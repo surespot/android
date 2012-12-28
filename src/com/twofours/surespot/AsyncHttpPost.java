@@ -51,7 +51,7 @@ public class AsyncHttpPost extends AsyncTask<Void, Void, HttpResponse> {
 		} catch (Exception e) {
 			Log.e("network", "error",e);
 			//e.printStackTrace();
-			// createDialog("Error", "Cannot Estabilish Connection");
+			// createDialog("Error", "Cannot Establish Connection");
 		}
 
 		return null;
