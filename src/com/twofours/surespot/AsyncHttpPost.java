@@ -11,6 +11,7 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONObject;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class AsyncHttpPost extends AsyncTask<Void, Void, HttpResponse> {
 	private String _url;
@@ -42,10 +43,14 @@ public class AsyncHttpPost extends AsyncTask<Void, Void, HttpResponse> {
 			se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
 					"application/json"));
 			post.setEntity(se);
-			return _httpClient.execute(post);
+			HttpResponse response = _httpClient.execute(post);
+		//	if (response.getEntity().getContent() != null && response.getEntity().getContent().available() > 0)
+		//		response.getEntity().getContent().close();
+			return response;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e("network", "error",e);
+			//e.printStackTrace();
 			// createDialog("Error", "Cannot Estabilish Connection");
 		}
 

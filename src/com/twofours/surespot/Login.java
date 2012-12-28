@@ -5,7 +5,17 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
+import java.math.BigInteger;
 import java.net.MalformedURLException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,42 +23,174 @@ import java.util.Map;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.interfaces.ECPrivateKey;
+import org.spongycastle.jce.interfaces.ECPublicKey;
+import org.spongycastle.jce.spec.ECParameterSpec;
+import org.spongycastle.jce.spec.ECPrivateKeySpec;
+import org.spongycastle.jce.spec.ECPublicKeySpec;
+import org.spongycastle.util.encoders.Hex;
 
 import com.twofours.surespot.R;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 public class Login extends Activity {
+
+	static {
+		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
+	}
+
 	private Button loginButton;
 	private Button sayHelloButton;
 	private SocketIO socket;
-	//TODO put this behind a factory or singleton or something
+	// TODO put this behind a factory or singleton or something
 	private AbstractHttpClient _httpClient;
+	private static String ASYMKEYPAIR_PREFKEY = "asymKeyPair";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 
-		_httpClient = new DefaultHttpClient();
-		HttpConnectionParams.setConnectionTimeout(_httpClient.getParams(), 10000); // Timeout
-																				// Limit
+		//use brainpool curve - fuck NIST! Reopen 9/11 investigation now!
+		ECParameterSpec curve = ECNamedCurveTable
+				.getParameterSpec("secp521r1");
+	
 		
+		// attempt to load key pair
+		SharedPreferences settings = getPreferences(MODE_PRIVATE);
+		String asymKeyPair = settings.getString(ASYMKEYPAIR_PREFKEY, null);
+
+		// if no keypair, generate one
+		// TODO move to thread
+		if (asymKeyPair == null) {
+			ECPublicKey ecpk = null; 
+
+			// begin key generation
+			KeyPairGenerator g = null;
+			String generatedPrivateKeyHex = null, generatedPrivDHex = null;
+			try {
+				g = KeyPairGenerator.getInstance("ECDH", "SC");
+				g.initialize(curve, new SecureRandom());
+				KeyPair pair = g.generateKeyPair();
+				ecpk = (ECPublicKey) pair.getPublic();
+				ECPrivateKey ecprik = (ECPrivateKey) pair.getPrivate();
+
+				// Log.d("ke","encoded public key: " +
+				// ecpk.getEncoded().toString());
+				// pair.getPublic().
+				// ecpk.getW().;
+				// ecprik.getD().toByteArray();
+				generatedPrivDHex = new String(Hex.encode(ecprik.getD()
+						.toByteArray()));
+
+				generatedPrivateKeyHex = new String(Hex.encode(ecprik
+						.getEncoded()));
+				String publicKey = new String(Hex.encode(ecpk.getQ().getEncoded())); 
+				Log.d("ke",
+						"generated public key:"
+								+ publicKey);
+
+				//Log.d("ke", "generated private key:" + generatedPrivateKeyHex);
+				Log.d("ke", "generated private key d:" + generatedPrivDHex);
+				
+				//save keypair in shared prefs json format (hex for now) TODO use something other than hex
+				JSONObject json = new JSONObject();
+				json.putOpt("private_key", generatedPrivDHex);
+				json.putOpt("public_key", publicKey);
+				settings.edit().putString(ASYMKEYPAIR_PREFKEY, json.toString()).commit();
+				
+				
+				
+				
+			} catch (NoSuchAlgorithmException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (NoSuchProviderException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (InvalidAlgorithmParameterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else {
+			//we have a keypair, load the fuckers up and reconstruct the keys
+			try {
+				JSONObject json = new JSONObject(asymKeyPair);
+				String sPrivateKey = (String) json.get("private_key");
+				String sPublicKey = (String) json.get("public_key");
+				//recreate key from hex string
+				ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(
+				
+						Hex.decode(sPrivateKey)), curve);
+				ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(
+						//new ECPoint(new BigInteger(px,16), new BigInteger(px,16)),
+						curve.getCurve().decodePoint(Hex.decode(sPublicKey)),
+						curve);
+
+				ECPrivateKey privKey = null;
+				ECPublicKey pubKey = null;
+
+				try {
+					KeyFactory fact =  KeyFactory.getInstance("ECDH", "SC");
+				
+					privKey = (ECPrivateKey) fact.generatePrivate(priKeySpec);
+					pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
+				} catch (InvalidKeySpecException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchProviderException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		//TODO use HttpURLConnection (http://android-developers.blogspot.com/2011/09/androids-http-clients.html)
+		// create thread safe http client
+		// (http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html)
+		_httpClient = new DefaultHttpClient();
+		ClientConnectionManager mgr = _httpClient.getConnectionManager();
+		HttpParams params = _httpClient.getParams();
+		_httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(
+				params, mgr.getSchemeRegistry()), params);
+		HttpConnectionParams.setConnectionTimeout(_httpClient.getParams(),
+				10000); // Timeout
+						// Limit
+
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);
 		this.loginButton.setOnClickListener(new View.OnClickListener() {
 
@@ -67,12 +209,12 @@ public class Login extends Activity {
 
 							@Override
 							public void handleResponse(HttpResponse response) {
-								
+
 								/* Checking response */
 								if (response.getStatusLine().getStatusCode() == 204) {
 									Cookie cookie = null;
-									for (Cookie c : (_httpClient).getCookieStore()
-											.getCookies()) {
+									for (Cookie c : (_httpClient)
+											.getCookieStore().getCookies()) {
 										System.out.println("Cookie name: "
 												+ c.getName() + " value: "
 												+ c.getValue());
@@ -179,7 +321,6 @@ public class Login extends Activity {
 		 * } });
 		 */
 	}
-
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
