@@ -91,7 +91,7 @@ public class LoginActivity extends Activity {
 										public void connectStatus(boolean status) {
 											if (status)
 												LoginActivity.this.startActivity(new Intent(LoginActivity.this,
-														NotificationsActivity.class));
+														FriendsActivity.class));
 										}
 
 									});

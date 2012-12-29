@@ -91,6 +91,7 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 								Log.d(TAG,"Invitation acted upon successfully: " + action);
 								
 								//delete this row
+								values.remove(position);
 								
 								if (action == "accept") {}
 								// broadcast message to say invite acted upon (if accept add user to friend to avoid web
