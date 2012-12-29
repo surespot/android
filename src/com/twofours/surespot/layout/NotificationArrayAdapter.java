@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +18,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.activities.NotificationsActivity;
+import com.twofours.surespot.chat.IConnectCallback;
+import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
 public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 	private final Context context;
 	private final List<JSONObject> values;
 	private static final String TAG = "NoficationArrayAdapter";
+
 	public NotificationArrayAdapter(Context context, List<JSONObject> values) {
 
 		super(context, R.layout.activity_notifications, values);
@@ -39,7 +46,6 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 		View rowView = convertView;
 
 		if (rowView == null) {
-			Log.d(TAG,"creating row");
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			rowView = inflater.inflate(R.layout.notification_list_item, parent, false);
 			// add button listener
@@ -62,10 +68,39 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 
 		@Override
 		public void onClick(View v) {
-						
-			String action = (String) v.getTag();
+
+			final String action = (String) v.getTag();
 			final int position = ((ListView) v.getParent().getParent()).getPositionForView((View) v.getParent());
-			Log.d(TAG, "Title clicked, row: " + position + ", action: " + action);
+
+			String friendname;
+			try {
+				friendname = values.get(position).getString("data");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+
+			SurespotApplication.getNetworkController().respondToInvite(friendname, action,
+					new IAsyncNetworkResultCallback<Boolean>() {
+
+						@Override
+						public void handleResponse(Boolean result) {
+							
+							if (result) {
+								Log.d(TAG,"Invitation acted upon successfully: " + action);
+								
+								//delete this row
+								
+								if (action == "accept") {}
+								// broadcast message to say invite acted upon (if accept add user to friend to avoid web
+								// request)
+
+							}
+						}
+					});
+
+			// Log.d(TAG, "Title clicked, row: " + position + ", action: " + action);
 		}
 	};
 }
