@@ -8,7 +8,7 @@ import android.view.Menu;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 
-public class MainActivity extends Activity {
+public class StartupActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
