@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.encryption;
 
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -23,10 +23,10 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 import org.spongycastle.util.encoders.Hex;
 
-import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+
+import com.twofours.surespot.SurespotApplication;
 
 public class EncryptionController {
 	private static String ASYMKEYPAIR_PREFKEY = "asymKeyPair";

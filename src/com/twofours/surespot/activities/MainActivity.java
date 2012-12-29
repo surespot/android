@@ -1,14 +1,12 @@
 package com.twofours.surespot.activities;
 
-import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.R.layout;
-import com.twofours.surespot.R.menu;
-
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.Menu;
+
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 
 public class MainActivity extends Activity {
 

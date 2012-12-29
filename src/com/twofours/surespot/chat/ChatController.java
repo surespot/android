@@ -1,4 +1,9 @@
-package com.twofours.surespot;
+package com.twofours.surespot.chat;
+
+import io.socket.IOAcknowledge;
+import io.socket.IOCallback;
+import io.socket.SocketIO;
+import io.socket.SocketIOException;
 
 import java.net.MalformedURLException;
 
@@ -6,10 +11,7 @@ import org.apache.http.cookie.Cookie;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
+import com.twofours.surespot.SurespotApplication;
 
 public class ChatController {
 	private SocketIO socket;

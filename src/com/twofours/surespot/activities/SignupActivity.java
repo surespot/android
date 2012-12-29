@@ -1,38 +1,22 @@
 package com.twofours.surespot.activities;
 
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
-
-import java.net.MalformedURLException;
 import java.security.KeyPair;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.cookie.Cookie;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
-import com.twofours.surespot.AbstractNetworkResultCallbackWrapper;
-import com.twofours.surespot.EncryptionController;
-import com.twofours.surespot.IConnectCallback;
-import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.R.id;
-import com.twofours.surespot.R.layout;
-import com.twofours.surespot.R.menu;
-
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.IConnectCallback;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.AbstractNetworkResultCallbackWrapper;
 
 public class SignupActivity extends Activity {
 

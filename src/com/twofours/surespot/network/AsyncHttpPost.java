@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.network;
 
 import java.util.Map;
 

@@ -2,9 +2,12 @@ package com.twofours.surespot;
 
 import java.security.Security;
 
-import junit.framework.Assert;
 import android.app.Application;
 import android.content.Context;
+
+import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.NetworkController;
 
 public class SurespotApplication extends Application {
     private static Context context;

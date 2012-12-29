@@ -1,42 +1,26 @@
 package com.twofours.surespot.activities;
 
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
 import io.socket.SocketIO;
-import io.socket.SocketIOException;
 
-import java.net.MalformedURLException;
-import java.security.Security;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.http.HttpResponse;
 import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.twofours.surespot.IAsyncNetworkResultCallback;
-import com.twofours.surespot.IConnectCallback;
-import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.R.id;
-import com.twofours.surespot.R.layout;
-import com.twofours.surespot.R.menu;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.IConnectCallback;
+import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
 public class LoginActivity extends Activity {
 
@@ -61,6 +45,30 @@ public class LoginActivity extends Activity {
 		HttpConnectionParams.setConnectionTimeout(_httpClient.getParams(), 10000); // Timeout
 																					// Limit
 
+		//debug
+		SurespotApplication.getNetworkController().login("adam", "wanker",
+				new IAsyncNetworkResultCallback<Boolean>() {
+
+					@Override
+					public void handleResponse(Boolean result) {
+						if (result) {
+							// go to friends
+							SurespotApplication.getChatController().connect(new IConnectCallback() {
+
+								@Override
+								public void connectStatus(boolean status) {
+									if (status)
+										LoginActivity.this.startActivity(new Intent(LoginActivity.this,
+												NotificationsActivity.class));
+								}
+
+							});
+
+						}
+					}
+				});
+		//end debug
+		
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);
 		this.loginButton.setOnClickListener(new View.OnClickListener() {
 

@@ -14,13 +14,15 @@
          android:id="@+id/notificationItemIgnore"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="ignore"></Button>
+         android:text="ignore"
+         android:tag="ignore"></Button>
    
 	<Button
          android:id="@+id/notificationItemAccept"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="accept"></Button>
+         android:text="accept"
+         android:tag="accept"></Button>
    
      
 </LinearLayout>

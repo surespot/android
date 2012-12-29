@@ -1,12 +1,6 @@
-package com.twofours.surespot;
-
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
+package com.twofours.surespot.network;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +17,8 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.jce.interfaces.ECPublicKey;
 
-import android.widget.EditText;
+import com.twofours.surespot.Utils;
 
 public class NetworkController {
 	// TODO put this behind a factory or singleton or something

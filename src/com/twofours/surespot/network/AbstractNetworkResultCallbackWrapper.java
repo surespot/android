@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.network;
 
 public abstract class AbstractNetworkResultCallbackWrapper<T,U> implements IAsyncNetworkResultCallback<T> {
 
