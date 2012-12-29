@@ -1,2 +1,5 @@
 bin/
 gen/
+/AndroidManifest.out.xml
+/.classpath
+/.project
