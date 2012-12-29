@@ -8,28 +8,29 @@ import org.json.JSONObject;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.app.ListActivity;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
-public class FriendsActivity extends ListActivity {
+public class FriendsActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_friends);
-		
-		//get the list of friends
+
+		// get the list of friends
 		SurespotApplication.getNetworkController().getFriends(new IAsyncNetworkResultCallback<List<String>>() {
-			
+
 			@Override
 			public void handleResponse(List<String> result) {
-				if (result == null) return;
-				setListAdapter(new ArrayAdapter<String>(FriendsActivity.this, android.R.layout.simple_list_item_1, result));
+				if (result == null)
+					return;
+				((ListView) findViewById(R.id.friendsList)).setAdapter(new ArrayAdapter<String>(FriendsActivity.this,
+						android.R.layout.simple_list_item_1, result));
 			}
 		});
 
-		
 	}
 
 	@Override

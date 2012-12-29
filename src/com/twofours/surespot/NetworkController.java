@@ -163,4 +163,28 @@ public class NetworkController {
 		get.execute();
 
 	}
+	
+	public void invite(String friendname, final IAsyncNetworkResultCallback<Boolean> callback) { 
+		
+
+		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/invite/" + friendname, null, new IAsyncHttpCallback() {
+
+			@Override
+			public void handleResponse(HttpResponse response) {
+				
+				/* Checking response */
+				if (response != null && (response.getStatusLine().getStatusCode() == 204 || response.getStatusLine().getStatusCode() == 202)) {
+					callback.handleResponse(true);
+					
+				}
+				else {
+					callback.handleResponse(false);
+				}
+				
+
+			}
+		});
+		post.execute();
+
+	}
 }
