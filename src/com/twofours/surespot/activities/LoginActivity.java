@@ -26,7 +26,6 @@ public class LoginActivity extends Activity {
 
 	private Button loginButton;
 	private Button sayHelloButton;
-	private SocketIO socket;
 	// TODO put this behind a factory or singleton or something
 	private AbstractHttpClient _httpClient;
 

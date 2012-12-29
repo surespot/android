@@ -17,7 +17,7 @@ public class FriendAddFragment extends SherlockFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.friend_list_fragment, container, false);
+		final View view = inflater.inflate(R.layout.friend_add_fragment, container, false);
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
 

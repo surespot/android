@@ -3,6 +3,7 @@ package com.twofours.surespot.layout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
+import com.twofours.surespot.fragments.FriendFragment;
 import com.twofours.surespot.fragments.FriendListFragment;
 import com.twofours.surespot.fragments.NotificationListFragment;
 
@@ -16,13 +17,13 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	public Fragment getItem(int i) {
 		switch (i) {
 		case 0:
-			return new FriendListFragment();
+			return new FriendFragment();
 
 		case 1:
 			return new NotificationListFragment();
 
 		default:
-			return new FriendListFragment();
+			return new FriendFragment();
 		}
 	}
 
