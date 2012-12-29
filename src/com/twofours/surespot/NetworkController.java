@@ -7,7 +7,9 @@ import io.socket.SocketIOException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
@@ -18,6 +20,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.jce.interfaces.ECPublicKey;
@@ -118,7 +121,7 @@ public class NetworkController {
 
 	}
 
-	public void getFriends(final IAsyncNetworkResultCallback<String> callback) {
+	public void getFriends(final IAsyncNetworkResultCallback<List<String>> callback) {
 		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/friends",
 				new IAsyncNetworkResultCallback<HttpResponse>() {
 
@@ -130,14 +133,29 @@ public class NetworkController {
 
 							// pass the callback in?
 							try {
-								callback.handleResponse(Utils.inputStreamToString(response.getEntity().getContent()));
+								String friendsJson = Utils.inputStreamToString(response.getEntity().getContent());
+								List<String> friends = null;
+								try {
+									JSONArray jsonArray = new JSONArray(friendsJson);
+									if (jsonArray.length() > 0) {
+										friends = new ArrayList<String>(jsonArray.length());
+										for (int i = 0; i < jsonArray.length(); i++) {
+											friends.add(jsonArray.getString(i));
+										}
+									}
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								callback.handleResponse(friends);
 							} catch (IllegalStateException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-							} 
+							}
 						}
 
 					}

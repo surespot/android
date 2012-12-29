@@ -1,5 +1,7 @@
 package com.twofours.surespot;
 
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,27 +20,16 @@ public class FriendsActivity extends ListActivity {
 		setContentView(R.layout.activity_friends);
 		
 		//get the list of friends
-		SurespotApplication.getNetworkController().getFriends(new IAsyncNetworkResultCallback<String>() {
+		SurespotApplication.getNetworkController().getFriends(new IAsyncNetworkResultCallback<List<String>>() {
 			
 			@Override
-			public void handleResponse(String result) {
+			public void handleResponse(List<String> result) {
 				if (result == null) return;
-				String[] friends = null;
-				try {
-					JSONArray jsonArray = new JSONArray(result);
-					friends = new String[jsonArray.length()];
-					for (int i =0;i<jsonArray.length();i++) {
-						friends[i] = jsonArray.getString(i);
-					}
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				
-				setListAdapter(new ArrayAdapter<String>(FriendsActivity.this, android.R.layout.simple_list_item_1, friends));
+				setListAdapter(new ArrayAdapter<String>(FriendsActivity.this, android.R.layout.simple_list_item_1, result));
 			}
 		});
+
+		
 	}
 
 	@Override
