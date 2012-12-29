@@ -92,6 +92,7 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 								
 								//delete this row
 								values.remove(position);
+								notifyDataSetChanged();
 								
 								if (action == "accept") {}
 								// broadcast message to say invite acted upon (if accept add user to friend to avoid web

@@ -46,7 +46,7 @@ public class LoginActivity extends Activity {
 																					// Limit
 
 		//debug
-		SurespotApplication.getNetworkController().login("adam", "wanker",
+		SurespotApplication.getNetworkController().login("jb", "jb",
 				new IAsyncNetworkResultCallback<Boolean>() {
 
 					@Override
@@ -59,7 +59,7 @@ public class LoginActivity extends Activity {
 								public void connectStatus(boolean status) {
 									if (status)
 										LoginActivity.this.startActivity(new Intent(LoginActivity.this,
-												NotificationsActivity.class));
+												FriendsActivity.class));
 								}
 
 							});
@@ -91,7 +91,7 @@ public class LoginActivity extends Activity {
 										public void connectStatus(boolean status) {
 											if (status)
 												LoginActivity.this.startActivity(new Intent(LoginActivity.this,
-														FriendsActivity.class));
+														NotificationsActivity.class));
 										}
 
 									});
