@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 import io.socket.IOAcknowledge;
 import io.socket.IOCallback;
@@ -15,6 +15,15 @@ import org.apache.http.cookie.Cookie;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.jce.interfaces.ECPublicKey;
+
+import com.twofours.surespot.AbstractNetworkResultCallbackWrapper;
+import com.twofours.surespot.EncryptionController;
+import com.twofours.surespot.IConnectCallback;
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.R.id;
+import com.twofours.surespot.R.layout;
+import com.twofours.surespot.R.menu;
 
 import android.os.Bundle;
 import android.app.Activity;

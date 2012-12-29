@@ -1,4 +1,9 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
+
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.R.layout;
+import com.twofours.surespot.R.menu;
 
 import android.os.Bundle;
 import android.app.Activity;

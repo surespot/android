@@ -8,7 +8,8 @@
     <string name="username_label">username:</string>
     <string name="password_label">password:</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_credential_management">CredentialManagementActivity</string>
-    <string name="title_activity_friends">FriendsActivity</string>
+    <string name="title_activity_signup">Signup</string>
+    <string name="title_activity_friends">Friends</string>
+   	<string name="title_activity_notifications">Notifications</string>
 
 </resources>

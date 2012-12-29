@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 import io.socket.IOAcknowledge;
 import io.socket.IOCallback;
@@ -20,6 +20,14 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.twofours.surespot.IAsyncNetworkResultCallback;
+import com.twofours.surespot.IConnectCallback;
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.R.id;
+import com.twofours.surespot.R.layout;
+import com.twofours.surespot.R.menu;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -75,7 +83,7 @@ public class LoginActivity extends Activity {
 										public void connectStatus(boolean status) {
 											if (status)
 												LoginActivity.this.startActivity(new Intent(LoginActivity.this,
-														FriendsActivity.class));
+														NotificationsActivity.class));
 										}
 
 									});
