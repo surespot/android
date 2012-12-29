@@ -31,8 +31,8 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View rowView = inflater.inflate(R.layout.activity_notifications,  parent, false); 
-		TextView textView = (TextView) rowView.findViewById(R.id.notificationsRow);
+		View rowView = inflater.inflate(R.layout.notification_list_item,  parent, false); 
+		TextView textView = (TextView) rowView.findViewById(R.id.notificationItemText);
 		try {
 			textView.setText(values.get(position).getString("data"));
 		} catch (JSONException e) {
