@@ -60,7 +60,17 @@ public class SignupActivity extends Activity {
 										//TODO add setkey pair method to encryption controller to not have to pass it into the callback
 										//and back into the encryption controller 
 										SurespotApplication.getEncryptionController().saveKeyPair(state);
-										startActivity(new Intent(SignupActivity.this, FriendsActivity.class));
+										SurespotApplication.getChatController().connect(new IConnectCallback() {
+											
+											@Override
+											public void connectStatus(boolean status) {												
+												if (status)
+													startActivity(new Intent(SignupActivity.this, FriendsActivity.class));	
+											}
+										
+											
+										});
+										
 									}
  
 								}

@@ -32,7 +32,6 @@ import android.widget.EditText;
 
 public class LoginActivity extends Activity {
 
-	
 	private Button loginButton;
 	private Button sayHelloButton;
 	private SocketIO socket;
@@ -69,8 +68,18 @@ public class LoginActivity extends Activity {
 							@Override
 							public void handleResponse(Boolean result) {
 								if (result) {
-									//go to friends
-									LoginActivity.this.startActivity(new Intent(LoginActivity.this, FriendsActivity.class));
+									// go to friends
+									SurespotApplication.getChatController().connect(new IConnectCallback() {
+
+										@Override
+										public void connectStatus(boolean status) {
+											if (status)
+												LoginActivity.this.startActivity(new Intent(LoginActivity.this,
+														FriendsActivity.class));
+										}
+
+									});
+
 								}
 							}
 						});

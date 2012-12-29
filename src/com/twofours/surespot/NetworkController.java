@@ -5,6 +5,7 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,6 +115,34 @@ public class NetworkController {
 			}
 		});
 		post.execute();
+
+	}
+
+	public void getFriends(final IAsyncNetworkResultCallback<String> callback) {
+		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/friends",
+				new IAsyncNetworkResultCallback<HttpResponse>() {
+
+					@Override
+					public void handleResponse(HttpResponse response) {
+
+						/* Checking response */
+						if (response != null && response.getStatusLine().getStatusCode() == 200) {
+
+							// pass the callback in?
+							try {
+								callback.handleResponse(Utils.inputStreamToString(response.getEntity().getContent()));
+							} catch (IllegalStateException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} 
+						}
+
+					}
+				});
+		get.execute();
 
 	}
 }

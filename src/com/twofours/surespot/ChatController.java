@@ -14,7 +14,7 @@ import io.socket.SocketIOException;
 public class ChatController {
 	private SocketIO socket;
 
-	public void connect() {
+	public void connect(final IConnectCallback callback) {
 
 		Cookie cookie = SurespotApplication.getNetworkController().getCookie();
 		//TODO handle no cookie
@@ -25,6 +25,7 @@ public class ChatController {
 		} catch (MalformedURLException e1) {
 			// Auto-generated
 			e1.printStackTrace();
+		//	callback.connectStatus(false);
 		}
 
 		socket.connect(new IOCallback() {
@@ -57,6 +58,7 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				System.out.println("socket.io connection established");
+				callback.connectStatus(true);
 
 			}
 
