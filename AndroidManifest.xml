@@ -32,8 +32,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.twofours.surespot.CredentialManagementActivity"
+            android:name="com.twofours.surespot.SignupActivity"
             android:label="@string/title_activity_credential_management" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.FriendsActivity"
+            android:label="@string/title_activity_friends" >
         </activity>
     </application>
 

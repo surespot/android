@@ -22,7 +22,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -30,33 +32,27 @@ import android.widget.EditText;
 
 public class LoginActivity extends Activity {
 
-	static {
-		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
-	}
-
+	
 	private Button loginButton;
 	private Button sayHelloButton;
 	private SocketIO socket;
 	// TODO put this behind a factory or singleton or something
 	private AbstractHttpClient _httpClient;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 
-	
-		//TODO use HttpURLConnection (http://android-developers.blogspot.com/2011/09/androids-http-clients.html)
+		// TODO use HttpURLConnection (http://android-developers.blogspot.com/2011/09/androids-http-clients.html)
 		// create thread safe http client
 		// (http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html)
 		_httpClient = new DefaultHttpClient();
 		ClientConnectionManager mgr = _httpClient.getConnectionManager();
 		HttpParams params = _httpClient.getParams();
-		_httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(
-				params, mgr.getSchemeRegistry()), params);
-		HttpConnectionParams.setConnectionTimeout(_httpClient.getParams(),
-				10000); // Timeout
-						// Limit
+		_httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(params, mgr.getSchemeRegistry()), params);
+		HttpConnectionParams.setConnectionTimeout(_httpClient.getParams(), 10000); // Timeout
+																					// Limit
 
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);
 		this.loginButton.setOnClickListener(new View.OnClickListener() {
@@ -64,126 +60,32 @@ public class LoginActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 
-				Map<String, String> params = new HashMap<String, String>();
-				params.put("username", ((EditText) LoginActivity.this
-						.findViewById(R.id.etUsername)).getText().toString());
-				params.put("password", ((EditText) LoginActivity.this
-						.findViewById(R.id.etPassword)).getText().toString());
+				String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
+				String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
-				AsyncHttpPost post = new AsyncHttpPost(_httpClient,
-						"http://192.168.10.68:3000/login", params,
-						new IAsyncHttpCallback() {
+				SurespotApplication.getNetworkController().login(username, password,
+						new IAsyncNetworkResultCallback<Boolean>() {
 
 							@Override
-							public void handleResponse(HttpResponse response) {
-
-								/* Checking response */
-								if (response.getStatusLine().getStatusCode() == 204) {
-									Cookie cookie = null;
-									for (Cookie c : (_httpClient)
-											.getCookieStore().getCookies()) {
-										System.out.println("Cookie name: "
-												+ c.getName() + " value: "
-												+ c.getValue());
-										if (c.getName().equals("connect.sid")) {
-											cookie = c;
-											break;
-										}
-									}
-
-									if (cookie == null) {
-										System.out
-												.println("did not get cookie from login");
-										return;
-									}
-									try {
-										socket = new SocketIO(
-												"http://192.168.10.68:3000");
-										socket.addHeader(
-												"cookie",
-												cookie.getName() + "="
-														+ cookie.getValue());
-									} catch (MalformedURLException e1) {
-										// Auto-generated
-										e1.printStackTrace();
-									}
-
-									socket.connect(new IOCallback() {
-
-										@Override
-										public void onMessage(JSONObject json,
-												IOAcknowledge ack) {
-											try {
-												System.out.println("Server said:"
-														+ json.toString(2));
-											} catch (JSONException e) {
-												e.printStackTrace();
-											}
-										}
-
-										@Override
-										public void onMessage(String data,
-												IOAcknowledge ack) {
-											System.out.println("Server said: "
-													+ data);
-										}
-
-										@Override
-										public void onError(
-												SocketIOException socketIOException) {
-											System.out
-													.println("an Error occured");
-											socketIOException.printStackTrace();
-										}
-
-										@Override
-										public void onDisconnect() {
-											System.out
-													.println("Connection terminated.");
-										}
-
-										@Override
-										public void onConnect() {
-											System.out
-													.println("socket.io connection established");
-
-										}
-
-										@Override
-										public void on(String event,
-												IOAcknowledge ack,
-												Object... args) {
-											System.out
-													.println("Server triggered event '"
-															+ event + "'");
-										}
-									});
-
-									// JSONObject j = new JSONObject();
-									// //j.putOpt(name,
-									// value)
-									// socket.send()
-
+							public void handleResponse(Boolean result) {
+								if (result) {
+									//go to friends
+									LoginActivity.this.startActivity(new Intent(LoginActivity.this, FriendsActivity.class));
 								}
-
 							}
 						});
-				post.execute();
 
 			}
 		});
 
 		/*
-		 * this.sayHelloButton = (Button) this.findViewById(R.id.bSayHello);
-		 * this.sayHelloButton.setOnClickListener(new View.OnClickListener() {
+		 * this.sayHelloButton = (Button) this.findViewById(R.id.bSayHello); this.sayHelloButton.setOnClickListener(new
+		 * View.OnClickListener() {
 		 * 
-		 * @Override public void onClick(View v) { // send a message JSONObject
-		 * json = new JSONObject();
+		 * @Override public void onClick(View v) { // send a message JSONObject json = new JSONObject();
 		 * 
-		 * try { json.putOpt("room", "adam_cherie"); json.putOpt("text",
-		 * "hello from android"); socket.emit("message", json.toString()); }
-		 * catch (JSONException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
+		 * try { json.putOpt("room", "adam_cherie"); json.putOpt("text", "hello from android"); socket.emit("message",
+		 * json.toString()); } catch (JSONException e) { // TODO Auto-generated catch block e.printStackTrace(); }
 		 * 
 		 * } });
 		 */

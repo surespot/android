@@ -18,7 +18,7 @@ public class MainActivity extends Activity {
 		}
 		//otherwise show the user / key management activity
 		else {
-			startActivity(new Intent(this,CredentialManagementActivity.class));
+			startActivity(new Intent(this,SignupActivity.class));
 		}
 	}
 

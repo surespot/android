@@ -4,18 +4,18 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
 
-public class CredentialManagementActivity extends Activity {
+public class FriendsActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_credential_management);
+		setContentView(R.layout.activity_friends);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_credential_management, menu);
+		getMenuInflater().inflate(R.menu.activity_friends, menu);
 		return true;
 	}
 

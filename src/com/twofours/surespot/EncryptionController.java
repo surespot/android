@@ -33,29 +33,24 @@ public class EncryptionController {
 	// use brainpool curve - fuck NIST! Reopen 9/11 investigation now!
 	private ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private KeyPair keyPair;
-	private Boolean hadKeys;
+
 
 	public EncryptionController() {
-		// load keys
 		// attempt to load key pair
 		keyPair = loadKeyPair();
-	/*	if (keyPair == null) {
-			// if no keypair, generate one
-			// TODO move to thread
-			keyPair = generateKeyPair();
-			saveKeyPair(keyPair);
-		} 
-		else {
-			hadKeys = true;
-		}*/
-		
-		
+	}
+	
+	public String getPublicKeyString() {
+		return encodePublicKey((ECPublicKey) keyPair.getPublic());
 	}
 	
 	public Boolean hasKeyPair() {
 		return keyPair != null;
 	}
 
+	
+	
+	
 	private KeyPair loadKeyPair() {
 		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences("encryption",
 				android.content.Context.MODE_PRIVATE);
@@ -126,13 +121,12 @@ public class EncryptionController {
 		return null;
 	}
 	
-	private KeyPair generateKeyPair() {
+	public KeyPair generateKeyPair() {
 
 		try {
 			KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
 			g.initialize(curve, new SecureRandom());
-			KeyPair pair = g.generateKeyPair();
-
+			KeyPair pair = g.generateKeyPair();	
 			return pair;
 
 		} catch (NoSuchAlgorithmException e2) {
@@ -149,8 +143,9 @@ public class EncryptionController {
 		return null;
 	}
 
-	private void saveKeyPair(KeyPair pair) {
+	public void saveKeyPair(KeyPair pair) {
 
+		keyPair = pair;
 		ECPublicKey ecpub = (ECPublicKey) pair.getPublic();
 		ECPrivateKey ecpriv = (ECPrivateKey) pair.getPrivate();
 
@@ -161,7 +156,7 @@ public class EncryptionController {
 		// ecprik.getD().toByteArray();
 		String generatedPrivDHex = new String(Hex.encode(ecpriv.getD().toByteArray()));
 
-		String publicKey = new String(Hex.encode(ecpub.getQ().getEncoded()));
+		String publicKey = encodePublicKey(ecpub);
 		Log.d("ke", "generated public key:" + publicKey);
 		Log.d("ke", "generated private key d:" + generatedPrivDHex);
 
@@ -180,6 +175,10 @@ public class EncryptionController {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public static String encodePublicKey(ECPublicKey publicKey) {
+		return new String(Hex.encode(publicKey.getQ().getEncoded()));
 	}
 
 	private byte[] generateSharedSecret(ECPublicKey publicKey) {
