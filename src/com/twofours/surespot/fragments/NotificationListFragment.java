@@ -4,19 +4,18 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.layout.NotificationArrayAdapter;
 import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
-import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
-
-public class NotificationListFragment extends ListFragment {
+public class NotificationListFragment extends SherlockListFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

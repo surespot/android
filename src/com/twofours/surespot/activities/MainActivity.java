@@ -1,20 +1,17 @@
 package com.twofours.surespot.activities;
 
-import com.twofours.surespot.R;
-import com.twofours.surespot.R.layout;
-import com.twofours.surespot.R.menu;
-import com.twofours.surespot.layout.MainPagerAdapter;
 
 import android.os.Bundle;
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.app.Activity;
-import android.app.FragmentTransaction;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.view.Menu;
 
-public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.twofours.surespot.R;
+import com.twofours.surespot.layout.MainPagerAdapter;
+
+public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener {
 
 	MainPagerAdapter mPagerAdapter;
 	ViewPager mViewPager;
@@ -26,7 +23,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
 		mPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
 
-		final ActionBar actionBar = getActionBar();
+		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -51,19 +48,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-	}
-
-	@Override
-	public void onTabReselected(Tab tab, FragmentTransaction ft) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
 		mViewPager.setCurrentItem(tab.getPosition());
 		
@@ -75,4 +59,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 		
 	}
 
+	@Override
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+
+	
 }

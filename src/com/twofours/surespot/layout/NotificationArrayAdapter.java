@@ -6,7 +6,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,8 +18,6 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
 public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {

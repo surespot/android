@@ -1,18 +1,18 @@
 package com.twofours.surespot.fragments;
 
-import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
-
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-public class FriendAddFragment extends Fragment {
+import com.actionbarsherlock.app.SherlockFragment;
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+
+public class FriendAddFragment extends SherlockFragment {
 
 
 	@Override

@@ -2,18 +2,18 @@ package com.twofours.surespot.fragments;
 
 import java.util.List;
 
-import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
-
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
-public class FriendListFragment extends ListFragment {
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+
+public class FriendListFragment extends SherlockListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
