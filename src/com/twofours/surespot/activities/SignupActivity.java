@@ -58,7 +58,7 @@ public class SignupActivity extends Activity {
 											@Override
 											public void connectStatus(boolean status) {												
 												if (status)
-													startActivity(new Intent(SignupActivity.this, FriendsActivity.class));	
+													startActivity(new Intent(SignupActivity.this, MainActivity.class));	
 											}
 										
 											

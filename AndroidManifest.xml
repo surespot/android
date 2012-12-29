@@ -39,9 +39,13 @@
             android:name="com.twofours.surespot.activities.FriendsActivity"
             android:label="@string/title_activity_friends" >
         </activity>
-          <activity
+        <activity
             android:name="com.twofours.surespot.activities.NotificationsActivity"
             android:label="@string/title_activity_notifications" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.MainActivity"
+            android:label="@string/title_activity_main" >
         </activity>
     </application>
 

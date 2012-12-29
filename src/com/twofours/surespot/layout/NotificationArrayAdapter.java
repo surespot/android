@@ -20,7 +20,6 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.activities.NotificationsActivity;
 import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
@@ -31,7 +30,7 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 
 	public NotificationArrayAdapter(Context context, List<JSONObject> values) {
 
-		super(context, R.layout.activity_notifications, values);
+		super(context, R.layout.notification_list_item, values);
 		this.context = context;
 		this.values = values;
 	}

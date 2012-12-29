@@ -13,7 +13,7 @@ public class StartupActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_startup);
 		
 		//if we have a key pair show the login activity
 		if (SurespotApplication.getEncryptionController().hasKeyPair()) {		
