@@ -45,7 +45,7 @@ public class LoginActivity extends Activity {
 																					// Limit
 
 		//debug
-		SurespotApplication.getNetworkController().login("jb", "jb",
+	/*	SurespotApplication.getNetworkController().login("jb", "jb",
 				new IAsyncNetworkResultCallback<Boolean>() {
 
 					@Override
@@ -65,7 +65,7 @@ public class LoginActivity extends Activity {
 
 						}
 					}
-				});
+				});*/
 		//end debug
 		
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);

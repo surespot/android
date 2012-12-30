@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,15 @@ import com.twofours.surespot.layout.NotificationArrayAdapter;
 import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
 public class NotificationListFragment extends SherlockListFragment {
+	
+	public interface OnInviteClickedListener {
+		public void onInviteClicked(String username, String action);
+	}
+
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

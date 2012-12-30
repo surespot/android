@@ -1,17 +1,19 @@
 package com.twofours.surespot.activities;
 
-
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.twofours.surespot.R;
+import com.twofours.surespot.fragments.NotificationListFragment.OnInviteClickedListener;
 import com.twofours.surespot.layout.MainPagerAdapter;
 
-public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener {
+public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener, OnInviteClickedListener {
+	public static final String TAG = "MainActivity";
 
 	MainPagerAdapter mPagerAdapter;
 	ViewPager mViewPager;
@@ -62,6 +64,12 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	@Override
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onInviteClicked(String username, String action) {
+		Log.v(TAG, "onInviteClicked, username: " + username + ", action: " + action);
 		
 	}
 

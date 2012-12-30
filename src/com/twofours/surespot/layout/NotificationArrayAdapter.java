@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.fragments.NotificationListFragment.OnInviteClickedListener;
 import com.twofours.surespot.network.IAsyncNetworkResultCallback;
 
 public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
@@ -67,8 +68,8 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 
 			final String action = (String) v.getTag();
 			final int position = ((ListView) v.getParent().getParent()).getPositionForView((View) v.getParent());
-
-			String friendname;
+			final String friendname;
+			
 			try {
 				friendname = values.get(position).getString("data");
 			} catch (JSONException e) {
@@ -90,9 +91,8 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 								values.remove(position);
 								notifyDataSetChanged();
 								
-								if (action == "accept") {}
-								// broadcast message to say invite acted upon (if accept add user to friend to avoid web
-								// request)
+								//tell the activity what we did
+								((OnInviteClickedListener) NotificationArrayAdapter.this.context).onInviteClicked(friendname, action);
 
 							}
 						}
