@@ -9,6 +9,7 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.twofours.surespot.R;
+import com.twofours.surespot.fragments.FriendListFragment;
 import com.twofours.surespot.fragments.NotificationListFragment.OnInviteClickedListener;
 import com.twofours.surespot.layout.MainPagerAdapter;
 
@@ -70,6 +71,12 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	@Override
 	public void onInviteClicked(String username, String action) {
 		Log.v(TAG, "onInviteClicked, username: " + username + ", action: " + action);
+		
+		//add the user who's invite was accepted to the friend list to avoid a web request
+		FriendListFragment friendListFragment = (FriendListFragment) getSupportFragmentManager().findFragmentById(R.id.friend_list_fragment);
+		if (friendListFragment != null) {
+			friendListFragment.inviteClicked(username, action);
+		}
 		
 	}
 
