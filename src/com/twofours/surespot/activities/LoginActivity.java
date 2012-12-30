@@ -1,7 +1,5 @@
 package com.twofours.surespot.activities;
 
-import io.socket.SocketIO;
-
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;

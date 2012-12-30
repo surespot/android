@@ -15,8 +15,8 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
 
 public class ChatController {
 

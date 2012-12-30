@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingLeft="8dp"
-    android:paddingRight="8dp" >
+    android:paddingRight="8dp"
+     >
 
     <ListView
         android:id="@id/android:list"
@@ -16,6 +17,6 @@
         android:id="@id/android:empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="You have no friends. Loser." />
+        android:text="You don't belong to any spots, loser." />
 
 </LinearLayout>

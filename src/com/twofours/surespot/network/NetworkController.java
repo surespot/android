@@ -200,6 +200,50 @@ public class NetworkController {
 
 	}
 	
+	public void getSpots(final IAsyncNetworkResultCallback<List<String>> callback) {
+		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/conversations",
+				new IAsyncNetworkResultCallback<HttpResponse>() {
+
+					@Override
+					public void handleResponse(HttpResponse response) {
+
+						/* Checking response */
+						if (response != null && response.getStatusLine().getStatusCode() == 200) {
+
+							// pass the callback in?
+							try {
+								String spotsJson = Utils.inputStreamToString(response.getEntity().getContent());
+								List<String> spots = null;
+								try {
+									JSONArray jsonArray = new JSONArray(spotsJson);
+									if (jsonArray.length() > 0) {
+										spots = new ArrayList<String>(jsonArray.length());
+										for (int i = 0; i < jsonArray.length(); i++) {
+											spots.add(jsonArray.getString(i));
+										}
+									}
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								callback.handleResponse(spots);
+							} catch (IllegalStateException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+
+					}
+				});
+		get.execute();
+
+	}
+	
+	
 	public void invite(String friendname, final IAsyncNetworkResultCallback<Boolean> callback) { 
 		
 

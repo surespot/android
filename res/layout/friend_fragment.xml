@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/friend_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    
-	<fragment android:name="com.twofours.surespot.fragments.FriendListFragment"
-	    android:id="@+id/friend_list_fragment"
-	    android:layout_weight="1"
-	    android:layout_width="match_parent"
-	    android:layout_height="0dp"></fragment>
-	<fragment android:name="com.twofours.surespot.fragments.FriendAddFragment"
-	    android:id="@+id/friend_add_fragment"	   
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"></fragment>
+
+    <ListView
+        android:id="@+id/friend_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:drawSelectorOnTop="false" />
+
+   <!--     <TextView
+        android:id="@+id/friend_list_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="You have no friends. Loser." />
+    -->
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <EditText
+            android:id="@+id/etFriend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="text"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/bAddFriend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Friend" />
+    </LinearLayout>
+
 </LinearLayout>
