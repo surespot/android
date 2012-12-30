@@ -11,9 +11,17 @@ import org.apache.http.cookie.Cookie;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+
+import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotApplication;
 
 public class ChatController {
+
+	
+	private static final String TAG = "ChatController";
 	private SocketIO socket;
 
 	public void connect(final IConnectCallback callback) {
@@ -35,7 +43,8 @@ public class ChatController {
 			@Override
 			public void onMessage(JSONObject json, IOAcknowledge ack) {
 				try {
-					System.out.println("Server said:" + json.toString(2));
+					Log.v(TAG,"JSON Server said:" + json.toString(2));
+				
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -43,38 +52,48 @@ public class ChatController {
 
 			@Override
 			public void onMessage(String data, IOAcknowledge ack) {
-				System.out.println("Server said: " + data);
+				Log.v(TAG,"Server said: " + data);
 			}
 
 			@Override
 			public void onError(SocketIOException socketIOException) {
-				System.out.println("an Error occured");
+				Log.v(TAG,"an Error occured");
 				socketIOException.printStackTrace();
 			}
 
 			@Override
 			public void onDisconnect() {
-				System.out.println("Connection terminated.");
+				Log.v(TAG,"Connection terminated.");
 			}
 
 			@Override
 			public void onConnect() {
-				System.out.println("socket.io connection established");
+				Log.v(TAG,"socket.io connection established");
 				callback.connectStatus(true);
 
 			}
 
 			@Override
 			public void on(String event, IOAcknowledge ack, Object... args) {
-				System.out.println("Server triggered event '" + event + "'");
+				Log.v(TAG,"Server triggered event '" + event + "'");
+				if (event.equals("notification")) {
+					sendNotification((JSONObject) args[0]);
+				}
 			}
 		});
 
+		
 		// JSONObject j = new JSONObject();
 		// //j.putOpt(name,
 		// value)
 		// socket.send()
 
+	}
+	
+	private void sendNotification(JSONObject notification) {
+		Intent intent = new Intent(SurespotConstants.EventFilters.NOTIFICATION_EVENT);
+		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, notification.toString());
+		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
 }

@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingLeft="8dp"
-    android:paddingRight="8dp" >
+    android:paddingRight="8dp"
+    android:id="@+id/notification_list_fragment" >
 
     <ListView
         android:id="@id/android:list"
