@@ -82,7 +82,7 @@ public class NotificationListFragment extends SherlockListFragment {
 		ensureNotificationAdapter();
 
 		notificationAdapter.add(notification);
-		notificationAdapter.notifyDataSetChanged();
+	//	notificationAdapter.notifyDataSetChanged();
 	}
 	
 	private void ensureNotificationAdapter() {

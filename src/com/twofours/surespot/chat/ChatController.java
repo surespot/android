@@ -78,6 +78,11 @@ public class ChatController {
 				Log.v(TAG,"Server triggered event '" + event + "'");
 				if (event.equals("notification")) {
 					sendNotification((JSONObject) args[0]);
+					return;
+				}
+				if (event.equals("friend")) {
+					sendFriendAdded((String) args[0]);
+					return;
 				}
 			}
 		});
@@ -93,6 +98,12 @@ public class ChatController {
 	private void sendNotification(JSONObject notification) {
 		Intent intent = new Intent(SurespotConstants.EventFilters.NOTIFICATION_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, notification.toString());
+		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+	}
+	
+	private void sendFriendAdded(String friend) {
+		Intent intent = new Intent(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT);
+		intent.putExtra(SurespotConstants.ExtraNames.FRIEND_ADDED, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
