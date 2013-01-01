@@ -63,23 +63,12 @@ public class FriendFragment extends SherlockFragment {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				// see if we have chat activity
-				// TODO move logic somewhere more appropriate
-				View chatActivity = getView().findViewById(R.id.chat_activity);
-				if (chatActivity == null) {
+				
+				// send show chat event
+				Intent intent = new Intent(SurespotConstants.EventFilters.SHOW_CHAT_EVENT);
+				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friendAdapter.getItem(position));
+				LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
-					// create chat room
-					Intent intent = new Intent(getActivity(), ChatActivity.class);
-					intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-					intent.putExtra("username", friendAdapter.getItem(position));
-					getActivity().startActivity(intent);
-				} else {
-					// send show chat event
-					Intent intent = new Intent(SurespotConstants.EventFilters.SHOW_CHAT_EVENT);
-					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friendAdapter.getItem(position));
-					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
-
-				}
 			}
 		});
 
