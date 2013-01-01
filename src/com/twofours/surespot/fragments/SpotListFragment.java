@@ -12,7 +12,7 @@ import android.widget.ArrayAdapter;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class SpotListFragment extends SherlockListFragment {
 	private ArrayAdapter<String> spotAdapter;
@@ -22,7 +22,7 @@ public class SpotListFragment extends SherlockListFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// get the list of friends
-		SurespotApplication.getNetworkController().getSpots(new IAsyncNetworkResultCallback<List<String>>() {
+		SurespotApplication.getNetworkController().getSpots(new IAsyncCallback<List<String>>() {
 
 			@Override
 			public void handleResponse(List<String> result) {

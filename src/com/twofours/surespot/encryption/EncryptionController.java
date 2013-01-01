@@ -10,11 +10,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.crypto.KeyAgreement;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.crypto.engines.AESLightEngine;
+import org.spongycastle.crypto.modes.CBCBlockCipher;
+import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.spongycastle.crypto.params.KeyParameter;
+import org.spongycastle.crypto.params.ParametersWithIV;
 import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.interfaces.ECPublicKey;
@@ -27,17 +34,33 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class EncryptionController {
 	private static String ASYMKEYPAIR_PREFKEY = "asymKeyPair";
-	// use brainpool curve - fuck NIST! Reopen 9/11 investigation now!
+	private static final int AES_KEY_LENGTH = 32;
+	
+	
 	private ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private KeyPair keyPair;
+	
+	
+	private PaddedBufferedBlockCipher cipher;
+	private SecureRandom secureRandom;
+	private int symmetricBlockSize;
+	
+	private Map<String, ECPublicKey> mPublicKeys;
+	private Map<String, byte[]> mSharedSecrets;
 
 
 	public EncryptionController() {
 		// attempt to load key pair
 		keyPair = loadKeyPair();
+		cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESLightEngine()));		
+		secureRandom = new SecureRandom();
+		symmetricBlockSize = cipher.getBlockSize();
+		mPublicKeys = new Hashtable<String, ECPublicKey>();
+		mSharedSecrets = new Hashtable<String, byte[]>();
 	}
 	
 	public String getPublicKeyString() {
@@ -206,5 +229,54 @@ public class EncryptionController {
 		} 
 		return null;
 	}
+	
+	private ParametersWithIV generateAESKey() {
+		byte[] aes_key_bytes = new byte[AES_KEY_LENGTH];		
+		byte[] iv = new byte[symmetricBlockSize];
+		secureRandom.nextBytes(aes_key_bytes);
+		secureRandom.nextBytes(iv);
+		return new ParametersWithIV(new KeyParameter(aes_key_bytes), iv);
+	}
+	
+	private ParametersWithIV createParametersWithIV(byte[] key, byte[] iv) {
 
+		return new ParametersWithIV(new KeyParameter(key), iv);
+	}
+	
+	private String symmetricDecrypt() {
+		return null;
+		
+	}
+
+	public void eccDecrypt(String from, String ciphertext, IAsyncCallback<String> callback) {
+		getSecret(from, new IAsyncCallback<byte[]>() {
+
+			@Override
+			public void handleResponse(byte[] result) {
+				
+				
+			}
+			
+		});
+	}
+	
+	public void getSecret(final String username, final IAsyncCallback<byte[]> callback) {
+		byte[] secret = mSharedSecrets.get(username);
+		if (secret == null) {		
+			SurespotApplication.getNetworkController().getPublicKey(username, new IAsyncCallback<String>() {
+				
+				@Override
+				public void handleResponse(String result) {
+					ECPublicKey pubKey = recreatePublicKey(result);				
+					mPublicKeys.put(username, pubKey);
+					byte[] secret = generateSharedSecret(pubKey);
+					mSharedSecrets.put(username, secret);
+					callback.handleResponse(secret);
+				}
+			});
+		}
+		else {
+			callback.handleResponse(secret);
+		}
+	}
 }

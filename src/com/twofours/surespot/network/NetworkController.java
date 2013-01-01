@@ -44,13 +44,13 @@ public class NetworkController {
 	}
 
 	public void addUser(String username, String password, String publicKey,
-			final IAsyncNetworkResultCallback<Boolean> callback) {
+			final IAsyncCallback<Boolean> callback) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("publickey", publicKey);
 
-		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/users", params, new IAsyncHttpCallback() {
+		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/users", params, new IAsyncCallback<HttpResponse>() {
 
 			@Override
 			public void handleResponse(HttpResponse response) {
@@ -78,12 +78,12 @@ public class NetworkController {
 		post.execute();
 	}
 
-	public void login(String username, String password, final IAsyncNetworkResultCallback<Boolean> callback) {
+	public void login(String username, String password, final IAsyncCallback<Boolean> callback) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 
-		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/login", params, new IAsyncHttpCallback() {
+		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/login", params, new IAsyncCallback<HttpResponse>() {
 
 			@Override
 			public void handleResponse(HttpResponse response) {
@@ -114,9 +114,9 @@ public class NetworkController {
 
 	}
 
-	public void getFriends(final IAsyncNetworkResultCallback<List<String>> callback) {
+	public void getFriends(final IAsyncCallback<List<String>> callback) {
 		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/friends",
-				new IAsyncNetworkResultCallback<HttpResponse>() {
+				new IAsyncCallback<HttpResponse>() {
 
 					@Override
 					public void handleResponse(HttpResponse response) {
@@ -156,10 +156,10 @@ public class NetworkController {
 		get.execute();
 
 	}
-	
-	public void getNotifications(final IAsyncNetworkResultCallback<List<JSONObject>> callback) {
+
+	public void getNotifications(final IAsyncCallback<List<JSONObject>> callback) {
 		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/notifications",
-				new IAsyncNetworkResultCallback<HttpResponse>() {
+				new IAsyncCallback<HttpResponse>() {
 
 					@Override
 					public void handleResponse(HttpResponse response) {
@@ -199,10 +199,83 @@ public class NetworkController {
 		get.execute();
 
 	}
+
+	public void getMessages(String room, final IAsyncCallback<List<JSONObject>> callback) {
+		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/conversations/" + room + "/messages",
+				new IAsyncCallback<HttpResponse>() {
+
+					@Override
+					public void handleResponse(HttpResponse response) {
+
+						/* Checking response */
+						if (response != null && response.getStatusLine().getStatusCode() == 200) {
+
+							// pass the callback in?
+							try {
+								String messagesJson = Utils.inputStreamToString(response.getEntity().getContent());
+								List<JSONObject> messages = null;
+								try {
+									JSONArray jsonArray = new JSONArray(messagesJson);
+									if (jsonArray.length() > 0) {
+										messages = new ArrayList<JSONObject>(jsonArray.length());
+										for (int i = 0; i < jsonArray.length(); i++) {
+											messages.add(new JSONObject(jsonArray.getString(i)));
+										}
+									}
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+
+								callback.handleResponse(messages);
+							} catch (IllegalStateException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+
+					}
+				});
+		get.execute();
+
+	}
 	
-	public void getSpots(final IAsyncNetworkResultCallback<List<String>> callback) {
+	public void getPublicKey(String username, final IAsyncCallback<String> callback) {
+		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/publickey/" + username,
+				new IAsyncCallback<HttpResponse>() {
+
+					@Override
+					public void handleResponse(HttpResponse response) {
+
+						/* Checking response */
+						if (response != null && response.getStatusLine().getStatusCode() == 200) {
+
+							// pass the callback in?
+							try {
+								String publickey = Utils.inputStreamToString(response.getEntity().getContent());
+								
+								callback.handleResponse(publickey);
+							} catch (IllegalStateException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+
+					}
+				});
+		get.execute();
+
+	}
+
+	public void getSpots(final IAsyncCallback<List<String>> callback) {
 		AsyncHttpGet get = new AsyncHttpGet(httpClient, baseUrl + "/conversations",
-				new IAsyncNetworkResultCallback<HttpResponse>() {
+				new IAsyncCallback<HttpResponse>() {
 
 					@Override
 					public void handleResponse(HttpResponse response) {
@@ -242,50 +315,48 @@ public class NetworkController {
 		get.execute();
 
 	}
-	
-	
-	public void invite(String friendname, final IAsyncNetworkResultCallback<Boolean> callback) { 
-		
 
-		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/invite/" + friendname, null, new IAsyncHttpCallback() {
+	public void invite(String friendname, final IAsyncCallback<Boolean> callback) {
 
-			@Override
-			public void handleResponse(HttpResponse response) {
-				
-				/* Checking response */
-				if (response != null && (response.getStatusLine().getStatusCode() == 204 || response.getStatusLine().getStatusCode() == 202)) {
-					callback.handleResponse(true);
-					
-				}
-				else {
-					callback.handleResponse(false);
-				}
-				
+		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/invite/" + friendname, null,
+				new IAsyncCallback<HttpResponse>() {
 
-			}
-		});
+					@Override
+					public void handleResponse(HttpResponse response) {
+
+						/* Checking response */
+						if (response != null
+								&& (response.getStatusLine().getStatusCode() == 204 || response.getStatusLine()
+										.getStatusCode() == 202)) {
+							callback.handleResponse(true);
+
+						} else {
+							callback.handleResponse(false);
+						}
+
+					}
+				});
 		post.execute();
 
 	}
-	
-	public void respondToInvite(String friendname, String action, final IAsyncNetworkResultCallback<Boolean> callback) {
-		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/invites/" + friendname + "/" + action, null, new IAsyncHttpCallback() {
 
-			@Override
-			public void handleResponse(HttpResponse response) {
-				
-				/* Checking response */
-				if (response != null && (response.getStatusLine().getStatusCode() == 201)) {
-					callback.handleResponse(true);
-					
-				}
-				else {
-					callback.handleResponse(false);
-				}
-				
+	public void respondToInvite(String friendname, String action, final IAsyncCallback<Boolean> callback) {
+		AsyncHttpPost post = new AsyncHttpPost(httpClient, baseUrl + "/invites/" + friendname + "/" + action, null,
+				new IAsyncCallback<HttpResponse>() {
 
-			}
-		});
-		post.execute();	
+					@Override
+					public void handleResponse(HttpResponse response) {
+
+						/* Checking response */
+						if (response != null && (response.getStatusLine().getStatusCode() == 201)) {
+							callback.handleResponse(true);
+
+						} else {
+							callback.handleResponse(false);
+						}
+
+					}
+				});
+		post.execute();
 	}
 }

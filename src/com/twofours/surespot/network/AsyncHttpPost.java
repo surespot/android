@@ -15,11 +15,11 @@ import android.util.Log;
 
 public class AsyncHttpPost extends AsyncTask<Void, Void, HttpResponse> {
 	private String _url;
-	private IAsyncHttpCallback _callback;
+	private IAsyncCallback<HttpResponse> _callback;
 	private Map<String, String> _params;
 	private HttpClient _httpClient;
 
-	public AsyncHttpPost(HttpClient httpClient, String url, Map<String, String> params, IAsyncHttpCallback callback) {
+	public AsyncHttpPost(HttpClient httpClient, String url, Map<String, String> params, IAsyncCallback<HttpResponse> callback) {
 		_httpClient = httpClient;
 		_url = url;
 		_callback = callback;

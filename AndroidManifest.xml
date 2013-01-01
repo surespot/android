@@ -39,6 +39,10 @@
             android:name="com.twofours.surespot.activities.MainActivity"
             android:label="@string/app_name" >
         </activity>
+         <activity
+            android:name="com.twofours.surespot.activities.ChatActivity"
+            android:label="@string/app_name" >
+        </activity>
     </application>
 
 </manifest>

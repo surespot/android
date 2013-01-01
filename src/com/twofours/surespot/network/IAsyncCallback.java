@@ -1,5 +1,5 @@
 package com.twofours.surespot.network;
 
-public interface IAsyncNetworkResultCallback<T> {
+public interface IAsyncCallback<T> {
 	void handleResponse(T result);
 }

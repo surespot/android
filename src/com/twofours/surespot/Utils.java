@@ -22,5 +22,9 @@ public class Utils {
 	    // Return full string
 	    return total.toString();
 	}
+	
+	public static String getOtherUser(String from, String to) {
+		return to.equals(SurespotApplication.getUserData().getUsername()) ? from : to;
+	}
 
 }

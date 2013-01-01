@@ -22,7 +22,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.layout.NotificationArrayAdapter;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class NotificationListFragment extends SherlockListFragment {
 	private NotificationArrayAdapter notificationAdapter;
@@ -42,7 +42,7 @@ public class NotificationListFragment extends SherlockListFragment {
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getNotifications(
-				new IAsyncNetworkResultCallback<List<JSONObject>>() {
+				new IAsyncCallback<List<JSONObject>>() {
 
 					@Override
 					public void handleResponse(List<JSONObject> result) {
@@ -92,4 +92,6 @@ public class NotificationListFragment extends SherlockListFragment {
 			setListAdapter(notificationAdapter);
 		}
 	}
+	
+	
 }

@@ -18,7 +18,7 @@ import android.widget.EditText;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.IConnectCallback;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class LoginActivity extends Activity {
 
@@ -72,11 +72,11 @@ public class LoginActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 
-				String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
+				final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
 				String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 				SurespotApplication.getNetworkController().login(username, password,
-						new IAsyncNetworkResultCallback<Boolean>() {
+						new IAsyncCallback<Boolean>() {
 
 							@Override
 							public void handleResponse(Boolean result) {
@@ -87,6 +87,7 @@ public class LoginActivity extends Activity {
 										@Override
 										public void connectStatus(boolean status) {
 											if (status)
+												SurespotApplication.getUserData().setUsername(username);
 												LoginActivity.this.startActivity(new Intent(LoginActivity.this,
 														MainActivity.class));
 										}

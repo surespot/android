@@ -22,9 +22,7 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 			return new FriendFragment();
 
 		case 1:
-			return new NotificationListFragment();
-		case 2:
-			return new SpotListFragment();
+			return new NotificationListFragment();		
 
 		default:
 			return new FriendFragment();
@@ -33,7 +31,7 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 
 	@Override
 	public int getCount() {
-		return 3;
+		return 2;
 	}
 
 	@Override
@@ -42,9 +40,7 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		case 0:
 			return "friends";
 		case 1:
-			return "notifications";
-		case 2: 
-			return "spots";
+			return "notifications";		
 		default:
 			return "your mama";
 		}

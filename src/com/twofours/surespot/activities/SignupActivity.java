@@ -37,7 +37,7 @@ public class SignupActivity extends Activity {
 				KeyPair keyPair = SurespotApplication.getEncryptionController().generateKeyPair();
 				if (keyPair != null) {
 
-					String username = ((EditText) SignupActivity.this.findViewById(R.id.etUsername))
+					final String username = ((EditText) SignupActivity.this.findViewById(R.id.etUsername))
 							.getText().toString();
 					String password = ((EditText) SignupActivity.this.findViewById(R.id.etPassword))
 							.getText().toString();
@@ -58,6 +58,7 @@ public class SignupActivity extends Activity {
 											@Override
 											public void connectStatus(boolean status) {												
 												if (status)
+													SurespotApplication.getUserData().setUsername(username);
 													startActivity(new Intent(SignupActivity.this, MainActivity.class));	
 											}
 										

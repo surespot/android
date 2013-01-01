@@ -12,6 +12,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,7 +23,8 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+import com.twofours.surespot.activities.ChatActivity;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendFragment extends SherlockFragment {
 
@@ -35,7 +38,7 @@ public class FriendFragment extends SherlockFragment {
 		//listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
 		// get the list of friends
-		SurespotApplication.getNetworkController().getFriends(new IAsyncNetworkResultCallback<List<String>>() {
+		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {
 
 			@Override
 			public void handleResponse(List<String> result) {
@@ -48,6 +51,18 @@ public class FriendFragment extends SherlockFragment {
 
 			}
 		});
+		
+		//click on friend to join chat
+		listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				//create chat room 
+				Intent intent = new Intent(getActivity(), ChatActivity.class);
+				intent.putExtra("username", friendAdapter.getItem(position));
+				getActivity().startActivity(intent);
+			}
+		});
 
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
@@ -57,7 +72,7 @@ public class FriendFragment extends SherlockFragment {
 
 				String friend = ((EditText) view.findViewById(R.id.etFriend)).getText().toString();
 
-				SurespotApplication.getNetworkController().invite(friend, new IAsyncNetworkResultCallback<Boolean>() {
+				SurespotApplication.getNetworkController().invite(friend, new IAsyncCallback<Boolean>() {
 
 					@Override
 					public void handleResponse(Boolean result) {

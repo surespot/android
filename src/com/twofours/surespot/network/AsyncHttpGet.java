@@ -9,10 +9,10 @@ import android.util.Log;
 
 public class AsyncHttpGet extends AsyncTask<Void, Void, HttpResponse> {
 	private String _url;
-	private IAsyncNetworkResultCallback<HttpResponse> _callback;	
+	private IAsyncCallback<HttpResponse> _callback;	
 	private HttpClient _httpClient;
 
-	public AsyncHttpGet(HttpClient httpClient,String url, IAsyncNetworkResultCallback<HttpResponse> callback) {
+	public AsyncHttpGet(HttpClient httpClient,String url, IAsyncCallback<HttpResponse> callback) {
 		_httpClient = httpClient;
 		_url = url;
 		_callback = callback;

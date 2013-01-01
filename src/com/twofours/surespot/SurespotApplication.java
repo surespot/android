@@ -14,7 +14,8 @@ public class SurespotApplication extends Application {
     private static EncryptionController encryptionController;
     private static ChatController chatController;
     private static NetworkController networkController;
-
+    private static UserData userData;
+    
     public void onCreate(){
         super.onCreate();
         
@@ -26,6 +27,7 @@ public class SurespotApplication extends Application {
         encryptionController = new EncryptionController();
         chatController = new ChatController();
         networkController = new NetworkController();
+        userData = new UserData();
         
     }
 
@@ -43,6 +45,10 @@ public class SurespotApplication extends Application {
     
     public static NetworkController getNetworkController() {
     	return networkController;
+    }
+    
+    public static UserData getUserData() {
+    	return userData;
     }
 	
 }

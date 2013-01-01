@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.fragments.NotificationListFragment.OnInviteClickedListener;
-import com.twofours.surespot.network.IAsyncNetworkResultCallback;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 	private final Context context;
@@ -79,7 +79,7 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 			}
 
 			SurespotApplication.getNetworkController().respondToInvite(friendname, action,
-					new IAsyncNetworkResultCallback<Boolean>() {
+					new IAsyncCallback<Boolean>() {
 
 						@Override
 						public void handleResponse(Boolean result) {
