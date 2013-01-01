@@ -56,7 +56,7 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 			// listener for when this tab is selected.
 			actionBar.addTab(actionBar.newTab().setText(mPagerAdapter.getPageTitle(i)).setTabListener(this));
 		}
-		
+		 
 		// register for notifications
 		LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
 

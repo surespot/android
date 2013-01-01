@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ public class FriendFragment extends SherlockFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Log.v(TAG,"onCreateView");
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
 		//listView.setEmptyView(view.findViewById(R.id.friend_list_empty));

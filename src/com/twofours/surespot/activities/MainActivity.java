@@ -69,9 +69,10 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	public void onInviteClicked(String username, String action) {
 		Log.v(TAG, "onInviteClicked, username: " + username + ", action: " + action);
 
+		
 		// add the user who's invite was accepted to the friend list to avoid a web request
-		FriendFragment friendFragment = (FriendFragment) getSupportFragmentManager().findFragmentById(
-				R.id.friend_fragment);
+		FriendFragment friendFragment = (FriendFragment) getSupportFragmentManager().findFragmentByTag(
+				"android:switcher:" + R.id.pager + ":" + 0);
 		friendFragment.inviteClicked(username, action);
 
 	}
