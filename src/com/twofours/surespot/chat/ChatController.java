@@ -24,6 +24,10 @@ public class ChatController {
 	private SocketIO socket;
 
 	public void connect(final IConnectCallback callback) {
+		
+		if (socket != null && socket.isConnected()) {
+			return;
+		}
 
 		Cookie cookie = SurespotApplication.getNetworkController().getCookie();
 		// TODO handle no cookie
@@ -130,6 +134,10 @@ public class ChatController {
 			}
 
 		}
+	}
+	
+	public void disconnect() {
+		socket.disconnect();
 	}
 
 }

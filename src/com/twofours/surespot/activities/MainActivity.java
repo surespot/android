@@ -17,8 +17,10 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
+import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.fragments.ChatFragment;
 import com.twofours.surespot.layout.MainPagerAdapter;
 
@@ -151,7 +153,17 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		Log.v(TAG, "onStart");
+		Log.v(TAG, "onStart");	
+		SurespotApplication.getChatController().connect(new IConnectCallback() {
+			
+			@Override
+			public void connectStatus(boolean status) {
+				if (!status) {
+					Log.e(TAG,"Could not connect to chat server.");
+				}
+				
+			}
+		});
 	}
 
 	@Override
@@ -159,6 +171,8 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 		// TODO Auto-generated method stub
 		super.onStop();
 		Log.v(TAG, "onStop");
+		SurespotApplication.getChatController().disconnect();
+		
 	}
 
 	@Override

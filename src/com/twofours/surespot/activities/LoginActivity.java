@@ -73,22 +73,15 @@ public class LoginActivity extends Activity {
 					@Override
 					public void handleResponse(Boolean result) {
 						if (result) {
-							// go to friends
-							SurespotApplication.getChatController().connect(new IConnectCallback() {
-
-								@Override
-								public void connectStatus(boolean status) {
-									if (status)
-										SurespotApplication.getUserData().setUsername(username);
-									Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-									intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-									LoginActivity.this.startActivity(intent);
-								}
-
-							});
-
+							//start main activity
+							SurespotApplication.getUserData().setUsername(username);
+							Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+							//intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+							LoginActivity.this.startActivity(intent);
 						}
+
 					}
+
 				});
 
 			}

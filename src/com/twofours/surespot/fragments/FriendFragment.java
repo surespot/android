@@ -28,7 +28,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.activities.ChatActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendFragment extends SherlockFragment {
