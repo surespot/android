@@ -19,6 +19,10 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 	private final Context context;
 	private final List<JSONObject> values;
 	private static final String TAG = "ChatArrayAdapter";
+	
+	static class MessageViewHolder {
+		TextView messageText;
+	}
 
 	public ChatArrayAdapter(Context context, List<JSONObject> values) {
 
@@ -35,18 +39,28 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		View rowView = convertView;
-
+		MessageViewHolder messageViewHolder;
 		if (rowView == null) {
+			
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			rowView = inflater.inflate(R.layout.message_list_item, parent, false);
+			
+			messageViewHolder = new MessageViewHolder();
+			messageViewHolder.messageText = (TextView) rowView.findViewById(R.id.messageText);
+			
+			rowView.setTag(messageViewHolder);
 
 		}
+		else {
+			messageViewHolder = (MessageViewHolder) rowView.getTag();
+		}
+		
+		
 
-		final TextView textView = (TextView) rowView.findViewById(R.id.messageText);
 		JSONObject message = values.get(position);
 		//String room = Utils.getOtherUser(message.getString("from"), message.getString("to"));
 		try {
-			textView.setText(message.getString("text"));
+			messageViewHolder.messageText.setText(message.getString("text"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

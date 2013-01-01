@@ -24,6 +24,7 @@ public class ChatFragment extends SherlockFragment {
 	private ChatArrayAdapter chatAdapter;
 	private static final String TAG = "ChatFragment";
 	private String mUsername;
+	private ListView mListView;
 	
 	public String getUsername() {
 		return mUsername;
@@ -40,7 +41,7 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
-		final ListView listView = (ListView) view.findViewById(R.id.message_list);
+		mListView = (ListView) view.findViewById(R.id.message_list);
 		//listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
 		// get the list of friends
@@ -53,7 +54,7 @@ public class ChatFragment extends SherlockFragment {
 				}
 
 				chatAdapter = new ChatArrayAdapter(getActivity(), result);
-				listView.setAdapter(chatAdapter);
+				mListView.setAdapter(chatAdapter);
 
 			}
 		});
@@ -77,14 +78,15 @@ public class ChatFragment extends SherlockFragment {
 	
 	private void ensureChatAdapter() {
 		if (chatAdapter == null) {
-			chatAdapter = new ChatArrayAdapter(getActivity(), new ArrayList<JSONObject>());
-			ListView listView = (ListView) getView().findViewById(R.id.message_list);
-			listView.setAdapter(chatAdapter);
+			chatAdapter = new ChatArrayAdapter(getActivity(), new ArrayList<JSONObject>());			
+			mListView.setAdapter(chatAdapter);
 		}
 	}
 	
 	public void addMessage(JSONObject message) {
 		ensureChatAdapter();
 		chatAdapter.add(message);
+	//	mListView = (ListView) getView().findViewById(R.id.message_list);
+	//	mListView.smo
 	}
 }
