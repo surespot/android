@@ -3,6 +3,9 @@ package com.twofours.surespot.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +27,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.activities.ChatActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 
@@ -34,10 +38,10 @@ public class FriendFragment extends SherlockFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		Log.v(TAG,"onCreateView");
+		Log.v(TAG, "onCreateView");
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
-		//listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
+		// listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {
@@ -53,16 +57,29 @@ public class FriendFragment extends SherlockFragment {
 
 			}
 		});
-		
-		//click on friend to join chat
+
+		// click on friend to join chat
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				//create chat room 
-				Intent intent = new Intent(getActivity(), ChatActivity.class);
-				intent.putExtra("username", friendAdapter.getItem(position));
-				getActivity().startActivity(intent);
+				// see if we have chat activity
+				// TODO move logic somewhere more appropriate
+				View chatActivity = getView().findViewById(R.id.chat_activity);
+				if (chatActivity == null) {
+
+					// create chat room
+					Intent intent = new Intent(getActivity(), ChatActivity.class);
+					intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+					intent.putExtra("username", friendAdapter.getItem(position));
+					getActivity().startActivity(intent);
+				} else {
+					// send show chat event
+					Intent intent = new Intent(SurespotConstants.EventFilters.SHOW_CHAT_EVENT);
+					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friendAdapter.getItem(position));
+					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+
+				}
 			}
 		});
 
@@ -99,15 +116,26 @@ public class FriendFragment extends SherlockFragment {
 
 			}
 		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT));
+
+		// register for notifications
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				String friendname = intent.getExtras().getString(SurespotConstants.ExtraNames.FRIEND_INVITE_NAME);
+				String action = intent.getExtras().getString(SurespotConstants.ExtraNames.FRIEND_INVITE_ACTION);
+				// TODO show pending and delete when ignored?
+				if (action.equals("accept")) {
+					ensureFriendAdapter();
+
+					friendAdapter.add(friendname);
+				}
+
+			}
+		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_INVITE_EVENT));
+
 		return view;
-	}
 
-	public void inviteClicked(String username, String action) {
-		if (action.equals("accept")) {
-			ensureFriendAdapter();
-
-			friendAdapter.add(username);
-		}
 	}
 
 	private void ensureFriendAdapter() {

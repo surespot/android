@@ -27,14 +27,6 @@ import com.twofours.surespot.network.IAsyncCallback;
 public class NotificationListFragment extends SherlockListFragment {
 	private NotificationArrayAdapter notificationAdapter;
 
-	public interface OnInviteClickedListener {
-		public void onInviteClicked(String username, String action);
-	}
-
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

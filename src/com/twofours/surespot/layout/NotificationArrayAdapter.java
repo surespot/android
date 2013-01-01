@@ -6,6 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +20,7 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.fragments.NotificationListFragment.OnInviteClickedListener;
+import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
@@ -69,7 +71,7 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 			final String action = (String) v.getTag();
 			final int position = ((ListView) v.getParent().getParent()).getPositionForView((View) v.getParent());
 			final String friendname;
-			
+
 			try {
 				friendname = values.get(position).getString("data");
 			} catch (JSONException e) {
@@ -83,16 +85,23 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 
 						@Override
 						public void handleResponse(Boolean result) {
-							
+
 							if (result) {
-								Log.d(TAG,"Invitation acted upon successfully: " + action);
-								
-								//delete this row
+								Log.d(TAG, "Invitation acted upon successfully: " + action);
+
+								// delete this row
 								values.remove(position);
 								notifyDataSetChanged();
-								
-								//tell the activity what we did
-								((OnInviteClickedListener) NotificationArrayAdapter.this.context).onInviteClicked(friendname, action);
+
+								// tell the app what we did
+
+								Intent intent = new Intent(SurespotConstants.EventFilters.FRIEND_INVITE_EVENT);
+								intent.putExtra(SurespotConstants.ExtraNames.FRIEND_INVITE_NAME, friendname);
+								intent.putExtra(SurespotConstants.ExtraNames.FRIEND_INVITE_ACTION, action);
+								LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(
+										intent);
+
+							
 
 							}
 						}

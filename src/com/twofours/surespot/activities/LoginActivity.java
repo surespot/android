@@ -42,9 +42,33 @@ public class LoginActivity extends Activity {
 		HttpConnectionParams.setConnectionTimeout(_httpClient.getParams(), 10000); // Timeout
 																					// Limit
 
-		//debug
-	/*	SurespotApplication.getNetworkController().login("jb", "jb",
-				new IAsyncNetworkResultCallback<Boolean>() {
+		// debug
+		/*
+		 * SurespotApplication.getNetworkController().login("jb", "jb", new IAsyncNetworkResultCallback<Boolean>() {
+		 * 
+		 * @Override public void handleResponse(Boolean result) { if (result) { // go to friends
+		 * SurespotApplication.getChatController().connect(new IConnectCallback() {
+		 * 
+		 * @Override public void connectStatus(boolean status) { if (status) LoginActivity.this.startActivity(new
+		 * Intent(LoginActivity.this, MainActivity.class)); }
+		 * 
+		 * });
+		 * 
+		 * } } });
+		 */
+		// end debug
+
+		this.loginButton = (Button) this.findViewById(R.id.bLogin);
+		this.loginButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+				final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText()
+						.toString();
+				String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
+
+				SurespotApplication.getNetworkController().login(username, password, new IAsyncCallback<Boolean>() {
 
 					@Override
 					public void handleResponse(Boolean result) {
@@ -55,48 +79,17 @@ public class LoginActivity extends Activity {
 								@Override
 								public void connectStatus(boolean status) {
 									if (status)
-										LoginActivity.this.startActivity(new Intent(LoginActivity.this,
-												MainActivity.class));
+										SurespotApplication.getUserData().setUsername(username);
+									Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+									intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+									LoginActivity.this.startActivity(intent);
 								}
 
 							});
 
 						}
 					}
-				});*/
-		//end debug
-		
-		this.loginButton = (Button) this.findViewById(R.id.bLogin);
-		this.loginButton.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-
-				final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
-				String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
-
-				SurespotApplication.getNetworkController().login(username, password,
-						new IAsyncCallback<Boolean>() {
-
-							@Override
-							public void handleResponse(Boolean result) {
-								if (result) {
-									// go to friends
-									SurespotApplication.getChatController().connect(new IConnectCallback() {
-
-										@Override
-										public void connectStatus(boolean status) {
-											if (status)
-												SurespotApplication.getUserData().setUsername(username);
-												LoginActivity.this.startActivity(new Intent(LoginActivity.this,
-														MainActivity.class));
-										}
-
-									});
-
-								}
-							}
-						});
+				});
 
 			}
 		});

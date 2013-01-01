@@ -58,4 +58,15 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		return null;
 	}
 	
+	public int getChatFragmentPosition(String username) {
+		int pos = 0;
+		for (ChatFragment cf : mChatFragments) {
+			pos++;
+			if (cf.getUsername().equals(username)) {
+				return pos;
+			}
+		}
+		return -1;
+	}
+	
 }

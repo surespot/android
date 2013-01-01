@@ -9,11 +9,9 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.twofours.surespot.R;
-import com.twofours.surespot.fragments.FriendFragment;
-import com.twofours.surespot.fragments.NotificationListFragment.OnInviteClickedListener;
 import com.twofours.surespot.layout.MainPagerAdapter;
 
-public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener, OnInviteClickedListener {
+public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener {
 	public static final String TAG = "MainActivity";
 
 	MainPagerAdapter mPagerAdapter;
@@ -22,6 +20,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.v(TAG,"onCreate");
 		setContentView(R.layout.activity_main);
 
 		mPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
@@ -45,6 +44,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 			// listener for when this tab is selected.
 			actionBar.addTab(actionBar.newTab().setText(mPagerAdapter.getPageTitle(i)).setTabListener(this));
 		}
+		
 	}
 
 	@Override
@@ -63,20 +63,42 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public void onInviteClicked(String username, String action) {
-		Log.v(TAG, "onInviteClicked, username: " + username + ", action: " + action);
-
-		
-		// add the user who's invite was accepted to the friend list to avoid a web request
-		FriendFragment friendFragment = (FriendFragment) getSupportFragmentManager().findFragmentByTag(
-				"android:switcher:" + R.id.pager + ":" + 0);
-		friendFragment.inviteClicked(username, action);
-
-	}
-
+	}	
 	
+	@Override
+	protected void onPause() {
+	
+		super.onPause();
+		Log.v(TAG, "onPause");
+		
+	}
+	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.v(TAG, "onResume");
+	}
+	
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		Log.v(TAG, "onStart");
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		Log.v(TAG, "onStop");
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		Log.v(TAG, "onDestroy");
+	}
 
 }

@@ -57,9 +57,12 @@ public class SignupActivity extends Activity {
 											
 											@Override
 											public void connectStatus(boolean status) {												
-												if (status)
+												if (status) {
 													SurespotApplication.getUserData().setUsername(username);
-													startActivity(new Intent(SignupActivity.this, MainActivity.class));	
+													Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+													intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+													startActivity(intent);
+												}
 											}
 										
 											
