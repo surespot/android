@@ -1,4 +1,4 @@
-package com.twofours.surespot.fragments;
+package com.twofours.surespot.ui.fragments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +20,8 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.layout.NotificationArrayAdapter;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.adapters.NotificationArrayAdapter;
 
 public class NotificationListFragment extends SherlockListFragment {
 	private NotificationArrayAdapter notificationAdapter;

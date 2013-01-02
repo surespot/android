@@ -1,4 +1,4 @@
-package com.twofours.surespot.fragments;
+package com.twofours.surespot.ui.fragments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.List;
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,8 +21,8 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.layout.ChatArrayAdapter;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.adapters.ChatArrayAdapter;
 
 public class ChatFragment extends SherlockFragment {
 
@@ -80,18 +81,18 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void onClick(View v) {
-
+				sendMessage();
 			}
 		});
 
-		EditText editText = (EditText) getActivity().findViewById(R.id.etMessage);
+		EditText editText = (EditText) view.findViewById(R.id.etMessage);
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
 				if (actionId == EditorInfo.IME_ACTION_SEND) {
 					//
-					sendMessage();					
+					sendMessage();
 					handled = true;
 				}
 				return handled;
@@ -103,7 +104,7 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	private void sendMessage() {
-		final EditText etMessage =((EditText) getView().findViewById(R.id.etMessage)); 
+		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
 
 		final String message = etMessage.getText().toString();
 
@@ -114,7 +115,7 @@ public class ChatFragment extends SherlockFragment {
 				@Override
 				public void handleResponse(String result) {
 					SurespotApplication.getChatController().sendMessage(mUsername, result);
-					etMessage.setText("");
+					TextKeyListener.clear(etMessage.getText());
 				}
 			});
 		}

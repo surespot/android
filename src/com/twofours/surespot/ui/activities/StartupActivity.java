@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.ui.activities;
 
 import android.app.Activity;
 import android.content.Intent;

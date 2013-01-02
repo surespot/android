@@ -1,4 +1,4 @@
-package com.twofours.surespot.layout;
+package com.twofours.surespot.ui.adapters;
 
 import java.util.List;
 

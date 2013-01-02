@@ -1,4 +1,4 @@
-package com.twofours.surespot.fragments;
+package com.twofours.surespot.ui.fragments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +9,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.method.TextKeyListener;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
@@ -36,7 +41,7 @@ public class FriendFragment extends SherlockFragment {
 		Log.v(TAG, "onCreateView");
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
-	    listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
+		listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {
@@ -58,7 +63,7 @@ public class FriendFragment extends SherlockFragment {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				
+
 				// send show chat event
 				Intent intent = new Intent(SurespotConstants.EventFilters.SHOW_CHAT_EVENT);
 				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friendAdapter.getItem(position));
@@ -72,20 +77,7 @@ public class FriendFragment extends SherlockFragment {
 
 			@Override
 			public void onClick(View v) {
-
-				String friend = ((EditText) view.findViewById(R.id.etFriend)).getText().toString();
-
-				SurespotApplication.getNetworkController().invite(friend, new IAsyncCallback<Boolean>() {
-
-					@Override
-					public void handleResponse(Boolean result) {
-						if (result) {
-							// TODO indicate in the UI that the request is pending somehow
-
-						}
-					}
-				});
-
+				addFriend();
 			}
 		});
 
@@ -118,7 +110,40 @@ public class FriendFragment extends SherlockFragment {
 			}
 		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_INVITE_EVENT));
 
+		EditText editText = (EditText) view.findViewById(R.id.etFriend);
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					//
+					addFriend();					
+					handled = true;
+				}
+				return handled;
+			}
+
+		});
+
 		return view;
+
+	}
+
+	private void addFriend() {
+
+		final EditText etFriend =((EditText) getView().findViewById(R.id.etFriend)); 
+		String friend = etFriend.getText().toString();
+
+		SurespotApplication.getNetworkController().invite(friend, new IAsyncCallback<Boolean>() {
+
+			@Override
+			public void handleResponse(Boolean result) {
+				if (result) {
+					// TODO indicate in the UI that the request is pending somehow
+					TextKeyListener.clear(etFriend.getText());
+				}
+			}
+		});
 
 	}
 

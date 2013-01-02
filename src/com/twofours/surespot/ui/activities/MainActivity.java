@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.ui.activities;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,8 +21,8 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.IConnectCallback;
-import com.twofours.surespot.fragments.ChatFragment;
-import com.twofours.surespot.layout.MainPagerAdapter;
+import com.twofours.surespot.ui.adapters.MainPagerAdapter;
+import com.twofours.surespot.ui.fragments.ChatFragment;
 
 public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener {
 	public static final String TAG = "MainActivity";
