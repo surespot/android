@@ -48,6 +48,31 @@ public class FriendFragment extends SherlockFragment {
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
 		listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
+		// get the list of friends
+		NetworkController.getFriends(new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(JSONArray jsonArray) {
+
+				List<String> friends = new ArrayList<String>();
+				if (jsonArray.length() > 0) {
+					try {
+						for (int i = 0; i < jsonArray.length(); i++) {
+							friends.add(jsonArray.getString(i));
+						}
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+
+				Log.v(TAG, "friends: " + friends);
+				friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, friends);				
+				listView.setAdapter(friendAdapter);
+
+			}
+		});
+
 		// click on friend to join chat
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -123,31 +148,35 @@ public class FriendFragment extends SherlockFragment {
 	public void onStart() {
 
 		super.onStart();
-		// get the list of friends
-		NetworkController.getFriends(new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONArray jsonArray) {
 
-				List<String> friends = new ArrayList<String>();
-				if (jsonArray.length() > 0) {
-					friends = new ArrayList<String>(jsonArray.length());
-					try {
-						for (int i = 0; i < jsonArray.length(); i++) {
-							friends.add(jsonArray.getString(i));
+		if (friendAdapter == null) {
+			// get the list of friends
+			NetworkController.getFriends(new JsonHttpResponseHandler() {
+				@Override
+				public void onSuccess(JSONArray jsonArray) {
+
+					List<String> friends = new ArrayList<String>();
+					if (jsonArray.length() > 0) {
+						try {
+							for (int i = 0; i < jsonArray.length(); i++) {
+								friends.add(jsonArray.getString(i));
+							}
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+
 					}
 
+					Log.v(TAG, "friends: " + friends);
+					friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1,
+							friends);
+					ListView listView = (ListView) getView().findViewById(R.id.friend_list);
+					listView.setAdapter(friendAdapter);
+
 				}
-
-				friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, friends);
-				ListView listView = (ListView) getView().findViewById(R.id.friend_list);
-				listView.setAdapter(friendAdapter);
-
-			}
-		});
+			});
+		}
 
 	}
 

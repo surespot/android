@@ -16,7 +16,7 @@ import com.loopj.android.http.RequestParams;
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
 	private static Cookie cookie;
-	private static String baseUrl = "http://192.168.10.68:3000";
+	private static String baseUrl = "http://alpha.surespot.me";
 	private static AsyncHttpClient mClient;
 	private static CookieStore mCookieStore;
 

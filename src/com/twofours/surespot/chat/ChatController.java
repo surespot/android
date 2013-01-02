@@ -34,7 +34,7 @@ public class ChatController {
 		// TODO handle no cookie
 		// if (cookie == null)
 		try {
-			socket = new SocketIO("http://192.168.10.68:3000");
+			socket = new SocketIO("http://alpha.surespot.me");
 			socket.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 		} catch (MalformedURLException e1) {
 			// Auto-generated
