@@ -3,9 +3,6 @@ package com.twofours.surespot.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +24,6 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendFragment extends SherlockFragment {

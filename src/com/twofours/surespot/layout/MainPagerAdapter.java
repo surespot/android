@@ -10,7 +10,6 @@ import android.util.Log;
 import com.twofours.surespot.fragments.ChatFragment;
 import com.twofours.surespot.fragments.FriendFragment;
 import com.twofours.surespot.fragments.NotificationListFragment;
-import com.twofours.surespot.fragments.SpotListFragment;
 
 public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
 	private List<ChatFragment> mChatFragments;

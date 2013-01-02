@@ -17,7 +17,6 @@ import android.widget.EditText;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class LoginActivity extends Activity {

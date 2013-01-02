@@ -46,23 +46,31 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		// listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
-
-		// get the list of friends
-		SurespotApplication.getNetworkController().getMessages(mUsername, new IAsyncCallback<List<JSONObject>>() {
+		
+		//make sure the public key is there
+		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
 
 			@Override
-			public void handleResponse(List<JSONObject> result) {
-				if (result == null) {
-					return;
-				}
+			public void handleResponse(Void result) {
 
-				// decrypt
+				// get the list of friends
+				SurespotApplication.getNetworkController().getMessages(mUsername, new IAsyncCallback<List<JSONObject>>() {
 
-				chatAdapter = new ChatArrayAdapter(getActivity(), result);
-				mListView.setAdapter(chatAdapter);
+					@Override
+					public void handleResponse(List<JSONObject> result) {
+						if (result == null) {
+							return;
+						}
+						
+						chatAdapter = new ChatArrayAdapter(getActivity(), result);
+						mListView.setAdapter(chatAdapter);
 
+					}
+				});
+				
 			}
 		});
+
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -100,31 +108,6 @@ public class ChatFragment extends SherlockFragment {
 
 	public void addMessage(final JSONObject message) {
 		ensureChatAdapter();
-
-		try {
-			// decrypt
-			SurespotApplication.getEncryptionController().eccDecrypt(
-
-			Utils.getOtherUser(message.getString("from"), message.getString("to")), message.getString("text"),
-					new IAsyncCallback<String>() {
-
-						@Override
-						public void handleResponse(String result) {
-							try {
-								message.put("plaintext", result);
-								chatAdapter.add(message);
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-						}
-
-					});
-
-		} catch (JSONException j) {
-			Log.e(TAG, j.toString());
-		}
-
+		chatAdapter.add(message);		
 	}
 }

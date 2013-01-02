@@ -1,8 +1,5 @@
 package com.twofours.surespot.encryption;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -13,25 +10,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.crypto.BufferedBlockCipher;
-import org.spongycastle.crypto.CipherParameters;
 import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.engines.AESLightEngine;
-import org.spongycastle.crypto.io.CipherInputStream;
-import org.spongycastle.crypto.modes.CBCBlockCipher;
 import org.spongycastle.crypto.modes.CCMBlockCipher;
-import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
 import org.spongycastle.jce.ECNamedCurveTable;
@@ -58,7 +46,6 @@ public class EncryptionController {
 
 	private Map<String, ECPublicKey> mPublicKeys;
 	private Map<String, byte[]> mSharedSecrets;
-	private Map<String, ParametersWithIV> mSymKeys;
 
 	public EncryptionController() {
 		// attempt to load key pair
@@ -67,7 +54,6 @@ public class EncryptionController {
 		keyPair = loadKeyPair();
 		mPublicKeys = new Hashtable<String, ECPublicKey>();
 		mSharedSecrets = new Hashtable<String, byte[]>();
-		mSymKeys = new Hashtable<String, ParametersWithIV>();
 	}
 
 	public String getPublicKeyString() {
@@ -232,8 +218,7 @@ public class EncryptionController {
 		return null;
 	}
 
-	private void symmetricDecrypt(String username, String cipherTextJson, byte[] keyBytes,
-			IAsyncCallback<String> callback) {
+	private void symmetricDecrypt(String username, String cipherTextJson, IAsyncCallback<String> callback) {
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
 		JSONObject json;
@@ -242,18 +227,17 @@ public class EncryptionController {
 		try {
 			json = new JSONObject(cipherTextJson);
 			cipherBytes = Hex.decode(json.getString("ciphertext"));
-			iv = Hex.decode(json.getString("iv").getBytes());			
+			iv = Hex.decode(json.getString("iv").getBytes());
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			return;
 		}
 
-		ParametersWithIV params = new ParametersWithIV(new KeyParameter(keyBytes, 0, 16), iv);
+		ParametersWithIV params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 		ccm.reset();
 		ccm.init(false, params);
-
 
 		byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
 
@@ -271,23 +255,19 @@ public class EncryptionController {
 
 	}
 
-	private void symmetricEncrypt(String plaintext, byte[] keyBytes, IAsyncCallback<String> callback) {
+	private void symmetricEncrypt(String username, String plaintext, IAsyncCallback<String> callback) {
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
-		
 		byte[] iv = new byte[8];
 		mSecureRandom.nextBytes(iv);
-		ParametersWithIV params = new ParametersWithIV(new KeyParameter(keyBytes,0,16), iv);
+		ParametersWithIV params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 		ccm.reset();
 		ccm.init(true, params);
 
-		
-		
-		
 		byte[] enc = plaintext.getBytes();
 		byte[] buf = new byte[ccm.getOutputSize(enc.length)];
-		
+
 		int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
 		try {
 			len += ccm.doFinal(buf, len);
@@ -310,29 +290,29 @@ public class EncryptionController {
 
 	}
 
-	public void eccEncrypt(String username, final String plaintext, final IAsyncCallback<String> callback) {
-		getSecret(username, new IAsyncCallback<byte[]>() {
+	public void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
+		hydratePublicKey(username, new IAsyncCallback<Void>() {
 
 			@Override
-			public void handleResponse(byte[] result) {
-				symmetricEncrypt(plaintext, result, callback);
+			public void handleResponse(Void result) {
+				symmetricEncrypt(username, plaintext, callback);
 			}
 		});
 	}
-
+		
 	public void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
 
-		getSecret(from, new IAsyncCallback<byte[]>() {
+		hydratePublicKey(from, new IAsyncCallback<Void>() {
 
 			@Override
-			public void handleResponse(byte[] result) {
-				symmetricDecrypt(from, ciphertext, result, callback);
+			public void handleResponse(Void result) {
+				symmetricDecrypt(from, ciphertext, callback);
 			}
 
 		});
 	}
 
-	public void getSecret(final String username, final IAsyncCallback<byte[]> callback) {
+	public void hydratePublicKey(final String username, final IAsyncCallback<Void> callback) {
 		byte[] secret = mSharedSecrets.get(username);
 		if (secret == null) {
 			SurespotApplication.getNetworkController().getPublicKey(username, new IAsyncCallback<String>() {
@@ -342,16 +322,13 @@ public class EncryptionController {
 					ECPublicKey pubKey = recreatePublicKey(result);
 					mPublicKeys.put(username, pubKey);
 					byte[] shared = generateSharedSecret(pubKey);
-					//use 32 bytes for AES key
-									
-					byte[] aesKey = new byte[32];
-					System.arraycopy(shared, 0, aesKey, 0, 32);
-					mSharedSecrets.put(username, aesKey);
-					callback.handleResponse(aesKey);
+					mSharedSecrets.put(username, shared);
+					callback.handleResponse(null);
+
 				}
 			});
 		} else {
-			callback.handleResponse(secret);
+			callback.handleResponse(null);
 		}
 	}
 }
