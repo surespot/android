@@ -19,9 +19,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class LoginActivity extends Activity {
 
@@ -92,20 +93,22 @@ public class LoginActivity extends Activity {
 		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-			//TODO show progress
-			
-			SurespotApplication.getNetworkController().login(username, password, new IAsyncCallback<Boolean>() {
+			// TODO show progress
+
+			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
 
 				@Override
-				public void handleResponse(Boolean result) {
-					if (result) {
-						// start main activity
-						SurespotApplication.getUserData().setUsername(username);
-						Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						LoginActivity.this.startActivity(intent);
-					}
+				public void onSuccess(String arg0) {
+					// start main activity
+					SurespotApplication.getUserData().setUsername(username);
+					Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					LoginActivity.this.startActivity(intent);
 
+				};
+
+				@Override
+				public void onFailure(Throwable arg0) {
 				}
 
 			});

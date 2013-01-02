@@ -3,6 +3,7 @@ package com.twofours.surespot.ui.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,10 +18,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.adapters.NotificationArrayAdapter;
 
 public class NotificationListFragment extends SherlockListFragment {
@@ -52,15 +53,23 @@ public class NotificationListFragment extends SherlockListFragment {
 	@Override
 	public void onStart() {
 		super.onStart();
-		// get the list of friends
-		SurespotApplication.getNetworkController().getNotifications(new IAsyncCallback<List<JSONObject>>() {
+		// get the list of notifications
+		NetworkController.getNotifications(new JsonHttpResponseHandler() {
+			public void onSuccess(JSONArray jsonArray) {
 
-			@Override
-			public void handleResponse(List<JSONObject> result) {
-				if (result == null)
-					return;
+				List<JSONObject> notifications = new ArrayList<JSONObject>();
+				try {
 
-				notificationAdapter = new NotificationArrayAdapter(getActivity(), result);
+					if (jsonArray.length() > 0) {
+						for (int i = 0; i < jsonArray.length(); i++) {
+							notifications.add(jsonArray.getJSONObject(i));
+						}
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				notificationAdapter = new NotificationArrayAdapter(getActivity(), notifications);
 				setListAdapter(notificationAdapter);
 
 			}

@@ -18,10 +18,11 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 	private final Context context;
@@ -80,32 +81,23 @@ public class NotificationArrayAdapter extends ArrayAdapter<JSONObject> {
 				return;
 			}
 
-			SurespotApplication.getNetworkController().respondToInvite(friendname, action,
-					new IAsyncCallback<Boolean>() {
+			NetworkController.respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
+				public void onSuccess(String arg0) {
 
-						@Override
-						public void handleResponse(Boolean result) {
+					Log.d(TAG, "Invitation acted upon successfully: " + action);
 
-							if (result) {
-								Log.d(TAG, "Invitation acted upon successfully: " + action);
+					// delete this row
+					values.remove(position);
+					notifyDataSetChanged();
 
-								// delete this row
-								values.remove(position);
-								notifyDataSetChanged();
+					// tell the app what we did
+					Intent intent = new Intent(SurespotConstants.EventFilters.FRIEND_INVITE_EVENT);
+					intent.putExtra(SurespotConstants.ExtraNames.FRIEND_INVITE_NAME, friendname);
+					intent.putExtra(SurespotConstants.ExtraNames.FRIEND_INVITE_ACTION, action);
+					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
-								// tell the app what we did
-
-								Intent intent = new Intent(SurespotConstants.EventFilters.FRIEND_INVITE_EVENT);
-								intent.putExtra(SurespotConstants.ExtraNames.FRIEND_INVITE_NAME, friendname);
-								intent.putExtra(SurespotConstants.ExtraNames.FRIEND_INVITE_ACTION, action);
-								LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(
-										intent);
-
-							
-
-							}
-						}
-					});
+				}
+			});
 
 			// Log.d(TAG, "Title clicked, row: " + position + ", action: " + action);
 		}

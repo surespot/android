@@ -3,9 +3,7 @@ package com.twofours.surespot.ui.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 
 public class StartupActivity extends Activity {

@@ -3,6 +3,9 @@ package com.twofours.surespot.ui.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,18 +21,20 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.TextView.OnEditorActionListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class FriendFragment extends SherlockFragment {
 
@@ -119,15 +124,25 @@ public class FriendFragment extends SherlockFragment {
 
 		super.onStart();
 		// get the list of friends
-		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {
-
+		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
-			public void handleResponse(List<String> result) {
-				if (result == null) {
-					return;
+			public void onSuccess(JSONArray jsonArray) {
+
+				List<String> friends = new ArrayList<String>();
+				if (jsonArray.length() > 0) {
+					friends = new ArrayList<String>(jsonArray.length());
+					try {
+						for (int i = 0; i < jsonArray.length(); i++) {
+							friends.add(jsonArray.getString(i));
+						}
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
 				}
 
-				friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, result);
+				friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, friends);
 				ListView listView = (ListView) getView().findViewById(R.id.friend_list);
 				listView.setAdapter(friendAdapter);
 
@@ -143,14 +158,11 @@ public class FriendFragment extends SherlockFragment {
 
 		if (friend.length() > 0 && !friend.equals(SurespotApplication.getUserData().getUsername())) {
 
-			SurespotApplication.getNetworkController().invite(friend, new IAsyncCallback<Boolean>() {
-
+			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
-				public void handleResponse(Boolean result) {
-					if (result) {
-						// TODO indicate in the UI that the request is pending somehow
-						TextKeyListener.clear(etFriend.getText());
-					}
+				public void onSuccess(String arg0) { // TODO indicate in the UI that the request is pending somehow
+					TextKeyListener.clear(etFriend.getText());
+
 				}
 			});
 		}

@@ -34,8 +34,10 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class EncryptionController {
 	private static String ASYMKEYPAIR_PREFKEY = "asymKeyPair";
@@ -364,10 +366,11 @@ public class EncryptionController {
 	public void hydratePublicKey(final String username, final IAsyncCallback<Void> callback) {
 		byte[] secret = mSharedSecrets.get(username);
 		if (secret == null) {
-			SurespotApplication.getNetworkController().getPublicKey(username, new IAsyncCallback<String>() {
+			NetworkController.getPublicKey(username, new AsyncHttpResponseHandler() {
 
 				@Override
-				public void handleResponse(String result) {
+				public void onSuccess(String result) {
+			
 					ECPublicKey pubKey = recreatePublicKey(result);
 					mPublicKeys.put(username, pubKey);
 					generateSharedSecret(username, new IAsyncCallback<byte[]>() {

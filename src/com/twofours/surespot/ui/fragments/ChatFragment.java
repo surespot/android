@@ -3,6 +3,8 @@ package com.twofours.surespot.ui.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Bundle;
@@ -20,14 +22,16 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.adapters.ChatArrayAdapter;
 
 public class ChatFragment extends SherlockFragment {
 
-	private ChatArrayAdapter chatAdapter;	
+	private ChatArrayAdapter chatAdapter;
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
@@ -47,7 +51,7 @@ public class ChatFragment extends SherlockFragment {
 	public void onStart() {
 
 		super.onStart();
-		//reget the messages in case any were added while we were gone
+		// reget the messages in case any were added while we were gone
 		Log.v(TAG, "onStart, mUsername:  " + mUsername);
 		// make sure the public key is there
 		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
@@ -56,21 +60,26 @@ public class ChatFragment extends SherlockFragment {
 			public void handleResponse(Void result) {
 
 				// get the list of friends
-				SurespotApplication.getNetworkController().getMessages(mUsername,
-						new IAsyncCallback<List<JSONObject>>() {
+				NetworkController.getMessages(mUsername, new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray jsonArray) {
 
-							@Override
-							public void handleResponse(List<JSONObject> result) {
-
-								if (result == null) {
-									return;
-								}
-
-								chatAdapter = new ChatArrayAdapter(getActivity(), result);
-								mListView.setAdapter(chatAdapter);
-
+						List<JSONObject> messages = new ArrayList<JSONObject>();
+						try {
+							for (int i = 0; i < jsonArray.length(); i++) {
+								messages.add(new JSONObject(jsonArray.getString(i)));
 							}
-						});
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						chatAdapter = new ChatArrayAdapter(getActivity(), messages);
+						mListView.setAdapter(chatAdapter);
+
+					}
+
+				});
 
 			}
 		});

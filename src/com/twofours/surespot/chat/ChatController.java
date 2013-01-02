@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.network.NetworkController;
 
 public class ChatController {
 
@@ -24,12 +25,12 @@ public class ChatController {
 	private SocketIO socket;
 
 	public void connect(final IConnectCallback callback) {
-		
+
 		if (socket != null && socket.isConnected()) {
 			return;
 		}
 
-		Cookie cookie = SurespotApplication.getNetworkController().getCookie();
+		Cookie cookie = NetworkController.getCookie();
 		// TODO handle no cookie
 		// if (cookie == null)
 		try {
@@ -62,6 +63,7 @@ public class ChatController {
 			public void onError(SocketIOException socketIOException) {
 				Log.v(TAG, "an Error occured");
 				socketIOException.printStackTrace();
+				connect(null);
 			}
 
 			@Override
@@ -72,7 +74,9 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				Log.v(TAG, "socket.io connection established");
-				callback.connectStatus(true);
+				if (callback != null) {
+					callback.connectStatus(true);
+				}
 
 			}
 
@@ -88,7 +92,7 @@ public class ChatController {
 					return;
 				}
 				if (event.equals("message")) {
-					//JSONObject j = new JSONObject((String) args[0]);
+					// JSONObject j = new JSONObject((String) args[0]);
 					sendMessageReceived((String) args[0]);
 				}
 			}
@@ -135,7 +139,7 @@ public class ChatController {
 
 		}
 	}
-	
+
 	public void disconnect() {
 		socket.disconnect();
 	}
