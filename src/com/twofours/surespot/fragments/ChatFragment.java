@@ -6,12 +6,16 @@ import java.util.List;
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
@@ -22,7 +26,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 public class ChatFragment extends SherlockFragment {
 
 	private ChatArrayAdapter chatAdapter;
-	//private static final String TAG = "ChatFragment";
+	// private static final String TAG = "ChatFragment";
 	private String mUsername;
 	private ListView mListView;
 
@@ -35,41 +39,41 @@ public class ChatFragment extends SherlockFragment {
 
 	public void setUsername(String mUsername) {
 		this.mUsername = mUsername;
-	}	
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
-	    mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-		
+		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+
 		setUsername(getArguments().getString("username"));
-		
-		//make sure the public key is there
+
+		// make sure the public key is there
 		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
 
 			@Override
 			public void handleResponse(Void result) {
 
 				// get the list of friends
-				SurespotApplication.getNetworkController().getMessages(mUsername, new IAsyncCallback<List<JSONObject>>() {
+				SurespotApplication.getNetworkController().getMessages(mUsername,
+						new IAsyncCallback<List<JSONObject>>() {
 
-					@Override
-					public void handleResponse(List<JSONObject> result) {
-						
-						if (result == null) {
-							return;
-						}
-						
-						chatAdapter = new ChatArrayAdapter(getActivity(), result);
-						mListView.setAdapter(chatAdapter);
+							@Override
+							public void handleResponse(List<JSONObject> result) {
 
-					}
-				});
-				
+								if (result == null) {
+									return;
+								}
+
+								chatAdapter = new ChatArrayAdapter(getActivity(), result);
+								mListView.setAdapter(chatAdapter);
+
+							}
+						});
+
 			}
 		});
-
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -77,25 +81,43 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onClick(View v) {
 
-				final String message = ((EditText) view.findViewById(R.id.etMessage)).getText().toString();
-
-				if (message.length() > 0) {
-					// TODO encrypt and send it
-					SurespotApplication.getEncryptionController().eccEncrypt(mUsername, message,
-							new IAsyncCallback<String>() {
-
-								@Override
-								public void handleResponse(String result) {
-									SurespotApplication.getChatController().sendMessage(mUsername, result);
-
-								}
-							});
-				}
-
 			}
 		});
 
+		EditText editText = (EditText) getActivity().findViewById(R.id.etMessage);
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_SEND) {
+					//
+					sendMessage();					
+					handled = true;
+				}
+				return handled;
+			}
+
+		});
+
 		return view;
+	}
+
+	private void sendMessage() {
+		final EditText etMessage =((EditText) getView().findViewById(R.id.etMessage)); 
+
+		final String message = etMessage.getText().toString();
+
+		if (message.length() > 0) {
+
+			SurespotApplication.getEncryptionController().eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
+
+				@Override
+				public void handleResponse(String result) {
+					SurespotApplication.getChatController().sendMessage(mUsername, result);
+					etMessage.setText("");
+				}
+			});
+		}
 	}
 
 	private void ensureChatAdapter() {
@@ -107,6 +129,6 @@ public class ChatFragment extends SherlockFragment {
 
 	public void addMessage(final JSONObject message) {
 		ensureChatAdapter();
-		chatAdapter.add(message);		
+		chatAdapter.add(message);
 	}
 }

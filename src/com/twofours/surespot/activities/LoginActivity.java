@@ -10,10 +10,14 @@ import org.apache.http.params.HttpParams;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -21,7 +25,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class LoginActivity extends Activity {
 
-	private Button loginButton;	
+	private Button loginButton;
 	// TODO put this behind a factory or singleton or something
 	private AbstractHttpClient _httpClient;
 
@@ -61,41 +65,51 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-
-				final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText()
-						.toString();
-				String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
-
-				SurespotApplication.getNetworkController().login(username, password, new IAsyncCallback<Boolean>() {
-
-					@Override
-					public void handleResponse(Boolean result) {
-						if (result) {
-							//start main activity
-							SurespotApplication.getUserData().setUsername(username);
-							Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-							//intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-							LoginActivity.this.startActivity(intent);
-						}
-
-					}
-
-				});
+				login();
 
 			}
 		});
 
-		/*
-		 * this.sayHelloButton = (Button) this.findViewById(R.id.bSayHello); this.sayHelloButton.setOnClickListener(new
-		 * View.OnClickListener() {
-		 * 
-		 * @Override public void onClick(View v) { // send a message JSONObject json = new JSONObject();
-		 * 
-		 * try { json.putOpt("room", "adam_cherie"); json.putOpt("text", "hello from android"); socket.emit("message",
-		 * json.toString()); } catch (JSONException e) { // TODO Auto-generated catch block e.printStackTrace(); }
-		 * 
-		 * } });
-		 */
+		EditText editText = (EditText) findViewById(R.id.etPassword);
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					//
+					login();
+					handled = true;
+				}
+				return handled;
+			}
+
+		});
+	}
+
+	private void login() {
+
+		final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
+		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
+
+		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
+			//TODO show progress
+			
+			SurespotApplication.getNetworkController().login(username, password, new IAsyncCallback<Boolean>() {
+
+				@Override
+				public void handleResponse(Boolean result) {
+					if (result) {
+						// start main activity
+						SurespotApplication.getUserData().setUsername(username);
+						Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+						LoginActivity.this.startActivity(intent);
+					}
+
+				}
+
+			});
+		}
+
 	}
 
 	@Override

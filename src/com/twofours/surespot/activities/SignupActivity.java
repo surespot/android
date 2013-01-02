@@ -5,17 +5,24 @@ import java.security.KeyPair;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.AsyncCallbackWrapper;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class SignupActivity extends Activity {
 
@@ -31,14 +38,43 @@ public class SignupActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				// generate key pair
-				// TODO make threaded and add progress
-				KeyPair keyPair = SurespotApplication.getEncryptionController().generateKeyPair();
+				signup();
+			}
+		});
+
+		EditText editText = (EditText) findViewById(R.id.etSignupPassword);
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					//
+					signup();
+					handled = true;
+				}
+				return handled;
+			}
+
+		});
+
+	}
+
+	private void signup() {
+		final ProgressDialog progressDialog = new ProgressDialog(this);
+		progressDialog.setIndeterminate(true);
+		progressDialog.setMessage("initializing...");
+		progressDialog.show();
+		
+		// generate key pair		
+		SurespotApplication.getEncryptionController().generateKeyPair(new IAsyncCallback<KeyPair>() {
+
+			@Override
+			public void handleResponse(KeyPair keyPair) {				
 				if (keyPair != null) {
 
-					final String username = ((EditText) SignupActivity.this.findViewById(R.id.etUsername)).getText()
+					final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername)).getText()
 							.toString();
-					String password = ((EditText) SignupActivity.this.findViewById(R.id.etPassword)).getText()
+					String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText()
 							.toString();
 
 					SurespotApplication.getNetworkController().addUser(username, password,
@@ -47,6 +83,7 @@ public class SignupActivity extends Activity {
 
 								@Override
 								public void handleResponse(Boolean result) {
+									progressDialog.dismiss();
 									if (result) {
 										// save key pair now that we've created a user successfully
 										// TODO add setkey pair method to encryption controller to not have to pass it
@@ -54,10 +91,12 @@ public class SignupActivity extends Activity {
 										// and back into the encryption controller
 										SurespotApplication.getEncryptionController().saveKeyPair(state);
 
+										
+										
 										SurespotApplication.getUserData().setUsername(username);
 										Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-										//intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 										startActivity(intent);
+										
 									}
 								}
 
@@ -65,7 +104,8 @@ public class SignupActivity extends Activity {
 				}
 			}
 		});
-
+		
+		
 	}
 
 	@Override

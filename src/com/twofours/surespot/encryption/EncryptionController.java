@@ -133,26 +133,48 @@ public class EncryptionController {
 		return null;
 	}
 
-	public KeyPair generateKeyPair() {
+	public void generateKeyPair(IAsyncCallback<KeyPair> callback) {
+			new AsyncGenerateKeyPair(callback).execute();
+	}
+	
+	private class AsyncGenerateKeyPair extends AsyncTask<Void, Void, KeyPair> {
+		private IAsyncCallback<KeyPair> mCallback;
+		
 
-		try {
-			KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
-			g.initialize(curve, new SecureRandom());
-			KeyPair pair = g.generateKeyPair();
-			return pair;
+		public AsyncGenerateKeyPair(IAsyncCallback<KeyPair> callback) {
+			
+			mCallback = callback;
 
-		} catch (NoSuchAlgorithmException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (NoSuchProviderException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
-		return null;
+		@Override
+		protected KeyPair doInBackground(Void... arg0) {
+			// perform async
+
+			try {
+				KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
+				g.initialize(curve, new SecureRandom());
+				KeyPair pair = g.generateKeyPair();
+				return pair;
+
+			} catch (NoSuchAlgorithmException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (NoSuchProviderException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (InvalidAlgorithmParameterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+
+		protected void onPostExecute(KeyPair result) {
+			mCallback.handleResponse(result);
+		}
+
 	}
 
 	public void saveKeyPair(KeyPair pair) {
