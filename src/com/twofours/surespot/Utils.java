@@ -8,23 +8,26 @@ import java.io.InputStreamReader;
 public class Utils {
 	// Fast Implementation
 	public static String inputStreamToString(InputStream is) throws IOException {
-	    String line = "";
-	    StringBuilder total = new StringBuilder();
-	    
-	    // Wrap a BufferedReader around the InputStream
-	    BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+		String line = "";
+		StringBuilder total = new StringBuilder();
 
-	    // Read response until the end
-	    while ((line = rd.readLine()) != null) { 
-	        total.append(line); 
-	    }
-	    
-	    // Return full string
-	    return total.toString();
+		// Wrap a BufferedReader around the InputStream
+		BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+
+		// Read response until the end
+		while ((line = rd.readLine()) != null) {
+			total.append(line);
+		}
+
+		// Return full string
+		return total.toString();
 	}
-	
+
 	public static String getOtherUser(String from, String to) {
 		return to.equals(SurespotApplication.getUserData().getUsername()) ? from : to;
 	}
 
+	public static String makePagerFragmentName(int viewId, long id) {
+		return "android:switcher:" + viewId + ":" + id;
+	}
 }

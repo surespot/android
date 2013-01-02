@@ -3,21 +3,34 @@ package com.twofours.surespot.ui.adapters;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
+import com.twofours.surespot.R;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.ui.fragments.ChatFragment;
 import com.twofours.surespot.ui.fragments.FriendFragment;
 import com.twofours.surespot.ui.fragments.NotificationListFragment;
 
 public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
-	private List<ChatFragment> mChatFragments;
+	
+	private ArrayList<String> mChatNames;
+	
+	
+
 	private static final int STATIC_TAB_COUNT = 2;
 	public MainPagerAdapter(FragmentManager fm) {
 		super(fm);
-		mChatFragments = new ArrayList<ChatFragment>();
+		mChatNames = new ArrayList<String>(); 
+				
 	}
+	
+	
 
 	@Override
 	public Fragment getItem(int i) {
@@ -30,7 +43,8 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 			return new NotificationListFragment();		
 
 		default:
-			return mChatFragments.get(i-STATIC_TAB_COUNT);
+		
+			return ChatFragment.newInstance(mChatNames.get(i-STATIC_TAB_COUNT));
 		}
 		
 	}
@@ -38,7 +52,7 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 
 	@Override
 	public int getCount() {
-		return STATIC_TAB_COUNT + mChatFragments.size();
+		return STATIC_TAB_COUNT + mChatNames.size();
 	}
 
 	@Override
@@ -49,43 +63,40 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		case 1:
 			return "notifications";		
 		default:
-			return mChatFragments.get(position-STATIC_TAB_COUNT).getUsername();
+			return mChatNames.get(position-STATIC_TAB_COUNT);
 		}
 	}
 	
 
-	public void addFragment(ChatFragment fragment) {
-		mChatFragments.add(fragment);
+	public void addFragment(String username) {
+		mChatNames.add(username);
 		this.notifyDataSetChanged();
 	}
 	
 	public boolean containsChat(String username) {
-		for (ChatFragment cf : mChatFragments) {
-			if (cf.getUsername().equals(username)) {
-				return true;
-			}
-		}
-		return false;
+		return mChatNames.contains(username);
 	}
 	
-	public ChatFragment getChatFragment(String username) {
-		for (ChatFragment cf : mChatFragments) {
-			if (cf.getUsername().equals(username)) {
-				return cf;
-			}
-		}
-		return null;
-	}
 	
 	public int getChatFragmentPosition(String username) {
-		int pos = 0;
-		for (ChatFragment cf : mChatFragments) {
-			
-			if (cf.getUsername().equals(username)) {
-				return (pos + STATIC_TAB_COUNT);
-			}
-			pos++;
-		}
-		return -1;
+	
+		return mChatNames.indexOf(username);
+		
 	}
+	
+	public String getFragmentTag(String username) {
+		int pos = getChatFragmentPosition(username);
+		if (pos == -1) return null;
+		return Utils.makePagerFragmentName(R.id.pager, pos+STATIC_TAB_COUNT);
+	}
+	
+	public ArrayList<String> getChatNames() {
+		return mChatNames;
+	}
+
+	public void setChatNames(ArrayList<String> chatNames) {
+		this.mChatNames = chatNames;
+	}
+	
 }
+

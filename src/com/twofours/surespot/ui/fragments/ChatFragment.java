@@ -46,6 +46,14 @@ public class ChatFragment extends SherlockFragment {
 	public void setUsername(String mUsername) {
 		this.mUsername = mUsername;
 	}
+	
+	public static ChatFragment newInstance(String username) {
+		ChatFragment cf = new ChatFragment();
+		Bundle bundle = new Bundle();
+		bundle.putString("username", username);
+		cf.setArguments(bundle);	
+		return cf;
+	}
 
 	@Override
 	public void onStart() {

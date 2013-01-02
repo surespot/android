@@ -1,5 +1,7 @@
 package com.twofours.surespot.ui.activities;
 
+import java.util.ArrayList;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +31,8 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 
 	MainPagerAdapter mPagerAdapter;
 	ViewPager mViewPager;
+	BroadcastReceiver mMessageBroadcastReceiver;
+	BroadcastReceiver mShowChatBroadcastReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,14 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 		setContentView(R.layout.activity_main);
 
 		mPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
+
+		// restore tabs
+		if (savedInstanceState != null) {
+			ArrayList<String> chatNames = savedInstanceState.getStringArrayList("chats");
+			if (chatNames != null) {
+				mPagerAdapter.setChatNames(chatNames);
+			}
+		}
 
 		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -49,7 +61,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 				actionBar.setSelectedNavigationItem(position);
 			}
 		});
-		mViewPager.setOffscreenPageLimit(10);
+		// mViewPager.setOffscreenPageLimit(10);
 
 		// For each of the sections in the app, add a tab to the action bar.
 		for (int i = 0; i < mPagerAdapter.getCount(); i++) {
@@ -60,54 +72,68 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 		}
 
 		// register for notifications
-		LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+		mMessageBroadcastReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				Log.v(TAG, "onReceiveMessage");
 				String message = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
 				try {
 					JSONObject messageJson = new JSONObject(message);
-					ChatFragment cf = mPagerAdapter.getChatFragment(Utils.getOtherUser(messageJson.getString("from"),
+					String tag = mPagerAdapter.getFragmentTag(Utils.getOtherUser(messageJson.getString("from"),
 							messageJson.getString("to")));
 
-					// fragment might be null if user hasn't opened this chat
-					// TODO indicate new message on FRIENDS screen?
-					if (cf != null) {
-						cf.addMessage(messageJson);
+					Log.v(TAG, "Fragment tag: " + tag);
+
+					if (tag != null) {
+
+						ChatFragment cf = (ChatFragment) getSupportFragmentManager().findFragmentByTag(tag);
+
+						// fragment might be null if user hasn't opened this chat
+						// TODO indicate new message on FRIENDS screen?
+						if (cf != null) {
+							cf.addMessage(messageJson);
+						}
+						else {
+							Log.v(TAG, "Fragment null");
+						}
 					}
-				} catch (JSONException e) {
+				}
+				catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
 			}
-		}, new IntentFilter(SurespotConstants.EventFilters.MESSAGE_RECEIVED_EVENT));
+		};
+		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
+				new IntentFilter(SurespotConstants.EventFilters.MESSAGE_RECEIVED_EVENT));
 
 		// register for notifications
-		LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+		mShowChatBroadcastReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				showChat(intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME));
 
 			}
-		}, new IntentFilter(SurespotConstants.EventFilters.SHOW_CHAT_EVENT));
+		};
+		LocalBroadcastManager.getInstance(this).registerReceiver(mShowChatBroadcastReceiver,
+				new IntentFilter(SurespotConstants.EventFilters.SHOW_CHAT_EVENT));
 
 	}
 
 	private void showChat(String username) {
+
 		if (mPagerAdapter.containsChat(username)) {
 			int pos = mPagerAdapter.getChatFragmentPosition(username);
 			if (pos > -1) {
 				getSupportActionBar().setSelectedNavigationItem(pos);
 			}
-		} else {
+		}
+		else {
 
-			ChatFragment cf = new ChatFragment();
-			Bundle bundle = new Bundle();
-			bundle.putString("username", username);
-			cf.setArguments(bundle);
-			mPagerAdapter.addFragment(cf);
+			mPagerAdapter.addFragment(username);
 
 			ActionBar actionBar = getSupportActionBar();
 			Tab tab = actionBar.newTab();
@@ -115,7 +141,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 			tab.setTabListener(this);
 			actionBar.addTab(tab);
 
-			//mViewPager.setCurrentItem(tab.getPosition());
+			// mViewPager.setCurrentItem(tab.getPosition());
 			tab.select();
 		}
 	}
@@ -157,15 +183,15 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		Log.v(TAG, "onStart");	
+		Log.v(TAG, "onStart");
 		SurespotApplication.getChatController().connect(new IConnectCallback() {
-			
+
 			@Override
 			public void connectStatus(boolean status) {
 				if (!status) {
-					Log.e(TAG,"Could not connect to chat server.");
+					Log.e(TAG, "Could not connect to chat server.");
 				}
-				
+
 			}
 		});
 	}
@@ -176,7 +202,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 		super.onStop();
 		Log.v(TAG, "onStop");
 		SurespotApplication.getChatController().disconnect();
-		
+
 	}
 
 	@Override
@@ -184,6 +210,18 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mShowChatBroadcastReceiver);
+
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		Log.v(TAG, "onSaveInstanceState");
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+
+		outState.putStringArrayList("chats", mPagerAdapter.getChatNames());
 	}
 
 }
