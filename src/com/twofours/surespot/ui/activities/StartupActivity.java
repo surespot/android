@@ -13,18 +13,19 @@ public class StartupActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		
-		//if we have a key pair show the login activity
-		if (SurespotApplication.getEncryptionController().hasKeyPair()) {		
-			startActivity(new Intent(this,LoginActivity.class));
+
+		// if we have a key pair show the login activity
+		if (SurespotApplication.getEncryptionController().hasKeyPair()) {
+			Intent intent = new Intent(this, LoginActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
 		}
-		//otherwise show the user / key management activity
+		// otherwise show the user / key management activity
 		else {
-			startActivity(new Intent(this,SignupActivity.class));
+			Intent intent = new Intent(this, SignupActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);			
 		}
 	}
-
-	
 
 }

@@ -26,25 +26,8 @@ import com.twofours.surespot.ui.adapters.NotificationArrayAdapter;
 public class NotificationListFragment extends SherlockListFragment {
 	private NotificationArrayAdapter notificationAdapter;
 
-
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		// get the list of friends
-		SurespotApplication.getNetworkController().getNotifications(
-				new IAsyncCallback<List<JSONObject>>() {
-
-					@Override
-					public void handleResponse(List<JSONObject> result) {
-						if (result == null)
-							return;
-
-						notificationAdapter = new NotificationArrayAdapter(getActivity(), result);
-						setListAdapter(notificationAdapter);
-
-					}
-				});
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		// register for notifications
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
@@ -62,20 +45,34 @@ public class NotificationListFragment extends SherlockListFragment {
 				}
 			}
 		}, new IntentFilter(SurespotConstants.EventFilters.NOTIFICATION_EVENT));
+
+		return inflater.inflate(R.layout.notification_list_fragment, container, false);
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.notification_list_fragment, container, false);
+	public void onStart() {
+		super.onStart();
+		// get the list of friends
+		SurespotApplication.getNetworkController().getNotifications(new IAsyncCallback<List<JSONObject>>() {
+
+			@Override
+			public void handleResponse(List<JSONObject> result) {
+				if (result == null)
+					return;
+
+				notificationAdapter = new NotificationArrayAdapter(getActivity(), result);
+				setListAdapter(notificationAdapter);
+
+			}
+		});
 	}
 
 	public void notificationReceived(JSONObject notification) {
 		ensureNotificationAdapter();
 
 		notificationAdapter.add(notification);
-	//	notificationAdapter.notifyDataSetChanged();
 	}
-	
+
 	private void ensureNotificationAdapter() {
 		if (notificationAdapter == null) {
 
@@ -83,6 +80,5 @@ public class NotificationListFragment extends SherlockListFragment {
 			setListAdapter(notificationAdapter);
 		}
 	}
-	
-	
+
 }

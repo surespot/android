@@ -95,6 +95,7 @@ public class SignupActivity extends Activity {
 										
 										SurespotApplication.getUserData().setUsername(username);
 										Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+										intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 										startActivity(intent);
 										
 									}

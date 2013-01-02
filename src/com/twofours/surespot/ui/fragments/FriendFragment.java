@@ -43,21 +43,6 @@ public class FriendFragment extends SherlockFragment {
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
 		listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
-		// get the list of friends
-		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {
-
-			@Override
-			public void handleResponse(List<String> result) {
-				if (result == null) {
-					return;
-				}
-
-				friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, result);
-				listView.setAdapter(friendAdapter);
-
-			}
-		});
-
 		// click on friend to join chat
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -117,7 +102,7 @@ public class FriendFragment extends SherlockFragment {
 				boolean handled = false;
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					//
-					addFriend();					
+					addFriend();
 					handled = true;
 				}
 				return handled;
@@ -129,21 +114,46 @@ public class FriendFragment extends SherlockFragment {
 
 	}
 
-	private void addFriend() {
+	@Override
+	public void onStart() {
 
-		final EditText etFriend =((EditText) getView().findViewById(R.id.etFriend)); 
-		String friend = etFriend.getText().toString();
-
-		SurespotApplication.getNetworkController().invite(friend, new IAsyncCallback<Boolean>() {
+		super.onStart();
+		// get the list of friends
+		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {
 
 			@Override
-			public void handleResponse(Boolean result) {
-				if (result) {
-					// TODO indicate in the UI that the request is pending somehow
-					TextKeyListener.clear(etFriend.getText());
+			public void handleResponse(List<String> result) {
+				if (result == null) {
+					return;
 				}
+
+				friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, result);
+				ListView listView = (ListView) getView().findViewById(R.id.friend_list);
+				listView.setAdapter(friendAdapter);
+
 			}
 		});
+
+	}
+
+	private void addFriend() {
+
+		final EditText etFriend = ((EditText) getView().findViewById(R.id.etFriend));
+		String friend = etFriend.getText().toString();
+
+		if (friend.length() > 0 && !friend.equals(SurespotApplication.getUserData().getUsername())) {
+
+			SurespotApplication.getNetworkController().invite(friend, new IAsyncCallback<Boolean>() {
+
+				@Override
+				public void handleResponse(Boolean result) {
+					if (result) {
+						// TODO indicate in the UI that the request is pending somehow
+						TextKeyListener.clear(etFriend.getText());
+					}
+				}
+			});
+		}
 
 	}
 

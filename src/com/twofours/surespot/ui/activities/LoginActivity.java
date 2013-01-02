@@ -102,6 +102,7 @@ public class LoginActivity extends Activity {
 						// start main activity
 						SurespotApplication.getUserData().setUsername(username);
 						Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						LoginActivity.this.startActivity(intent);
 					}
 

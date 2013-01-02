@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import android.os.Bundle;
 import android.text.method.TextKeyListener;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +27,10 @@ import com.twofours.surespot.ui.adapters.ChatArrayAdapter;
 
 public class ChatFragment extends SherlockFragment {
 
-	private ChatArrayAdapter chatAdapter;
-	// private static final String TAG = "ChatFragment";
+	private ChatArrayAdapter chatAdapter;	
 	private String mUsername;
 	private ListView mListView;
+	private static final String TAG = "ChatFragment";
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -43,13 +44,11 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
-		mListView = (ListView) view.findViewById(R.id.message_list);
-		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+	public void onStart() {
 
-		setUsername(getArguments().getString("username"));
-
+		super.onStart();
+		//reget the messages in case any were added while we were gone
+		Log.v(TAG, "onStart, mUsername:  " + mUsername);
 		// make sure the public key is there
 		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
 
@@ -75,6 +74,16 @@ public class ChatFragment extends SherlockFragment {
 
 			}
 		});
+
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
+		mListView = (ListView) view.findViewById(R.id.message_list);
+		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+
+		setUsername(getArguments().getString("username"));
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
