@@ -3,9 +3,11 @@ package com.twofours.surespot.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,7 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.layout.ChatArrayAdapter;
 import com.twofours.surespot.network.IAsyncCallback;
 
@@ -25,7 +28,7 @@ public class ChatFragment extends SherlockFragment {
 	private static final String TAG = "ChatFragment";
 	private String mUsername;
 	private ListView mListView;
-	
+
 	public String getUsername() {
 		return mUsername;
 	}
@@ -34,15 +37,15 @@ public class ChatFragment extends SherlockFragment {
 		this.mUsername = mUsername;
 	}
 
-	public ChatFragment (String username) {
-		setUsername( username);
+	public ChatFragment(String username) {
+		setUsername(username);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
-		//listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
+		// listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getMessages(mUsername, new IAsyncCallback<List<JSONObject>>() {
@@ -53,12 +56,13 @@ public class ChatFragment extends SherlockFragment {
 					return;
 				}
 
+				// decrypt
+
 				chatAdapter = new ChatArrayAdapter(getActivity(), result);
 				mListView.setAdapter(chatAdapter);
 
 			}
 		});
-				
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -66,27 +70,61 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onClick(View v) {
 
-				String message = ((EditText) view.findViewById(R.id.etMessage)).getText().toString();
+				final String message = ((EditText) view.findViewById(R.id.etMessage)).getText().toString();
 
-				//TODO encrypt and send it
-				SurespotApplication.getChatController().sendMessage(mUsername, message);
+				if (message.length() > 0) {
+					// TODO encrypt and send it
+					SurespotApplication.getEncryptionController().eccEncrypt(mUsername, message,
+							new IAsyncCallback<String>() {
+
+								@Override
+								public void handleResponse(String result) {
+									SurespotApplication.getChatController().sendMessage(mUsername, result);
+
+								}
+							});
+				}
+
 			}
 		});
 
 		return view;
 	}
-	
+
 	private void ensureChatAdapter() {
 		if (chatAdapter == null) {
-			chatAdapter = new ChatArrayAdapter(getActivity(), new ArrayList<JSONObject>());			
+			chatAdapter = new ChatArrayAdapter(getActivity(), new ArrayList<JSONObject>());
 			mListView.setAdapter(chatAdapter);
 		}
 	}
-	
-	public void addMessage(JSONObject message) {
+
+	public void addMessage(final JSONObject message) {
 		ensureChatAdapter();
-		chatAdapter.add(message);
-	//	mListView = (ListView) getView().findViewById(R.id.message_list);
-	//	mListView.smo
+
+		try {
+			// decrypt
+			SurespotApplication.getEncryptionController().eccDecrypt(
+
+			Utils.getOtherUser(message.getString("from"), message.getString("to")), message.getString("text"),
+					new IAsyncCallback<String>() {
+
+						@Override
+						public void handleResponse(String result) {
+							try {
+								message.put("plaintext", result);
+								chatAdapter.add(message);
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						}
+
+					});
+
+		} catch (JSONException j) {
+			Log.e(TAG, j.toString());
+		}
+
 	}
 }

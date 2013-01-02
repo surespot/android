@@ -60,7 +60,7 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 		JSONObject message = values.get(position);
 		//String room = Utils.getOtherUser(message.getString("from"), message.getString("to"));
 		try {
-			messageViewHolder.messageText.setText(message.getString("text"));
+			messageViewHolder.messageText.setText(message.getString("plaintext"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
