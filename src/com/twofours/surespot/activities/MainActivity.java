@@ -49,6 +49,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 				actionBar.setSelectedNavigationItem(position);
 			}
 		});
+		mViewPager.setOffscreenPageLimit(10);
 
 		// For each of the sections in the app, add a tab to the action bar.
 		for (int i = 0; i < mPagerAdapter.getCount(); i++) {
@@ -102,7 +103,10 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 			}
 		} else {
 
-			ChatFragment cf = new ChatFragment(username);
+			ChatFragment cf = new ChatFragment();
+			Bundle bundle = new Bundle();
+			bundle.putString("username", username);
+			cf.setArguments(bundle);
 			mPagerAdapter.addFragment(cf);
 
 			ActionBar actionBar = getSupportActionBar();

@@ -36,7 +36,7 @@ public class FriendFragment extends SherlockFragment {
 		Log.v(TAG, "onCreateView");
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
-		// listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
+	    listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getFriends(new IAsyncCallback<List<String>>() {

@@ -3,11 +3,9 @@ package com.twofours.surespot.fragments;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,34 +16,34 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.Utils;
 import com.twofours.surespot.layout.ChatArrayAdapter;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatFragment extends SherlockFragment {
 
 	private ChatArrayAdapter chatAdapter;
-	private static final String TAG = "ChatFragment";
+	//private static final String TAG = "ChatFragment";
 	private String mUsername;
 	private ListView mListView;
 
 	public String getUsername() {
+		if (mUsername == null) {
+			mUsername = getArguments().getString("username");
+		}
 		return mUsername;
 	}
 
 	public void setUsername(String mUsername) {
 		this.mUsername = mUsername;
-	}
-
-	public ChatFragment(String username) {
-		setUsername(username);
-	}
+	}	
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
-		// listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
+	    mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+		
+		setUsername(getArguments().getString("username"));
 		
 		//make sure the public key is there
 		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
@@ -58,6 +56,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void handleResponse(List<JSONObject> result) {
+						
 						if (result == null) {
 							return;
 						}

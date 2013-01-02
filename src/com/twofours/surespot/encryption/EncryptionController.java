@@ -31,6 +31,7 @@ import org.spongycastle.jce.spec.ECPublicKeySpec;
 import org.spongycastle.util.encoders.Hex;
 
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.twofours.surespot.SurespotApplication;
@@ -192,30 +193,53 @@ public class EncryptionController {
 		return new String(Hex.encode(publicKey.getQ().getEncoded()));
 	}
 
-	private byte[] generateSharedSecret(ECPublicKey publicKey) {
-		if (keyPair == null)
-			return null;
-		try {
-			KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
-			ka.init(keyPair.getPrivate());
-			ka.doPhase(publicKey, true);
-			byte[] sharedSecret = ka.generateSecret();
+	private void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
+		new AsyncGenerateSharedSecret(username, callback).execute();
+	}
 
-			Log.d("ke", "shared Key: " + new String(Hex.encode(new BigInteger(sharedSecret).toByteArray())));
-			return sharedSecret;
+	private class AsyncGenerateSharedSecret extends AsyncTask<Void, Void, byte[]> {
+		private IAsyncCallback<byte[]> mCallback;
+		private String mUsername;
 
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		public AsyncGenerateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
+			mUsername = username;
+			mCallback = callback;
 
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return null;
+
+		@Override
+		protected byte[] doInBackground(Void... arg0) {
+			// perform async
+
+			if (keyPair == null)
+				return null;
+			try {
+				KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
+				ka.init(keyPair.getPrivate());
+				ka.doPhase(mPublicKeys.get(mUsername), true);
+				byte[] sharedSecret = ka.generateSecret();
+
+				Log.d("ke", "shared Key: " + new String(Hex.encode(new BigInteger(sharedSecret).toByteArray())));
+				return sharedSecret;
+
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchProviderException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		protected void onPostExecute(byte[] result) {
+			mCallback.handleResponse(result);
+		}
+
 	}
 
 	private void symmetricDecrypt(String username, String cipherTextJson, IAsyncCallback<String> callback) {
@@ -234,7 +258,8 @@ public class EncryptionController {
 			return;
 		}
 
-		ParametersWithIV params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+		ParametersWithIV params = new ParametersWithIV(
+				new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 		ccm.reset();
 		ccm.init(false, params);
@@ -258,9 +283,11 @@ public class EncryptionController {
 	private void symmetricEncrypt(String username, String plaintext, IAsyncCallback<String> callback) {
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
-		byte[] iv = new byte[8];
+		//crashes with getBlockSize() bytes, don't know why?
+		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize()-1];
 		mSecureRandom.nextBytes(iv);
-		ParametersWithIV params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+		ParametersWithIV params = new ParametersWithIV(
+				new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 		ccm.reset();
 		ccm.init(true, params);
@@ -299,7 +326,7 @@ public class EncryptionController {
 			}
 		});
 	}
-		
+
 	public void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
 
 		hydratePublicKey(from, new IAsyncCallback<Void>() {
@@ -321,9 +348,15 @@ public class EncryptionController {
 				public void handleResponse(String result) {
 					ECPublicKey pubKey = recreatePublicKey(result);
 					mPublicKeys.put(username, pubKey);
-					byte[] shared = generateSharedSecret(pubKey);
-					mSharedSecrets.put(username, shared);
-					callback.handleResponse(null);
+					generateSharedSecret(username, new IAsyncCallback<byte[]>() {
+
+						@Override
+						public void handleResponse(byte[] result) {
+							mSharedSecrets.put(username, result);
+							callback.handleResponse(null);
+						}
+
+					});
 
 				}
 			});

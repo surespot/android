@@ -21,8 +21,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class LoginActivity extends Activity {
 
-	private Button loginButton;
-	private Button sayHelloButton;
+	private Button loginButton;	
 	// TODO put this behind a factory or singleton or something
 	private AbstractHttpClient _httpClient;
 

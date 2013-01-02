@@ -16,7 +16,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class SpotListFragment extends SherlockListFragment {
 	private ArrayAdapter<String> spotAdapter;
-	private static final String TAG = "SpotListFragment";
+	//private static final String TAG = "SpotListFragment";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -43,6 +43,7 @@ public class SpotListFragment extends SherlockListFragment {
 		return inflater.inflate(R.layout.spot_list_fragment, container, false);
 	}
 
+	@SuppressWarnings("unused")
 	private void ensureSpotAdapter() {
 		if (spotAdapter == null) {
 			spotAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1,

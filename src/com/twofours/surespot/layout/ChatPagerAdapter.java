@@ -3,6 +3,7 @@ package com.twofours.surespot.layout;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
@@ -10,12 +11,14 @@ import com.twofours.surespot.fragments.ChatFragment;
 
 public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
 	private List<ChatFragment> mChatFragments;
-	
-	
+
 	public ChatPagerAdapter(FragmentManager fm, String username) {
 		super(fm);
 		mChatFragments = new ArrayList<ChatFragment>();
-		ChatFragment cf = new ChatFragment(username);	
+		ChatFragment cf = new ChatFragment();
+		Bundle bundle = new Bundle();
+		bundle.putString("username", username);
+		cf.setArguments(bundle);
 		mChatFragments.add(cf);
 	}
 
@@ -32,14 +35,14 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	@Override
 	public CharSequence getPageTitle(int position) {
 		return mChatFragments.get(position).getUsername();
-		
+
 	}
-	
+
 	public void addFragment(ChatFragment fragment) {
 		mChatFragments.add(fragment);
 		this.notifyDataSetChanged();
 	}
-	
+
 	public boolean containsChat(String username) {
 		for (ChatFragment cf : mChatFragments) {
 			if (cf.getUsername().equals(username)) {
@@ -48,7 +51,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		}
 		return false;
 	}
-	
+
 	public ChatFragment getChatFragment(String username) {
 		for (ChatFragment cf : mChatFragments) {
 			if (cf.getUsername().equals(username)) {
@@ -57,7 +60,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		}
 		return null;
 	}
-	
+
 	public int getChatFragmentPosition(String username) {
 		int pos = 0;
 		for (ChatFragment cf : mChatFragments) {
@@ -68,5 +71,5 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		}
 		return -1;
 	}
-	
+
 }
