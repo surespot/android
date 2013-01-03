@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.activities;
+package com.twofours.surespot.main;
 
 import java.util.ArrayList;
 
@@ -18,7 +18,6 @@ import android.util.Log;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.twofours.surespot.MainPagerAdapter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;

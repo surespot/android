@@ -36,7 +36,7 @@ public class NetworkController {
 	static {
 		mCookieStore = new BasicCookieStore();
 		mClient = new AsyncHttpClient();
-		mClient.setCookieStore(mCookieStore);
+		mClient.setCookieStore(mCookieStore);		
 	}
 
 	public static void addUser(String username, String password, String publicKey,

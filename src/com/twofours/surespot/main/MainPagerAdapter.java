@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,8 @@ import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.Utils;
+import com.twofours.surespot.R.id;
 import com.twofours.surespot.chat.ChatFragment;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.notifications.NotificationListFragment;

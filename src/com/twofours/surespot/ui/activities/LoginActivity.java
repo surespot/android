@@ -18,6 +18,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.main.MainActivity;
 import com.twofours.surespot.network.NetworkController;
 
 public class LoginActivity extends Activity {
@@ -87,11 +88,11 @@ public class LoginActivity extends Activity {
 
 					finish();
 
-				};
+				}
 
 				@Override
 				public void onFailure(Throwable arg0) {
-					Toast.makeText(LoginActivity.this, "Login Error", 1000).show();
+					Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_SHORT).show();
 				}
 
 			});

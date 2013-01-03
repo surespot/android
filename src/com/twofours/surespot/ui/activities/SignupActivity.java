@@ -23,6 +23,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.main.MainActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 

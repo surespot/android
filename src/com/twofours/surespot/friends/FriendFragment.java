@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -77,9 +78,7 @@ public class FriendFragment extends SherlockFragment {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				ensureFriendAdapter();
-
 				friendAdapter.add(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED));
-
 			}
 		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT));
 
@@ -93,7 +92,6 @@ public class FriendFragment extends SherlockFragment {
 				// TODO show pending and delete when ignored?
 				if (action.equals("accept")) {
 					ensureFriendAdapter();
-
 					friendAdapter.add(friendname);
 				}
 
@@ -135,7 +133,8 @@ public class FriendFragment extends SherlockFragment {
 						for (int i = 0; i < jsonArray.length(); i++) {
 							friends.add(jsonArray.getString(i));
 						}
-					} catch (JSONException e) {
+					}
+					catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -148,6 +147,12 @@ public class FriendFragment extends SherlockFragment {
 				listView.setAdapter(friendAdapter);
 
 			}
+
+			@Override
+			public void onFailure(Throwable arg0) {
+				Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.", Toast.LENGTH_SHORT).show();
+			}
+
 		});
 
 	}
@@ -163,8 +168,14 @@ public class FriendFragment extends SherlockFragment {
 				@Override
 				public void onSuccess(String arg0) { // TODO indicate in the UI that the request is pending somehow
 					TextKeyListener.clear(etFriend.getText());
-
 				}
+
+				@Override
+				public void onFailure(Throwable arg0, String content) {
+					Toast.makeText(FriendFragment.this.getActivity(), content, Toast.LENGTH_SHORT)
+							.show();
+				}
+
 			});
 		}
 
