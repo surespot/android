@@ -2,10 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp"
-    >
+    android:orientation="vertical" >
 
     <ListView
         android:id="@id/android:list"
@@ -17,6 +14,7 @@
         android:id="@id/android:empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="10dp"
         android:text="You have no notifications. Loser." />
 
 </LinearLayout>

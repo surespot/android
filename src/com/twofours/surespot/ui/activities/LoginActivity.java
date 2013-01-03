@@ -2,7 +2,9 @@ package com.twofours.surespot.ui.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -10,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -20,6 +23,7 @@ import com.twofours.surespot.network.NetworkController;
 public class LoginActivity extends Activity {
 
 	private Button loginButton;
+	private static final String TAG = "LoginActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,17 @@ public class LoginActivity extends Activity {
 			}
 
 		});
+
+		// set the username
+		EditText usernameText = (EditText) findViewById(R.id.etUsername);
+		String username = SurespotApplication.getEncryptionController().getIdentityUsername();
+		if (username != null) {
+			usernameText.setText(username);
+		}
+		else {
+			Log.w(TAG,"In login activity with no identity stored.");
+		}
+
 	}
 
 	private void login() {
@@ -69,13 +84,14 @@ public class LoginActivity extends Activity {
 					Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					LoginActivity.this.startActivity(intent);
-					
+
 					finish();
 
 				};
 
 				@Override
 				public void onFailure(Throwable arg0) {
+					Toast.makeText(LoginActivity.this, "Login Error", 1000).show();
 				}
 
 			});

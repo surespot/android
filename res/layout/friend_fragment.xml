@@ -12,12 +12,25 @@
         android:layout_weight="1"
         android:drawSelectorOnTop="false" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/friend_list_empty"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="No friends...yet. Add friends by entering their username and touching &apos;add friend&apos;. You can swipe between tabs or click the tab to navigate." />
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="No friends...yet. Add friends by entering their username and touching &apos;add friend&apos;." />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="You can swipe or click to navigate between tabs." />
+    </LinearLayout>
 
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -38,7 +51,7 @@
             android:id="@+id/bAddFriend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add Friend" />
+            android:text="add friend" />
     </LinearLayout>
 
 </LinearLayout>

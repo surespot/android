@@ -16,10 +16,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -62,7 +64,7 @@ public class SignupActivity extends Activity {
 	private void signup() {
 		final ProgressDialog progressDialog = new ProgressDialog(this);
 		progressDialog.setIndeterminate(true);
-		progressDialog.setMessage("initializing...");
+		progressDialog.setMessage("Generating Keys...");
 		progressDialog.show();
 
 		// generate key pair
@@ -90,7 +92,7 @@ public class SignupActivity extends Activity {
 									// TODO add setkey pair method to encryption controller to not have to pass it
 									// into the callback
 									// and back into the encryption controller
-									SurespotApplication.getEncryptionController().saveKeyPair(keyPair);
+									SurespotApplication.getEncryptionController().saveIdentity(new SurespotIdentity(username, keyPair));
 
 									SurespotApplication.getUserData().setUsername(username);
 									Intent intent = new Intent(SignupActivity.this, MainActivity.class);
@@ -102,7 +104,10 @@ public class SignupActivity extends Activity {
 								}
 								
 								//TODO implement
-								public void onFailure(Throwable arg0, String arg1) {};
+								public void onFailure(Throwable arg0, String arg1) {
+									progressDialog.dismiss();
+									Toast.makeText(SignupActivity.this, "Error creating user.", Toast.LENGTH_LONG).show();
+								};
 
 							});
 				}

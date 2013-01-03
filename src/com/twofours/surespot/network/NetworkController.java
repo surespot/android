@@ -12,20 +12,21 @@ import android.util.Log;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.twofours.surespot.SurespotConstants;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
 	private static Cookie cookie;
-	private static String baseUrl = "http://alpha.surespot.me";
+	
 	private static AsyncHttpClient mClient;
 	private static CookieStore mCookieStore;
 
 	public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-		mClient.get(baseUrl + url, params, responseHandler);
+		mClient.get(SurespotConstants.BASE_URL + url, params, responseHandler);
 	}
 
 	public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-		mClient.post(baseUrl + url, params, responseHandler);
+		mClient.post(SurespotConstants.BASE_URL + url, params, responseHandler);
 	}
 
 	public static Cookie getCookie() {

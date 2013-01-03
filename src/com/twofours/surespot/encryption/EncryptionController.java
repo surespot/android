@@ -36,15 +36,16 @@ import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class EncryptionController {
-	private static String ASYMKEYPAIR_PREFKEY = "asymKeyPair";
+	private static String IDENTITY_KEY = "surespot_identity";
 	private static final int AES_KEY_LENGTH = 32;
 
 	private ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
-	private KeyPair keyPair;
+	private SurespotIdentity mIdentity;
 	private SecureRandom mSecureRandom;
 
 	private Map<String, ECPublicKey> mPublicKeys;
@@ -54,35 +55,54 @@ public class EncryptionController {
 		// attempt to load key pair
 		mSecureRandom = new SecureRandom();
 
-		keyPair = loadKeyPair();
+		mIdentity = loadIdentity();
 		mPublicKeys = new Hashtable<String, ECPublicKey>();
 		mSharedSecrets = new Hashtable<String, byte[]>();
 	}
 
 	public String getPublicKeyString() {
-		return encodePublicKey((ECPublicKey) keyPair.getPublic());
+		if (hasIdentity()) {
+			return encodePublicKey((ECPublicKey) mIdentity.getKeyPair().getPublic());
+		}
+		else {
+			return null;
+		}
 	}
 
-	public Boolean hasKeyPair() {
-		return keyPair != null;
+	public Boolean hasIdentity() {
+		return mIdentity != null;
 	}
 
-	private KeyPair loadKeyPair() {
+	public String getIdentityUsername() {
+		if (hasIdentity()) {
+			return mIdentity.getUsername();
+
+		}
+		else {
+			return null;
+		}
+	}
+
+	private SurespotIdentity loadIdentity() {
 		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences("encryption",
 				android.content.Context.MODE_PRIVATE);
-		String asymKeyPair = settings.getString(ASYMKEYPAIR_PREFKEY, null);
-		if (asymKeyPair == null)
-			return null;
+		String jsonIdentity = settings.getString(IDENTITY_KEY, null);
+		if (jsonIdentity == null) return null;
 
-		// we have a keypair stored, load the fuckers up and reconstruct the keys
+		// we have a identity stored, load the fucker up and reconstruct the keys
 
 		try {
 
-			JSONObject json = new JSONObject(asymKeyPair);
+			JSONObject json = new JSONObject(jsonIdentity);
+			String username = (String) json.get("username");
 			String sPrivateKey = (String) json.get("private_key");
 			String sPublicKey = (String) json.get("public_key");
-			return new KeyPair(recreatePublicKey(sPublicKey), recreatePrivateKey(sPrivateKey));
-		} catch (JSONException e) {
+
+			SurespotIdentity identity = new SurespotIdentity(username, new KeyPair(recreatePublicKey(sPublicKey),
+					recreatePrivateKey(sPrivateKey)));
+			return identity;
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -97,13 +117,16 @@ public class EncryptionController {
 			fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
 			return pubKey;
-		} catch (NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
+		}
+		catch (NoSuchProviderException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidKeySpecException e) {
+		}
+		catch (InvalidKeySpecException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -121,13 +144,16 @@ public class EncryptionController {
 			fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(priKeySpec);
 			return privKey;
-		} catch (NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
+		}
+		catch (NoSuchProviderException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidKeySpecException e) {
+		}
+		catch (InvalidKeySpecException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -136,15 +162,14 @@ public class EncryptionController {
 	}
 
 	public void generateKeyPair(IAsyncCallback<KeyPair> callback) {
-			new AsyncGenerateKeyPair(callback).execute();
+		new AsyncGenerateKeyPair(callback).execute();
 	}
-	
+
 	private class AsyncGenerateKeyPair extends AsyncTask<Void, Void, KeyPair> {
 		private IAsyncCallback<KeyPair> mCallback;
-		
 
 		public AsyncGenerateKeyPair(IAsyncCallback<KeyPair> callback) {
-			
+
 			mCallback = callback;
 
 		}
@@ -159,13 +184,16 @@ public class EncryptionController {
 				KeyPair pair = g.generateKeyPair();
 				return pair;
 
-			} catch (NoSuchAlgorithmException e2) {
+			}
+			catch (NoSuchAlgorithmException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
-			} catch (NoSuchProviderException e2) {
+			}
+			catch (NoSuchProviderException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
-			} catch (InvalidAlgorithmParameterException e) {
+			}
+			catch (InvalidAlgorithmParameterException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -179,11 +207,11 @@ public class EncryptionController {
 
 	}
 
-	public void saveKeyPair(KeyPair pair) {
+	public void saveIdentity(SurespotIdentity identity) {
 
-		keyPair = pair;
-		ECPublicKey ecpub = (ECPublicKey) pair.getPublic();
-		ECPrivateKey ecpriv = (ECPrivateKey) pair.getPrivate();
+		mIdentity = identity;
+		ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
+		ECPrivateKey ecpriv = (ECPrivateKey) identity.getKeyPair().getPrivate();
 
 		// Log.d("ke","encoded public key: " +
 		// ecpk.getEncoded().toString());
@@ -201,12 +229,14 @@ public class EncryptionController {
 
 		JSONObject json = new JSONObject();
 		try {
+			json.putOpt("username", identity.getUsername());
 			json.putOpt("private_key", generatedPrivDHex);
 			json.putOpt("public_key", publicKey);
 			SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences("encryption",
 					android.content.Context.MODE_PRIVATE);
-			settings.edit().putString(ASYMKEYPAIR_PREFKEY, json.toString()).commit();
-		} catch (JSONException e) {
+			settings.edit().putString(IDENTITY_KEY, json.toString()).commit();
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -235,25 +265,27 @@ public class EncryptionController {
 		protected byte[] doInBackground(Void... arg0) {
 			// perform async
 
-			if (keyPair == null)
-				return null;
+			if (mIdentity == null) return null;
 			try {
 				KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
-				ka.init(keyPair.getPrivate());
+				ka.init(mIdentity.getKeyPair().getPrivate());
 				ka.doPhase(mPublicKeys.get(mUsername), true);
 				byte[] sharedSecret = ka.generateSecret();
 
 				Log.d("ke", "shared Key: " + new String(Hex.encode(new BigInteger(sharedSecret).toByteArray())));
 				return sharedSecret;
 
-			} catch (InvalidKeyException e) {
+			}
+			catch (InvalidKeyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 
-			} catch (NoSuchAlgorithmException e) {
+			}
+			catch (NoSuchAlgorithmException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (NoSuchProviderException e) {
+			}
+			catch (NoSuchProviderException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -276,7 +308,8 @@ public class EncryptionController {
 			json = new JSONObject(cipherTextJson);
 			cipherBytes = Hex.decode(json.getString("ciphertext"));
 			iv = Hex.decode(json.getString("iv").getBytes());
-		} catch (JSONException e1) {
+		}
+		catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			return;
@@ -294,10 +327,12 @@ public class EncryptionController {
 		try {
 			len += ccm.doFinal(buf, len);
 			callback.handleResponse(new String(buf));
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidCipherTextException e) {
+		}
+		catch (InvalidCipherTextException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -307,8 +342,8 @@ public class EncryptionController {
 	private void symmetricEncrypt(String username, String plaintext, IAsyncCallback<String> callback) {
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
-		//crashes with getBlockSize() bytes, don't know why?
-		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize()-1];
+		// crashes with getBlockSize() bytes, don't know why?
+		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
 		mSecureRandom.nextBytes(iv);
 		ParametersWithIV params = new ParametersWithIV(
 				new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
@@ -327,14 +362,17 @@ public class EncryptionController {
 
 			json.put("ciphertext", new String(Hex.encode(buf)));
 			callback.handleResponse(json.toString());
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidCipherTextException e) {
+		}
+		catch (InvalidCipherTextException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -370,7 +408,7 @@ public class EncryptionController {
 
 				@Override
 				public void onSuccess(String result) {
-			
+
 					ECPublicKey pubKey = recreatePublicKey(result);
 					mPublicKeys.put(username, pubKey);
 					generateSharedSecret(username, new IAsyncCallback<byte[]>() {
@@ -385,7 +423,8 @@ public class EncryptionController {
 
 				}
 			});
-		} else {
+		}
+		else {
 			callback.handleResponse(null);
 		}
 	}

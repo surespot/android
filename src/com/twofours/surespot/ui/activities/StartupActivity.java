@@ -13,7 +13,7 @@ public class StartupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		// if we have a key pair show the login activity
-		if (SurespotApplication.getEncryptionController().hasKeyPair()) {
+		if (SurespotApplication.getEncryptionController().hasIdentity()) {
 			Intent intent = new Intent(this, LoginActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
