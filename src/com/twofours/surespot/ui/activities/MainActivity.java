@@ -18,13 +18,13 @@ import android.util.Log;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.twofours.surespot.MainPagerAdapter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
+import com.twofours.surespot.chat.ChatFragment;
 import com.twofours.surespot.chat.IConnectCallback;
-import com.twofours.surespot.ui.adapters.MainPagerAdapter;
-import com.twofours.surespot.ui.fragments.ChatFragment;
 
 public class MainActivity extends SherlockFragmentActivity implements ActionBar.TabListener {
 	public static final String TAG = "MainActivity";
@@ -61,7 +61,7 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 				actionBar.setSelectedNavigationItem(position);
 			}
 		});
-		// mViewPager.setOffscreenPageLimit(10);
+		mViewPager.setOffscreenPageLimit(10);
 
 		// For each of the sections in the app, add a tab to the action bar.
 		for (int i = 0; i < mPagerAdapter.getCount(); i++) {

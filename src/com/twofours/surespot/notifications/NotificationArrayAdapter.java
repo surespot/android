@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.adapters;
+package com.twofours.surespot.notifications;
 
 import java.util.List;
 

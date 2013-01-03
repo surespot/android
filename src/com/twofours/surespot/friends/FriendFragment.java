@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.fragments;
+package com.twofours.surespot.friends;
 
 import java.util.ArrayList;
 import java.util.List;

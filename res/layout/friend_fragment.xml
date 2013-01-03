@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="No friends...yet. Add friends by entering their username and touching &apos;add friend&apos;." />
+        android:text="No friends...yet. Add friends by entering their username and touching &apos;add friend&apos;. You can swipe between tabs or click the tab to navigate." />
 
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"

@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.adapters;
+package com.twofours.surespot.chat;
 
 import java.util.List;
 
@@ -25,6 +25,7 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 
 	static class MessageViewHolder {
 		TextView messageText;
+		TextView messageUser;
 	}
 
 	public ChatArrayAdapter(Context context, List<JSONObject> values) {
@@ -50,29 +51,37 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 
 			messageViewHolder = new MessageViewHolder();
 			messageViewHolder.messageText = (TextView) rowView.findViewById(R.id.messageText);
+			messageViewHolder.messageUser = (TextView) rowView.findViewById(R.id.messageUser);
 
 			rowView.setTag(messageViewHolder);
 
-		} else {
+		}
+		else {
 			messageViewHolder = (MessageViewHolder) rowView.getTag();
 		}
 
 		final JSONObject message = values.get(position);
-		if (message.has("plaintext")) {
-			try {
-				messageViewHolder.messageText.setText(message.getString("plaintext"));
-				
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
+		boolean needsDecryption = true;
+		try {
+			messageViewHolder.messageUser.setText(message.getString("from"));
+			if (message.has("plaintext")) {
 
+				messageViewHolder.messageText.setText(message.getString("plaintext"));
+				needsDecryption = false;
+			}
+
+		}
+		catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		if (needsDecryption) {
 			try {
 				// decrypt
 				SurespotApplication.getEncryptionController().eccDecrypt(
 
-						Utils.getOtherUser(message.getString("from"), message.getString("to")), message.getString("text"),
+				Utils.getOtherUser(message.getString("from"), message.getString("to")), message.getString("text"),
 						new IAsyncCallback<String>() {
 
 							@Override
@@ -80,7 +89,9 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 								try {
 									message.put("plaintext", result);
 									messageViewHolder.messageText.setText(result);
-								} catch (JSONException e) {
+
+								}
+								catch (JSONException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
@@ -89,7 +100,8 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 
 						});
 
-			} catch (JSONException j) {
+			}
+			catch (JSONException j) {
 				Log.e(TAG, j.toString());
 			}
 

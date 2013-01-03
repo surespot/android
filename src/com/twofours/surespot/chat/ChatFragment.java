@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.fragments;
+package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +14,16 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -27,14 +31,14 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.ui.adapters.ChatArrayAdapter;
 
-public class ChatFragment extends SherlockFragment {
+public class ChatFragment extends SherlockFragment  {
 
 	private ChatArrayAdapter chatAdapter;
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
+	private TextSwitcher mSwitcher;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -99,7 +103,7 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-
+				
 		setUsername(getArguments().getString("username"));
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
@@ -158,4 +162,6 @@ public class ChatFragment extends SherlockFragment {
 		ensureChatAdapter();
 		chatAdapter.add(message);
 	}
+
+	
 }

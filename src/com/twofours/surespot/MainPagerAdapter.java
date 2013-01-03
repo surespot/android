@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.adapters;
+package com.twofours.surespot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +12,9 @@ import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.Utils;
-import com.twofours.surespot.ui.fragments.ChatFragment;
-import com.twofours.surespot.ui.fragments.FriendFragment;
-import com.twofours.surespot.ui.fragments.NotificationListFragment;
+import com.twofours.surespot.chat.ChatFragment;
+import com.twofours.surespot.friends.FriendFragment;
+import com.twofours.surespot.notifications.NotificationListFragment;
 
 public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
 	

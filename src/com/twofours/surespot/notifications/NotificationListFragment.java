@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.fragments;
+package com.twofours.surespot.notifications;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.ui.adapters.NotificationArrayAdapter;
 
 public class NotificationListFragment extends SherlockListFragment {
 	private NotificationArrayAdapter notificationAdapter;
