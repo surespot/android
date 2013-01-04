@@ -81,7 +81,7 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	
 	public int getChatFragmentPosition(String username) {
 	
-		return mChatNames.indexOf(username);
+		return mChatNames.indexOf(username) + STATIC_TAB_COUNT;
 		
 	}
 	
