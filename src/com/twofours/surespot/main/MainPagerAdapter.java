@@ -88,7 +88,7 @@ public class MainPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	public String getFragmentTag(String username) {
 		int pos = getChatFragmentPosition(username);
 		if (pos == -1) return null;
-		return Utils.makePagerFragmentName(R.id.pager, pos+STATIC_TAB_COUNT);
+		return Utils.makePagerFragmentName(R.id.pager, pos);
 	}
 	
 	public ArrayList<String> getChatNames() {
