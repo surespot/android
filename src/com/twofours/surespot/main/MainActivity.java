@@ -168,6 +168,8 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 
 		super.onPause();
 		Log.v(TAG, "onPause");
+		SurespotApplication.getChatController().disconnect();
+		
 
 	}
 
@@ -176,13 +178,6 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "onResume");
-	}
-
-	@Override
-	protected void onStart() {
-		// TODO Auto-generated method stub
-		super.onStart();
-		Log.v(TAG, "onStart");
 		SurespotApplication.getChatController().connect(new IConnectCallback() {
 
 			@Override
@@ -196,11 +191,19 @@ public class MainActivity extends SherlockFragmentActivity implements ActionBar.
 	}
 
 	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		Log.v(TAG, "onStart");
+		
+	}
+
+	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
 		Log.v(TAG, "onStop");
-		SurespotApplication.getChatController().disconnect();
+
 
 	}
 

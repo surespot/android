@@ -28,65 +28,58 @@ public class NotificationListFragment extends SherlockListFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
 		// register for notifications
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
-
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				ensureNotificationAdapter();
 				try {
-					notificationAdapter.add(new JSONObject(intent
-							.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION)));
-
-				} catch (JSONException e) {
+					notificationAdapter.add(new JSONObject(intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION)));
+				}
+				catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}, new IntentFilter(SurespotConstants.EventFilters.NOTIFICATION_EVENT));
-
 		return inflater.inflate(R.layout.notification_list_fragment, container, false);
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
+	public void onResume() {
+		super.onResume();
 		// get the list of notifications
 		NetworkController.getNotifications(new JsonHttpResponseHandler() {
 			public void onSuccess(JSONArray jsonArray) {
-
-				List<JSONObject> notifications = new ArrayList<JSONObject>();
-				try {
-
-					if (jsonArray.length() > 0) {
-						for (int i = 0; i < jsonArray.length(); i++) {
-							notifications.add(jsonArray.getJSONObject(i));
+				if (getActivity() != null) {
+					List<JSONObject> notifications = new ArrayList<JSONObject>();
+					try {
+						if (jsonArray.length() > 0) {
+							for (int i = 0; i < jsonArray.length(); i++) {
+								notifications.add(jsonArray.getJSONObject(i));
+							}
 						}
 					}
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					notificationAdapter = new NotificationArrayAdapter(getActivity(), notifications);
+					setListAdapter(notificationAdapter);
 				}
-				notificationAdapter = new NotificationArrayAdapter(getActivity(), notifications);
-				setListAdapter(notificationAdapter);
-
 			}
 		});
 	}
 
 	public void notificationReceived(JSONObject notification) {
 		ensureNotificationAdapter();
-
 		notificationAdapter.add(notification);
 	}
 
 	private void ensureNotificationAdapter() {
 		if (notificationAdapter == null) {
-
 			notificationAdapter = new NotificationArrayAdapter(getActivity(), new ArrayList<JSONObject>());
 			setListAdapter(notificationAdapter);
 		}
 	}
-
 }

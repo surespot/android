@@ -18,6 +18,7 @@ public class SurespotConstants {
 		public static final String SHOW_CHAT_NAME = "show_chat_name";
 	}
 	
-	//public final static String BASE_URL = "http://alpha.surespot.me";
-	public final static String BASE_URL = "http://192.168.10.68:3000"; 
+	public final static String BASE_URL = "http://alpha.surespot.me";
+	public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
+	//public final static String BASE_URL = "http://192.168.10.68:3000"; 
 }

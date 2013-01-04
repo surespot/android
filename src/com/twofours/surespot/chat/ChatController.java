@@ -34,7 +34,7 @@ public class ChatController {
 		// TODO handle no cookie
 		// if (cookie == null)
 		try {
-			socket = new SocketIO(SurespotConstants.BASE_URL);
+			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL);
 			socket.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 		} catch (MalformedURLException e1) {
 			// Auto-generated
@@ -63,7 +63,7 @@ public class ChatController {
 			public void onError(SocketIOException socketIOException) {
 				Log.v(TAG, "an Error occured");
 				socketIOException.printStackTrace();
-				connect(null);
+			//	connect(null);
 			}
 
 			@Override

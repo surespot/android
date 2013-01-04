@@ -32,13 +32,11 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
-public class ChatFragment extends SherlockFragment  {
-
+public class ChatFragment extends SherlockFragment {
 	private ChatArrayAdapter chatAdapter;
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
-	private TextSwitcher mSwitcher;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -50,52 +48,51 @@ public class ChatFragment extends SherlockFragment  {
 	public void setUsername(String mUsername) {
 		this.mUsername = mUsername;
 	}
-	
+
 	public static ChatFragment newInstance(String username) {
 		ChatFragment cf = new ChatFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("username", username);
-		cf.setArguments(bundle);	
+		cf.setArguments(bundle);
 		return cf;
 	}
 
 	@Override
-	public void onStart() {
-
-		super.onStart();
+	public void onResume() {
+		super.onResume();
 		// reget the messages in case any were added while we were gone
-		Log.v(TAG, "onStart, mUsername:  " + mUsername);
+		Log.v(TAG, "onResume, mUsername:  " + mUsername);
 		// make sure the public key is there
+		// TODO move this into network controller
 		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
-
 			@Override
 			public void handleResponse(Void result) {
-
 				// get the list of friends
 				NetworkController.getMessages(mUsername, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray jsonArray) {
-
-						List<JSONObject> messages = new ArrayList<JSONObject>();
-						try {
-							for (int i = 0; i < jsonArray.length(); i++) {
-								messages.add(new JSONObject(jsonArray.getString(i)));
+						// on async http request, response seems to come back
+						// after app is destroyed sometimes
+						// (ie. on rotation on gingerbread)
+						// so check for null here
+						if (getActivity() != null) {
+							List<JSONObject> messages = new ArrayList<JSONObject>();
+							try {
+								for (int i = 0; i < jsonArray.length(); i++) {
+									messages.add(new JSONObject(jsonArray.getString(i)));
+								}
 							}
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							chatAdapter = new ChatArrayAdapter(getActivity(), messages);
+							mListView.setAdapter(chatAdapter);
 						}
-
-						chatAdapter = new ChatArrayAdapter(getActivity(), messages);
-						mListView.setAdapter(chatAdapter);
-
 					}
-
 				});
-
 			}
 		});
-
 	}
 
 	@Override
@@ -103,18 +100,14 @@ public class ChatFragment extends SherlockFragment  {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-				
 		setUsername(getArguments().getString("username"));
-
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				sendMessage();
 			}
 		});
-
 		EditText editText = (EditText) view.findViewById(R.id.etMessage);
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -127,21 +120,15 @@ public class ChatFragment extends SherlockFragment  {
 				}
 				return handled;
 			}
-
 		});
-
 		return view;
 	}
 
 	private void sendMessage() {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
-
 		final String message = etMessage.getText().toString();
-
 		if (message.length() > 0) {
-
 			SurespotApplication.getEncryptionController().eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
-
 				@Override
 				public void handleResponse(String result) {
 					SurespotApplication.getChatController().sendMessage(mUsername, result);
@@ -162,6 +149,4 @@ public class ChatFragment extends SherlockFragment  {
 		ensureChatAdapter();
 		chatAdapter.add(message);
 	}
-
-	
 }
