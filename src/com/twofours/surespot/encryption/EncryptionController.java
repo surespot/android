@@ -36,12 +36,15 @@ import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
-public class EncryptionController {
-	private static String IDENTITY_KEY = "surespot_identity";
+public class EncryptionController 
+	{
+	private static final String TAG = "EncryptionController";
+	private static final String IDENTITY_KEY = "surespot_identity";
 	private static final int AES_KEY_LENGTH = 32;
 
 	private ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
@@ -52,6 +55,7 @@ public class EncryptionController {
 	private Map<String, byte[]> mSharedSecrets;
 
 	public EncryptionController() {
+		Log.v(TAG, "constructor");
 		// attempt to load key pair
 		mSecureRandom = new SecureRandom();
 
@@ -84,7 +88,7 @@ public class EncryptionController {
 	}
 
 	private SurespotIdentity loadIdentity() {
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences("encryption",
+		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
 				android.content.Context.MODE_PRIVATE);
 		String jsonIdentity = settings.getString(IDENTITY_KEY, null);
 		if (jsonIdentity == null) return null;
@@ -232,7 +236,7 @@ public class EncryptionController {
 			json.putOpt("username", identity.getUsername());
 			json.putOpt("private_key", generatedPrivDHex);
 			json.putOpt("public_key", publicKey);
-			SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences("encryption",
+			SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
 					android.content.Context.MODE_PRIVATE);
 			settings.edit().putString(IDENTITY_KEY, json.toString()).commit();
 		}

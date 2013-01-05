@@ -1,10 +1,10 @@
 package com.twofours.surespot.friends;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,13 +21,12 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -35,58 +34,65 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.network.NetworkController;
 
 public class FriendFragment extends SherlockFragment {
-	private ArrayAdapter<String> friendAdapter;
+	private FriendAdapter mFriendAdapter;
 	private static final String TAG = "FriendFragment";
-
+	private boolean mDisconnectSocket = true;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.v(TAG, "onCreateView");
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 		final ListView listView = (ListView) view.findViewById(R.id.friend_list);
+		mFriendAdapter = new FriendAdapter(getActivity());
+		listView.setAdapter(mFriendAdapter);
 		listView.setEmptyView(view.findViewById(R.id.friend_list_empty));
 		// click on friend to join chat
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				// send show chat event
-				Intent intent = new Intent(SurespotConstants.EventFilters.SHOW_CHAT_EVENT);
-				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friendAdapter.getItem(position));
+				// start chat activity
+
+				// don't disconnect the socket io
+				mDisconnectSocket = false;
+
+				Intent intent = new Intent(getActivity(),ChatActivity.class);
+				
+				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, ((Friend) mFriendAdapter.getItem(position)).getName());
+				getActivity().startActivity(intent);
 				LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+
 			}
 		});
-		
+
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				addFriend();
+				inviteFriend();
 			}
 		});
-		
-		// register for notifications
+
+		// register for friend aded
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				ensureFriendAdapter();
-				friendAdapter.add(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED));
+				mFriendAdapter.addFriend(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED), Friend.NEW_FRIEND);
 			}
 		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT));
+
 		// register for notifications
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				String friendname = intent.getExtras().getString(SurespotConstants.ExtraNames.FRIEND_INVITE_NAME);
-				String action = intent.getExtras().getString(SurespotConstants.ExtraNames.FRIEND_INVITE_ACTION);
-				// TODO show pending and delete when ignored?
-				if (action.equals("accept")) {
-					ensureFriendAdapter();
-					friendAdapter.add(friendname);
-				}
+
+				mFriendAdapter.addFriendInvite(intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION));
+
 			}
-		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_INVITE_EVENT));
+		}, new IntentFilter(SurespotConstants.EventFilters.NOTIFICATION_EVENT));
+
 		EditText editText = (EditText) view.findViewById(R.id.etFriend);
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -94,7 +100,7 @@ public class FriendFragment extends SherlockFragment {
 				boolean handled = false;
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					//
-					addFriend();
+					inviteFriend();
 					handled = true;
 				}
 				return handled;
@@ -106,14 +112,41 @@ public class FriendFragment extends SherlockFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		// get the list of notifications
+		NetworkController.getNotifications(new JsonHttpResponseHandler() {
+			public void onSuccess(JSONArray jsonArray) {
+				if (getActivity() != null) {
+
+					for (int i = 0; i < jsonArray.length(); i++) {
+						try {
+							JSONObject json = jsonArray.getJSONObject(i);
+							mFriendAdapter.addFriendInvite(json.getString("data"));
+						}
+						catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+					}
+
+				}
+			}
+			@Override
+			public void onFailure(Throwable arg0) {
+				Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.", Toast.LENGTH_SHORT).show();
+			}
+		});
 		// get the list of friends
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				if (getActivity() != null) {
-					List<String> friends = new ArrayList<String>();
+
 					if (jsonArray.length() > 0) {
+						ArrayList<String> friends = null;
 						try {
+							friends = new ArrayList<String>(jsonArray.length());
 							for (int i = 0; i < jsonArray.length(); i++) {
 								friends.add(jsonArray.getString(i));
 							}
@@ -122,11 +155,12 @@ public class FriendFragment extends SherlockFragment {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						
+						mFriendAdapter.clearFriends(false);
+						mFriendAdapter.addFriends(friends, Friend.NEW_FRIEND);
 					}
-					Log.v(TAG, "friends: " + friends);
-					friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, friends);
-					ListView listView = (ListView) getView().findViewById(R.id.friend_list);
-					listView.setAdapter(friendAdapter);
+					//
+
 				}
 			}
 
@@ -135,9 +169,10 @@ public class FriendFragment extends SherlockFragment {
 				Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.", Toast.LENGTH_SHORT).show();
 			}
 		});
+
 	}
 
-	private void addFriend() {
+	private void inviteFriend() {
 		final EditText etFriend = ((EditText) getView().findViewById(R.id.etFriend));
 		String friend = etFriend.getText().toString();
 		if (friend.length() > 0 && !friend.equals(SurespotApplication.getUserData().getUsername())) {
@@ -157,11 +192,4 @@ public class FriendFragment extends SherlockFragment {
 		}
 	}
 
-	private void ensureFriendAdapter() {
-		if (friendAdapter == null) {
-			friendAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
-			ListView listView = (ListView) getView().findViewById(R.id.friend_list);
-			listView.setAdapter(friendAdapter);
-		}
-	}
 }

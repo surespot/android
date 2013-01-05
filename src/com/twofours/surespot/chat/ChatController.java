@@ -84,7 +84,14 @@ public class ChatController {
 			public void on(String event, IOAcknowledge ack, Object... args) {
 				Log.v(TAG, "Server triggered event '" + event + "'");
 				if (event.equals("notification")) {
-					sendNotification((JSONObject) args[0]);
+					JSONObject json = (JSONObject) args[0]; 
+					try {
+						sendNotification(json.getString("data"));
+					}
+					catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					return;
 				}
 				if (event.equals("friend")) {
@@ -105,9 +112,9 @@ public class ChatController {
 
 	}
 
-	private void sendNotification(JSONObject notification) {
+	private void sendNotification(String  friend) {
 		Intent intent = new Intent(SurespotConstants.EventFilters.NOTIFICATION_EVENT);
-		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, notification.toString());
+		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 

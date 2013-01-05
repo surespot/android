@@ -9,6 +9,8 @@
     <string name="title_activity_main">surespot</string>
     <string name="title_activity_signup">signup</string>
     <string name="title_activity_friends">friends</string>
-   	<string name="title_activity_notifications">notifications</string>
+    <string name="title_activity_notifications">notifications</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_chat">ChatActivity</string>
 
 </resources>

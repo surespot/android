@@ -1,11 +1,9 @@
 package com.twofours.surespot;
 
-import java.security.KeyPair;
 import java.security.Security;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -19,8 +17,12 @@ public class SurespotApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 
+		
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
+		java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+		java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
+		
 		SurespotApplication.context = getApplicationContext();
 
 		// create controllers
