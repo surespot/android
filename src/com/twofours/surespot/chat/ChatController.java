@@ -23,9 +23,9 @@ import com.twofours.surespot.network.NetworkController;
 public class ChatController {
 
 	private static final String TAG = "ChatController";
-	private SocketIO socket;
+	private static SocketIO socket;
 
-	public void connect(final IConnectCallback callback) {
+	public static void connect(final IConnectCallback callback) {
 
 		if (socket != null && socket.isConnected()) {
 			return;
@@ -84,6 +84,7 @@ public class ChatController {
 			@Override
 			public void on(String event, IOAcknowledge ack, Object... args) {
 				Log.v(TAG, "Server triggered event '" + event + "'");
+				
 				if (event.equals("notification")) {
 					JSONObject json = (JSONObject) args[0]; 
 					try {
@@ -113,26 +114,26 @@ public class ChatController {
 
 	}
 
-	private void sendNotification(String  friend) {
+	private static void sendNotification(String  friend) {
 		Intent intent = new Intent(SurespotConstants.EventFilters.NOTIFICATION_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
-	private void sendFriendAdded(String friend) {
+	private static void sendFriendAdded(String friend) {
 		Intent intent = new Intent(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.FRIEND_ADDED, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
-	private void sendMessageReceived(String message) {
+	private static void sendMessageReceived(String message) {
 		Intent intent = new Intent(SurespotConstants.EventFilters.MESSAGE_RECEIVED_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 	}
 
-	public void sendMessage(String to, String text) {
+	public static void sendMessage(String to, String text) {
 		if (text != null && text.length() > 0) {
 			JSONObject message = new JSONObject();
 			try {
@@ -148,7 +149,7 @@ public class ChatController {
 		}
 	}
 
-	public void disconnect() {
+	public static void disconnect() {
 		socket.disconnect();
 	}
 

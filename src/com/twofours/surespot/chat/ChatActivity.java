@@ -21,7 +21,6 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 
@@ -208,7 +207,7 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 		// TODO Auto-generated method stub
 		super.onResume();
 		Log.v(TAG, "onResume");
-		SurespotApplication.getChatController().connect(new IConnectCallback() {
+		ChatController.connect(new IConnectCallback() {
 
 			@Override
 			public void connectStatus(boolean status) {

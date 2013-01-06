@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.IConnectCallback;
 
 public class MainActivity extends SherlockFragmentActivity {
@@ -16,9 +16,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreate");
 		setContentView(R.layout.activity_main);
-		
-		
-
 	}
 
 	@Override
@@ -27,14 +24,13 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onResume();
 		// reconnect to socket io
 		Log.v(TAG, "onResume");
-		SurespotApplication.getChatController().connect(new IConnectCallback() {
+		ChatController.connect(new IConnectCallback() {
 
 			@Override
 			public void connectStatus(boolean status) {
 				if (!status) {
 					Log.e(TAG, "Could not connect to chat server.");
 				}
-
 			}
 		});
 	}

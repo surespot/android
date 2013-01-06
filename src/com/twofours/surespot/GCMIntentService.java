@@ -52,7 +52,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		Log.v(TAG, "Successfully registered for GCM. Saving in SharedPrefs");
 
 		// shoved it in shared prefs
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PREFS_FILE,
 				android.content.Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putString(SurespotConstants.GCM_ID, id);
