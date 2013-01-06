@@ -425,7 +425,15 @@ public class EncryptionController
 
 					});
 
+					
 				}
+				
+				@Override
+				public void onFailure(Throwable error, String content) {
+					Log.e(TAG, error.getMessage());
+				}
+				
+				
 			});
 		}
 		else {

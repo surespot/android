@@ -169,6 +169,10 @@ public class FriendAdapter extends BaseAdapter {
 						addFriend(friendname, Friend.NEW_FRIEND);
 					}
 				}
+				
+				public void onFailure(Throwable error, String content) {
+					Log.e(TAG,error.getMessage());
+				};
 			});
 
 			// Log.d(TAG, "Title clicked, row: " + position + ", action: " +

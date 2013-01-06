@@ -86,6 +86,11 @@ public class ChatFragment extends SherlockFragment {
 							mListView.setAdapter(chatAdapter);
 						}
 					}
+					
+					@Override
+					public void onFailure(Throwable error, String content) {
+						Log.e(TAG, error.getMessage());
+					}
 				});
 			}
 		});

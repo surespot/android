@@ -1,5 +1,7 @@
 package com.twofours.surespot.ui.activities;
 
+import org.apache.http.client.HttpResponseException;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -118,11 +120,24 @@ public class LoginActivity extends Activity {
 				}
 
 				@Override
-				public void onFailure(Throwable arg0) {
+				public void onFailure(Throwable arg0, String message) {
 					progressDialog.dismiss();
-					Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_LONG).show();
+
 					Log.e(TAG,arg0.toString());
+					
+					if (arg0 instanceof HttpResponseException) {
+						HttpResponseException error = (HttpResponseException) arg0;
+						int statusCode = error.getStatusCode();
+						if (statusCode == 401) {
+							Toast.makeText(LoginActivity.this, "Could not login, please make sure your password is correct.", Toast.LENGTH_SHORT).show();
+						}
+						else {
+							Toast.makeText(LoginActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+						}
+					}
+					
 				}
+			
 
 			});
 		}

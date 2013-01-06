@@ -2,6 +2,7 @@ package com.twofours.surespot.friends;
 
 import java.util.ArrayList;
 
+import org.apache.http.client.HttpResponseException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +43,7 @@ public class FriendFragment extends SherlockFragment {
 	private FriendAdapter mFriendAdapter;
 	private static final String TAG = "FriendFragment";
 	private boolean mDisconnectSocket = true;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		Log.v(TAG, "onCreateView");
@@ -59,8 +61,8 @@ public class FriendFragment extends SherlockFragment {
 				// don't disconnect the socket io
 				mDisconnectSocket = false;
 
-				Intent intent = new Intent(getActivity(),ChatActivity.class);
-				
+				Intent intent = new Intent(getActivity(), ChatActivity.class);
+
 				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, ((Friend) mFriendAdapter.getItem(position)).getName());
 				getActivity().startActivity(intent);
 				LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
@@ -133,6 +135,7 @@ public class FriendFragment extends SherlockFragment {
 
 				}
 			}
+
 			@Override
 			public void onFailure(Throwable arg0) {
 				Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.", Toast.LENGTH_SHORT).show();
@@ -156,7 +159,7 @@ public class FriendFragment extends SherlockFragment {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						
+
 						mFriendAdapter.clearFriends(false);
 						mFriendAdapter.addFriends(friends, Friend.NEW_FRIEND);
 					}
@@ -179,17 +182,33 @@ public class FriendFragment extends SherlockFragment {
 		if (friend.length() > 0 && !friend.equals(EncryptionController.getIdentityUsername())) {
 			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
-				public void onSuccess(String arg0) { // TODO indicate in the UI
-														// that the request is
-														// pending somehow
+				public void onSuccess(int statusCode, String arg0) { // TODO
+																	// indicate
+																	// in the UI
+					// that the request is
+					// pending somehow
 					TextKeyListener.clear(etFriend.getText());
-					Toast.makeText(FriendFragment.this.getActivity(), friend + " has been invited to be your friend.", Toast.LENGTH_SHORT).show();
+					Toast.makeText(FriendFragment.this.getActivity(), friend + " has been invited to be your friend.", Toast.LENGTH_SHORT)
+							.show();
 				}
 
 				@Override
 				public void onFailure(Throwable arg0, String content) {
-					Toast.makeText(FriendFragment.this.getActivity(), "Error: " + content, Toast.LENGTH_SHORT).show();
+					if (arg0 instanceof HttpResponseException) {
+						HttpResponseException error = (HttpResponseException) arg0;
+						int statusCode = error.getStatusCode();
+						if (statusCode == 409) {
+							Toast.makeText(FriendFragment.this.getActivity(), error.getMessage(), Toast.LENGTH_SHORT).show();
+						}
+						else {
+							Toast.makeText(FriendFragment.this.getActivity(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+						}
+					}
+					else {
+						Toast.makeText(FriendFragment.this.getActivity(), "Error: " + content, Toast.LENGTH_SHORT).show();
+					}
 				}
+
 			});
 		}
 	}

@@ -2,6 +2,7 @@ package com.twofours.surespot.ui.activities;
 
 import java.security.KeyPair;
 
+import org.apache.http.client.HttpResponseException;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Activity;
@@ -72,6 +73,7 @@ public class SignupActivity extends Activity {
 		progressDialog.show();
 
 		// generate key pair
+		// TODO don't always regenerate if the signup was not successful
 		EncryptionController.generateKeyPair(new IAsyncCallback<KeyPair>() {
 
 			@Override
@@ -114,8 +116,18 @@ public class SignupActivity extends Activity {
 								// TODO implement
 								public void onFailure(Throwable arg0, String arg1) {
 									progressDialog.dismiss();
-									Log.e("SignupActivity",arg0.toString());
-									Toast.makeText(SignupActivity.this, "Error creating user.", Toast.LENGTH_LONG).show();
+									Log.e("SignupActivity",arg0.toString());									
+
+									if (arg0 instanceof HttpResponseException) {
+										HttpResponseException error = (HttpResponseException) arg0;
+										int statusCode = error.getStatusCode();
+										if (statusCode == 409) {
+											Toast.makeText(SignupActivity.this, "That username already exists, please choose another.", Toast.LENGTH_LONG).show();
+										}
+										else {
+											Toast.makeText(SignupActivity.this, "Error creating user: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+										}
+									}
 								};
 
 							});

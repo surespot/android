@@ -1,7 +1,5 @@
 package com.twofours.surespot;
 
-//import android.app.Notification;
-//import android.app.NotificationManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,8 +13,6 @@ import android.util.Log;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.chat.ChatActivity;
-import com.twofours.surespot.main.MainActivity;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.StartupActivity;
 
@@ -68,6 +64,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		GCMRegistrar.setRegisteredOnServer(context, true);
 
+		//TODO use password instead of session
 		if (NetworkController.hasSession()) {
 			NetworkController.registerGcmId(id, new AsyncHttpResponseHandler() {
 				@Override
@@ -97,6 +94,8 @@ public class GCMIntentService extends GCMBaseIntentService
 				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 		// if we're logged in, go to the chat, otherwise go to login
+		//TODO use password instead of sesson
+		/*
 		if (NetworkController.hasSession()) {
 
 			Intent mainIntent = new Intent(context, ChatActivity.class);
@@ -108,7 +107,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 			builder.setContentIntent(resultPendingIntent);
 		}
-		else {
+		else {*/
 			// builder.set
 			Intent mainIntent = new Intent(context, StartupActivity.class);
 			mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user);
@@ -116,7 +115,7 @@ public class GCMIntentService extends GCMBaseIntentService
 			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
 			builder.setContentIntent(resultPendingIntent);
-		}
+		//}
 
 		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
@@ -132,7 +131,8 @@ public class GCMIntentService extends GCMBaseIntentService
 				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 		// if we're logged in, go to the chat, otherwise go to login
-		if (NetworkController.hasSession()) {
+		//TODO save password instead of session
+		/*if (NetworkController.hasSession()) {
 
 			Intent mainIntent = new Intent(context, MainActivity.class);
 			stackBuilder.addNextIntent(mainIntent);
@@ -140,14 +140,14 @@ public class GCMIntentService extends GCMBaseIntentService
 
 			builder.setContentIntent(resultPendingIntent);
 		}
-		else {
+		else {*/
 			// builder.set
 			Intent mainIntent = new Intent(context, StartupActivity.class);
 			stackBuilder.addNextIntent(mainIntent);
 			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
 
 			builder.setContentIntent(resultPendingIntent);
-		}
+		//}
 
 		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
