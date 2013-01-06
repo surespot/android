@@ -212,7 +212,7 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 
 		super.onPause();
 		Log.v(TAG, "onPause");
-	//	SurespotApplication.getChatController().disconnect();
+		ChatController.disconnect();
 		// save chat names
 		SharedPreferences prefs = getSharedPreferences(SurespotConstants.PREFS_FILE, 0);
 		SharedPreferences.Editor editor = prefs.edit();

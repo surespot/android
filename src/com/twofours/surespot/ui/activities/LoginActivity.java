@@ -121,6 +121,7 @@ public class LoginActivity extends Activity {
 				public void onFailure(Throwable arg0) {
 					progressDialog.dismiss();
 					Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_LONG).show();
+					Log.e(TAG,arg0.toString());
 				}
 
 			});

@@ -175,7 +175,7 @@ public class FriendFragment extends SherlockFragment {
 
 	private void inviteFriend() {
 		final EditText etFriend = ((EditText) getView().findViewById(R.id.etFriend));
-		String friend = etFriend.getText().toString();
+		final String friend = etFriend.getText().toString();
 		if (friend.length() > 0 && !friend.equals(EncryptionController.getIdentityUsername())) {
 			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
@@ -183,11 +183,12 @@ public class FriendFragment extends SherlockFragment {
 														// that the request is
 														// pending somehow
 					TextKeyListener.clear(etFriend.getText());
+					Toast.makeText(FriendFragment.this.getActivity(), friend + " has been invited to be your friend.", Toast.LENGTH_SHORT).show();
 				}
 
 				@Override
 				public void onFailure(Throwable arg0, String content) {
-					Toast.makeText(FriendFragment.this.getActivity(), content, Toast.LENGTH_SHORT).show();
+					Toast.makeText(FriendFragment.this.getActivity(), "Error: " + content, Toast.LENGTH_SHORT).show();
 				}
 			});
 		}

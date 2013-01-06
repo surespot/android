@@ -9,6 +9,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -113,6 +114,7 @@ public class SignupActivity extends Activity {
 								// TODO implement
 								public void onFailure(Throwable arg0, String arg1) {
 									progressDialog.dismiss();
+									Log.e("SignupActivity",arg0.toString());
 									Toast.makeText(SignupActivity.this, "Error creating user.", Toast.LENGTH_LONG).show();
 								};
 

@@ -19,6 +19,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.ui.activities.StartupActivity;
 
 public class ChatController {
 
@@ -27,17 +28,23 @@ public class ChatController {
 
 	public static void connect(final IConnectCallback callback) {
 
-		if (socket != null && socket.isConnected()) {
+		if (socket != null && socket.isConnected()) { return; }
+
+		Cookie cookie = NetworkController.getConnectCookie();
+
+		if (cookie == null) {
+			// need to login
+			Log.v(TAG,"No session cookie, starting Login activity.");
+			Intent startupIntent = new Intent(SurespotApplication.getAppContext(), StartupActivity.class);
+			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			SurespotApplication.getAppContext().startActivity(startupIntent);
 			return;
 		}
-
-		Cookie cookie = NetworkController.getCookie();
-		// TODO handle no cookie
-		// if (cookie == null)
 		try {
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL);
 			socket.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
-		} catch (MalformedURLException e1) {
+		}
+		catch (MalformedURLException e1) {
 			// Auto-generated
 			e1.printStackTrace();
 			// callback.connectStatus(false);
@@ -50,7 +57,8 @@ public class ChatController {
 				try {
 					Log.v(TAG, "JSON Server said:" + json.toString(2));
 
-				} catch (JSONException e) {
+				}
+				catch (JSONException e) {
 					e.printStackTrace();
 				}
 			}
@@ -64,7 +72,7 @@ public class ChatController {
 			public void onError(SocketIOException socketIOException) {
 				Log.v(TAG, "an Error occured");
 				socketIOException.printStackTrace();
-			//	connect(null);
+				// connect(null);
 			}
 
 			@Override
@@ -84,9 +92,9 @@ public class ChatController {
 			@Override
 			public void on(String event, IOAcknowledge ack, Object... args) {
 				Log.v(TAG, "Server triggered event '" + event + "'");
-				
+
 				if (event.equals("notification")) {
-					JSONObject json = (JSONObject) args[0]; 
+					JSONObject json = (JSONObject) args[0];
 					try {
 						sendNotification(json.getString("data"));
 					}
@@ -114,7 +122,7 @@ public class ChatController {
 
 	}
 
-	private static void sendNotification(String  friend) {
+	private static void sendNotification(String friend) {
 		Intent intent = new Intent(SurespotConstants.EventFilters.NOTIFICATION_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
@@ -141,7 +149,8 @@ public class ChatController {
 				message.put("to", to);
 				message.put("from", EncryptionController.getIdentityUsername());
 				socket.send(message.toString());
-			} catch (JSONException e) {
+			}
+			catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
 
 import android.content.Context;
 import android.util.Log;
@@ -13,13 +12,15 @@ import android.util.Log;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
-	private static Cookie cookie;
-	
+	private static Cookie mConnectCookie;
+
 	private static AsyncHttpClient mClient;
 	private static CookieStore mCookieStore;
 
@@ -31,22 +32,27 @@ public class NetworkController {
 		mClient.post(SurespotConstants.BASE_URL + url, params, responseHandler);
 	}
 
-	public static Cookie getCookie() {
-		return cookie;
+	public static Cookie getConnectCookie() {
+		return mConnectCookie;
 	}
 
 	public static boolean hasSession() {
-		return cookie != null;
-	}
-	
-	static {
-		mCookieStore = new BasicCookieStore();
-		mClient = new AsyncHttpClient();
-		mClient.setCookieStore(mCookieStore);		
+		return mConnectCookie != null;
 	}
 
-	public static void addUser(String username, String password, String publicKey,
-			String gcmId, final AsyncHttpResponseHandler responseHandler) {
+	static {
+		mCookieStore = new PersistentCookieStore(SurespotApplication.getAppContext());
+		if (mCookieStore.getCookies().size() > 0) {
+			Log.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
+			mConnectCookie = getConnectCookie(mCookieStore);
+		}
+		
+		mClient = new AsyncHttpClient();
+		mClient.setCookieStore(mCookieStore);
+	}
+
+	public static void addUser(String username, String password, String publicKey, String gcmId,
+			final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -59,17 +65,8 @@ public class NetworkController {
 
 			@Override
 			public void onSuccess(String result) {
-
-				for (Cookie c : mCookieStore.getCookies()) {
-					System.out.println("Cookie name: " + c.getName() + " value: " + c.getValue());
-					if (c.getName().equals("connect.sid")) {
-						cookie = c;
-						responseHandler.onSuccess(result);
-						return;
-					}
-				}
-
-				if (cookie == null) {
+				mConnectCookie = getConnectCookie(mCookieStore);
+				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from signup");
 				}
 
@@ -85,6 +82,16 @@ public class NetworkController {
 
 	}
 
+	private static Cookie getConnectCookie(CookieStore cookieStore) {
+		for (Cookie c : mCookieStore.getCookies()) {
+			// System.out.println("Cookie name: " + c.getName() + " value: " +
+			// c.getValue());
+			if (c.getName().equals("connect.sid")) { return c; }
+		}
+		return null;
+
+	}
+
 	public static void login(String username, String password, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
@@ -97,14 +104,14 @@ public class NetworkController {
 				for (Cookie c : mCookieStore.getCookies()) {
 					System.out.println("Cookie name: " + c.getName() + " value: " + c.getValue());
 					if (c.getName().equals("connect.sid")) {
-						cookie = c;
+						mConnectCookie = c;
 
 						responseHandler.onSuccess(arg0);
 						return;
 					}
 				}
 
-				if (cookie == null) {
+				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from login.");
 				}
 
@@ -146,21 +153,21 @@ public class NetworkController {
 	public static void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
 		post("/invites/" + friendname + "/" + action, null, responseHandler);
 	}
-	
+
 	public static void registerGcmId(String id, AsyncHttpResponseHandler responseHandler) {
 
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("device_gcm_id", id);
-		
+
 		post("/registergcm/", new RequestParams(params), responseHandler);
 
 	}
-	
-    /**
-     * Unregister this account/device pair within the server.
-     */
-    public static void unregister(final Context context, final String regId) {
-        Log.i(TAG, "unregistering device (regId = " + regId + ")");        
-        GCMRegistrar.setRegisteredOnServer(context, false);
-    }
+
+	/**
+	 * Unregister this account/device pair within the server.
+	 */
+	public static void unregister(final Context context, final String regId) {
+		Log.i(TAG, "unregistering device (regId = " + regId + ")");
+		GCMRegistrar.setRegisteredOnServer(context, false);
+	}
 }

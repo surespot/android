@@ -16,6 +16,7 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.chat.ChatActivity;
+import com.twofours.surespot.main.MainActivity;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.StartupActivity;
 
@@ -40,10 +41,18 @@ public class GCMIntentService extends GCMBaseIntentService
 	@Override
 	protected void onMessage(Context context, Intent intent) {
 		Log.v(TAG, "received GCM message, extras: " + intent.getExtras());
-		String to = intent.getStringExtra("to");
-		String from = intent.getStringExtra("sentfrom");
-		String otherUser = Utils.getOtherUser(from, to);
-		generateNotification(context, otherUser, "New message", "You have received a new message from " + otherUser + ".");
+
+		String type = intent.getStringExtra("type");
+		if (type.equals("message")) {
+			String to = intent.getStringExtra("to");
+			String from = intent.getStringExtra("sentfrom");
+			String otherUser = Utils.getOtherUser(from, to);
+			generateMessageNotification(context, otherUser, "New message", "New message from " + otherUser + ".");
+		}
+		else {
+			String user = intent.getStringExtra("user");			
+			generateInviteNotification(context, user, "Friend invite", "Friend invite from " + user + ".");
+		}
 
 	}
 
@@ -52,8 +61,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		Log.v(TAG, "Successfully registered for GCM. Saving in SharedPrefs");
 
 		// shoved it in shared prefs
-		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
+		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PREFS_FILE, android.content.Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putString(SurespotConstants.GCM_ID, id);
 		editor.commit();
@@ -81,9 +89,9 @@ public class GCMIntentService extends GCMBaseIntentService
 
 	}
 
-	private static void generateNotification(Context context, String user, String title, String message) {
+	private static void generateMessageNotification(Context context, String user, String title, String message) {
 		int icon = R.drawable.ic_launcher;
-		
+
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
 				.setContentText(message);
@@ -94,7 +102,6 @@ public class GCMIntentService extends GCMBaseIntentService
 			Intent mainIntent = new Intent(context, ChatActivity.class);
 			mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user);
 
-			
 			stackBuilder.addParentStack(ChatActivity.class);
 			stackBuilder.addNextIntent(mainIntent);
 			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -102,8 +109,8 @@ public class GCMIntentService extends GCMBaseIntentService
 			builder.setContentIntent(resultPendingIntent);
 		}
 		else {
-			//builder.set
-			Intent mainIntent = new Intent(context, StartupActivity.class);			
+			// builder.set
+			Intent mainIntent = new Intent(context, StartupActivity.class);
 			mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user);
 			stackBuilder.addNextIntent(mainIntent);
 			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -116,4 +123,36 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		notificationManager.notify(1, notification);
 	}
+
+	private static void generateInviteNotification(Context context, String user, String title, String message) {
+		int icon = R.drawable.ic_launcher;
+
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
+				.setContentText(message);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
+		// if we're logged in, go to the chat, otherwise go to login
+		if (NetworkController.hasSession()) {
+
+			Intent mainIntent = new Intent(context, MainActivity.class);
+			stackBuilder.addNextIntent(mainIntent);
+			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+
+			builder.setContentIntent(resultPendingIntent);
+		}
+		else {
+			// builder.set
+			Intent mainIntent = new Intent(context, StartupActivity.class);
+			stackBuilder.addNextIntent(mainIntent);
+			PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+
+			builder.setContentIntent(resultPendingIntent);
+		}
+
+		Notification notification = builder.getNotification();
+		notification.flags = Notification.FLAG_AUTO_CANCEL;
+
+		notificationManager.notify(1, notification);
+	}
+
 }

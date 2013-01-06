@@ -41,7 +41,7 @@ public class FriendAdapter extends BaseAdapter {
 	public void addFriends(List<String> names, int flags) {
 		for (String name : names) {
 			Friend friend = new Friend();
-			friend.setName(name);		
+			friend.setName(name);
 			friend.setFlags(flags);
 			mFriends.add(friend);
 		}
@@ -164,9 +164,10 @@ public class FriendAdapter extends BaseAdapter {
 					Log.d(TAG, "Invitation acted upon successfully: " + action);
 
 					// delete invite
-					removeItem(position);				
-					addFriend(friendname, Friend.NEW_FRIEND);
-
+					removeItem(position);
+					if (action.equals("accept")) {
+						addFriend(friendname, Friend.NEW_FRIEND);
+					}
 				}
 			});
 

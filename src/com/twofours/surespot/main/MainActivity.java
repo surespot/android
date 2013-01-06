@@ -19,6 +19,12 @@ public class MainActivity extends SherlockFragmentActivity {
 	}
 
 	@Override
+	protected void onPause() {		
+		super.onPause();
+		ChatController.disconnect();
+	}
+	
+	@Override
 	protected void onResume() {
 
 		super.onResume();
