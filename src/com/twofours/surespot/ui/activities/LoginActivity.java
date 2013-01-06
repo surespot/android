@@ -112,7 +112,6 @@ public class LoginActivity extends Activity {
 					else {
 
 						Intent intent = new Intent(LoginActivity.this, ChatActivity.class);
-						// TODO back stack to mainactivity
 						intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
 						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						LoginActivity.this.startActivity(intent);

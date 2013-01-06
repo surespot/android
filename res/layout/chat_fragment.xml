@@ -10,20 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:transcriptMode="alwaysScroll"
         android:drawSelectorOnTop="false"
-        android:stackFromBottom="true" />
-      
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll" />
+
     <TextView
         android:id="@+id/message_list_empty"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:text="No messages....yet." />
-  
+        android:text="Either you don&apos;t have any messages or they haven&apos;t been loaded yet." />
 
-    
-    
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -34,15 +31,14 @@
             android:id="@+id/etMessage"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:inputType="text"
-            android:singleLine="true"
-            android:imeOptions="actionSend" />
+            android:layout_weight="1"            
+            android:imeOptions="actionSend"            
+            android:width="0dp" />
 
         <Button
             android:id="@+id/bSend"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"            
             android:text="send" />
     </LinearLayout>
 
