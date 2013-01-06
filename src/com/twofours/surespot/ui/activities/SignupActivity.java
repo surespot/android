@@ -7,6 +7,7 @@ import org.spongycastle.jce.interfaces.ECPublicKey;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.main.MainActivity;
@@ -69,42 +71,46 @@ public class SignupActivity extends Activity {
 		progressDialog.show();
 
 		// generate key pair
-		SurespotApplication.getEncryptionController().generateKeyPair(new IAsyncCallback<KeyPair>() {
+		EncryptionController.generateKeyPair(new IAsyncCallback<KeyPair>() {
 
 			@Override
 			public void handleResponse(final KeyPair keyPair) {
 				if (keyPair != null) {
 
-					final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername))
-							.getText().toString();
-					String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText()
-							.toString();
+					final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername)).getText().toString();
+					String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText().toString();
 
-					NetworkController.addUser(username, password,
-							EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
-							new AsyncHttpResponseHandler() {
+					// get the gcm id
+					SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+							android.content.Context.MODE_PRIVATE);
+					String gcmId = settings.getString(SurespotConstants.GCM_ID, null);				
+
+					NetworkController.addUser(username, password, EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
+							gcmId, new AsyncHttpResponseHandler() {
 
 								@Override
 								public void onSuccess(String arg0) {
 
 									progressDialog.dismiss();
 
-									// save key pair now that we've created a user successfully
-									// TODO add setkey pair method to encryption controller to not have to pass it
+									// save key pair now that we've created a
+									// user successfully
+									// TODO add setkey pair method to encryption
+									// controller to not have to pass it
 									// into the callback
 									// and back into the encryption controller
-									SurespotApplication.getEncryptionController().saveIdentity(new SurespotIdentity(username, keyPair));
+									EncryptionController.saveIdentity(new SurespotIdentity(username, keyPair));
 
-									SurespotApplication.getUserData().setUsername(username);
+								//	SurespotApplication.getUserData().setUsername(username);
 									Intent intent = new Intent(SignupActivity.this, MainActivity.class);
 									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 									startActivity(intent);
-									
+
 									finish();
 
 								}
-								
-								//TODO implement
+
+								// TODO implement
 								public void onFailure(Throwable arg0, String arg1) {
 									progressDialog.dismiss();
 									Toast.makeText(SignupActivity.this, "Error creating user.", Toast.LENGTH_LONG).show();

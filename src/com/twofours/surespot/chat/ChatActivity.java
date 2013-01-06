@@ -1,8 +1,6 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -195,7 +193,7 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 
 		super.onPause();
 		Log.v(TAG, "onPause");
-		SurespotApplication.getChatController().disconnect();
+	//	SurespotApplication.getChatController().disconnect();
 		// save chat names
 		SharedPreferences prefs = getSharedPreferences(SurespotConstants.PREFS_FILE, 0);
 		SharedPreferences.Editor editor = prefs.edit();

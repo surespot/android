@@ -35,6 +35,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.chat.ChatActivity;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 
 public class FriendFragment extends SherlockFragment {
@@ -175,7 +176,7 @@ public class FriendFragment extends SherlockFragment {
 	private void inviteFriend() {
 		final EditText etFriend = ((EditText) getView().findViewById(R.id.etFriend));
 		String friend = etFriend.getText().toString();
-		if (friend.length() > 0 && !friend.equals(SurespotApplication.getUserData().getUsername())) {
+		if (friend.length() > 0 && !friend.equals(EncryptionController.getIdentityUsername())) {
 			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(String arg0) { // TODO indicate in the UI

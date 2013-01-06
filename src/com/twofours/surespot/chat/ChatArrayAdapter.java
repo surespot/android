@@ -14,8 +14,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
@@ -79,7 +79,7 @@ public class ChatArrayAdapter extends ArrayAdapter<JSONObject> {
 		if (needsDecryption) {
 			try {
 				// decrypt
-				SurespotApplication.getEncryptionController().eccDecrypt(
+				EncryptionController.eccDecrypt(
 
 				Utils.getOtherUser(message.getString("from"), message.getString("to")), message.getString("text"),
 						new IAsyncCallback<String>() {

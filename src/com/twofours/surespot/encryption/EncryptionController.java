@@ -47,14 +47,14 @@ public class EncryptionController
 	private static final String IDENTITY_KEY = "surespot_identity";
 	private static final int AES_KEY_LENGTH = 32;
 
-	private ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
-	private SurespotIdentity mIdentity;
-	private SecureRandom mSecureRandom;
+	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
+	private static SurespotIdentity mIdentity;
+	private static SecureRandom mSecureRandom;
 
-	private Map<String, ECPublicKey> mPublicKeys;
-	private Map<String, byte[]> mSharedSecrets;
+	private static Map<String, ECPublicKey> mPublicKeys;
+	private static Map<String, byte[]> mSharedSecrets;
 
-	public EncryptionController() {
+	static {
 		Log.v(TAG, "constructor");
 		// attempt to load key pair
 		mSecureRandom = new SecureRandom();
@@ -64,7 +64,7 @@ public class EncryptionController
 		mSharedSecrets = new Hashtable<String, byte[]>();
 	}
 
-	public String getPublicKeyString() {
+	public static String getPublicKeyString() {
 		if (hasIdentity()) {
 			return encodePublicKey((ECPublicKey) mIdentity.getKeyPair().getPublic());
 		}
@@ -73,11 +73,11 @@ public class EncryptionController
 		}
 	}
 
-	public Boolean hasIdentity() {
+	public static Boolean hasIdentity() {
 		return mIdentity != null;
 	}
 
-	public String getIdentityUsername() {
+	public static String getIdentityUsername() {
 		if (hasIdentity()) {
 			return mIdentity.getUsername();
 
@@ -87,7 +87,7 @@ public class EncryptionController
 		}
 	}
 
-	private SurespotIdentity loadIdentity() {
+	private static SurespotIdentity loadIdentity() {
 		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
 				android.content.Context.MODE_PRIVATE);
 		String jsonIdentity = settings.getString(IDENTITY_KEY, null);
@@ -113,7 +113,7 @@ public class EncryptionController
 		return null;
 	}
 
-	private ECPublicKey recreatePublicKey(String encodedKey) {
+	private static ECPublicKey recreatePublicKey(String encodedKey) {
 		ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Hex.decode(encodedKey)), curve);
 
 		KeyFactory fact;
@@ -139,7 +139,7 @@ public class EncryptionController
 
 	}
 
-	private ECPrivateKey recreatePrivateKey(String encodedKey) {
+	private static  ECPrivateKey recreatePrivateKey(String encodedKey) {
 		// recreate key from hex string
 		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Hex.decode(encodedKey)), curve);
 
@@ -165,11 +165,11 @@ public class EncryptionController
 		return null;
 	}
 
-	public void generateKeyPair(IAsyncCallback<KeyPair> callback) {
+	public static void generateKeyPair(IAsyncCallback<KeyPair> callback) {
 		new AsyncGenerateKeyPair(callback).execute();
 	}
 
-	private class AsyncGenerateKeyPair extends AsyncTask<Void, Void, KeyPair> {
+	private static class AsyncGenerateKeyPair extends AsyncTask<Void, Void, KeyPair> {
 		private IAsyncCallback<KeyPair> mCallback;
 
 		public AsyncGenerateKeyPair(IAsyncCallback<KeyPair> callback) {
@@ -211,7 +211,7 @@ public class EncryptionController
 
 	}
 
-	public void saveIdentity(SurespotIdentity identity) {
+	public static  void saveIdentity(SurespotIdentity identity) {
 
 		mIdentity = identity;
 		ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
@@ -251,11 +251,11 @@ public class EncryptionController
 		return new String(Hex.encode(publicKey.getQ().getEncoded()));
 	}
 
-	private void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
+	private static  void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
 		new AsyncGenerateSharedSecret(username, callback).execute();
 	}
 
-	private class AsyncGenerateSharedSecret extends AsyncTask<Void, Void, byte[]> {
+	private static  class AsyncGenerateSharedSecret extends AsyncTask<Void, Void, byte[]> {
 		private IAsyncCallback<byte[]> mCallback;
 		private String mUsername;
 
@@ -302,7 +302,7 @@ public class EncryptionController
 
 	}
 
-	private void symmetricDecrypt(String username, String cipherTextJson, IAsyncCallback<String> callback) {
+	private static void symmetricDecrypt(String username, String cipherTextJson, IAsyncCallback<String> callback) {
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
 		JSONObject json;
@@ -343,7 +343,7 @@ public class EncryptionController
 
 	}
 
-	private void symmetricEncrypt(String username, String plaintext, IAsyncCallback<String> callback) {
+	private static void symmetricEncrypt(String username, String plaintext, IAsyncCallback<String> callback) {
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
 		// crashes with getBlockSize() bytes, don't know why?
@@ -383,7 +383,7 @@ public class EncryptionController
 
 	}
 
-	public void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
+	public static  void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
 		hydratePublicKey(username, new IAsyncCallback<Void>() {
 
 			@Override
@@ -393,7 +393,7 @@ public class EncryptionController
 		});
 	}
 
-	public void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
+	public static void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
 
 		hydratePublicKey(from, new IAsyncCallback<Void>() {
 
@@ -405,7 +405,7 @@ public class EncryptionController
 		});
 	}
 
-	public void hydratePublicKey(final String username, final IAsyncCallback<Void> callback) {
+	public static void hydratePublicKey(final String username, final IAsyncCallback<Void> callback) {
 		byte[] secret = mSharedSecrets.get(username);
 		if (secret == null) {
 			NetworkController.getPublicKey(username, new AsyncHttpResponseHandler() {

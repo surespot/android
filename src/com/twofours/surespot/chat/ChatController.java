@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 
 public class ChatController {
@@ -137,7 +138,7 @@ public class ChatController {
 			try {
 				message.put("text", text);
 				message.put("to", to);
-				message.put("from", SurespotApplication.getUserData().getUsername());
+				message.put("from", EncryptionController.getIdentityUsername());
 				socket.send(message.toString());
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

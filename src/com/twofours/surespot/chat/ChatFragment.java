@@ -25,6 +25,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
@@ -60,7 +61,7 @@ public class ChatFragment extends SherlockFragment {
 		Log.v(TAG, "onResume, mUsername:  " + mUsername);
 		// make sure the public key is there
 		// TODO move this into network controller
-		SurespotApplication.getEncryptionController().hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
+		EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
 			@Override
 			public void handleResponse(Void result) {
 				// get the list of friends
@@ -124,7 +125,7 @@ public class ChatFragment extends SherlockFragment {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
 		final String message = etMessage.getText().toString();
 		if (message.length() > 0) {
-			SurespotApplication.getEncryptionController().eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
+			EncryptionController.eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
 				@Override
 				public void handleResponse(String result) {
 					SurespotApplication.getChatController().sendMessage(mUsername, result);

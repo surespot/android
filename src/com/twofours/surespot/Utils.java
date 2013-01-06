@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import com.twofours.surespot.encryption.EncryptionController;
+
 public class Utils {
 	// Fast Implementation
 	public static String inputStreamToString(InputStream is) throws IOException {
@@ -24,7 +26,7 @@ public class Utils {
 	}
 
 	public static String getOtherUser(String from, String to) {
-		return to.equals(SurespotApplication.getUserData().getUsername()) ? from : to;
+		return to.equals(EncryptionController.getIdentityUsername()) ? from : to;
 	}
 
 	public static String makePagerFragmentName(int viewId, long id) {

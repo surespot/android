@@ -1,6 +1,7 @@
 package com.twofours.surespot.ui.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,9 @@ import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.chat.ChatActivity;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.main.MainActivity;
 import com.twofours.surespot.network.NetworkController;
 
@@ -57,17 +60,21 @@ public class LoginActivity extends Activity {
 
 		// set the username
 		EditText usernameText = (EditText) findViewById(R.id.etUsername);
-		String username = SurespotApplication.getEncryptionController().getIdentityUsername();
+		String username = EncryptionController.getIdentityUsername();
 		if (username != null) {
 			usernameText.setText(username);
 		}
 		else {
-			Log.w(TAG,"In login activity with no identity stored.");
+			Log.w(TAG, "In login activity with no identity stored.");
 		}
 
 	}
 
 	private void login() {
+		final ProgressDialog progressDialog = new ProgressDialog(this);
+		progressDialog.setIndeterminate(true);
+		progressDialog.setMessage("Logging in...");
+		progressDialog.show();
 
 		final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
 		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
@@ -79,19 +86,41 @@ public class LoginActivity extends Activity {
 
 				@Override
 				public void onSuccess(String arg0) {
+					progressDialog.dismiss();
 					// start main activity
-					SurespotApplication.getUserData().setUsername(username);
-					Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					LoginActivity.this.startActivity(intent);
 
+				//	SurespotApplication.getUserData().setUsername(username);
+
+					// if we have a chat name, we may have started from a
+					// message, so in that case
+					// go straight to the chat now we've logged in
+
+					
+					String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+
+					if (name == null) {
+						Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						LoginActivity.this.startActivity(intent);						
+					}
+					else {
+
+						Intent intent = new Intent(LoginActivity.this, ChatActivity.class);
+						//TODO back stack to mainactivity
+						intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						LoginActivity.this.startActivity(intent);
+
+					}
 					finish();
+
 
 				}
 
 				@Override
 				public void onFailure(Throwable arg0) {
-					Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_SHORT).show();
+					progressDialog.dismiss();
+					Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_LONG).show();
 				}
 
 			});

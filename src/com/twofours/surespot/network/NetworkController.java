@@ -7,8 +7,10 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 
+import android.content.Context;
 import android.util.Log;
 
+import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -33,6 +35,10 @@ public class NetworkController {
 		return cookie;
 	}
 
+	public static boolean hasSession() {
+		return cookie != null;
+	}
+	
 	static {
 		mCookieStore = new BasicCookieStore();
 		mClient = new AsyncHttpClient();
@@ -40,11 +46,14 @@ public class NetworkController {
 	}
 
 	public static void addUser(String username, String password, String publicKey,
-			final AsyncHttpResponseHandler responseHandler) {
+			String gcmId, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("publickey", publicKey);
+		if (gcmId != null) {
+			params.put("device_gcm_id", gcmId);
+		}
 
 		post("/users", new RequestParams(params), new AsyncHttpResponseHandler() {
 
@@ -137,4 +146,21 @@ public class NetworkController {
 	public static void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
 		post("/invites/" + friendname + "/" + action, null, responseHandler);
 	}
+	
+	public static void registerGcmId(String id, AsyncHttpResponseHandler responseHandler) {
+
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("device_gcm_id", id);
+		
+		post("/registergcm/", new RequestParams(params), responseHandler);
+
+	}
+	
+    /**
+     * Unregister this account/device pair within the server.
+     */
+    public static void unregister(final Context context, final String regId) {
+        Log.i(TAG, "unregistering device (regId = " + regId + ")");        
+        GCMRegistrar.setRegisteredOnServer(context, false);
+    }
 }
