@@ -45,6 +45,7 @@ public class FriendFragment extends SherlockFragment {
 	private FriendAdapter mFriendAdapter;
 	private static final String TAG = "FriendFragment";
 	private boolean mDisconnectSocket = true;
+	private Toast mToast;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -119,6 +120,7 @@ public class FriendFragment extends SherlockFragment {
 	public void onResume() {
 		super.onResume();
 
+		//TODO combine into 1 web service call
 		// get the list of notifications
 		NetworkController.getNotifications(new JsonHttpResponseHandler() {
 			public void onSuccess(JSONArray jsonArray) {
@@ -130,8 +132,7 @@ public class FriendFragment extends SherlockFragment {
 							mFriendAdapter.addFriendInvite(json.getString("data"));
 						}
 						catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Log.e(TAG, e.toString());
 						}
 
 					}
@@ -140,7 +141,8 @@ public class FriendFragment extends SherlockFragment {
 			}
 
 			@Override
-			public void onFailure(Throwable arg0) {
+			public void onFailure(Throwable arg0, String content) {
+				Log.e(TAG,"getNotifications: " + content);
 				Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.", Toast.LENGTH_SHORT).show();
 			}
 		});
@@ -159,8 +161,7 @@ public class FriendFragment extends SherlockFragment {
 							}
 						}
 						catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Log.e(TAG, e.toString());
 						}
 
 						mFriendAdapter.clearFriends(false);
@@ -172,7 +173,8 @@ public class FriendFragment extends SherlockFragment {
 			}
 
 			@Override
-			public void onFailure(Throwable arg0) {
+			public void onFailure(Throwable arg0, String content) {
+				Log.e(TAG,"getFriends: " + content);
 				Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.", Toast.LENGTH_SHORT).show();
 			}
 		});
@@ -202,20 +204,38 @@ public class FriendFragment extends SherlockFragment {
 					if (arg0 instanceof HttpResponseException) {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
-						if (statusCode == 409) {
-							Toast.makeText(FriendFragment.this.getActivity(), error.getMessage(), Toast.LENGTH_SHORT).show();
-						}
-						else {
-							Toast.makeText(FriendFragment.this.getActivity(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+						switch (statusCode) {
+							case 404:
+								Toast.makeText(FriendFragment.this.getActivity(), "User does not exist.", Toast.LENGTH_SHORT).show();
+								break;
+							case 409:
+								Toast.makeText(FriendFragment.this.getActivity(), "You are already friends.", Toast.LENGTH_SHORT).show();
+								break;
+							case 403:
+								Toast.makeText(FriendFragment.this.getActivity(), "You have already invited this user.", Toast.LENGTH_SHORT)
+										.show();
+								break;
+							default:
+								Log.e(TAG, "inviteFriend: " + error.getMessage());
+								Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
 						}
 					}
 					else {
-						Toast.makeText(FriendFragment.this.getActivity(), "Error: " + content, Toast.LENGTH_SHORT).show();
+						Log.e(TAG, "inviteFriend: " + content);
+						Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
 					}
 				}
 
 			});
 		}
+	}
+	
+	private void makeToast(String toast) {
+		if (mToast != null) {
+			mToast.cancel();
+		}
+		mToast = Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT);
+		mToast.show();
 	}
 
 }

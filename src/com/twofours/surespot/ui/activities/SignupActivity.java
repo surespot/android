@@ -34,7 +34,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class SignupActivity extends Activity {
-
+	private static final String TAG = "SignupActivity";
 	private Button signupButton;
 
 	@Override
@@ -44,7 +44,7 @@ public class SignupActivity extends Activity {
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
-		
+
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
 
@@ -72,71 +72,107 @@ public class SignupActivity extends Activity {
 	}
 
 	private void signup() {
-		final ProgressDialog progressDialog = new ProgressDialog(this);
-		progressDialog.setIndeterminate(true);
-		progressDialog.setMessage("Generating Keys...");
-		progressDialog.show();
+		final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername)).getText().toString();
 
-		// generate key pair
-		// TODO don't always regenerate if the signup was not successful
-		EncryptionController.generateKeyPair(new IAsyncCallback<KeyPair>() {
+		// TODO use char array
+		final String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText().toString();
 
+		if (!(username.length() > 0 && password.length() > 0)) { return; }
+
+		// see if the user exists
+		NetworkController.userExists(username, new AsyncHttpResponseHandler() {
 			@Override
-			public void handleResponse(final KeyPair keyPair) {
-				if (keyPair != null) {
+			public void onSuccess(String arg1) {
+				if (arg1.equals("true")) {
+					Toast.makeText(SignupActivity.this, "That username already exists, please choose another.", Toast.LENGTH_LONG).show();
 
-					final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername)).getText().toString();
-					String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText().toString();
-
-					// get the gcm id
-					SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-							android.content.Context.MODE_PRIVATE);
-					String gcmId = settings.getString(SurespotConstants.GCM_ID, null);				
-
-					NetworkController.addUser(username, password, EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
-							gcmId, new AsyncHttpResponseHandler() {
-
-								@Override
-								public void onSuccess(String arg0) {
-
-									progressDialog.dismiss();
-
-									// save key pair now that we've created a
-									// user successfully
-									// TODO add setkey pair method to encryption
-									// controller to not have to pass it
-									// into the callback
-									// and back into the encryption controller
-									EncryptionController.saveIdentity(new SurespotIdentity(username, keyPair));
-
-								//	SurespotApplication.getUserData().setUsername(username);
-									Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-									intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-									startActivity(intent);
-
-									finish();
-
-								}
-
-								// TODO implement
-								public void onFailure(Throwable arg0, String arg1) {
-									progressDialog.dismiss();
-									Log.e("SignupActivity",arg0.toString());									
-
-									if (arg0 instanceof HttpResponseException) {
-										HttpResponseException error = (HttpResponseException) arg0;
-										int statusCode = error.getStatusCode();
-										if (statusCode == 409) {
-											Toast.makeText(SignupActivity.this, "That username already exists, please choose another.", Toast.LENGTH_LONG).show();
-										}
-										else {
-											Toast.makeText(SignupActivity.this, "Error creating user: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-										}
-									}
-								};
-
-							});
 				}
+				else {
+					final ProgressDialog progressDialog = new ProgressDialog(SignupActivity.this);
+					progressDialog.setIndeterminate(true);
+					progressDialog.setMessage("Generating Keys...");
+					progressDialog.show();
+
+					// generate key pair
+					// TODO don't always regenerate if the signup was not
+					// successful
+					EncryptionController.generateKeyPair(new IAsyncCallback<KeyPair>() {
+
+						@Override
+						public void handleResponse(final KeyPair keyPair) {
+							if (keyPair != null) {
+
+								// get the gcm id
+								SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(
+										SurespotConstants.PREFS_FILE, android.content.Context.MODE_PRIVATE);
+								String gcmId = settings.getString(SurespotConstants.GCM_ID, null);
+
+								NetworkController.addUser(username, password,
+										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()), gcmId,
+										new AsyncHttpResponseHandler() {
+
+											@Override
+											public void onSuccess(int statusCode, String arg0) {
+
+												progressDialog.dismiss();
+
+												if (statusCode == 201) {
+													// save key pair now
+													// that we've created
+													// a
+													// user successfully
+													// TODO add setkey pair
+													// method to
+													// encryption
+													// controller to not
+													// have to pass it
+													// into the callback
+													// and back into the
+													// encryption
+													// controller
+													EncryptionController.saveIdentity(new SurespotIdentity(username, keyPair));
+
+													// SurespotApplication.getUserData().setUsername(username);
+													Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+													startActivity(intent);
+
+													finish();
+												}
+												else {
+													Log.e(TAG, "201 not returned on user create.");
+												}
+
+											}
+
+											// TODO implement
+											public void onFailure(Throwable arg0, String arg1) {
+												progressDialog.dismiss();
+												Log.e("SignupActivity", arg0.toString());
+
+												if (arg0 instanceof HttpResponseException) {
+													HttpResponseException error = (HttpResponseException) arg0;
+													int statusCode = error.getStatusCode();
+													if (statusCode == 409) {
+														Toast.makeText(SignupActivity.this,
+																"That username already exists, please choose another.", Toast.LENGTH_LONG)
+																.show();
+													}
+													else {
+
+														Toast.makeText(SignupActivity.this, "Error, could not create user.",
+																Toast.LENGTH_SHORT).show();
+													}
+												}
+											};
+
+										});
+							}
+						}
+					});
+
+				}
+
 			}
 		});
 

@@ -64,14 +64,14 @@ public class NetworkController {
 		post("/users", new RequestParams(params), new AsyncHttpResponseHandler() {
 
 			@Override
-			public void onSuccess(String result) {
+			public void onSuccess(int responseCode, String result) {
 				mConnectCookie = getConnectCookie(mCookieStore);
 				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from signup");
-					responseHandler.onFailure(new Exception("Did not get cookie."), null);
+					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
 				}
 				else {
-					responseHandler.onSuccess(result);
+					responseHandler.onSuccess(responseCode, result);
 				}
 
 			}
@@ -103,14 +103,14 @@ public class NetworkController {
 		post("/login", new RequestParams(params), new AsyncHttpResponseHandler() {
 
 			@Override
-			public void onSuccess(String result) {
+			public void onSuccess(int responseCode, String result) {
 				mConnectCookie = getConnectCookie(mCookieStore);
 				if (mConnectCookie == null) {
 					Log.e(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
 				}
 				else {
-					responseHandler.onSuccess(result);
+					responseHandler.onSuccess(responseCode, result);
 				}
 
 			}
@@ -158,6 +158,10 @@ public class NetworkController {
 
 		post("/registergcm/", new RequestParams(params), responseHandler);
 
+	}
+	
+	public static void userExists(String username, AsyncHttpResponseHandler responseHandler) {
+		get("/users/" + username + "/exists", null, responseHandler);
 	}
 
 	/**

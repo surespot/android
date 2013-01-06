@@ -92,7 +92,7 @@ public class LoginActivity extends Activity {
 			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
 
 				@Override
-				public void onSuccess(String arg0) {
+				public void onSuccess(int responseCode, String arg0) {
 					progressDialog.dismiss();
 					// start main activity
 

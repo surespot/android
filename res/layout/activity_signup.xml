@@ -36,12 +36,20 @@
         android:imeOptions="actionDone"
         android:inputType="textPassword"
         android:singleLine="true" />
+    
+    <CheckBox
+        android:text="save password"
+        android:layout_marginTop="15dip"
+        android:id="@+id/cbSavePassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+         ></CheckBox>
 
     <Button
         android:id="@+id/bSignup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
-        android:text="signup" />
+        android:layout_marginTop="15dip"
+        android:text="create account" />
 
 </LinearLayout>
