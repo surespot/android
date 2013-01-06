@@ -20,9 +20,11 @@ import android.util.Log;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
+import com.twofours.surespot.main.MainActivity;
 
 public class ChatActivity extends SherlockFragmentActivity implements ActionBar.TabListener {
 	public static final String TAG = "ChatActivity";
@@ -80,6 +82,7 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 
 		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
@@ -144,6 +147,23 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
 				new IntentFilter(SurespotConstants.EventFilters.MESSAGE_RECEIVED_EVENT));
 
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	        case android.R.id.home:
+	            // This is called when the Home (Up) button is pressed
+	            // in the Action Bar.
+	            Intent parentActivityIntent = new Intent(this, MainActivity.class);
+	            parentActivityIntent.addFlags(
+	                    Intent.FLAG_ACTIVITY_CLEAR_TOP |
+	                    Intent.FLAG_ACTIVITY_NEW_TASK);
+	            startActivity(parentActivityIntent);
+	            finish();
+	            return true;
+	    }
+	    return super.onOptionsItemSelected(item);
 	}
 
 	private void showChat(String username) {
