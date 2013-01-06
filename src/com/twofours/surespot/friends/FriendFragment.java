@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.InputFilter;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -32,6 +33,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
@@ -97,6 +99,7 @@ public class FriendFragment extends SherlockFragment {
 		}, new IntentFilter(SurespotConstants.EventFilters.NOTIFICATION_EVENT));
 
 		EditText editText = (EditText) view.findViewById(R.id.etFriend);
+		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -183,8 +186,10 @@ public class FriendFragment extends SherlockFragment {
 			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) { // TODO
-																	// indicate
-																	// in the UI
+																		// indicate
+																		// in
+																		// the
+																		// UI
 					// that the request is
 					// pending somehow
 					TextKeyListener.clear(etFriend.getText());

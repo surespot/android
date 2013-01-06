@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.chat.ChatActivity;
@@ -46,6 +48,8 @@ public class LoginActivity extends Activity {
 		});
 
 		EditText editText = (EditText) findViewById(R.id.etPassword);
+		
+
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -62,6 +66,7 @@ public class LoginActivity extends Activity {
 
 		// set the username
 		EditText usernameText = (EditText) findViewById(R.id.etUsername);
+		usernameText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
 		String username = EncryptionController.getIdentityUsername();
 		if (username != null) {
 			usernameText.setText(username);
@@ -91,24 +96,23 @@ public class LoginActivity extends Activity {
 					progressDialog.dismiss();
 					// start main activity
 
-				//	SurespotApplication.getUserData().setUsername(username);
+					// SurespotApplication.getUserData().setUsername(username);
 
 					// if we have a chat name, we may have started from a
 					// message, so in that case
 					// go straight to the chat now we've logged in
 
-					
 					String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 
 					if (name == null) {
 						Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						LoginActivity.this.startActivity(intent);						
+						LoginActivity.this.startActivity(intent);
 					}
 					else {
 
 						Intent intent = new Intent(LoginActivity.this, ChatActivity.class);
-						//TODO back stack to mainactivity
+						// TODO back stack to mainactivity
 						intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
 						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						LoginActivity.this.startActivity(intent);
@@ -116,28 +120,27 @@ public class LoginActivity extends Activity {
 					}
 					finish();
 
-
 				}
 
 				@Override
 				public void onFailure(Throwable arg0, String message) {
 					progressDialog.dismiss();
 
-					Log.e(TAG,arg0.toString());
-					
+					Log.e(TAG, arg0.toString());
+
 					if (arg0 instanceof HttpResponseException) {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
 						if (statusCode == 401) {
-							Toast.makeText(LoginActivity.this, "Could not login, please make sure your password is correct.", Toast.LENGTH_SHORT).show();
+							Toast.makeText(LoginActivity.this, "Could not login, please make sure your password is correct.",
+									Toast.LENGTH_SHORT).show();
 						}
 						else {
 							Toast.makeText(LoginActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
 						}
 					}
-					
+
 				}
-			
 
 			});
 		}

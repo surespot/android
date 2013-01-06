@@ -3,3 +3,5 @@ gen/
 /AndroidManifest.out.xml
 /.classpath
 /.project
+.settings/
+lint.xml

@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
@@ -40,6 +42,9 @@ public class SignupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
 
+		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
+		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
+		
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
 
@@ -49,7 +54,7 @@ public class SignupActivity extends Activity {
 			}
 		});
 
-		EditText editText = (EditText) findViewById(R.id.etSignupPassword);
+		editText = (EditText) findViewById(R.id.etSignupPassword);
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
