@@ -46,7 +46,7 @@ public class NetworkController {
 			Log.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
 			mConnectCookie = getConnectCookie(mCookieStore);
 		}
-		
+
 		mClient = new AsyncHttpClient();
 		mClient.setCookieStore(mCookieStore);
 	}
@@ -68,9 +68,12 @@ public class NetworkController {
 				mConnectCookie = getConnectCookie(mCookieStore);
 				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from signup");
+					responseHandler.onFailure(new Exception("Did not get cookie."), null);
+				}
+				else {
+					responseHandler.onSuccess(result);
 				}
 
-				responseHandler.onFailure(new Exception("Did not get cookie."), null);
 			}
 
 			@Override
@@ -83,7 +86,7 @@ public class NetworkController {
 	}
 
 	private static Cookie getConnectCookie(CookieStore cookieStore) {
-		for (Cookie c : mCookieStore.getCookies()) {
+		for (Cookie c : cookieStore.getCookies()) {
 			// System.out.println("Cookie name: " + c.getName() + " value: " +
 			// c.getValue());
 			if (c.getName().equals("connect.sid")) { return c; }
@@ -98,24 +101,18 @@ public class NetworkController {
 		params.put("password", password);
 
 		post("/login", new RequestParams(params), new AsyncHttpResponseHandler() {
+
 			@Override
-			public void onSuccess(String arg0) {
-
-				for (Cookie c : mCookieStore.getCookies()) {
-					System.out.println("Cookie name: " + c.getName() + " value: " + c.getValue());
-					if (c.getName().equals("connect.sid")) {
-						mConnectCookie = c;
-
-						responseHandler.onSuccess(arg0);
-						return;
-					}
-				}
-
+			public void onSuccess(String result) {
+				mConnectCookie = getConnectCookie(mCookieStore);
 				if (mConnectCookie == null) {
-					Log.e(TAG, "did not get cookie from login.");
+					Log.e(TAG, "Did not get cookie from login.");
+					responseHandler.onFailure(new Exception("Did not get cookie."), null);
+				}
+				else {
+					responseHandler.onSuccess(result);
 				}
 
-				responseHandler.onFailure(new Exception("Did not get cookie."), null);
 			}
 
 			@Override

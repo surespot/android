@@ -10,7 +10,10 @@ import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.main.MainActivity;
+import com.twofours.surespot.network.NetworkController;
 
 public class StartupActivity extends Activity {
 
@@ -41,16 +44,33 @@ public class StartupActivity extends Activity {
 
 		// NetworkController.unregister(this, regId);
 
-		// if we have a key pair show the login activity
 		if (EncryptionController.hasIdentity()) {
-			Intent intent = new Intent(this, LoginActivity.class);
-
-			String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
-			if (name != null) {
-				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+			//if we have a session
+			if (NetworkController.hasSession()) {
+				Intent intent;
+				//if we have a chat intent go to chat
+				String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+				if (name != null) {
+					intent = new Intent(this, ChatActivity.class);
+					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+				}
+				else {
+					// go to main
+					intent = new Intent(this, MainActivity.class);
+				}
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);	
 			}
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
+			else {
+				//identity but no session, login
+				Intent intent = new Intent(this, LoginActivity.class);
+				String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+				if (name != null) {
+					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+				}
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(intent);
+			}
 		}
 		// otherwise show the user / key management activity
 		else {
