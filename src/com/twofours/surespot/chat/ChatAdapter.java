@@ -58,10 +58,10 @@ public class ChatAdapter extends BaseAdapter {
 		ChatMessage message = mMessages.get(position);
 		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {			
-			return TYPE_US;
+			return TYPE_THEM;
 		}
 		else {
-			return TYPE_THEM;
+			return TYPE_US;
 		}
 	}
 
@@ -97,7 +97,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 
 			chatMessageViewHolder = new ChatMessageViewHolder();
-			chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
+		//	chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 
 			convertView.setTag(chatMessageViewHolder);
@@ -107,13 +107,13 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		final ChatMessage item = (ChatMessage) getItem(position);
-		chatMessageViewHolder.tvUser.setText(item.getFrom());
+	//	chatMessageViewHolder.tvUser.setText(item.getFrom());
 		if (item.getPlainText() != null) {
 			chatMessageViewHolder.tvText.setText(item.getPlainText());
 		}
 		else {
 			// decrypt
-			EncryptionController.eccDecrypt((type == TYPE_THEM ? item.getTo() : item.getFrom()), item.getCipherText(),
+			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherText(),
 					new IAsyncCallback<String>() {
 
 						@Override
@@ -132,7 +132,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public static class ChatMessageViewHolder {
-		public TextView tvUser;
+		//public TextView tvUser;
 		public TextView tvText;
 	}
 
