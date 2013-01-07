@@ -15,6 +15,7 @@ import org.apache.http.protocol.HttpContext;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -29,6 +30,12 @@ import com.twofours.surespot.ui.activities.LoginActivity;
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
 	private static Cookie mConnectCookie;
+
+	private static void setConnectCookie(Cookie connectCookie) {
+		// we be authorized
+		NetworkController.mConnectCookie = connectCookie;
+		setUnauthorized(false);
+	}
 
 	private static AsyncHttpClient mClient;
 	private static CookieStore mCookieStore;
@@ -53,11 +60,22 @@ public class NetworkController {
 		return mCookieStore;
 	}
 
+	private static boolean mUnauthorized;
+
+	private static boolean isUnauthorized() {
+		return mUnauthorized;
+	}
+
+	public static synchronized void setUnauthorized(boolean unauthorized) {
+
+		NetworkController.mUnauthorized = unauthorized;
+	}
+
 	static {
 		mCookieStore = new PersistentCookieStore(SurespotApplication.getAppContext());
 		if (mCookieStore.getCookies().size() > 0) {
 			Log.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
-			mConnectCookie = getConnectCookie(mCookieStore);
+			mConnectCookie = extractConnectCookie(mCookieStore);
 		}
 
 		mClient = new AsyncHttpClient();
@@ -75,14 +93,17 @@ public class NetworkController {
 					if (origin != null) {
 						Log.v(TAG, "response origin: " + origin);
 						if (!origin.equals("[" + SurespotConstants.BASE_URL.substring(7) + "/login]")) {
-						    mClient.cancelRequests(SurespotApplication.getAppContext(), true);
 
-							Log.v(TAG, "launching login intent");
-							Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
-							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							SurespotApplication.getAppContext().startActivity(intent);
-							
-							
+							if (!NetworkController.isUnauthorized()) {
+								mClient.cancelRequests(SurespotApplication.getAppContext(), true);
+
+								Log.v(TAG, "launching login intent");
+								Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+								SurespotApplication.getAppContext().startActivity(intent);
+
+								setUnauthorized(true);
+							}
 
 						}
 					}
@@ -92,26 +113,44 @@ public class NetworkController {
 
 	}
 
-	public static void addUser(String username, String password, String publicKey, String gcmId,
-			final AsyncHttpResponseHandler responseHandler) {
+	public static void addUser(String username, String password, String publicKey, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("publickey", publicKey);
-		if (gcmId != null) {
-			params.put("gcmId", gcmId);
+		// get the gcm id
+		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+				android.content.Context.MODE_PRIVATE);
+		String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
+
+		boolean gcmUpdatedTemp = false;
+		if (gcmIdReceived != null) {
+
+			params.put("gcmId", gcmIdReceived);
+			gcmUpdatedTemp = true;
 		}
+
+		final boolean gcmUpdated = gcmUpdatedTemp;
 
 		post("/users", new RequestParams(params), new AsyncHttpResponseHandler() {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
-				mConnectCookie = getConnectCookie(mCookieStore);
+				setConnectCookie(extractConnectCookie(mCookieStore));
 				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
 				}
 				else {
+
+					// update shared prefs
+					if (gcmUpdated) {
+						SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+								android.content.Context.MODE_PRIVATE);
+						String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
+						settings.edit().putString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+					}
+
 					responseHandler.onSuccess(responseCode, result);
 				}
 
@@ -126,7 +165,7 @@ public class NetworkController {
 
 	}
 
-	private static Cookie getConnectCookie(CookieStore cookieStore) {
+	private static Cookie extractConnectCookie(CookieStore cookieStore) {
 		for (Cookie c : cookieStore.getCookies()) {
 			// System.out.println("Cookie name: " + c.getName() + " value: " +
 			// c.getValue());
@@ -136,22 +175,46 @@ public class NetworkController {
 
 	}
 
-	public static void login(String username, String password, String gcmId, final AsyncHttpResponseHandler responseHandler) {
+	public static void login(String username, String password, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
-		params.put("gcmId", gcmId);
+
+		// get the gcm id
+		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+				android.content.Context.MODE_PRIVATE);
+		String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
+		String gcmIdSent = settings.getString(SurespotConstants.GCM_ID_SENT, null);
+
+		boolean gcmUpdatedTemp = false;
+		// update the gcmid if it differs
+		if (gcmIdReceived != null && !gcmIdReceived.equals(gcmIdSent)) {
+
+			params.put("gcmId", gcmIdReceived);
+			gcmUpdatedTemp = true;
+		}
+
+		// just be javascript already
+		final boolean gcmUpdated = gcmUpdatedTemp;
 
 		post("/login", new RequestParams(params), new AsyncHttpResponseHandler() {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
-				mConnectCookie = getConnectCookie(mCookieStore);
+				setConnectCookie(extractConnectCookie(mCookieStore));
 				if (mConnectCookie == null) {
 					Log.e(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
 				}
 				else {
+					// update shared prefs
+					if (gcmUpdated) {
+						SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+								android.content.Context.MODE_PRIVATE);
+						String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
+						settings.edit().putString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+					}
+
 					responseHandler.onSuccess(responseCode, result);
 				}
 
@@ -193,12 +256,57 @@ public class NetworkController {
 		post("/invites/" + friendname + "/" + action, null, responseHandler);
 	}
 
-	public static void registerGcmId(String id, AsyncHttpResponseHandler responseHandler) {
+	public static void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
+		// make sure the gcm is set
+		// use case:
+		// user signs-up without google account (unlikely)
+		// user creates google account
+		// user opens app again, we have session so neither login or add user is called (which wolud set the gcm)
+		// so we need to upload the gcm here if we haven't already
+		// get the gcm id
+		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+				android.content.Context.MODE_PRIVATE);
+		String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
+		String gcmIdSent = settings.getString(SurespotConstants.GCM_ID_SENT, null);
 
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("gcmId", id);
 
-		post("/registergcm", new RequestParams(params), responseHandler);
+		boolean gcmUpdatedTemp = false;
+		// update the gcmid if it differs
+		if (gcmIdReceived != null && !gcmIdReceived.equals(gcmIdSent)) {
+
+			params.put("gcmId", gcmIdReceived);
+			gcmUpdatedTemp = true;
+		}
+		else {
+			return;
+		}
+
+		// just be javascript already
+		final boolean gcmUpdated = gcmUpdatedTemp;
+
+		post("/registergcm", new RequestParams(params), new AsyncHttpResponseHandler() {
+
+			@Override
+			public void onSuccess(int responseCode, String result) {
+
+				// update shared prefs
+				if (gcmUpdated) {
+					SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+							android.content.Context.MODE_PRIVATE);
+					String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
+					settings.edit().putString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+				}
+
+				responseHandler.onSuccess(responseCode, result);
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				responseHandler.onFailure(arg0, arg1);
+			}
+
+		});
 
 	}
 

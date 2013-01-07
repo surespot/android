@@ -5,7 +5,6 @@ import org.apache.http.client.HttpResponseException;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
@@ -22,7 +21,6 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -88,36 +86,11 @@ public class LoginActivity extends Activity {
 		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-			// get the gcm id
-			SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-					android.content.Context.MODE_PRIVATE);
-			String gcmId = settings.getString(SurespotConstants.GCM_ID, null);
-
-			NetworkController.login(username, password, gcmId, new AsyncHttpResponseHandler() {
-
+			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int responseCode, String arg0) {
-					// update the gcm if we have to
-					String gcmId = getIntent().getStringExtra(SurespotConstants.ExtraNames.GCM_CHANGED);
-					if (gcmId != null) {
-						NetworkController.registerGcmId(gcmId, new AsyncHttpResponseHandler() {
-							@Override
-							public void onSuccess(int arg0, String arg1) {
-								progressDialog.dismiss();
-								nextActivity();
-							}
-
-							public void onFailure(Throwable arg0, String arg1) {
-								progressDialog.dismiss();
-								Log.e(TAG, "Error updating gcmid: " + arg0.toString());
-							};
-						});
-					}
-					else {
-						// gcm doesn't need updating
-						progressDialog.dismiss();
-						nextActivity();
-					}
+					progressDialog.dismiss();
+					nextActivity();
 				}
 
 				@Override
@@ -137,12 +110,9 @@ public class LoginActivity extends Activity {
 							Toast.makeText(LoginActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
 						}
 					}
-
 				}
-
 			});
 		}
-
 	}
 
 	private void nextActivity() {

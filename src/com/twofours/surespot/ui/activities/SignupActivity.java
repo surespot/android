@@ -8,7 +8,6 @@ import org.spongycastle.jce.interfaces.ECPublicKey;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
@@ -25,8 +24,6 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.main.MainActivity;
@@ -102,13 +99,8 @@ public class SignupActivity extends Activity {
 						public void handleResponse(final KeyPair keyPair) {
 							if (keyPair != null) {
 
-								// get the gcm id
-								SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(
-										SurespotConstants.PREFS_FILE, android.content.Context.MODE_PRIVATE);
-								String gcmId = settings.getString(SurespotConstants.GCM_ID, null);
-
 								NetworkController.addUser(username, password,
-										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()), gcmId,
+										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
 										new AsyncHttpResponseHandler() {
 
 											@Override

@@ -47,23 +47,29 @@ public class GCMIntentService extends GCMBaseIntentService
 			String to = intent.getStringExtra("to");
 			String from = intent.getStringExtra("sentfrom");
 			String otherUser = Utils.getOtherUser(from, to);
-			generateMessageNotification(context, otherUser, "new message", "new message from " + otherUser + ".");
+			generateMessageNotification(context, otherUser, "new message", "new message from " + otherUser);
 		}
 		else {
 			String user = intent.getStringExtra("user");
-			generateInviteNotification(context, user, "friend invite", "friend invite from " + user + ".");
+			generateInviteNotification(context, user, "friend invite", "friend invite from " + user);
 		}
 
 	}
 
 	@Override
 	protected void onRegistered(final Context context, final String id) {
+		// shoved it in shared prefs
+		Log.v(TAG, "Received gcm id, saving it in shared prefs.");
+		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PREFS_FILE, android.content.Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putString(SurespotConstants.GCM_ID_RECEIVED, id);
+		editor.commit();
 		// TODO use password instead of session?
 		// TODO retries?
 		if (NetworkController.hasSession()) {
 			Log.v(TAG, "Attempting to register gcm id on surespot server.");
 			// do this synchronously so android doesn't kill the service thread before it's done
-			
+
 			SyncHttpClient client = new SyncHttpClient() {
 
 				@Override
@@ -81,12 +87,11 @@ public class GCMIntentService extends GCMBaseIntentService
 			String result = client.post(SurespotConstants.BASE_URL + "/registergcm", new RequestParams(params));
 			// success returns 204 = null result
 			if (result == null) {
-				Log.v(TAG, "Successfully saved GCM id on surespot server, now saving it in shared prefs.");
-				// shoved it in shared prefs
-				SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PREFS_FILE,
-						android.content.Context.MODE_PRIVATE);
-				SharedPreferences.Editor editor = settings.edit();
-				editor.putString(SurespotConstants.GCM_ID, id);
+				Log.v(TAG, "Successfully saved GCM id on surespot server.");
+
+				// the server and client match, we're golden
+				editor = settings.edit();
+				editor.putString(SurespotConstants.GCM_ID_SENT, id);
 				editor.commit();
 
 				GCMRegistrar.setRegisteredOnServer(context, true);
@@ -112,21 +117,13 @@ public class GCMIntentService extends GCMBaseIntentService
 				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 		// if we're logged in, go to the chat, otherwise go to login
-		// TODO use password instead of sesson
-		/*
-		 * if (NetworkController.hasSession()) { Intent mainIntent = new Intent(context, ChatActivity.class);
-		 * mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user); stackBuilder.addParentStack(ChatActivity.class);
-		 * stackBuilder.addNextIntent(mainIntent); PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
-		 * PendingIntent.FLAG_UPDATE_CURRENT); builder.setContentIntent(resultPendingIntent); } else {
-		 */
-		// builder.set
+
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
-		// }
 
 		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
@@ -141,20 +138,12 @@ public class GCMIntentService extends GCMBaseIntentService
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
 				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
-		// if we're logged in, go to the chat, otherwise go to login
-		// TODO save password instead of session
-		/*
-		 * if (NetworkController.hasSession()) { Intent mainIntent = new Intent(context, MainActivity.class);
-		 * stackBuilder.addNextIntent(mainIntent); PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
-		 * PendingIntent.FLAG_CANCEL_CURRENT); builder.setContentIntent(resultPendingIntent); } else {
-		 */
-		// builder.set
+
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		stackBuilder.addNextIntent(mainIntent);
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
-		// }
 
 		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
