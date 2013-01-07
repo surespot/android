@@ -211,7 +211,7 @@ public class EncryptionController
 
 	}
 
-	public static  void saveIdentity(SurespotIdentity identity) {
+	public static synchronized void saveIdentity(SurespotIdentity identity) {
 
 		mIdentity = identity;
 		ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();

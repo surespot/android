@@ -1,12 +1,20 @@
 package com.twofours.surespot.network;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.CookieStore;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HttpContext;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -16,6 +24,7 @@ import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.ui.activities.LoginActivity;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
@@ -31,7 +40,7 @@ public class NetworkController {
 	public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.post(SurespotConstants.BASE_URL + url, params, responseHandler);
 	}
-	
+
 	public static Cookie getConnectCookie() {
 		return mConnectCookie;
 	}
@@ -39,7 +48,7 @@ public class NetworkController {
 	public static boolean hasSession() {
 		return mConnectCookie != null;
 	}
-	
+
 	public static CookieStore getCookieStore() {
 		return mCookieStore;
 	}
@@ -53,6 +62,34 @@ public class NetworkController {
 
 		mClient = new AsyncHttpClient();
 		mClient.setCookieStore(mCookieStore);
+
+		// handle 401s
+		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(new HttpResponseInterceptor() {
+
+			@Override
+			public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+
+				if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+					String origin = context.getAttribute("http.cookie-origin").toString();
+
+					if (origin != null) {
+						Log.v(TAG, "response origin: " + origin);
+						if (!origin.equals("[" + SurespotConstants.BASE_URL.substring(7) + "/login]")) {
+						    mClient.cancelRequests(SurespotApplication.getAppContext(), true);
+
+							Log.v(TAG, "launching login intent");
+							Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							SurespotApplication.getAppContext().startActivity(intent);
+							
+							
+
+						}
+					}
+				}
+			}
+		});
+
 	}
 
 	public static void addUser(String username, String password, String publicKey, String gcmId,
@@ -164,9 +201,7 @@ public class NetworkController {
 		post("/registergcm", new RequestParams(params), responseHandler);
 
 	}
-	
-	
-	
+
 	public static void userExists(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/users/" + username + "/exists", null, responseHandler);
 	}
