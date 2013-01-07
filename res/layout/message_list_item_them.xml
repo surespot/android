@@ -6,16 +6,19 @@
     
     <TextView
             android:id="@+id/messageUser"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:layout_marginRight="10dp"
+            android:layout_marginLeft="5dp"
+            android:gravity="right"
             />
      <TextView 
         android:id="@+id/messageText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"></TextView>
+        android:layout_weight="2"></TextView>
    
    
      

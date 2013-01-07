@@ -1,7 +1,6 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +28,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class ChatFragment extends SherlockFragment {
-	private ChatArrayAdapter chatAdapter;
+	private ChatAdapter chatAdapter;
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
@@ -63,7 +62,7 @@ public class ChatFragment extends SherlockFragment {
 		EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
 			@Override
 			public void handleResponse(Void result) {
-				// get the list of friends
+				// get the list of messages
 				NetworkController.getMessages(mUsername, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray jsonArray) {
@@ -72,21 +71,22 @@ public class ChatFragment extends SherlockFragment {
 						// (ie. on rotation on gingerbread)
 						// so check for null here
 						if (getActivity() != null) {
-							List<JSONObject> messages = new ArrayList<JSONObject>();
+							ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
 							try {
 								for (int i = 0; i < jsonArray.length(); i++) {
-									messages.add(new JSONObject(jsonArray.getString(i)));
+									JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+									messages.add(ChatMessage.toChatMessage(jsonMessage));
 								}
 							}
 							catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+								Log.e(TAG, "Error creating chat message: " + e.toString());
 							}
-							chatAdapter = new ChatArrayAdapter(getActivity(), messages);
+							chatAdapter = new ChatAdapter(getActivity());
+							chatAdapter.addMessages(messages);
 							mListView.setAdapter(chatAdapter);
 						}
 					}
-					
+
 					@Override
 					public void onFailure(Throwable error, String content) {
 						Log.e(TAG, error.getMessage());
@@ -141,13 +141,18 @@ public class ChatFragment extends SherlockFragment {
 
 	private void ensureChatAdapter() {
 		if (chatAdapter == null) {
-			chatAdapter = new ChatArrayAdapter(getActivity(), new ArrayList<JSONObject>());
+			chatAdapter = new ChatAdapter(getActivity());
 			mListView.setAdapter(chatAdapter);
 		}
 	}
 
 	public void addMessage(final JSONObject message) {
 		ensureChatAdapter();
-		chatAdapter.add(message);
+		try {
+			chatAdapter.addMessage(ChatMessage.toChatMessage(message));
+		}
+		catch (JSONException e) {
+			Log.e(TAG,"Error adding chat message.");
+		}
 	}
 }
