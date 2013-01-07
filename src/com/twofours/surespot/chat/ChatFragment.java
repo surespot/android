@@ -127,7 +127,7 @@ public class ChatFragment extends SherlockFragment {
 
 	private void sendMessage() {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
-		final String message = etMessage.getText().toString().trim();
+		final String message = etMessage.getText().toString();
 		if (message.length() > 0) {
 			EncryptionController.eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
 				@Override

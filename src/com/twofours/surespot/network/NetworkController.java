@@ -31,13 +31,17 @@ public class NetworkController {
 	public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.post(SurespotConstants.BASE_URL + url, params, responseHandler);
 	}
-
+	
 	public static Cookie getConnectCookie() {
 		return mConnectCookie;
 	}
 
 	public static boolean hasSession() {
 		return mConnectCookie != null;
+	}
+	
+	public static CookieStore getCookieStore() {
+		return mCookieStore;
 	}
 
 	static {
@@ -58,7 +62,7 @@ public class NetworkController {
 		params.put("password", password);
 		params.put("publickey", publicKey);
 		if (gcmId != null) {
-			params.put("device_gcm_id", gcmId);
+			params.put("gcmId", gcmId);
 		}
 
 		post("/users", new RequestParams(params), new AsyncHttpResponseHandler() {
@@ -95,10 +99,11 @@ public class NetworkController {
 
 	}
 
-	public static void login(String username, String password, final AsyncHttpResponseHandler responseHandler) {
+	public static void login(String username, String password, String gcmId, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
+		params.put("gcmId", gcmId);
 
 		post("/login", new RequestParams(params), new AsyncHttpResponseHandler() {
 
@@ -154,11 +159,13 @@ public class NetworkController {
 	public static void registerGcmId(String id, AsyncHttpResponseHandler responseHandler) {
 
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("device_gcm_id", id);
+		params.put("gcmId", id);
 
-		post("/registergcm/", new RequestParams(params), responseHandler);
+		post("/registergcm", new RequestParams(params), responseHandler);
 
 	}
+	
+	
 	
 	public static void userExists(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/users/" + username + "/exists", null, responseHandler);

@@ -15,6 +15,7 @@ public class SurespotConstants {
 		public static final String FRIEND_INVITE_RESPONSE_NAME = "friend_invite_name";
 		public static final String FRIEND_INVITE_RESPONSE_ACTION = "friend_invite_action";
 		public static final String SHOW_CHAT_NAME = "show_chat_name";
+		public static final String GCM_CHANGED = "gcm_changed";
 	}
 	
 	//public final static String BASE_URL = "http://alpha.surespot.me";

@@ -81,21 +81,22 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 		}
 
 		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		//actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		
 
-		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager = (ViewPager) findViewById(R.id.pager);		
 		mViewPager.setAdapter(mPagerAdapter);
-		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+		/*mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
 				actionBar.setSelectedNavigationItem(position);
 			}
-		});
+		});*/
 		mViewPager.setOffscreenPageLimit(4);
 
 		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mPagerAdapter.getCount(); i++) {
+		/*for (int i = 0; i < mPagerAdapter.getCount(); i++) {
 			// Create a tab with text corresponding to the page title defined by
 			// the adapter.
 			// Also specify this Activity object, which implements the
@@ -103,11 +104,13 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 			// listener for when this tab is selected.
 			actionBar.addTab(actionBar.newTab().setText(mPagerAdapter.getPageTitle(i)).setTabListener(this));
 		}
-
-		int pos = mPagerAdapter.getChatFragmentPosition(name);
+*/
+	/*	int pos = mPagerAdapter.getChatFragmentPosition(name);
 		if (pos > -1) {
 			actionBar.setSelectedNavigationItem(pos);
-		}
+		}*/
+		
+		mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
 		// register for notifications
 		mMessageBroadcastReceiver = new BroadcastReceiver() {
 
@@ -191,7 +194,7 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 
 	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
-		mViewPager.setCurrentItem(tab.getPosition());
+	//	mViewPager.setCurrentItem(tab.getPosition());
 
 	}
 

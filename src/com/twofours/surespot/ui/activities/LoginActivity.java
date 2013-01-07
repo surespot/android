@@ -5,6 +5,7 @@ import org.apache.http.client.HttpResponseException;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -48,7 +50,6 @@ public class LoginActivity extends Activity {
 		});
 
 		EditText editText = (EditText) findViewById(R.id.etPassword);
-		
 
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -87,38 +88,36 @@ public class LoginActivity extends Activity {
 		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-			// TODO show progress
+			// get the gcm id
+			SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+					android.content.Context.MODE_PRIVATE);
+			String gcmId = settings.getString(SurespotConstants.GCM_ID, null);
 
-			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
+			NetworkController.login(username, password, gcmId, new AsyncHttpResponseHandler() {
 
 				@Override
 				public void onSuccess(int responseCode, String arg0) {
-					progressDialog.dismiss();
-					// start main activity
+					// update the gcm if we have to
+					String gcmId = getIntent().getStringExtra(SurespotConstants.ExtraNames.GCM_CHANGED);
+					if (gcmId != null) {
+						NetworkController.registerGcmId(gcmId, new AsyncHttpResponseHandler() {
+							@Override
+							public void onSuccess(int arg0, String arg1) {
+								progressDialog.dismiss();
+								nextActivity();
+							}
 
-					// SurespotApplication.getUserData().setUsername(username);
-
-					// if we have a chat name, we may have started from a
-					// message, so in that case
-					// go straight to the chat now we've logged in
-
-					String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
-
-					if (name == null) {
-						Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						LoginActivity.this.startActivity(intent);
+							public void onFailure(Throwable arg0, String arg1) {
+								progressDialog.dismiss();
+								Log.e(TAG, "Error updating gcmid: " + arg0.toString());
+							};
+						});
 					}
 					else {
-
-						Intent intent = new Intent(LoginActivity.this, ChatActivity.class);
-						intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
-						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						LoginActivity.this.startActivity(intent);
-
+						// gcm doesn't need updating
+						progressDialog.dismiss();
+						nextActivity();
 					}
-					finish();
-
 				}
 
 				@Override
@@ -144,6 +143,27 @@ public class LoginActivity extends Activity {
 			});
 		}
 
+	}
+
+	private void nextActivity() {
+		// if we have a chat name, we may have started from a
+		// message, so in that case
+		// go straight to the chat now we've logged in
+		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+		if (name == null) {
+			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			LoginActivity.this.startActivity(intent);
+		}
+		else {
+
+			Intent intent = new Intent(LoginActivity.this, ChatActivity.class);
+			intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			LoginActivity.this.startActivity(intent);
+
+		}
+		finish();
 	}
 
 	@Override
