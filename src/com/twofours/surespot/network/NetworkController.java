@@ -15,7 +15,6 @@ import org.apache.http.protocol.HttpContext;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -120,17 +119,17 @@ public class NetworkController {
 		params.put("password", password);
 		params.put("publickey", publicKey);
 		// get the gcm id
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
-		String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
-
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
+		
 		boolean gcmUpdatedTemp = false;
+		// update the gcmid if it differs
 		if (gcmIdReceived != null) {
 
 			params.put("gcmId", gcmIdReceived);
 			gcmUpdatedTemp = true;
 		}
 
+		// just be javascript already
 		final boolean gcmUpdated = gcmUpdatedTemp;
 
 		post("/users", new RequestParams(params), new AsyncHttpResponseHandler() {
@@ -143,13 +142,9 @@ public class NetworkController {
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
 				}
 				else {
-
 					// update shared prefs
 					if (gcmUpdated) {
-						SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-								android.content.Context.MODE_PRIVATE);
-						String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
-						settings.edit().putString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+						Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result);
@@ -183,7 +178,7 @@ public class NetworkController {
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_SENT);		
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_SENT);
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -274,8 +269,8 @@ public class NetworkController {
 			gcmUpdatedTemp = true;
 		}
 		else {
-			Log.v(TAG,"GCM does not need updating on server.");
-			return;			
+			Log.v(TAG, "GCM does not need updating on server.");
+			return;
 		}
 
 		// just be javascript already

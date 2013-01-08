@@ -10,7 +10,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
@@ -43,12 +42,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
 
-		// get the chats
-		SharedPreferences prefs = getSharedPreferences(SurespotConstants.PREFS_FILE, 0);
+		// get the chats		
 		JSONArray jsonChats;
 		boolean foundChat = false;
 		try {
-			String sChats = prefs.getString("chats", null);
+			String sChats = Utils.getSharedPrefsString("chats");
 			if (sChats != null) {
 				jsonChats = new JSONArray(sChats);
 
@@ -155,12 +153,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 		super.onPause();
 		Log.v(TAG, "onPause");
 		ChatController.disconnect();
-		// save chat names
-		SharedPreferences prefs = getSharedPreferences(SurespotConstants.PREFS_FILE, 0);
-		SharedPreferences.Editor editor = prefs.edit();
+		// save chat names		
 		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
-		editor.putString("chats", jsonArray.toString());
-		editor.commit();
+		Utils.putSharedPrefsString("chats", jsonArray.toString());		
 
 	}
 
