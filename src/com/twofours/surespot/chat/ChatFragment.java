@@ -155,4 +155,11 @@ public class ChatFragment extends SherlockFragment {
 			Log.e(TAG,"Error adding chat message.");
 		}
 	}
+	
+	@Override
+	public void onPause() {
+	
+		super.onPause();
+		Log.v(TAG, "onPause, mUsername:  " + mUsername);
+	}
 }

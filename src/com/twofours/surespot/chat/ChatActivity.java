@@ -17,6 +17,8 @@ import android.util.Log;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
@@ -42,7 +44,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
 
-		// get the chats		
+		// get the chats
 		JSONArray jsonChats;
 		boolean foundChat = false;
 		try {
@@ -80,7 +82,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setTitle(name);
-		
+
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -138,13 +140,33 @@ public class ChatActivity extends SherlockFragmentActivity {
 			case android.R.id.home:
 				// This is called when the Home (Up) button is pressed
 				// in the Action Bar.
-				Intent parentActivityIntent = new Intent(this, MainActivity.class);
-				parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(parentActivityIntent);
-				finish();
+				showMain();
 				return true;
+			case R.id.menu_close:
+				if (mPagerAdapter.getCount() == 1) {
+					mPagerAdapter.removeChat(0, false);
+					showMain();
+				}
+				else {
+					
+					mPagerAdapter.removeChat(mViewPager.getCurrentItem(), true);	
+					//set the title bar
+					getSupportActionBar().setTitle(mPagerAdapter.getChatNames().get(mViewPager.getCurrentItem()));
+				
+				}
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+
+	}
+
+	private void showMain() {
+		Intent parentActivityIntent = new Intent(this, MainActivity.class);
+		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(parentActivityIntent);
+		finish();
+
 	}
 
 	@Override
@@ -153,9 +175,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 		super.onPause();
 		Log.v(TAG, "onPause");
 		ChatController.disconnect();
-		// save chat names		
+		// save chat names
 		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
-		Utils.putSharedPrefsString("chats", jsonArray.toString());		
+		Utils.putSharedPrefsString("chats", jsonArray.toString());
 
 	}
 
@@ -195,6 +217,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 		Log.v(TAG, "onDestroy");
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
 
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.activity_main, menu);
+		return true;
 	}
 
 }
