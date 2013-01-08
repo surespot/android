@@ -110,6 +110,9 @@ public class LoginActivity extends Activity {
 							Toast.makeText(LoginActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
 						}
 					}
+					else {
+						Toast.makeText(LoginActivity.this, "Error logging in, please try again later.", Toast.LENGTH_SHORT).show();
+					}
 				}
 			});
 		}

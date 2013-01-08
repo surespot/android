@@ -137,7 +137,6 @@ public class SignupActivity extends Activity {
 
 											}
 
-											// TODO implement
 											public void onFailure(Throwable arg0, String arg1) {
 												progressDialog.dismiss();
 												Log.e("SignupActivity", arg0.toString());

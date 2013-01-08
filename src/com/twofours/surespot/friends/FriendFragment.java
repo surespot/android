@@ -143,7 +143,7 @@ public class FriendFragment extends SherlockFragment {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				Log.e(TAG,"getNotifications: " + content);
-				Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.", Toast.LENGTH_SHORT).show();
+			//	Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.", Toast.LENGTH_SHORT).show();
 			}
 		});
 		// get the list of friends
@@ -175,7 +175,7 @@ public class FriendFragment extends SherlockFragment {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				Log.e(TAG,"getFriends: " + content);
-				Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.", Toast.LENGTH_SHORT).show();
+			//	Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.", Toast.LENGTH_SHORT).show();
 			}
 		});
 
@@ -217,12 +217,12 @@ public class FriendFragment extends SherlockFragment {
 								break;
 							default:
 								Log.e(TAG, "inviteFriend: " + error.getMessage());
-								Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
+							//	Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
 						}
 					}
 					else {
 						Log.e(TAG, "inviteFriend: " + content);
-						Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
+					//	Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
 					}
 				}
 

@@ -43,7 +43,8 @@ public class StartupActivity extends Activity {
 				//use case:
 				//user signs-up without google account (unlikely)
 				//user creates google account
-				//user opens app again, we have session so neither login or add user is called (which wolud set the gcm)
+				//user opens app again, we have session so neither login or add user is called (which would set the gcm)
+
 				//so we need to upload the gcm here if we haven't already
 			
 				NetworkController.registerGcmId(new AsyncHttpResponseHandler() {
@@ -66,13 +67,17 @@ public class StartupActivity extends Activity {
 				if (name != null) {
 					intent = new Intent(this, ChatActivity.class);
 					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(intent);
 				}
 				else {
 					// go to main
+					
 					intent = new Intent(this, MainActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(intent);
 				}
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
+				
 			}
 			else {
 				// identity but no session, login
