@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -148,11 +149,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 					showMain();
 				}
 				else {
-					
-					mPagerAdapter.removeChat(mViewPager.getCurrentItem(), true);	
-					//set the title bar
+
+					mPagerAdapter.removeChat(mViewPager.getCurrentItem(), true);
+					// set the title bar
 					getSupportActionBar().setTitle(mPagerAdapter.getChatNames().get(mViewPager.getCurrentItem()));
-				
+
 				}
 				return true;
 			default:
@@ -224,6 +225,31 @@ public class ChatActivity extends SherlockFragmentActivity {
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_main, menu);
 		return true;
+	}
+
+	private int mProgressCounter;
+	private ProgressDialog mLoadingMessagesProgress;
+
+	public synchronized void startLoadingMessagesProgress() {
+		mProgressCounter++;
+		if (mProgressCounter == 1) {
+			if (mLoadingMessagesProgress == null) {
+				mLoadingMessagesProgress = new ProgressDialog(this);
+				mLoadingMessagesProgress.setIndeterminate(true);
+				// progressDialog.setTitle("loading");
+				mLoadingMessagesProgress.setMessage("loading and decrypting messages...");
+			}
+
+			mLoadingMessagesProgress.show();
+		}
+
+	}
+
+	public synchronized void stopLoadingMessagesProgress() {
+		mProgressCounter--;
+		if (mProgressCounter == 0) {
+			mLoadingMessagesProgress.dismiss();
+		}
 	}
 
 }

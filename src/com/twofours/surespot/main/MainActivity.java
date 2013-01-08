@@ -59,7 +59,7 @@ public class MainActivity extends SherlockActivity {
 		final ListView listView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new MainAdapter(this);
 		listView.setAdapter(mMainAdapter);
-		listView.setEmptyView(findViewById(R.id.main_list_empty));
+		
 		// click on friend to join chat
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -183,6 +183,7 @@ public class MainActivity extends SherlockActivity {
 
 					mMainAdapter.clearFriends(false);
 					mMainAdapter.addFriends(friends, Friend.NEW_FRIEND);
+					((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 				}
 				//
 
