@@ -127,6 +127,9 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
+		notification.defaults |= Notification.DEFAULT_LIGHTS;
+		notification.defaults |= Notification.DEFAULT_SOUND;
+		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
 		notificationManager.notify(1, notification);
 	}
@@ -147,6 +150,10 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
+		notification.defaults |= Notification.DEFAULT_LIGHTS;
+		notification.defaults |= Notification.DEFAULT_SOUND;
+		notification.defaults |= Notification.DEFAULT_VIBRATE;
+
 
 		notificationManager.notify(1, notification);
 	}
