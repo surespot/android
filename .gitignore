@@ -1,7 +1,5 @@
 bin/
 gen/
 /AndroidManifest.out.xml
-.classpath
 .settings/
 lint.xml
-.project

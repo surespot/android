@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="lib" path="/opt/android-sdk/extras/android/support/v4/android-support-v4.jar" sourcepath="/opt/android-sdk/extras/android/support/v4/src"/>
+	<classpathentry kind="lib" path="libs/sc-light-jdk15on-1.47.0.2.jar"/>
+	<classpathentry kind="lib" path="libs/scprov-jdk15on-1.47.0.2.jar"/>
+	<classpathentry kind="lib" path="libs/WebSocket.jar"/>
+	<classpathentry kind="lib" path="libs/gcm.jar"/>
+	<classpathentry kind="lib" path="libs/1.4.2-17-g65dc6f2-dirty.jar" sourcepath="/home/adam/src/android-async-http/src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/library"/>
+	<classpathentry excluding="com/twofours/surespot/chat/ChatArrayAdapter.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
