@@ -46,11 +46,11 @@ public class GCMIntentService extends GCMBaseIntentService
 			String to = intent.getStringExtra("to");
 			String from = intent.getStringExtra("sentfrom");
 			String otherUser = Utils.getOtherUser(from, to);
-			generateMessageNotification(context, otherUser, "new message", "new message from " + otherUser);
+			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);
 		}
 		else {
 			String user = intent.getStringExtra("user");
-			generateInviteNotification(context, user, "friend invite", "friend invite from " + user);
+			generateInviteNotification(context, user, "surespot", "friend invite from " + user);
 		}
 
 	}
@@ -109,7 +109,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
 				.setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
@@ -119,7 +119,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		builder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.getNotification();
+		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;
@@ -134,7 +134,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
 				.setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		stackBuilder.addNextIntent(mainIntent);
@@ -142,7 +142,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		builder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.getNotification();
+		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;
