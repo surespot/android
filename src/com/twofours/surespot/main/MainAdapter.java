@@ -1,4 +1,4 @@
-package com.twofours.surespot.friends;
+package com.twofours.surespot.main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,11 @@ import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.friends.FriendInvite;
 import com.twofours.surespot.network.NetworkController;
 
-public class FriendAdapter extends BaseAdapter {
+public class MainAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
 	private final List<Friend> mFriends = new ArrayList<Friend>();
 	private final List<FriendInvite> mNotifications = new ArrayList<FriendInvite>();
@@ -26,7 +28,7 @@ public class FriendAdapter extends BaseAdapter {
 	private final static int TYPE_NOTIFICATION = 0;
 	private final static int TYPE_FRIEND = 1;
 
-	public FriendAdapter(Context context) {
+	public MainAdapter(Context context) {
 		mContext = context;
 	}
 

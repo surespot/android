@@ -123,8 +123,8 @@ public class ChatController {
 	}
 
 	private static void sendNotification(String friend) {
-		Intent intent = new Intent(SurespotConstants.EventFilters.NOTIFICATION_EVENT);
-		intent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION, friend);
+		Intent intent = new Intent(SurespotConstants.EventFilters.INVITATION_INTENT);
+		intent.putExtra(SurespotConstants.ExtraNames.INVITATION, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 

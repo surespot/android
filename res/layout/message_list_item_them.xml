@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="5dp"
         android:layout_marginLeft="50dp"
-        android:gravity="right" >
+        android:gravity="right" 
+        android:textSize="15sp">
     </TextView>
 
 </LinearLayout>
