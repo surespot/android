@@ -120,7 +120,7 @@ public class NetworkController {
 		params.put("publickey", publicKey);
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
-		
+
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
 		if (gcmIdReceived != null) {
@@ -155,6 +155,11 @@ public class NetworkController {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				responseHandler.onFailure(arg0, content);
+			}
+
+			@Override
+			public void onFinish() {
+				responseHandler.onFinish();
 			}
 
 		});
@@ -214,6 +219,11 @@ public class NetworkController {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				responseHandler.onFailure(arg0, content);
+			}
+
+			@Override
+			public void onFinish() {
+				responseHandler.onFinish();
 			}
 		});
 

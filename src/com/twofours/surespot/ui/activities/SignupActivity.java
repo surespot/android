@@ -6,7 +6,6 @@ import org.apache.http.client.HttpResponseException;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -21,6 +20,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
+import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.Utils;
@@ -32,11 +32,13 @@ import com.twofours.surespot.network.NetworkController;
 public class SignupActivity extends Activity {
 	private static final String TAG = "SignupActivity";
 	private Button signupButton;
+	private MultiProgressDialog mMpd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
+		mMpd = new MultiProgressDialog(this,"creating a user and generating keys", 750);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
@@ -75,19 +77,17 @@ public class SignupActivity extends Activity {
 
 		if (!(username.length() > 0 && password.length() > 0)) { return; }
 
+		mMpd.incrProgress();
 		// see if the user exists
 		NetworkController.userExists(username, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
 					Utils.makeToast("That username already exists, please choose another.");
-
+					mMpd.decrProgress();
 				}
 				else {
-					final ProgressDialog progressDialog = new ProgressDialog(SignupActivity.this);
-					progressDialog.setIndeterminate(true);
-					progressDialog.setMessage("Generating Keys...");
-					progressDialog.show();
+					
 
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
@@ -104,8 +104,7 @@ public class SignupActivity extends Activity {
 
 											@Override
 											public void onSuccess(int statusCode, String arg0) {
-
-												progressDialog.dismiss();
+												
 
 												if (statusCode == 201) {
 													// save key pair now
@@ -136,8 +135,7 @@ public class SignupActivity extends Activity {
 
 											}
 
-											public void onFailure(Throwable arg0, String arg1) {
-												progressDialog.dismiss();
+											public void onFailure(Throwable arg0, String arg1) {												
 												Log.e("SignupActivity", arg1);
 
 												if (arg0 instanceof HttpResponseException) {
@@ -151,6 +149,12 @@ public class SignupActivity extends Activity {
 														Utils.makeToast("Error, could not create user.");
 													}
 												}
+												
+												
+											};
+											
+											public void onFinish() {
+												mMpd.decrProgress();
 											};
 
 										});

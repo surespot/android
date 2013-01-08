@@ -20,6 +20,14 @@
         android:orientation="vertical"
         android:visibility="gone" >
 
+          <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="Welcome to surespot. Messages sent using this software are end to end encrypted using 256 bit AES and 512+ bit ECC. Enjoy." />
+
+     
+        
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="This is early pre-beta software, your logins and (encrypted) data can and will be erased at any time. If this happens you will need to 'Clear data' for the surespot application in your phone." />
+            android:text="This is early pre-beta software, your logins and encrypted conversatations can and will be erased at any time. If this happens you will need to 'Clear data' for the surespot application in your phone." />
                 
     </LinearLayout>
     

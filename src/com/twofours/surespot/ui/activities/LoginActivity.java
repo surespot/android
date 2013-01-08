@@ -3,7 +3,6 @@ package com.twofours.surespot.ui.activities;
 import org.apache.http.client.HttpResponseException;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -18,6 +17,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
+import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
@@ -30,11 +30,14 @@ public class LoginActivity extends Activity {
 
 	private Button loginButton;
 	private static final String TAG = "LoginActivity";
+	MultiProgressDialog mMpd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+
+		mMpd = new MultiProgressDialog(this, "logging in", 750);
 
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);
 		this.loginButton.setOnClickListener(new View.OnClickListener() {
@@ -76,26 +79,21 @@ public class LoginActivity extends Activity {
 	}
 
 	private void login() {
-		final ProgressDialog progressDialog = new ProgressDialog(this);
-		progressDialog.setIndeterminate(true);
-		progressDialog.setMessage("Logging in...");
-		progressDialog.show();
 
 		final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
 		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
+			mMpd.incrProgress();
+
 			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int responseCode, String arg0) {
-					progressDialog.dismiss();
 					nextActivity();
 				}
 
 				@Override
 				public void onFailure(Throwable arg0, String message) {
-					progressDialog.dismiss();
-
 					Log.e(TAG, arg0.toString());
 
 					if (arg0 instanceof HttpResponseException) {
@@ -111,6 +109,11 @@ public class LoginActivity extends Activity {
 					else {
 						Utils.makeToast("Error logging in, please try again later.");
 					}
+				}
+
+				@Override
+				public void onFinish() {
+					mMpd.decrProgress();
 				}
 			});
 		}
@@ -136,7 +139,5 @@ public class LoginActivity extends Activity {
 		}
 		finish();
 	}
-
-	
 
 }

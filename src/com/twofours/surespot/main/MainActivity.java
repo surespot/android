@@ -199,7 +199,7 @@ public class MainActivity extends SherlockActivity {
 
 					mMainAdapter.clearFriends(false);
 					mMainAdapter.addFriends(friends, Friend.NEW_FRIEND);
-					((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+					
 				}
 				//
 
@@ -213,6 +213,7 @@ public class MainActivity extends SherlockActivity {
 
 			@Override
 			public void onFinish() {
+				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 				MainActivity.this.mMpdPopulateList.decrProgress();
 			}
 		});
