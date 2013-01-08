@@ -57,6 +57,8 @@ public class MainActivity extends SherlockActivity {
 		setContentView(R.layout.activity_main);
 		//final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 		
+		getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
+		
 		
 		final ListView listView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new MainAdapter(this);

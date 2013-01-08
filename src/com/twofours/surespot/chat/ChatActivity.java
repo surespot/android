@@ -39,6 +39,8 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 		Log.v(TAG, "onCreate");
 		setContentView(R.layout.activity_chat);
 		// get intent
+		//getSupportActionBar().setTitle("chatting as " + EncryptionController.getIdentityUsername());
+		
 		Intent intent = getIntent();
 		String name = intent.getExtras().getString(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 
@@ -87,12 +89,12 @@ public class ChatActivity extends SherlockFragmentActivity implements ActionBar.
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);		
 		mViewPager.setAdapter(mPagerAdapter);
-		/*mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
-				actionBar.setSelectedNavigationItem(position);
+				actionBar.setTitle(mPagerAdapter.getChatNames().get(position));
 			}
-		});*/
+		});
 		mViewPager.setOffscreenPageLimit(4);
 
 		// For each of the sections in the app, add a tab to the action bar.
