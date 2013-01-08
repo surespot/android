@@ -16,12 +16,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.main.MainActivity;
@@ -103,15 +103,14 @@ public class LoginActivity extends Activity {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
 						if (statusCode == 401) {
-							Toast.makeText(LoginActivity.this, "Could not login, please make sure your password is correct.",
-									Toast.LENGTH_SHORT).show();
+							Utils.makeToast("Could not login, please make sure your password is correct.");
 						}
 						else {
-							Toast.makeText(LoginActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+							Utils.makeToast("Error: " + message);
 						}
 					}
 					else {
-						Toast.makeText(LoginActivity.this, "Error logging in, please try again later.", Toast.LENGTH_SHORT).show();
+						Utils.makeToast("Error logging in, please try again later.");
 					}
 				}
 			});

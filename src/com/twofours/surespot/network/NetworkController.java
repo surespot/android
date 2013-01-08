@@ -25,6 +25,7 @@ import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.ui.activities.LoginActivity;
 
 public class NetworkController {
@@ -181,10 +182,8 @@ public class NetworkController {
 		params.put("password", password);
 
 		// get the gcm id
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
-		String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
-		String gcmIdSent = settings.getString(SurespotConstants.GCM_ID_SENT, null);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_SENT);		
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -209,10 +208,7 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-								android.content.Context.MODE_PRIVATE);
-						String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
-						settings.edit().putString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+						Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result);
@@ -264,10 +260,9 @@ public class NetworkController {
 		// user opens app again, we have session so neither login or add user is called (which wolud set the gcm)
 		// so we need to upload the gcm here if we haven't already
 		// get the gcm id
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
-		String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
-		String gcmIdSent = settings.getString(SurespotConstants.GCM_ID_SENT, null);
+
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_SENT);
 
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -279,7 +274,8 @@ public class NetworkController {
 			gcmUpdatedTemp = true;
 		}
 		else {
-			return;
+			Log.v(TAG,"GCM does not need updating on server.");
+			return;			
 		}
 
 		// just be javascript already
@@ -292,10 +288,7 @@ public class NetworkController {
 
 				// update shared prefs
 				if (gcmUpdated) {
-					SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-							android.content.Context.MODE_PRIVATE);
-					String gcmIdReceived = settings.getString(SurespotConstants.GCM_ID_RECEIVED, null);
-					settings.edit().putString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+					Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
 				}
 
 				responseHandler.onSuccess(responseCode, result);

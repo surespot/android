@@ -8,7 +8,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
@@ -60,10 +59,8 @@ public class GCMIntentService extends GCMBaseIntentService
 	protected void onRegistered(final Context context, final String id) {
 		// shoved it in shared prefs
 		Log.v(TAG, "Received gcm id, saving it in shared prefs.");
-		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PREFS_FILE, android.content.Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = settings.edit();
-		editor.putString(SurespotConstants.GCM_ID_RECEIVED, id);
-		editor.commit();
+		Utils.putSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED, id);
+
 		// TODO use password instead of session?
 		// TODO retries?
 		if (NetworkController.hasSession()) {
@@ -74,7 +71,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 				@Override
 				public String onRequestFailed(Throwable arg0, String arg1) {
-					Log.v(TAG, "Error saving gcmId on surespot server: " + arg0.toString());
+					Log.v(TAG, "Error saving gcmId on surespot server: " + arg1);
 					return "failed";
 				}
 			};
@@ -90,10 +87,7 @@ public class GCMIntentService extends GCMBaseIntentService
 				Log.v(TAG, "Successfully saved GCM id on surespot server.");
 
 				// the server and client match, we're golden
-				editor = settings.edit();
-				editor.putString(SurespotConstants.GCM_ID_SENT, id);
-				editor.commit();
-
+				Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, id);
 				GCMRegistrar.setRegisteredOnServer(context, true);
 
 			}
@@ -153,7 +147,6 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
-
 
 		notificationManager.notify(1, notification);
 	}

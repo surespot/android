@@ -30,19 +30,16 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 import org.spongycastle.util.encoders.Hex;
 
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
-public class EncryptionController 
-	{
+public class EncryptionController {
 	private static final String TAG = "EncryptionController";
 	private static final String IDENTITY_KEY = "surespot_identity";
 	private static final int AES_KEY_LENGTH = 32;
@@ -88,9 +85,7 @@ public class EncryptionController
 	}
 
 	private static SurespotIdentity loadIdentity() {
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
-		String jsonIdentity = settings.getString(IDENTITY_KEY, null);
+		String jsonIdentity = Utils.getSharedPrefsString(IDENTITY_KEY);
 		if (jsonIdentity == null) return null;
 
 		// we have a identity stored, load the fucker up and reconstruct the keys
@@ -139,7 +134,7 @@ public class EncryptionController
 
 	}
 
-	private static  ECPrivateKey recreatePrivateKey(String encodedKey) {
+	private static ECPrivateKey recreatePrivateKey(String encodedKey) {
 		// recreate key from hex string
 		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Hex.decode(encodedKey)), curve);
 
@@ -236,9 +231,7 @@ public class EncryptionController
 			json.putOpt("username", identity.getUsername());
 			json.putOpt("private_key", generatedPrivDHex);
 			json.putOpt("public_key", publicKey);
-			SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
-					android.content.Context.MODE_PRIVATE);
-			settings.edit().putString(IDENTITY_KEY, json.toString()).commit();
+			Utils.putSharedPrefsString(IDENTITY_KEY, json.toString());
 		}
 		catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -251,11 +244,11 @@ public class EncryptionController
 		return new String(Hex.encode(publicKey.getQ().getEncoded()));
 	}
 
-	private static  void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
+	private static void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
 		new AsyncGenerateSharedSecret(username, callback).execute();
 	}
 
-	private static  class AsyncGenerateSharedSecret extends AsyncTask<Void, Void, byte[]> {
+	private static class AsyncGenerateSharedSecret extends AsyncTask<Void, Void, byte[]> {
 		private IAsyncCallback<byte[]> mCallback;
 		private String mUsername;
 
@@ -319,8 +312,7 @@ public class EncryptionController
 			return;
 		}
 
-		ParametersWithIV params = new ParametersWithIV(
-				new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+		ParametersWithIV params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 		ccm.reset();
 		ccm.init(false, params);
@@ -349,8 +341,7 @@ public class EncryptionController
 		// crashes with getBlockSize() bytes, don't know why?
 		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
 		mSecureRandom.nextBytes(iv);
-		ParametersWithIV params = new ParametersWithIV(
-				new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+		ParametersWithIV params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 		ccm.reset();
 		ccm.init(true, params);
@@ -383,7 +374,7 @@ public class EncryptionController
 
 	}
 
-	public static  void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
+	public static void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
 		hydratePublicKey(username, new IAsyncCallback<Void>() {
 
 			@Override
@@ -425,15 +416,13 @@ public class EncryptionController
 
 					});
 
-					
 				}
-				
+
 				@Override
 				public void onFailure(Throwable error, String content) {
-					Log.e(TAG, error.getMessage());
+					Log.e(TAG, content);
 				}
-				
-				
+
 			});
 		}
 		else {

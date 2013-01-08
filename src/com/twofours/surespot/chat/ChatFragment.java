@@ -89,7 +89,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						Log.e(TAG, error.getMessage());
+						Log.e(TAG, content);
 					}
 				});
 			}

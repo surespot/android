@@ -26,7 +26,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -35,6 +34,7 @@ import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.IConnectCallback;
@@ -46,20 +46,16 @@ public class MainActivity extends SherlockActivity {
 	private MainAdapter mMainAdapter;
 	private static final String TAG = "MainActivity";
 	private boolean mDisconnectSocket = true;
-	private Toast mToast;
 
-	
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
 		setContentView(R.layout.activity_main);
-		//final View view = inflater.inflate(R.layout.friend_fragment, container, false);
-		
+		// final View view = inflater.inflate(R.layout.friend_fragment, container, false);
+
 		getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
-		
-		
+
 		final ListView listView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new MainAdapter(this);
 		listView.setAdapter(mMainAdapter);
@@ -122,9 +118,9 @@ public class MainActivity extends SherlockActivity {
 				return handled;
 			}
 		});
-		
+
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
@@ -134,7 +130,7 @@ public class MainActivity extends SherlockActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+
 		ChatController.connect(new IConnectCallback() {
 
 			@Override
@@ -145,61 +141,57 @@ public class MainActivity extends SherlockActivity {
 			}
 		});
 
-		//TODO combine into 1 web service call
+		// TODO combine into 1 web service call
 		// get the list of notifications
 		NetworkController.getNotifications(new JsonHttpResponseHandler() {
 			public void onSuccess(JSONArray jsonArray) {
-				
-					for (int i = 0; i < jsonArray.length(); i++) {
-						try {
-							JSONObject json = jsonArray.getJSONObject(i);
-							mMainAdapter.addFriendInvite(json.getString("data"));
-						}
-						catch (JSONException e) {
-							Log.e(TAG, e.toString());
-						}
 
-					
+				for (int i = 0; i < jsonArray.length(); i++) {
+					try {
+						JSONObject json = jsonArray.getJSONObject(i);
+						mMainAdapter.addFriendInvite(json.getString("data"));
+					}
+					catch (JSONException e) {
+						Log.e(TAG, e.toString());
+					}
 
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
-				Log.e(TAG,"getNotifications: " + content);
-			//	Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.", Toast.LENGTH_SHORT).show();
+				Log.e(TAG, "getNotifications: " + content);
+				// Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.");
 			}
 		});
 		// get the list of friends
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
-				
 
-					if (jsonArray.length() > 0) {
-						ArrayList<String> friends = null;
-						try {
-							friends = new ArrayList<String>(jsonArray.length());
-							for (int i = 0; i < jsonArray.length(); i++) {
-								friends.add(jsonArray.getString(i));
-							}
+				if (jsonArray.length() > 0) {
+					ArrayList<String> friends = null;
+					try {
+						friends = new ArrayList<String>(jsonArray.length());
+						for (int i = 0; i < jsonArray.length(); i++) {
+							friends.add(jsonArray.getString(i));
 						}
-						catch (JSONException e) {
-							Log.e(TAG, e.toString());
-						}
-
-						mMainAdapter.clearFriends(false);
-						mMainAdapter.addFriends(friends, Friend.NEW_FRIEND);
 					}
-					//
+					catch (JSONException e) {
+						Log.e(TAG, e.toString());
+					}
 
-				
+					mMainAdapter.clearFriends(false);
+					mMainAdapter.addFriends(friends, Friend.NEW_FRIEND);
+				}
+				//
+
 			}
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
-				Log.e(TAG,"getFriends: " + content);
-			//	Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.", Toast.LENGTH_SHORT).show();
+				Log.e(TAG, "getFriends: " + content);
+				// Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.");
 			}
 		});
 
@@ -208,7 +200,15 @@ public class MainActivity extends SherlockActivity {
 	private void inviteFriend() {
 		final EditText etFriend = ((EditText) findViewById(R.id.etFriend));
 		final String friend = etFriend.getText().toString();
-		if (friend.length() > 0 && !friend.equals(EncryptionController.getIdentityUsername())) {
+		
+		
+		
+		if (friend.length() > 0) {
+			if (friend.equals(EncryptionController.getIdentityUsername())) {
+				Utils.makeToast("You can't be friends with yourself, bro.");
+				return;				
+			}
+			
 			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) { // TODO
@@ -219,8 +219,7 @@ public class MainActivity extends SherlockActivity {
 					// that the request is
 					// pending somehow
 					TextKeyListener.clear(etFriend.getText());
-					Toast.makeText(MainActivity.this, friend + " has been invited to be your friend.", Toast.LENGTH_SHORT)
-							.show();
+					Utils.makeToast(friend + " has been invited to be your friend.");
 				}
 
 				@Override
@@ -230,36 +229,27 @@ public class MainActivity extends SherlockActivity {
 						int statusCode = error.getStatusCode();
 						switch (statusCode) {
 							case 404:
-								Toast.makeText(MainActivity.this, "User does not exist.", Toast.LENGTH_SHORT).show();
+								Utils.makeToast("User does not exist.");
 								break;
 							case 409:
-								Toast.makeText(MainActivity.this, "You are already friends.", Toast.LENGTH_SHORT).show();
+								Utils.makeToast("You are already friends.");
 								break;
 							case 403:
-								Toast.makeText(MainActivity.this, "You have already invited this user.", Toast.LENGTH_SHORT)
-										.show();
+								Utils.makeToast("You have already invited this user.");
 								break;
 							default:
-								Log.e(TAG, "inviteFriend: " + error.getMessage());
-							//	Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
+								Log.e(TAG, "inviteFriend: " + content);
+								// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 						}
 					}
 					else {
 						Log.e(TAG, "inviteFriend: " + content);
-					//	Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.", Toast.LENGTH_SHORT).show();
+						// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 					}
 				}
 
 			});
 		}
-	}
-	
-	private void makeToast(String toast) {
-		if (mToast != null) {
-			mToast.cancel();
-		}
-		mToast = Toast.makeText(MainActivity.this, "Error inviting friend.", Toast.LENGTH_SHORT);
-		mToast.show();
 	}
 
 }

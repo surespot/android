@@ -3,28 +3,33 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
-    
-     <TextView 
+
+    <TextView
         android:id="@+id/notificationItemText"
         android:layout_width="0dp"
         android:layout_height="50sp"
+        android:layout_marginLeft="5sp"
         android:layout_weight="1"
-        android:layout_marginLeft="5sp"        
-        android:textSize="20sp"></TextView>
-     
-     <Button
-         android:id="@+id/notificationItemIgnore"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="ignore"
-         android:tag="ignore"></Button>
-   
-	<Button
-         android:id="@+id/notificationItemAccept"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="accept"
-         android:tag="accept"></Button>
-   
-     
+        android:gravity="center_vertical"
+        android:textSize="20sp" >
+    </TextView>
+
+    <Button
+        android:id="@+id/notificationItemIgnore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:tag="ignore"
+        android:text="ignore" >
+    </Button>
+
+    <Button
+        android:id="@+id/notificationItemAccept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:tag="accept"
+        android:text="accept" >
+    </Button>
+
 </LinearLayout>

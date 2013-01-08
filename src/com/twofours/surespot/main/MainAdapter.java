@@ -173,7 +173,7 @@ public class MainAdapter extends BaseAdapter {
 				}
 				
 				public void onFailure(Throwable error, String content) {
-					Log.e(TAG,error.getMessage());
+					Log.e(TAG, content);
 				};
 			});
 
@@ -189,6 +189,7 @@ public class MainAdapter extends BaseAdapter {
 		else {
 			mFriends.remove(position - mNotifications.size());
 		}
+		notifyDataSetChanged();
 	}
 
 	public static class NotificationViewHolder {

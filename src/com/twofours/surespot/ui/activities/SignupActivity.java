@@ -19,12 +19,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.main.MainActivity;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -81,7 +81,7 @@ public class SignupActivity extends Activity {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
-					Toast.makeText(SignupActivity.this, "That username already exists, please choose another.", Toast.LENGTH_LONG).show();
+					Utils.makeToast("That username already exists, please choose another.");
 
 				}
 				else {
@@ -139,20 +139,17 @@ public class SignupActivity extends Activity {
 
 											public void onFailure(Throwable arg0, String arg1) {
 												progressDialog.dismiss();
-												Log.e("SignupActivity", arg0.toString());
+												Log.e("SignupActivity", arg1);
 
 												if (arg0 instanceof HttpResponseException) {
 													HttpResponseException error = (HttpResponseException) arg0;
 													int statusCode = error.getStatusCode();
 													if (statusCode == 409) {
-														Toast.makeText(SignupActivity.this,
-																"That username already exists, please choose another.", Toast.LENGTH_LONG)
-																.show();
+														Utils.makeToast("That username already exists, please choose another.");
 													}
 													else {
 
-														Toast.makeText(SignupActivity.this, "Error, could not create user.",
-																Toast.LENGTH_SHORT).show();
+														Utils.makeToast("Error, could not create user.");
 													}
 												}
 											};
