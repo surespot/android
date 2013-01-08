@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -138,11 +137,6 @@ public class LoginActivity extends Activity {
 		finish();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_sure_spot, menu);
-		return true;
-	}
+	
 
 }

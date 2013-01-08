@@ -226,7 +226,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.activity_main, menu);
+		inflater.inflate(R.menu.activity_chat, menu);
 		return true;
 	}
 

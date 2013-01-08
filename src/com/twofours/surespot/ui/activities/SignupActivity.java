@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -166,11 +165,5 @@ public class SignupActivity extends Activity {
 
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_credential_management, menu);
-		return true;
-	}
 
 }
