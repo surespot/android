@@ -1,6 +1,8 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -233,6 +235,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	public synchronized void startLoadingMessagesProgress() {
 		mProgressCounter++;
 		if (mProgressCounter == 1) {
+
 			if (mLoadingMessagesProgress == null) {
 				mLoadingMessagesProgress = new ProgressDialog(this);
 				mLoadingMessagesProgress.setIndeterminate(true);
@@ -240,7 +243,26 @@ public class ChatActivity extends SherlockFragmentActivity {
 				mLoadingMessagesProgress.setMessage("loading and decrypting messages...");
 			}
 
-			mLoadingMessagesProgress.show();
+			// only show the dialog if we haven't loaded within 500 ms
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask() {
+
+				@Override
+				public void run() {
+					if (mProgressCounter > 0) {
+						ChatActivity.this.runOnUiThread(new Runnable() {
+
+							@Override
+							public void run() {
+								mLoadingMessagesProgress.show();
+
+							}
+						});
+
+					}
+				}
+			}, 500);
+
 		}
 
 	}
@@ -248,7 +270,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 	public synchronized void stopLoadingMessagesProgress() {
 		mProgressCounter--;
 		if (mProgressCounter == 0) {
-			mLoadingMessagesProgress.dismiss();
+			if (mLoadingMessagesProgress.isShowing()) {
+				mLoadingMessagesProgress.dismiss();
+			}
 		}
 	}
 
