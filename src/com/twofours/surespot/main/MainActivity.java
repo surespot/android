@@ -31,6 +31,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
+import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
@@ -46,20 +47,23 @@ public class MainActivity extends SherlockActivity {
 	private MainAdapter mMainAdapter;
 	private static final String TAG = "MainActivity";
 	private boolean mDisconnectSocket = true;
+	private MultiProgressDialog mMpdPopulateList;
+	private MultiProgressDialog mMpdInviteFriend;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
 		setContentView(R.layout.activity_main);
-		// final View view = inflater.inflate(R.layout.friend_fragment, container, false);
+		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
+		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
 		getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
 
 		final ListView listView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new MainAdapter(this);
 		listView.setAdapter(mMainAdapter);
-		
+
 		// click on friend to join chat
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -141,9 +145,11 @@ public class MainActivity extends SherlockActivity {
 			}
 		});
 
+		this.mMpdPopulateList.incrProgress();
 		// TODO combine into 1 web service call
 		// get the list of notifications
 		NetworkController.getNotifications(new JsonHttpResponseHandler() {
+
 			public void onSuccess(JSONArray jsonArray) {
 
 				for (int i = 0; i < jsonArray.length(); i++) {
@@ -156,14 +162,24 @@ public class MainActivity extends SherlockActivity {
 					}
 
 				}
+
 			}
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				Log.e(TAG, "getNotifications: " + content);
 				// Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.");
+
 			}
+
+			@Override
+			public void onFinish() {
+				MainActivity.this.mMpdPopulateList.decrProgress();
+			}
+
 		});
+
+		this.mMpdPopulateList.incrProgress();
 		// get the list of friends
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
@@ -194,6 +210,11 @@ public class MainActivity extends SherlockActivity {
 				Log.e(TAG, "getFriends: " + content);
 				// Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.");
 			}
+
+			@Override
+			public void onFinish() {
+				MainActivity.this.mMpdPopulateList.decrProgress();
+			}
 		});
 
 	}
@@ -201,15 +222,14 @@ public class MainActivity extends SherlockActivity {
 	private void inviteFriend() {
 		final EditText etFriend = ((EditText) findViewById(R.id.etFriend));
 		final String friend = etFriend.getText().toString();
-		
-		
-		
+
 		if (friend.length() > 0) {
 			if (friend.equals(EncryptionController.getIdentityUsername())) {
 				Utils.makeToast("You can't be friends with yourself, bro.");
-				return;				
+				return;
 			}
-			
+
+			mMpdInviteFriend.incrProgress();
 			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) { // TODO
@@ -247,6 +267,11 @@ public class MainActivity extends SherlockActivity {
 						Log.e(TAG, "inviteFriend: " + content);
 						// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 					}
+				}
+
+				@Override
+				public void onFinish() {
+					mMpdInviteFriend.decrProgress();
 				}
 
 			});

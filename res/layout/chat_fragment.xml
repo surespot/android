@@ -3,7 +3,8 @@
     android:id="@+id/chat_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+     >
 
     <ListView
         android:id="@+id/message_list"
@@ -12,7 +13,9 @@
         android:layout_weight="1"
         android:drawSelectorOnTop="false"
         android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll" />
+        android:transcriptMode="alwaysScroll" 
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"/>
 
     <TextView
         android:id="@+id/message_list_empty"

@@ -1,14 +1,11 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +20,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
@@ -34,6 +32,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 	ChatPagerAdapter mPagerAdapter;
 	ViewPager mViewPager;
 	BroadcastReceiver mMessageBroadcastReceiver;
+	MultiProgressDialog mMpd;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +46,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		String name = intent.getExtras().getString(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
-
+		mMpd = new MultiProgressDialog(this, "loading and decrypting messages", 750);
+		
 		// get the chats
 		JSONArray jsonChats;
 		boolean foundChat = false;
@@ -229,51 +230,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 		return true;
 	}
 
-	private int mProgressCounter;
-	private ProgressDialog mLoadingMessagesProgress;
+	
 
-	public synchronized void startLoadingMessagesProgress() {
-		mProgressCounter++;
-		if (mProgressCounter == 1) {
-
-			if (mLoadingMessagesProgress == null) {
-				mLoadingMessagesProgress = new ProgressDialog(this);
-				mLoadingMessagesProgress.setIndeterminate(true);
-				// progressDialog.setTitle("loading");
-				mLoadingMessagesProgress.setMessage("loading and decrypting messages...");
-			}
-
-			// only show the dialog if we haven't loaded within 500 ms
-			Timer timer = new Timer();
-			timer.schedule(new TimerTask() {
-
-				@Override
-				public void run() {
-					if (mProgressCounter > 0) {
-						ChatActivity.this.runOnUiThread(new Runnable() {
-
-							@Override
-							public void run() {
-								mLoadingMessagesProgress.show();
-
-							}
-						});
-
-					}
-				}
-			}, 500);
-
-		}
-
+	public void startLoadingMessagesProgress() {
+		mMpd.incrProgress();
 	}
 
-	public synchronized void stopLoadingMessagesProgress() {
-		mProgressCounter--;
-		if (mProgressCounter == 0) {
-			if (mLoadingMessagesProgress.isShowing()) {
-				mLoadingMessagesProgress.dismiss();
-			}
-		}
+	public void stopLoadingMessagesProgress() {
+		mMpd.decrProgress();
 	}
 
 }
