@@ -91,13 +91,14 @@ public class NetworkController {
 					String origin = context.getAttribute("http.cookie-origin").toString();
 
 					if (origin != null) {
-						Log.v(TAG, "response origin: " + origin);
-						if (!origin.equals("[" + SurespotConstants.BASE_URL.substring(7) + "/login]")) {
 
-							if (!NetworkController.isUnauthorized()) {
+						if (!NetworkController.isUnauthorized()) {
+							
+							if (!(origin.contains(SurespotConstants.BASE_URL.substring(7)) && origin.contains("/login"))) {
+
 								mClient.cancelRequests(SurespotApplication.getAppContext(), true);
 
-								Log.v(TAG, "launching login intent");
+								Log.v(TAG, "Got 401, launching login intent.");
 								Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 								SurespotApplication.getAppContext().startActivity(intent);

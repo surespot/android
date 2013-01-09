@@ -57,7 +57,11 @@ public class ChatFragment extends SherlockFragment {
 		super.onResume();
 
 		// TODO use dependency injection with interface
-		((ChatActivity) getActivity()).startLoadingMessagesProgress();
+		// if this is the fragment that's showing, start progress
+		if (this.isVisible()) {
+			Log.v(TAG, "Throwing up a progress dialog: " + getUsername());
+			((ChatActivity) getActivity()).startLoadingMessagesProgress();
+		}
 		// reget the messages in case any were added while we were gone
 		Log.v(TAG, "onResume, mUsername:  " + mUsername);
 		// make sure the public key is there
@@ -90,13 +94,19 @@ public class ChatFragment extends SherlockFragment {
 							mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
 
 						}
-						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
 						Log.e(TAG, content);
-						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+					}
+
+					@Override
+					public void onFinish() {
+						if (ChatFragment.this.isVisible()) {
+							Log.v(TAG, "Tearing down a progress dialog: " + getUsername());
+							((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+						}
 					}
 				});
 			}
@@ -107,7 +117,7 @@ public class ChatFragment extends SherlockFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 
-		mListView = (ListView) view.findViewById(R.id.message_list);				
+		mListView = (ListView) view.findViewById(R.id.message_list);
 		setUsername(getArguments().getString("username"));
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
