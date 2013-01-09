@@ -10,8 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.KeyAgreement;
 
@@ -48,8 +47,8 @@ public class EncryptionController {
 	private static SurespotIdentity mIdentity;
 	private static SecureRandom mSecureRandom;
 
-	private static Map<String, ECPublicKey> mPublicKeys;
-	private static Map<String, byte[]> mSharedSecrets;
+	private static ConcurrentHashMap<String, ECPublicKey> mPublicKeys;
+	private static ConcurrentHashMap<String, byte[]> mSharedSecrets;
 
 	static {
 		Log.v(TAG, "constructor");
@@ -57,8 +56,8 @@ public class EncryptionController {
 		mSecureRandom = new SecureRandom();
 
 		mIdentity = loadIdentity();
-		mPublicKeys = new Hashtable<String, ECPublicKey>();
-		mSharedSecrets = new Hashtable<String, byte[]>();
+		mPublicKeys = new ConcurrentHashMap<String, ECPublicKey>();
+		mSharedSecrets = new ConcurrentHashMap<String, byte[]>();
 	}
 
 	public static String getPublicKeyString() {
@@ -111,9 +110,8 @@ public class EncryptionController {
 	private static ECPublicKey recreatePublicKey(String encodedKey) {
 		ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Hex.decode(encodedKey)), curve);
 
-		KeyFactory fact;
 		try {
-			fact = KeyFactory.getInstance("ECDH", "SC");
+			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
 			return pubKey;
 		}
@@ -138,9 +136,8 @@ public class EncryptionController {
 		// recreate key from hex string
 		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Hex.decode(encodedKey)), curve);
 
-		KeyFactory fact;
 		try {
-			fact = KeyFactory.getInstance("ECDH", "SC");
+			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(priKeySpec);
 			return privKey;
 		}
