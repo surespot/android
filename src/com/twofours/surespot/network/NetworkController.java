@@ -120,7 +120,7 @@ public class NetworkController {
 		params.put("password", password);
 		params.put("publickey", publicKey);
 		// get the gcm id
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -145,7 +145,7 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result);
@@ -183,8 +183,8 @@ public class NetworkController {
 		params.put("password", password);
 
 		// get the gcm id
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_SENT);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -209,7 +209,7 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result);
@@ -267,8 +267,8 @@ public class NetworkController {
 		// so we need to upload the gcm here if we haven't already
 		// get the gcm id
 
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.GCM_ID_SENT);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -294,7 +294,7 @@ public class NetworkController {
 
 				// update shared prefs
 				if (gcmUpdated) {
-					Utils.putSharedPrefsString(SurespotConstants.GCM_ID_SENT, gcmIdReceived);
+					Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 				}
 
 				responseHandler.onSuccess(responseCode, result);
