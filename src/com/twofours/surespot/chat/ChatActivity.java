@@ -33,7 +33,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 	ViewPager mViewPager;
 	BroadcastReceiver mMessageBroadcastReceiver;
 	MultiProgressDialog mMpd;
-	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +46,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
 		mMpd = new MultiProgressDialog(this, "loading and decrypting messages", 750);
-		
+
 		// get the chats
 		JSONArray jsonChats;
 		boolean foundChat = false;
@@ -147,22 +146,39 @@ public class ChatActivity extends SherlockFragmentActivity {
 				showMain();
 				return true;
 			case R.id.menu_close:
-				if (mPagerAdapter.getCount() == 1) {
-					mPagerAdapter.removeChat(0, false);
-					showMain();
-				}
-				else {
 
-					mPagerAdapter.removeChat(mViewPager.getCurrentItem(), true);
-					// set the title bar
-					getSupportActionBar().setTitle(mPagerAdapter.getChatNames().get(mViewPager.getCurrentItem()));
+				closeTab(mViewPager.getCurrentItem());
 
-				}
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 
+	}
+
+	public void closeChat(String username) {
+		if (mPagerAdapter.getCount() == 1) {
+			mPagerAdapter.removeChat(0, false);
+			showMain();
+		}
+		else {
+			mPagerAdapter.removeChat(mPagerAdapter.getChatFragmentPosition(username), true);
+			// set the title bar
+			getSupportActionBar().setTitle(mPagerAdapter.getChatNames().get(mViewPager.getCurrentItem()));
+		}
+	}
+
+	public void closeTab(int position) {
+		if (mPagerAdapter.getCount() == 1) {
+			mPagerAdapter.removeChat(0, false);
+			showMain();
+		}
+		else {
+
+			mPagerAdapter.removeChat(mViewPager.getCurrentItem(), true);
+			// set the title bar
+			getSupportActionBar().setTitle(mPagerAdapter.getChatNames().get(mViewPager.getCurrentItem()));
+		}
 	}
 
 	private void showMain() {
@@ -229,8 +245,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 		inflater.inflate(R.menu.activity_chat, menu);
 		return true;
 	}
-
-	
 
 	public void startLoadingMessagesProgress() {
 		mMpd.incrProgress();

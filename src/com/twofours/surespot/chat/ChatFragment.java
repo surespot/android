@@ -58,56 +58,67 @@ public class ChatFragment extends SherlockFragment {
 
 		// TODO use dependency injection with interface
 		// if this is the fragment that's showing, start progress
-		if (this.isVisible()) {			
+		if (this.isVisible()) {
 			((ChatActivity) getActivity()).startLoadingMessagesProgress();
 		}
 		// reget the messages in case any were added while we were gone
 		Log.v(TAG, "onResume, mUsername:  " + mUsername);
 		// make sure the public key is there
 		// TODO move this into network controller
-		EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Void>() {
+		EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Boolean>() {
 			@Override
-			public void handleResponse(Void result) {
-				// get the list of messages
-				NetworkController.getMessages(mUsername, new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(JSONArray jsonArray) {
-						// on async http request, response seems to come back
-						// after app is destroyed sometimes
-						// (ie. on rotation on gingerbread)
-						// so check for null here
-						if (getActivity() != null) {
-							ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
-							try {
-								for (int i = 0; i < jsonArray.length(); i++) {
-									JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-									messages.add(ChatMessage.toChatMessage(jsonMessage));
+			public void handleResponse(Boolean result) {
+				if (result) {
+					// get the list of messages
+					NetworkController.getMessages(mUsername, new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(JSONArray jsonArray) {
+							// on async http request, response seems to come back
+							// after app is destroyed sometimes
+							// (ie. on rotation on gingerbread)
+							// so check for null here
+							if (getActivity() != null) {
+								ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
+								try {
+									for (int i = 0; i < jsonArray.length(); i++) {
+										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+										messages.add(ChatMessage.toChatMessage(jsonMessage));
+									}
 								}
+								catch (JSONException e) {
+									Log.e(TAG, "Error creating chat message: " + e.toString());
+								}
+								chatAdapter = new ChatAdapter(getActivity());
+								chatAdapter.addMessages(messages);
+								mListView.setAdapter(chatAdapter);
+								mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+
 							}
-							catch (JSONException e) {
-								Log.e(TAG, "Error creating chat message: " + e.toString());
+						}
+
+						@Override
+						public void onFailure(Throwable error, String content) {
+							Log.e(TAG, content);
+						}
+
+						@Override
+						public void onFinish() {
+							if (ChatFragment.this.isVisible()) {
+								Log.v(TAG, "Tearing down a progress dialog: " + getUsername());
+								((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 							}
-							chatAdapter = new ChatAdapter(getActivity());
-							chatAdapter.addMessages(messages);
-							mListView.setAdapter(chatAdapter);
-							mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-
 						}
+					});
+				}
+				else {
+					Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
+					//can't do anything without a public key so close the tab
+					if (ChatFragment.this.isVisible()) {
+						((ChatActivity) getActivity()).stopLoadingMessagesProgress();						
 					}
-
-					@Override
-					public void onFailure(Throwable error, String content) {
-						Log.e(TAG, content);
-					}
-
-					@Override
-					public void onFinish() {
-						if (ChatFragment.this.isVisible()) {
-							Log.v(TAG, "Tearing down a progress dialog: " + getUsername());
-							((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-						}
-					}
-				});
+					
+					((ChatActivity) getActivity()).closeChat(mUsername);
+				}
 			}
 		});
 	}

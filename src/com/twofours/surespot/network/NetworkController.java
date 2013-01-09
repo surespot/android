@@ -31,7 +31,7 @@ public class NetworkController {
 	protected static final String TAG = "NetworkController";
 	private static Cookie mConnectCookie;
 
-	private static void setConnectCookie(Cookie connectCookie) {
+	private static synchronized void setConnectCookie(Cookie connectCookie) {
 		// we be authorized
 		NetworkController.mConnectCookie = connectCookie;
 		setUnauthorized(false);

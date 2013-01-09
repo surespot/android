@@ -372,28 +372,30 @@ public class EncryptionController {
 	}
 
 	public static void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
-		hydratePublicKey(username, new IAsyncCallback<Void>() {
+		hydratePublicKey(username, new IAsyncCallback<Boolean>() {
 
 			@Override
-			public void handleResponse(Void result) {
-				symmetricEncrypt(username, plaintext, callback);
+			public void handleResponse(Boolean result) {
+				if (result) {
+					symmetricEncrypt(username, plaintext, callback);
+				}
 			}
 		});
 	}
 
 	public static void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
 
-		hydratePublicKey(from, new IAsyncCallback<Void>() {
+		hydratePublicKey(from, new IAsyncCallback<Boolean>() {
 
 			@Override
-			public void handleResponse(Void result) {
+			public void handleResponse(Boolean result) {
 				symmetricDecrypt(from, ciphertext, callback);
 			}
 
 		});
 	}
 
-	public static void hydratePublicKey(final String username, final IAsyncCallback<Void> callback) {
+	public static void hydratePublicKey(final String username, final IAsyncCallback<Boolean> callback) {
 		byte[] secret = mSharedSecrets.get(username);
 		if (secret == null) {
 			NetworkController.getPublicKey(username, new AsyncHttpResponseHandler() {
@@ -408,7 +410,7 @@ public class EncryptionController {
 						@Override
 						public void handleResponse(byte[] result) {
 							mSharedSecrets.put(username, result);
-							callback.handleResponse(null);
+							callback.handleResponse(true);
 						}
 
 					});
@@ -417,13 +419,14 @@ public class EncryptionController {
 
 				@Override
 				public void onFailure(Throwable error, String content) {
-					Log.e(TAG, content);
+					Log.e(TAG, "getPublicKey: " + content);
+					callback.handleResponse(false);
 				}
 
 			});
 		}
 		else {
-			callback.handleResponse(null);
+			callback.handleResponse(true);
 		}
 	}
 }
