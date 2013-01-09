@@ -14,8 +14,8 @@ public class SurespotApplication extends Application {
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
 		//TODO froyo only
-		//java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
-		//java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
+		java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+		java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
 
 		SurespotApplication.context = getApplicationContext();
 

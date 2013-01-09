@@ -52,7 +52,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		JSONArray jsonChats;
 		boolean foundChat = false;
 		try {
-			String sChats = Utils.getSharedPrefsString("chats");
+			String sChats = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS);
 			if (sChats != null) {
 				jsonChats = new JSONArray(sChats);
 
@@ -181,7 +181,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		ChatController.disconnect();
 		// save chat names
 		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
-		Utils.putSharedPrefsString("chats", jsonArray.toString());
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
 
 	}
 

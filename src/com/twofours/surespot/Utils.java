@@ -49,13 +49,13 @@ public class Utils {
 	}
 
 	public static String getSharedPrefsString(String key) {
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE,
 				android.content.Context.MODE_PRIVATE);
 		return settings.getString(key, null);
 	}
 
 	public static void putSharedPrefsString(String key, String value) {
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PREFS_FILE,
+		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE,
 				android.content.Context.MODE_PRIVATE);
 		Editor editor = settings.edit();
 		editor.putString(key, value);

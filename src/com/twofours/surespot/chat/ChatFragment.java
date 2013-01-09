@@ -58,8 +58,7 @@ public class ChatFragment extends SherlockFragment {
 
 		// TODO use dependency injection with interface
 		// if this is the fragment that's showing, start progress
-		if (this.isVisible()) {
-			Log.v(TAG, "Throwing up a progress dialog: " + getUsername());
+		if (this.isVisible()) {			
 			((ChatActivity) getActivity()).startLoadingMessagesProgress();
 		}
 		// reget the messages in case any were added while we were gone
