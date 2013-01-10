@@ -8,12 +8,13 @@ public class ChatMessage {
 	private String mTo;
 	private String mCipherText;
 	private String mPlainText;
+	private String mId;
 	
 	
 	public String getFrom() {
 		return mFrom;
 	}
-	public void setFro(String from) {
+	public void setFrom(String from) {
 		mFrom = from;
 	}
 	public String getTo() {
@@ -23,7 +24,7 @@ public class ChatMessage {
 		mTo = to;
 	}
 	public String getCipherText() {
-		return mCipherText;
+		return mCipherText;		
 	}
 	public void setCipherText(String cipherText) {
 		mCipherText = cipherText;
@@ -35,10 +36,17 @@ public class ChatMessage {
 		mPlainText = plainText;
 	}
 	
+	public String getId() {
+		return mId;
+	}
+	public void setId(String id) {
+		mId = id;
+	}
 	public static ChatMessage toChatMessage(JSONObject jsonMessage) throws JSONException {
 		ChatMessage chatMessage = new ChatMessage();
 		 
-		chatMessage.setFro(jsonMessage.getString("from"));
+		chatMessage.setId(jsonMessage.getString("id"));
+		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
 		chatMessage.setCipherText(jsonMessage.getString("text"));
 

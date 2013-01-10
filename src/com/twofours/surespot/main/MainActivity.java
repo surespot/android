@@ -8,13 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
@@ -33,8 +30,6 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.twofours.surespot.GCMIntentService;
-import com.twofours.surespot.GCMIntentService.GCMBinder;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
@@ -57,8 +52,6 @@ public class MainActivity extends SherlockActivity {
 	private BroadcastReceiver mInvitationReceiver;
 	private BroadcastReceiver mFriendAddedReceiver;
 	private BroadcastReceiver mMessageReceiver;
-	private GCMIntentService mGCMService;
-	private boolean mBound = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -157,51 +150,22 @@ public class MainActivity extends SherlockActivity {
 				return handled;
 			}
 		});
-
-		Intent intent = new Intent(MainActivity.this, GCMIntentService.class);
-		bindService(intent, mConnection, Context.BIND_ALLOW_OOM_MANAGEMENT);
 	}
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
-		unbindService(mConnection);
+		super.onDestroy();		
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mFriendAddedReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 	}
 
-	/** Defines callbacks for service binding, passed to bindService() */
-	private ServiceConnection mConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceConnected(ComponentName className, IBinder service) {
-
-			Log.v(TAG, "GCMService connected.");
-			// We've bound to LocalService, cast the IBinder and get LocalService instance
-			GCMBinder binder = (GCMBinder) service;
-			mGCMService = binder.getService();
-
-		
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			Log.v(TAG, "GCMService disconnected.");
 	
-
-		}
-	};
-
 	@Override
 	protected void onPause() {
 		super.onPause();
 		Log.v(TAG, "onPause");
 
-		if (mGCMService != null) {
-			mGCMService.setStoreMessages(true);
-
-		}
 		ChatController.disconnect();
 
 	}
@@ -273,27 +237,7 @@ public class MainActivity extends SherlockActivity {
 
 					mMainAdapter.refreshActiveChats();
 					mMainAdapter.clearFriends(false);
-					mMainAdapter.addFriends(friends);
-
-					Log.v(TAG, "mBound: " + mBound + ", mGCMService exists: " + (mGCMService != null));
-					if (mGCMService != null) {
-						ArrayList<JSONObject> storedMessages = mGCMService.getStoredMessages();
-						// iterate throught the stored messages and flag friends with new message
-						// TODO display count?
-						Log.v(TAG,"there were: " + storedMessages.size() + " stored messages while you were gone, mr main activity sir.");
-						for (JSONObject jsonMessage : storedMessages) {
-							try {
-								String username = jsonMessage.getString("otheruser");
-								mMainAdapter.messageReceived(username);
-							}
-							catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						mGCMService.setStoreMessages(false);
-					}
-					
+					mMainAdapter.addFriends(friends);			
 
 				}
 			}

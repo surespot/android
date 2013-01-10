@@ -28,10 +28,11 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class ChatFragment extends SherlockFragment {
-	private ChatAdapter chatAdapter;
+	private ChatAdapter mChatAdapter;
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
+	private String mLastMessageId;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -50,6 +51,14 @@ public class ChatFragment extends SherlockFragment {
 		bundle.putString("username", username);
 		cf.setArguments(bundle);
 		return cf;
+	}
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+	
+		super.onCreate(savedInstanceState); 
+		
+		
 	}
 
 	@Override
@@ -70,27 +79,34 @@ public class ChatFragment extends SherlockFragment {
 			public void handleResponse(Boolean result) {
 				if (result) {
 					// get the list of messages
-					NetworkController.getMessages(mUsername, new JsonHttpResponseHandler() {
+					NetworkController.getMessages(mUsername, mLastMessageId, new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(JSONArray jsonArray) {
 							// on async http request, response seems to come back
 							// after app is destroyed sometimes
 							// (ie. on rotation on gingerbread)
 							// so check for null here
+
 							if (getActivity() != null) {
+
 								ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
+								ChatMessage message = null;
 								try {
 									for (int i = 0; i < jsonArray.length(); i++) {
 										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-										messages.add(ChatMessage.toChatMessage(jsonMessage));
+										message = ChatMessage.toChatMessage(jsonMessage);
+										messages.add(message);
 									}
 								}
 								catch (JSONException e) {
 									Log.e(TAG, "Error creating chat message: " + e.toString());
 								}
-								chatAdapter = new ChatAdapter(getActivity());
-								chatAdapter.addMessages(messages);
-								mListView.setAdapter(chatAdapter);
+
+								if (message != null) {
+									mLastMessageId = message.getId();
+								}
+								
+								mChatAdapter.addMessages(messages);								
 								mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
 
 							}
@@ -98,7 +114,7 @@ public class ChatFragment extends SherlockFragment {
 
 						@Override
 						public void onFailure(Throwable error, String content) {
-							Log.e(TAG, content);
+							Log.e(TAG, "getMessages: " + error.getMessage());
 						}
 
 						@Override
@@ -112,11 +128,11 @@ public class ChatFragment extends SherlockFragment {
 				}
 				else {
 					Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
-					//can't do anything without a public key so close the tab
+					// can't do anything without a public key so close the tab
 					if (ChatFragment.this.isVisible()) {
-						((ChatActivity) getActivity()).stopLoadingMessagesProgress();						
+						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 					}
-					
+
 					((ChatActivity) getActivity()).closeChat(mUsername);
 				}
 			}
@@ -128,6 +144,9 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 
 		mListView = (ListView) view.findViewById(R.id.message_list);
+		ensureChatAdapter();
+		
+		
 		setUsername(getArguments().getString("username"));
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -167,16 +186,19 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	private void ensureChatAdapter() {
-		if (chatAdapter == null) {
-			chatAdapter = new ChatAdapter(getActivity());
-			mListView.setAdapter(chatAdapter);
+		if (mChatAdapter == null) {
+			mChatAdapter = new ChatAdapter(getActivity());
+			mListView.setAdapter(mChatAdapter);
 		}
 	}
 
-	public void addMessage(final JSONObject message) {
+	public void addMessage(final JSONObject jsonMessage) {
 		ensureChatAdapter();
 		try {
-			chatAdapter.addMessage(ChatMessage.toChatMessage(message));
+			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);
+			mChatAdapter.addMessage(message);
+			mLastMessageId = message.getId();
+
 		}
 		catch (JSONException e) {
 			Log.e(TAG, "Error adding chat message.");

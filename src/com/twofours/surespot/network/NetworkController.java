@@ -239,9 +239,17 @@ public class NetworkController {
 
 	}
 
-	public static void getMessages(String room, AsyncHttpResponseHandler responseHandler) {
-		get("/conversations/" + room + "/messages", null, responseHandler);
+	//if we have an id get the messages since the id, otherwise get the last x
+	public static void getMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
+	
+		if (id == null) {
+			get("/messages/" + room, null, responseHandler);
+		}
+		else {
+			get("/messages/" + room + "/" + id, null, responseHandler);		
+		}
 	}
+	
 
 	public static void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/publickey/" + username, null, responseHandler);

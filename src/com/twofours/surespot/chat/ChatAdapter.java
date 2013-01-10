@@ -32,7 +32,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public void addMessages(ArrayList<ChatMessage> messages) {
-		mMessages = messages;
+		mMessages.addAll(messages);
 		notifyDataSetChanged();
 	}
 

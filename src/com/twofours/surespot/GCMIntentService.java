@@ -1,22 +1,15 @@
 package com.twofours.surespot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -28,18 +21,13 @@ import com.twofours.surespot.ui.activities.StartupActivity;
 
 public class GCMIntentService extends GCMBaseIntentService
 
-{
-	private final IBinder mBinder = new GCMBinder();
+{	
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
-	private boolean mStoring;
-	private ArrayList<JSONObject> mStoredMessages;
 
 	public GCMIntentService() {
 		super(SENDER_ID);
 		Log.v(TAG, "GCMIntentService");
-		mStoredMessages = new ArrayList<JSONObject>();
-
 	}
 
 	@Override
@@ -57,29 +45,12 @@ public class GCMIntentService extends GCMBaseIntentService
 			String to = intent.getStringExtra("to");
 			String from = intent.getStringExtra("sentfrom");
 			String otherUser = Utils.getOtherUser(from, to);
-			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);
-			JSONObject jsonObject = new JSONObject();
-			try {
-				jsonObject.put("to", to);
-				jsonObject.put("from", from);
-				jsonObject.put("otheruser", otherUser);
-				jsonObject.put("text", intent.getStringExtra("text"));
-				sendMessageReceived(jsonObject.toString());
-				if (mStoring) {
-					mStoredMessages.add(jsonObject);
-				}
-			}
-			catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);					
 		}
 		else {
 			String user = intent.getStringExtra("user");
 			generateInviteNotification(context, user, "surespot", "friend invite from " + user);
 		}
-
 	}
 
 	@Override
@@ -176,36 +147,5 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
 		notificationManager.notify(1, notification);
-	}
-	
-	private static void sendMessageReceived(String message) {
-		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
-		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
-		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
-
-	}
-	
-	@Override
-	public IBinder onBind(Intent intent) {
-		return mBinder;
-	}
-
-	
-	public class GCMBinder extends Binder {
-		public GCMIntentService getService() {
-			return GCMIntentService.this;
-		}
-	}
-	
-	public ArrayList<JSONObject> getStoredMessages() {
-		return mStoredMessages;
-	}
-	
-	public void setStoreMessages(boolean store) {
-		mStoring = store;
-		if (!mStoring) {
-			mStoredMessages.clear();
-		}
-		
-	}
+	}		
 }

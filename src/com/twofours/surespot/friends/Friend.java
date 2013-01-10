@@ -1,9 +1,10 @@
 package com.twofours.surespot.friends;
 
 public class Friend implements Comparable<Friend> {
-	public static final int ACTIVE_CHAT = 1;
-	public static final int NEW_MESSAGE = 2;
-	public static final int NEW_FRIEND = 4;
+	public static final int NEW_FRIEND = 1;
+	public static final int ACTIVE_CHAT = 2;
+	public static final int NEW_MESSAGE = 4;
+	
 
 	private String mName;
 	private int mFlags;
