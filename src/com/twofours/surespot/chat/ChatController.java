@@ -91,6 +91,7 @@ public class ChatController {
 
 			@Override
 			public void on(String event, IOAcknowledge ack, Object... args) {
+
 				Log.v(TAG, "Server triggered event '" + event + "'");
 
 				if (event.equals("notification")) {
@@ -123,19 +124,19 @@ public class ChatController {
 	}
 
 	private static void sendNotification(String friend) {
-		Intent intent = new Intent(SurespotConstants.EventFilters.INVITATION_INTENT);
+		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITATION_INTENT);
 		intent.putExtra(SurespotConstants.ExtraNames.INVITATION, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
 	private static void sendFriendAdded(String friend) {
-		Intent intent = new Intent(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT);
+		Intent intent = new Intent(SurespotConstants.IntentFilters.FRIEND_ADDED_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.FRIEND_ADDED, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
 	private static void sendMessageReceived(String message) {
-		Intent intent = new Intent(SurespotConstants.EventFilters.MESSAGE_RECEIVED_EVENT);
+		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
 		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 

@@ -8,10 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
@@ -30,6 +33,8 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.twofours.surespot.GCMIntentService;
+import com.twofours.surespot.GCMIntentService.GCMBinder;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
@@ -49,6 +54,11 @@ public class MainActivity extends SherlockActivity {
 	private boolean mDisconnectSocket = true;
 	private MultiProgressDialog mMpdPopulateList;
 	private MultiProgressDialog mMpdInviteFriend;
+	private BroadcastReceiver mInvitationReceiver;
+	private BroadcastReceiver mFriendAddedReceiver;
+	private BroadcastReceiver mMessageReceiver;
+	private GCMIntentService mGCMService;
+	private boolean mBound = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,23 +100,48 @@ public class MainActivity extends SherlockActivity {
 			}
 		});
 
+		mFriendAddedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				mMainAdapter.addNewFriend(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED));
+			}
+		};
 		// register for friend aded
-		LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+		LocalBroadcastManager.getInstance(this).registerReceiver(mFriendAddedReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.FRIEND_ADDED_EVENT));
+
+		// register for invites
+		mInvitationReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mMainAdapter.addFriend(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED), Friend.NEW_FRIEND);
-			}
-		}, new IntentFilter(SurespotConstants.EventFilters.FRIEND_ADDED_EVENT));
-
-		// register for notifications
-		LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-
 				mMainAdapter.addFriendInvite(intent.getStringExtra(SurespotConstants.ExtraNames.INVITATION));
-
 			}
-		}, new IntentFilter(SurespotConstants.EventFilters.INVITATION_INTENT));
+		};
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(mInvitationReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.INVITATION_INTENT));
+
+		mMessageReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				String message = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
+
+				JSONObject messageJson;
+				try {
+					messageJson = new JSONObject(message);
+					String name = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
+					mMainAdapter.messageReceived(name);
+				}
+				catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT));
 
 		EditText editText = (EditText) findViewById(R.id.etFriend);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
@@ -123,17 +158,58 @@ public class MainActivity extends SherlockActivity {
 			}
 		});
 
+		Intent intent = new Intent(MainActivity.this, GCMIntentService.class);
+		bindService(intent, mConnection, Context.BIND_ALLOW_OOM_MANAGEMENT);
 	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		unbindService(mConnection);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mFriendAddedReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+	}
+
+	/** Defines callbacks for service binding, passed to bindService() */
+	private ServiceConnection mConnection = new ServiceConnection() {
+
+		@Override
+		public void onServiceConnected(ComponentName className, IBinder service) {
+
+			Log.v(TAG, "GCMService connected.");
+			// We've bound to LocalService, cast the IBinder and get LocalService instance
+			GCMBinder binder = (GCMBinder) service;
+			mGCMService = binder.getService();
+
+		
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {
+			Log.v(TAG, "GCMService disconnected.");
+	
+
+		}
+	};
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+		Log.v(TAG, "onPause");
+
+		if (mGCMService != null) {
+			mGCMService.setStoreMessages(true);
+
+		}
 		ChatController.disconnect();
+
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+		Log.v(TAG, "onResume");
 
 		ChatController.connect(new IConnectCallback() {
 
@@ -160,9 +236,7 @@ public class MainActivity extends SherlockActivity {
 					catch (JSONException e) {
 						Log.e(TAG, e.toString());
 					}
-
 				}
-
 			}
 
 			@Override
@@ -176,7 +250,6 @@ public class MainActivity extends SherlockActivity {
 			public void onFinish() {
 				MainActivity.this.mMpdPopulateList.decrProgress();
 			}
-
 		});
 
 		this.mMpdPopulateList.incrProgress();
@@ -184,6 +257,7 @@ public class MainActivity extends SherlockActivity {
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
+				Log.v(TAG, "getFriends success.");
 
 				if (jsonArray.length() > 0) {
 					ArrayList<String> friends = null;
@@ -197,12 +271,31 @@ public class MainActivity extends SherlockActivity {
 						Log.e(TAG, e.toString());
 					}
 
+					mMainAdapter.refreshActiveChats();
 					mMainAdapter.clearFriends(false);
-					mMainAdapter.addFriends(friends, Friend.NEW_FRIEND);
-					
-				}
-				//
+					mMainAdapter.addFriends(friends);
 
+					Log.v(TAG, "mBound: " + mBound + ", mGCMService exists: " + (mGCMService != null));
+					if (mGCMService != null) {
+						ArrayList<JSONObject> storedMessages = mGCMService.getStoredMessages();
+						// iterate throught the stored messages and flag friends with new message
+						// TODO display count?
+						Log.v(TAG,"there were: " + storedMessages.size() + " stored messages while you were gone, mr main activity sir.");
+						for (JSONObject jsonMessage : storedMessages) {
+							try {
+								String username = jsonMessage.getString("otheruser");
+								mMainAdapter.messageReceived(username);
+							}
+							catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						mGCMService.setStoreMessages(false);
+					}
+					
+
+				}
 			}
 
 			@Override
@@ -217,7 +310,6 @@ public class MainActivity extends SherlockActivity {
 				MainActivity.this.mMpdPopulateList.decrProgress();
 			}
 		});
-
 	}
 
 	private void inviteFriend() {
@@ -274,7 +366,6 @@ public class MainActivity extends SherlockActivity {
 				public void onFinish() {
 					mMpdInviteFriend.decrProgress();
 				}
-
 			});
 		}
 	}
