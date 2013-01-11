@@ -6,6 +6,8 @@ import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
 import java.net.MalformedURLException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.http.cookie.Cookie;
 import org.json.JSONException;
@@ -25,6 +27,10 @@ public class ChatController {
 
 	private static final String TAG = "ChatController";
 	private static SocketIO socket;
+	private static final int MAX_RETRIES = 5;
+	private static int mRetries = 0;
+	final private static Timer mBackgroundTimer = new Timer("backgroundTimer");
+	private static boolean mError;
 
 	public static void connect(final IConnectCallback callback) {
 
@@ -34,7 +40,7 @@ public class ChatController {
 
 		if (cookie == null) {
 			// need to login
-			Log.v(TAG,"No session cookie, starting Login activity.");
+			Log.v(TAG, "No session cookie, starting Login activity.");
 			Intent startupIntent = new Intent(SurespotApplication.getAppContext(), StartupActivity.class);
 			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			SurespotApplication.getAppContext().startActivity(startupIntent);
@@ -69,10 +75,38 @@ public class ChatController {
 			}
 
 			@Override
-			public void onError(SocketIOException socketIOException) {
-				Log.v(TAG, "an Error occured");
-				socketIOException.printStackTrace();
+			public synchronized void onError(SocketIOException socketIOException) {
+				// socketIOException.printStackTrace();
+				Log.v(TAG, "mError before: " + mError);
 				// connect(null);
+
+				if (!mError) {
+					mError = true;
+					disconnect();
+					connect(null);
+				}
+
+				// Log.v(TAG, "mError: " + mError);
+				// Log.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
+				//
+				// if (mRetries == 0) {
+				//
+				// // if (mReconnectTask == null) {
+				// // mReconnectTask.cancel();
+				// //
+				// // }
+				// mRetries++;
+				// mReconnectTask = new ReconnectTask();
+				// mBackgroundTimer.schedule(mReconnectTask, 0);
+				//
+				// }
+				// else {
+				// // TODO tell user?
+				// Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
+				// }
+				//
+				// }
+
 			}
 
 			@Override
@@ -83,6 +117,9 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				Log.v(TAG, "socket.io connection established");
+				mRetries = 0;
+				mError = false;
+
 				if (callback != null) {
 					callback.connectStatus(true);
 				}
@@ -161,6 +198,40 @@ public class ChatController {
 
 	public static void disconnect() {
 		socket.disconnect();
+	
 	}
 
+	private static ReconnectTask mReconnectTask;
+
+	private static class ReconnectTask extends TimerTask {
+
+		@Override
+		public void run() {
+			Log.v(TAG, "Reconnect task run.");
+			connect(null);
+			mReconnectTask = null;
+
+			// kick off another task
+			if (mRetries < MAX_RETRIES && !socket.isConnected()) {
+
+				if (mReconnectTask != null) {
+					mReconnectTask.cancel();
+
+				}
+
+				int timerInterval = (mRetries++ ^ 2) * 1000;
+				Log.v(TAG, "Starting another task in: " + timerInterval);
+
+				mReconnectTask = new ReconnectTask();
+				mBackgroundTimer.schedule(mReconnectTask, timerInterval);
+
+			}
+			else {
+				// TODO tell user?
+				Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
+			}
+
+		}
+
+	}
 }

@@ -18,17 +18,17 @@ public class SurespotConstants {
 		public static final String GCM_CHANGED = "gcm_changed";
 	}
 
-	//public final static String BASE_URL = "http://alpha.surespot.me";
-	//public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
+	// public final static String BASE_URL = "http://alpha.surespot.me";
+	// public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
 
-	 public final static String BASE_URL = "http://192.168.10.68:3000";
-	 public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
+	public final static String BASE_URL = "http://192.168.10.68:3000";
+	public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";
 		public final static String GCM_ID_RECEIVED = "gcm_id_received";
 		public final static String GCM_ID_SENT = "gcm_id_sent";
-		public final static String PREFS_ACTIVE_CHATS = "active_chats";		
+		public final static String PREFS_ACTIVE_CHATS = "active_chats";
 		public final static String PREFS_LAST_MESSAGE_IDS = "last_message_ids";
 	}
 }

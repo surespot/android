@@ -252,7 +252,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 		}
 
-		// if we didn't get any new messages we know by the NULL
+		// if we opened the tab and didn't get any new messages we know by the -1
 		mVisitedPageMessageIds.put(getCurrentChatName(), -1);
 
 	}

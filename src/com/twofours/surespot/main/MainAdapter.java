@@ -256,7 +256,7 @@ public class MainAdapter extends BaseAdapter {
 				}
 
 				if ((item1.getFlags() & Friend.NEW_FRIEND) == Friend.NEW_FRIEND) {
-					friendViewHolder.tvName.setText(item1.getName() + " [new]");
+					friendViewHolder.tvName.setText(item1.getName());
 					friendViewHolder.tvName.setTypeface(null, Typeface.ITALIC);
 				}
 				else {

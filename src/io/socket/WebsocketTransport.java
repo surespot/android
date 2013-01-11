@@ -11,9 +11,12 @@ import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import android.util.Log;
+
 class WebsocketTransport extends WebSocketClient implements IOTransport {
     private final static Pattern PATTERN_HTTP = Pattern.compile("^http");
     public static final String TRANSPORT_NAME = "websocket";
+	private static final String TAG = "WebsocketTransport";
     private IOConnection connection;
     public static IOTransport create(URL url, IOConnection connection) {
         URI uri = URI.create(
@@ -95,6 +98,9 @@ class WebsocketTransport extends WebSocketClient implements IOTransport {
     @Override
     public void onError(Exception ex) {
         // TODO Auto-generated method stub
-
+    	Log.e(TAG,"websocket transport error");    	
+    	if (connection!=null) {
+    		connection.transportError(ex);
+    	}
     }
 }
