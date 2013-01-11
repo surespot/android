@@ -233,8 +233,6 @@ public class MainAdapter extends BaseAdapter {
 					friendViewHolder = new FriendViewHolder();
 					friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 					friendViewHolder.newMessageCountView = (TextView) convertView.findViewById(R.id.newMessageCount);
-					// friendViewHolder.itemLayout = convertView.findViewById(R.id.friendItemLayout);
-
 					convertView.setTag(friendViewHolder);
 				}
 				else {
@@ -244,15 +242,10 @@ public class MainAdapter extends BaseAdapter {
 				Friend item1 = (Friend) getItem(position);
 
 				if ((item1.getFlags() & Friend.ACTIVE_CHAT) == Friend.ACTIVE_CHAT) {
-					// friendViewHolder.itemLayout.setBackgroundColor(color.white);
-					// friendViewHolder.tvName.setBackgroundColor(color.white);
 					convertView.setBackgroundColor(Color.WHITE);
 				}
 				else {
 					convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
-					// friendViewHolder.itemLayout.setBackgroundColor(Color.LTGRAY);
-					// friendViewHolder.tvName.setBackgroundColor(Color.LTGRAY);
-
 				}
 
 				if (item1.getMessageCount() > 0) {
@@ -303,9 +296,6 @@ public class MainAdapter extends BaseAdapter {
 					Log.e(TAG, content);
 				};
 			});
-
-			// Log.d(TAG, "Title clicked, row: " + position + ", action: " +
-			// action);
 		}
 	};
 

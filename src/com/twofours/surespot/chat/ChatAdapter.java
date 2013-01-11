@@ -32,16 +32,18 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public void addMessages(ArrayList<ChatMessage> messages) {
-		mMessages.addAll(messages);
-		notifyDataSetChanged();
-	}
-
-	public void clearMessages(boolean notify) {
-		mMessages.clear();
-		if (notify) {
+		if (messages.size() > 0) {
+			mMessages.addAll(messages);
 			notifyDataSetChanged();
 		}
 	}
+//
+//	public void clearMessages(boolean notify) {
+//		mMessages.clear();
+//		if (notify) {
+//			notifyDataSetChanged();
+//		}
+//	}
 
 	@Override
 	public int getCount() {
@@ -57,7 +59,7 @@ public class ChatAdapter extends BaseAdapter {
 	public int getItemViewType(int position) {
 		ChatMessage message = mMessages.get(position);
 		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
-		if (otherUser.equals(message.getFrom())) {			
+		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
 		}
 		else {
@@ -97,7 +99,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 
 			chatMessageViewHolder = new ChatMessageViewHolder();
-		//	chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
+			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 
 			convertView.setTag(chatMessageViewHolder);
@@ -107,7 +109,7 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		final ChatMessage item = (ChatMessage) getItem(position);
-	//	chatMessageViewHolder.tvUser.setText(item.getFrom());
+		// chatMessageViewHolder.tvUser.setText(item.getFrom());
 		if (item.getPlainText() != null) {
 			chatMessageViewHolder.tvText.setText(item.getPlainText());
 		}
@@ -122,7 +124,6 @@ public class ChatAdapter extends BaseAdapter {
 							item.setPlainText(result);
 							chatMessageViewHolder.tvText.setText(result);
 
-						
 						}
 
 					});
@@ -132,7 +133,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public static class ChatMessageViewHolder {
-		//public TextView tvUser;
+		// public TextView tvUser;
 		public TextView tvText;
 	}
 

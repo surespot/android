@@ -33,6 +33,7 @@ public class ChatFragment extends SherlockFragment {
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
 	private String mLastMessageId;
+	private EditText mEditText;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -52,14 +53,6 @@ public class ChatFragment extends SherlockFragment {
 		cf.setArguments(bundle);
 		return cf;
 	}
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-	
-		super.onCreate(savedInstanceState); 
-		
-		
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -67,8 +60,7 @@ public class ChatFragment extends SherlockFragment {
 
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		ensureChatAdapter();
-		
-		
+
 		setUsername(getArguments().getString("username"));
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -77,8 +69,8 @@ public class ChatFragment extends SherlockFragment {
 				sendMessage();
 			}
 		});
-		EditText editText = (EditText) view.findViewById(R.id.etMessage);
-		editText.setOnEditorActionListener(new OnEditorActionListener() {
+		mEditText = (EditText) view.findViewById(R.id.etMessage);
+		mEditText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
@@ -90,9 +82,10 @@ public class ChatFragment extends SherlockFragment {
 				return handled;
 			}
 		});
+
 		return view;
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -134,13 +127,17 @@ public class ChatFragment extends SherlockFragment {
 									Log.e(TAG, "Error creating chat message: " + e.toString());
 								}
 
+								mChatAdapter.addMessages(messages);
+								mListView.setAdapter(mChatAdapter);								
+								mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+								
+
 								if (message != null) {
 									mLastMessageId = message.getId();
 								}
-								
-								mChatAdapter.addMessages(messages);								
-								mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
 
+
+								mEditText.requestFocus();
 							}
 						}
 
@@ -154,6 +151,7 @@ public class ChatFragment extends SherlockFragment {
 							if (ChatFragment.this.isVisible()) {
 								Log.v(TAG, "Tearing down a progress dialog: " + getUsername());
 								((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+								
 							}
 						}
 					});
@@ -169,6 +167,21 @@ public class ChatFragment extends SherlockFragment {
 				}
 			}
 		});
+
+	}
+
+	@Override
+	public void onPause() {
+
+		super.onPause();
+		Log.v(TAG, "onPause, mUsername:  " + mUsername);
+	}
+
+	@Override
+	public void onDestroy() {
+
+		super.onDestroy();
+		Log.v(TAG, "onDestroy");
 	}
 
 	private void sendMessage() {
@@ -205,10 +218,4 @@ public class ChatFragment extends SherlockFragment {
 		}
 	}
 
-	@Override
-	public void onPause() {
-
-		super.onPause();
-		Log.v(TAG, "onPause, mUsername:  " + mUsername);
-	}
 }
