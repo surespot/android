@@ -2,13 +2,13 @@ package com.twofours.surespot.main;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.R.color;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -98,18 +98,34 @@ public class MainAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 
-	public void addFriends(List<String> names) {
-		for (String name : names) {
-			Friend friend = new Friend();
-			friend.setName(name);
-			if (mActiveChats.contains(name)) {
-				friend.setFlags(Friend.ACTIVE_CHAT);
+	public void addFriends(JSONArray names) {
+		try {
+			for (int i = 0; i < names.length(); i++) {
+				Friend friend = new Friend();
+				String name = names.getString(i);
+				friend.setName(name);
+				if (mActiveChats.contains(name)) {
+					friend.setFlags(Friend.ACTIVE_CHAT);
+				}
+				mFriends.add(friend);
 			}
-			mFriends.add(friend);
 		}
+		catch (JSONException e) {
+			Log.e(TAG, e.toString());
+		}
+
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 	}
+	
+
+	public void clearFriends(boolean notify) {
+		mFriends.clear();
+		if (notify) {
+			notifyDataSetChanged();
+		}
+	}
+
 
 	public void addFriendInvite(String name) {
 		FriendInvite friendInvite = new FriendInvite();
@@ -118,13 +134,33 @@ public class MainAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 
 	}
+	
+	public void addFriendInvites(JSONArray names) {
+		try {
+			for (int i = 0; i < names.length(); i++) {
+				FriendInvite friendInvite = new FriendInvite();
+				String name = names.getJSONObject(i).getString("data");
+				friendInvite.setName(name);				
+				mInvites.add(friendInvite);
+				notifyDataSetChanged();
+			}
+		}
+		catch (JSONException e) {
+			Log.e(TAG, e.toString());
+		}
 
-	public void clearFriends(boolean notify) {
-		mFriends.clear();
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
+	}
+	
+	public void clearInvites(boolean notify) {
+		mInvites.clear();
 		if (notify) {
 			notifyDataSetChanged();
 		}
 	}
+
+
 
 	@Override
 	public int getCount() {
@@ -197,9 +233,7 @@ public class MainAdapter extends BaseAdapter {
 					friendViewHolder = new FriendViewHolder();
 					friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 					friendViewHolder.newMessageCountView = (TextView) convertView.findViewById(R.id.newMessageCount);
-					friendViewHolder.itemLayout = convertView.findViewById(R.id.friendItemLayout);
-					friendViewHolder.newFriendView = convertView.findViewById(R.id.newFriend);
-					friendViewHolder.activeChatView = convertView.findViewById(R.id.activeChat);
+					// friendViewHolder.itemLayout = convertView.findViewById(R.id.friendItemLayout);
 
 					convertView.setTag(friendViewHolder);
 				}
@@ -208,34 +242,33 @@ public class MainAdapter extends BaseAdapter {
 				}
 
 				Friend item1 = (Friend) getItem(position);
-				friendViewHolder.tvName.setText(item1.getName());
 
 				if ((item1.getFlags() & Friend.ACTIVE_CHAT) == Friend.ACTIVE_CHAT) {
-					friendViewHolder.itemLayout.setBackgroundColor(color.white);
-					friendViewHolder.tvName.setBackgroundColor(color.white);
-					friendViewHolder.activeChatView.setVisibility(View.VISIBLE);
-					convertView.setBackgroundColor(color.white);
+					// friendViewHolder.itemLayout.setBackgroundColor(color.white);
+					// friendViewHolder.tvName.setBackgroundColor(color.white);
+					convertView.setBackgroundColor(Color.WHITE);
 				}
 				else {
-					convertView.setBackgroundColor(color.holo_blue_dark);
-					friendViewHolder.itemLayout.setBackgroundColor(color.holo_blue_dark);
-					friendViewHolder.tvName.setBackgroundColor(color.holo_blue_dark);
-					friendViewHolder.activeChatView.setVisibility(View.INVISIBLE);
+					convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
+					// friendViewHolder.itemLayout.setBackgroundColor(Color.LTGRAY);
+					// friendViewHolder.tvName.setBackgroundColor(Color.LTGRAY);
+
 				}
 
 				if (item1.getMessageCount() > 0) {
 					friendViewHolder.newMessageCountView.setText(item1.getMessageCount().toString());
-					friendViewHolder.newMessageCountView.setVisibility(View.VISIBLE);
 				}
 				else {
-					friendViewHolder.newMessageCountView.setVisibility(View.INVISIBLE);
+					friendViewHolder.newMessageCountView.setText("");
 				}
 
 				if ((item1.getFlags() & Friend.NEW_FRIEND) == Friend.NEW_FRIEND) {
-					friendViewHolder.newFriendView.setVisibility(View.VISIBLE);
+					friendViewHolder.tvName.setText(item1.getName() + " [new]");
+					friendViewHolder.tvName.setTypeface(null, Typeface.ITALIC);
 				}
 				else {
-					friendViewHolder.newFriendView.setVisibility(View.INVISIBLE);
+					friendViewHolder.tvName.setText(item1.getName());
+					friendViewHolder.tvName.setTypeface(null, Typeface.NORMAL);
 				}
 
 				break;

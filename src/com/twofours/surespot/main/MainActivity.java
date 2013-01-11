@@ -1,6 +1,5 @@
 package com.twofours.surespot.main;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.http.client.HttpResponseException;
@@ -174,17 +173,11 @@ public class MainActivity extends SherlockActivity {
 		// TODO combine into 1 web service call
 		// get the list of notifications
 		NetworkController.getNotifications(new JsonHttpResponseHandler() {
-
 			public void onSuccess(JSONArray jsonArray) {
+				if (jsonArray.length() > 0) {					
+					mMainAdapter.clearInvites(false);
+					mMainAdapter.addFriendInvites(jsonArray);
 
-				for (int i = 0; i < jsonArray.length(); i++) {
-					try {
-						JSONObject json = jsonArray.getJSONObject(i);
-						mMainAdapter.addFriendInvite(json.getString("data"));
-					}
-					catch (JSONException e) {
-						Log.e(TAG, e.toString());
-					}
 				}
 			}
 
@@ -199,6 +192,7 @@ public class MainActivity extends SherlockActivity {
 			public void onFinish() {
 				MainActivity.this.mMpdPopulateList.decrProgress();
 			}
+
 		});
 
 		this.mMpdPopulateList.incrProgress();
@@ -222,20 +216,10 @@ public class MainActivity extends SherlockActivity {
 				Log.v(TAG, "getFriends success.");
 
 				if (jsonArray.length() > 0) {
-					ArrayList<String> friends = null;
-					try {
-						friends = new ArrayList<String>(jsonArray.length());
-						for (int i = 0; i < jsonArray.length(); i++) {
-							friends.add(jsonArray.getString(i));
-						}
-					}
-					catch (JSONException e) {
-						Log.e(TAG, e.toString());
-					}
 
 					mMainAdapter.refreshActiveChats();
 					mMainAdapter.clearFriends(false);
-					mMainAdapter.addFriends(friends);
+					mMainAdapter.addFriends(jsonArray);
 
 					// compute new message deltas
 					NetworkController.getLastMessageIds(new JsonHttpResponseHandler() {
@@ -255,20 +239,20 @@ public class MainActivity extends SherlockActivity {
 									int serverId = serverMessageIds.get(user);
 									Integer localId = mLastMessageIds.get(user);
 
-									//new chat, all messages are new
+									// new chat, all messages are new
 									if (localId == null) {
 										mLastMessageIds.put(user, serverId);
-										mMainAdapter.messageDeltaReceived(user, serverId);										
+										mMainAdapter.messageDeltaReceived(user, serverId);
 									}
 									else {
-										//user went to tab but no new messages received, set count to match server
+										// user went to tab but no new messages received, set count to match server
 										if (localId == -1) {
 											mLastMessageIds.put(user, serverId);
 											mMainAdapter.messageDeltaReceived(user, 0);
 										}
 
 										else {
-											//compute delta
+											// compute delta
 											int messageDelta = serverId - localId;
 											if (messageDelta > 0) {
 												mMainAdapter.messageDeltaReceived(user, messageDelta);

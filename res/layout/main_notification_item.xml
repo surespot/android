@@ -8,10 +8,11 @@
         android:id="@+id/notificationItemText"
         android:layout_width="0dp"
         android:layout_height="50sp"
-        android:layout_marginLeft="5sp"
+        android:layout_marginLeft="15sp"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:textSize="20sp" >
+        
+        android:textSize="30sp" >
     </TextView>
 
     <Button

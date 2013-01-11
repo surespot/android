@@ -62,6 +62,38 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
+
+		mListView = (ListView) view.findViewById(R.id.message_list);
+		ensureChatAdapter();
+		
+		
+		setUsername(getArguments().getString("username"));
+		Button sendButton = (Button) view.findViewById(R.id.bSend);
+		sendButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				sendMessage();
+			}
+		});
+		EditText editText = (EditText) view.findViewById(R.id.etMessage);
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_SEND) {
+					//
+					sendMessage();
+					handled = true;
+				}
+				return handled;
+			}
+		});
+		return view;
+	}
+	
+	@Override
 	public void onResume() {
 		super.onResume();
 
@@ -137,38 +169,6 @@ public class ChatFragment extends SherlockFragment {
 				}
 			}
 		});
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
-
-		mListView = (ListView) view.findViewById(R.id.message_list);
-		ensureChatAdapter();
-		
-		
-		setUsername(getArguments().getString("username"));
-		Button sendButton = (Button) view.findViewById(R.id.bSend);
-		sendButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				sendMessage();
-			}
-		});
-		EditText editText = (EditText) view.findViewById(R.id.etMessage);
-		editText.setOnEditorActionListener(new OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				boolean handled = false;
-				if (actionId == EditorInfo.IME_ACTION_SEND) {
-					//
-					sendMessage();
-					handled = true;
-				}
-				return handled;
-			}
-		});
-		return view;
 	}
 
 	private void sendMessage() {
