@@ -20,6 +20,7 @@ import android.util.Log;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
 import com.twofours.surespot.SurespotApplication;
@@ -249,6 +250,11 @@ public class NetworkController {
 			get("/messages/" + room + "/" + id, null, responseHandler);		
 		}
 	}
+	
+	public static void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
+		get("/conversations/ids",null, responseHandler);
+	}
+	
 	
 
 	public static void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {

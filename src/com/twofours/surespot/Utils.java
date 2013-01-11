@@ -4,6 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -58,8 +64,56 @@ public class Utils {
 		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE,
 				android.content.Context.MODE_PRIVATE);
 		Editor editor = settings.edit();
-		editor.putString(key, value);
+		if (value == null) {
+			editor.remove(key);
+		}
+		else {
+			editor.putString(key, value);
+		}
 		editor.commit();
 
+	}
+
+	public static HashMap<String, Integer> jsonToMap(JSONObject jsonObject) {
+		try {
+			HashMap<String, Integer> outMap = new HashMap<String, Integer>();
+
+			@SuppressWarnings("unchecked")
+			Iterator<String> names = jsonObject.keys();
+			while (names.hasNext()) {
+				String name = names.next();
+				outMap.put(name, jsonObject.getInt(name));
+			}
+
+			return outMap;
+
+		}
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+
+	public static HashMap<String, Integer> jsonStringToMap(String jsonString) {
+
+		JSONObject jsonObject;
+		try {
+			jsonObject = new JSONObject(jsonString);
+			return jsonToMap(jsonObject);
+		}
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return null;
+
+	}
+
+	public static String mapToJsonString(Map map) {
+		JSONObject jsonObject = new JSONObject(map);
+		return jsonObject.toString();
 	}
 }

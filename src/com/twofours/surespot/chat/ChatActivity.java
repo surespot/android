@@ -1,6 +1,7 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,10 +30,11 @@ import com.twofours.surespot.main.MainActivity;
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
 
-	ChatPagerAdapter mPagerAdapter;
-	ViewPager mViewPager;
-	BroadcastReceiver mMessageBroadcastReceiver;
-	MultiProgressDialog mMpd;
+	private ChatPagerAdapter mPagerAdapter;
+	private ViewPager mViewPager;
+	private BroadcastReceiver mMessageBroadcastReceiver;
+	private MultiProgressDialog mMpd;
+	private HashMap<String, Integer> mVisitedPageMessageIds;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +92,15 @@ public class ChatActivity extends SherlockFragmentActivity {
 		mViewPager.setAdapter(mPagerAdapter);
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
-			public void onPageSelected(int position) {
-				actionBar.setTitle(mPagerAdapter.getChatNames().get(position));
+			public void onPageSelected(int position) {								
+				String name = mPagerAdapter.getChatName(position);
+				actionBar.setTitle(name);
+				if (mVisitedPageMessageIds != null) {
+					Log.v(TAG,"onPageSelected updating visited page, name: " + name + ", pos: "+ position);		
+					mVisitedPageMessageIds.put(name, -1);
+				}
 			}
+
 		});
 		mViewPager.setOffscreenPageLimit(4);
 		mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
@@ -105,8 +113,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 				String message = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
 				try {
 					JSONObject messageJson = new JSONObject(message);
-					String tag = mPagerAdapter
-							.getFragmentTag(Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to")));
+					String otherUser = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
+					String tag = mPagerAdapter.getFragmentTag(otherUser);
 
 					Log.v(TAG, "Fragment tag: " + tag);
 
@@ -116,13 +124,20 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 						// fragment might be null if user hasn't opened this
 						// chat
-						// TODO indicate new message on FRIENDS screen?
 						if (cf != null) {
+
 							cf.addMessage(messageJson);
+
 						}
 						else {
 							Log.v(TAG, "Fragment null");
 						}
+					}
+
+					// update last visited id for current tab
+					String name = getCurrentChatName();
+					if (name.equals(otherUser)) {
+						mVisitedPageMessageIds.put(name, messageJson.getInt("id"));
 					}
 				}
 				catch (JSONException e) {
@@ -199,6 +214,15 @@ public class ChatActivity extends SherlockFragmentActivity {
 		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
 
+		// store chats the user went into
+		if (mVisitedPageMessageIds.size() > 0) {
+			String jsonString = Utils.mapToJsonString(mVisitedPageMessageIds);
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
+		}
+		else {
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, null);
+		}
+
 	}
 
 	@Override
@@ -215,6 +239,22 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			}
 		});
+
+		// get last message id's out of shared prefs
+		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
+		if (lastMessageIdJson != null) {
+			try {
+				mVisitedPageMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
+			}
+			catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+
+		// if we didn't get any new messages we know by the NULL
+		mVisitedPageMessageIds.put(getCurrentChatName(), -1);
+
 	}
 
 	@Override
@@ -252,6 +292,12 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	public void stopLoadingMessagesProgress() {
 		mMpd.decrProgress();
+	}
+
+	private String getCurrentChatName() {
+		int pos = mViewPager.getCurrentItem();
+		String name = mPagerAdapter.getChatName(pos);
+		return name;
 	}
 
 }

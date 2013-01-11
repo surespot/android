@@ -91,6 +91,10 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	public ArrayList<String> getChatNames() {
 		return mChatNames;
 	}
+	
+	public String getChatName(int position) {
+		return mChatNames.get(position);
+	}
 
 	public void removeChat(int index, boolean notify) {
 		mChatNames.remove(index);

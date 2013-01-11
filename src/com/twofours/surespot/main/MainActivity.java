@@ -1,6 +1,7 @@
 package com.twofours.surespot.main;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.http.client.HttpResponseException;
 import org.json.JSONArray;
@@ -52,12 +53,14 @@ public class MainActivity extends SherlockActivity {
 	private BroadcastReceiver mInvitationReceiver;
 	private BroadcastReceiver mFriendAddedReceiver;
 	private BroadcastReceiver mMessageReceiver;
+	private HashMap<String, Integer> mLastMessageIds;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
 		setContentView(R.layout.activity_main);
+		mLastMessageIds = new HashMap<String, Integer>();
 		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
@@ -99,7 +102,7 @@ public class MainActivity extends SherlockActivity {
 				mMainAdapter.addNewFriend(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED));
 			}
 		};
-		// register for friend aded
+		// register for friend added
 		LocalBroadcastManager.getInstance(this).registerReceiver(mFriendAddedReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.FRIEND_ADDED_EVENT));
 
@@ -153,24 +156,6 @@ public class MainActivity extends SherlockActivity {
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();		
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mFriendAddedReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-	}
-
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-		Log.v(TAG, "onPause");
-
-		ChatController.disconnect();
-
-	}
-
-	@Override
 	public void onResume() {
 		super.onResume();
 		Log.v(TAG, "onResume");
@@ -217,6 +202,19 @@ public class MainActivity extends SherlockActivity {
 		});
 
 		this.mMpdPopulateList.incrProgress();
+
+		// get last message id's out of shared prefs
+		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
+		if (lastMessageIdJson != null) {
+			try {
+				mLastMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
+			}
+			catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+
 		// get the list of friends
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
@@ -237,8 +235,60 @@ public class MainActivity extends SherlockActivity {
 
 					mMainAdapter.refreshActiveChats();
 					mMainAdapter.clearFriends(false);
-					mMainAdapter.addFriends(friends);			
+					mMainAdapter.addFriends(friends);
 
+					// compute new message deltas
+					NetworkController.getLastMessageIds(new JsonHttpResponseHandler() {
+
+						public void onSuccess(int arg0, JSONObject arg1) {
+							Log.v(TAG, "getLastmessageids success status jsonobject");
+
+							HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
+
+							// if we have counts
+							if (mLastMessageIds != null) {
+
+								// set the deltas
+								for (String user : serverMessageIds.keySet()) {
+
+									// figure out new message counts
+									int serverId = serverMessageIds.get(user);
+									Integer localId = mLastMessageIds.get(user);
+
+									//new chat, all messages are new
+									if (localId == null) {
+										mLastMessageIds.put(user, serverId);
+										mMainAdapter.messageDeltaReceived(user, serverId);										
+									}
+									else {
+										//user went to tab but no new messages received, set count to match server
+										if (localId == -1) {
+											mLastMessageIds.put(user, serverId);
+											mMainAdapter.messageDeltaReceived(user, 0);
+										}
+
+										else {
+											//compute delta
+											int messageDelta = serverId - localId;
+											if (messageDelta > 0) {
+												mMainAdapter.messageDeltaReceived(user, messageDelta);
+											}
+										}
+									}
+								}
+							}
+
+							// if this is first time through store the last message ids
+							else {
+								mLastMessageIds = serverMessageIds;
+
+							}
+						};
+
+						public void onFailure(Throwable arg0, String arg1) {
+							Log.e(TAG, "getLastMessageIds: " + arg0.toString());
+						};
+					});
 				}
 			}
 
@@ -254,6 +304,26 @@ public class MainActivity extends SherlockActivity {
 				MainActivity.this.mMpdPopulateList.decrProgress();
 			}
 		});
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.v(TAG, "onPause");
+
+		// store last message ids
+		String jsonString = Utils.mapToJsonString(mLastMessageIds);
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
+		ChatController.disconnect();
+
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mFriendAddedReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 	}
 
 	private void inviteFriend() {

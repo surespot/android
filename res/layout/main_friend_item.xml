@@ -35,14 +35,14 @@
         android:visibility="invisible" >
     </View>
 
-    <View
-        android:id="@+id/newMessage"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+    <TextView
+        android:id="@+id/newMessageCount"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_gravity="center"
         android:layout_marginRight="10dp"
         android:background="@drawable/green_circle_shape"
         android:visibility="invisible" >
-    </View>
+    </TextView>
 
 </LinearLayout>

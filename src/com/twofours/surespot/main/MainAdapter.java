@@ -70,10 +70,16 @@ public class MainAdapter extends BaseAdapter {
 
 	public void messageReceived(String name) {
 		Friend friend = getFriend(name);
-		friend.setFlags(friend.getFlags() | Friend.NEW_MESSAGE);		
+		friend.incMessageCount(1);
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
+	}
 
+	public void messageDeltaReceived(String name, int delta) {
+		Friend friend = getFriend(name);
+		friend.setMessageCount(delta);
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
 	}
 
 	private Friend getFriend(String friendName) {
@@ -190,7 +196,7 @@ public class MainAdapter extends BaseAdapter {
 
 					friendViewHolder = new FriendViewHolder();
 					friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
-					friendViewHolder.newMessageView = convertView.findViewById(R.id.newMessage);
+					friendViewHolder.newMessageCountView = (TextView) convertView.findViewById(R.id.newMessageCount);
 					friendViewHolder.itemLayout = convertView.findViewById(R.id.friendItemLayout);
 					friendViewHolder.newFriendView = convertView.findViewById(R.id.newFriend);
 					friendViewHolder.activeChatView = convertView.findViewById(R.id.activeChat);
@@ -217,11 +223,12 @@ public class MainAdapter extends BaseAdapter {
 					friendViewHolder.activeChatView.setVisibility(View.INVISIBLE);
 				}
 
-				if ((item1.getFlags() & Friend.NEW_MESSAGE) == Friend.NEW_MESSAGE) {
-					friendViewHolder.newMessageView.setVisibility(View.VISIBLE);					
+				if (item1.getMessageCount() > 0) {
+					friendViewHolder.newMessageCountView.setText(item1.getMessageCount().toString());
+					friendViewHolder.newMessageCountView.setVisibility(View.VISIBLE);
 				}
 				else {
-					friendViewHolder.newMessageView.setVisibility(View.INVISIBLE);
+					friendViewHolder.newMessageCountView.setVisibility(View.INVISIBLE);
 				}
 
 				if ((item1.getFlags() & Friend.NEW_FRIEND) == Friend.NEW_FRIEND) {
@@ -285,7 +292,7 @@ public class MainAdapter extends BaseAdapter {
 
 	public static class FriendViewHolder {
 		public TextView tvName;
-		public View newMessageView;
+		public TextView newMessageCountView;
 		public View itemLayout;
 		public View newFriendView;
 		public View activeChatView;
