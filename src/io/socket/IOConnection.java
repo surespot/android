@@ -569,7 +569,8 @@ class IOConnection implements IOCallback {
 	public void transportError(Exception error) {
 		this.lastException = error;
 		setState(STATE_INTERRUPTED);
-		reconnect();
+		//reconnect();
+		error(new SocketIOException(error.getMessage()));
 	}
 
 	/**

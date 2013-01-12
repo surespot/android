@@ -76,7 +76,7 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				// socketIOException.printStackTrace();
+				socketIOException.printStackTrace();
 				Log.v(TAG, "mError before: " + mError);
 				// connect(null);
 

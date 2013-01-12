@@ -31,4 +31,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/io/socket/WebSocketClient.java</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/srclibs/Java-WebSocket/src/main/java/org/java_websocket/client/WebSocketClient.java</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

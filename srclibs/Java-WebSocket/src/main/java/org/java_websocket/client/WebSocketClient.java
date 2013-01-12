@@ -193,14 +193,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		
 		channel = SelectorProvider.provider().openSocketChannel();
 		channel.configureBlocking( true );
-		//try {
-			channel.connect( remote );
-		//}
-		//catch (IOException ioe) {
-		//	channel.close();
-		//	throw ioe;
-		//}
-
+		channel.connect( remote );	
 	}
 
 	// Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -229,14 +222,11 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
-			System.err.print("conn: " + conn);
-			e.printStackTrace();
+			//System.err.print("conn: " + conn);
+			//e.printStackTrace();
 			if (conn != null) {
 				conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
-			}
-			else {
-				channel.close();
-			}
+			}			
 			return;
 		}
 
