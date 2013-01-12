@@ -29,7 +29,7 @@ public class ChatController {
 	private static SocketIO socket;
 	private static final int MAX_RETRIES = 5;
 	private static int mRetries = 0;
-	final private static Timer mBackgroundTimer = new Timer("backgroundTimer");
+	private static Timer mBackgroundTimer = new Timer("backgroundTimer");
 	private static boolean mError;
 
 	public static void connect(final IConnectCallback callback) {
@@ -80,32 +80,33 @@ public class ChatController {
 				Log.v(TAG, "mError before: " + mError);
 				// connect(null);
 
-				if (!mError) {
-					mError = true;
-					disconnect();
-					connect(null);
-				}
+				Log.v(TAG, "mError: " + mError);
+				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
 
-				// Log.v(TAG, "mError: " + mError);
-				// Log.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
-				//
-				// if (mRetries == 0) {
-				//
-				// // if (mReconnectTask == null) {
-				// // mReconnectTask.cancel();
-				// //
-				// // }
-				// mRetries++;
-				// mReconnectTask = new ReconnectTask();
-				// mBackgroundTimer.schedule(mReconnectTask, 0);
-				//
-				// }
-				// else {
-				// // TODO tell user?
-				// Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
-				// }
-				//
-				// }
+				mReconnectTask = null;
+
+				// kick off another task
+				if (mRetries <= MAX_RETRIES) {
+
+					if (mReconnectTask != null) {
+						mReconnectTask.cancel();
+
+					}
+
+					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
+					Log.v(TAG, "Starting another task in: " + timerInterval);
+
+					mReconnectTask = new ReconnectTask();
+					if (mBackgroundTimer == null) {
+						mBackgroundTimer = new Timer("backgroundTimer");
+					}
+					mBackgroundTimer.schedule(mReconnectTask, timerInterval);
+
+				}
+				else {
+					// TODO tell user?
+					Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
+				}
 
 			}
 
@@ -119,6 +120,10 @@ public class ChatController {
 				Log.v(TAG, "socket.io connection established");
 				mRetries = 0;
 				mError = false;
+				if (mBackgroundTimer != null) {
+					mBackgroundTimer.cancel();
+					mBackgroundTimer = null;
+				}
 
 				if (callback != null) {
 					callback.connectStatus(true);
@@ -152,12 +157,6 @@ public class ChatController {
 				}
 			}
 		});
-
-		// JSONObject j = new JSONObject();
-		// //j.putOpt(name,
-		// value)
-		// socket.send()
-
 	}
 
 	private static void sendNotification(String friend) {
@@ -198,7 +197,7 @@ public class ChatController {
 
 	public static void disconnect() {
 		socket.disconnect();
-	
+
 	}
 
 	private static ReconnectTask mReconnectTask;
@@ -209,27 +208,6 @@ public class ChatController {
 		public void run() {
 			Log.v(TAG, "Reconnect task run.");
 			connect(null);
-			mReconnectTask = null;
-
-			// kick off another task
-			if (mRetries < MAX_RETRIES && !socket.isConnected()) {
-
-				if (mReconnectTask != null) {
-					mReconnectTask.cancel();
-
-				}
-
-				int timerInterval = (mRetries++ ^ 2) * 1000;
-				Log.v(TAG, "Starting another task in: " + timerInterval);
-
-				mReconnectTask = new ReconnectTask();
-				mBackgroundTimer.schedule(mReconnectTask, timerInterval);
-
-			}
-			else {
-				// TODO tell user?
-				Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
-			}
 
 		}
 
