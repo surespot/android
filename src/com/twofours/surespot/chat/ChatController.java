@@ -29,8 +29,7 @@ public class ChatController {
 	private static SocketIO socket;
 	private static final int MAX_RETRIES = 5;
 	private static int mRetries = 0;
-	private static Timer mBackgroundTimer = new Timer("backgroundTimer");
-	private static boolean mError;
+	private static Timer mBackgroundTimer;	
 
 	public static void connect(final IConnectCallback callback) {
 
@@ -76,11 +75,6 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				socketIOException.printStackTrace();
-				Log.v(TAG, "mError before: " + mError);
-				// connect(null);
-
-				Log.v(TAG, "mError: " + mError);
 				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
 
 				mReconnectTask = null;
@@ -104,7 +98,7 @@ public class ChatController {
 
 				}
 				else {
-					// TODO tell user?
+					// TODO tell user
 					Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 				}
 
@@ -118,8 +112,7 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				Log.v(TAG, "socket.io connection established");
-				mRetries = 0;
-				mError = false;
+				mRetries = 0;				
 				if (mBackgroundTimer != null) {
 					mBackgroundTimer.cancel();
 					mBackgroundTimer = null;
