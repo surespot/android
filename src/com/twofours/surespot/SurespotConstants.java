@@ -6,6 +6,7 @@ public class SurespotConstants {
 		public static final String FRIEND_ADDED_EVENT = "friend_added_event";
 		public static final String MESSAGE_RECEIVED_EVENT = "message_added_event";
 		public static final String FRIEND_INVITE_RESPONSE_EVENT = "friend_invite_event";
+		public static final String SOCKET_CONNECTION_STATUS_CHANGED = "socket_io_connection_status_changed";
 	}
 
 	public class ExtraNames {
@@ -18,11 +19,11 @@ public class SurespotConstants {
 		public static final String GCM_CHANGED = "gcm_changed";
 	}
 
-	// public final static String BASE_URL = "http://alpha.surespot.me";
-	// public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
+	public final static String BASE_URL = "http://alpha.surespot.me";
+	public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
 
-	public final static String BASE_URL = "http://192.168.10.68:3000";
-	public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
+	// public final static String BASE_URL = "http://192.168.10.68:3000";
+	// public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";

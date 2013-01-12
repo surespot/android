@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -30,6 +31,7 @@ public class ChatController {
 	private static final int MAX_RETRIES = 5;
 	private static int mRetries = 0;
 	private static Timer mBackgroundTimer;	
+	private static MultiProgressDialog mMpd = new MultiProgressDialog(SurespotApplication.getAppContext(), "Reconnecting to chat server...", 0);
 
 	public static void connect(final IConnectCallback callback) {
 
@@ -75,16 +77,14 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
+				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);			
 
-				mReconnectTask = null;
-
+				//mMpd.incrProgress();
 				// kick off another task
 				if (mRetries <= MAX_RETRIES) {
-
+					
 					if (mReconnectTask != null) {
 						mReconnectTask.cancel();
-
 					}
 
 					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
@@ -95,13 +95,19 @@ public class ChatController {
 						mBackgroundTimer = new Timer("backgroundTimer");
 					}
 					mBackgroundTimer.schedule(mReconnectTask, timerInterval);
-
 				}
 				else {
 					// TODO tell user
-					Log.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
+					Log.e(TAG, "Socket.io reconnect retries exhausted, giving up.");
+					//TODO more persistent error
+					
+															
+					/*Toast.makeText(SurespotApplication.getAppContext(), "Can not connect to chat server. Please check your network and try again.", Toast.LENGTH_LONG).show();
+					//TODO tie in with network controller 401 handling
+					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					SurespotApplication.getAppContext().startActivity(intent);*/
 				}
-
 			}
 
 			@Override
@@ -145,7 +151,6 @@ public class ChatController {
 					return;
 				}
 				if (event.equals("message")) {
-					// JSONObject j = new JSONObject((String) args[0]);
 					sendMessageReceived((String) args[0]);
 				}
 			}
@@ -170,6 +175,14 @@ public class ChatController {
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 	}
+	
+//private static void sendConnectionStatusChanged(boolean status) {
+//		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
+//		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
+//		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+//
+//	}
+
 
 	public static void sendMessage(String to, String text) {
 		if (text != null && text.length() > 0) {
@@ -180,7 +193,7 @@ public class ChatController {
 				message.put("from", EncryptionController.getIdentityUsername());
 				socket.send(message.toString());
 			}
-			catch (JSONException e) {
+			catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -200,6 +213,7 @@ public class ChatController {
 		@Override
 		public void run() {
 			Log.v(TAG, "Reconnect task run.");
+			socket.disconnect();
 			connect(null);
 
 		}

@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -279,7 +280,8 @@ public class MainActivity extends SherlockActivity {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				Log.e(TAG, "getFriends: " + content);
-				// Toast.makeText(FriendFragment.this.getActivity(), "Error getting friends.");
+				
+				Toast.makeText(MainActivity.this.getApplicationContext(), "Could not load friends. Please check your network connection.",Toast.LENGTH_SHORT).show();
 			}
 
 			@Override

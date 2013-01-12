@@ -107,7 +107,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
 				.setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 		// if we're logged in, go to the chat, otherwise go to login
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
@@ -117,7 +117,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		builder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.build();
+		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;
@@ -132,7 +132,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
 				.setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		stackBuilder.addNextIntent(mainIntent);
@@ -140,7 +140,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		builder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.build();
+		Notification notification = builder.getNotification();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;

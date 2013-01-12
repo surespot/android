@@ -6,10 +6,11 @@
 	<classpathentry kind="lib" path="libs/sc-light-jdk15on-1.47.0.2.jar" sourcepath="/home/adam/src/spongycastle"/>
 	<classpathentry kind="lib" path="libs/scprov-jdk15on-1.47.0.2.jar" sourcepath="/home/adam/src/spongycastle"/>
 	<classpathentry kind="lib" path="libs/gcm.jar"/>
-	<classpathentry kind="lib" path="libs/1.4.2-17-g65dc6f2-dirty.jar" sourcepath="/home/adam/src/android-async-http/src"/>
 	<classpathentry kind="lib" path="libs/java_websocket.jar" sourcepath="/home/adam/dev/surespot/srclibs/Java-WebSocket"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/library"/>
 	<classpathentry excluding="com/twofours/surespot/chat/ChatArrayAdapter.java|io/socket/WebSocketClient.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/library"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/android-async-http"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/socket.io-java-client"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
