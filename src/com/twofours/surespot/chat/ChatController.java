@@ -9,12 +9,18 @@ import java.net.MalformedURLException;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.http.cookie.Cookie;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -31,12 +37,61 @@ public class ChatController {
 	private static SocketIO socket;
 	private static final int MAX_RETRIES = 5;
 	private static int mRetries = 0;
-	private static Timer mBackgroundTimer;	
-	private static MultiProgressDialog mMpd = new MultiProgressDialog(SurespotApplication.getAppContext(), "Reconnecting to chat server...", 0);
+	private static Timer mBackgroundTimer;
+	private static TimerTask mResendTask;
+
+	private static ConcurrentLinkedQueue<String> mMessageBuffer = new ConcurrentLinkedQueue<String>();
+	private static final int STATE_CONNECTING = 0;
+	private static final int STATE_CONNECTED = 1;
+
+	private static int mState;
+
+	//
+	static {
+		SurespotApplication.getAppContext().registerReceiver(new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Log.v(TAG, "Connectivity Action");
+				ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+				if (networkInfo != null) {
+					Log.v(TAG, "isconnected: " + networkInfo.isConnected());
+					Log.v(TAG, "failover: " + networkInfo.isFailover());
+					Log.v(TAG, "reason: " + networkInfo.getReason());
+					Log.v(TAG, "type: " + networkInfo.getTypeName());
+
+					// if it's not a failover and wifi is now active then initiate reconnect
+					if (!networkInfo.isFailover()
+							&& (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
+						// if we're not connecting, connect
+						if (!(getState() == STATE_CONNECTING)) {
+							setState(STATE_CONNECTING);
+							disconnect();
+							connect(new IConnectCallback() {
+
+								@Override
+								public void connectStatus(boolean status) {
+									if (true) {
+										sendNextMessage();
+									}
+
+								}
+							});
+						}
+					}
+				} else {
+					Log.v(TAG, "networkinfo null");
+				}
+			}
+		}, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+	}
 
 	public static void connect(final IConnectCallback callback) {
 
-		if (socket != null && socket.isConnected()) { return; }
+		if (socket != null && socket.isConnected()) {
+			return;
+		}
 
 		Cookie cookie = NetworkController.getConnectCookie();
 
@@ -51,10 +106,9 @@ public class ChatController {
 		try {
 			Properties headers = new Properties();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
-			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL,headers);
-			
-		}
-		catch (MalformedURLException e1) {
+			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
+
+		} catch (MalformedURLException e1) {
 			// Auto-generated
 			e1.printStackTrace();
 			// callback.connectStatus(false);
@@ -67,8 +121,7 @@ public class ChatController {
 				try {
 					Log.v(TAG, "JSON Server said:" + json.toString(2));
 
-				}
-				catch (JSONException e) {
+				} catch (JSONException e) {
 					e.printStackTrace();
 				}
 			}
@@ -80,12 +133,15 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);			
+				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
 
-				//mMpd.incrProgress();
+				if (mResendTask != null) {
+					mResendTask.cancel();
+				}
+
 				// kick off another task
 				if (mRetries <= MAX_RETRIES) {
-					
+
 					if (mReconnectTask != null) {
 						mReconnectTask.cancel();
 					}
@@ -98,18 +154,19 @@ public class ChatController {
 						mBackgroundTimer = new Timer("backgroundTimer");
 					}
 					mBackgroundTimer.schedule(mReconnectTask, timerInterval);
-				}
-				else {
+				} else {
 					// TODO tell user
 					Log.e(TAG, "Socket.io reconnect retries exhausted, giving up.");
-					//TODO more persistent error
-					
-															
-					/*Toast.makeText(SurespotApplication.getAppContext(), "Can not connect to chat server. Please check your network and try again.", Toast.LENGTH_LONG).show();
-					//TODO tie in with network controller 401 handling
-					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					SurespotApplication.getAppContext().startActivity(intent);*/
+					// TODO more persistent error
+
+					/*
+					 * Toast.makeText(SurespotApplication.getAppContext(),
+					 * "Can not connect to chat server. Please check your network and try again.",
+					 * Toast.LENGTH_LONG).show(); //TODO tie in with network controller 401 handling Intent intent = new
+					 * Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+					 * intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					 * SurespotApplication.getAppContext().startActivity(intent);
+					 */
 				}
 			}
 
@@ -121,14 +178,16 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				Log.v(TAG, "socket.io connection established");
-				mRetries = 0;				
+				mRetries = 0;
 				if (mBackgroundTimer != null) {
 					mBackgroundTimer.cancel();
 					mBackgroundTimer = null;
 				}
 
 				if (callback != null) {
+					setState(STATE_CONNECTED);
 					callback.connectStatus(true);
+
 				}
 
 			}
@@ -142,8 +201,7 @@ public class ChatController {
 					JSONObject json = (JSONObject) args[0];
 					try {
 						sendNotification(json.getString("data"));
-					}
-					catch (JSONException e) {
+					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -155,6 +213,8 @@ public class ChatController {
 				}
 				if (event.equals("message")) {
 					sendMessageReceived((String) args[0]);
+					//TODO check who from
+					checkAndSendNextMessage((String) args[0]);
 				}
 			}
 		});
@@ -178,14 +238,30 @@ public class ChatController {
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 	}
-	
-//private static void sendConnectionStatusChanged(boolean status) {
-//		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
-//		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
-//		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
-//
-//	}
 
+	private static void checkAndSendNextMessage(String message) {
+		Log.v(TAG, "received message: " + message);
+		String sentMessage = mMessageBuffer.peek();
+		Log.v(TAG, "message we sent: " + sentMessage);
+
+		// TODO deserialize and check fields (id is added so can't do equals)
+		if (message.startsWith(sentMessage.substring(0, sentMessage.length() - 1))) {
+
+			mMessageBuffer.remove();
+			Log.v(TAG, "Messages equal, sending next message in buffer.");
+			sendNextMessage();
+
+		} else {
+			// Log.e(TAG,"didn't receive same message we sent.");
+		}
+	}
+
+	// private static void sendConnectionStatusChanged(boolean status) {
+	// Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
+	// intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
+	// LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+	//
+	// }
 
 	public static void sendMessage(String to, String text) {
 		if (text != null && text.length() > 0) {
@@ -194,9 +270,18 @@ public class ChatController {
 				message.put("text", text);
 				message.put("to", to);
 				message.put("from", EncryptionController.getIdentityUsername());
-				socket.send(message.toString());
-			}
-			catch (Exception e) {
+				String sMessage = message.toString();
+
+				mMessageBuffer.add(sMessage);
+				// if there's no messages in the buffer
+				if (mMessageBuffer.size() == 1) {
+
+					// keep track of the messages we sent
+					// and remove them from the buffer when we receive them back from the server
+					sendNextMessage();
+				}
+
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -204,9 +289,37 @@ public class ChatController {
 		}
 	}
 
+	private static void sendNextMessage() {
+		if (mBackgroundTimer == null) {
+
+			mBackgroundTimer = new Timer("backgroundTimer");
+		}
+
+		if (mResendTask != null) {
+			mResendTask.cancel();
+		}
+
+		if (getState() == STATE_CONNECTED) {
+			mResendTask = new ResendTask();
+			mBackgroundTimer.schedule(mResendTask, 1000);
+
+			if (mMessageBuffer.size() > 0) {
+				socket.send(mMessageBuffer.peek());
+			}
+		}
+	}
+
 	public static void disconnect() {
 		socket.disconnect();
 
+	}
+
+	public static synchronized int getState() {
+		return mState;
+	}
+
+	public static synchronized void setState(int state) {
+		mState = state;
 	}
 
 	private static ReconnectTask mReconnectTask;
@@ -216,8 +329,27 @@ public class ChatController {
 		@Override
 		public void run() {
 			Log.v(TAG, "Reconnect task run.");
-			socket.disconnect();
-			connect(null);
+			disconnect();
+			connect(new IConnectCallback() {
+
+				@Override
+				public void connectStatus(boolean status) {
+
+					sendNextMessage();
+
+				}
+			});
+
+		}
+
+	}
+
+	private static class ResendTask extends TimerTask {
+
+		@Override
+		public void run() {
+			// resend message
+			sendNextMessage();
 
 		}
 
