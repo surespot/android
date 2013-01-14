@@ -1,8 +1,11 @@
 package com.twofours.surespot.friends;
 
+import android.util.Log;
+
 public class Friend implements Comparable<Friend> {
 	public static final int NEW_FRIEND = 1;
 	public static final int ACTIVE_CHAT = 2;
+	private static final String TAG = "Friend";
 	
 
 	private String mName;
@@ -29,11 +32,12 @@ public class Friend implements Comparable<Friend> {
 		return mMessageCount;
 	}
 
-	public void incMessageCount(int messageCount) {
+	public synchronized void incMessageCount(int messageCount) {
 		mMessageCount += messageCount;
+		Log.v(TAG, "newCount: " + mMessageCount);
 	}
 	
-	public void setMessageCount(int messageCount) {
+	public synchronized void setMessageCount(int messageCount) {
 		mMessageCount = messageCount;
 	}
 

@@ -98,6 +98,8 @@ public class SignupActivity extends Activity {
 						public void handleResponse(final KeyPair keyPair) {
 							if (keyPair != null) {
 
+								//TODO use password derived from user's password
+								
 								NetworkController.addUser(username, password,
 										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
 										new AsyncHttpResponseHandler() {

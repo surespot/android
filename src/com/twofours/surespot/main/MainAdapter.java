@@ -69,6 +69,7 @@ public class MainAdapter extends BaseAdapter {
 	 */
 
 	public void messageReceived(String name) {
+		Log.v(TAG,"message received");
 		Friend friend = getFriend(name);
 		friend.incMessageCount(1);
 		Collections.sort(mFriends);

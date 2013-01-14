@@ -213,7 +213,7 @@ public class ChatController {
 				}
 				if (event.equals("message")) {
 					sendMessageReceived((String) args[0]);
-					//TODO check who from
+					// TODO check who from
 					checkAndSendNextMessage((String) args[0]);
 				}
 			}
@@ -241,18 +241,20 @@ public class ChatController {
 
 	private static void checkAndSendNextMessage(String message) {
 		Log.v(TAG, "received message: " + message);
-		String sentMessage = mMessageBuffer.peek();
-		Log.v(TAG, "message we sent: " + sentMessage);
+		if (mMessageBuffer.size() > 0) {
+			String sentMessage = mMessageBuffer.peek();
+			Log.v(TAG, "message we sent: " + sentMessage);
 
-		// TODO deserialize and check fields (id is added so can't do equals)
-		if (message.startsWith(sentMessage.substring(0, sentMessage.length() - 1))) {
+			// TODO deserialize and check fields (id is added so can't do equals)
+			if (message.startsWith(sentMessage.substring(0, sentMessage.length() - 1))) {
 
-			mMessageBuffer.remove();
-			Log.v(TAG, "Messages equal, sending next message in buffer.");
-			sendNextMessage();
+				mMessageBuffer.remove();
+				Log.v(TAG, "Messages equal, sending next message in buffer.");
+				sendNextMessage();
 
-		} else {
-			// Log.e(TAG,"didn't receive same message we sent.");
+			} else {
+				// Log.e(TAG,"didn't receive same message we sent.");
+			}
 		}
 	}
 
@@ -277,7 +279,7 @@ public class ChatController {
 				if (mMessageBuffer.size() == 1) {
 
 					// keep track of the messages we sent
-					// and remove them from the buffer when we receive them back from the server
+				 	// and remove them from the buffer when we receive them back from the server
 					sendNextMessage();
 				}
 
