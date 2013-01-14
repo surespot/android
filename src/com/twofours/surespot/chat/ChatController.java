@@ -6,6 +6,7 @@ import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
 import java.net.MalformedURLException;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -48,8 +49,10 @@ public class ChatController {
 			return;
 		}
 		try {
-			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL);
-			socket.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
+			Properties headers = new Properties();
+			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
+			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL,headers);
+			
 		}
 		catch (MalformedURLException e1) {
 			// Auto-generated
