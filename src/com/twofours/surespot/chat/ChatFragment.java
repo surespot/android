@@ -23,6 +23,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -119,23 +120,20 @@ public class ChatFragment extends SherlockFragment {
 								try {
 									for (int i = 0; i < jsonArray.length(); i++) {
 										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-										message = ChatMessage.toChatMessage(jsonMessage);
+										message = ChatMessage.toChatMessage(jsonMessage);										
 										messages.add(message);
 									}
-								}
-								catch (JSONException e) {
+								} catch (JSONException e) {
 									Log.e(TAG, "Error creating chat message: " + e.toString());
 								}
 
 								mChatAdapter.addMessages(messages);
-								mListView.setAdapter(mChatAdapter);								
+								mListView.setAdapter(mChatAdapter);
 								mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-								
 
 								if (message != null) {
 									mLastMessageId = message.getId();
 								}
-
 
 								mEditText.requestFocus();
 							}
@@ -151,12 +149,11 @@ public class ChatFragment extends SherlockFragment {
 							if (ChatFragment.this.isVisible()) {
 								Log.v(TAG, "Tearing down a progress dialog: " + getUsername());
 								((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-								
+
 							}
 						}
 					});
-				}
-				else {
+				} else {
 					Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
 					// can't do anything without a public key so close the tab
 					if (ChatFragment.this.isVisible()) {
@@ -188,9 +185,18 @@ public class ChatFragment extends SherlockFragment {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
 		final String message = etMessage.getText().toString();
 		if (message.length() > 0) {
+
 			EncryptionController.eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
 				@Override
 				public void handleResponse(String result) {
+
+					ChatMessage chatMessage = new ChatMessage();
+					chatMessage.setFrom(EncryptionController.getIdentityUsername());
+					chatMessage.setTo(mUsername);
+					chatMessage.setCipherText(result);					
+
+					mChatAdapter.addOrUpdateMessage(chatMessage);													
+					
 					ChatController.sendMessage(mUsername, result);
 					TextKeyListener.clear(etMessage.getText());
 				}
@@ -208,12 +214,11 @@ public class ChatFragment extends SherlockFragment {
 	public void addMessage(final JSONObject jsonMessage) {
 		ensureChatAdapter();
 		try {
-			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);
-			mChatAdapter.addMessage(message);
+			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);						
+			mChatAdapter.addOrUpdateMessage(message);
 			mLastMessageId = message.getId();
 
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			Log.e(TAG, "Error adding chat message.");
 		}
 	}

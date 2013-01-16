@@ -271,7 +271,7 @@ public class ChatController {
 			try {
 				message.put("text", text);
 				message.put("to", to);
-				message.put("from", EncryptionController.getIdentityUsername());
+				message.put("from", EncryptionController.getIdentityUsername());				
 				String sMessage = message.toString();
 
 				mMessageBuffer.add(sMessage);

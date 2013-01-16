@@ -10,7 +10,6 @@ public class ChatMessage {
 	private String mPlainText;
 	private String mId;
 	
-	
 	public String getFrom() {
 		return mFrom;
 	}
@@ -36,6 +35,8 @@ public class ChatMessage {
 		mPlainText = plainText;
 	}
 	
+
+	
 	public String getId() {
 		return mId;
 	}
@@ -52,4 +53,26 @@ public class ChatMessage {
 
 		return chatMessage;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+        
+        ChatMessage rhs = (ChatMessage) obj;
+        
+        return this.getCipherText().equals(rhs.getCipherText()) && this.getTo().equals(rhs.getTo()) && this.getFrom().equals(rhs.getFrom()); 
+        
+       
+	}
+	
+	public int hashCode() {
+		return this.getCipherText().hashCode() + this.getFrom().hashCode() + this.getTo().hashCode();
+	}
+	
+
 }

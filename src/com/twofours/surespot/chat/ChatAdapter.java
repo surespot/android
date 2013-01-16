@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +17,8 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatAdapter extends BaseAdapter {
-	private final static String TAG = "FriendAdapter";
-	private List<ChatMessage> mMessages = new ArrayList<ChatMessage>();
+	private final static String TAG = "ChatAdapter";
+	private ArrayList<ChatMessage> mMessages = new ArrayList<ChatMessage>();
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
@@ -26,8 +27,18 @@ public class ChatAdapter extends BaseAdapter {
 		mContext = context;
 	}
 
-	public void addMessage(ChatMessage message) {
-		mMessages.add(message);
+	// update the id and sent status of the message once we received
+	public void addOrUpdateMessage(ChatMessage message) {
+		int index = mMessages.indexOf(message);
+		if (index == -1) {
+			Log.v(TAG, "addMessage, could not find message");
+			mMessages.add(message);
+		} else {
+			Log.v(TAG, "addMessage, updating message");
+			ChatMessage updateMessage = mMessages.get(index);
+			updateMessage.setId(message.getId());
+		}
+
 		notifyDataSetChanged();
 	}
 
@@ -37,13 +48,14 @@ public class ChatAdapter extends BaseAdapter {
 			notifyDataSetChanged();
 		}
 	}
-//
-//	public void clearMessages(boolean notify) {
-//		mMessages.clear();
-//		if (notify) {
-//			notifyDataSetChanged();
-//		}
-//	}
+
+	//
+	// public void clearMessages(boolean notify) {
+	// mMessages.clear();
+	// if (notify) {
+	// notifyDataSetChanged();
+	// }
+	// }
 
 	@Override
 	public int getCount() {
@@ -61,8 +73,7 @@ public class ChatAdapter extends BaseAdapter {
 		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
-		}
-		else {
+		} else {
 			return TYPE_US;
 		}
 	}
@@ -84,36 +95,34 @@ public class ChatAdapter extends BaseAdapter {
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		final ChatMessageViewHolder chatMessageViewHolder;
 		if (convertView == null) {
+			chatMessageViewHolder = new ChatMessageViewHolder();
 
 			switch (type) {
-				case TYPE_US:
-
-					convertView = inflater.inflate(R.layout.message_list_item_us, parent, false);
-
-					break;
-				case TYPE_THEM:
-
-					convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
-
-					break;
+			case TYPE_US:
+				convertView = inflater.inflate(R.layout.message_list_item_us, parent, false);
+				chatMessageViewHolder.vMessageSending = convertView.findViewById(R.id.messageSending);
+				chatMessageViewHolder.vMessageSent = convertView.findViewById(R.id.messageSent);
+				break;
+			case TYPE_THEM:
+				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
+				break;
 			}
-
-			chatMessageViewHolder = new ChatMessageViewHolder();
 			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
-
 			convertView.setTag(chatMessageViewHolder);
-		}
-		else {
+		} else {
 			chatMessageViewHolder = (ChatMessageViewHolder) convertView.getTag();
 		}
 
 		final ChatMessage item = (ChatMessage) getItem(position);
-		// chatMessageViewHolder.tvUser.setText(item.getFrom());
+		if (type == TYPE_US) {
+			chatMessageViewHolder.vMessageSending.setVisibility(item.getId() == null ? View.VISIBLE : View.GONE);
+			chatMessageViewHolder.vMessageSent.setVisibility(item.getId() != null ? View.VISIBLE : View.GONE);
+		}
+
 		if (item.getPlainText() != null) {
 			chatMessageViewHolder.tvText.setText(item.getPlainText());
-		}
-		else {
+		} else {
 			// decrypt
 			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherText(),
 					new IAsyncCallback<String>() {
@@ -135,6 +144,8 @@ public class ChatAdapter extends BaseAdapter {
 	public static class ChatMessageViewHolder {
 		// public TextView tvUser;
 		public TextView tvText;
+		public View vMessageSending;
+		public View vMessageSent;
 	}
 
 }
