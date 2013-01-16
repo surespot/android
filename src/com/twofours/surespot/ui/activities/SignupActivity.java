@@ -25,7 +25,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.main.MainActivity;
+import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
@@ -125,7 +125,7 @@ public class SignupActivity extends Activity {
 													EncryptionController.saveIdentity(new SurespotIdentity(username, keyPair));
 
 													// SurespotApplication.getUserData().setUsername(username);
-													Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
 													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 													startActivity(intent);
 

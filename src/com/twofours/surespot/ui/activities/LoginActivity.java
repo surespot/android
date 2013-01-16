@@ -23,7 +23,7 @@ import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.main.MainActivity;
+import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
 
 public class LoginActivity extends Activity {
@@ -125,7 +125,7 @@ public class LoginActivity extends Activity {
 		// go straight to the chat now we've logged in
 		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 		if (name == null) {
-			Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+			Intent intent = new Intent(LoginActivity.this, FriendActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			LoginActivity.this.startActivity(intent);
 		}

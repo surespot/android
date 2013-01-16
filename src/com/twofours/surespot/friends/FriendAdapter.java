@@ -1,4 +1,4 @@
-package com.twofours.surespot.main;
+package com.twofours.surespot.friends;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,10 +23,9 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.NetworkController;
 
-public class MainAdapter extends BaseAdapter {
+public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "MainAdapter";
 
 	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
@@ -34,7 +33,7 @@ public class MainAdapter extends BaseAdapter {
 
 	private Context mContext;
 
-	public MainAdapter(Context context) {
+	public FriendAdapter(Context context) {
 		mContext = context;
 		// refreshActiveChats();
 
@@ -66,16 +65,20 @@ public class MainAdapter extends BaseAdapter {
 	public void messageReceived(String name) {
 		Log.v(TAG, "message received");
 		Friend friend = getFriend(name);
-		friend.incMessageCount(1);
-		Collections.sort(mFriends);
-		notifyDataSetChanged();
+		if (friend != null) {
+			friend.incMessageCount(1);
+			Collections.sort(mFriends);
+			notifyDataSetChanged();
+		}
 	}
 
 	public void messageDeltaReceived(String name, int delta) {
 		Friend friend = getFriend(name);
-		friend.setMessageCount(delta);
-		Collections.sort(mFriends);
-		notifyDataSetChanged();
+		if (friend != null) {
+			friend.setMessageCount(delta);
+			Collections.sort(mFriends);
+			notifyDataSetChanged();
+		}
 	}
 
 	private Friend getFriend(String friendName) {
@@ -158,9 +161,9 @@ public class MainAdapter extends BaseAdapter {
 	public long getItemId(int position) {
 		return position;
 	}
-	
+
 	public void removeFriend(String name) {
-		mFriends.remove(getFriend(name));		
+		mFriends.remove(getFriend(name));
 		notifyDataSetChanged();
 	}
 
@@ -240,9 +243,9 @@ public class MainAdapter extends BaseAdapter {
 					if (action.equals("accept")) {
 						friend.setInvited(false);
 						friend.setNewFriend(true);
-						
+
 					} else {
-						mFriends.remove(position);					
+						mFriends.remove(position);
 					}
 
 					notifyDataSetChanged();
@@ -265,7 +268,5 @@ public class MainAdapter extends BaseAdapter {
 		public View vgInvite;
 		public View vgFriend;
 	}
-
-	
 
 }

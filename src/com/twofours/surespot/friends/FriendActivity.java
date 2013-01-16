@@ -1,4 +1,4 @@
-package com.twofours.surespot.main;
+package com.twofours.surespot.friends;
 
 import java.util.HashMap;
 
@@ -41,11 +41,10 @@ import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.NetworkController;
 
-public class MainActivity extends SherlockActivity {
-	private MainAdapter mMainAdapter;
+public class FriendActivity extends SherlockActivity {
+	private FriendAdapter mMainAdapter;
 	private static final String TAG = "MainActivity";
 	private boolean mDisconnectSocket = true;
 	private MultiProgressDialog mMpdPopulateList;
@@ -59,7 +58,7 @@ public class MainActivity extends SherlockActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_friend);
 		mLastMessageIds = new HashMap<String, Integer>();
 		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
@@ -67,7 +66,7 @@ public class MainActivity extends SherlockActivity {
 		getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
 
 		final ListView listView = (ListView) findViewById(R.id.main_list);
-		mMainAdapter = new MainAdapter(this);
+		mMainAdapter = new FriendAdapter(this);
 		listView.setAdapter(mMainAdapter);
 
 		// click on friend to join chat
@@ -81,9 +80,9 @@ public class MainActivity extends SherlockActivity {
 
 					mDisconnectSocket = false;
 
-					Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+					Intent intent = new Intent(FriendActivity.this, ChatActivity.class);
 					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
-					MainActivity.this.startActivity(intent);
+					FriendActivity.this.startActivity(intent);
 					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 				}
@@ -270,14 +269,14 @@ public class MainActivity extends SherlockActivity {
 			public void onFailure(Throwable arg0, String content) {
 				Log.e(TAG, "getFriends: " + content);
 
-				Toast.makeText(MainActivity.this.getApplicationContext(),
+				Toast.makeText(FriendActivity.this.getApplicationContext(),
 						"Could not load friends. Please check your network connection.", Toast.LENGTH_SHORT).show();
 			}
 
 			@Override
 			public void onFinish() {
 				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-				MainActivity.this.mMpdPopulateList.decrProgress();
+				FriendActivity.this.mMpdPopulateList.decrProgress();
 			}
 		});
 	}

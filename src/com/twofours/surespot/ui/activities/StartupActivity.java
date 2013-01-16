@@ -11,7 +11,7 @@ import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.main.MainActivity;
+import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
 
 public class StartupActivity extends Activity {
@@ -73,7 +73,7 @@ public class StartupActivity extends Activity {
 				else {
 					// go to main
 					
-					intent = new Intent(this, MainActivity.class);
+					intent = new Intent(this, FriendActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					startActivity(intent);
 				}

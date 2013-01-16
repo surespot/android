@@ -25,7 +25,7 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.main.MainActivity;
+import com.twofours.surespot.friends.FriendActivity;
 
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
@@ -197,7 +197,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	}
 
 	private void showMain() {
-		Intent parentActivityIntent = new Intent(this, MainActivity.class);
+		Intent parentActivityIntent = new Intent(this, FriendActivity.class);
 		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(parentActivityIntent);
 		finish();

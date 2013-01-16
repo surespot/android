@@ -21,7 +21,7 @@ import com.twofours.surespot.ui.activities.StartupActivity;
 
 public class GCMIntentService extends GCMBaseIntentService
 
-{	
+{
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
 
@@ -45,11 +45,15 @@ public class GCMIntentService extends GCMBaseIntentService
 			String to = intent.getStringExtra("to");
 			String from = intent.getStringExtra("sentfrom");
 			String otherUser = Utils.getOtherUser(from, to);
-			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);					
-		}
-		else {
+			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);
+		} else {
 			String user = intent.getStringExtra("user");
-			generateInviteNotification(context, user, "surespot", "friend invite from " + user);
+			if (type.equals("invite")) {				
+				generateInviteNotification(context, user, "surespot", "you have received a friend invite from " + user);
+			}
+			else {
+				generateInviteNotification(context, user, "surespot", user + " has accepted your friend invite");
+			}
 		}
 	}
 
@@ -89,8 +93,7 @@ public class GCMIntentService extends GCMBaseIntentService
 				GCMRegistrar.setRegisteredOnServer(context, true);
 
 			}
-		}
-		else {
+		} else {
 			Log.v(TAG, "Can't save GCM id on surespot server as user is not logged in.");
 		}
 	}
@@ -104,9 +107,10 @@ public class GCMIntentService extends GCMBaseIntentService
 	private static void generateMessageNotification(Context context, String user, String title, String message) {
 		int icon = R.drawable.ic_launcher;
 
-		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
-				.setContentText(message);
+		NotificationManager notificationManager = (NotificationManager) context
+				.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon)
+				.setContentTitle(title).setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 		// if we're logged in, go to the chat, otherwise go to login
 
@@ -129,9 +133,10 @@ public class GCMIntentService extends GCMBaseIntentService
 	private static void generateInviteNotification(Context context, String user, String title, String message) {
 		int icon = R.drawable.ic_launcher;
 
-		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
-				.setContentText(message);
+		NotificationManager notificationManager = (NotificationManager) context
+				.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon)
+				.setContentTitle(title).setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
@@ -147,5 +152,5 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
 		notificationManager.notify(1, notification);
-	}		
+	}
 }
