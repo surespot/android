@@ -24,19 +24,15 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.friends.Friend;
-import com.twofours.surespot.friends.FriendInvite;
 import com.twofours.surespot.network.NetworkController;
 
 public class MainAdapter extends BaseAdapter {
 	private final static String TAG = "MainAdapter";
 
 	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
-	private final ArrayList<FriendInvite> mInvites = new ArrayList<FriendInvite>();
 	private final ArrayList<String> mActiveChats = new ArrayList<String>();
 
 	private Context mContext;
-	public final static int TYPE_INVITE = 0;
-	public final static int TYPE_FRIEND = 1;
 
 	public MainAdapter(Context context) {
 		mContext = context;
@@ -55,8 +51,7 @@ public class MainAdapter extends BaseAdapter {
 					String chatName = jsonChats.getString(i);
 					mActiveChats.add(chatName);
 				}
-			}
-			catch (JSONException e) {
+			} catch (JSONException e) {
 				Log.e(TAG, "Error decoding active chat json list: " + e.toString());
 			}
 		}
@@ -64,12 +59,12 @@ public class MainAdapter extends BaseAdapter {
 
 	/*
 	 * public void refreshFlags() { for (Friend friend : mFriends) { if (mActiveChats.contains(friend.getName())) {
-	 * friend.setFlags(friend.getFlags() | ~Friend.ACTIVE_CHAT ); } else { friend.setFlags(friend.getFlags() & ~Friend.ACTIVE_CHAT ); } }
-	 * notifyDataSetChanged(); }
+	 * friend.setFlags(friend.getFlags() | ~Friend.ACTIVE_CHAT ); } else { friend.setFlags(friend.getFlags() &
+	 * ~Friend.ACTIVE_CHAT ); } } notifyDataSetChanged(); }
 	 */
 
 	public void messageReceived(String name) {
-		Log.v(TAG,"message received");
+		Log.v(TAG, "message received");
 		Friend friend = getFriend(name);
 		friend.incMessageCount(1);
 		Collections.sort(mFriends);
@@ -85,40 +80,60 @@ public class MainAdapter extends BaseAdapter {
 
 	private Friend getFriend(String friendName) {
 		for (Friend friend : mFriends) {
-			if (friend.getName().equals(friendName)) { return friend; }
+			if (friend.getName().equals(friendName)) {
+				return friend;
+			}
 		}
 		return null;
 	}
 
 	public void addNewFriend(String name) {
-		Friend friend = new Friend();
-		friend.setName(name);
-		friend.setFlags(Friend.NEW_FRIEND);
-		mFriends.add(friend);
+		Friend friend = getFriend(name);
+		if (friend == null) {
+			friend = new Friend();
+			mFriends.add(friend);
+			friend.setName(name);
+		}
+
+		friend.setNewFriend(true);
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 	}
 
-	public void addFriends(JSONArray names) {
+	public void addFriendInvited(String name) {
+		Friend friend = new Friend();
+		friend.setName(name);
+		friend.setInvited(true);
+		mFriends.add(friend);
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
+
+	}
+
+	public void addFriendInviter(String name) {
+		Friend friend = new Friend();
+		friend.setName(name);
+		friend.setInviter(true);
+		mFriends.add(friend);
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
+
+	}
+
+	public void addFriends(JSONArray friends) {
 		try {
-			for (int i = 0; i < names.length(); i++) {
-				Friend friend = new Friend();
-				String name = names.getString(i);
-				friend.setName(name);
-				if (mActiveChats.contains(name)) {
-					friend.setFlags(Friend.ACTIVE_CHAT);
-				}
+			for (int i = 0; i < friends.length(); i++) {
+				Friend friend = Friend.toFriend(friends.getJSONObject(i));
+				friend.setChatActive(mActiveChats.contains(friend.getName()));
 				mFriends.add(friend);
 			}
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			Log.e(TAG, e.toString());
 		}
 
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 	}
-	
 
 	public void clearFriends(boolean notify) {
 		mFriends.clear();
@@ -127,145 +142,80 @@ public class MainAdapter extends BaseAdapter {
 		}
 	}
 
-
-	public void addFriendInvite(String name) {
-		FriendInvite friendInvite = new FriendInvite();
-		friendInvite.setName(name);
-		mInvites.add(friendInvite);
-		notifyDataSetChanged();
-
-	}
-	
-	public void addFriendInvites(JSONArray names) {
-		try {
-			for (int i = 0; i < names.length(); i++) {
-				FriendInvite friendInvite = new FriendInvite();
-				String name = names.getJSONObject(i).getString("data");
-				friendInvite.setName(name);				
-				mInvites.add(friendInvite);
-				notifyDataSetChanged();
-			}
-		}
-		catch (JSONException e) {
-			Log.e(TAG, e.toString());
-		}
-
-		Collections.sort(mFriends);
-		notifyDataSetChanged();
-	}
-	
-	public void clearInvites(boolean notify) {
-		mInvites.clear();
-		if (notify) {
-			notifyDataSetChanged();
-		}
-	}
-
-
-
 	@Override
 	public int getCount() {
-		return mFriends.size() + mInvites.size();
+		return mFriends.size();
 	}
 
 	@Override
 	public Object getItem(int position) {
-		if (position < mInvites.size()) {
-			return mInvites.get(position);
-		}
-		else {
-			return mFriends.get(position - mInvites.size());
-		}
-	}
 
-	@Override
-	public int getItemViewType(int position) {
-		if (position < mInvites.size()) {
-			return TYPE_INVITE;
-		}
-		else {
-			return TYPE_FRIEND;
-		}
-	}
+		return mFriends.get(position);
 
-	@Override
-	public int getViewTypeCount() {
-		return 2;
 	}
 
 	@Override
 	public long getItemId(int position) {
 		return position;
 	}
+	
+	public void removeFriend(String name) {
+		mFriends.remove(getFriend(name));		
+		notifyDataSetChanged();
+	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
-		int type = getItemViewType(position);
+		Friend friend = (Friend) getItem(position);
+		FriendViewHolder friendViewHolder;
 
-		switch (type) {
-			case TYPE_INVITE:
-				NotificationViewHolder notificationViewHolder;
-				if (convertView == null) {
-					LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-					convertView = inflater.inflate(R.layout.main_notification_item, parent, false);
+		if (convertView == null) {
+			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			convertView = inflater.inflate(R.layout.main_friend_item, parent, false);
 
-					notificationViewHolder = new NotificationViewHolder();
-					notificationViewHolder.tvName = (TextView) convertView.findViewById(R.id.notificationItemText);
+			((Button) convertView.findViewById(R.id.notificationItemAccept))
+					.setOnClickListener(FriendInviteResponseListener);
+			((Button) convertView.findViewById(R.id.notificationItemIgnore))
+					.setOnClickListener(FriendInviteResponseListener);
 
-					((Button) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
-					((Button) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
+			friendViewHolder = new FriendViewHolder();
+			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
+			friendViewHolder.newMessageCountView = (TextView) convertView.findViewById(R.id.newMessageCount);
+			friendViewHolder.vgFriend = convertView.findViewById(R.id.friendLayout);
+			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
+			convertView.setTag(friendViewHolder);
 
-					convertView.setTag(notificationViewHolder);
-				}
-				else {
-					notificationViewHolder = (NotificationViewHolder) convertView.getTag();
-				}
+		} else {
+			friendViewHolder = (FriendViewHolder) convertView.getTag();
+		}
 
-				FriendInvite item = (FriendInvite) getItem(position);
-				notificationViewHolder.tvName.setText(item.getName());
-				break;
-			case TYPE_FRIEND:
-				FriendViewHolder friendViewHolder;
-				if (convertView == null) {
-					LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-					convertView = inflater.inflate(R.layout.main_friend_item, parent, false);
+		friendViewHolder.tvName.setText(friend.getName() + (friend.isInvited() ? " (invited)" : ""));
 
-					friendViewHolder = new FriendViewHolder();
-					friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
-					friendViewHolder.newMessageCountView = (TextView) convertView.findViewById(R.id.newMessageCount);
-					convertView.setTag(friendViewHolder);
-				}
-				else {
-					friendViewHolder = (FriendViewHolder) convertView.getTag();
-				}
+		if (friend.isInviter()) {
+			friendViewHolder.vgFriend.setVisibility(View.GONE);
+			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
+		} else {
+			friendViewHolder.vgFriend.setVisibility(View.VISIBLE);
+			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
-				Friend item1 = (Friend) getItem(position);
+			if (friend.isChatActive()) {
+				convertView.setBackgroundColor(Color.WHITE);
+			} else {
+				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
+			}
 
-				if ((item1.getFlags() & Friend.ACTIVE_CHAT) == Friend.ACTIVE_CHAT) {
-					convertView.setBackgroundColor(Color.WHITE);
-				}
-				else {
-					convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
-				}
+			if (friend.getMessageCount() > 0) {
+				friendViewHolder.newMessageCountView.setText(friend.getMessageCount().toString());
+			} else {
+				friendViewHolder.newMessageCountView.setText("");
+			}
 
-				if (item1.getMessageCount() > 0) {
-					friendViewHolder.newMessageCountView.setText(item1.getMessageCount().toString());
-				}
-				else {
-					friendViewHolder.newMessageCountView.setText("");
-				}
-
-				if ((item1.getFlags() & Friend.NEW_FRIEND) == Friend.NEW_FRIEND) {
-					friendViewHolder.tvName.setText(item1.getName());
-					friendViewHolder.tvName.setTypeface(null, Typeface.ITALIC);
-				}
-				else {
-					friendViewHolder.tvName.setText(item1.getName());
-					friendViewHolder.tvName.setTypeface(null, Typeface.NORMAL);
-				}
-
-				break;
+			if (friend.isNewFriend()) {
+				friendViewHolder.tvName.setTypeface(null, Typeface.ITALIC);
+			} else {
+				friendViewHolder.tvName.setTypeface(null, Typeface.NORMAL);
+			}
 
 		}
 
@@ -278,19 +228,24 @@ public class MainAdapter extends BaseAdapter {
 		public void onClick(View v) {
 
 			final String action = (String) v.getTag();
-			final int position = ((ListView) v.getParent().getParent()).getPositionForView((View) v.getParent());
-			final String friendname = ((FriendInvite) getItem(position)).getName();
+			final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v
+					.getParent());
+			final Friend friend = (Friend) getItem(position);
+			final String friendname = friend.getName();
 
 			NetworkController.respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
 				public void onSuccess(String arg0) {
 
 					Log.d(TAG, "Invitation acted upon successfully: " + action);
-
-					// delete invite
-					removeItem(position);
 					if (action.equals("accept")) {
-						addNewFriend(friendname);
+						friend.setInvited(false);
+						friend.setNewFriend(true);
+						
+					} else {
+						mFriends.remove(position);					
 					}
+
+					notifyDataSetChanged();
 				}
 
 				public void onFailure(Throwable error, String content) {
@@ -300,16 +255,6 @@ public class MainAdapter extends BaseAdapter {
 		}
 	};
 
-	private void removeItem(int position) {
-		if (position < mInvites.size()) {
-			mInvites.remove(position);
-		}
-		else {
-			mFriends.remove(position - mInvites.size());
-		}
-		notifyDataSetChanged();
-	}
-
 	public static class NotificationViewHolder {
 		public TextView tvName;
 	}
@@ -317,9 +262,10 @@ public class MainAdapter extends BaseAdapter {
 	public static class FriendViewHolder {
 		public TextView tvName;
 		public TextView newMessageCountView;
-		public View itemLayout;
-		public View newFriendView;
-		public View activeChatView;
+		public View vgInvite;
+		public View vgFriend;
 	}
+
+	
 
 }

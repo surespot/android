@@ -15,35 +15,58 @@
         android:textSize="30sp" >
     </TextView>
 
-    <View
-        android:id="@+id/newFriend"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="center"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/orange_circle_shape"
-        android:visibility="invisible" >
-    </View>
+    <LinearLayout
+        android:id="@+id/friendLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
-    <View
-        android:id="@+id/activeChat"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="center"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/blue_circle_shape"
-        android:visibility="invisible" >
-    </View>
+        <View
+            android:id="@+id/newFriend"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/orange_circle_shape"
+            android:visibility="invisible" >
+        </View>
 
-    <TextView
-        android:id="@+id/newMessageCount"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:layout_gravity="center"
-        android:layout_marginRight="10dp"
-        android:gravity="center"
-        android:textSize="30sp"
-        android:textStyle="bold|italic" >
-    </TextView>
+        <TextView
+            android:id="@+id/newMessageCount"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
+            android:gravity="center"
+            android:textSize="30sp"
+            android:textStyle="bold|italic" >
+        </TextView>
+    </LinearLayout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/inviteLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/notificationItemIgnore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:tag="ignore"
+            android:text="ignore" >
+        </Button>
+
+        <Button
+            android:id="@+id/notificationItemAccept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:tag="accept"
+            android:text="accept" >
+        </Button>
+    </LinearLayout>
 
 </LinearLayout>

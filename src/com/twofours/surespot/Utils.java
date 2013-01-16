@@ -112,7 +112,7 @@ public class Utils {
 
 	}
 
-	public static String mapToJsonString(Map map) {
+	public static String mapToJsonString(Map<String,Integer> map) {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject.toString();
 	}

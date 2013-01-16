@@ -51,7 +51,7 @@ public class MainActivity extends SherlockActivity {
 	private MultiProgressDialog mMpdPopulateList;
 	private MultiProgressDialog mMpdInviteFriend;
 	private BroadcastReceiver mInvitationReceiver;
-	private BroadcastReceiver mFriendAddedReceiver;
+	private BroadcastReceiver InviteResponseReceiver;
 	private BroadcastReceiver mMessageReceiver;
 	private HashMap<String, Integer> mLastMessageIds;
 
@@ -74,17 +74,19 @@ public class MainActivity extends SherlockActivity {
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				// start chat activity
+				Friend friend = (Friend) mMainAdapter.getItem(position);
+				if (friend.isFriend()) {
+					// start chat activity
+					// don't disconnect the socket io
 
-				// don't disconnect the socket io
-				mDisconnectSocket = false;
+					mDisconnectSocket = false;
 
-				Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+					Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
+					MainActivity.this.startActivity(intent);
+					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
-				intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, ((Friend) mMainAdapter.getItem(position)).getName());
-				MainActivity.this.startActivity(intent);
-				LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
-
+				}
 			}
 		});
 
@@ -96,26 +98,42 @@ public class MainActivity extends SherlockActivity {
 			}
 		});
 
-		mFriendAddedReceiver = new BroadcastReceiver() {
+		InviteResponseReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mMainAdapter.addNewFriend(intent.getStringExtra(SurespotConstants.ExtraNames.FRIEND_ADDED));
+				String jsonStringInviteResponse = intent.getStringExtra(SurespotConstants.ExtraNames.INVITE_RESPONSE);
+				JSONObject jsonInviteResponse;
+				try {
+					jsonInviteResponse = new JSONObject(jsonStringInviteResponse);
+					String name = jsonInviteResponse.getString("user");
+					if (jsonInviteResponse.getString("response").equals("accept")) {
+						mMainAdapter.addNewFriend(name);
+					}
+					else {
+						mMainAdapter.removeFriend(name);
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					Log.e(TAG,"Invite Response Handler error: " + e.getMessage());
+				}
+				
 			}
 		};
 		// register for friend added
-		LocalBroadcastManager.getInstance(this).registerReceiver(mFriendAddedReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.FRIEND_ADDED_EVENT));
+		LocalBroadcastManager.getInstance(this).registerReceiver(InviteResponseReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
 
 		// register for invites
 		mInvitationReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mMainAdapter.addFriendInvite(intent.getStringExtra(SurespotConstants.ExtraNames.INVITATION));
+				mMainAdapter.addFriendInviter(intent.getStringExtra(SurespotConstants.ExtraNames.NAME));
 			}
 		};
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(mInvitationReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.INVITATION_INTENT));
+				new IntentFilter(SurespotConstants.IntentFilters.INVITE_REQUEST));
 
 		mMessageReceiver = new BroadcastReceiver() {
 
@@ -128,8 +146,7 @@ public class MainActivity extends SherlockActivity {
 					messageJson = new JSONObject(message);
 					String name = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
 					mMainAdapter.messageReceived(name);
-				}
-				catch (JSONException e) {
+				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -137,7 +154,7 @@ public class MainActivity extends SherlockActivity {
 		};
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT));
+				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
 		EditText editText = (EditText) findViewById(R.id.etFriend);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
@@ -171,40 +188,13 @@ public class MainActivity extends SherlockActivity {
 		});
 
 		this.mMpdPopulateList.incrProgress();
-		// TODO combine into 1 web service call
-		// get the list of notifications
-		NetworkController.getNotifications(new JsonHttpResponseHandler() {
-			public void onSuccess(JSONArray jsonArray) {
-				if (jsonArray.length() > 0) {					
-					mMainAdapter.clearInvites(false);
-					mMainAdapter.addFriendInvites(jsonArray);
-
-				}
-			}
-
-			@Override
-			public void onFailure(Throwable arg0, String content) {
-				Log.e(TAG, "getNotifications: " + content);
-				// Toast.makeText(FriendFragment.this.getActivity(), "Error getting notifications.");
-
-			}
-
-			@Override
-			public void onFinish() {
-				MainActivity.this.mMpdPopulateList.decrProgress();
-			}
-
-		});
-
-		this.mMpdPopulateList.incrProgress();
 
 		// get last message id's out of shared prefs
 		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
 		if (lastMessageIdJson != null) {
 			try {
 				mLastMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-			}
-			catch (Exception e1) {
+			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -244,8 +234,7 @@ public class MainActivity extends SherlockActivity {
 									if (localId == null) {
 										mLastMessageIds.put(user, serverId);
 										mMainAdapter.messageDeltaReceived(user, serverId);
-									}
-									else {
+									} else {
 										// user went to tab but no new messages received, set count to match server
 										if (localId == -1) {
 											mLastMessageIds.put(user, serverId);
@@ -280,8 +269,9 @@ public class MainActivity extends SherlockActivity {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				Log.e(TAG, "getFriends: " + content);
-				
-				Toast.makeText(MainActivity.this.getApplicationContext(), "Could not load friends. Please check your network connection.",Toast.LENGTH_SHORT).show();
+
+				Toast.makeText(MainActivity.this.getApplicationContext(),
+						"Could not load friends. Please check your network connection.", Toast.LENGTH_SHORT).show();
 			}
 
 			@Override
@@ -307,7 +297,7 @@ public class MainActivity extends SherlockActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mFriendAddedReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 	}
@@ -333,6 +323,7 @@ public class MainActivity extends SherlockActivity {
 					// that the request is
 					// pending somehow
 					TextKeyListener.clear(etFriend.getText());
+					mMainAdapter.addFriendInvited(friend);
 					Utils.makeToast(friend + " has been invited to be your friend.");
 				}
 
@@ -342,21 +333,20 @@ public class MainActivity extends SherlockActivity {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
 						switch (statusCode) {
-							case 404:
-								Utils.makeToast("User does not exist.");
-								break;
-							case 409:
-								Utils.makeToast("You are already friends.");
-								break;
-							case 403:
-								Utils.makeToast("You have already invited this user.");
-								break;
-							default:
-								Log.e(TAG, "inviteFriend: " + content);
-								// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
+						case 404:
+							Utils.makeToast("User does not exist.");
+							break;
+						case 409:
+							Utils.makeToast("You are already friends.");
+							break;
+						case 403:
+							Utils.makeToast("You have already invited this user.");
+							break;
+						default:
+							Log.e(TAG, "inviteFriend: " + content);
+							// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 						}
-					}
-					else {
+					} else {
 						Log.e(TAG, "inviteFriend: " + content);
 						// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 					}

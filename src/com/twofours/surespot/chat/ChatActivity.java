@@ -148,7 +148,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 		};
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT));
+				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
 	}
 

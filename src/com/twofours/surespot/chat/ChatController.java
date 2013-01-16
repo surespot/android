@@ -24,7 +24,6 @@ import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -65,14 +64,14 @@ public class ChatController {
 					if (!networkInfo.isFailover()
 							&& (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
 						// if we're not connecting, connect
-						if (!(getState() == STATE_CONNECTING)) {
+						if (getState() != STATE_CONNECTING) {
 							setState(STATE_CONNECTING);
 							disconnect();
 							connect(new IConnectCallback() {
 
 								@Override
 								public void connectStatus(boolean status) {
-									if (true) {
+									if (status) {
 										sendNextMessage();
 									}
 
@@ -200,15 +199,15 @@ public class ChatController {
 				if (event.equals("notification")) {
 					JSONObject json = (JSONObject) args[0];
 					try {
-						sendNotification(json.getString("data"));
+						sendInviteRequest(json.getString("data"));
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					return;
 				}
-				if (event.equals("friend")) {
-					sendFriendAdded((String) args[0]);
+				if (event.equals("inviteResponse")) {
+					sendInviteResponse((String) args[0]);
 					return;
 				}
 				if (event.equals("message")) {
@@ -220,20 +219,20 @@ public class ChatController {
 		});
 	}
 
-	private static void sendNotification(String friend) {
-		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITATION_INTENT);
-		intent.putExtra(SurespotConstants.ExtraNames.INVITATION, friend);
+	private static void sendInviteRequest(String friend) {
+		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_REQUEST);
+		intent.putExtra(SurespotConstants.ExtraNames.NAME, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
-	private static void sendFriendAdded(String friend) {
-		Intent intent = new Intent(SurespotConstants.IntentFilters.FRIEND_ADDED_EVENT);
-		intent.putExtra(SurespotConstants.ExtraNames.FRIEND_ADDED, friend);
+	private static void sendInviteResponse(String response) {
+		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_RESPONSE);
+		intent.putExtra(SurespotConstants.ExtraNames.INVITE_RESPONSE, response);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
 	private static void sendMessageReceived(String message) {
-		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
+		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED);
 		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 

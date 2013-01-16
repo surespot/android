@@ -235,11 +235,6 @@ public class NetworkController {
 		get("/friends", null, responseHandler);
 	}
 
-	public static void getNotifications(AsyncHttpResponseHandler responseHandler) {
-		get("/notifications", null, responseHandler);
-
-	}
-
 	//if we have an id get the messages since the id, otherwise get the last x
 	public static void getMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
 	

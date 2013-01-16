@@ -23,7 +23,6 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
