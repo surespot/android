@@ -21,8 +21,8 @@ public class SurespotConstants {
 	 public final static String BASE_URL = "http://alpha.surespot.me:8080";
 	 public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
 
-	//public final static String BASE_URL = "http://192.168.10.68:3000";
-	//public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
+	//public final static String BASE_URL = "http://192.168.10.68:52683";
+	//public final static String WEBSOCKET_URL = "http://192.168.10.68:44850";
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";

@@ -28,14 +28,19 @@ public class ChatAdapter extends BaseAdapter {
 
 	// update the id and sent status of the message once we received
 	public void addOrUpdateMessage(ChatMessage message) {
-		int index = mMessages.indexOf(message);
-		if (index == -1) {
-			Log.v(TAG, "addMessage, could not find message");
+		// if the id is null we're sending the message so just add it
+		if (message.getId() == null) {
 			mMessages.add(message);
 		} else {
-			Log.v(TAG, "addMessage, updating message");
-			ChatMessage updateMessage = mMessages.get(index);
-			updateMessage.setId(message.getId());
+			int index = mMessages.indexOf(message);
+			if (index == -1) {
+				Log.v(TAG, "addMessage, could not find message");
+				mMessages.add(message);
+			} else {
+				Log.v(TAG, "addMessage, updating message");
+				ChatMessage updateMessage = mMessages.get(index);
+				updateMessage.setId(message.getId());
+			}
 		}
 
 		notifyDataSetChanged();

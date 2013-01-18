@@ -6,6 +6,7 @@ import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
 import java.net.MalformedURLException;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -39,7 +40,8 @@ public class ChatController {
 	private static Timer mBackgroundTimer;
 	private static TimerTask mResendTask;
 
-	private static ConcurrentLinkedQueue<String> mMessageBuffer = new ConcurrentLinkedQueue<String>();
+	private static ConcurrentLinkedQueue<ChatMessage> mSendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
+	private static ConcurrentLinkedQueue<ChatMessage> mResendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
 	private static final int STATE_CONNECTING = 0;
 	private static final int STATE_CONNECTED = 1;
 
@@ -67,16 +69,7 @@ public class ChatController {
 						if (getState() != STATE_CONNECTING) {
 							setState(STATE_CONNECTING);
 							disconnect();
-							connect(new IConnectCallback() {
-
-								@Override
-								public void connectStatus(boolean status) {
-									if (status) {
-										sendNextMessage();
-									}
-
-								}
-							});
+							connect(mConnectHandler);
 						}
 					}
 				} else {
@@ -89,6 +82,9 @@ public class ChatController {
 	public static void connect(final IConnectCallback callback) {
 
 		if (socket != null && socket.isConnected()) {
+			if (callback != null) {
+				callback.connectStatus(true);
+			}
 			return;
 		}
 
@@ -213,7 +209,14 @@ public class ChatController {
 				if (event.equals("message")) {
 					sendMessageReceived((String) args[0]);
 					// TODO check who from
-					checkAndSendNextMessage((String) args[0]);
+					try {
+						ChatMessage cm = ChatMessage.toChatMessage(new JSONObject((String) args[0]));
+						checkAndSendNextMessage(cm);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
 				}
 			}
 		});
@@ -238,22 +241,23 @@ public class ChatController {
 
 	}
 
-	private static void checkAndSendNextMessage(String message) {
+	private static void checkAndSendNextMessage(ChatMessage message) {
 		Log.v(TAG, "received message: " + message);
-		if (mMessageBuffer.size() > 0) {
-			String sentMessage = mMessageBuffer.peek();
-			Log.v(TAG, "message we sent: " + sentMessage);
+		sendMessages();
+
+		if (mResendBuffer.size() > 0) {
+			// String sentMessage = mMessageBuffer.peek();
+			// Log.v(TAG, "message we sent: " + sentMessage);
 
 			// TODO deserialize and check fields (id is added so can't do equals)
-			if (message.startsWith(sentMessage.substring(0, sentMessage.length() - 1))) {
+			// if (message.startsWith(sentMessage.substring(0, sentMessage.length() - 1))) {
 
-				mMessageBuffer.remove();
-				Log.v(TAG, "Messages equal, sending next message in buffer.");
-				sendNextMessage();
+			if (mResendBuffer.remove(message))
+				Log.v(TAG, "Received and removed message from resend  buffer: " + message);
 
-			} else {
-				// Log.e(TAG,"didn't receive same message we sent.");
-			}
+			// } else {
+			// Log.e(TAG,"didn't receive same message we sent.");
+			// }
 		}
 	}
 
@@ -266,31 +270,20 @@ public class ChatController {
 
 	public static void sendMessage(String to, String text) {
 		if (text != null && text.length() > 0) {
-			JSONObject message = new JSONObject();
-			try {
-				message.put("text", text);
-				message.put("to", to);
-				message.put("from", EncryptionController.getIdentityUsername());				
-				String sMessage = message.toString();
+			ChatMessage cm = new ChatMessage();
+			cm.setFrom(EncryptionController.getIdentityUsername());
+			cm.setTo(to);
+			cm.setCipherText(text);
+			mSendBuffer.add(cm);
 
-				mMessageBuffer.add(sMessage);
-				// if there's no messages in the buffer
-				if (mMessageBuffer.size() == 1) {
-
-					// keep track of the messages we sent
-				 	// and remove them from the buffer when we receive them back from the server
-					sendNextMessage();
-				}
-
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			// keep track of the messages we sent
+			// and remove them from the buffer when we receive them back from the server
+			sendMessages();
 
 		}
 	}
 
-	private static void sendNextMessage() {
+	private static void sendMessages() {
 		if (mBackgroundTimer == null) {
 
 			mBackgroundTimer = new Timer("backgroundTimer");
@@ -301,11 +294,23 @@ public class ChatController {
 		}
 
 		if (getState() == STATE_CONNECTED) {
-			mResendTask = new ResendTask();
-			mBackgroundTimer.schedule(mResendTask, 1000);
+			// mResendTask = new ResendTask();
+			// mBackgroundTimer.schedule(mResendTask, 1000);
 
-			if (mMessageBuffer.size() > 0) {
-				socket.send(mMessageBuffer.peek());
+			Iterator<ChatMessage> iterator = mSendBuffer.iterator();
+
+			while (iterator.hasNext()) {
+				ChatMessage message = iterator.next();
+				iterator.remove();
+				mResendBuffer.add(message);
+				socket.send (new IOAcknowledge() {
+					
+					@Override
+					public void ack(Object... args) {
+						// TODO Auto-generated method stub
+						Log.v(TAG,"ack");
+					}
+				}, message.toJSONObject().toString());
 			}
 		}
 	}
@@ -331,16 +336,7 @@ public class ChatController {
 		public void run() {
 			Log.v(TAG, "Reconnect task run.");
 			disconnect();
-			connect(new IConnectCallback() {
-
-				@Override
-				public void connectStatus(boolean status) {
-
-					sendNextMessage();
-
-				}
-			});
-
+			connect(mConnectHandler);
 		}
 
 	}
@@ -350,9 +346,22 @@ public class ChatController {
 		@Override
 		public void run() {
 			// resend message
-			sendNextMessage();
+			sendMessages();
 
 		}
 
 	}
+
+	private static IConnectCallback mConnectHandler = new IConnectCallback() {
+
+		@Override
+		public void connectStatus(boolean status) {
+			if (status) {
+				mSendBuffer.addAll(mResendBuffer);
+				mResendBuffer.clear();
+				sendMessages();
+			}
+
+		}
+	};
 }

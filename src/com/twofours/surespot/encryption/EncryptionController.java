@@ -108,25 +108,18 @@ public class EncryptionController {
 	}
 
 	private static ECPublicKey recreatePublicKey(String encodedKey) {
-		ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Hex.decode(encodedKey)), curve);
+
 
 		try {
+			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Hex.decode(encodedKey)), curve);
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
 			return pubKey;
 		}
-		catch (NoSuchAlgorithmException e) {
+		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}	
 
 		return null;
 

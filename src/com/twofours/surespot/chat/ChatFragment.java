@@ -157,9 +157,10 @@ public class ChatFragment extends SherlockFragment {
 					// can't do anything without a public key so close the tab
 					if (ChatFragment.this.isVisible()) {
 						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+						((ChatActivity) getActivity()).closeChat(mUsername);
 					}
 
-					((ChatActivity) getActivity()).closeChat(mUsername);
+					
 				}
 			}
 		});
