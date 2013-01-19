@@ -60,7 +60,7 @@ public class ChatAdapter extends BaseAdapter {
 			} else {
 				Log.v(TAG, "addMessage, updating message");
 				ChatMessage updateMessage = mMessages.get(index);
-				updateMessage.setId(message.getId());
+				updateMessage.setId(message.getId());				
 			}
 		}		
 	}

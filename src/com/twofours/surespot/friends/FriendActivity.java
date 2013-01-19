@@ -88,13 +88,12 @@ public class FriendActivity extends SherlockActivity {
 					// start chat activity
 					// don't disconnect the socket io
 
-					mDisconnectSocket = false;
+				//	mDisconnectSocket = false;
 
 					Intent intent = new Intent(FriendActivity.this, ChatActivity.class);
 					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
 					FriendActivity.this.startActivity(intent);
-					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
-
+					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);					
 				}
 			}
 		});
@@ -291,6 +290,8 @@ public class FriendActivity extends SherlockActivity {
 		String jsonString = Utils.mapToJsonString(mLastMessageIds);
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
 		mChatController.disconnect();
+		mChatController.destroy();
+		
 
 	}
 
@@ -299,8 +300,7 @@ public class FriendActivity extends SherlockActivity {
 		super.onDestroy();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-		mChatController.destroy();
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);		
 	}
 
 	private void inviteFriend() {

@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.drm.DrmManagerClient.OnErrorListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
@@ -47,6 +48,7 @@ public class ChatController {
 	private Timer mBackgroundTimer;
 	private TimerTask mResendTask;
 	private IConnectCallback mConnectCallback;
+	private IOCallback mSocketCallback;
 
 	private ConcurrentLinkedQueue<ChatMessage> mSendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
 	private ConcurrentLinkedQueue<ChatMessage> mResendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
@@ -54,75 +56,13 @@ public class ChatController {
 	private int mState;
 
 	private BroadcastReceiver mConnectivityReceiver;
+
 	//
 	public ChatController(IConnectCallback connectCallback) {
+		Log.v(TAG, "constructor.");
 		mConnectCallback = connectCallback;
-		mConnectivityReceiver = new BroadcastReceiver() {
 
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				Log.v(TAG, "Connectivity Action");
-				ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-				if (networkInfo != null) {
-					Log.v(TAG, "isconnected: " + networkInfo.isConnected());
-					Log.v(TAG, "failover: " + networkInfo.isFailover());
-					Log.v(TAG, "reason: " + networkInfo.getReason());
-					Log.v(TAG, "type: " + networkInfo.getTypeName());
-
-					// if it's not a failover and wifi is now active then initiate reconnect
-					if (!networkInfo.isFailover()
-							&& (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-						// if we're not connecting, connect
-						if (getState() != STATE_CONNECTING) {
-							setState(STATE_CONNECTING);
-							disconnect();
-							connect();
-						}
-					}
-				} else {
-					Log.v(TAG, "networkinfo null");
-				}
-			}
-		};
-		
-		loadUnsentMessages();
-		
-		
-		SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-	}
-
-	public void connect() {
-
-		if (socket != null && socket.isConnected()) {
-			if (mConnectCallback != null) {
-				mConnectCallback.connectStatus(true);
-			}
-			return;
-		}
-
-		Cookie cookie = NetworkController.getConnectCookie();
-
-		if (cookie == null) {
-			// need to login
-			Log.v(TAG, "No session cookie, starting Login activity.");
-			Intent startupIntent = new Intent(SurespotApplication.getAppContext(), StartupActivity.class);
-			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			SurespotApplication.getAppContext().startActivity(startupIntent);
-			return;
-		}
-		try {
-			Properties headers = new Properties();
-			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
-			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
-
-		} catch (MalformedURLException e1) {
-			// Auto-generated
-			e1.printStackTrace();
-			// callback.connectStatus(false);
-		}
-
-		socket.connect(new IOCallback() {
+		mSocketCallback = new IOCallback() {
 
 			@Override
 			public void onMessage(JSONObject json, IOAcknowledge ack) {
@@ -185,23 +125,25 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				Log.v(TAG, "socket.io connection established");
+				setState(STATE_CONNECTED);
 				mRetries = 0;
 				if (mBackgroundTimer != null) {
 					mBackgroundTimer.cancel();
 					mBackgroundTimer = null;
 				}
 
-				setState(STATE_CONNECTED);								
+				if (mReconnectTask != null && mReconnectTask.cancel()) {
+					Log.v(TAG, "Cancelled reconnect timer.");
+				}
+
 				mSendBuffer.addAll(mResendBuffer);
 				mResendBuffer.clear();
-				
+
 				if (mConnectCallback != null) {
 					mConnectCallback.connectStatus(true);
 				}
-				
-				sendMessages();
 
-				
+				sendMessages();
 
 			}
 
@@ -237,7 +179,77 @@ public class ChatController {
 
 				}
 			}
-		});
+		};
+
+		mConnectivityReceiver = new BroadcastReceiver() {
+
+			@Override
+			public synchronized void onReceive(Context context, Intent intent) {
+				Log.v(TAG, "Connectivity Action");
+				ConnectivityManager connectivityManager = (ConnectivityManager) context
+						.getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+				if (networkInfo != null) {
+
+					// if it's not a failover and wifi is now active then initiate reconnect
+					if (!networkInfo.isFailover()
+							&& (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
+						// if we're not connecting, connect
+						if (getState() != STATE_CONNECTING) {
+							Log.v(TAG, "isconnected: " + networkInfo.isConnected());
+							Log.v(TAG, "failover: " + networkInfo.isFailover());
+							Log.v(TAG, "reason: " + networkInfo.getReason());
+							Log.v(TAG, "type: " + networkInfo.getTypeName());
+
+							Log.v(TAG, "Network switch, Reconnecting...");
+
+							setState(STATE_CONNECTING);
+							disconnect();
+							connect();
+						}
+					}
+				} else {
+					Log.v(TAG, "networkinfo null");
+				}
+			}
+		};
+
+		loadUnsentMessages();
+
+		SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
+				new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+	}
+
+	public void connect() {
+
+		/*
+		 * if (socket != null && socket.isConnected()) { if (mConnectCallback != null) {
+		 * mConnectCallback.connectStatus(true); } return; }
+		 */
+
+		Cookie cookie = NetworkController.getConnectCookie();
+
+		if (cookie == null) {
+			// need to login
+			Log.v(TAG, "No session cookie, starting Login activity.");
+			Intent startupIntent = new Intent(SurespotApplication.getAppContext(), StartupActivity.class);
+			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			SurespotApplication.getAppContext().startActivity(startupIntent);
+			return;
+		}
+
+		try {
+			Properties headers = new Properties();
+			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
+			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
+			socket.connect(mSocketCallback);
+
+		} catch (MalformedURLException e1) {
+			// Auto-generated
+			e1.printStackTrace();
+			// callback.connectStatus(false);
+		}
+
 	}
 
 	private static void sendInviteRequest(String friend) {
@@ -311,32 +323,35 @@ public class ChatController {
 			mResendTask.cancel();
 		}
 
-		if (getState() == STATE_CONNECTED) {
-			// mResendTask = new ResendTask();
-			// mBackgroundTimer.schedule(mResendTask, 1000);
-			Log.v(TAG,"Sending: " + mSendBuffer.size() + " messages.");
-			
-			Iterator<ChatMessage> iterator = mSendBuffer.iterator();
+		// mResendTask = new ResendTask();
+		// mBackgroundTimer.schedule(mResendTask, 1000);
+		Log.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
-			while (iterator.hasNext()) {
-				ChatMessage message = iterator.next();
-				iterator.remove();
-				mResendBuffer.add(message);
+		Iterator<ChatMessage> iterator = mSendBuffer.iterator();
+
+		while (iterator.hasNext()) {
+			ChatMessage message = iterator.next();
+			iterator.remove();
+			mResendBuffer.add(message);
+			if (getState() == STATE_CONNECTED) {
 				socket.send(message.toJSONObject().toString());
 			}
 		}
+
 	}
 
 	public void disconnect() {
+		Log.v(TAG, "disconnect.");
 		socket.disconnect();
+		// socket = null;
 
 	}
 
-	public synchronized int getState() {
+	private synchronized int getState() {
 		return mState;
 	}
 
-	public synchronized void setState(int state) {
+	private synchronized void setState(int state) {
 		mState = state;
 	}
 
@@ -347,7 +362,6 @@ public class ChatController {
 		@Override
 		public void run() {
 			Log.v(TAG, "Reconnect task run.");
-			disconnect();
 			connect();
 		}
 
@@ -381,12 +395,16 @@ public class ChatController {
 			}
 			Log.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 		}
-		
+
 		Utils.putSharedPrefsString("unsentmessages", null);
 
 	}
-	
+
 	public void destroy() {
-		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		Log.v(TAG, "destroy.");
+		if (mBackgroundTimer != null) {
+			mBackgroundTimer.cancel();
+		}
+	//	SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
 	}
 }

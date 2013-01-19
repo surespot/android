@@ -69,7 +69,7 @@ public class NetworkController {
 
 	public static synchronized void setUnauthorized(boolean unauthorized) {
 
-		NetworkController.mUnauthorized = unauthorized;
+		NetworkController.mUnauthorized = unauthorized;		
 	}
 
 	static {
