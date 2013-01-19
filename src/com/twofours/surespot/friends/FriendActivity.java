@@ -53,11 +53,21 @@ public class FriendActivity extends SherlockActivity {
 	private BroadcastReceiver InviteResponseReceiver;
 	private BroadcastReceiver mMessageReceiver;
 	private HashMap<String, Integer> mLastMessageIds;
+	private ChatController mChatController;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
+		mChatController = new ChatController(new IConnectCallback() {
+
+			@Override
+			public void connectStatus(boolean status) {
+				if (!status) {
+					Log.e(TAG, "Could not connect to chat server.");
+				}
+			}
+		});
 		setContentView(R.layout.activity_friend);
 		mLastMessageIds = new HashMap<String, Integer>();
 		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
@@ -107,16 +117,15 @@ public class FriendActivity extends SherlockActivity {
 					String name = jsonInviteResponse.getString("user");
 					if (jsonInviteResponse.getString("response").equals("accept")) {
 						mMainAdapter.addNewFriend(name);
-					}
-					else {
+					} else {
 						mMainAdapter.removeFriend(name);
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					Log.e(TAG,"Invite Response Handler error: " + e.getMessage());
+					Log.e(TAG, "Invite Response Handler error: " + e.getMessage());
 				}
-				
+
 			}
 		};
 		// register for friend added
@@ -176,15 +185,7 @@ public class FriendActivity extends SherlockActivity {
 		super.onResume();
 		Log.v(TAG, "onResume");
 
-		ChatController.connect(new IConnectCallback() {
-
-			@Override
-			public void connectStatus(boolean status) {
-				if (!status) {
-					Log.e(TAG, "Could not connect to chat server.");
-				}
-			}
-		});
+		mChatController.connect();
 
 		this.mMpdPopulateList.incrProgress();
 
@@ -289,7 +290,7 @@ public class FriendActivity extends SherlockActivity {
 		// store last message ids
 		String jsonString = Utils.mapToJsonString(mLastMessageIds);
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
-		ChatController.disconnect();
+		mChatController.disconnect();
 
 	}
 
@@ -299,6 +300,7 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+		mChatController.destroy();
 	}
 
 	private void inviteFriend() {

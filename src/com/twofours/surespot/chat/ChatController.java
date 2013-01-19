@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.http.cookie.Cookie;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,32 +25,39 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.ui.activities.LoginActivity;
 import com.twofours.surespot.ui.activities.StartupActivity;
 
 public class ChatController {
 
 	private static final String TAG = "ChatController";
-	private static SocketIO socket;
-	private static final int MAX_RETRIES = 5;
-	private static int mRetries = 0;
-	private static Timer mBackgroundTimer;
-	private static TimerTask mResendTask;
-
-	private static ConcurrentLinkedQueue<ChatMessage> mSendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
-	private static ConcurrentLinkedQueue<ChatMessage> mResendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
 	private static final int STATE_CONNECTING = 0;
 	private static final int STATE_CONNECTED = 1;
 
-	private static int mState;
+	private static final int MAX_RETRIES = 5;
+	private SocketIO socket;
+	private int mRetries = 0;
+	private Timer mBackgroundTimer;
+	private TimerTask mResendTask;
+	private IConnectCallback mConnectCallback;
 
+	private ConcurrentLinkedQueue<ChatMessage> mSendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
+	private ConcurrentLinkedQueue<ChatMessage> mResendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
+
+	private int mState;
+
+	private BroadcastReceiver mConnectivityReceiver;
 	//
-	static {
-		SurespotApplication.getAppContext().registerReceiver(new BroadcastReceiver() {
+	public ChatController(IConnectCallback connectCallback) {
+		mConnectCallback = connectCallback;
+		mConnectivityReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -69,21 +77,26 @@ public class ChatController {
 						if (getState() != STATE_CONNECTING) {
 							setState(STATE_CONNECTING);
 							disconnect();
-							connect(mConnectHandler);
+							connect();
 						}
 					}
 				} else {
 					Log.v(TAG, "networkinfo null");
 				}
 			}
-		}, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		};
+		
+		loadUnsentMessages();
+		
+		
+		SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 
-	public static void connect(final IConnectCallback callback) {
+	public void connect() {
 
 		if (socket != null && socket.isConnected()) {
-			if (callback != null) {
-				callback.connectStatus(true);
+			if (mConnectCallback != null) {
+				mConnectCallback.connectStatus(true);
 			}
 			return;
 		}
@@ -154,14 +167,13 @@ public class ChatController {
 					Log.e(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					/*
-					 * Toast.makeText(SurespotApplication.getAppContext(),
-					 * "Can not connect to chat server. Please check your network and try again.",
-					 * Toast.LENGTH_LONG).show(); //TODO tie in with network controller 401 handling Intent intent = new
-					 * Intent(SurespotApplication.getAppContext(), LoginActivity.class);
-					 * intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					 * SurespotApplication.getAppContext().startActivity(intent);
-					 */
+					// Toast.makeText(SurespotApplication.getAppContext(),
+					// "Can not connect to chat server. Please check your network and try again.",
+					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
+					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					SurespotApplication.getAppContext().startActivity(intent);
+
 				}
 			}
 
@@ -179,11 +191,17 @@ public class ChatController {
 					mBackgroundTimer = null;
 				}
 
-				if (callback != null) {
-					setState(STATE_CONNECTED);
-					callback.connectStatus(true);
-
+				setState(STATE_CONNECTED);								
+				mSendBuffer.addAll(mResendBuffer);
+				mResendBuffer.clear();
+				
+				if (mConnectCallback != null) {
+					mConnectCallback.connectStatus(true);
 				}
+				
+				sendMessages();
+
+				
 
 			}
 
@@ -241,7 +259,7 @@ public class ChatController {
 
 	}
 
-	private static void checkAndSendNextMessage(ChatMessage message) {
+	private void checkAndSendNextMessage(ChatMessage message) {
 		Log.v(TAG, "received message: " + message);
 		sendMessages();
 
@@ -268,7 +286,7 @@ public class ChatController {
 	//
 	// }
 
-	public static void sendMessage(String to, String text) {
+	public void sendMessage(String to, String text) {
 		if (text != null && text.length() > 0) {
 			ChatMessage cm = new ChatMessage();
 			cm.setFrom(EncryptionController.getIdentityUsername());
@@ -283,7 +301,7 @@ public class ChatController {
 		}
 	}
 
-	private static void sendMessages() {
+	private void sendMessages() {
 		if (mBackgroundTimer == null) {
 
 			mBackgroundTimer = new Timer("backgroundTimer");
@@ -296,52 +314,46 @@ public class ChatController {
 		if (getState() == STATE_CONNECTED) {
 			// mResendTask = new ResendTask();
 			// mBackgroundTimer.schedule(mResendTask, 1000);
-
+			Log.v(TAG,"Sending: " + mSendBuffer.size() + " messages.");
+			
 			Iterator<ChatMessage> iterator = mSendBuffer.iterator();
 
 			while (iterator.hasNext()) {
 				ChatMessage message = iterator.next();
 				iterator.remove();
 				mResendBuffer.add(message);
-				socket.send (new IOAcknowledge() {
-					
-					@Override
-					public void ack(Object... args) {
-						// TODO Auto-generated method stub
-						Log.v(TAG,"ack");
-					}
-				}, message.toJSONObject().toString());
+				socket.send(message.toJSONObject().toString());
 			}
 		}
 	}
 
-	public static void disconnect() {
+	public void disconnect() {
 		socket.disconnect();
 
 	}
 
-	public static synchronized int getState() {
+	public synchronized int getState() {
 		return mState;
 	}
 
-	public static synchronized void setState(int state) {
+	public synchronized void setState(int state) {
 		mState = state;
 	}
 
-	private static ReconnectTask mReconnectTask;
+	private ReconnectTask mReconnectTask;
 
-	private static class ReconnectTask extends TimerTask {
+	private class ReconnectTask extends TimerTask {
 
 		@Override
 		public void run() {
 			Log.v(TAG, "Reconnect task run.");
 			disconnect();
-			connect(mConnectHandler);
+			connect();
 		}
 
 	}
 
-	private static class ResendTask extends TimerTask {
+	private class ResendTask extends TimerTask {
 
 		@Override
 		public void run() {
@@ -352,16 +364,29 @@ public class ChatController {
 
 	}
 
-	private static IConnectCallback mConnectHandler = new IConnectCallback() {
+	public void saveUnsentMessages() {
+		mResendBuffer.addAll(mSendBuffer);
+		Log.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
+		Utils.putSharedPrefsString("unsentmessages", Utils.chatMessagesToJson(mResendBuffer).toString());
 
-		@Override
-		public void connectStatus(boolean status) {
-			if (status) {
-				mSendBuffer.addAll(mResendBuffer);
-				mResendBuffer.clear();
-				sendMessages();
+	}
+
+	public void loadUnsentMessages() {
+		String sUnsentMessages = Utils.getSharedPrefsString("unsentmessages");
+
+		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
+			Iterator<ChatMessage> iterator = Utils.jsonStringToChatMessages(sUnsentMessages).iterator();
+			while (iterator.hasNext()) {
+				mSendBuffer.add(iterator.next());
 			}
-
+			Log.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 		}
-	};
+		
+		Utils.putSharedPrefsString("unsentmessages", null);
+
+	}
+	
+	public void destroy() {
+		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+	}
 }

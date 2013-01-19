@@ -55,7 +55,10 @@ public class ChatMessage {
 	public static ChatMessage toChatMessage(JSONObject jsonMessage) throws JSONException {
 		ChatMessage chatMessage = new ChatMessage();
 
-		chatMessage.setId(jsonMessage.getString("id"));
+		String id = jsonMessage.optString("id");
+		if (id != null && !id.isEmpty()) {
+			chatMessage.setId(id);
+		}
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
 		chatMessage.setCipherText(jsonMessage.getString("text"));

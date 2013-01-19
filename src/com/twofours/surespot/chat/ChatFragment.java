@@ -23,6 +23,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -32,7 +33,7 @@ public class ChatFragment extends SherlockFragment {
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
-	private String mLastMessageId;
+	// private String mLastMessageId;
 	private EditText mEditText;
 
 	public String getUsername() {
@@ -62,6 +63,10 @@ public class ChatFragment extends SherlockFragment {
 		ensureChatAdapter();
 
 		setUsername(getArguments().getString("username"));
+		
+		//load messages from local storage
+		loadMessages();
+		
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -95,6 +100,9 @@ public class ChatFragment extends SherlockFragment {
 		if (this.isVisible()) {
 			((ChatActivity) getActivity()).startLoadingMessagesProgress();
 		}
+
+		
+
 		// reget the messages in case any were added while we were gone
 		Log.v(TAG, "onResume, mUsername:  " + mUsername);
 		// make sure the public key is there
@@ -104,7 +112,14 @@ public class ChatFragment extends SherlockFragment {
 			public void handleResponse(Boolean result) {
 				if (result) {
 					// get the list of messages
-					NetworkController.getMessages(mUsername, mLastMessageId, new JsonHttpResponseHandler() {
+					ChatMessage lastMessage = mChatAdapter.getLastMessageWithId();
+					String lastMessageId = null;
+
+					if (lastMessage != null) {
+						lastMessageId = lastMessage.getId();
+					}
+					Log.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
+					NetworkController.getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(JSONArray jsonArray) {
 							// on async http request, response seems to come back
@@ -114,25 +129,23 @@ public class ChatFragment extends SherlockFragment {
 
 							if (getActivity() != null) {
 
-								ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
+								//ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
 								ChatMessage message = null;
 								try {
 									for (int i = 0; i < jsonArray.length(); i++) {
 										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-										message = ChatMessage.toChatMessage(jsonMessage);										
-										messages.add(message);
+										message = ChatMessage.toChatMessage(jsonMessage);
+										mChatAdapter.addOrUpdateMessage(message,false);
 									}
 								} catch (JSONException e) {
 									Log.e(TAG, "Error creating chat message: " + e.toString());
 								}
 
-								mChatAdapter.addMessages(messages);
+								Log.v(TAG,"loaded: " + jsonArray.length() + " messages from the server.");
+								//mChatAdapter.addMessages(messages);
+
 								mListView.setAdapter(mChatAdapter);
 								mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-
-								if (message != null) {
-									mLastMessageId = message.getId();
-								}
 
 								mEditText.requestFocus();
 							}
@@ -160,7 +173,6 @@ public class ChatFragment extends SherlockFragment {
 						((ChatActivity) getActivity()).closeChat(mUsername);
 					}
 
-					
 				}
 			}
 		});
@@ -171,7 +183,9 @@ public class ChatFragment extends SherlockFragment {
 	public void onPause() {
 
 		super.onPause();
+
 		Log.v(TAG, "onPause, mUsername:  " + mUsername);
+		saveMessages();
 	}
 
 	@Override
@@ -193,11 +207,11 @@ public class ChatFragment extends SherlockFragment {
 					ChatMessage chatMessage = new ChatMessage();
 					chatMessage.setFrom(EncryptionController.getIdentityUsername());
 					chatMessage.setTo(mUsername);
-					chatMessage.setCipherText(result);					
+					chatMessage.setCipherText(result);
 
-					mChatAdapter.addOrUpdateMessage(chatMessage);													
-					
-					ChatController.sendMessage(mUsername, result);
+					mChatAdapter.addOrUpdateMessage(chatMessage, true);
+
+					((ChatActivity) getActivity()).sendMessage(mUsername, result);
 					TextKeyListener.clear(etMessage.getText());
 				}
 			});
@@ -214,12 +228,26 @@ public class ChatFragment extends SherlockFragment {
 	public void addMessage(final JSONObject jsonMessage) {
 		ensureChatAdapter();
 		try {
-			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);						
-			mChatAdapter.addOrUpdateMessage(message);
-			mLastMessageId = message.getId();
-
+			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);
+			mChatAdapter.addOrUpdateMessage(message, true);
 		} catch (JSONException e) {
 			Log.e(TAG, "Error adding chat message.");
+		}
+	}
+
+	private void saveMessages() {
+		Utils.putSharedPrefsString("messages_" + mUsername, Utils.chatMessagesToJson(mChatAdapter.getMessages())
+				.toString());
+	}
+
+	private void loadMessages() {
+		ensureChatAdapter();
+		String sMessages = Utils.getSharedPrefsString("messages_" + mUsername);
+		if (sMessages != null && !sMessages.isEmpty()) {
+			ArrayList<ChatMessage> messages = Utils.jsonStringToChatMessages(sMessages);
+			Log.v(TAG,"Loaded: " + messages.size() + " from local storage.");
+			mChatAdapter.addMessages(messages); 
+			Utils.putSharedPrefsString("messages_" + mUsername, null);
 		}
 	}
 

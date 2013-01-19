@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,6 +18,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.widget.Toast;
 
+import com.twofours.surespot.chat.ChatMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 
 public class Utils {
@@ -115,5 +119,34 @@ public class Utils {
 	public static String mapToJsonString(Map<String,Integer> map) {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject.toString();
+	}
+	
+	public static JSONArray chatMessagesToJson(Collection<ChatMessage> messages) {
+		
+		JSONArray jsonMessages = new JSONArray();
+		Iterator<ChatMessage> iterator = messages.iterator();
+		while (iterator.hasNext()) {
+			jsonMessages.put(iterator.next().toJSONObject());
+
+		}
+		return jsonMessages;
+		
+
+	}
+	public static ArrayList<ChatMessage> jsonStringToChatMessages(String jsonMessageString) {
+		
+		ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
+		try {
+			JSONArray jsonUM = new JSONArray(jsonMessageString);
+			for (int i=0;i<jsonUM.length();i++) {
+				messages.add(ChatMessage.toChatMessage(jsonUM.getJSONObject(i)));
+			}			
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return messages;
+		
+
 	}
 }

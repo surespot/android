@@ -31,12 +31,11 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	@Override
 	public int getItemPosition(Object object) {
 		ChatFragment chatFragment = (ChatFragment) object;
-	//	Log.v(TAG, "getItemPosition, object: " + object.getClass().getName());
+		// Log.v(TAG, "getItemPosition, object: " + object.getClass().getName());
 		int index = mChatNames.indexOf(chatFragment.getUsername());
 		if (index == -1) {
 			return POSITION_NONE;
-		}
-		else {
+		} else {
 			return index;
 		}
 	}
@@ -49,7 +48,10 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	@Override
 	public CharSequence getPageTitle(int position) {
 
-		return mChatNames.get(position);
+		if (mChatNames.size() > position) {
+			return mChatNames.get(position);
+		}
+		return null;
 
 	}
 
@@ -78,20 +80,22 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 
 	public String getFragmentTag(String username) {
 		int pos = getChatFragmentPosition(username);
-		if (pos == -1) return null;
+		if (pos == -1)
+			return null;
 		return Utils.makePagerFragmentName(R.id.pager, pos);
 	}
 
 	public String getFragmentTag(int position) {
 		int pos = position;
-		if (pos == -1) return null;
+		if (pos == -1)
+			return null;
 		return Utils.makePagerFragmentName(R.id.pager, pos);
 	}
 
 	public ArrayList<String> getChatNames() {
 		return mChatNames;
 	}
-	
+
 	public String getChatName(int position) {
 		return mChatNames.get(position);
 	}

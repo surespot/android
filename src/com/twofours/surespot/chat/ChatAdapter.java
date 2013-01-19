@@ -1,6 +1,8 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.ListIterator;
 
 import android.content.Context;
 import android.util.Log;
@@ -26,6 +28,25 @@ public class ChatAdapter extends BaseAdapter {
 		mContext = context;
 	}
 
+	public Collection<ChatMessage> getMessages() {
+		return mMessages;
+	}
+
+	// get the last message that has an id
+	public ChatMessage getLastMessageWithId() {
+		for (ListIterator<ChatMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+			ChatMessage message = iterator.previous();
+			if (message.getId() != null) {
+				return message;
+			}
+		}
+		return null;
+	}
+
+	// public void setMessages(ArrayList<ChatMessage> messages) {
+	// mMessages = messages;
+	// }
+
 	// update the id and sent status of the message once we received
 	public void addOrUpdateMessage(ChatMessage message) {
 		// if the id is null we're sending the message so just add it
@@ -41,15 +62,13 @@ public class ChatAdapter extends BaseAdapter {
 				ChatMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
 			}
-		}
-
-		notifyDataSetChanged();
+		}		
 	}
 
 	public void addMessages(ArrayList<ChatMessage> messages) {
 		if (messages.size() > 0) {
 			mMessages.addAll(messages);
-			notifyDataSetChanged();
+			// notifyDataSetChanged();
 		}
 	}
 
@@ -150,6 +169,14 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvText;
 		public View vMessageSending;
 		public View vMessageSent;
+	}
+
+	public void addOrUpdateMessage(ChatMessage message, boolean notify) {
+		addOrUpdateMessage(message);
+		if (notify) {
+			notifyDataSetChanged();
+		}
+		
 	}
 
 }

@@ -389,6 +389,7 @@ public class EncryptionController {
 	}
 
 	public static void hydratePublicKey(final String username, final IAsyncCallback<Boolean> callback) {
+		Log.v(TAG,"hydratepublickey");
 		byte[] secret = mSharedSecrets.get(username);
 		if (secret == null) {
 			NetworkController.getPublicKey(username, new AsyncHttpResponseHandler() {
