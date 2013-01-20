@@ -132,10 +132,10 @@ public class ChatFragment extends SherlockFragment {
 			if (this.isVisible()) {
 				chatActivity.startLoadingMessagesProgress();
 			}
-			EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Boolean>() {
-				@Override
-				public void handleResponse(Boolean result) {
-					if (result) {
+//			EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Boolean>() {
+//				@Override
+//				public void handleResponse(Boolean result) {
+//					if (result) {
 						getLatestMessages(new IAsyncCallback<Boolean>() {
 
 							@Override
@@ -148,17 +148,17 @@ public class ChatFragment extends SherlockFragment {
 							}
 						});
 
-					} else {
-						Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
-						// can't do anything without a public key so close the tab
-						if (ChatFragment.this.isVisible()) {
-							((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-							((ChatActivity) getActivity()).closeChat(mUsername);
-						}
-
-					}
-				}
-			});
+//					} else {
+//						Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
+//						// can't do anything without a public key so close the tab
+//						if (ChatFragment.this.isVisible()) {
+//							((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+//							((ChatActivity) getActivity()).closeChat(mUsername);
+//						}
+//
+//					}
+//				}
+//			});
 		}
 
 	}

@@ -23,6 +23,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
@@ -40,6 +41,7 @@ public class NetworkController {
 
 	private static AsyncHttpClient mClient;
 	private static CookieStore mCookieStore;
+	private static SyncHttpClient mSyncClient;
 
 	public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.get(SurespotConstants.BASE_URL + url, params, responseHandler);
@@ -80,8 +82,17 @@ public class NetworkController {
 		}
 
 		mClient = new AsyncHttpClient();
+		mSyncClient = new SyncHttpClient() {
+			
+			@Override
+			public String onRequestFailed(Throwable arg0, String arg1) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		
 		mClient.setCookieStore(mCookieStore);
-
+		mSyncClient.setCookieStore(mCookieStore);
 		// handle 401s
 		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(new HttpResponseInterceptor() {
 
@@ -255,6 +266,10 @@ public class NetworkController {
 	public static void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/publickey/" + username, null, responseHandler);
 
+	}
+	
+	public static String getPublicKeySync(String username) {
+		return mSyncClient.get(SurespotConstants.BASE_URL + "/publickey/" + username);
 	}
 
 	public static void invite(String friendname, AsyncHttpResponseHandler responseHandler) {

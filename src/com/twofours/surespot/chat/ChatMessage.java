@@ -4,7 +4,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 
 public class ChatMessage {
 	private String mFrom;
