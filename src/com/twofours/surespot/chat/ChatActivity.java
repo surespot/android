@@ -174,8 +174,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			}
 		};
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
+		
 
 	}
 
@@ -236,6 +235,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		super.onPause();
 		Log.v(TAG, "onPause");
+		
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
+		
 		mChatController.disconnect();
 		// save chat names
 		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
@@ -256,6 +258,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		Log.v(TAG, "onResume");
+		
+		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
 		// get last message id's out of shared prefs
 		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
@@ -292,7 +297,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
+	
 		mChatController.destroy();
 
 	}

@@ -26,7 +26,7 @@ import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.NetworkController;
 
 public class FriendAdapter extends BaseAdapter {
-	private final static String TAG = "MainAdapter";
+	private final static String TAG = "FriendAdapter";
 
 	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	private final ArrayList<String> mActiveChats = new ArrayList<String>();

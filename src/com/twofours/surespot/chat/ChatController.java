@@ -55,6 +55,7 @@ public class ChatController {
 	private ConcurrentLinkedQueue<ChatMessage> mResendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
 
 	private int mState;
+	private boolean mSwitchedToWifi;
 
 	private BroadcastReceiver mConnectivityReceiver;
 
@@ -88,6 +89,7 @@ public class ChatController {
 					mResendTask.cancel();
 				}
 
+				mSwitchedToWifi = false;
 				// kick off another task
 				if (mRetries <= MAX_RETRIES) {
 
@@ -186,7 +188,7 @@ public class ChatController {
 		mConnectivityReceiver = new BroadcastReceiver() {
 
 			@Override
-			public synchronized void onReceive(Context context, Intent intent) {
+			public void onReceive(Context context, Intent intent) {
 				Log.v(TAG, "Connectivity Action");
 				ConnectivityManager connectivityManager = (ConnectivityManager) context
 						.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -196,18 +198,22 @@ public class ChatController {
 					// if it's not a failover and wifi is now active then initiate reconnect
 					if (!networkInfo.isFailover()
 							&& (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-						// if we're not connecting, connect
-						if (getState() != STATE_CONNECTING) {
-							Log.v(TAG, "isconnected: " + networkInfo.isConnected());
-							Log.v(TAG, "failover: " + networkInfo.isFailover());
-							Log.v(TAG, "reason: " + networkInfo.getReason());
-							Log.v(TAG, "type: " + networkInfo.getTypeName());
+						synchronized (ChatController.this) {
+							// if we're not connecting, connect
+							if (getState() != STATE_CONNECTING && !mSwitchedToWifi) {
+								Log.v(TAG, "isconnected: " + networkInfo.isConnected());
+								Log.v(TAG, "failover: " + networkInfo.isFailover());
+								Log.v(TAG, "reason: " + networkInfo.getReason());
+								Log.v(TAG, "type: " + networkInfo.getTypeName());
 
-							Log.v(TAG, "Network switch, Reconnecting...");
+								Log.v(TAG, "Network switch, Reconnecting...");
 
-							setState(STATE_CONNECTING);
-							disconnect();
-							connect();
+								setState(STATE_CONNECTING);
+
+								mSwitchedToWifi = true;
+								disconnect();
+								connect();
+							}
 						}
 					}
 				} else {
@@ -254,19 +260,19 @@ public class ChatController {
 
 	}
 
-	private static void sendInviteRequest(String friend) {
+	private void sendInviteRequest(String friend) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_REQUEST);
 		intent.putExtra(SurespotConstants.ExtraNames.NAME, friend);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
-	private static void sendInviteResponse(String response) {
+	private void sendInviteResponse(String response) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_RESPONSE);
 		intent.putExtra(SurespotConstants.ExtraNames.INVITE_RESPONSE, response);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 	}
 
-	private static void sendMessageReceived(String message) {
+	private void sendMessageReceived(String message) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED);
 		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
@@ -316,10 +322,10 @@ public class ChatController {
 	}
 
 	public ChatMessage[] getResendMessages() {
-		ChatMessage[] messages =  mResendBuffer.toArray(new ChatMessage[0]);
+		ChatMessage[] messages = mResendBuffer.toArray(new ChatMessage[0]);
 		mResendBuffer.clear();
 		return messages;
-		
+
 	}
 
 	private void sendMessages() {
@@ -338,7 +344,7 @@ public class ChatController {
 		Iterator<ChatMessage> iterator = mSendBuffer.iterator();
 		while (iterator.hasNext()) {
 			ChatMessage message = iterator.next();
-			iterator.remove();		
+			iterator.remove();
 			sendMessage(message);
 		}
 
@@ -351,7 +357,7 @@ public class ChatController {
 
 	}
 
-	private synchronized int getState() {
+	private int getState() {
 		return mState;
 	}
 
@@ -409,13 +415,19 @@ public class ChatController {
 		if (mBackgroundTimer != null) {
 			mBackgroundTimer.cancel();
 		}
-		// SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		if (mReconnectTask != null) {
+			boolean cancel = mReconnectTask.cancel();
+			Log.v(TAG, "Cancelled reconnect task: " + cancel);
+		}
+		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		//mSocketCallback = null;
+		socket = null;
 	}
 
 	public void sendMessage(ChatMessage message) {
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
-			
+
 			socket.send(message.toJSONObject().toString());
 		}
 

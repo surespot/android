@@ -88,12 +88,12 @@ public class FriendActivity extends SherlockActivity {
 					// start chat activity
 					// don't disconnect the socket io
 
-				//	mDisconnectSocket = false;
+					// mDisconnectSocket = false;
 
 					Intent intent = new Intent(FriendActivity.this, ChatActivity.class);
 					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
 					FriendActivity.this.startActivity(intent);
-					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);					
+					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 				}
 			}
 		});
@@ -127,9 +127,6 @@ public class FriendActivity extends SherlockActivity {
 
 			}
 		};
-		// register for friend added
-		LocalBroadcastManager.getInstance(this).registerReceiver(InviteResponseReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
 
 		// register for invites
 		mInvitationReceiver = new BroadcastReceiver() {
@@ -138,9 +135,6 @@ public class FriendActivity extends SherlockActivity {
 				mMainAdapter.addFriendInviter(intent.getStringExtra(SurespotConstants.ExtraNames.NAME));
 			}
 		};
-
-		LocalBroadcastManager.getInstance(this).registerReceiver(mInvitationReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.INVITE_REQUEST));
 
 		mMessageReceiver = new BroadcastReceiver() {
 
@@ -159,9 +153,6 @@ public class FriendActivity extends SherlockActivity {
 				}
 			}
 		};
-
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
 		EditText editText = (EditText) findViewById(R.id.etFriend);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
@@ -183,6 +174,13 @@ public class FriendActivity extends SherlockActivity {
 	public void onResume() {
 		super.onResume();
 		Log.v(TAG, "onResume");
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(InviteResponseReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
+		LocalBroadcastManager.getInstance(this).registerReceiver(mInvitationReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.INVITE_REQUEST));
+		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
 		mChatController.connect();
 
@@ -286,21 +284,21 @@ public class FriendActivity extends SherlockActivity {
 		super.onPause();
 		Log.v(TAG, "onPause");
 
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 		// store last message ids
 		String jsonString = Utils.mapToJsonString(mLastMessageIds);
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
 		mChatController.disconnect();
 		mChatController.destroy();
-		
 
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);		
+		
 	}
 
 	private void inviteFriend() {
