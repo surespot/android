@@ -59,9 +59,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 							Log.v(TAG,"setting resendId, room: " + room + ", id: " + id);
 							message.setResendId(id.toString());
 						}
-						else {
-							message.setResendId(null);
-						}
+//						else {
+//							message.setResendId(null);
+//						}
 						mChatController.sendMessage(message);
 					}
 				} else {
