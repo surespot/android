@@ -42,6 +42,7 @@ public class ChatController {
 	private static final String TAG = "ChatController";
 	private static final int STATE_CONNECTING = 0;
 	private static final int STATE_CONNECTED = 1;
+	private static final int STATE_DISCONNECTED = 2;
 
 	private static final int MAX_RETRIES = 5;
 	private SocketIO socket;
@@ -130,6 +131,7 @@ public class ChatController {
 				Log.v(TAG, "socket.io connection established");
 				setState(STATE_CONNECTED);
 				mRetries = 0;
+				
 				if (mBackgroundTimer != null) {
 					mBackgroundTimer.cancel();
 					mBackgroundTimer = null;
@@ -137,6 +139,7 @@ public class ChatController {
 
 				if (mReconnectTask != null && mReconnectTask.cancel()) {
 					Log.v(TAG, "Cancelled reconnect timer.");
+					mReconnectTask = null;
 				}
 
 				// TODO send last id to server so it knows which messages to check
@@ -147,6 +150,7 @@ public class ChatController {
 					mConnectCallback.connectStatus(true);
 				}
 
+				sendConnectStatus(true);
 				sendMessages();
 
 			}
@@ -224,8 +228,7 @@ public class ChatController {
 
 		loadUnsentMessages();
 
-		SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
-				new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		
 	}
 
 	public void connect() {
@@ -251,6 +254,8 @@ public class ChatController {
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
 			socket.connect(mSocketCallback);
+			SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
+					new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 		} catch (MalformedURLException e1) {
 			// Auto-generated
@@ -278,6 +283,14 @@ public class ChatController {
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 	}
+	
+	private void sendConnectStatus(boolean connected) {
+		Intent intent = new Intent(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED);
+		intent.putExtra(SurespotConstants.ExtraNames.CONNECTED, connected);
+		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+
+	}
+
 
 	private void checkAndSendNextMessage(ChatMessage message) {
 		Log.v(TAG, "received message: " + message);
@@ -352,7 +365,10 @@ public class ChatController {
 
 	public void disconnect() {
 		Log.v(TAG, "disconnect.");
+		setState(STATE_DISCONNECTED);
 		socket.disconnect();
+		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		sendConnectStatus(false);
 		// socket = null;
 
 	}
@@ -414,12 +430,14 @@ public class ChatController {
 		Log.v(TAG, "destroy.");
 		if (mBackgroundTimer != null) {
 			mBackgroundTimer.cancel();
+			mBackgroundTimer = null;
 		}
 		if (mReconnectTask != null) {
 			boolean cancel = mReconnectTask.cancel();
+			mReconnectTask = null;			
 			Log.v(TAG, "Cancelled reconnect task: " + cancel);
 		}
-		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		
 		//mSocketCallback = null;
 		socket = null;
 	}
@@ -431,5 +449,9 @@ public class ChatController {
 			socket.send(message.toJSONObject().toString());
 		}
 
+	}
+	
+	public boolean isConnected() {
+		return (getState() == STATE_CONNECTED);
 	}
 }

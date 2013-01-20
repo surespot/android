@@ -182,6 +182,59 @@ public class ChatActivity extends SherlockFragmentActivity {
 		};
 
 	}
+	
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.v(TAG, "onResume");
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
+				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
+
+		// get last message id's out of shared prefs
+		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
+		if (lastMessageIdJson != null) {
+			try {
+				mVisitedPageMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+
+		// if we opened the tab and didn't get any new messages we know by the -1
+		mVisitedPageMessageIds.put(getCurrentChatName(), -1);
+
+		mChatController.connect();
+	}
+	
+	@Override
+	protected void onPause() {
+
+		super.onPause();
+		Log.v(TAG, "onPause");
+
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
+
+		mChatController.disconnect();
+		// save chat names
+		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
+		mChatController.saveUnsentMessages();
+		// store chats the user went into
+		if (mVisitedPageMessageIds.size() > 0) {
+			String jsonString = Utils.mapToJsonString(mVisitedPageMessageIds);
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
+
+		} else {
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, null);
+		}
+
+		mChatController.destroy();
+	}
+
+
 
 	private ChatFragment getChatFragment(String roomName) {
 		String tag = mPagerAdapter.getFragmentTag(roomName);
@@ -250,55 +303,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 	}
 
 	@Override
-	protected void onPause() {
-
-		super.onPause();
-		Log.v(TAG, "onPause");
-
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
-
-		mChatController.disconnect();
-		// save chat names
-		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
-		mChatController.saveUnsentMessages();
-		// store chats the user went into
-		if (mVisitedPageMessageIds.size() > 0) {
-			String jsonString = Utils.mapToJsonString(mVisitedPageMessageIds);
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
-
-		} else {
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, null);
-		}
-
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Log.v(TAG, "onResume");
-
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
-
-		// get last message id's out of shared prefs
-		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
-		if (lastMessageIdJson != null) {
-			try {
-				mVisitedPageMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-
-		// if we opened the tab and didn't get any new messages we know by the -1
-		mVisitedPageMessageIds.put(getCurrentChatName(), -1);
-
-		mChatController.connect();
-	}
-
-	@Override
 	protected void onStart() {
 		super.onStart();
 		Log.v(TAG, "onStart");
@@ -317,7 +321,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
 
-		mChatController.destroy();
+		
 
 	}
 
@@ -347,4 +351,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	}
 
+	public boolean chatConnected() {
+		return mChatController.isConnected();
+	}
 }

@@ -88,7 +88,7 @@ public class SignupActivity extends Activity {
 				}
 				else {
 					
-
+				
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
 					// successful
@@ -128,7 +128,7 @@ public class SignupActivity extends Activity {
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
 													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 													startActivity(intent);
-
+													mMpd.decrProgress();
 													finish();
 												}
 												else {
@@ -139,7 +139,7 @@ public class SignupActivity extends Activity {
 
 											public void onFailure(Throwable arg0, String arg1) {												
 												Log.e("SignupActivity", arg1);
-
+												mMpd.decrProgress();
 												if (arg0 instanceof HttpResponseException) {
 													HttpResponseException error = (HttpResponseException) arg0;
 													int statusCode = error.getStatusCode();
@@ -153,11 +153,9 @@ public class SignupActivity extends Activity {
 												}
 												
 												
-											};
-											
-											public void onFinish() {
-												mMpd.decrProgress();
-											};
+												
+												
+											};																				
 
 										});
 							}

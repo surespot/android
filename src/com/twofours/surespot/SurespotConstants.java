@@ -13,17 +13,18 @@ public class SurespotConstants {
 		public static final String NAME = "notification_data";
 		public static final String FRIEND_ADDED = "friend_added_data";
 		public static final String MESSAGE = "message_data";
-		public static final String INVITE_RESPONSE = "friend_invite_response";		
+		public static final String INVITE_RESPONSE = "friend_invite_response";
 		public static final String SHOW_CHAT_NAME = "show_chat_name";
 		public static final String GCM_CHANGED = "gcm_changed";
+		public static final String CONNECTED = "connected";
 	}
 
-	// public final static String BASE_URL = "http://alpha.surespot.me:8080";
-	
-//	 public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
+	public final static String BASE_URL = "http://alpha.surespot.me:8080";
 
-	public final static String BASE_URL = "http://192.168.10.68:3000";
-	public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
+	public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
+
+	// public final static String BASE_URL = "http://192.168.10.68:3000";
+	// public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";

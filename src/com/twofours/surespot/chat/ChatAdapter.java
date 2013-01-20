@@ -56,6 +56,8 @@ public class ChatAdapter extends BaseAdapter {
 			int index = mMessages.indexOf(message);
 			if (index == -1) {
 				Log.v(TAG, "addMessage, could not find message");
+				
+				//
 				mMessages.add(message);
 			} else {
 				Log.v(TAG, "addMessage, updating message");
