@@ -1,7 +1,9 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +47,24 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			@Override
 			public void connectStatus(boolean status) {
-				if (!status) {
+				if (status) {
+
+					// get the resend messages
+					ChatMessage[] resendMessages = mChatController.getResendMessages();					
+					for (ChatMessage message : resendMessages) {
+						// set the last seen id
+						String room = message.getRoom();
+						Integer id = mVisitedPageMessageIds.get(room);
+						if (id != null) {
+							Log.v(TAG,"setting resendId, room: " + room + ", id: " + id);
+							message.setResendId(id.toString());
+						}
+						else {
+							message.setResendId(null);
+						}
+						mChatController.sendMessage(message);
+					}
+				} else {
 					Log.e(TAG, "Could not connect to chat server.");
 				}
 
@@ -237,8 +256,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		Log.v(TAG, "onResume");
-
-	
 
 		// get last message id's out of shared prefs
 		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);

@@ -6,6 +6,7 @@ import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Timer;
@@ -136,8 +137,9 @@ public class ChatController {
 					Log.v(TAG, "Cancelled reconnect timer.");
 				}
 
-				mSendBuffer.addAll(mResendBuffer);
-				mResendBuffer.clear();
+				// TODO send last id to server so it knows which messages to check
+				// mSendBuffer.addAll(mResendBuffer);
+				// mResendBuffer.clear();
 
 				if (mConnectCallback != null) {
 					mConnectCallback.connectStatus(true);
@@ -313,9 +315,15 @@ public class ChatController {
 		}
 	}
 
+	public ChatMessage[] getResendMessages() {
+		ChatMessage[] messages =  mResendBuffer.toArray(new ChatMessage[0]);
+		mResendBuffer.clear();
+		return messages;
+		
+	}
+
 	private void sendMessages() {
 		if (mBackgroundTimer == null) {
-
 			mBackgroundTimer = new Timer("backgroundTimer");
 		}
 
@@ -328,14 +336,10 @@ public class ChatController {
 		Log.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
 		Iterator<ChatMessage> iterator = mSendBuffer.iterator();
-
 		while (iterator.hasNext()) {
 			ChatMessage message = iterator.next();
-			iterator.remove();
-			mResendBuffer.add(message);
-			if (getState() == STATE_CONNECTED) {
-				socket.send(message.toJSONObject().toString());
-			}
+			iterator.remove();		
+			sendMessage(message);
 		}
 
 	}
@@ -405,6 +409,15 @@ public class ChatController {
 		if (mBackgroundTimer != null) {
 			mBackgroundTimer.cancel();
 		}
-	//	SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		// SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+	}
+
+	public void sendMessage(ChatMessage message) {
+		mResendBuffer.add(message);
+		if (getState() == STATE_CONNECTED) {
+			
+			socket.send(message.toJSONObject().toString());
+		}
+
 	}
 }

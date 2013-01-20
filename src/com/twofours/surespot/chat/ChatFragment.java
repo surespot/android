@@ -135,7 +135,8 @@ public class ChatFragment extends SherlockFragment {
 									for (int i = 0; i < jsonArray.length(); i++) {
 										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 										message = ChatMessage.toChatMessage(jsonMessage);
-										mChatAdapter.addOrUpdateMessage(message,false);
+										mChatAdapter.addOrUpdateMessage(message,
+												false);
 									}
 								} catch (JSONException e) {
 									Log.e(TAG, "Error creating chat message: " + e.toString());
