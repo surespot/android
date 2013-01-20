@@ -50,18 +50,31 @@ public class ChatActivity extends SherlockFragmentActivity {
 				if (status) {
 
 					// get the resend messages
-					ChatMessage[] resendMessages = mChatController.getResendMessages();					
+					ChatMessage[] resendMessages = mChatController.getResendMessages();
 					for (ChatMessage message : resendMessages) {
 						// set the last seen id
 						String room = message.getRoom();
-						Integer id = mVisitedPageMessageIds.get(room);
-						if (id != null) {
-							Log.v(TAG,"setting resendId, room: " + room + ", id: " + id);
-							message.setResendId(id.toString());
+
+						String lastMessageID = null;
+						ChatFragment cf = getChatFragment(Utils.getOtherUser(message.getFrom(), message.getTo()));
+						if (cf != null) {
+							lastMessageID = cf.getLastMessageId();
 						}
-//						else {
-//							message.setResendId(null);
-//						}
+						if (lastMessageID == null) {
+							Object oId = mVisitedPageMessageIds.get(room);
+							if (oId != null) {
+								lastMessageID = oId.toString();
+							}
+						}
+						if (lastMessageID == null) {
+							lastMessageID = "-1";
+						}
+						Log.v(TAG, "setting resendId, room: " + room + ", id: " + lastMessageID);
+						message.setResendId(lastMessageID);
+
+						// else {
+						// message.setResendId(null);
+						// }
 						mChatController.sendMessage(message);
 					}
 				} else {
@@ -143,23 +156,16 @@ public class ChatActivity extends SherlockFragmentActivity {
 				try {
 					JSONObject messageJson = new JSONObject(message);
 					String otherUser = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
-					String tag = mPagerAdapter.getFragmentTag(otherUser);
 
-					Log.v(TAG, "Fragment tag: " + tag);
+					ChatFragment cf = getChatFragment(otherUser);
+					// fragment might be null if user hasn't opened this
+					// chat
+					if (cf != null) {
 
-					if (tag != null) {
+						cf.addMessage(messageJson);
 
-						ChatFragment cf = (ChatFragment) getSupportFragmentManager().findFragmentByTag(tag);
-
-						// fragment might be null if user hasn't opened this
-						// chat
-						if (cf != null) {
-
-							cf.addMessage(messageJson);
-
-						} else {
-							Log.v(TAG, "Fragment null");
-						}
+					} else {
+						Log.v(TAG, "Fragment null");
 					}
 
 					// update last visited id for current tab
@@ -174,7 +180,20 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			}
 		};
-		
+
+	}
+
+	private ChatFragment getChatFragment(String roomName) {
+		String tag = mPagerAdapter.getFragmentTag(roomName);
+
+		Log.v(TAG, "Fragment tag: " + tag);
+
+		if (tag != null) {
+
+			ChatFragment cf = (ChatFragment) getSupportFragmentManager().findFragmentByTag(tag);
+			return cf;
+		}
+		return null;
 
 	}
 
@@ -235,9 +254,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		super.onPause();
 		Log.v(TAG, "onPause");
-		
+
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
-		
+
 		mChatController.disconnect();
 		// save chat names
 		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
@@ -258,7 +277,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		Log.v(TAG, "onResume");
-		
+
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
@@ -297,7 +316,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
-	
+
 		mChatController.destroy();
 
 	}

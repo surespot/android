@@ -112,12 +112,8 @@ public class ChatFragment extends SherlockFragment {
 			public void handleResponse(Boolean result) {
 				if (result) {
 					// get the list of messages
-					ChatMessage lastMessage = mChatAdapter.getLastMessageWithId();
-					String lastMessageId = null;
-
-					if (lastMessage != null) {
-						lastMessageId = lastMessage.getId();
-					}
+					String lastMessageId = getLastMessageId();					
+					
 					Log.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
 					NetworkController.getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
 						@Override
@@ -178,6 +174,16 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
+	}
+	
+	public String getLastMessageId() {
+		ChatMessage lastMessage = mChatAdapter.getLastMessageWithId();
+		String lastMessageId = null;
+
+		if (lastMessage != null) {
+			lastMessageId = lastMessage.getId();
+		}
+		return lastMessageId;
 	}
 
 	@Override
