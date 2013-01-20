@@ -68,11 +68,7 @@ public class ChatFragment extends SherlockFragment {
 
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-		ensureChatAdapter();		
-		
-
-		
-
+		ensureChatAdapter();
 
 		setUsername(getArguments().getString("username"));
 
@@ -100,14 +96,14 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-		// if the connection status changed we need to reload any messages we missed
+		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog (sshh)
 		mSocketConnectionStatusReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				boolean connected = intent.getBooleanExtra(SurespotConstants.ExtraNames.CONNECTED, false);
 				if (connected) {
-					getLatestMessages();
+					getLatestMessages(null);
 				}
 			}
 		};
@@ -140,10 +136,18 @@ public class ChatFragment extends SherlockFragment {
 				@Override
 				public void handleResponse(Boolean result) {
 					if (result) {
-						getLatestMessages();
-						if (ChatFragment.this.isVisible()) {
-							((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-						}						
+						getLatestMessages(new IAsyncCallback<Boolean>() {
+
+							@Override
+							public void handleResponse(Boolean result) {
+								// TODO Auto-generated method stub
+
+								if (ChatFragment.this.isVisible()) {
+									((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+								}
+							}
+						});
+
 					} else {
 						Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
 						// can't do anything without a public key so close the tab
@@ -157,8 +161,6 @@ public class ChatFragment extends SherlockFragment {
 			});
 		}
 
-		
-	
 	}
 
 	@Override
@@ -167,7 +169,7 @@ public class ChatFragment extends SherlockFragment {
 		super.onPause();
 
 		Log.v(TAG, "onPause, mUsername:  " + mUsername);
-	//	saveMessages();
+		// saveMessages();
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 	}
 
@@ -177,15 +179,10 @@ public class ChatFragment extends SherlockFragment {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
 		saveMessages();
-		
+
 	}
 
-	private void getLatestMessages() {
-		// TODO use dependency injection with interface
-		// if this is the fragment that's showing, start progress
-		if (this.isVisible()) {
-			((ChatActivity) getActivity()).startLoadingMessagesProgress();
-		}
+	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {
 
 		// get the list of messages
 		String lastMessageId = getLastMessageId();
@@ -215,6 +212,9 @@ public class ChatFragment extends SherlockFragment {
 
 					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
 					mChatAdapter.notifyDataSetChanged();
+					if (callback != null) {
+						callback.handleResponse(true);
+					}
 					mEditText.requestFocus();
 
 				}
@@ -223,16 +223,11 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onFailure(Throwable error, String content) {
 				Log.e(TAG, "getMessages: " + error.getMessage());
-			}
-
-			@Override
-			public void onFinish() {
-				if (ChatFragment.this.isVisible()) {
-					Log.v(TAG, "Tearing down a progress dialog: " + getUsername());
-					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-
+				if (callback != null) {
+					callback.handleResponse(false);
 				}
 			}
+
 		});
 	}
 
@@ -299,9 +294,8 @@ public class ChatFragment extends SherlockFragment {
 			ArrayList<ChatMessage> messages = Utils.jsonStringToChatMessages(sMessages);
 			Log.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
 			mChatAdapter.addMessages(messages);
-		//	Utils.putSharedPrefsString("messages_" + mUsername, null);
-		}
-		else {
+			// Utils.putSharedPrefsString("messages_" + mUsername, null);
+		} else {
 			Log.v(TAG, "Loaded: no messages from local storage.");
 		}
 	}
