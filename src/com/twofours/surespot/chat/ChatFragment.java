@@ -39,7 +39,6 @@ public class ChatFragment extends SherlockFragment {
 	private String mUsername;
 	private ListView mListView;
 	private static final String TAG = "ChatFragment";
-	// private String mLastMessageId;
 	private EditText mEditText;
 	private BroadcastReceiver mSocketConnectionStatusReceiver;
 
@@ -63,16 +62,31 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		Log.v(TAG, "onCreate");
 
-		mListView = (ListView) view.findViewById(R.id.message_list);
-		ensureChatAdapter();
-
+		mChatAdapter = new ChatAdapter(getActivity());
 		setUsername(getArguments().getString("username"));
-
 		// load messages from local storage
 		loadMessages();
+
+		String lastMessageId = getLastMessageId();
+		if (lastMessageId != null) {
+			((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(getLastMessageId()));
+		}
+
+		Log.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
+
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
+		mListView = (ListView) view.findViewById(R.id.message_list);
+		mListView.setAdapter(mChatAdapter);
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -117,6 +131,7 @@ public class ChatFragment extends SherlockFragment {
 
 		// reget the messages in case any were added while we were gone
 		Log.v(TAG, "onResume, mUsername:  " + mUsername);
+		Log.v(TAG, "message count: " + mChatAdapter.getCount());
 
 		LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(mSocketConnectionStatusReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED));
@@ -129,9 +144,8 @@ public class ChatFragment extends SherlockFragment {
 		ChatActivity chatActivity = (ChatActivity) getActivity();
 
 		if (chatActivity.chatConnected()) {
-			if (this.isVisible()) {
-				chatActivity.startLoadingMessagesProgress();
-			}
+
+			chatActivity.startLoadingMessagesProgress();
 
 			getLatestMessages(new IAsyncCallback<Boolean>() {
 
@@ -139,13 +153,12 @@ public class ChatFragment extends SherlockFragment {
 				public void handleResponse(Boolean result) {
 					// TODO Auto-generated method stub
 
-					if (ChatFragment.this.isVisible()) {
-						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-					}
+					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+					mEditText.requestFocus();
+
 					mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
 				}
 			});
-
 		}
 
 	}
@@ -184,25 +197,29 @@ public class ChatFragment extends SherlockFragment {
 				// so check for null here
 
 				if (getActivity() != null) {
-
-					// ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
 					ChatMessage message = null;
 					try {
 						for (int i = 0; i < jsonArray.length(); i++) {
 							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 							message = ChatMessage.toChatMessage(jsonMessage);
 							mChatAdapter.addOrUpdateMessage(message, false);
+
 						}
 					} catch (JSONException e) {
 						Log.e(TAG, "Error creating chat message: " + e.toString());
 					}
 
 					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
+
+					// TODO move "last viewed" logic to ChatActivity
+					if (message != null) {
+						((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(message.getId()));
+					}
+
 					mChatAdapter.notifyDataSetChanged();
 					if (callback != null) {
 						callback.handleResponse(true);
 					}
-					mEditText.requestFocus();
 
 				}
 			}
@@ -247,24 +264,17 @@ public class ChatFragment extends SherlockFragment {
 
 						((ChatActivity) getActivity()).sendMessage(mUsername, result);
 						TextKeyListener.clear(etMessage.getText());
-					}
-					else {
-						//TODO handle encryption error
+					} else {
+						// TODO handle encryption error
 					}
 				}
 			});
 		}
 	}
 
-	private void ensureChatAdapter() {
-		if (mChatAdapter == null) {
-			mChatAdapter = new ChatAdapter(getActivity());
-			mListView.setAdapter(mChatAdapter);
-		}
-	}
-
 	public void addMessage(final JSONObject jsonMessage) {
-		ensureChatAdapter();
+		Log.v(TAG,"addMessage: " + jsonMessage.toString());
+
 		try {
 			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);
 			mChatAdapter.addOrUpdateMessage(message, true);
@@ -274,13 +284,11 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	private void saveMessages() {
-		Log.v(TAG, "saving messages to shared prefs");
-		Utils.putSharedPrefsString("messages_" + mUsername, Utils.chatMessagesToJson(mChatAdapter.getMessages())
-				.toString());
+		Log.v(TAG, "saving " + mChatAdapter.getCount() + " messages to shared prefs");
+		Utils.putSharedPrefsString("messages_" + mUsername, Utils.chatMessagesToJson(mChatAdapter.getMessages()).toString());
 	}
 
 	private void loadMessages() {
-		ensureChatAdapter();
 		String sMessages = Utils.getSharedPrefsString("messages_" + mUsername);
 		if (sMessages != null && !sMessages.isEmpty()) {
 			ArrayList<ChatMessage> messages = Utils.jsonStringToChatMessages(sMessages);

@@ -28,6 +28,7 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 
 	public ChatAdapter(Context context) {
+		Log.v(TAG,"Constructor.");
 		mContext = context;
 	}
 
@@ -58,7 +59,7 @@ public class ChatAdapter extends BaseAdapter {
 		} else {
 			int index = mMessages.indexOf(message);
 			if (index == -1) {
-				Log.v(TAG, "addMessage, could not find message");
+				//Log.v(TAG, "addMessage, could not find message");
 
 				//
 				mMessages.add(message);
@@ -72,8 +73,9 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void addMessages(ArrayList<ChatMessage> messages) {
 		if (messages.size() > 0) {
+			mMessages.clear();
 			mMessages.addAll(messages);
-			// notifyDataSetChanged();
+			notifyDataSetChanged();
 		}
 	}
 

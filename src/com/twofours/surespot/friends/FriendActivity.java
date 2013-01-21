@@ -187,7 +187,7 @@ public class FriendActivity extends SherlockActivity {
 		this.mMpdPopulateList.incrProgress();
 
 		// get last message id's out of shared prefs
-		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS);
+		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS);
 		if (lastMessageIdJson != null) {
 			try {
 				mLastMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
@@ -289,7 +289,7 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 		// store last message ids
 		String jsonString = Utils.mapToJsonString(mLastMessageIds);
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_MESSAGE_IDS, jsonString);
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
 		mChatController.disconnect();
 		mChatController.destroy();
 

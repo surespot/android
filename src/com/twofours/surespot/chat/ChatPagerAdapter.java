@@ -82,14 +82,14 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		int pos = getChatFragmentPosition(username);
 		if (pos == -1)
 			return null;
-		return Utils.makePagerFragmentName(R.id.pager, pos);
+		return Utils.makePagerFragmentName(R.id.pager, getItemId(pos));
 	}
 
 	public String getFragmentTag(int position) {
 		int pos = position;
 		if (pos == -1)
 			return null;
-		return Utils.makePagerFragmentName(R.id.pager, pos);
+		return Utils.makePagerFragmentName(R.id.pager, getItemId(position));
 	}
 
 	public ArrayList<String> getChatNames() {
@@ -106,4 +106,8 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 			notifyDataSetChanged();
 		}
 	}
+	
+    public long getItemId(int position) {
+        return mChatNames.get(position).hashCode();
+    }
 }
