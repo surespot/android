@@ -226,26 +226,22 @@ public class FriendActivity extends SherlockActivity {
 									// figure out new message counts
 									int serverId = serverMessageIds.get(user);
 									Integer localId = mLastMessageIds.get(user);
+									Log.v(TAG,"last localId for " + user + ": " + localId);
+									Log.v(TAG,"last serverId for " + user + ": " + serverId);
 
 									// new chat, all messages are new
 									if (localId == null) {
 										mLastMessageIds.put(user, serverId);
 										mMainAdapter.messageDeltaReceived(user, serverId);
 									} else {
-										// user went to tab but no new messages received, set count to match server
-										if (localId == -1) {
-											mLastMessageIds.put(user, serverId);
-											mMainAdapter.messageDeltaReceived(user, 0);
-										}
 
-										else {
-											// compute delta
-											int messageDelta = serverId - localId;
-											if (messageDelta > 0) {
-												mMainAdapter.messageDeltaReceived(user, messageDelta);
-											}
+										// compute delta
+										int messageDelta = serverId - localId;
+										if (messageDelta > 0) {
+											mMainAdapter.messageDeltaReceived(user, messageDelta);
 										}
 									}
+
 								}
 							}
 
@@ -288,8 +284,8 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 		// store last message ids
-		String jsonString = Utils.mapToJsonString(mLastMessageIds);
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
+		// String jsonString = Utils.mapToJsonString(mLastMessageIds);
+		// Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
 		mChatController.disconnect();
 		mChatController.destroy();
 
@@ -298,7 +294,7 @@ public class FriendActivity extends SherlockActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		
+
 	}
 
 	private void inviteFriend() {

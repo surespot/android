@@ -72,10 +72,10 @@ public class ChatFragment extends SherlockFragment {
 		// load messages from local storage
 		loadMessages();
 
-		String lastMessageId = getLastMessageId();
-		if (lastMessageId != null) {
-			((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(getLastMessageId()));
-		}
+//		String lastMessageId = getLastMessageId();
+//		if (lastMessageId != null) {
+//			((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(getLastMessageId()));
+//		}
 
 		Log.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
 

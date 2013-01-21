@@ -137,8 +137,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 				String name = mPagerAdapter.getChatName(position);
 				actionBar.setTitle(name);
 				if (mLastViewedMessageIds != null) {
-					Log.v(TAG, "onPageSelected updating visited page, name: " + name + ", pos: " + position);
-					mLastViewedMessageIds.put(name, Integer.parseInt(getChatFragment(name).getLastMessageId()));		
+					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
+					updateLastViewedMessageId(name);
 				}
 			}
 
@@ -165,9 +165,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 						Log.v(TAG, "Fragment null");
 					}
 
-					// update last visited id for current tab
-					String name = getCurrentChatName();					
-					updateLastViewedMessageId(name, messageJson.getInt("id"));
+					// update last visited id for message	
+					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -179,10 +178,16 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	}
 	
+	public void updateLastViewedMessageId(String name) {
+		String sLastMessageId = getChatFragment(name).getLastMessageId();
+		Log.v(TAG,"updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
+		mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
+	}
+	
 	public void updateLastViewedMessageId(String name, int lastMessageId) {
 		Log.v(TAG,"Received lastMessageId: " + lastMessageId + " for " + name);
 		if (name == getCurrentChatName()) {
-			Log.v(TAG,"The tab is visible so updating lastViewedMessageId.");
+			Log.v(TAG,"The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
 			mLastViewedMessageIds.put(name, lastMessageId);
 		}
 	}
@@ -204,6 +209,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+		}
+		else {
+			mLastViewedMessageIds = new HashMap<String, Integer>();
 		}
 
 		mChatController.connect();
@@ -283,8 +291,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 		} else {
 
 			mPagerAdapter.removeChat(position, true);
-			// set the title bar
-			getSupportActionBar().setTitle(mPagerAdapter.getChatNames().get(mViewPager.getCurrentItem()));
+			//when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
+			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
+			updateLastViewedMessageId(name);			
+			getSupportActionBar().setTitle(name);	
+			
 		}
 	}
 
