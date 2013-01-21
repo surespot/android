@@ -34,6 +34,7 @@ import android.util.Log;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.Utils;
@@ -112,7 +113,6 @@ public class EncryptionController {
 		// we have a identity stored, load the fucker up and reconstruct the keys
 
 		try {
-
 			JSONObject json = new JSONObject(jsonIdentity);
 			String username = (String) json.get("username");
 			String sPrivateKey = (String) json.get("private_key");
@@ -131,8 +131,7 @@ public class EncryptionController {
 	private static ECPublicKey recreatePublicKey(String encodedKey) {
 
 		try {
-			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Base64.decode(encodedKey,Base64.DEFAULT)),
-					curve);
+			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Base64.decode(encodedKey, Base64.DEFAULT)), curve);
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
 			return pubKey;
@@ -167,47 +166,37 @@ public class EncryptionController {
 		return null;
 	}
 
-	public static void generateKeyPair(IAsyncCallback<KeyPair> callback) {
-		new AsyncGenerateKeyPair(callback).execute();
-	}
+	public static void generateKeyPair(final IAsyncCallback<KeyPair> callback) {
+		new AsyncTask<Void, Void, KeyPair>() {
 
-	private static class AsyncGenerateKeyPair extends AsyncTask<Void, Void, KeyPair> {
-		private IAsyncCallback<KeyPair> mCallback;
+			@Override
+			protected KeyPair doInBackground(Void... arg0) {
+				// perform async
 
-		public AsyncGenerateKeyPair(IAsyncCallback<KeyPair> callback) {
+				try {
+					KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
+					g.initialize(curve, new SecureRandom());
+					KeyPair pair = g.generateKeyPair();
+					return pair;
 
-			mCallback = callback;
+				} catch (NoSuchAlgorithmException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				} catch (NoSuchProviderException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				} catch (InvalidAlgorithmParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
-		}
-
-		@Override
-		protected KeyPair doInBackground(Void... arg0) {
-			// perform async
-
-			try {
-				KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
-				g.initialize(curve, new SecureRandom());
-				KeyPair pair = g.generateKeyPair();
-				return pair;
-
-			} catch (NoSuchAlgorithmException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			} catch (NoSuchProviderException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			} catch (InvalidAlgorithmParameterException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return null;
 			}
 
-			return null;
-		}
-
-		protected void onPostExecute(KeyPair result) {
-			mCallback.handleResponse(result);
-		}
-
+			protected void onPostExecute(KeyPair result) {
+				callback.handleResponse(result);
+			}
+		}.execute();
 	}
 
 	public static synchronized void saveIdentity(SurespotIdentity identity) {
@@ -221,7 +210,7 @@ public class EncryptionController {
 		// pair.getPublic().
 		// ecpk.getW().;
 		// ecprik.getD().toByteArray();
-		String generatedPrivDHex = new String(Base64.encode(ecpriv.getD().toByteArray(),Base64.DEFAULT));
+		String generatedPrivDHex = new String(Base64.encode(ecpriv.getD().toByteArray(), Base64.DEFAULT));
 
 		String publicKey = encodePublicKey(ecpub);
 		Log.d("ke", "generated public key:" + publicKey);
@@ -244,12 +233,13 @@ public class EncryptionController {
 	}
 
 	public static String encodePublicKey(ECPublicKey publicKey) {
-		return new String(Base64.encode(publicKey.getQ().getEncoded(),Base64.DEFAULT));
+		return new String(Base64.encode(publicKey.getQ().getEncoded(), Base64.DEFAULT));
 	}
-//
-//	private static void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
-//		new AsyncGenerateSharedSecret(username, callback).execute();
-//	}
+
+	//
+	// private static void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
+	// new AsyncGenerateSharedSecret(username, callback).execute();
+	// }
 
 	private static byte[] generateSharedSecretSync(String username) {
 		if (mIdentity == null)
@@ -260,7 +250,7 @@ public class EncryptionController {
 			ka.doPhase(mPublicKeys.get(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			Log.d("ke", "shared Key: " + new String(Base64.encode(new BigInteger(sharedSecret).toByteArray(),Base64.DEFAULT)));
+			Log.d("ke", "shared Key: " + new String(Base64.encode(new BigInteger(sharedSecret).toByteArray(), Base64.DEFAULT)));
 			return sharedSecret;
 
 		} catch (InvalidKeyException e) {
@@ -283,29 +273,6 @@ public class EncryptionController {
 		return null;
 	}
 
-	// /weird shit happens with multiple threads banging on this and it's not async
-	private static class AsyncGenerateSharedSecret extends AsyncTask<Void, Void, byte[]> {
-		private IAsyncCallback<byte[]> mCallback;
-		private String mUsername;
-
-		public AsyncGenerateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
-			mUsername = username;
-			mCallback = callback;
-
-		}
-
-		@Override
-		protected byte[] doInBackground(Void... arg0) {
-			// perform async
-			return generateSharedSecretSync(mUsername);
-		}
-
-		protected void onPostExecute(byte[] result) {
-			mCallback.handleResponse(result);
-		}
-
-	}
-
 	private static void symmetricDecrypt(String username, String cipherTextJson, final IAsyncCallback<String> callback) {
 		new AsyncTask<String, Void, String>() {
 
@@ -322,8 +289,8 @@ public class EncryptionController {
 				ParametersWithIV ivParams = null;
 				try {
 					json = new JSONObject(cipherTextJson);
-					cipherBytes = Base64.decode(json.getString("ciphertext"),Base64.DEFAULT);
-					iv = Base64.decode(json.getString("iv").getBytes(),Base64.DEFAULT);
+					cipherBytes = Base64.decode(json.getString("ciphertext"), Base64.DEFAULT);
+					iv = Base64.decode(json.getString("iv").getBytes(), Base64.DEFAULT);
 					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH),
 							iv);
 
@@ -334,6 +301,9 @@ public class EncryptionController {
 				} catch (ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					return null;
+				} catch (InvalidCacheLoadException icle) {
+					icle.printStackTrace();
 					return null;
 				}
 
@@ -376,8 +346,7 @@ public class EncryptionController {
 				mSecureRandom.nextBytes(iv);
 				ParametersWithIV ivParams;
 				try {
-					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(params[0]), 0, AES_KEY_LENGTH),
-							iv);
+					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(params[0]), 0, AES_KEY_LENGTH), iv);
 				} catch (ExecutionException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -394,9 +363,9 @@ public class EncryptionController {
 				try {
 					len += ccm.doFinal(buf, len);
 					JSONObject json = new JSONObject();
-					json.put("iv", new String(Base64.encode(iv,Base64.DEFAULT)));
+					json.put("iv", new String(Base64.encode(iv, Base64.DEFAULT)));
 
-					json.put("ciphertext", new String(Base64.encode(buf,Base64.DEFAULT)));
+					json.put("ciphertext", new String(Base64.encode(buf, Base64.DEFAULT)));
 					return json.toString();
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -426,6 +395,6 @@ public class EncryptionController {
 	}
 
 	public static void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
-		symmetricDecrypt(from, ciphertext, callback);	
+		symmetricDecrypt(from, ciphertext, callback);
 	}
 }

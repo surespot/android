@@ -91,10 +91,8 @@ public class NetworkController {
 			}
 		};
 		
-		mClient.setCookieStore(mCookieStore);
-		mSyncClient.setCookieStore(mCookieStore);
-		// handle 401s
-		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(new HttpResponseInterceptor() {
+	
+		HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
 
 			@Override
 			public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
@@ -122,7 +120,13 @@ public class NetworkController {
 					}
 				}
 			}
-		});
+		};
+		
+		mClient.setCookieStore(mCookieStore);
+		mSyncClient.setCookieStore(mCookieStore);
+		// handle 401s
+		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+		((DefaultHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 
 	}
 

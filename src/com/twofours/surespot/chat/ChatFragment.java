@@ -236,16 +236,21 @@ public class ChatFragment extends SherlockFragment {
 			EncryptionController.eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
 				@Override
 				public void handleResponse(String result) {
+					if (result != null) {
 
-					ChatMessage chatMessage = new ChatMessage();
-					chatMessage.setFrom(EncryptionController.getIdentityUsername());
-					chatMessage.setTo(mUsername);
-					chatMessage.setCipherText(result);
+						ChatMessage chatMessage = new ChatMessage();
+						chatMessage.setFrom(EncryptionController.getIdentityUsername());
+						chatMessage.setTo(mUsername);
+						chatMessage.setCipherText(result);
 
-					mChatAdapter.addOrUpdateMessage(chatMessage, true);
+						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 
-					((ChatActivity) getActivity()).sendMessage(mUsername, result);
-					TextKeyListener.clear(etMessage.getText());
+						((ChatActivity) getActivity()).sendMessage(mUsername, result);
+						TextKeyListener.clear(etMessage.getText());
+					}
+					else {
+						//TODO handle encryption error
+					}
 				}
 			});
 		}

@@ -152,13 +152,13 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setText(item.getPlainText());
 		} else {
 
-			try {
-				JSONObject text = new JSONObject(item.getCipherText());
-				chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				JSONObject text = new JSONObject(item.getCipherText());
+//				chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
+//			} catch (JSONException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			// decrypt
 			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherText(),
 					new IAsyncCallback<String>() {
@@ -166,8 +166,13 @@ public class ChatAdapter extends BaseAdapter {
 						@Override
 						public void handleResponse(String result) {
 
+							if (result != null) {
 							item.setPlainText(result);
 							chatMessageViewHolder.tvText.setText(result);
+							}
+							else {
+								chatMessageViewHolder.tvText.setText("Could not decrypt message.");	
+							}
 
 						}
 
