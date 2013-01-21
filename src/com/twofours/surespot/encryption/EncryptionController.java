@@ -27,9 +27,9 @@ import org.spongycastle.jce.interfaces.ECPublicKey;
 import org.spongycastle.jce.spec.ECParameterSpec;
 import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
-import org.spongycastle.util.encoders.Hex;
 
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.common.cache.CacheBuilder;
@@ -131,7 +131,7 @@ public class EncryptionController {
 	private static ECPublicKey recreatePublicKey(String encodedKey) {
 
 		try {
-			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Hex.decode(encodedKey)),
+			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Base64.decode(encodedKey,Base64.DEFAULT)),
 					curve);
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
@@ -147,7 +147,7 @@ public class EncryptionController {
 
 	private static ECPrivateKey recreatePrivateKey(String encodedKey) {
 		// recreate key from hex string
-		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Hex.decode(encodedKey)), curve);
+		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Base64.decode(encodedKey, Base64.DEFAULT)), curve);
 
 		try {
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
@@ -221,7 +221,7 @@ public class EncryptionController {
 		// pair.getPublic().
 		// ecpk.getW().;
 		// ecprik.getD().toByteArray();
-		String generatedPrivDHex = new String(Hex.encode(ecpriv.getD().toByteArray()));
+		String generatedPrivDHex = new String(Base64.encode(ecpriv.getD().toByteArray(),Base64.DEFAULT));
 
 		String publicKey = encodePublicKey(ecpub);
 		Log.d("ke", "generated public key:" + publicKey);
@@ -244,12 +244,12 @@ public class EncryptionController {
 	}
 
 	public static String encodePublicKey(ECPublicKey publicKey) {
-		return new String(Hex.encode(publicKey.getQ().getEncoded()));
+		return new String(Base64.encode(publicKey.getQ().getEncoded(),Base64.DEFAULT));
 	}
-
-	private static void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
-		new AsyncGenerateSharedSecret(username, callback).execute();
-	}
+//
+//	private static void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
+//		new AsyncGenerateSharedSecret(username, callback).execute();
+//	}
 
 	private static byte[] generateSharedSecretSync(String username) {
 		if (mIdentity == null)
@@ -260,7 +260,7 @@ public class EncryptionController {
 			ka.doPhase(mPublicKeys.get(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			Log.d("ke", "shared Key: " + new String(Hex.encode(new BigInteger(sharedSecret).toByteArray())));
+			Log.d("ke", "shared Key: " + new String(Base64.encode(new BigInteger(sharedSecret).toByteArray(),Base64.DEFAULT)));
 			return sharedSecret;
 
 		} catch (InvalidKeyException e) {
@@ -322,8 +322,8 @@ public class EncryptionController {
 				ParametersWithIV ivParams = null;
 				try {
 					json = new JSONObject(cipherTextJson);
-					cipherBytes = Hex.decode(json.getString("ciphertext"));
-					iv = Hex.decode(json.getString("iv").getBytes());
+					cipherBytes = Base64.decode(json.getString("ciphertext"),Base64.DEFAULT);
+					iv = Base64.decode(json.getString("iv").getBytes(),Base64.DEFAULT);
 					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH),
 							iv);
 
@@ -394,9 +394,9 @@ public class EncryptionController {
 				try {
 					len += ccm.doFinal(buf, len);
 					JSONObject json = new JSONObject();
-					json.put("iv", new String(Hex.encode(iv)));
+					json.put("iv", new String(Base64.encode(iv,Base64.DEFAULT)));
 
-					json.put("ciphertext", new String(Hex.encode(buf)));
+					json.put("ciphertext", new String(Base64.encode(buf,Base64.DEFAULT)));
 					return json.toString();
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
