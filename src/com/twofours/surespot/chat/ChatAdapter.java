@@ -153,7 +153,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (item.getPlainText() != null) {
 			chatMessageViewHolder.tvText.setText(item.getPlainText());
 		} else {
-
+			chatMessageViewHolder.tvText.setText("");
 //			try {
 //				JSONObject text = new JSONObject(item.getCipherText());
 //				chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));

@@ -340,8 +340,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		return name;
 	}
 
-	public void sendMessage(String to, String message) {
-		mChatController.sendMessage(to, message);
+	public void sendMessage(ChatMessage message) {
+		mChatController.sendMessage(message);
 
 	}
 

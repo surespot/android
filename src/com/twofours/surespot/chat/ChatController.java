@@ -315,21 +315,6 @@ public class ChatController {
 	//
 	// }
 
-	public void sendMessage(String to, String text) {
-		if (text != null && text.length() > 0) {
-			ChatMessage cm = new ChatMessage();
-			cm.setFrom(EncryptionController.getIdentityUsername());
-			cm.setTo(to);
-			cm.setCipherText(text);
-			mSendBuffer.add(cm);
-
-			// keep track of the messages we sent
-			// and remove them from the buffer when we receive them back from the server
-			sendMessages();
-
-		}
-	}
-
 	public ChatMessage[] getResendMessages() {
 		ChatMessage[] messages = mResendBuffer.toArray(new ChatMessage[0]);
 		mResendBuffer.clear();

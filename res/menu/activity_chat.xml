@@ -4,11 +4,11 @@
         android:id="@+id/menu_close"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="close"/>
+        android:title="close tab"/>
     <item
         android:id="@+id/menu_close"
         android:orderInCategory="100"
         android:showAsAction="ifRoom"
-        android:title="close"/>
+        android:title="close tab"/>
 
 </menu>

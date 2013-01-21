@@ -259,10 +259,11 @@ public class ChatFragment extends SherlockFragment {
 						chatMessage.setFrom(EncryptionController.getIdentityUsername());
 						chatMessage.setTo(mUsername);
 						chatMessage.setCipherText(result);
+						chatMessage.setPlainText(message);
 
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 
-						((ChatActivity) getActivity()).sendMessage(mUsername, result);
+						((ChatActivity) getActivity()).sendMessage(chatMessage);
 						TextKeyListener.clear(etMessage.getText());
 					} else {
 						// TODO handle encryption error
