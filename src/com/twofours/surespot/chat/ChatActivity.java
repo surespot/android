@@ -53,22 +53,22 @@ public class ChatActivity extends SherlockFragmentActivity {
 						// set the last received id so the server knows which messages to check
 						String room = message.getRoom();
 
-						//ideally get the last id from the fragment's chat adapter
+						// ideally get the last id from the fragment's chat adapter
 						String lastMessageID = null;
 						ChatFragment cf = getChatFragment(Utils.getOtherUser(message.getFrom(), message.getTo()));
 						if (cf != null) {
 							lastMessageID = cf.getLastMessageId();
 						}
-						
-						//failing that use the last viewed id
+
+						// failing that use the last viewed id
 						if (lastMessageID == null) {
 							Object oId = mLastViewedMessageIds.get(room);
 							if (oId != null) {
 								lastMessageID = oId.toString();
 							}
 						}
-						
-						//last option, check last x messages for dupes
+
+						// last option, check last x messages for dupes
 						if (lastMessageID == null) {
 							lastMessageID = "-1";
 						}
@@ -143,7 +143,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 
 		});
-//		mViewPager.setOffscreenPageLimit(0);
+		// mViewPager.setOffscreenPageLimit(0);
 		mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
 		// register for notifications
 		mMessageBroadcastReceiver = new BroadcastReceiver() {
@@ -165,9 +165,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 						Log.v(TAG, "Fragment null");
 					}
 
-					// update last visited id for message	
+					// update last visited id for message
 					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
-					
+
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -177,17 +177,17 @@ public class ChatActivity extends SherlockFragmentActivity {
 		};
 
 	}
-	
+
 	public void updateLastViewedMessageId(String name) {
 		String sLastMessageId = getChatFragment(name).getLastMessageId();
-		Log.v(TAG,"updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
+		Log.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
 		mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
 	}
-	
+
 	public void updateLastViewedMessageId(String name, int lastMessageId) {
-		Log.v(TAG,"Received lastMessageId: " + lastMessageId + " for " + name);
+		Log.v(TAG, "Received lastMessageId: " + lastMessageId + " for " + name);
 		if (name == getCurrentChatName()) {
-			Log.v(TAG,"The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
+			Log.v(TAG, "The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
 			mLastViewedMessageIds.put(name, lastMessageId);
 		}
 	}
@@ -209,14 +209,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		}
-		else {
+		} else {
 			mLastViewedMessageIds = new HashMap<String, Integer>();
 		}
 
 		mChatController.connect();
 	}
-	
+
 	@Override
 	protected void onPause() {
 
@@ -240,12 +239,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 		}
 
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, getCurrentChatName());
-		
+
 		mChatController.destroy();
 	}
-
-
-	
 
 	private ChatFragment getChatFragment(String roomName) {
 		String tag = mPagerAdapter.getFragmentTag(roomName);
@@ -293,11 +289,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 		} else {
 
 			mPagerAdapter.removeChat(position, true);
-			//when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
+			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
-			updateLastViewedMessageId(name);			
-			getSupportActionBar().setTitle(name);	
-			
+			updateLastViewedMessageId(name);
+			getSupportActionBar().setTitle(name);
+
 		}
 	}
 
@@ -309,28 +305,28 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	}
 
-//	@Override
-//	protected void onStart() {
-//		super.onStart();
-//		Log.v(TAG, "onStart");
-//
-//	}
-//
-//	@Override
-//	protected void onStop() {
-//		super.onStop();
-//		Log.v(TAG, "onStop");
-//
-//	}
-//
-//	@Override
-//	protected void onDestroy() {
-//		super.onDestroy();
-//		Log.v(TAG, "onDestroy");
-//
-//		
-//
-//	}
+	// @Override
+	// protected void onStart() {
+	// super.onStart();
+	// Log.v(TAG, "onStart");
+	//
+	// }
+	//
+	// @Override
+	// protected void onStop() {
+	// super.onStop();
+	// Log.v(TAG, "onStop");
+	//
+	// }
+	//
+	// @Override
+	// protected void onDestroy() {
+	// super.onDestroy();
+	// Log.v(TAG, "onDestroy");
+	//
+	//
+	//
+	// }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -348,9 +344,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 	}
 
 	private String getCurrentChatName() {
-		int pos = mViewPager.getCurrentItem();
-		String name = mPagerAdapter.getChatName(pos);
-		return name;
+		if (mPagerAdapter.getCount() > 0) {
+			int pos = mViewPager.getCurrentItem();
+			String name = mPagerAdapter.getChatName(pos);
+			return name;
+		} else {
+			return null;
+		}
 	}
 
 	public void sendMessage(ChatMessage message) {
