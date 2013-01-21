@@ -67,7 +67,6 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 
 		mListView = (ListView) view.findViewById(R.id.message_list);
-		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 		ensureChatAdapter();
 
 		setUsername(getArguments().getString("username"));
@@ -96,7 +95,8 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog (sshh)
+		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog
+		// (sshh)
 		mSocketConnectionStatusReceiver = new BroadcastReceiver() {
 
 			@Override
@@ -132,33 +132,20 @@ public class ChatFragment extends SherlockFragment {
 			if (this.isVisible()) {
 				chatActivity.startLoadingMessagesProgress();
 			}
-//			EncryptionController.hydratePublicKey(mUsername, new IAsyncCallback<Boolean>() {
-//				@Override
-//				public void handleResponse(Boolean result) {
-//					if (result) {
-						getLatestMessages(new IAsyncCallback<Boolean>() {
 
-							@Override
-							public void handleResponse(Boolean result) {
-								// TODO Auto-generated method stub
+			getLatestMessages(new IAsyncCallback<Boolean>() {
 
-								if (ChatFragment.this.isVisible()) {
-									((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-								}
-							}
-						});
+				@Override
+				public void handleResponse(Boolean result) {
+					// TODO Auto-generated method stub
 
-//					} else {
-//						Log.v(TAG, "couldn't get public key, closing tab:  " + mUsername);
-//						// can't do anything without a public key so close the tab
-//						if (ChatFragment.this.isVisible()) {
-//							((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-//							((ChatActivity) getActivity()).closeChat(mUsername);
-//						}
-//
-//					}
-//				}
-//			});
+					if (ChatFragment.this.isVisible()) {
+						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+					}
+					mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+				}
+			});
+
 		}
 
 	}

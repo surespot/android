@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ListIterator;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,15 +59,15 @@ public class ChatAdapter extends BaseAdapter {
 			int index = mMessages.indexOf(message);
 			if (index == -1) {
 				Log.v(TAG, "addMessage, could not find message");
-				
+
 				//
 				mMessages.add(message);
 			} else {
 				Log.v(TAG, "addMessage, updating message");
 				ChatMessage updateMessage = mMessages.get(index);
-				updateMessage.setId(message.getId());				
+				updateMessage.setId(message.getId());
 			}
-		}		
+		}
 	}
 
 	public void addMessages(ArrayList<ChatMessage> messages) {
@@ -148,6 +151,14 @@ public class ChatAdapter extends BaseAdapter {
 		if (item.getPlainText() != null) {
 			chatMessageViewHolder.tvText.setText(item.getPlainText());
 		} else {
+
+			try {
+				JSONObject text = new JSONObject(item.getCipherText());
+				chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			// decrypt
 			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherText(),
 					new IAsyncCallback<String>() {
@@ -178,7 +189,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (notify) {
 			notifyDataSetChanged();
 		}
-		
+
 	}
 
 }
