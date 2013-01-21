@@ -9,6 +9,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
@@ -64,6 +65,12 @@ public class StartupActivity extends Activity {
 				Intent intent;
 				// if we have a chat intent go to chat
 				String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+				
+				//if we don't have an intent, see if we have saved chat
+				if (name == null) {
+					name = Utils.getSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT);
+				}				
+				
 				if (name != null) {
 					intent = new Intent(this, ChatActivity.class);
 					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
@@ -71,13 +78,11 @@ public class StartupActivity extends Activity {
 					startActivity(intent);
 				}
 				else {
-					// go to main
-					
+					// go to main					
 					intent = new Intent(this, FriendActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					startActivity(intent);
-				}
-				
+				}				
 			}
 			else {
 				// identity but no session, login

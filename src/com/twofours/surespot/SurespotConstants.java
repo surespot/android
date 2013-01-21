@@ -32,5 +32,6 @@ public class SurespotConstants {
 		public final static String GCM_ID_SENT = "gcm_id_sent";
 		public final static String PREFS_ACTIVE_CHATS = "active_chats";
 		public final static String PREFS_LAST_VIEWED_MESSAGE_IDS = "last_message_ids";
+		public static final String LAST_CHAT = "last_chat";
 	}
 }

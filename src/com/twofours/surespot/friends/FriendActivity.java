@@ -283,9 +283,8 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-		// store last message ids
-		// String jsonString = Utils.mapToJsonString(mLastMessageIds);
-		// Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
+		
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, null);
 		mChatController.disconnect();
 		mChatController.destroy();
 

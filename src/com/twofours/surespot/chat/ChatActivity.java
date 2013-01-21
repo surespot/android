@@ -239,6 +239,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
 		}
 
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, getCurrentChatName());
+		
 		mChatController.destroy();
 	}
 
