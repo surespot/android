@@ -356,7 +356,7 @@ public class EncryptionController {
 				return null;
 
 			}
-			
+
 			@Override
 			protected void onPostExecute(String result) {
 				callback.handleResponse(result);
@@ -364,46 +364,60 @@ public class EncryptionController {
 		}.execute(username, cipherTextJson);
 	}
 
-	private static void symmetricEncrypt(String username, String plaintext, IAsyncCallback<String> callback) {
-		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+	private static void symmetricEncrypt(String username, String plaintext, final IAsyncCallback<String> callback) {
+		new AsyncTask<String, Void, String>() {
+			@Override
+			protected String doInBackground(String... params) {
 
-		// crashes with getBlockSize() bytes, don't know why?
-		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
-		mSecureRandom.nextBytes(iv);
-		ParametersWithIV params;
-		try {
-			params = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
-		} catch (ExecutionException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			return;
-		}
+				CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
-		ccm.reset();
-		ccm.init(true, params);
+				// crashes with getBlockSize() bytes, don't know why?
+				byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
+				mSecureRandom.nextBytes(iv);
+				ParametersWithIV ivParams;
+				try {
+					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(params[0]), 0, AES_KEY_LENGTH),
+							iv);
+				} catch (ExecutionException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					return null;
+				}
 
-		byte[] enc = plaintext.getBytes();
-		byte[] buf = new byte[ccm.getOutputSize(enc.length)];
+				ccm.reset();
+				ccm.init(true, ivParams);
 
-		int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
-		try {
-			len += ccm.doFinal(buf, len);
-			JSONObject json = new JSONObject();
-			json.put("iv", new String(Hex.encode(iv)));
+				byte[] enc = params[1].getBytes();
+				byte[] buf = new byte[ccm.getOutputSize(enc.length)];
 
-			json.put("ciphertext", new String(Hex.encode(buf)));
-			callback.handleResponse(json.toString());
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+				int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
+				try {
+					len += ccm.doFinal(buf, len);
+					JSONObject json = new JSONObject();
+					json.put("iv", new String(Hex.encode(iv)));
 
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidCipherTextException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+					json.put("ciphertext", new String(Hex.encode(buf)));
+					return json.toString();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidCipherTextException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+
+			}
+
+			@Override
+			protected void onPostExecute(String result) {
+				callback.handleResponse(result);
+			}
+		}.execute(username, plaintext);
 
 	}
 
