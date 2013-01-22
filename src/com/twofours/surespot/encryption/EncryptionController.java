@@ -1,5 +1,8 @@
 package com.twofours.surespot.encryption;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -12,10 +15,20 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.ExecutionException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyAgreement;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.crypto.DataLengthException;
 import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.modes.CCMBlockCipher;
@@ -273,58 +286,67 @@ public class EncryptionController {
 		return null;
 	}
 
-
-	public static void symmetricBase64Decrypt(String username, String cipherTextJson, final IAsyncCallback<String> callback) {
+	public static void symmetricBase64Decrypt(String username, final String cipherTextJson, final IAsyncCallback<String> callback) {
 		new AsyncTask<String, Void, String>() {
 
 			@Override
 			protected String doInBackground(String... params) {
 
-				CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+				byte[] buf = new byte[1024]; // input buffer
 
-				String username = params[0];
-				String cipherTextJson = params[1];
-				JSONObject json;
-				byte[] cipherBytes = null;
-				byte[] iv = null;
-				ParametersWithIV ivParams = null;
 				try {
-					json = new JSONObject(cipherTextJson);
-					cipherBytes = Base64.decode(json.getString("ciphertext"), Base64.DEFAULT);
-					iv = Base64.decode(json.getString("iv").getBytes(), Base64.DEFAULT);
-					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+					SecretKey key = new SecretKeySpec(mSharedSecrets.get(params[0]), 0, AES_KEY_LENGTH, "AES");
+					JSONObject json = new JSONObject(cipherTextJson);
+					byte[] cipherBytes = Base64.decode(json.getString("ciphertext"), Base64.DEFAULT);
+					byte[] iv = Base64.decode(json.getString("iv").getBytes(), Base64.DEFAULT);
+					IvParameterSpec ivParams = new IvParameterSpec(iv);
+					ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					CipherOutputStream cos = new CipherOutputStream(out, ccm);
+									
+					ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
+					int i=0;
+					while ((i = in.read(buf)) != -1 ) {
+						cos.write(buf,0,i);
+					}
+									
 
-				} catch (JSONException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					return null;
-				} catch (ExecutionException e) {
+					in.close();
+					cos.close();
+
+
+					return new String(Base64.encode(out.toByteArray(), Base64.DEFAULT));
+				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					return null;
-				} catch (InvalidCacheLoadException icle) {
-					icle.printStackTrace();
-					return null;
-				}
 
-				ccm.reset();
-				ccm.init(false, ivParams);
-
-				byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
-
-				int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
-				try {
-					len += ccm.doFinal(buf, len);
-					return new String(Base64.encode(buf, Base64.DEFAULT));
 				} catch (IllegalStateException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (InvalidCipherTextException e) {
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidAlgorithmParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchProviderException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				return null;
-
 			}
 
 			@Override
@@ -338,33 +360,36 @@ public class EncryptionController {
 		new AsyncTask<String, Void, String>() {
 			@Override
 			protected String doInBackground(String... params) {
+				byte[] iv = new byte[15];
+				byte[] buf = new byte[1024]; // input buffer
+				byte[] enc = Base64.decode(params[1].getBytes(), Base64.DEFAULT);
 
-				CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
-
-				// crashes with getBlockSize() bytes, don't know why?
-				byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
+				ByteArrayInputStream in = new ByteArrayInputStream(enc);
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				mSecureRandom.nextBytes(iv);
-				ParametersWithIV ivParams;
+				IvParameterSpec ivParams = new IvParameterSpec(iv);
+
+				
+				
 				try {
-					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(params[0]), 0, AES_KEY_LENGTH), iv);
-				} catch (ExecutionException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					return null;
-				}
+					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+					
+					SecretKey key = new SecretKeySpec(mSharedSecrets.get(params[0]), 0, AES_KEY_LENGTH, "AES");
+					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
+					CipherOutputStream cos = new CipherOutputStream(out, ccm);
+										
+					int i=0;
+					
+					while ((i = in.read(buf)) != -1 ) {
+						cos.write(buf,0,i);
+					}
+									
+					in.close();
+					cos.close();
 
-				ccm.reset();
-				ccm.init(true, ivParams);
-
-				byte[] enc = Base64.decode(params[1].getBytes(),Base64.DEFAULT);
-				byte[] buf = new byte[ccm.getOutputSize(enc.length)];
-
-				int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
-				try {
-					len += ccm.doFinal(buf, len);
 					JSONObject json = new JSONObject();
 					json.put("iv", new String(Base64.encode(iv, Base64.DEFAULT)));
-					json.put("ciphertext", new String(Base64.encode(buf, Base64.DEFAULT)));
+					json.put("ciphertext", new String(Base64.encode(out.toByteArray(), Base64.DEFAULT)));
 					return json.toString();
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -373,7 +398,25 @@ public class EncryptionController {
 				} catch (IllegalStateException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (InvalidCipherTextException e) {
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidAlgorithmParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchProviderException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -388,7 +431,7 @@ public class EncryptionController {
 		}.execute(username, base64data);
 
 	}
-	
+
 	private static void symmetricDecrypt(String username, String cipherTextJson, final IAsyncCallback<String> callback) {
 		new AsyncTask<String, Void, String>() {
 
@@ -503,7 +546,6 @@ public class EncryptionController {
 		}.execute(username, plaintext);
 
 	}
-	
 
 	public static void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
 		symmetricEncrypt(username, plaintext, callback);
