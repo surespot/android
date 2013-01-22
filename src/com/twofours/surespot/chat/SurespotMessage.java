@@ -42,7 +42,7 @@ public class SurespotMessage {
 		mCipherData = cipherText;
 	}
 
-	public String getPlainText() {
+	public String getPlainData() {
 		return mPlainData;
 	}
 

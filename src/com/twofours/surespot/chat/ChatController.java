@@ -147,7 +147,7 @@ public class ChatController {
 				}
 
 				sendConnectStatus(true);
-				
+
 				sendMessages();
 				SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
 						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -249,7 +249,6 @@ public class ChatController {
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
 			socket.connect(mSocketCallback);
-		
 
 		} catch (MalformedURLException e1) {
 			// Auto-generated
@@ -343,10 +342,13 @@ public class ChatController {
 
 	public void disconnect() {
 		Log.v(TAG, "disconnect.");
-		setState(STATE_DISCONNECTED);		
-		socket.disconnect();		
-		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		setState(STATE_DISCONNECTED);
+		if (socket.isConnected()) {
+			socket.disconnect();
+			SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		}
 		sendConnectStatus(false);
+
 		// socket = null;
 	}
 

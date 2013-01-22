@@ -66,7 +66,7 @@ public class FriendActivity extends SherlockActivity {
 	
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 			//set the title
-			getSupportActionBar().setTitle("share with");
+			getSupportActionBar().setTitle("send to");
 		}
 		else {
 			getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());

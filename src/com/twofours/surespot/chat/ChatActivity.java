@@ -287,7 +287,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			closeTab(mViewPager.getCurrentItem());
 
-			return true;
+			return true;		
+			
 		default:
 			return super.onOptionsItemSelected(item);
 		}

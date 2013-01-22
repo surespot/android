@@ -1,6 +1,7 @@
 package com.twofours.surespot;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,6 +17,7 @@ import org.json.JSONObject;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.util.Base64;
 import android.widget.Toast;
 
 import com.twofours.surespot.chat.SurespotMessage;
@@ -39,6 +41,30 @@ public class Utils {
 
 		// Return full string
 		return total.toString();
+	}
+
+	public static byte[] inputStreamToBytes(InputStream inputStream) throws IOException {
+		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+		int bufferSize = 1024;
+		byte[] buffer = new byte[bufferSize];
+
+		int len = 0;
+		while ((len = inputStream.read(buffer)) != -1) {
+			byteBuffer.write(buffer, 0, len);
+		}
+		return byteBuffer.toByteArray();
+	}
+	
+	public static String inputStreamToBase64(InputStream inputStream) throws IOException {
+		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+		int bufferSize = 1024;
+		byte[] buffer = new byte[bufferSize];
+
+		int len = 0;
+		while ((len = inputStream.read(buffer)) != -1) {
+			byteBuffer.write(buffer, 0, len);
+		}
+		return new String(Base64.encode(byteBuffer.toByteArray(),Base64.DEFAULT));
 	}
 
 	public static String getOtherUser(String from, String to) {
@@ -70,8 +96,7 @@ public class Utils {
 		Editor editor = settings.edit();
 		if (value == null) {
 			editor.remove(key);
-		}
-		else {
+		} else {
 			editor.putString(key, value);
 		}
 		editor.commit();
@@ -91,8 +116,7 @@ public class Utils {
 
 			return outMap;
 
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -106,8 +130,7 @@ public class Utils {
 		try {
 			jsonObject = new JSONObject(jsonString);
 			return jsonToMap(jsonObject);
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -116,13 +139,13 @@ public class Utils {
 
 	}
 
-	public static String mapToJsonString(Map<String,Integer> map) {
+	public static String mapToJsonString(Map<String, Integer> map) {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject.toString();
 	}
-	
+
 	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
-		
+
 		JSONArray jsonMessages = new JSONArray();
 		Iterator<SurespotMessage> iterator = messages.iterator();
 		while (iterator.hasNext()) {
@@ -130,23 +153,22 @@ public class Utils {
 
 		}
 		return jsonMessages;
-		
 
 	}
+
 	public static ArrayList<SurespotMessage> jsonStringToChatMessages(String jsonMessageString) {
-		
+
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		try {
 			JSONArray jsonUM = new JSONArray(jsonMessageString);
-			for (int i=0;i<jsonUM.length();i++) {
+			for (int i = 0; i < jsonUM.length(); i++) {
 				messages.add(SurespotMessage.toChatMessage(jsonUM.getJSONObject(i)));
-			}			
+			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return messages;
-		
 
 	}
 }

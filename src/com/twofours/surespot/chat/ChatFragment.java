@@ -1,5 +1,8 @@
 package com.twofours.surespot.chat;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -10,9 +13,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.method.TextKeyListener;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -70,9 +77,9 @@ public class ChatFragment extends SherlockFragment {
 
 		mChatAdapter = new ChatAdapter(getActivity());
 		setUsername(getArguments().getString("username"));
-		// load messages from local storage		
+		// load messages from local storage
 		loadMessages();
-		
+
 		mLatestMessageHandler = new IAsyncCallback<Boolean>() {
 
 			@Override
@@ -91,7 +98,7 @@ public class ChatFragment extends SherlockFragment {
 				mChatAdapter.notifyDataSetChanged();
 			}
 		};
-	
+
 		Log.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
 
 	}
@@ -107,7 +114,7 @@ public class ChatFragment extends SherlockFragment {
 		sendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendMessage();
+				sendTextMessage();
 			}
 		});
 		mEditText = (EditText) view.findViewById(R.id.etMessage);
@@ -117,7 +124,7 @@ public class ChatFragment extends SherlockFragment {
 				boolean handled = false;
 				if (actionId == EditorInfo.IME_ACTION_SEND) {
 					//
-					sendMessage();
+					sendTextMessage();
 					handled = true;
 				}
 				return handled;
@@ -134,7 +141,7 @@ public class ChatFragment extends SherlockFragment {
 
 			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 				// we have a send action so populate the edit box with the data
-				populateEditBox(action, type, intent.getExtras());
+				handleSendIntent(action, type, intent.getExtras());
 
 				// intent.setAction(null);
 				// intent.setType(null);
@@ -184,9 +191,8 @@ public class ChatFragment extends SherlockFragment {
 			getLatestMessages(mLatestMessageHandler);
 		}
 
-		
 		if (isVisible()) {
-			Log.v(TAG,"onResume we are visible");
+			Log.v(TAG, "onResume we are visible");
 			requestFocus();
 		}
 	}
@@ -265,35 +271,44 @@ public class ChatFragment extends SherlockFragment {
 		return lastMessageId;
 	}
 
-	private void sendMessage() {
+	private void sendTextMessage() {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
 		final String message = etMessage.getText().toString();
-		if (message.length() > 0) {
+		sendMessage(message, SurespotConstants.MimeTypes.TEXT);
 
-			EncryptionController.eccEncrypt(mUsername, message, new IAsyncCallback<String>() {
+		// TODO only clear on success
+		TextKeyListener.clear(etMessage.getText());
+	}
+
+	private void sendMessage(final String plainText, final String mimeType) {
+
+		if (plainText.length() > 0) {
+
+			EncryptionController.eccEncrypt(mUsername, plainText, new IAsyncCallback<String>() {
 				@Override
 				public void handleResponse(String result) {
 					if (result != null) {
-
-						SurespotMessage chatMessage = new SurespotMessage();
-						chatMessage.setFrom(EncryptionController.getIdentityUsername());
-						chatMessage.setTo(mUsername);
-						chatMessage.setCipherData(result);
-						chatMessage.setPlainData(message);
-						// store the mime type outside teh encrypted envelope, this way we can offload resources
-						// by mime type
-						chatMessage.setMimeType("text/plain");
-
+						SurespotMessage chatMessage = buildMessage(mUsername, mimeType, plainText, result);
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
-
 						((ChatActivity) getActivity()).sendMessage(chatMessage);
-						TextKeyListener.clear(etMessage.getText());
 					} else {
 						// TODO handle encryption error
 					}
 				}
 			});
 		}
+	}
+
+	private SurespotMessage buildMessage(String to, String mimeType, String plainData, String cipherData) {
+		SurespotMessage chatMessage = new SurespotMessage();
+		chatMessage.setFrom(EncryptionController.getIdentityUsername());
+		chatMessage.setTo(to);
+		chatMessage.setCipherData(cipherData);
+		chatMessage.setPlainData(plainData);
+		// store the mime type outside teh encrypted envelope, this way we can offload resources
+		// by mime type
+		chatMessage.setMimeType(mimeType);
+		return chatMessage;
 	}
 
 	public void addMessage(final JSONObject jsonMessage) {
@@ -324,16 +339,44 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	// populate the edit box
-	private void populateEditBox(String action, String type, Bundle extras) {
+	private void handleSendIntent(String action, final String type, Bundle extras) {
 		if (action.equals(Intent.ACTION_SEND)) {
 
-			if ("text/plain".equals(type)) {
+			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = extras.getString(Intent.EXTRA_TEXT);
 				Log.v(TAG, "received action send, data: " + sharedText);
 				mEditText.append(sharedText);
 				requestFocus();
-			} else if (type.startsWith("image/")) {
-				// TODO implement
+			} else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
+				InputStream iStream;
+				try {
+					
+					iStream = getActivity().getContentResolver().openInputStream(imageUri);
+					final String data = Utils.inputStreamToBase64(iStream);
+					
+					//Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+					EncryptionController.symmetricBase64Encrypt(mUsername, data, new IAsyncCallback<String>() {
+
+						@Override
+						public void handleResponse(String result) {
+							if (result != null) {
+								SurespotMessage chatMessage = buildMessage(mUsername, type, data, result);
+								mChatAdapter.addOrUpdateMessage(chatMessage, true);
+								((ChatActivity) getActivity()).sendMessage(chatMessage);
+							}
+
+						}
+					});
+
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			}
 		} else {
 			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
@@ -344,14 +387,14 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	public void scrollToEnd() {
-		Log.v(TAG,"scrollFocus");
+		Log.v(TAG, "scrollFocus");
 		mListView.setSelection(mChatAdapter.getCount() - 1);
-		
+
 	}
 
 	public void requestFocus() {
 		mEditText.requestFocus();
-		
+
 	}
 
 }

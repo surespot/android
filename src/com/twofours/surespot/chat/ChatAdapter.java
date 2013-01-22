@@ -8,14 +8,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -28,7 +34,7 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 
 	public ChatAdapter(Context context) {
-		Log.v(TAG,"Constructor.");
+		Log.v(TAG, "Constructor.");
 		mContext = context;
 	}
 
@@ -59,7 +65,7 @@ public class ChatAdapter extends BaseAdapter {
 		} else {
 			int index = mMessages.indexOf(message);
 			if (index == -1) {
-				//Log.v(TAG, "addMessage, could not find message");
+				// Log.v(TAG, "addMessage, could not find message");
 
 				//
 				mMessages.add(message);
@@ -75,7 +81,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (messages.size() > 0) {
 			mMessages.clear();
 			mMessages.addAll(messages);
-		//	notifyDataSetChanged();
+			// notifyDataSetChanged();
 		}
 	}
 
@@ -139,46 +145,90 @@ public class ChatAdapter extends BaseAdapter {
 			}
 			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
+			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			convertView.setTag(chatMessageViewHolder);
 		} else {
 			chatMessageViewHolder = (ChatMessageViewHolder) convertView.getTag();
 		}
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
-		if (type == TYPE_US) {
-			chatMessageViewHolder.vMessageSending.setVisibility(item.getId() == null ? View.VISIBLE : View.GONE);
-			chatMessageViewHolder.vMessageSent.setVisibility(item.getId() != null ? View.VISIBLE : View.GONE);
-		}
 
-		if (item.getPlainText() != null) {
-			chatMessageViewHolder.tvText.setText(item.getPlainText());
+		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.imageView.setVisibility(View.GONE);
+			if (item.getPlainData() != null) {
+				chatMessageViewHolder.tvText.setText(item.getPlainData());
+			} else {
+				chatMessageViewHolder.tvText.setText("");
+				// try {
+				// JSONObject text = new JSONObject(item.getCipherText());
+				// chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
+				// } catch (JSONException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
+				// decrypt
+				EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherData(),
+						new IAsyncCallback<String>() {
+
+							@Override
+							public void handleResponse(String result) {
+
+								if (result != null) {
+									item.setPlainData(result);
+									chatMessageViewHolder.tvText.setText(result);
+								} else {
+									chatMessageViewHolder.tvText.setText("Could not decrypt message.");
+								}
+
+							}
+
+						});
+			}
 		} else {
-			chatMessageViewHolder.tvText.setText("");
-//			try {
-//				JSONObject text = new JSONObject(item.getCipherText());
-//				chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
-//			} catch (JSONException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			// decrypt
-			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherData(),
+			chatMessageViewHolder.tvText.setVisibility(View.GONE);
+			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
+			if (item.getPlainData() != null) {
+				byte[] data = item.getPlainData().getBytes();
+				byte[] decoded = Base64.decode(data, Base64.DEFAULT);
+				
+				Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+				chatMessageViewHolder.imageView.setImageBitmap(bitmap);
+			} else {
+				// chatMessageViewHolder.tvText.setText("");
+				// try {
+				// JSONObject text = new JSONObject(item.getCipherText());
+				// chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
+				// } catch (JSONException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
+				
+				// decrypt
+				EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherData(),
 					new IAsyncCallback<String>() {
-
 						@Override
 						public void handleResponse(String result) {
-
 							if (result != null) {
-							item.setPlainData(result);
-							chatMessageViewHolder.tvText.setText(result);
-							}
-							else {
-								chatMessageViewHolder.tvText.setText("Could not decrypt message.");	
-							}
+								
+								byte[] decoded = Base64.decode(result, Base64.DEFAULT);
+								
+								
+								Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+								chatMessageViewHolder.imageView.setImageBitmap(bitmap);
 
+								item.setPlainData(result);
+
+							}
 						}
 
 					});
+			}
+		}
+
+		if (type == TYPE_US) {
+			chatMessageViewHolder.vMessageSending.setVisibility(item.getId() == null ? View.VISIBLE : View.GONE);
+			chatMessageViewHolder.vMessageSent.setVisibility(item.getId() != null ? View.VISIBLE : View.GONE);
 		}
 
 		return convertView;
@@ -189,6 +239,7 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvText;
 		public View vMessageSending;
 		public View vMessageSent;
+		public ImageView imageView;
 	}
 
 	public void addOrUpdateMessage(SurespotMessage message, boolean notify) {
