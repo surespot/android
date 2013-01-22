@@ -14,6 +14,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotConstants.IntentFilters;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -86,9 +87,9 @@ public class StartupActivity extends Activity {
 					newIntent = new Intent(this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, intentName);
 					newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					
+
 				} else {
-					//we have a send action so start friend activity so user can pick someone to send to
+					// we have a send action so start friend activity so user can pick someone to send to
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 						newIntent = new Intent(this, FriendActivity.class);
 						newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -96,18 +97,20 @@ public class StartupActivity extends Activity {
 						newIntent.setType(type);
 						newIntent.putExtras(intent);
 					} else {
-						//we saved a chat name so load the chat activity with that name
-						String lastName = Utils.getSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT);
-						if (lastName != null) {
-							newIntent = new Intent(this, ChatActivity.class);
-							newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, lastName);
-							newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						if (intent.getStringExtra(IntentFilters.INVITE_NOTIFICATION) == null) {
+							// we saved a chat name so load the chat activity with that name
+							String lastName = Utils.getSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT);
+							if (lastName != null) {
+								newIntent = new Intent(this, ChatActivity.class);
+								newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, lastName);
+								newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							}
 						}
 
 					}
-					
+
 				}
-				
+
 				if (newIntent == null) {
 					newIntent = new Intent(this, FriendActivity.class);
 					newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -129,7 +132,7 @@ public class StartupActivity extends Activity {
 				}
 
 				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
+				startActivity(newIntent);
 			}
 		}
 		// otherwise show the user / key management activity
@@ -140,27 +143,6 @@ public class StartupActivity extends Activity {
 		}
 
 		finish();
-	}
-
-	void handleSendText(Intent intent) {
-		String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-		if (sharedText != null) {
-			// Update UI to reflect text being shared
-		}
-	}
-
-	void handleSendImage(Intent intent) {
-		Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-		if (imageUri != null) {
-			// Update UI to reflect image being shared
-		}
-	}
-
-	void handleSendMultipleImages(Intent intent) {
-		ArrayList<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-		if (imageUris != null) {
-			// Update UI to reflect multiple images being shared
-		}
 	}
 
 }

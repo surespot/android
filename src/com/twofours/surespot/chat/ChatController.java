@@ -127,7 +127,7 @@ public class ChatController {
 				Log.v(TAG, "socket.io connection established");
 				setState(STATE_CONNECTED);
 				mRetries = 0;
-				
+
 				if (mBackgroundTimer != null) {
 					mBackgroundTimer.cancel();
 					mBackgroundTimer = null;
@@ -147,7 +147,10 @@ public class ChatController {
 				}
 
 				sendConnectStatus(true);
+				
 				sendMessages();
+				SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
+						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			}
 
@@ -190,14 +193,12 @@ public class ChatController {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				Log.v(TAG, "Connectivity Action");
-				ConnectivityManager connectivityManager = (ConnectivityManager) context
-						.getSystemService(Context.CONNECTIVITY_SERVICE);
+				ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 				if (networkInfo != null) {
 
 					// if it's not a failover and wifi is now active then initiate reconnect
-					if (!networkInfo.isFailover()
-							&& (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
+					if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
 						synchronized (ChatController.this) {
 							// if we're not connecting, connect
 							if (getState() != STATE_CONNECTING && !mSwitchedToWifi) {
@@ -224,14 +225,12 @@ public class ChatController {
 
 		loadUnsentMessages();
 
-		
 	}
 
 	public void connect() {
 
 		/*
-		 * if (socket != null && socket.isConnected()) { if (mConnectCallback != null) {
-		 * mConnectCallback.connectStatus(true); } return; }
+		 * if (socket != null && socket.isConnected()) { if (mConnectCallback != null) { mConnectCallback.connectStatus(true); } return; }
 		 */
 
 		Cookie cookie = NetworkController.getConnectCookie();
@@ -250,8 +249,7 @@ public class ChatController {
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
 			socket.connect(mSocketCallback);
-			SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
-					new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+		
 
 		} catch (MalformedURLException e1) {
 			// Auto-generated
@@ -279,14 +277,13 @@ public class ChatController {
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 	}
-	
+
 	private void sendConnectStatus(boolean connected) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED);
 		intent.putExtra(SurespotConstants.ExtraNames.CONNECTED, connected);
 		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
 
 	}
-
 
 	private void checkAndSendNextMessage(SurespotMessage message) {
 		Log.v(TAG, "received message: " + message);
@@ -346,12 +343,11 @@ public class ChatController {
 
 	public void disconnect() {
 		Log.v(TAG, "disconnect.");
-		setState(STATE_DISCONNECTED);
-		socket.disconnect();
+		setState(STATE_DISCONNECTED);		
+		socket.disconnect();		
 		SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
 		sendConnectStatus(false);
 		// socket = null;
-
 	}
 
 	private int getState() {
@@ -415,24 +411,24 @@ public class ChatController {
 		}
 		if (mReconnectTask != null) {
 			boolean cancel = mReconnectTask.cancel();
-			mReconnectTask = null;			
+			mReconnectTask = null;
 			Log.v(TAG, "Cancelled reconnect task: " + cancel);
 		}
-		
-		//mSocketCallback = null;
+
+		// mSocketCallback = null;
 		socket = null;
 	}
 
 	public void sendMessage(SurespotMessage message) {
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
-			//TODO handle different mime types
+			// TODO handle different mime types
 
 			socket.send(message.toJSONObject().toString());
 		}
 
 	}
-	
+
 	public boolean isConnected() {
 		return (getState() == STATE_CONNECTED);
 	}

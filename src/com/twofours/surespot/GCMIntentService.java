@@ -16,6 +16,7 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
+import com.twofours.surespot.SurespotConstants.IntentFilters;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.StartupActivity;
 
@@ -113,7 +114,7 @@ public class GCMIntentService extends GCMBaseIntentService
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon)
 				.setContentTitle(title).setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
@@ -123,7 +124,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		builder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.getNotification();
+		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;
@@ -139,15 +140,17 @@ public class GCMIntentService extends GCMBaseIntentService
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon)
 				.setContentTitle(title).setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.from(context);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
+		mainIntent.putExtra(IntentFilters.INVITE_NOTIFICATION, IntentFilters.INVITE_NOTIFICATION);
 		stackBuilder.addNextIntent(mainIntent);
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+		
 
 		builder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.getNotification();
+		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
 		notification.defaults |= Notification.DEFAULT_SOUND;

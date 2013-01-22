@@ -41,6 +41,7 @@ public class ChatFragment extends SherlockFragment {
 	private static final String TAG = "ChatFragment";
 	private EditText mEditText;
 	private BroadcastReceiver mSocketConnectionStatusReceiver;
+	private IAsyncCallback<Boolean> mLatestMessageHandler;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -69,14 +70,28 @@ public class ChatFragment extends SherlockFragment {
 
 		mChatAdapter = new ChatAdapter(getActivity());
 		setUsername(getArguments().getString("username"));
-		// load messages from local storage
+		// load messages from local storage		
 		loadMessages();
+		
+		mLatestMessageHandler = new IAsyncCallback<Boolean>() {
 
-		// String lastMessageId = getLastMessageId();
-		// if (lastMessageId != null) {
-		// ((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(getLastMessageId()));
-		// }
+			@Override
+			public void handleResponse(Boolean result) {
+				// TODO Auto-generated method stub
 
+				((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+				// mEditText.requestFocus();
+				// TODO move "last viewed" logic to ChatActivity
+				String lastMessageId = getLastMessageId();
+				if (lastMessageId != null) {
+					((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
+				}
+
+				mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+				mChatAdapter.notifyDataSetChanged();
+			}
+		};
+	
 		Log.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
 
 	}
@@ -108,25 +123,24 @@ public class ChatFragment extends SherlockFragment {
 				return handled;
 			}
 		});
-		
+
 		Intent intent = getActivity().getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
 		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
-		
-		//if the intent is meant for this chat
+
+		// if the intent is meant for this chat
 		if (intentName != null && intentName.equals(mUsername)) {
 
 			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-				// we have a send action so populate the edit box with the data			
+				// we have a send action so populate the edit box with the data
 				populateEditBox(action, type, intent.getExtras());
 
-				//intent.setAction(null);
-				//intent.setType(null);
-				//intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+				// intent.setAction(null);
+				// intent.setType(null);
+				// intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 			}
-			
-			
+
 		}
 
 		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog
@@ -137,7 +151,7 @@ public class ChatFragment extends SherlockFragment {
 			public void onReceive(Context context, Intent intent) {
 				boolean connected = intent.getBooleanExtra(SurespotConstants.ExtraNames.CONNECTED, false);
 				if (connected) {
-					getLatestMessages(null);
+					getLatestMessages(mLatestMessageHandler);
 				}
 			}
 		};
@@ -167,28 +181,14 @@ public class ChatFragment extends SherlockFragment {
 
 			chatActivity.startLoadingMessagesProgress();
 
-			getLatestMessages(new IAsyncCallback<Boolean>() {
-
-				@Override
-				public void handleResponse(Boolean result) {
-					// TODO Auto-generated method stub
-
-					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-					//mEditText.requestFocus();
-					// TODO move "last viewed" logic to ChatActivity				
-					String lastMessageId = getLastMessageId();
-					if (lastMessageId != null) {
-						((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
-					}
-				
-					mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-					
-				}
-			});
+			getLatestMessages(mLatestMessageHandler);
 		}
 
 		
-
+		if (isVisible()) {
+			Log.v(TAG,"onResume we are visible");
+			requestFocus();
+		}
 	}
 
 	@Override
@@ -236,15 +236,12 @@ public class ChatFragment extends SherlockFragment {
 						Log.e(TAG, "Error creating chat message: " + e.toString());
 					}
 
-					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");		
+					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
 
-					//mChatAdapter.notifyDataSetChanged();
+					// mChatAdapter.notifyDataSetChanged();
 					if (callback != null) {
 						callback.handleResponse(true);
 					}
-					
-					mChatAdapter.notifyDataSetChanged();
-
 				}
 			}
 
@@ -254,10 +251,7 @@ public class ChatFragment extends SherlockFragment {
 				if (callback != null) {
 					callback.handleResponse(false);
 				}
-				mChatAdapter.notifyDataSetChanged();
-			
 			}
-
 		});
 	}
 
@@ -323,7 +317,7 @@ public class ChatFragment extends SherlockFragment {
 		if (sMessages != null && !sMessages.isEmpty()) {
 			ArrayList<SurespotMessage> messages = Utils.jsonStringToChatMessages(sMessages);
 			Log.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
-			mChatAdapter.addMessages(messages);			
+			mChatAdapter.addMessages(messages);
 		} else {
 			Log.v(TAG, "Loaded: no messages from local storage.");
 		}
@@ -336,7 +330,8 @@ public class ChatFragment extends SherlockFragment {
 			if ("text/plain".equals(type)) {
 				String sharedText = extras.getString(Intent.EXTRA_TEXT);
 				Log.v(TAG, "received action send, data: " + sharedText);
-				mEditText.append(sharedText);				
+				mEditText.append(sharedText);
+				requestFocus();
 			} else if (type.startsWith("image/")) {
 				// TODO implement
 			}
@@ -346,6 +341,17 @@ public class ChatFragment extends SherlockFragment {
 			}
 		}
 
+	}
+
+	public void scrollToEnd() {
+		Log.v(TAG,"scrollFocus");
+		mListView.setSelection(mChatAdapter.getCount() - 1);
+		
+	}
+
+	public void requestFocus() {
+		mEditText.requestFocus();
+		
 	}
 
 }

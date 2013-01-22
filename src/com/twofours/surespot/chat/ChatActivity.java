@@ -145,6 +145,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 				if (mLastViewedMessageIds != null) {
 					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
 					updateLastViewedMessageId(name);
+					getChatFragment(name).requestFocus();
+					
 				}
 			}
 
@@ -359,7 +361,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		mMpd.decrProgress();
 	}
 
-	private String getCurrentChatName() {
+	public String getCurrentChatName() {
 		if (mPagerAdapter.getCount() > 0) {
 			int pos = mViewPager.getCurrentItem();
 			String name = mPagerAdapter.getChatName(pos);

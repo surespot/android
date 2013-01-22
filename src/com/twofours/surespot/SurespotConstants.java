@@ -2,11 +2,12 @@ package com.twofours.surespot;
 
 public class SurespotConstants {
 	public class IntentFilters {
-		public static final String INVITE_REQUEST = "notification_event";
-		public static final String INVITE_RESPONSE = "friend_added_event";
+		public static final String INVITE_REQUEST = "invite_request_intent";
+		public static final String INVITE_RESPONSE = "invite_response_intent";
 		public static final String MESSAGE_RECEIVED = "message_added_event";
 		public static final String FRIEND_INVITE_RESPONSE_EVENT = "friend_invite_event";
 		public static final String SOCKET_CONNECTION_STATUS_CHANGED = "socket_io_connection_status_changed";
+		public static final String INVITE_NOTIFICATION = "invite_notification";
 	}
 
 	public class ExtraNames {
