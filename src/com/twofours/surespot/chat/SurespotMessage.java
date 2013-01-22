@@ -7,19 +7,20 @@ import com.twofours.surespot.Utils;
 
 /**
  * @author adam
- *
+ * 
  */
 public class SurespotMessage {
 	private String mFrom;
 	private String mTo;
+	private String mIv;
 	private String mCipherData;
 	private String mPlainData;
 	private String mId;
 	private String mResendId;
 	private String mMimeType;
-	
+
 	public SurespotMessage() {
-		
+
 	}
 
 	public String getFrom() {
@@ -80,7 +81,7 @@ public class SurespotMessage {
 	 * @throws JSONException
 	 */
 	public static SurespotMessage toSurespotMessage(JSONObject jsonMessage) throws JSONException {
-		
+
 		SurespotMessage chatMessage = new SurespotMessage();
 
 		String id = jsonMessage.optString("id");
@@ -91,6 +92,7 @@ public class SurespotMessage {
 		chatMessage.setTo(jsonMessage.getString("to"));
 		chatMessage.setCipherData(jsonMessage.getString("data"));
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
+		chatMessage.setIv(jsonMessage.getString("iv"));
 		String resendId = jsonMessage.optString("resendId");
 		if (resendId != null && !resendId.isEmpty()) {
 			chatMessage.setResendId(resendId);
@@ -111,6 +113,7 @@ public class SurespotMessage {
 			message.put("from", this.getFrom());
 			message.put("resendId", this.getResendId());
 			message.put("mimeType", this.getMimeType());
+			message.put("iv", this.getIv());
 
 			return message;
 		} catch (JSONException e) {
@@ -135,9 +138,11 @@ public class SurespotMessage {
 		if (this.getId() != null && rhs.getId() != null && this.getId().equals(rhs.getId())) {
 			return true;
 		} else {
+			//iv should be unique across all messages
+			return (this.getIv().equals(rhs.getIv()));
 
-			return this.getCipherData().equals(rhs.getCipherData()) && this.getTo().equals(rhs.getTo())
-					&& this.getFrom().equals(rhs.getFrom()) && ((this.getId() == null) || rhs.getId() == null);
+			// return this.getCipherData().equals(rhs.getCipherData()) && this.getTo().equals(rhs.getTo())
+			// && this.getFrom().equals(rhs.getFrom()) && ((this.getId() == null) || rhs.getId() == null);
 		}
 
 	}
@@ -152,6 +157,14 @@ public class SurespotMessage {
 
 	public void setMimeType(String mMimeType) {
 		this.mMimeType = mMimeType;
+	}
+
+	public String getIv() {
+		return mIv;
+	}
+
+	public void setIv(String mIv) {
+		this.mIv = mIv;
 	}
 
 }

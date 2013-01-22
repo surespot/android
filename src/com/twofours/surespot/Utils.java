@@ -147,12 +147,13 @@ public class Utils {
 
 	}
 
-	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String cipherData) {
+	public static SurespotMessage buildMessage(String to, String mimeType, String plainData,String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(EncryptionController.getIdentityUsername());
 		chatMessage.setTo(to);
 		chatMessage.setCipherData(cipherData);
 		chatMessage.setPlainData(plainData);
+		chatMessage.setIv(iv);
 		// store the mime type outside teh encrypted envelope, this way we can offload resources
 		// by mime type
 		chatMessage.setMimeType(mimeType);
@@ -161,8 +162,8 @@ public class Utils {
 
 	public static void buildPictureMessage(Context context, Uri imageUri, final String to, final IAsyncCallback<SurespotMessage> callback) {
 
-		
-		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 600, 400);
+		//TODO thread
+		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 320, 240);
 
 		//bitmap.
 		
@@ -170,15 +171,21 @@ public class Utils {
 		
 		final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
+		try {
+			jpeg.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 
 		// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-		EncryptionController.symmetricBase64Encrypt(to, new ByteArrayInputStream(jpeg.toByteArray()), new IAsyncCallback<String>() {
+		EncryptionController.symmetricBase64Encrypt(to, new ByteArrayInputStream(jpeg.toByteArray()), new IAsyncCallback<String[]>() {
 
 			@Override
-			public void handleResponse(String result) {
-				if (result != null) {
-					SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, new String(Base64.encode(jpeg.toByteArray(),Base64.DEFAULT)), result);
+			public void handleResponse(String[] results) {
+				if (results != null) {
+					SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE,  new String(Base64.encode(jpeg.toByteArray(),Base64.DEFAULT)),results[0], results[1]);
 					callback.handleResponse(chatMessage);
 				}
 

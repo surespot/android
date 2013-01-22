@@ -16,6 +16,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.twofours.surespot.BitmapCache;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
@@ -28,6 +29,7 @@ public class ChatAdapter extends BaseAdapter {
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
+	private final static BitmapCache mBitmapCache = new BitmapCache();
 
 	public ChatAdapter(Context context) {
 		Log.v(TAG, "Constructor.");
@@ -66,7 +68,7 @@ public class ChatAdapter extends BaseAdapter {
 				//
 				mMessages.add(message);
 			} else {
-				Log.v(TAG, "addMessage, updating message");
+				//Log.v(TAG, "addMessage, updating message");
 				SurespotMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
 			}
@@ -164,8 +166,8 @@ public class ChatAdapter extends BaseAdapter {
 				// e.printStackTrace();
 				// }
 				// decrypt
-				EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherData(),
-						new IAsyncCallback<String>() {
+				EncryptionController.symmetricDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
+						item.getCipherData(), new IAsyncCallback<String>() {
 
 							@Override
 							public void handleResponse(String result) {
@@ -184,41 +186,39 @@ public class ChatAdapter extends BaseAdapter {
 		} else {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
-			if (item.getPlainData() != null) {
-				byte[] data = item.getPlainData().getBytes();
-				byte[] decoded = Base64.decode(data, Base64.DEFAULT);
-				
-				Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-				chatMessageViewHolder.imageView.setImageBitmap(bitmap);				
+
+			// check bitmap cache
+			Bitmap bitmap = null;
+
+			bitmap = mBitmapCache.getBitmapFromMemCache(item.getIv());
+
+			if (bitmap != null) {
+				Log.v(TAG, "Using cached bitmap for message: " + item.getIv());
+				chatMessageViewHolder.imageView.setImageBitmap(bitmap);
+
 			} else {
-				// chatMessageViewHolder.tvText.setText("");
-				// try {
-				// JSONObject text = new JSONObject(item.getCipherText());
-				// chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
-				// } catch (JSONException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
+
+					// decrypt
+					EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
+							item.getCipherData(), new IAsyncCallback<String>() {
+								@Override
+								public void handleResponse(String result) {
+									if (result != null) {
+
+										//TODO decode on thread
+										Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getIv());
+										byte[] decoded = Base64.decode(result, Base64.DEFAULT);
+										Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+										chatMessageViewHolder.imageView.setImageBitmap(bitmap);										
+										
+										//cache the bitmap
+										mBitmapCache.addBitmapToMemoryCache(item.getIv(), bitmap);
+
+									}
+								}
+
+							});
 				
-				// decrypt
-				EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherData(),
-					new IAsyncCallback<String>() {
-						@Override
-						public void handleResponse(String result) {
-							if (result != null) {
-								
-								byte[] decoded = Base64.decode(result, Base64.DEFAULT);
-								
-								
-								Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-								chatMessageViewHolder.imageView.setImageBitmap(bitmap);
-
-								item.setPlainData(result);
-
-							}
-						}
-
-					});
 			}
 		}
 

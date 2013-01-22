@@ -278,11 +278,11 @@ public class ChatFragment extends SherlockFragment {
 
 		if (plainText.length() > 0) {
 
-			EncryptionController.eccEncrypt(mUsername, plainText, new IAsyncCallback<String>() {
+			EncryptionController.symmetricEncrypt(mUsername, plainText, new IAsyncCallback<String[]>() {
 				@Override
-				public void handleResponse(String result) {
+				public void handleResponse(String[] result) {
 					if (result != null) {
-						SurespotMessage chatMessage = Utils.buildMessage(mUsername, mimeType, plainText, result);
+						SurespotMessage chatMessage = Utils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 						((ChatActivity) getActivity()).sendMessage(chatMessage);
 					} else {
