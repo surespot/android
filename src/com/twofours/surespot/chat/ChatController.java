@@ -48,8 +48,8 @@ public class ChatController {
 	private IConnectCallback mConnectCallback;
 	private IOCallback mSocketCallback;
 
-	private ConcurrentLinkedQueue<ChatMessage> mSendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
-	private ConcurrentLinkedQueue<ChatMessage> mResendBuffer = new ConcurrentLinkedQueue<ChatMessage>();
+	private ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
+	private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
 
 	private int mState;
 	private boolean mSwitchedToWifi;
@@ -174,7 +174,7 @@ public class ChatController {
 					sendMessageReceived((String) args[0]);
 					// TODO check who from
 					try {
-						ChatMessage cm = ChatMessage.toChatMessage(new JSONObject((String) args[0]));
+						SurespotMessage cm = SurespotMessage.toChatMessage(new JSONObject((String) args[0]));
 						checkAndSendNextMessage(cm);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
@@ -288,7 +288,7 @@ public class ChatController {
 	}
 
 
-	private void checkAndSendNextMessage(ChatMessage message) {
+	private void checkAndSendNextMessage(SurespotMessage message) {
 		Log.v(TAG, "received message: " + message);
 		sendMessages();
 
@@ -315,8 +315,8 @@ public class ChatController {
 	//
 	// }
 
-	public ChatMessage[] getResendMessages() {
-		ChatMessage[] messages = mResendBuffer.toArray(new ChatMessage[0]);
+	public SurespotMessage[] getResendMessages() {
+		SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
 		mResendBuffer.clear();
 		return messages;
 
@@ -335,9 +335,9 @@ public class ChatController {
 		// mBackgroundTimer.schedule(mResendTask, 1000);
 		Log.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
-		Iterator<ChatMessage> iterator = mSendBuffer.iterator();
+		Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
 		while (iterator.hasNext()) {
-			ChatMessage message = iterator.next();
+			SurespotMessage message = iterator.next();
 			iterator.remove();
 			sendMessage(message);
 		}
@@ -396,7 +396,7 @@ public class ChatController {
 		String sUnsentMessages = Utils.getSharedPrefsString("unsentmessages");
 
 		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
-			Iterator<ChatMessage> iterator = Utils.jsonStringToChatMessages(sUnsentMessages).iterator();
+			Iterator<SurespotMessage> iterator = Utils.jsonStringToChatMessages(sUnsentMessages).iterator();
 			while (iterator.hasNext()) {
 				mSendBuffer.add(iterator.next());
 			}
@@ -423,9 +423,10 @@ public class ChatController {
 		socket = null;
 	}
 
-	public void sendMessage(ChatMessage message) {
+	public void sendMessage(SurespotMessage message) {
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
+			//TODO handle different mime types
 
 			socket.send(message.toJSONObject().toString());
 		}

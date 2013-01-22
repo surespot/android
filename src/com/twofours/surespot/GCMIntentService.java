@@ -22,6 +22,7 @@ import com.twofours.surespot.ui.activities.StartupActivity;
 public class GCMIntentService extends GCMBaseIntentService
 
 {
+
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
 
@@ -104,6 +105,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 	}
 
+	//TODO remove notifications when action taken
 	private static void generateMessageNotification(Context context, String user, String title, String message) {
 		int icon = R.drawable.ic_launcher;
 

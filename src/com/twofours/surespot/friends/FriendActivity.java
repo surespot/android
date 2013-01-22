@@ -45,20 +45,33 @@ import com.twofours.surespot.network.NetworkController;
 
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
-	private static final String TAG = "MainActivity";
+	private static final String TAG = "FriendActivity";
 	private boolean mDisconnectSocket = true;
 	private MultiProgressDialog mMpdPopulateList;
 	private MultiProgressDialog mMpdInviteFriend;
 	private BroadcastReceiver mInvitationReceiver;
 	private BroadcastReceiver InviteResponseReceiver;
 	private BroadcastReceiver mMessageReceiver;
-	private HashMap<String, Integer> mLastMessageIds;
+	private HashMap<String, Integer> mLastViewedMessageIds;
 	private ChatController mChatController;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
+
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+	
+		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+			//set the title
+			getSupportActionBar().setTitle("share with");
+		}
+		else {
+			getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
+		}
+
 		mChatController = new ChatController(new IConnectCallback() {
 
 			@Override
@@ -69,11 +82,11 @@ public class FriendActivity extends SherlockActivity {
 			}
 		});
 		setContentView(R.layout.activity_friend);
-		mLastMessageIds = new HashMap<String, Integer>();
+		mLastViewedMessageIds = new HashMap<String, Integer>();
 		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
-		getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
+		
 
 		final ListView listView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new FriendAdapter(this);
@@ -90,10 +103,23 @@ public class FriendActivity extends SherlockActivity {
 
 					// mDisconnectSocket = false;
 
-					Intent intent = new Intent(FriendActivity.this, ChatActivity.class);
-					intent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
-					FriendActivity.this.startActivity(intent);
-					LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+					Intent newIntent = new Intent(FriendActivity.this, ChatActivity.class);
+					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
+					//if we have a send intent, when we pick a user, propogate it
+					// Get intent, action and MIME type
+					Intent intent = getIntent();
+					String action = intent.getAction();
+					String type = intent.getType();
+				
+					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+						newIntent.setAction(action);
+						newIntent.setType(type);
+						newIntent.putExtras(intent);
+					}
+
+					
+					FriendActivity.this.startActivity(newIntent);
+					//LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(newIntent);
 				}
 			}
 		});
@@ -190,7 +216,8 @@ public class FriendActivity extends SherlockActivity {
 		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS);
 		if (lastMessageIdJson != null) {
 			try {
-				mLastMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
+				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
+				Log.v(TAG,"Loaded last viewed message ids: " + mLastViewedMessageIds);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -218,20 +245,20 @@ public class FriendActivity extends SherlockActivity {
 							HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
 
 							// if we have counts
-							if (mLastMessageIds != null) {
+							if (mLastViewedMessageIds != null) {
 
 								// set the deltas
 								for (String user : serverMessageIds.keySet()) {
 
 									// figure out new message counts
 									int serverId = serverMessageIds.get(user);
-									Integer localId = mLastMessageIds.get(user);
-									Log.v(TAG,"last localId for " + user + ": " + localId);
-									Log.v(TAG,"last serverId for " + user + ": " + serverId);
+									Integer localId = mLastViewedMessageIds.get(user);
+									Log.v(TAG, "last localId for " + user + ": " + localId);
+									Log.v(TAG, "last serverId for " + user + ": " + serverId);
 
 									// new chat, all messages are new
 									if (localId == null) {
-										mLastMessageIds.put(user, serverId);
+										mLastViewedMessageIds.put(user, serverId);
 										mMainAdapter.messageDeltaReceived(user, serverId);
 									} else {
 
@@ -247,7 +274,7 @@ public class FriendActivity extends SherlockActivity {
 
 							// if this is first time through store the last message ids
 							else {
-								mLastMessageIds = serverMessageIds;
+								mLastViewedMessageIds = serverMessageIds;
 
 							}
 						};
@@ -283,7 +310,7 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-		
+
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, null);
 		mChatController.disconnect();
 		mChatController.destroy();

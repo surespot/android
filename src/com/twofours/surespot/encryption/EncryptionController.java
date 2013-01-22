@@ -52,6 +52,7 @@ public class EncryptionController {
 
 	private static LoadingCache<String, ECPublicKey> mPublicKeys;
 	private static LoadingCache<String, byte[]> mSharedSecrets;
+	
 
 	static {
 		Log.v(TAG, "constructor");

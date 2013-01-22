@@ -22,7 +22,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
-	private ArrayList<ChatMessage> mMessages = new ArrayList<ChatMessage>();
+	private ArrayList<SurespotMessage> mMessages = new ArrayList<SurespotMessage>();
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
@@ -32,14 +32,14 @@ public class ChatAdapter extends BaseAdapter {
 		mContext = context;
 	}
 
-	public Collection<ChatMessage> getMessages() {
+	public Collection<SurespotMessage> getMessages() {
 		return mMessages;
 	}
 
 	// get the last message that has an id
-	public ChatMessage getLastMessageWithId() {
-		for (ListIterator<ChatMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
-			ChatMessage message = iterator.previous();
+	public SurespotMessage getLastMessageWithId() {
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+			SurespotMessage message = iterator.previous();
 			if (message.getId() != null) {
 				return message;
 			}
@@ -52,7 +52,7 @@ public class ChatAdapter extends BaseAdapter {
 	// }
 
 	// update the id and sent status of the message once we received
-	public void addOrUpdateMessage(ChatMessage message) {
+	public void addOrUpdateMessage(SurespotMessage message) {
 		// if the id is null we're sending the message so just add it
 		if (message.getId() == null) {
 			mMessages.add(message);
@@ -65,17 +65,17 @@ public class ChatAdapter extends BaseAdapter {
 				mMessages.add(message);
 			} else {
 				Log.v(TAG, "addMessage, updating message");
-				ChatMessage updateMessage = mMessages.get(index);
+				SurespotMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
 			}
 		}
 	}
 
-	public void addMessages(ArrayList<ChatMessage> messages) {
+	public void addMessages(ArrayList<SurespotMessage> messages) {
 		if (messages.size() > 0) {
 			mMessages.clear();
 			mMessages.addAll(messages);
-			notifyDataSetChanged();
+		//	notifyDataSetChanged();
 		}
 	}
 
@@ -99,7 +99,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public int getItemViewType(int position) {
-		ChatMessage message = mMessages.get(position);
+		SurespotMessage message = mMessages.get(position);
 		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
@@ -144,7 +144,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder = (ChatMessageViewHolder) convertView.getTag();
 		}
 
-		final ChatMessage item = (ChatMessage) getItem(position);
+		final SurespotMessage item = (SurespotMessage) getItem(position);
 		if (type == TYPE_US) {
 			chatMessageViewHolder.vMessageSending.setVisibility(item.getId() == null ? View.VISIBLE : View.GONE);
 			chatMessageViewHolder.vMessageSent.setVisibility(item.getId() != null ? View.VISIBLE : View.GONE);
@@ -162,14 +162,14 @@ public class ChatAdapter extends BaseAdapter {
 //				e.printStackTrace();
 //			}
 			// decrypt
-			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherText(),
+			EncryptionController.eccDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getCipherData(),
 					new IAsyncCallback<String>() {
 
 						@Override
 						public void handleResponse(String result) {
 
 							if (result != null) {
-							item.setPlainText(result);
+							item.setPlainData(result);
 							chatMessageViewHolder.tvText.setText(result);
 							}
 							else {
@@ -191,7 +191,7 @@ public class ChatAdapter extends BaseAdapter {
 		public View vMessageSent;
 	}
 
-	public void addOrUpdateMessage(ChatMessage message, boolean notify) {
+	public void addOrUpdateMessage(SurespotMessage message, boolean notify) {
 		addOrUpdateMessage(message);
 		if (notify) {
 			notifyDataSetChanged();

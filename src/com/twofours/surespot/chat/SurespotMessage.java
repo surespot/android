@@ -5,13 +5,18 @@ import org.json.JSONObject;
 
 import com.twofours.surespot.Utils;
 
-public class ChatMessage {
+public class SurespotMessage {
 	private String mFrom;
 	private String mTo;
-	private String mCipherText;
-	private String mPlainText;
+	private String mCipherData;
+	private String mPlainData;
 	private String mId;
 	private String mResendId;
+	private String mMimeType;
+	
+	public SurespotMessage() {
+		
+	}
 
 	public String getFrom() {
 		return mFrom;
@@ -29,20 +34,20 @@ public class ChatMessage {
 		mTo = to;
 	}
 
-	public String getCipherText() {
-		return mCipherText;
+	public String getCipherData() {
+		return mCipherData;
 	}
 
-	public void setCipherText(String cipherText) {
-		mCipherText = cipherText;
+	public void setCipherData(String cipherText) {
+		mCipherData = cipherText;
 	}
 
 	public String getPlainText() {
-		return mPlainText;
+		return mPlainData;
 	}
 
-	public void setPlainText(String plainText) {
-		mPlainText = plainText;
+	public void setPlainData(String plainText) {
+		mPlainData = plainText;
 	}
 
 	public String getId() {
@@ -65,8 +70,8 @@ public class ChatMessage {
 		return Utils.getOtherUser(this.mFrom, this.mTo);
 	}
 
-	public static ChatMessage toChatMessage(JSONObject jsonMessage) throws JSONException {
-		ChatMessage chatMessage = new ChatMessage();
+	public static SurespotMessage toChatMessage(JSONObject jsonMessage) throws JSONException {
+		SurespotMessage chatMessage = new SurespotMessage();
 
 		String id = jsonMessage.optString("id");
 		if (id != null && !id.isEmpty()) {
@@ -74,7 +79,8 @@ public class ChatMessage {
 		}
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
-		chatMessage.setCipherText(jsonMessage.getString("text"));
+		chatMessage.setCipherData(jsonMessage.getString("data"));
+		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		String resendId = jsonMessage.optString("resendId");
 		if (resendId != null && !resendId.isEmpty()) {
 			chatMessage.setResendId(resendId);
@@ -90,10 +96,11 @@ public class ChatMessage {
 			if (this.getId() != null) {
 				message.put("id", this.getId());
 			}
-			message.put("text", this.getCipherText());
+			message.put("data", this.getCipherData());
 			message.put("to", this.getTo());
 			message.put("from", this.getFrom());
 			message.put("resendId", this.getResendId());
+			message.put("mimeType", this.getMimeType());
 
 			return message;
 		} catch (JSONException e) {
@@ -113,20 +120,28 @@ public class ChatMessage {
 		if (obj.getClass() != getClass())
 			return false;
 
-		ChatMessage rhs = (ChatMessage) obj;
+		SurespotMessage rhs = (SurespotMessage) obj;
 
 		if (this.getId() != null && rhs.getId() != null && this.getId().equals(rhs.getId())) {
 			return true;
 		} else {
 
-			return this.getCipherText().equals(rhs.getCipherText()) && this.getTo().equals(rhs.getTo())
+			return this.getCipherData().equals(rhs.getCipherData()) && this.getTo().equals(rhs.getTo())
 					&& this.getFrom().equals(rhs.getFrom()) && ((this.getId() == null) || rhs.getId() == null);
 		}
 
 	}
 
 	public int hashCode() {
-		return this.getCipherText().hashCode() + this.getFrom().hashCode() + this.getTo().hashCode();
+		return this.getCipherData().hashCode() + this.getFrom().hashCode() + this.getTo().hashCode();
+	}
+
+	public String getMimeType() {
+		return mMimeType;
+	}
+
+	public void setMimeType(String mMimeType) {
+		this.mMimeType = mMimeType;
 	}
 
 }

@@ -18,7 +18,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.widget.Toast;
 
-import com.twofours.surespot.chat.ChatMessage;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 
 public class Utils {
@@ -121,10 +121,10 @@ public class Utils {
 		return jsonObject.toString();
 	}
 	
-	public static JSONArray chatMessagesToJson(Collection<ChatMessage> messages) {
+	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
 		
 		JSONArray jsonMessages = new JSONArray();
-		Iterator<ChatMessage> iterator = messages.iterator();
+		Iterator<SurespotMessage> iterator = messages.iterator();
 		while (iterator.hasNext()) {
 			jsonMessages.put(iterator.next().toJSONObject());
 
@@ -133,13 +133,13 @@ public class Utils {
 		
 
 	}
-	public static ArrayList<ChatMessage> jsonStringToChatMessages(String jsonMessageString) {
+	public static ArrayList<SurespotMessage> jsonStringToChatMessages(String jsonMessageString) {
 		
-		ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
+		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		try {
 			JSONArray jsonUM = new JSONArray(jsonMessageString);
 			for (int i=0;i<jsonUM.length();i++) {
-				messages.add(ChatMessage.toChatMessage(jsonUM.getJSONObject(i)));
+				messages.add(SurespotMessage.toChatMessage(jsonUM.getJSONObject(i)));
 			}			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

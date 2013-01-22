@@ -25,6 +25,7 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 
 public class ChatActivity extends SherlockFragmentActivity {
@@ -48,8 +49,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 				if (status) {
 
 					// get the resend messages
-					ChatMessage[] resendMessages = mChatController.getResendMessages();
-					for (ChatMessage message : resendMessages) {
+					SurespotMessage[] resendMessages = mChatController.getResendMessages();
+					for (SurespotMessage message : resendMessages) {
 						// set the last received id so the server knows which messages to check
 						String room = message.getRoom();
 
@@ -75,6 +76,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 						Log.v(TAG, "setting resendId, room: " + room + ", id: " + lastMessageID);
 						message.setResendId(lastMessageID);
 						mChatController.sendMessage(message);
+
 					}
 				} else {
 					Log.e(TAG, "Could not connect to chat server.");
@@ -83,10 +85,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 		});
 		setContentView(R.layout.activity_chat);
-		// get intent
 
-		Intent intent = getIntent();
-		String name = intent.getExtras().getString(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+		Log.v(TAG, "Intent contained name: " + name);
+
+		// if we don't have an intent, see if we have saved chat
+		if (name == null) {
+			name = Utils.getSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT);
+		}
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
 		mMpd = new MultiProgressDialog(this, "loading and decrypting messages", 750);
@@ -121,7 +127,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			e1.printStackTrace();
 		}
 
-		if (!foundChat) {
+		if (!foundChat && name != null) {
 			mPagerAdapter.addChatName(name);
 		}
 
@@ -144,7 +150,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		});
 		// mViewPager.setOffscreenPageLimit(0);
-		mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
+
+		if (name != null) {
+			mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
+		}
+
 		// register for notifications
 		mMessageBroadcastReceiver = new BroadcastReceiver() {
 
@@ -181,12 +191,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 	public void updateLastViewedMessageId(String name) {
 		String sLastMessageId = getChatFragment(name).getLastMessageId();
 		Log.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
-		mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
+		if (sLastMessageId != null) {
+			mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
+		}
 	}
 
 	public void updateLastViewedMessageId(String name, int lastMessageId) {
 		Log.v(TAG, "Received lastMessageId: " + lastMessageId + " for " + name);
-		if (name == getCurrentChatName()) {
+		if (name.equals(getCurrentChatName())) {
 			Log.v(TAG, "The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
 			mLastViewedMessageIds.put(name, lastMessageId);
 		}
@@ -205,6 +217,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (lastMessageIdJson != null) {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
+				Log.v(TAG,"Loaded last viewed ids: "+ mLastViewedMessageIds);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -214,6 +227,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		}
 
 		mChatController.connect();
+
+		
 	}
 
 	@Override
@@ -233,6 +248,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (mLastViewedMessageIds.size() > 0) {
 			String jsonString = Utils.mapToJsonString(mLastViewedMessageIds);
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
+			Log.v(TAG,"saved last viewed ids: "+ mLastViewedMessageIds);
 
 		} else {
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
@@ -353,7 +369,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		}
 	}
 
-	public void sendMessage(ChatMessage message) {
+	public void sendMessage(SurespotMessage message) {
 		mChatController.sendMessage(message);
 
 	}

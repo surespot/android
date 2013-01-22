@@ -72,10 +72,10 @@ public class ChatFragment extends SherlockFragment {
 		// load messages from local storage
 		loadMessages();
 
-//		String lastMessageId = getLastMessageId();
-//		if (lastMessageId != null) {
-//			((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(getLastMessageId()));
-//		}
+		// String lastMessageId = getLastMessageId();
+		// if (lastMessageId != null) {
+		// ((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(getLastMessageId()));
+		// }
 
 		Log.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
 
@@ -108,6 +108,26 @@ public class ChatFragment extends SherlockFragment {
 				return handled;
 			}
 		});
+		
+		Intent intent = getActivity().getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+		
+		//if the intent is meant for this chat
+		if (intentName != null && intentName.equals(mUsername)) {
+
+			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+				// we have a send action so populate the edit box with the data			
+				populateEditBox(action, type, intent.getExtras());
+
+				//intent.setAction(null);
+				//intent.setType(null);
+				//intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+			}
+			
+			
+		}
 
 		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog
 		// (sshh)
@@ -154,12 +174,20 @@ public class ChatFragment extends SherlockFragment {
 					// TODO Auto-generated method stub
 
 					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-					mEditText.requestFocus();
-
+					//mEditText.requestFocus();
+					// TODO move "last viewed" logic to ChatActivity				
+					String lastMessageId = getLastMessageId();
+					if (lastMessageId != null) {
+						((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
+					}
+				
 					mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+					
 				}
 			});
 		}
+
+		
 
 	}
 
@@ -169,7 +197,6 @@ public class ChatFragment extends SherlockFragment {
 		super.onPause();
 
 		Log.v(TAG, "onPause, mUsername:  " + mUsername);
-		// saveMessages();
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 	}
 
@@ -197,11 +224,11 @@ public class ChatFragment extends SherlockFragment {
 				// so check for null here
 
 				if (getActivity() != null) {
-					ChatMessage message = null;
+					SurespotMessage message = null;
 					try {
 						for (int i = 0; i < jsonArray.length(); i++) {
 							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-							message = ChatMessage.toChatMessage(jsonMessage);
+							message = SurespotMessage.toChatMessage(jsonMessage);
 							mChatAdapter.addOrUpdateMessage(message, false);
 
 						}
@@ -209,17 +236,14 @@ public class ChatFragment extends SherlockFragment {
 						Log.e(TAG, "Error creating chat message: " + e.toString());
 					}
 
-					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
+					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");		
 
-					// TODO move "last viewed" logic to ChatActivity
-					if (message != null) {
-						((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(message.getId()));
-					}
-
-					mChatAdapter.notifyDataSetChanged();
+					//mChatAdapter.notifyDataSetChanged();
 					if (callback != null) {
 						callback.handleResponse(true);
 					}
+					
+					mChatAdapter.notifyDataSetChanged();
 
 				}
 			}
@@ -230,13 +254,15 @@ public class ChatFragment extends SherlockFragment {
 				if (callback != null) {
 					callback.handleResponse(false);
 				}
+				mChatAdapter.notifyDataSetChanged();
+			
 			}
 
 		});
 	}
 
 	public String getLastMessageId() {
-		ChatMessage lastMessage = mChatAdapter.getLastMessageWithId();
+		SurespotMessage lastMessage = mChatAdapter.getLastMessageWithId();
 		String lastMessageId = null;
 
 		if (lastMessage != null) {
@@ -255,11 +281,14 @@ public class ChatFragment extends SherlockFragment {
 				public void handleResponse(String result) {
 					if (result != null) {
 
-						ChatMessage chatMessage = new ChatMessage();
+						SurespotMessage chatMessage = new SurespotMessage();
 						chatMessage.setFrom(EncryptionController.getIdentityUsername());
 						chatMessage.setTo(mUsername);
-						chatMessage.setCipherText(result);
-						chatMessage.setPlainText(message);
+						chatMessage.setCipherData(result);
+						chatMessage.setPlainData(message);
+						// store the mime type outside teh encrypted envelope, this way we can offload resources
+						// by mime type
+						chatMessage.setMimeType("text/plain");
 
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 
@@ -274,10 +303,10 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	public void addMessage(final JSONObject jsonMessage) {
-		Log.v(TAG,"addMessage: " + jsonMessage.toString());
+		Log.v(TAG, "addMessage: " + jsonMessage.toString());
 
 		try {
-			ChatMessage message = ChatMessage.toChatMessage(jsonMessage);
+			SurespotMessage message = SurespotMessage.toChatMessage(jsonMessage);
 			mChatAdapter.addOrUpdateMessage(message, true);
 		} catch (JSONException e) {
 			Log.e(TAG, "Error adding chat message.");
@@ -292,13 +321,31 @@ public class ChatFragment extends SherlockFragment {
 	private void loadMessages() {
 		String sMessages = Utils.getSharedPrefsString("messages_" + mUsername);
 		if (sMessages != null && !sMessages.isEmpty()) {
-			ArrayList<ChatMessage> messages = Utils.jsonStringToChatMessages(sMessages);
+			ArrayList<SurespotMessage> messages = Utils.jsonStringToChatMessages(sMessages);
 			Log.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
-			mChatAdapter.addMessages(messages);
-			// Utils.putSharedPrefsString("messages_" + mUsername, null);
+			mChatAdapter.addMessages(messages);			
 		} else {
 			Log.v(TAG, "Loaded: no messages from local storage.");
 		}
+	}
+
+	// populate the edit box
+	private void populateEditBox(String action, String type, Bundle extras) {
+		if (action.equals(Intent.ACTION_SEND)) {
+
+			if ("text/plain".equals(type)) {
+				String sharedText = extras.getString(Intent.EXTRA_TEXT);
+				Log.v(TAG, "received action send, data: " + sharedText);
+				mEditText.append(sharedText);				
+			} else if (type.startsWith("image/")) {
+				// TODO implement
+			}
+		} else {
+			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
+				// TODO implement
+			}
+		}
+
 	}
 
 }
