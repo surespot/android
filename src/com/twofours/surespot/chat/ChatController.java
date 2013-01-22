@@ -28,7 +28,6 @@ import android.util.Log;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.LoginActivity;
 import com.twofours.surespot.ui.activities.StartupActivity;
@@ -177,7 +176,7 @@ public class ChatController {
 					sendMessageReceived((String) args[0]);
 					// TODO check who from
 					try {
-						SurespotMessage cm = SurespotMessage.toChatMessage(new JSONObject((String) args[0]));
+						SurespotMessage cm = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
 						checkAndSendNextMessage(cm);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block

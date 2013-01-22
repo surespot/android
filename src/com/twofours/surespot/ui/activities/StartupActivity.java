@@ -1,12 +1,9 @@
 package com.twofours.surespot.ui.activities;
 
-import java.security.acl.LastOwnerException;
-import java.util.ArrayList;
 import java.util.Set;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 

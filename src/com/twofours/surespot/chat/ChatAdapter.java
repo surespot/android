@@ -4,13 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ListIterator;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -193,7 +189,7 @@ public class ChatAdapter extends BaseAdapter {
 				byte[] decoded = Base64.decode(data, Base64.DEFAULT);
 				
 				Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-				chatMessageViewHolder.imageView.setImageBitmap(bitmap);
+				chatMessageViewHolder.imageView.setImageBitmap(bitmap);				
 			} else {
 				// chatMessageViewHolder.tvText.setText("");
 				// try {

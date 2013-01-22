@@ -1,9 +1,5 @@
 package com.twofours.surespot.encryption;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -20,7 +16,6 @@ import javax.crypto.KeyAgreement;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.crypto.DataLengthException;
 import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.modes.CCMBlockCipher;

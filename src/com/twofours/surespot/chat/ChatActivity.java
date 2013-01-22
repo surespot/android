@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
@@ -25,8 +26,8 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
@@ -146,7 +147,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
 					updateLastViewedMessageId(name);
 					getChatFragment(name).requestFocus();
-					
+
 				}
 			}
 
@@ -163,21 +164,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				Log.v(TAG, "onReceiveMessage");
-				String message = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
+				String sMessage = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
 				try {
-					JSONObject messageJson = new JSONObject(message);
-					String otherUser = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
-
-					ChatFragment cf = getChatFragment(otherUser);
-					// fragment might be null if user hasn't opened this
-					// chat
-					if (cf != null) {
-						cf.addMessage(messageJson);
-					} else {
-						Log.v(TAG, "Fragment null");
-					}
-
+					JSONObject messageJson = new JSONObject(sMessage);
+					SurespotMessage message = SurespotMessage.toSurespotMessage(messageJson); 					
+					sendMessageToFragment(message);
+					
 					// update last visited id for message
+					String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
 
 				} catch (JSONException e) {
@@ -188,6 +182,18 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 		};
 
+	}
+	
+	private void sendMessageToFragment(SurespotMessage message) {
+		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
+		ChatFragment cf = getChatFragment(otherUser);
+		// fragment might be null if user hasn't opened this chat
+		if (cf != null) {
+			cf.addMessage(message);
+		} else {
+			Log.v(TAG, "Fragment null");
+		}
+		
 	}
 
 	public void updateLastViewedMessageId(String name) {
@@ -219,7 +225,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (lastMessageIdJson != null) {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-				Log.v(TAG,"Loaded last viewed ids: "+ mLastViewedMessageIds);
+				Log.v(TAG, "Loaded last viewed ids: " + mLastViewedMessageIds);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -230,7 +236,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mChatController.connect();
 
-		
 	}
 
 	@Override
@@ -250,7 +255,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (mLastViewedMessageIds.size() > 0) {
 			String jsonString = Utils.mapToJsonString(mLastViewedMessageIds);
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
-			Log.v(TAG,"saved last viewed ids: "+ mLastViewedMessageIds);
+			Log.v(TAG, "saved last viewed ids: " + mLastViewedMessageIds);
 
 		} else {
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
@@ -283,16 +288,41 @@ public class ChatActivity extends SherlockFragmentActivity {
 			// in the Action Bar.
 			showMain();
 			return true;
-		case R.id.menu_close:
-
+		case R.id.menu_close_bar:
+		case R.id.menu_close_menu:
 			closeTab(mViewPager.getCurrentItem());
+			return true;
 
-			return true;		
-			
+		case R.id.menu_send_image_bar:
+		case R.id.menu_send_image_menu:
+
+			// TODO set chat name on selection and propogate to result handler
+			Intent intent = new Intent();
+			intent.setType("image/*");
+			intent.setAction(Intent.ACTION_GET_CONTENT);
+			startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode == RESULT_OK) {			
+			Uri selectedImageUri = data.getData();
+			Utils.buildPictureMessage(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<SurespotMessage>() {
+
+				@Override
+				public void handleResponse(SurespotMessage result) {
+					if (result != null) {
+						sendMessageToFragment(result);
+						sendMessage(result);						
+					}
+				}
+			});
+		}
 	}
 
 	public void closeChat(String username) {

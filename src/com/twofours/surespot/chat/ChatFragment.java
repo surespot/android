@@ -1,8 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -13,13 +10,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.method.TextKeyListener;
-import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -234,7 +228,7 @@ public class ChatFragment extends SherlockFragment {
 					try {
 						for (int i = 0; i < jsonArray.length(); i++) {
 							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-							message = SurespotMessage.toChatMessage(jsonMessage);
+							message = SurespotMessage.toSurespotMessage(jsonMessage);
 							mChatAdapter.addOrUpdateMessage(message, false);
 
 						}
@@ -288,7 +282,7 @@ public class ChatFragment extends SherlockFragment {
 				@Override
 				public void handleResponse(String result) {
 					if (result != null) {
-						SurespotMessage chatMessage = buildMessage(mUsername, mimeType, plainText, result);
+						SurespotMessage chatMessage = Utils.buildMessage(mUsername, mimeType, plainText, result);
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 						((ChatActivity) getActivity()).sendMessage(chatMessage);
 					} else {
@@ -299,27 +293,9 @@ public class ChatFragment extends SherlockFragment {
 		}
 	}
 
-	private SurespotMessage buildMessage(String to, String mimeType, String plainData, String cipherData) {
-		SurespotMessage chatMessage = new SurespotMessage();
-		chatMessage.setFrom(EncryptionController.getIdentityUsername());
-		chatMessage.setTo(to);
-		chatMessage.setCipherData(cipherData);
-		chatMessage.setPlainData(plainData);
-		// store the mime type outside teh encrypted envelope, this way we can offload resources
-		// by mime type
-		chatMessage.setMimeType(mimeType);
-		return chatMessage;
-	}
-
-	public void addMessage(final JSONObject jsonMessage) {
-		Log.v(TAG, "addMessage: " + jsonMessage.toString());
-
-		try {
-			SurespotMessage message = SurespotMessage.toChatMessage(jsonMessage);
-			mChatAdapter.addOrUpdateMessage(message, true);
-		} catch (JSONException e) {
-			Log.e(TAG, "Error adding chat message.");
-		}
+	public void addMessage(final SurespotMessage message) {
+		Log.v(TAG, "addMessage: " + message.getTo());
+		mChatAdapter.addOrUpdateMessage(message, true);
 	}
 
 	private void saveMessages() {
@@ -349,34 +325,17 @@ public class ChatFragment extends SherlockFragment {
 				requestFocus();
 			} else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
-				InputStream iStream;
-				try {
-					
-					iStream = getActivity().getContentResolver().openInputStream(imageUri);
-					final String data = Utils.inputStreamToBase64(iStream);
-					
-					//Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-					EncryptionController.symmetricBase64Encrypt(mUsername, data, new IAsyncCallback<String>() {
+				Utils.buildPictureMessage(getActivity(), imageUri, mUsername, new IAsyncCallback<SurespotMessage>() {
 
-						@Override
-						public void handleResponse(String result) {
-							if (result != null) {
-								SurespotMessage chatMessage = buildMessage(mUsername, type, data, result);
-								mChatAdapter.addOrUpdateMessage(chatMessage, true);
-								((ChatActivity) getActivity()).sendMessage(chatMessage);
-							}
-
+					@Override
+					public void handleResponse(SurespotMessage result) {
+						if (result != null) {
+							mChatAdapter.addOrUpdateMessage(result, true);
+							((ChatActivity) getActivity()).sendMessage(result);
 						}
-					});
 
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
+					}
+				});
 			}
 		} else {
 			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {

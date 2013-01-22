@@ -2,6 +2,7 @@ package com.twofours.surespot;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,13 +16,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 import android.util.Base64;
 import android.widget.Toast;
 
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class Utils {
 	private static Toast mToast;
@@ -54,7 +58,7 @@ public class Utils {
 		}
 		return byteBuffer.toByteArray();
 	}
-	
+
 	public static String inputStreamToBase64(InputStream inputStream) throws IOException {
 		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
 		int bufferSize = 1024;
@@ -64,7 +68,7 @@ public class Utils {
 		while ((len = inputStream.read(buffer)) != -1) {
 			byteBuffer.write(buffer, 0, len);
 		}
-		return new String(Base64.encode(byteBuffer.toByteArray(),Base64.DEFAULT));
+		return new String(Base64.encode(byteBuffer.toByteArray(), Base64.DEFAULT));
 	}
 
 	public static String getOtherUser(String from, String to) {
@@ -139,6 +143,49 @@ public class Utils {
 
 	}
 
+	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String cipherData) {
+		SurespotMessage chatMessage = new SurespotMessage();
+		chatMessage.setFrom(EncryptionController.getIdentityUsername());
+		chatMessage.setTo(to);
+		chatMessage.setCipherData(cipherData);
+		chatMessage.setPlainData(plainData);
+		// store the mime type outside teh encrypted envelope, this way we can offload resources
+		// by mime type
+		chatMessage.setMimeType(mimeType);
+		return chatMessage;
+	}
+
+	public static void buildPictureMessage(Context context, Uri imageUri, final String to, final IAsyncCallback<SurespotMessage> callback) {
+
+		InputStream iStream;
+		try {
+
+			iStream = context.getContentResolver().openInputStream(imageUri);
+			final String data = Utils.inputStreamToBase64(iStream);
+
+			// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+			EncryptionController.symmetricBase64Encrypt(to, data, new IAsyncCallback<String>() {
+
+				@Override
+				public void handleResponse(String result) {
+					if (result != null) {
+						SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, data, result);
+						callback.handleResponse(chatMessage);
+					}
+
+				}
+			});
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		callback.handleResponse(null);
+	}
+
 	public static String mapToJsonString(Map<String, Integer> map) {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject.toString();
@@ -162,7 +209,7 @@ public class Utils {
 		try {
 			JSONArray jsonUM = new JSONArray(jsonMessageString);
 			for (int i = 0; i < jsonUM.length(); i++) {
-				messages.add(SurespotMessage.toChatMessage(jsonUM.getJSONObject(i)));
+				messages.add(SurespotMessage.toSurespotMessage(jsonUM.getJSONObject(i)));
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

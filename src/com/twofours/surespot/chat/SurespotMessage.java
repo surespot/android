@@ -5,6 +5,10 @@ import org.json.JSONObject;
 
 import com.twofours.surespot.Utils;
 
+/**
+ * @author adam
+ *
+ */
 public class SurespotMessage {
 	private String mFrom;
 	private String mTo;
@@ -70,7 +74,13 @@ public class SurespotMessage {
 		return Utils.getOtherUser(this.mFrom, this.mTo);
 	}
 
-	public static SurespotMessage toChatMessage(JSONObject jsonMessage) throws JSONException {
+	/**
+	 * @param jsonMessage
+	 * @return SurespotMessage
+	 * @throws JSONException
+	 */
+	public static SurespotMessage toSurespotMessage(JSONObject jsonMessage) throws JSONException {
+		
 		SurespotMessage chatMessage = new SurespotMessage();
 
 		String id = jsonMessage.optString("id");

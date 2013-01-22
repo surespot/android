@@ -1,13 +1,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/menu_close"
+        android:id="@+id/menu_send_image_bar"
         android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="send image"/>
+    <item
+        android:id="@+id/menu_send_image_menu"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="send image"/>
+    <item
+        android:id="@+id/menu_close_menu"
+        android:orderInCategory="200"
         android:showAsAction="never"
         android:title="close tab"/>
     <item
-        android:id="@+id/menu_close"
-        android:orderInCategory="100"
+        android:id="@+id/menu_close_bar"
+        android:orderInCategory="200"
         android:showAsAction="ifRoom"
         android:title="close tab"/>
 
