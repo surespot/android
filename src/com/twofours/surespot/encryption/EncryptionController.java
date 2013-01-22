@@ -3,6 +3,7 @@ package com.twofours.surespot.encryption;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -429,6 +430,82 @@ public class EncryptionController {
 				callback.handleResponse(result);
 			}
 		}.execute(username, base64data);
+
+	}
+	
+	public static void symmetricBase64Encrypt(final String username, InputStream data, final IAsyncCallback<String> callback) {
+		new AsyncTask<InputStream, Void, String>() {
+			@Override
+			protected String doInBackground(InputStream... params) {
+				byte[] iv = new byte[15];
+				byte[] buf = new byte[1024]; // input buffer
+				//byte[] enc = Base64.decode(params[1].getBytes(), Base64.DEFAULT);
+
+			//	ByteArrayInputStream in = new ByteArrayInputStream(enc);
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				mSecureRandom.nextBytes(iv);
+				IvParameterSpec ivParams = new IvParameterSpec(iv);
+
+				InputStream in = params[0];
+				
+				try {
+					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+					
+					SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
+					CipherOutputStream cos = new CipherOutputStream(out, ccm);
+										
+					int i=0;
+					
+					while ((i = in.read(buf)) != -1 ) {
+						cos.write(buf,0,i);
+					}
+									
+					in.close();
+					cos.close();
+
+					JSONObject json = new JSONObject();
+					json.put("iv", new String(Base64.encode(iv, Base64.DEFAULT)));
+					json.put("ciphertext", new String(Base64.encode(out.toByteArray(), Base64.DEFAULT)));
+					return json.toString();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidKeyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvalidAlgorithmParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchProviderException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchPaddingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+
+			}
+
+			@Override
+			protected void onPostExecute(String result) {
+				callback.handleResponse(result);
+			}
+		}.execute(data);
 
 	}
 

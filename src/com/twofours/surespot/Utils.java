@@ -1,6 +1,7 @@
 package com.twofours.surespot;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,10 +16,13 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.util.encoders.Hex;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
 import android.widget.Toast;
@@ -157,33 +161,58 @@ public class Utils {
 
 	public static void buildPictureMessage(Context context, Uri imageUri, final String to, final IAsyncCallback<SurespotMessage> callback) {
 
-		InputStream iStream;
-		try {
+		
+		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 600, 400);
 
-			iStream = context.getContentResolver().openInputStream(imageUri);
-			final String data = Utils.inputStreamToBase64(iStream);
+		//bitmap.
+		
+		//final String data = Utils.inputStreamToBase64(iStream);
+		
+		final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
+		bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
+		
 
-			// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-			EncryptionController.symmetricBase64Encrypt(to, data, new IAsyncCallback<String>() {
+		// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+		EncryptionController.symmetricBase64Encrypt(to, new ByteArrayInputStream(jpeg.toByteArray()), new IAsyncCallback<String>() {
 
-				@Override
-				public void handleResponse(String result) {
-					if (result != null) {
-						SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, data, result);
-						callback.handleResponse(chatMessage);
-					}
-
+			@Override
+			public void handleResponse(String result) {
+				if (result != null) {
+					SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, new String(Base64.encode(jpeg.toByteArray(),Base64.DEFAULT)), result);
+					callback.handleResponse(chatMessage);
 				}
-			});
 
+			}
+		});
+		callback.handleResponse(null);
+	}
+
+	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int reqWidth, int reqHeight) {
+
+		// First decode with inJustDecodeBounds=true to check dimensions
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		try {
+			BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return null;
+		}
+
+		// Calculate inSampleSize
+		options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+		// Decode bitmap with inSampleSize set
+		options.inJustDecodeBounds = false;
+		try {
+			return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		callback.handleResponse(null);
+		return null;
+
 	}
 
 	public static String mapToJsonString(Map<String, Integer> map) {
@@ -217,5 +246,26 @@ public class Utils {
 		}
 		return messages;
 
+	}
+
+	public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		// Raw height and width of image
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+
+			// Calculate ratios of height and width to requested height and width
+			final int heightRatio = Math.round((float) height / (float) reqHeight);
+			final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+			// Choose the smallest ratio as inSampleSize value, this will guarantee
+			// a final image with both dimensions larger than or equal to the
+			// requested height and width.
+			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+		}
+
+		return inSampleSize;
 	}
 }
