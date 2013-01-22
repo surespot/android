@@ -3,3 +3,4 @@ gen/
 /AndroidManifest.out.xml
 .settings/
 lint.xml
+.keystore
