@@ -7,7 +7,6 @@ import java.util.ListIterator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -200,14 +199,14 @@ public class ChatAdapter extends BaseAdapter {
 
 					// decrypt
 					EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
-							item.getCipherData(), new IAsyncCallback<String>() {
+							item.getCipherData(), new IAsyncCallback<byte[]>() {
 								@Override
-								public void handleResponse(String result) {
+								public void handleResponse(byte[] result) {
 									if (result != null) {
 
 										//TODO decode on thread
 										Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getIv());
-										byte[] decoded = Base64.decode(result, Base64.DEFAULT);
+										byte[] decoded = result;
 										Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
 										chatMessageViewHolder.imageView.setImageBitmap(bitmap);										
 										

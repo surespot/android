@@ -16,20 +16,16 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.ExecutionException;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyAgreement;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.crypto.DataLengthException;
 import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.modes.CCMBlockCipher;
@@ -43,7 +39,6 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import android.os.AsyncTask;
-import android.util.Base64;
 import android.util.Log;
 
 import com.google.common.cache.CacheBuilder;
@@ -145,7 +140,7 @@ public class EncryptionController {
 	private static ECPublicKey recreatePublicKey(String encodedKey) {
 
 		try {
-			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Base64.decode(encodedKey, Base64.DEFAULT)), curve);
+			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
 			return pubKey;
@@ -160,7 +155,7 @@ public class EncryptionController {
 
 	private static ECPrivateKey recreatePrivateKey(String encodedKey) {
 		// recreate key from hex string
-		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Base64.decode(encodedKey, Base64.DEFAULT)), curve);
+		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
 
 		try {
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
@@ -224,7 +219,7 @@ public class EncryptionController {
 		// pair.getPublic().
 		// ecpk.getW().;
 		// ecprik.getD().toByteArray();
-		String generatedPrivDHex = new String(Base64.encode(ecpriv.getD().toByteArray(), Base64.DEFAULT));
+		String generatedPrivDHex = new String(Utils.base64Encode(ecpriv.getD().toByteArray()));
 
 		String publicKey = encodePublicKey(ecpub);
 		Log.d("ke", "generated public key:" + publicKey);
@@ -247,7 +242,7 @@ public class EncryptionController {
 	}
 
 	public static String encodePublicKey(ECPublicKey publicKey) {
-		return new String(Base64.encode(publicKey.getQ().getEncoded(), Base64.DEFAULT));
+		return new String(Utils.base64Encode(publicKey.getQ().getEncoded()));
 	}
 
 	//
@@ -264,7 +259,7 @@ public class EncryptionController {
 			ka.doPhase(mPublicKeys.get(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			Log.d("ke", "shared Key: " + new String(Base64.encode(new BigInteger(sharedSecret).toByteArray(), Base64.DEFAULT)));
+			Log.d("ke", "shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
 			return sharedSecret;
 
 		} catch (InvalidKeyException e) {
@@ -288,19 +283,19 @@ public class EncryptionController {
 	}
 
 	public static void symmetricBase64Decrypt(final String username, final String ivs, final String cipherData,
-			final IAsyncCallback<String> callback) {
-		new AsyncTask<Void, Void, String>() {
+			final IAsyncCallback<byte[]> callback) {
+		new AsyncTask<Void, Void, byte[]>() {
 
 			@Override
-			protected String doInBackground(Void... params) {
+			protected byte[] doInBackground(Void... params) {
 
 				byte[] buf = new byte[1024]; // input buffer
 
 				try {
 					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
 					SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
-					byte[] cipherBytes = Base64.decode(cipherData, Base64.DEFAULT);
-					byte[] iv = Base64.decode(ivs, Base64.DEFAULT);
+					byte[] cipherBytes = Utils.base64Decode(cipherData);
+					byte[] iv = Utils.base64Decode(ivs);
 					IvParameterSpec ivParams = new IvParameterSpec(iv);
 					ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -315,7 +310,7 @@ public class EncryptionController {
 					in.close();
 					cos.close();
 
-					return new String(Base64.encode(out.toByteArray(), Base64.DEFAULT));
+					return out.toByteArray();
 				} catch (IllegalStateException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -345,7 +340,7 @@ public class EncryptionController {
 			}
 
 			@Override
-			protected void onPostExecute(String result) {
+			protected void onPostExecute(byte[] result) {
 				callback.handleResponse(result);
 			}
 		}.execute();
@@ -357,7 +352,7 @@ public class EncryptionController {
 			protected String[] doInBackground(Void... params) {
 				byte[] iv = new byte[15];
 				byte[] buf = new byte[1024]; // input buffer
-				byte[] enc = Base64.decode(base64data.getBytes(), Base64.DEFAULT);
+				byte[] enc = Utils.base64Decode(base64data);
 
 				ByteArrayInputStream in = new ByteArrayInputStream(enc);
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -382,8 +377,8 @@ public class EncryptionController {
 
 					String[] returns = new String[2];
 
-					returns[0] = new String(Base64.encode(iv, Base64.DEFAULT));
-					returns[1] = new String(Base64.encode(out.toByteArray(), Base64.DEFAULT));
+					returns[0] = new String(Utils.base64Encode(iv));
+					returns[1] = new String(Utils.base64Encode(out.toByteArray()));
 
 					return returns;
 				} catch (IllegalStateException e) {
@@ -423,20 +418,17 @@ public class EncryptionController {
 
 	}
 
-	public static void symmetricBase64Encrypt(final String username, InputStream data, final IAsyncCallback<String[]> callback) {
-		new AsyncTask<InputStream, Void, String[]>() {
+	public static void symmetricBase64Encrypt(final String username, final InputStream data, final IAsyncCallback<String[]> callback) {
+		new AsyncTask<Void, Void, String[]>() {
 			@Override
-			protected String[] doInBackground(InputStream... params) {
+			protected String[] doInBackground(Void... params) {
 				byte[] iv = new byte[15];
 				byte[] buf = new byte[1024]; // input buffer
-				// byte[] enc = Base64.decode(params[1].getBytes(), Base64.DEFAULT);
-
-				// ByteArrayInputStream in = new ByteArrayInputStream(enc);
+			
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				mSecureRandom.nextBytes(iv);
 				IvParameterSpec ivParams = new IvParameterSpec(iv);
-
-				InputStream in = params[0];
+				InputStream in = data;
 
 				try {
 					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
@@ -455,8 +447,8 @@ public class EncryptionController {
 					cos.close();
 					String[] returns = new String[2];
 
-					returns[0] = new String(Base64.encode(iv, Base64.DEFAULT));
-					returns[1] = new String(Base64.encode(out.toByteArray(), Base64.DEFAULT));
+					returns[0] = new String(Utils.base64Encode(iv));
+					returns[1] = new String(Utils.base64Encode(out.toByteArray()));
 
 					return returns;
 				} catch (IllegalStateException e) {
@@ -492,7 +484,7 @@ public class EncryptionController {
 			protected void onPostExecute(String[] result) {
 				callback.handleResponse(result);
 			}
-		}.execute(data);
+		}.execute();
 
 	}
 
@@ -510,8 +502,8 @@ public class EncryptionController {
 				ParametersWithIV ivParams = null;
 				try {
 
-					cipherBytes = Base64.decode(cipherData, Base64.DEFAULT);
-					iv = Base64.decode(ivs.getBytes(), Base64.DEFAULT);
+					cipherBytes = Utils.base64Decode(cipherData);
+					iv = Utils.base64Decode(ivs);
 					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
 				} catch (ExecutionException e) {
@@ -580,8 +572,8 @@ public class EncryptionController {
 					len += ccm.doFinal(buf, len);
 					String[] returns = new String[2];
 
-					returns[0] = new String(Base64.encode(iv, Base64.DEFAULT));
-					returns[1] = new String(Base64.encode(buf, Base64.DEFAULT));
+					returns[0] = new String(Utils.base64Encode(iv));
+					returns[1] = new String(Utils.base64Encode(buf));
 
 					return returns;
 

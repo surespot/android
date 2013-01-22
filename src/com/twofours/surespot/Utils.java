@@ -16,7 +16,6 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.util.encoders.Hex;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -72,9 +71,17 @@ public class Utils {
 		while ((len = inputStream.read(buffer)) != -1) {
 			byteBuffer.write(buffer, 0, len);
 		}
-		return new String(Base64.encode(byteBuffer.toByteArray(), Base64.DEFAULT));
+		return new String( base64Encode(byteBuffer.toByteArray()));
 	}
 
+	public static byte[] base64Encode(byte[] buf) {
+		return Base64.encode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
+	}
+	
+	public static byte[] base64Decode(String buf) {
+		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
+	}
+	
 	public static String getOtherUser(String from, String to) {
 		return to.equals(EncryptionController.getIdentityUsername()) ? from : to;
 	}
@@ -185,7 +192,7 @@ public class Utils {
 			@Override
 			public void handleResponse(String[] results) {
 				if (results != null) {
-					SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE,  new String(Base64.encode(jpeg.toByteArray(),Base64.DEFAULT)),results[0], results[1]);
+					SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE,  new String(base64Encode(jpeg.toByteArray())),results[0], results[1]);
 					callback.handleResponse(chatMessage);
 				}
 
