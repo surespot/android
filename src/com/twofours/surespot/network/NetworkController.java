@@ -357,7 +357,7 @@ public class NetworkController {
 	public static void postFile(Context context, String user, String id, byte[] data, String mimeType,
 			AsyncHttpResponseHandler responseHandler) {
 
-		RequestParams params = new RequestParams();
+		RequestParams params = new RequestParams();		
 		params.put("image", new ByteArrayInputStream(data), id, mimeType);
 
 		post("/images/" + user, params, responseHandler);
