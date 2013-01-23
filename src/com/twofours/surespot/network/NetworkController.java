@@ -257,8 +257,13 @@ public class NetworkController {
 			get("/messages/" + room, null, responseHandler);
 		}
 		else {
-			get("/messages/" + room + "/" + id, null, responseHandler);		
+			get("/messages/" + room + "/after/" + id, null, responseHandler);		
 		}
+	}
+	
+	//if we have an id get the messages since the id, otherwise get the last x
+	public static void getEarlierMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {		
+		get("/messages/" + room + "/before/" + id, null, responseHandler);				
 	}
 	
 	public static void getLastMessageIds(JsonHttpResponseHandler responseHandler) {

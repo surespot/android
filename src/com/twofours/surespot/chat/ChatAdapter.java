@@ -35,7 +35,7 @@ public class ChatAdapter extends BaseAdapter {
 		mContext = context;
 	}
 
-	public Collection<SurespotMessage> getMessages() {
+	public ArrayList<SurespotMessage> getMessages() {
 		return mMessages;
 	}
 
@@ -43,6 +43,15 @@ public class ChatAdapter extends BaseAdapter {
 	public SurespotMessage getLastMessageWithId() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			SurespotMessage message = iterator.previous();
+			if (message.getId() != null) {
+				return message;
+			}
+		}
+		return null;
+	}
+	public SurespotMessage getFirstMessageWithId() {
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext();) {
+			SurespotMessage message = iterator.next();
 			if (message.getId() != null) {
 				return message;
 			}
@@ -72,6 +81,10 @@ public class ChatAdapter extends BaseAdapter {
 				updateMessage.setId(message.getId());
 			}
 		}
+	}
+	
+	private void insertMessage(SurespotMessage message) {
+		mMessages.add(0,message);
 	}
 
 	public void addMessages(ArrayList<SurespotMessage> messages) {
@@ -239,6 +252,13 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void addOrUpdateMessage(SurespotMessage message, boolean notify) {
 		addOrUpdateMessage(message);
+		if (notify) {
+			notifyDataSetChanged();
+		}
+
+	}
+	public void insertMessage(SurespotMessage message, boolean notify) {
+		insertMessage(message);
 		if (notify) {
 			notifyDataSetChanged();
 		}

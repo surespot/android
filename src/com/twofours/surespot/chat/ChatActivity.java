@@ -59,7 +59,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 						String lastMessageID = null;
 						ChatFragment cf = getChatFragment(Utils.getOtherUser(message.getFrom(), message.getTo()));
 						if (cf != null) {
-							lastMessageID = cf.getLastMessageId();
+							lastMessageID = cf.getLatestMessageId();
 						}
 
 						// failing that use the last viewed id
@@ -197,7 +197,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	}
 
 	public void updateLastViewedMessageId(String name) {
-		String sLastMessageId = getChatFragment(name).getLastMessageId();
+		String sLastMessageId = getChatFragment(name).getLatestMessageId();
 		Log.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
 		if (sLastMessageId != null) {
 			mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));

@@ -1,6 +1,8 @@
 package com.twofours.surespot.chat;
 
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,7 +21,10 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -43,6 +48,9 @@ public class ChatFragment extends SherlockFragment {
 	private EditText mEditText;
 	private BroadcastReceiver mSocketConnectionStatusReceiver;
 	private IAsyncCallback<Boolean> mLatestMessageHandler;
+	private boolean mLoading;
+	private int mPreviousTotal;
+	private boolean mNoEarlierMessages = false;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -83,7 +91,7 @@ public class ChatFragment extends SherlockFragment {
 				((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 				// mEditText.requestFocus();
 				// TODO move "last viewed" logic to ChatActivity
-				String lastMessageId = getLastMessageId();
+				String lastMessageId = getLatestMessageId();
 				if (lastMessageId != null) {
 					((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
 				}
@@ -157,6 +165,38 @@ public class ChatFragment extends SherlockFragment {
 			}
 		};
 
+		// listen to scroll changes
+		mListView.setOnScrollListener(new OnScrollListener() {
+
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+				// Log.v(TAG,"onScroll, firstVisibleItem: " + firstVisibleItem + ", visibleItemCount: " + visibleItemCount +
+				// ", totalItemCount: " + totalItemCount);
+				if (mLoading) {
+					// will have more items if we loaded them
+					if (totalItemCount > mPreviousTotal) {
+						mPreviousTotal = totalItemCount;
+						mLoading = false;
+					}
+
+				}
+
+				if (!mLoading && !mNoEarlierMessages && (firstVisibleItem <= 7)) {
+					Log.v(TAG, "onScroll: Loading more messages.");
+					mLoading = true;
+					getEarlierMessages();
+
+				}
+
+			}
+
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+			}
+		});
+
 		return view;
 	}
 
@@ -179,9 +219,7 @@ public class ChatFragment extends SherlockFragment {
 		ChatActivity chatActivity = (ChatActivity) getActivity();
 
 		if (chatActivity.chatConnected()) {
-
 			chatActivity.startLoadingMessagesProgress();
-
 			getLatestMessages(mLatestMessageHandler);
 		}
 
@@ -193,26 +231,22 @@ public class ChatFragment extends SherlockFragment {
 
 	@Override
 	public void onPause() {
-
 		super.onPause();
-
-		Log.v(TAG, "onPause, mUsername:  " + mUsername);
+		Log.v(TAG, "onPause, mUsername:  " + mUsername);		
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 	}
 
 	@Override
 	public void onDestroy() {
-
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
 		saveMessages();
-
 	}
 
 	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {
 
 		// get the list of messages
-		String lastMessageId = getLastMessageId();
+		String lastMessageId = getLatestMessageId();
 
 		Log.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
 		NetworkController.getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
@@ -238,7 +272,6 @@ public class ChatFragment extends SherlockFragment {
 
 					Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
 
-					// mChatAdapter.notifyDataSetChanged();
 					if (callback != null) {
 						callback.handleResponse(true);
 					}
@@ -255,7 +288,57 @@ public class ChatFragment extends SherlockFragment {
 		});
 	}
 
-	public String getLastMessageId() {
+	private void getEarlierMessages() {
+
+		mLoading = true;
+		// get the list of messages
+		String firstMessageId = getEarliestMessageId();
+
+		if (firstMessageId != null) {
+			// todo make all the ints #s
+			if (Integer.parseInt(firstMessageId) > 1) {
+				Log.v(TAG, "Asking server for messages before messageId: " + firstMessageId);
+				NetworkController.getEarlierMessages(mUsername, firstMessageId, new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray jsonArray) {
+						// on async http request, response seems to come back
+						// after app is destroyed sometimes
+						// (ie. on rotation on gingerbread)
+						// so check for null here
+
+						if (getActivity() != null) {
+							SurespotMessage message = null;
+							try {
+								for (int i = jsonArray.length() - 1; i >= 0; i--) {
+									JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+									message = SurespotMessage.toSurespotMessage(jsonMessage);
+									mChatAdapter.insertMessage(message, false);
+
+								}
+							} catch (JSONException e) {
+								Log.e(TAG, "Error creating chat message: " + e.toString());
+							}
+
+							Log.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
+
+							mChatAdapter.notifyDataSetChanged();
+
+						}
+					}
+
+					@Override
+					public void onFailure(Throwable error, String content) {
+						Log.e(TAG, "getEarlierMessages: " + error.getMessage());
+					}
+				});
+			} else {
+				Log.v(TAG, "getEarlierMessages: no more messages.");
+				ChatFragment.this.mNoEarlierMessages = true;
+			}
+		}
+	}
+
+	public String getLatestMessageId() {
 		SurespotMessage lastMessage = mChatAdapter.getLastMessageWithId();
 		String lastMessageId = null;
 
@@ -263,6 +346,17 @@ public class ChatFragment extends SherlockFragment {
 			lastMessageId = lastMessage.getId();
 		}
 		return lastMessageId;
+
+	}
+
+	public String getEarliestMessageId() {
+		SurespotMessage firstMessage = mChatAdapter.getFirstMessageWithId();
+		String firstMessageId = null;
+
+		if (firstMessage != null) {
+			firstMessageId = firstMessage.getId();
+		}
+		return firstMessageId;
 	}
 
 	private void sendTextMessage() {
@@ -299,8 +393,13 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	private void saveMessages() {
-		Log.v(TAG, "saving " + mChatAdapter.getCount() + " messages to shared prefs");
-		Utils.putSharedPrefsString("messages_" + mUsername, Utils.chatMessagesToJson(mChatAdapter.getMessages()).toString());
+		// save last 30? messages
+		Log.v(TAG, "saving " + 30 + " messages to shared prefs");
+
+		ArrayList<SurespotMessage> messages = mChatAdapter.getMessages();
+		int messagesSize = messages.size();
+		Utils.putSharedPrefsString("messages_" + mUsername, Utils.chatMessagesToJson(messages.subList(messagesSize - 30, messagesSize))
+				.toString());
 	}
 
 	private void loadMessages() {

@@ -51,7 +51,7 @@ public class ChatController {
 	private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
 
 	private int mState;
-	private boolean mSwitchedToWifi;
+	private boolean mOnWifi;
 
 	private BroadcastReceiver mConnectivityReceiver;
 
@@ -59,6 +59,8 @@ public class ChatController {
 	public ChatController(IConnectCallback connectCallback) {
 		Log.v(TAG, "constructor.");
 		mConnectCallback = connectCallback;
+
+		setOnWifi();
 
 		mSocketCallback = new IOCallback() {
 
@@ -85,7 +87,7 @@ public class ChatController {
 					mResendTask.cancel();
 				}
 
-				mSwitchedToWifi = false;
+				setOnWifi();
 				// kick off another task
 				if (mRetries <= MAX_RETRIES) {
 
@@ -136,11 +138,7 @@ public class ChatController {
 					Log.v(TAG, "Cancelled reconnect timer.");
 					mReconnectTask = null;
 				}
-
-				// TODO send last id to server so it knows which messages to check
-				// mSendBuffer.addAll(mResendBuffer);
-				// mResendBuffer.clear();
-
+			
 				if (mConnectCallback != null) {
 					mConnectCallback.connectStatus(true);
 				}
@@ -200,7 +198,7 @@ public class ChatController {
 					if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
 						synchronized (ChatController.this) {
 							// if we're not connecting, connect
-							if (getState() != STATE_CONNECTING && !mSwitchedToWifi) {
+							if (getState() != STATE_CONNECTING && !mOnWifi) {
 								Log.v(TAG, "isconnected: " + networkInfo.isConnected());
 								Log.v(TAG, "failover: " + networkInfo.isFailover());
 								Log.v(TAG, "reason: " + networkInfo.getReason());
@@ -210,7 +208,7 @@ public class ChatController {
 
 								setState(STATE_CONNECTING);
 
-								mSwitchedToWifi = true;
+								mOnWifi = true;
 								disconnect();
 								connect();
 							}
@@ -223,6 +221,19 @@ public class ChatController {
 		};
 
 		loadUnsentMessages();
+
+	}
+
+	private void setOnWifi() {
+		// get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
+		ConnectivityManager connectivityManager = (ConnectivityManager) SurespotApplication.getAppContext().getSystemService(
+				Context.CONNECTIVITY_SERVICE);
+		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+		if (networkInfo != null) {
+			mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
+		}
+
+		
 
 	}
 
@@ -288,27 +299,11 @@ public class ChatController {
 		sendMessages();
 
 		if (mResendBuffer.size() > 0) {
-			// String sentMessage = mMessageBuffer.peek();
-			// Log.v(TAG, "message we sent: " + sentMessage);
-
-			// TODO deserialize and check fields (id is added so can't do equals)
-			// if (message.startsWith(sentMessage.substring(0, sentMessage.length() - 1))) {
-
-			if (mResendBuffer.remove(message))
+						if (mResendBuffer.remove(message)) {
 				Log.v(TAG, "Received and removed message from resend  buffer: " + message);
-
-			// } else {
-			// Log.e(TAG,"didn't receive same message we sent.");
-			// }
+			}
 		}
 	}
-
-	// private static void sendConnectionStatusChanged(boolean status) {
-	// Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED_EVENT);
-	// intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
-	// LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
-	//
-	// }
 
 	public SurespotMessage[] getResendMessages() {
 		SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
@@ -326,8 +321,6 @@ public class ChatController {
 			mResendTask.cancel();
 		}
 
-		// mResendTask = new ResendTask();
-		// mBackgroundTimer.schedule(mResendTask, 1000);
 		Log.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
 		Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
@@ -416,7 +409,6 @@ public class ChatController {
 			Log.v(TAG, "Cancelled reconnect task: " + cancel);
 		}
 
-		// mSocketCallback = null;
 		socket = null;
 	}
 
