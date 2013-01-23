@@ -15,12 +15,14 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.BitmapCache;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -144,7 +146,7 @@ public class ChatAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
-		int type = getItemViewType(position);
+		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		final ChatMessageViewHolder chatMessageViewHolder;
 		if (convertView == null) {
@@ -209,35 +211,54 @@ public class ChatAdapter extends BaseAdapter {
 			// check bitmap cache
 			Bitmap bitmap = null;
 
-			bitmap = mBitmapCache.getBitmapFromMemCache(item.getIv());
+			bitmap = mBitmapCache.getBitmapFromMemCache(item.getId());
 
 			if (bitmap != null) {
-				Log.v(TAG, "Using cached bitmap for message: " + item.getIv());
+				Log.v(TAG, "Using cached bitmap for message: " + item.getId());
 				chatMessageViewHolder.imageView.setImageBitmap(bitmap);
 
 			} else {
+				//download the encrypted image data
+				NetworkController.getFile(item.getRoom(), item.getId(), new AsyncHttpResponseHandler() {
+					@Override
+					public void onSuccess(int statusCode, String content) {
+						// decrypt
+						EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
+								content, new IAsyncCallback<byte[]>() {
+									@Override
+									public void handleResponse(byte[] result) {
+										if (result != null) {
 
-					// decrypt
-					EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
-							item.getCipherData(), new IAsyncCallback<byte[]>() {
-								@Override
-								public void handleResponse(byte[] result) {
-									if (result != null) {
+											//TODO decode on thread
+											Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getId());
+											byte[] decoded = result;
+											Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+											
+											//clear out memory
+											decoded = null;
+											
+											chatMessageViewHolder.imageView.setImageBitmap(bitmap);										
+											
+											//clear out memory
+											item.setCipherData(null);
+											//cache the bitmap
+											mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
 
-										//TODO decode on thread
-										Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getIv());
-										byte[] decoded = result;
-										Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-										chatMessageViewHolder.imageView.setImageBitmap(bitmap);										
-										
-										//cache the bitmap
-										mBitmapCache.addBitmapToMemoryCache(item.getIv(), bitmap);
-
+										}
 									}
-								}
 
-							});
-				
+								});
+
+					}
+					
+					@Override
+					public void onFailure(Throwable error, String content) {
+						
+						
+					}
+				});
+
+								
 			}
 		}
 

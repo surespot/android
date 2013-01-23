@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
@@ -145,9 +146,10 @@ public class ChatFragment extends SherlockFragment {
 				// we have a send action so populate the edit box with the data
 				handleSendIntent(action, type, intent.getExtras());
 
-				// intent.setAction(null);
-				// intent.setType(null);
-				// intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+				// remove intent data so we don't upload an image on restart
+				intent.setAction(null);
+				intent.setType(null);
+				intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 			}
 
 		}
@@ -395,12 +397,13 @@ public class ChatFragment extends SherlockFragment {
 
 	private void saveMessages() {
 		// save last 30? messages
-		Log.v(TAG, "saving 30 messages to shared prefs");
 
 		ArrayList<SurespotMessage> messages = mChatAdapter.getMessages();
 		int messagesSize = messages.size();
+		Log.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages to shared prefs");
 		Utils.putSharedPrefsString("messages_" + mUsername,
 				Utils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString());
+
 	}
 
 	private void loadMessages() {
@@ -424,25 +427,23 @@ public class ChatFragment extends SherlockFragment {
 				mEditText.append(sharedText);
 				requestFocus();
 			} else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
-				Utils.buildPictureMessage(getActivity(), imageUri, mUsername, new IAsyncCallback<SurespotMessage>() {
+
+				Utils.uploadPictureMessage(getActivity(), imageUri, mUsername, new IAsyncCallback<Boolean>() {
 
 					@Override
-					public void handleResponse(SurespotMessage result) {
-						if (result != null) {
-							mChatAdapter.addOrUpdateMessage(result, true);
-							((ChatActivity) getActivity()).sendMessage(result);
-						}
+					public void handleResponse(Boolean result) {
+						// TODO Auto-generated method stub
 
 					}
-				});
-			}
+				});			
+			}			
 		} else {
 			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
 				// TODO implement
 			}
 		}
-
 	}
 
 	public void scrollToEnd() {

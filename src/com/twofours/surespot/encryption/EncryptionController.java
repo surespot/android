@@ -418,10 +418,10 @@ public class EncryptionController {
 
 	}
 
-	public static void symmetricBase64Encrypt(final String username, final InputStream data, final IAsyncCallback<String[]> callback) {
-		new AsyncTask<Void, Void, String[]>() {
+	public static void symmetricBase64Encrypt(final String username, final InputStream data, final IAsyncCallback<byte[][]> callback) {
+		new AsyncTask<Void, Void, byte[][]>() {
 			@Override
-			protected String[] doInBackground(Void... params) {
+			protected byte[][] doInBackground(Void... params) {
 				byte[] iv = new byte[15];
 				byte[] buf = new byte[1024]; // input buffer
 			
@@ -445,10 +445,10 @@ public class EncryptionController {
 
 					in.close();
 					cos.close();
-					String[] returns = new String[2];
+					byte[][] returns = new byte[2][];
 
-					returns[0] = new String(Utils.base64Encode(iv));
-					returns[1] = new String(Utils.base64Encode(out.toByteArray()));
+					returns[0] = Utils.base64Encode(iv);
+					returns[1] = Utils.base64Encode(out.toByteArray());
 
 					return returns;
 				} catch (IllegalStateException e) {
@@ -481,7 +481,7 @@ public class EncryptionController {
 			}
 
 			@Override
-			protected void onPostExecute(String[] result) {
+			protected void onPostExecute(byte[][] result) {
 				callback.handleResponse(result);
 			}
 		}.execute();

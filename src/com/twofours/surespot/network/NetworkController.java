@@ -1,6 +1,10 @@
 package com.twofours.surespot.network;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +19,7 @@ import org.apache.http.protocol.HttpContext;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -71,7 +76,7 @@ public class NetworkController {
 
 	public static synchronized void setUnauthorized(boolean unauthorized) {
 
-		NetworkController.mUnauthorized = unauthorized;		
+		NetworkController.mUnauthorized = unauthorized;
 	}
 
 	static {
@@ -82,16 +87,16 @@ public class NetworkController {
 		}
 
 		mClient = new AsyncHttpClient();
+		
 		mSyncClient = new SyncHttpClient() {
-			
+
 			@Override
 			public String onRequestFailed(Throwable arg0, String arg1) {
 				// TODO Auto-generated method stub
 				return null;
 			}
 		};
-		
-	
+
 		HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
 
 			@Override
@@ -103,7 +108,7 @@ public class NetworkController {
 					if (origin != null) {
 
 						if (!NetworkController.isUnauthorized()) {
-							
+
 							if (!(origin.contains(SurespotConstants.BASE_URL.substring(7)) && origin.contains("/login"))) {
 
 								mClient.cancelRequests(SurespotApplication.getAppContext(), true);
@@ -121,14 +126,26 @@ public class NetworkController {
 				}
 			}
 		};
-		
+
 		mClient.setCookieStore(mCookieStore);
 		mSyncClient.setCookieStore(mCookieStore);
 		// handle 401s
 		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 		((DefaultHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 
+//		enableHttpResponseCache();
 	}
+	
+//	private static void enableHttpResponseCache() {
+//	    try {
+//	        long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
+//	        File httpCacheDir = new File(SurespotApplication.getAppContext().getCacheDir(), "http");
+//	        Class.forName("android.net.http.HttpResponseCache")
+//	            .getMethod("install", File.class, long.class)
+//	            .invoke(null, httpCacheDir, httpCacheSize);
+//	    } catch (Exception httpResponseCacheNotAvailable) {
+//	    }
+//	}
 
 	public static void addUser(String username, String password, String publicKey, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
@@ -157,8 +174,7 @@ public class NetworkController {
 				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
-				}
-				else {
+				} else {
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -187,7 +203,9 @@ public class NetworkController {
 		for (Cookie c : cookieStore.getCookies()) {
 			// System.out.println("Cookie name: " + c.getName() + " value: " +
 			// c.getValue());
-			if (c.getName().equals("connect.sid")) { return c; }
+			if (c.getName().equals("connect.sid")) {
+				return c;
+			}
 		}
 		return null;
 
@@ -221,8 +239,7 @@ public class NetworkController {
 				if (mConnectCookie == null) {
 					Log.e(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
-				}
-				else {
+				} else {
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -250,33 +267,30 @@ public class NetworkController {
 		get("/friends", null, responseHandler);
 	}
 
-	//if we have an id get the messages since the id, otherwise get the last x
+	// if we have an id get the messages since the id, otherwise get the last x
 	public static void getMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
-	
+
 		if (id == null) {
 			get("/messages/" + room, null, responseHandler);
-		}
-		else {
-			get("/messages/" + room + "/after/" + id, null, responseHandler);		
+		} else {
+			get("/messages/" + room + "/after/" + id, null, responseHandler);
 		}
 	}
-	
-	//if we have an id get the messages since the id, otherwise get the last x
-	public static void getEarlierMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {		
-		get("/messages/" + room + "/before/" + id, null, responseHandler);				
+
+	// if we have an id get the messages since the id, otherwise get the last x
+	public static void getEarlierMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
+		get("/messages/" + room + "/before/" + id, null, responseHandler);
 	}
-	
+
 	public static void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
-		get("/conversations/ids",null, responseHandler);
+		get("/conversations/ids", null, responseHandler);
 	}
-	
-	
 
 	public static void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/publickey/" + username, null, responseHandler);
 
 	}
-	
+
 	public static String getPublicKeySync(String username) {
 		return mSyncClient.get(SurespotConstants.BASE_URL + "/publickey/" + username);
 	}
@@ -311,8 +325,7 @@ public class NetworkController {
 
 			params.put("gcmId", gcmIdReceived);
 			gcmUpdatedTemp = true;
-		}
-		else {
+		} else {
 			Log.v(TAG, "GCM does not need updating on server.");
 			return;
 		}
@@ -353,4 +366,19 @@ public class NetworkController {
 		Log.i(TAG, "unregistering device (regId = " + regId + ")");
 		GCMRegistrar.setRegisteredOnServer(context, false);
 	}
+
+	public static void postFile(Context context, String user, String id, byte[] data, String mimeType,
+			AsyncHttpResponseHandler responseHandler) {
+
+		RequestParams params = new RequestParams();
+		params.put("image", new ByteArrayInputStream(data), id, mimeType);
+
+		post("/images/" + user, params, responseHandler);
+
+	}
+
+	public static void getFile(String user, String id, AsyncHttpResponseHandler responseHandler) {
+		get("/images/" + user + "/" + id, null, responseHandler);
+	}
+
 }

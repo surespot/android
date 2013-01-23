@@ -24,15 +24,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class Utils {
 	private static Toast mToast;
-
+	private static final String TAG = "Utils";
 	// Fast Implementation
 	public static String inputStreamToString(InputStream is) throws IOException {
 		String line = "";
@@ -71,17 +74,17 @@ public class Utils {
 		while ((len = inputStream.read(buffer)) != -1) {
 			byteBuffer.write(buffer, 0, len);
 		}
-		return new String( base64Encode(byteBuffer.toByteArray()));
+		return new String(base64Encode(byteBuffer.toByteArray()));
 	}
 
 	public static byte[] base64Encode(byte[] buf) {
 		return Base64.encode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
 	}
-	
+
 	public static byte[] base64Decode(String buf) {
 		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
 	}
-	
+
 	public static String getOtherUser(String from, String to) {
 		return to.equals(EncryptionController.getIdentityUsername()) ? from : to;
 	}
@@ -154,7 +157,7 @@ public class Utils {
 
 	}
 
-	public static SurespotMessage buildMessage(String to, String mimeType, String plainData,String iv, String cipherData) {
+	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(EncryptionController.getIdentityUsername());
 		chatMessage.setTo(to);
@@ -167,33 +170,46 @@ public class Utils {
 		return chatMessage;
 	}
 
-	public static void buildPictureMessage(Context context, Uri imageUri, final String to, final IAsyncCallback<SurespotMessage> callback) {
+	public static void uploadPictureMessage(final Context context, Uri imageUri, final String to, final IAsyncCallback<Boolean> callback) {
 
-		//TODO thread
+		// TODO thread
 		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 320, 240);
 
-		//bitmap.
-		
-		//final String data = Utils.inputStreamToBase64(iStream);
-		
+		// bitmap.
+
+		// final String data = Utils.inputStreamToBase64(iStream);
+
 		final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
+		bitmap.compress(Bitmap.CompressFormat.JPEG, 60, jpeg);
+		bitmap = null;
+
+		System.gc();
+
 		try {
 			jpeg.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 
 		// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-		EncryptionController.symmetricBase64Encrypt(to, new ByteArrayInputStream(jpeg.toByteArray()), new IAsyncCallback<String[]>() {
+		EncryptionController.symmetricBase64Encrypt(to, new ByteArrayInputStream(jpeg.toByteArray()), new IAsyncCallback<byte[][]>() {
 
 			@Override
-			public void handleResponse(String[] results) {
+			public void handleResponse(byte[][] results) {
 				if (results != null) {
-					SurespotMessage chatMessage = buildMessage(to, SurespotConstants.MimeTypes.IMAGE,  new String(base64Encode(jpeg.toByteArray())),results[0], results[1]);
-					callback.handleResponse(chatMessage);
+					NetworkController.postFile(context, to, new String(results[0]), results[1], SurespotConstants.MimeTypes.IMAGE,
+							new AsyncHttpResponseHandler() {
+								public void onSuccess(int statusCode, String content) {
+									Log.v(TAG,"Received picture upload response: " + content);
+									callback.handleResponse(true);
+								};
+
+								public void onFailure(Throwable error, String content) {
+									Log.v(TAG,"Error uploading picture: " + content);
+									callback.handleResponse(false);
+								};
+							});
 				}
 
 			}

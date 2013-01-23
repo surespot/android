@@ -146,13 +146,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 				if (mLastViewedMessageIds != null) {
 					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
 					updateLastViewedMessageId(name);
-					getChatFragment(name).requestFocus();
+					
+					//getChatFragment(name).requestFocus();
 
 				}
 			}
 
 		});
-		mViewPager.setOffscreenPageLimit(3);
+	    mViewPager.setOffscreenPageLimit(1);
 
 		if (name != null) {
 			mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
@@ -167,9 +168,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 				String sMessage = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
 				try {
 					JSONObject messageJson = new JSONObject(sMessage);
-					SurespotMessage message = SurespotMessage.toSurespotMessage(messageJson); 					
+					SurespotMessage message = SurespotMessage.toSurespotMessage(messageJson);
 					sendMessageToFragment(message);
-					
+
 					// update last visited id for message
 					String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
@@ -183,7 +184,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		};
 
 	}
-	
+
 	private void sendMessageToFragment(SurespotMessage message) {
 		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 		ChatFragment cf = getChatFragment(otherUser);
@@ -193,14 +194,17 @@ public class ChatActivity extends SherlockFragmentActivity {
 		} else {
 			Log.v(TAG, "Fragment null");
 		}
-		
+
 	}
 
 	public void updateLastViewedMessageId(String name) {
-		String sLastMessageId = getChatFragment(name).getLatestMessageId();
-		Log.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
-		if (sLastMessageId != null) {
-			mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
+		ChatFragment cf = getChatFragment(name);
+		if (cf != null) {
+			String sLastMessageId = cf.getLatestMessageId();
+			Log.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
+			if (sLastMessageId != null) {
+				mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
+			}
 		}
 	}
 
@@ -310,18 +314,16 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_OK) {			
+		if (resultCode == RESULT_OK) {
 			Uri selectedImageUri = data.getData();
-			Utils.buildPictureMessage(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<SurespotMessage>() {
-
+			Utils.uploadPictureMessage(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
+				
 				@Override
-				public void handleResponse(SurespotMessage result) {
-					if (result != null) {
-						sendMessageToFragment(result);
-						sendMessage(result);						
-					}
+				public void handleResponse(Boolean result) {
+					// TODO handle error
+					
 				}
-			});
+			});		
 		}
 	}
 

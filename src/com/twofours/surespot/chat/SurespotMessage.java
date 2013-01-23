@@ -89,8 +89,8 @@ public class SurespotMessage {
 			chatMessage.setId(id);
 		}
 		chatMessage.setFrom(jsonMessage.getString("from"));
-		chatMessage.setTo(jsonMessage.getString("to"));
-		chatMessage.setCipherData(jsonMessage.getString("data"));
+		chatMessage.setTo(jsonMessage.getString("to"));		
+		chatMessage.setCipherData(jsonMessage.optString("data",null));
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setIv(jsonMessage.getString("iv"));
 		String resendId = jsonMessage.optString("resendId");
@@ -108,6 +108,7 @@ public class SurespotMessage {
 			if (this.getId() != null) {
 				message.put("id", this.getId());
 			}
+						
 			message.put("data", this.getCipherData());
 			message.put("to", this.getTo());
 			message.put("from", this.getFrom());
@@ -140,11 +141,7 @@ public class SurespotMessage {
 		} else {
 			//iv should be unique across all messages
 			return (this.getIv().equals(rhs.getIv()));
-
-			// return this.getCipherData().equals(rhs.getCipherData()) && this.getTo().equals(rhs.getTo())
-			// && this.getFrom().equals(rhs.getFrom()) && ((this.getId() == null) || rhs.getId() == null);
 		}
-
 	}
 
 	public int hashCode() {
