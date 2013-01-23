@@ -39,7 +39,7 @@ public class ChatController {
 	private static final int STATE_CONNECTED = 1;
 	private static final int STATE_DISCONNECTED = 2;
 
-	private static final int MAX_RETRIES = 5;
+	private static final int MAX_RETRIES = 7;
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;

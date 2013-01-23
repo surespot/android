@@ -232,7 +232,7 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onPause() {
 		super.onPause();
-		Log.v(TAG, "onPause, mUsername:  " + mUsername);		
+		Log.v(TAG, "onPause, mUsername:  " + mUsername);
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 	}
 
@@ -394,12 +394,12 @@ public class ChatFragment extends SherlockFragment {
 
 	private void saveMessages() {
 		// save last 30? messages
-		Log.v(TAG, "saving " + 30 + " messages to shared prefs");
+		Log.v(TAG, "saving 30 messages to shared prefs");
 
 		ArrayList<SurespotMessage> messages = mChatAdapter.getMessages();
 		int messagesSize = messages.size();
-		Utils.putSharedPrefsString("messages_" + mUsername, Utils.chatMessagesToJson(messages.subList(messagesSize - 30, messagesSize))
-				.toString());
+		Utils.putSharedPrefsString("messages_" + mUsername,
+				Utils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString());
 	}
 
 	private void loadMessages() {
