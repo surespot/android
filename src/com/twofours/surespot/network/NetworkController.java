@@ -2,9 +2,7 @@ package com.twofours.surespot.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +17,6 @@ import org.apache.http.protocol.HttpContext;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -129,23 +126,13 @@ public class NetworkController {
 
 		mClient.setCookieStore(mCookieStore);
 		mSyncClient.setCookieStore(mCookieStore);
+		
 		// handle 401s
 		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 		((DefaultHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 
-//		enableHttpResponseCache();
 	}
-	
-//	private static void enableHttpResponseCache() {
-//	    try {
-//	        long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
-//	        File httpCacheDir = new File(SurespotApplication.getAppContext().getCacheDir(), "http");
-//	        Class.forName("android.net.http.HttpResponseCache")
-//	            .getMethod("install", File.class, long.class)
-//	            .invoke(null, httpCacheDir, httpCacheSize);
-//	    } catch (Exception httpResponseCacheNotAvailable) {
-//	    }
-//	}
+
 
 	public static void addUser(String username, String password, String publicKey, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
@@ -377,8 +364,8 @@ public class NetworkController {
 
 	}
 
-	public static void getFile(String user, String id, AsyncHttpResponseHandler responseHandler) {
-		get("/images/" + user + "/" + id, null, responseHandler);
+	public static void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
+		get(relativeUrl, null, responseHandler);
 	}
 
 }

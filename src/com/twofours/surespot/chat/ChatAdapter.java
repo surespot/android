@@ -1,7 +1,6 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.ListIterator;
 
 import android.content.Context;
@@ -219,7 +218,7 @@ public class ChatAdapter extends BaseAdapter {
 
 			} else {
 				//download the encrypted image data
-				NetworkController.getFile(item.getRoom(), item.getId(), new AsyncHttpResponseHandler() {
+				NetworkController.getFile(item.getCipherData(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
 						// decrypt
@@ -239,8 +238,6 @@ public class ChatAdapter extends BaseAdapter {
 											
 											chatMessageViewHolder.imageView.setImageBitmap(bitmap);										
 											
-											//clear out memory
-											item.setCipherData(null);
 											//cache the bitmap
 											mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
 
