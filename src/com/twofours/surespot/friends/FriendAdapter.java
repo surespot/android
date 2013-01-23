@@ -58,8 +58,8 @@ public class FriendAdapter extends BaseAdapter {
 
 	/*
 	 * public void refreshFlags() { for (Friend friend : mFriends) { if (mActiveChats.contains(friend.getName())) {
-	 * friend.setFlags(friend.getFlags() | ~Friend.ACTIVE_CHAT ); } else { friend.setFlags(friend.getFlags() &
-	 * ~Friend.ACTIVE_CHAT ); } } notifyDataSetChanged(); }
+	 * friend.setFlags(friend.getFlags() | ~Friend.ACTIVE_CHAT ); } else { friend.setFlags(friend.getFlags() & ~Friend.ACTIVE_CHAT ); } }
+	 * notifyDataSetChanged(); }
 	 */
 
 	public void messageReceived(String name) {
@@ -177,29 +177,46 @@ public class FriendAdapter extends BaseAdapter {
 			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.main_friend_item, parent, false);
 
-			((Button) convertView.findViewById(R.id.notificationItemAccept))
-					.setOnClickListener(FriendInviteResponseListener);
-			((Button) convertView.findViewById(R.id.notificationItemIgnore))
-					.setOnClickListener(FriendInviteResponseListener);
+			((Button) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
+			((Button) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
 
 			friendViewHolder = new FriendViewHolder();
-			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
-			friendViewHolder.newMessageCountView = (TextView) convertView.findViewById(R.id.newMessageCount);
-			friendViewHolder.vgFriend = convertView.findViewById(R.id.friendLayout);
+			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);			
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
+			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
 			convertView.setTag(friendViewHolder);
 
 		} else {
 			friendViewHolder = (FriendViewHolder) convertView.getTag();
 		}
 
-		friendViewHolder.tvName.setText(friend.getName() + (friend.isInvited() ? " (invited)" : ""));
+		friendViewHolder.tvName.setText(friend.getName());
 
-		if (friend.isInviter()) {
-			friendViewHolder.vgFriend.setVisibility(View.GONE);
-			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
+		int messageCount = friend.getMessageCount();
+
+		// TODO cleanup this logic
+		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || messageCount > 0) {
+			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
+			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
+			// TODO expose flags and use switch
+			if (friend.isInvited()) {
+				friendViewHolder.tvStatus.setText("invited");
+			}
+			if (friend.isNewFriend()) {
+				friendViewHolder.tvStatus.setText("invitation accepted");
+			}
+			if (friend.isInviter()) {
+				friendViewHolder.tvStatus.setText("is inviting you to be friends");
+			}
+
 		} else {
-			friendViewHolder.vgFriend.setVisibility(View.VISIBLE);
+			friendViewHolder.tvStatus.setVisibility(View.GONE);
+			// friendViewHolder.tvName.setTypeface(null, Typeface.NORMAL);
+		}
+
+		if (friend.isInviter()) {			
+			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
+		} else {			
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
 			if (friend.isChatActive()) {
@@ -208,16 +225,26 @@ public class FriendAdapter extends BaseAdapter {
 				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
 
-			if (friend.getMessageCount() > 0) {
-				friendViewHolder.newMessageCountView.setText(friend.getMessageCount().toString());
-			} else {
-				friendViewHolder.newMessageCountView.setText("");
-			}
+			if (messageCount > 0) {
 
-			if (friend.isNewFriend()) {
-				friendViewHolder.tvName.setTypeface(null, Typeface.ITALIC);
-			} else {
-				friendViewHolder.tvName.setTypeface(null, Typeface.NORMAL);
+				String currentStatus = friendViewHolder.tvStatus.getText().toString();
+				String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
+				
+				
+				
+				if (!currentStatus.isEmpty()) {
+					if (currentStatus.contains("unread message")) {
+						currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
+						
+					}
+					else {
+						currentStatus += "\n" + messageCountString;
+					}				
+					
+				} else {
+					currentStatus = messageCountString;
+				}
+				friendViewHolder.tvStatus.setText(currentStatus);
 			}
 
 		}
@@ -231,8 +258,7 @@ public class FriendAdapter extends BaseAdapter {
 		public void onClick(View v) {
 
 			final String action = (String) v.getTag();
-			final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v
-					.getParent());
+			final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v.getParent());
 			final Friend friend = (Friend) getItem(position);
 			final String friendname = friend.getName();
 
@@ -264,9 +290,8 @@ public class FriendAdapter extends BaseAdapter {
 
 	public static class FriendViewHolder {
 		public TextView tvName;
-		public TextView newMessageCountView;
-		public View vgInvite;
-		public View vgFriend;
+		public TextView tvStatus;
+		public View vgInvite;		
 	}
 
 }

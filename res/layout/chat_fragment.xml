@@ -35,10 +35,10 @@
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="70dp"
             android:layout_weight="1"
             android:imeOptions="actionSend"
-            android:width="0dp" >            
+            android:gravity="bottom">            
         </EditText>
 
         <Button
