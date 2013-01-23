@@ -28,13 +28,20 @@ public class ChatAdapter extends BaseAdapter {
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
-	private final static BitmapCache mBitmapCache = new BitmapCache();
+	private final BitmapCache mBitmapCache = new BitmapCache();
 
+	
+	
 	public ChatAdapter(Context context) {
 		Log.v(TAG, "Constructor.");
 		mContext = context;
 	}
-
+	
+	public void evictCache() {
+		mBitmapCache.evictAll();
+	}
+	
+	
 	public ArrayList<SurespotMessage> getMessages() {
 		return mMessages;
 	}
