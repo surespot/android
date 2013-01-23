@@ -50,6 +50,8 @@ public class Utils {
 		}
 
 		// Return full string
+		rd.close();
+		is.close();
 		return total.toString();
 	}
 
@@ -62,6 +64,8 @@ public class Utils {
 		while ((len = inputStream.read(buffer)) != -1) {
 			byteBuffer.write(buffer, 0, len);
 		}
+		byteBuffer.close();
+		inputStream.close();
 		return byteBuffer.toByteArray();
 	}
 
@@ -74,6 +78,8 @@ public class Utils {
 		while ((len = inputStream.read(buffer)) != -1) {
 			byteBuffer.write(buffer, 0, len);
 		}
+		byteBuffer.close();
+		inputStream.close();
 		return new String(base64Encode(byteBuffer.toByteArray()));
 	}
 
@@ -180,10 +186,8 @@ public class Utils {
 		// final String data = Utils.inputStreamToBase64(iStream);
 
 		final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.JPEG, 60, jpeg);
-		bitmap = null;
-
-		System.gc();
+		bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
+		bitmap = null;		
 
 		try {
 			jpeg.close();

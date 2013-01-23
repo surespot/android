@@ -309,6 +309,7 @@ public class EncryptionController {
 
 					in.close();
 					cos.close();
+					out.close();
 
 					return out.toByteArray();
 				} catch (IllegalStateException e) {
@@ -374,6 +375,7 @@ public class EncryptionController {
 
 					in.close();
 					cos.close();
+					out.close();
 
 					String[] returns = new String[2];
 
@@ -445,11 +447,12 @@ public class EncryptionController {
 
 					in.close();
 					cos.close();
+					out.close();
 					byte[][] returns = new byte[2][];
 
 					returns[0] = Utils.base64Encode(iv);
 					returns[1] = Utils.base64Encode(out.toByteArray());
-
+					
 					return returns;
 				} catch (IllegalStateException e) {
 					// TODO Auto-generated catch block
