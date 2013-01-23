@@ -138,7 +138,7 @@ public class ChatController {
 					Log.v(TAG, "Cancelled reconnect timer.");
 					mReconnectTask = null;
 				}
-			
+
 				if (mConnectCallback != null) {
 					mConnectCallback.connectStatus(true);
 				}
@@ -233,8 +233,6 @@ public class ChatController {
 			mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
 		}
 
-		
-
 	}
 
 	public void connect() {
@@ -299,7 +297,7 @@ public class ChatController {
 		sendMessages();
 
 		if (mResendBuffer.size() > 0) {
-						if (mResendBuffer.remove(message)) {
+			if (mResendBuffer.remove(message)) {
 				Log.v(TAG, "Received and removed message from resend  buffer: " + message);
 			}
 		}
@@ -337,7 +335,18 @@ public class ChatController {
 		setState(STATE_DISCONNECTED);
 		if (socket.isConnected()) {
 			socket.disconnect();
-			SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+			
+			//workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+			try {
+				SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+			} catch (IllegalArgumentException e) {
+				if (e.getMessage().contains("Receiver not registered")) {
+					// Ignore this exception. This is exactly what is desired
+				} else {
+					// unexpected, re-throw
+					throw e;
+				}
+			}
 		}
 		sendConnectStatus(false);
 
