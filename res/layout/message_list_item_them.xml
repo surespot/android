@@ -2,31 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:gravity="right"
     android:orientation="horizontal" >
 
     <TextView
         android:id="@+id/messageText"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="2dp"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="2dp"
-        android:gravity="right"
-        android:textSize="15sp" 
-        android:visibility="gone">
+        android:textSize="15sp"
+        android:visibility="gone" 
+        android:gravity="right">
     </TextView>
-    
-    <ImageView 
+
+    <ImageView
         android:id="@+id/messageImage"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="2dp"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="2dp"
-        android:gravity="right"
-        android:visibility="gone"
         android:adjustViewBounds="true"
-        />
+        android:visibility="gone" />
+
 </LinearLayout>

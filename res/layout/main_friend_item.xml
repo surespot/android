@@ -3,7 +3,8 @@
     android:id="@+id/friendItemLayout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:background="@android:color/background_light" >
 
     <LinearLayout
         android:id="@+id/statusLayout"
