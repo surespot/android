@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@drawable/filled_blue_circle" android:state_pressed="true"></item>
+    <item android:drawable="@drawable/empty_blue_circle" android:state_focused="true"></item>
+    <item android:drawable="@drawable/empty_blue_circle"></item>
+
+</selector>

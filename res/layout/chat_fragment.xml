@@ -42,7 +42,7 @@
         android:layout_alignParentRight="true"
         android:layout_marginBottom="-10sp"
         android:layout_marginRight="-10sp"
-        android:background="@drawable/empty_blue_circle"
+        android:background="@drawable/send_button"
         android:text="send" />
 
 </RelativeLayout>
