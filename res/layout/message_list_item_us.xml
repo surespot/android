@@ -10,7 +10,7 @@
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
         android:background="@drawable/empty_blue_rectangle"
-        android:visibility="visible" >
+        android:visibility="visible"         >
     </View>
 
     <View
@@ -27,8 +27,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="2dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="50dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2sp"        
         android:layout_marginTop="2dp"
         android:textSize="15sp"
         android:visibility="gone" />
@@ -37,9 +37,9 @@
         android:id="@+id/messageImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="50dp"
+        android:layout_marginBottom="2dp"        
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2sp"
         android:layout_marginTop="2dp"
         android:adjustViewBounds="true"
         android:visibility="visible" />

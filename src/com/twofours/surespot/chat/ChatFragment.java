@@ -109,6 +109,8 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setAdapter(mChatAdapter);
+		//mListView.setDivider(null);
+		mListView.setDividerHeight(1);		
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
