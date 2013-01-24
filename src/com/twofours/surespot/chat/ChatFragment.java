@@ -93,7 +93,9 @@ public class ChatFragment extends SherlockFragment {
 					((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
 				}
 
-				mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+				if (getView() != null) {
+					mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+				}
 				mChatAdapter.notifyDataSetChanged();
 			}
 		};
@@ -108,8 +110,8 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setAdapter(mChatAdapter);
-		//mListView.setDivider(null);
-		mListView.setDividerHeight(1);		
+		// mListView.setDivider(null);
+		mListView.setDividerHeight(1);
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -435,8 +437,8 @@ public class ChatFragment extends SherlockFragment {
 						// TODO Auto-generated method stub
 
 					}
-				});			
-			}			
+				});
+			}
 		} else {
 			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
 				// TODO implement

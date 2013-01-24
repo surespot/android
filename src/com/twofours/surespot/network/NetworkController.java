@@ -81,9 +81,9 @@ public class NetworkController {
 			mConnectCookie = extractConnectCookie(mCookieStore);
 		}
 
-		mClient = new AsyncHttpClient();
+		mClient = new AsyncHttpClient(SurespotApplication.getAppContext());
 		
-		mSyncClient = new SyncHttpClient() {
+		mSyncClient = new SyncHttpClient(SurespotApplication.getAppContext()) {
 
 			@Override
 			public String onRequestFailed(Throwable arg0, String arg1) {

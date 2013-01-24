@@ -71,7 +71,7 @@ public class GCMIntentService extends GCMBaseIntentService
 			Log.v(TAG, "Attempting to register gcm id on surespot server.");
 			// do this synchronously so android doesn't kill the service thread before it's done
 
-			SyncHttpClient client = new SyncHttpClient() {
+			SyncHttpClient client = new SyncHttpClient(this) {
 
 				@Override
 				public String onRequestFailed(Throwable arg0, String arg1) {
