@@ -2,7 +2,6 @@ package com.twofours.surespot.friends;
 
 import java.util.HashMap;
 
-import org.apache.http.client.HttpResponseException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +26,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.loopj.android.http.AsyncHttpResponseHandler;

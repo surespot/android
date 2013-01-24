@@ -1,23 +1,20 @@
 package com.twofours.surespot.network;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.CookieStore;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.HttpContext;
-
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import ch.boye.httpclientandroidlib.HttpException;
+import ch.boye.httpclientandroidlib.HttpResponse;
+import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
+import ch.boye.httpclientandroidlib.HttpStatus;
+import ch.boye.httpclientandroidlib.client.CookieStore;
+import ch.boye.httpclientandroidlib.cookie.Cookie;
+import ch.boye.httpclientandroidlib.protocol.HttpContext;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
@@ -27,6 +24,7 @@ import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.ui.activities.LoginActivity;
@@ -128,8 +126,8 @@ public class NetworkController {
 		mSyncClient.setCookieStore(mCookieStore);
 		
 		// handle 401s
-		((DefaultHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
-		((DefaultHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+		((SurespotCachingHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+		((SurespotCachingHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 
 	}
 

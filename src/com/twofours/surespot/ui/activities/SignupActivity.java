@@ -2,7 +2,6 @@ package com.twofours.surespot.ui.activities;
 
 import java.security.KeyPair;
 
-import org.apache.http.client.HttpResponseException;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Activity;
@@ -17,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;

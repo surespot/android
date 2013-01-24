@@ -1,7 +1,5 @@
 package com.twofours.surespot.ui.activities;
 
-import org.apache.http.client.HttpResponseException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
