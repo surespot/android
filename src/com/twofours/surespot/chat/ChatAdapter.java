@@ -142,7 +142,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-	//	Log.v(TAG, "getView, pos: " + position);
+		// Log.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -176,31 +176,28 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.getPlainData() != null) {
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
 			} else {
-				chatMessageViewHolder.tvText.setText("");
-				// try {
-				// JSONObject text = new JSONObject(item.getCipherText());
-				// chatMessageViewHolder.tvText.setText(text.getString("ciphertext"));
-				// } catch (JSONException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
-				// decrypt
-				EncryptionController.symmetricDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
-						item.getCipherData(), new IAsyncCallback<String>() {
+				if (!item.isLoading()) {
+					item.setLoading(true);
+					chatMessageViewHolder.tvText.setText("");
+					// decrypt
+					EncryptionController.symmetricDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
+							item.getCipherData(), new IAsyncCallback<String>() {
 
-							@Override
-							public void handleResponse(String result) {
+								@Override
+								public void handleResponse(String result) {
 
-								if (result != null) {
-									item.setPlainData(result);
-									chatMessageViewHolder.tvText.setText(result);
-								} else {
-									chatMessageViewHolder.tvText.setText("Could not decrypt message.");
+									if (result != null) {
+										item.setPlainData(result);
+										chatMessageViewHolder.tvText.setText(result);
+									} else {
+										chatMessageViewHolder.tvText.setText("Could not decrypt message.");
+									}
+
+									item.setLoading(false);
 								}
 
-							}
-
-						});
+							});
+				}
 			}
 		} else {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
@@ -226,7 +223,7 @@ public class ChatAdapter extends BaseAdapter {
 							EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
 									content, new IAsyncCallback<byte[]>() {
 										@Override
-										public void handleResponse(byte[] result) {
+						 				public void handleResponse(byte[] result) {
 											if (result != null) {
 
 												// TODO decode on thread
@@ -240,8 +237,8 @@ public class ChatAdapter extends BaseAdapter {
 												chatMessageViewHolder.imageView.setImageBitmap(bitmap);
 
 												// cache the bitmap
-												mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);		
-												notifyDataSetChanged();
+												mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
+										//notifyDataSetChanged();
 												item.setLoading(false);
 
 											}

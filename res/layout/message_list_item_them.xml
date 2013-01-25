@@ -23,7 +23,7 @@
         android:layout_marginRight="55dp"
         android:layout_marginTop="2dp"
         android:textSize="15sp"
-        android:visibility="gone" >
+        android:visibility="visible" >
     </TextView>
 
     <ImageView
