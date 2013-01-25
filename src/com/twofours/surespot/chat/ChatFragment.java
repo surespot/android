@@ -402,7 +402,7 @@ public class ChatFragment extends SherlockFragment {
 		int messagesSize = messages.size();
 		Log.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages to shared prefs");
 		Utils.putSharedPrefsString("messages_" + mUsername,
-				Utils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString());
+				Utils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize), true).toString());
 
 	}
 

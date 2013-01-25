@@ -294,4 +294,8 @@ public class FriendAdapter extends BaseAdapter {
 		public View vgInvite;		
 	}
 
+	public ArrayList<String> getFriends() {
+		return mActiveChats;
+	}
+
 }

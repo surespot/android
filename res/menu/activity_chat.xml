@@ -11,6 +11,12 @@
         android:showAsAction="never"
         android:title="send image"/>
     <item
+        android:id="@+id/menu_capture_image_menu"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="capture image"/>
+    
+    <item
         android:id="@+id/menu_close_menu"
         android:orderInCategory="200"
         android:showAsAction="never"
@@ -20,5 +26,6 @@
         android:orderInCategory="200"
         android:showAsAction="ifRoom"
         android:title="close tab"/>
+
 
 </menu>

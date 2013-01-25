@@ -18,6 +18,8 @@ public class SurespotMessage {
 	private String mId;
 	private String mResendId;
 	private String mMimeType;
+	private int mHeight;
+
 	private boolean mLoading;
 
 	public SurespotMessage() {
@@ -94,6 +96,7 @@ public class SurespotMessage {
 		chatMessage.setCipherData(jsonMessage.optString("data",null));
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setIv(jsonMessage.getString("iv"));
+		chatMessage.setHeight(jsonMessage.optInt("height"));
 		String resendId = jsonMessage.optString("resendId");
 		if (resendId != null && !resendId.isEmpty()) {
 			chatMessage.setResendId(resendId);
@@ -102,7 +105,7 @@ public class SurespotMessage {
 		return chatMessage;
 	}
 
-	public JSONObject toJSONObject() {
+	public JSONObject toJSONObject(boolean forLocalStorage) {
 		JSONObject message = new JSONObject();
 
 		try {
@@ -114,8 +117,12 @@ public class SurespotMessage {
 			message.put("to", this.getTo());
 			message.put("from", this.getFrom());
 			message.put("resendId", this.getResendId());
-			message.put("mimeType", this.getMimeType());
+			message.put("mimeType", this.getMimeType());			
 			message.put("iv", this.getIv());
+			
+			if (forLocalStorage) {
+				message.put("height", this.getHeight());
+			}
 
 			return message;
 		} catch (JSONException e) {
@@ -172,5 +179,14 @@ public class SurespotMessage {
 	public void setLoading(boolean mLoading) {
 		this.mLoading = mLoading;
 	}
+
+	public Integer getHeight() {
+		return mHeight;
+	}
+
+	public void setHeight(Integer mHeight) {
+		this.mHeight = mHeight;
+	}
+
 
 }

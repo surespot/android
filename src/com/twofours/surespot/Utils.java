@@ -254,12 +254,12 @@ public class Utils {
 		return jsonObject.toString();
 	}
 
-	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
+	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages, boolean forLocalStorage) {
 
 		JSONArray jsonMessages = new JSONArray();
 		Iterator<SurespotMessage> iterator = messages.iterator();
 		while (iterator.hasNext()) {
-			jsonMessages.put(iterator.next().toJSONObject());
+			jsonMessages.put(iterator.next().toJSONObject(forLocalStorage));
 
 		}
 		return jsonMessages;

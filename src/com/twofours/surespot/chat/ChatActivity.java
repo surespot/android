@@ -146,14 +146,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 				if (mLastViewedMessageIds != null) {
 					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
 					updateLastViewedMessageId(name);
-					
-					//getChatFragment(name).requestFocus();
+
+					// getChatFragment(name).requestFocus();
 
 				}
 			}
 
 		});
-	    mViewPager.setOffscreenPageLimit(1);
+		mViewPager.setOffscreenPageLimit(1);
 
 		if (name != null) {
 			mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
@@ -300,11 +300,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		case R.id.menu_send_image_bar:
 		case R.id.menu_send_image_menu:
 
-			// TODO set chat name on selection and propogate to result handler
-			Intent intent = new Intent();
-			intent.setType("image/*");
-			intent.setAction(Intent.ACTION_GET_CONTENT);
-			startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the callback
+			sendImage();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -312,18 +309,25 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	}
 
+	private void sendImage() {
+		Intent intent = new Intent();
+		intent.setType("image/*");
+		intent.setAction(Intent.ACTION_GET_CONTENT);
+		startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
 			Uri selectedImageUri = data.getData();
 			Utils.uploadPictureMessage(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
-				
+
 				@Override
 				public void handleResponse(Boolean result) {
 					// TODO handle error
-					
+
 				}
-			});		
+			});
 		}
 	}
 

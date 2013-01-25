@@ -387,7 +387,7 @@ public class ChatController {
 	public void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		Log.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		Utils.putSharedPrefsString("unsentmessages", Utils.chatMessagesToJson(mResendBuffer).toString());
+		Utils.putSharedPrefsString("unsentmessages", Utils.chatMessagesToJson(mResendBuffer, true).toString());
 
 	}
 
@@ -426,7 +426,7 @@ public class ChatController {
 		if (getState() == STATE_CONNECTED) {
 			// TODO handle different mime types
 
-			socket.send(message.toJSONObject().toString());
+			socket.send(message.toJSONObject(false).toString());
 		}
 
 	}

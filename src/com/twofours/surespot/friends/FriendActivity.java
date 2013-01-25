@@ -29,6 +29,9 @@ import android.widget.Toast;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
@@ -378,6 +381,32 @@ public class FriendActivity extends SherlockActivity {
 				}
 			});
 		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.activity_friend, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {	
+		case R.id.menu_debug_clear:
+			for (String chatname : mMainAdapter.getFriends()) {
+				Utils.putSharedPrefsString("messages_" + chatname, null);
+				
+				
+			}
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
+		
+
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+
 	}
 
 }

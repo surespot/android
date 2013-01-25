@@ -7,12 +7,17 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+
+import android.widget.AbsListView.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.BitmapCache;
@@ -141,10 +146,11 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getView(final int position, View convertView, ViewGroup parent) {
 		// Log.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
+		
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		final ChatMessageViewHolder chatMessageViewHolder;
 		if (convertView == null) {
@@ -152,33 +158,61 @@ public class ChatAdapter extends BaseAdapter {
 
 			switch (type) {
 			case TYPE_US:
-				convertView = inflater.inflate(R.layout.message_list_item_us, parent, false);
+				convertView = inflater.inflate(R.layout.message_list_item_us, null, false);
 				chatMessageViewHolder.vMessageSending = convertView.findViewById(R.id.messageSending);
 				chatMessageViewHolder.vMessageSent = convertView.findViewById(R.id.messageSent);
 				break;
 			case TYPE_THEM:
-				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
+				convertView = inflater.inflate(R.layout.message_list_item_them, null, false);
 				break;
 			}
 			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
-			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
+			chatMessageViewHolder.tvText = // new TextView(parent.getContext());
+			(TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
+			// chatMessageViewHolder.imageView = new ImageView(parent.getContext());
+			// ((LinearLayout) convertView).addView(chatMessageViewHolder.tvText);
+			// ((LinearLayout) convertView).addView(chatMessageViewHolder.imageView);
 			convertView.setTag(chatMessageViewHolder);
+			
 		} else {
 			chatMessageViewHolder = (ChatMessageViewHolder) convertView.getTag();
 		}
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 
+		final View rowView  = convertView;
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+
+			// chatMessageViewHolder.imageView.rem
+			if (item.getHeight() > 0) {
+				Log.v(TAG, "text height before pos: " + position + ", height: " + item.getHeight());
+				// chatMessageViewHolder.tvText.setHeight(item.getHeight());
+				chatMessageViewHolder.tvText.setHeight(item.getHeight());
+			////	chatMessageViewHolder.tvText.setMinHeight(item.getHeight());
+			//	chatMessageViewHolder.tvText.setMaxHeight(item.getHeight());
+
+				 chatMessageViewHolder.tvText.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+				 android.view.ViewGroup.LayoutParams.WRAP_CONTENT, item.getHeight()));
+
+			} else {
+			//	chatMessageViewHolder.tvText.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+	//					android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+//
+			}
+
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
+			chatMessageViewHolder.imageView.setImageBitmap(null);
+
 			if (item.getPlainData() != null) {
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
 			} else {
 				if (!item.isLoading()) {
 					item.setLoading(true);
-					chatMessageViewHolder.tvText.setText("");
+
+				//	chatMessageViewHolder.tvText.setText(item.getCipherData());
+
 					// decrypt
 					EncryptionController.symmetricDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
 							item.getCipherData(), new IAsyncCallback<String>() {
@@ -189,19 +223,58 @@ public class ChatAdapter extends BaseAdapter {
 									if (result != null) {
 										item.setPlainData(result);
 										chatMessageViewHolder.tvText.setText(result);
+										rowView.requestLayout();
+										Log.v(TAG,
+												"pos: " + position + ", measured height: "
+														+ chatMessageViewHolder.tvText.getMeasuredHeight());
+										Log.v(TAG, "pos: " + position + ", height: " + chatMessageViewHolder.tvText.getMeasuredHeight());
 									} else {
 										chatMessageViewHolder.tvText.setText("Could not decrypt message.");
 									}
 
+									if (item.getHeight() == 0) {
+
+										// first time setting height, set the textview to wrap content so it computes the height, then store
+										// it
+
+										Log.v(TAG,
+												"pos: " + position + ", storing height: "
+														+ chatMessageViewHolder.tvText.getMeasuredHeight());
+										item.setHeight(chatMessageViewHolder.tvText.getMeasuredHeight());
+									}
+
 									item.setLoading(false);
+
 								}
 
 							});
 				}
 			}
 		} else {
+			// images
+			chatMessageViewHolder.tvText.setText("");
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
+
+			if (item.getHeight() > 0) {
+				Log.v(TAG, "Setting height: " + item.getHeight());
+
+				chatMessageViewHolder.imageView.getLayoutParams().height = item.getHeight();
+				// chatMessageViewHolder.imageView.(item.getHeight());
+		//		chatMessageViewHolder.imageView.setMinimumHeight(item.getHeight());
+		//		chatMessageViewHolder.imageView.setMaxHeight(item.getHeight());
+				chatMessageViewHolder.imageView.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+									android.view.ViewGroup.LayoutParams.WRAP_CONTENT, item.getHeight()));
+
+				// chatMessageViewHolder.imageView.setMaxHeight(item.getHeight());
+				// convertView.setLayoutParams(new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, item.getHeight()));
+				// convertView.setMinimumHeight(item.getHeight());
+				// chatMessageViewHolder.imageView.setMinimumHeight(item.getHeight());
+			} else {
+		//		chatMessageViewHolder.imageView.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+			//			android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+
+			}
 
 			// check bitmap cache
 			Bitmap bitmap = null;
@@ -215,6 +288,7 @@ public class ChatAdapter extends BaseAdapter {
 			} else {
 				if (!item.isLoading()) {
 					item.setLoading(true);
+
 					// download the encrypted image data
 					NetworkController.getFile(item.getCipherData(), new AsyncHttpResponseHandler() {
 						@Override
@@ -223,7 +297,7 @@ public class ChatAdapter extends BaseAdapter {
 							EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
 									content, new IAsyncCallback<byte[]>() {
 										@Override
-						 				public void handleResponse(byte[] result) {
+										public void handleResponse(byte[] result) {
 											if (result != null) {
 
 												// TODO decode on thread
@@ -238,8 +312,14 @@ public class ChatAdapter extends BaseAdapter {
 
 												// cache the bitmap
 												mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
-										//notifyDataSetChanged();
+
+												// save the dimensions so we can rebuild nicer later
+												if (item.getHeight() == 0) {
+													item.setHeight(bitmap.getHeight());
+												}
+
 												item.setLoading(false);
+												// notifyDataSetChanged();
 
 											}
 										}
