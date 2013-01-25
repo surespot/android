@@ -31,18 +31,15 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private final BitmapCache mBitmapCache = new BitmapCache();
 
-	
-	
 	public ChatAdapter(Context context) {
 		Log.v(TAG, "Constructor.");
 		mContext = context;
 	}
-	
+
 	public void evictCache() {
 		mBitmapCache.evictAll();
 	}
-	
-	
+
 	public ArrayList<SurespotMessage> getMessages() {
 		return mMessages;
 	}
@@ -57,6 +54,7 @@ public class ChatAdapter extends BaseAdapter {
 		}
 		return null;
 	}
+
 	public SurespotMessage getFirstMessageWithId() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext();) {
 			SurespotMessage message = iterator.next();
@@ -72,7 +70,7 @@ public class ChatAdapter extends BaseAdapter {
 	// }
 
 	// update the id and sent status of the message once we received
-	public void addOrUpdateMessage(SurespotMessage message) {
+	private void addOrUpdateMessage(SurespotMessage message) {
 		// if the id is null we're sending the message so just add it
 		if (message.getId() == null) {
 			mMessages.add(message);
@@ -84,15 +82,15 @@ public class ChatAdapter extends BaseAdapter {
 				//
 				mMessages.add(message);
 			} else {
-				//Log.v(TAG, "addMessage, updating message");
+				// Log.v(TAG, "addMessage, updating message");
 				SurespotMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
 			}
 		}
 	}
-	
+
 	private void insertMessage(SurespotMessage message) {
-		mMessages.add(0,message);
+		mMessages.add(0, message);
 	}
 
 	public void addMessages(ArrayList<SurespotMessage> messages) {
@@ -144,6 +142,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		Log.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -217,45 +216,48 @@ public class ChatAdapter extends BaseAdapter {
 				chatMessageViewHolder.imageView.setImageBitmap(bitmap);
 
 			} else {
-				//download the encrypted image data
-				NetworkController.getFile(item.getCipherData(), new AsyncHttpResponseHandler() {
-					@Override
-					public void onSuccess(int statusCode, String content) {
-						// decrypt
-						EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
-								content, new IAsyncCallback<byte[]>() {
-									@Override
-									public void handleResponse(byte[] result) {
-										if (result != null) {
+				if (!item.isLoading()) {
+					item.setLoading(true);
+					// download the encrypted image data
+					NetworkController.getFile(item.getCipherData(), new AsyncHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, String content) {
+							// decrypt
+							EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
+									content, new IAsyncCallback<byte[]>() {
+										@Override
+										public void handleResponse(byte[] result) {
+											if (result != null) {
 
-											//TODO decode on thread
-											Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getId());
-											byte[] decoded = result;
-											Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-											
-											//clear out memory
-											decoded = null;
-											
-											chatMessageViewHolder.imageView.setImageBitmap(bitmap);										
-											
-											//cache the bitmap
-											mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
+												// TODO decode on thread
+												Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getId());
+												byte[] decoded = result;
+												Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
 
+												// clear out memory
+												decoded = null;
+
+												chatMessageViewHolder.imageView.setImageBitmap(bitmap);
+
+												// cache the bitmap
+												mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);		
+												notifyDataSetChanged();
+												item.setLoading(false);
+
+											}
 										}
-									}
 
-								});
+									});
 
-					}
-					
-					@Override
-					public void onFailure(Throwable error, String content) {
-						
-						
-					}
-				});
+						}
 
-								
+						@Override
+						public void onFailure(Throwable error, String content) {
+							item.setLoading(false);
+						}
+					});
+				}
+
 			}
 		}
 
@@ -282,6 +284,7 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 	}
+
 	public void insertMessage(SurespotMessage message, boolean notify) {
 		insertMessage(message);
 		if (notify) {

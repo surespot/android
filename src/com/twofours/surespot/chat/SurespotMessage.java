@@ -18,6 +18,7 @@ public class SurespotMessage {
 	private String mId;
 	private String mResendId;
 	private String mMimeType;
+	private boolean mLoading;
 
 	public SurespotMessage() {
 
@@ -162,6 +163,14 @@ public class SurespotMessage {
 
 	public void setIv(String mIv) {
 		this.mIv = mIv;
+	}
+
+	public boolean isLoading() {
+		return mLoading;
+	}
+
+	public void setLoading(boolean mLoading) {
+		this.mLoading = mLoading;
 	}
 
 }

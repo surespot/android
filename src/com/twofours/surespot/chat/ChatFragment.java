@@ -446,11 +446,7 @@ public class ChatFragment extends SherlockFragment {
 		}
 	}
 
-	public void scrollToEnd() {
-		Log.v(TAG, "scrollFocus");
-		mListView.setSelection(mChatAdapter.getCount() - 1);
 
-	}
 
 	public void requestFocus() {
 		mEditText.requestFocus();
