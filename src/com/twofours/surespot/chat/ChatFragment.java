@@ -226,7 +226,7 @@ public class ChatFragment extends SherlockFragment {
 		}
 
 		if (isVisible()) {
-			Log.v(TAG, "onResume we are visible");
+			Log.v(TAG, "onResume " + mUsername  + " visible");
 			requestFocus();
 		}
 	}

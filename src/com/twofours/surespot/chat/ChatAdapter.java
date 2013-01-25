@@ -142,7 +142,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		Log.v(TAG, "getView, pos: " + position);
+	//	Log.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
