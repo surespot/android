@@ -36,6 +36,7 @@ import com.twofours.surespot.network.NetworkController;
 public class Utils {
 	private static Toast mToast;
 	private static final String TAG = "Utils";
+
 	// Fast Implementation
 	public static String inputStreamToString(InputStream is) throws IOException {
 		String line = "";
@@ -187,7 +188,7 @@ public class Utils {
 
 		final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
-		bitmap = null;		
+		bitmap = null;
 
 		try {
 			jpeg.close();
@@ -205,12 +206,12 @@ public class Utils {
 					NetworkController.postFile(context, to, new String(results[0]), results[1], SurespotConstants.MimeTypes.IMAGE,
 							new AsyncHttpResponseHandler() {
 								public void onSuccess(int statusCode, String content) {
-									Log.v(TAG,"Received picture upload response: " + content);
+									Log.v(TAG, "Received picture upload response: " + content);
 									callback.handleResponse(true);
 								};
 
 								public void onFailure(Throwable error, String content) {
-									Log.v(TAG,"Error uploading picture: " + content);
+									Log.v(TAG, "Error uploading picture: " + content);
 									callback.handleResponse(false);
 								};
 							});
@@ -219,6 +220,19 @@ public class Utils {
 			}
 		});
 		callback.handleResponse(null);
+	}
+
+	private void decodeImageBounds(Context context, Uri imageUri, BitmapFactory.Options options) {
+		// First decode with inJustDecodeBounds=true to check dimensions
+		
+		options.inJustDecodeBounds = true;
+		try {
+			BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			//return null;
+		}
 	}
 
 	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int reqWidth, int reqHeight) {

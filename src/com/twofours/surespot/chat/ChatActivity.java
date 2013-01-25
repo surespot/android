@@ -153,7 +153,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 
 		});
-		mViewPager.setOffscreenPageLimit(1);
+		mViewPager.setOffscreenPageLimit(2);
 
 		if (name != null) {
 			mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));

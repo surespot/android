@@ -151,7 +151,6 @@ public class ChatFragment extends SherlockFragment {
 				intent.setType(null);
 				intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 			}
-
 		}
 
 		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog
@@ -173,24 +172,22 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
-				// Log.v(TAG,"onScroll, firstVisibleItem: " + firstVisibleItem + ", visibleItemCount: " + visibleItemCount +
-				// ", totalItemCount: " + totalItemCount);
 				if (mLoading) {
 					// will have more items if we loaded them
 					if (totalItemCount > mPreviousTotal) {
 						mPreviousTotal = totalItemCount;
 						mLoading = false;
 					}
-
 				}
 
-				if (!mLoading && !mNoEarlierMessages && (firstVisibleItem <= 7)) {
-					Log.v(TAG, "onScroll: Loading more messages.");
+				if (!mLoading && !mNoEarlierMessages && firstVisibleItem <= 10) {
+				//	Log.v(TAG, "onScroll: Loading more messages.");
+				//	Log.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+				//			+ ", visibleItemCount: " + visibleItemCount);
 					mLoading = true;
 					getEarlierMessages();
 
 				}
-
 			}
 
 			@Override
@@ -226,7 +223,7 @@ public class ChatFragment extends SherlockFragment {
 		}
 
 		if (isVisible()) {
-			Log.v(TAG, "onResume " + mUsername  + " visible");
+			Log.v(TAG, "onResume " + mUsername + " visible");
 			requestFocus();
 		}
 	}
@@ -267,7 +264,6 @@ public class ChatFragment extends SherlockFragment {
 							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 							message = SurespotMessage.toSurespotMessage(jsonMessage);
 							mChatAdapter.addOrUpdateMessage(message, false);
-
 						}
 					} catch (JSONException e) {
 						Log.e(TAG, "Error creating chat message: " + e.toString());
@@ -445,8 +441,6 @@ public class ChatFragment extends SherlockFragment {
 			}
 		}
 	}
-
-
 
 	public void requestFocus() {
 		mEditText.requestFocus();

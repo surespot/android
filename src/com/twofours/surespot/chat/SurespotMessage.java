@@ -18,6 +18,8 @@ public class SurespotMessage {
 	private String mId;
 	private String mResendId;
 	private String mMimeType;
+	private int mHeight;
+
 	private boolean mLoading;
 
 	public SurespotMessage() {
@@ -90,10 +92,11 @@ public class SurespotMessage {
 			chatMessage.setId(id);
 		}
 		chatMessage.setFrom(jsonMessage.getString("from"));
-		chatMessage.setTo(jsonMessage.getString("to"));		
-		chatMessage.setCipherData(jsonMessage.optString("data",null));
+		chatMessage.setTo(jsonMessage.getString("to"));
+		chatMessage.setCipherData(jsonMessage.optString("data", null));
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setIv(jsonMessage.getString("iv"));
+		chatMessage.setHeight(jsonMessage.optInt("height"));
 		String resendId = jsonMessage.optString("resendId");
 		if (resendId != null && !resendId.isEmpty()) {
 			chatMessage.setResendId(resendId);
@@ -109,13 +112,15 @@ public class SurespotMessage {
 			if (this.getId() != null) {
 				message.put("id", this.getId());
 			}
-						
+
 			message.put("data", this.getCipherData());
 			message.put("to", this.getTo());
 			message.put("from", this.getFrom());
 			message.put("resendId", this.getResendId());
 			message.put("mimeType", this.getMimeType());
 			message.put("iv", this.getIv());
+
+			message.put("height", this.getHeight());
 
 			return message;
 		} catch (JSONException e) {
@@ -140,7 +145,7 @@ public class SurespotMessage {
 		if (this.getId() != null && rhs.getId() != null && this.getId().equals(rhs.getId())) {
 			return true;
 		} else {
-			//iv should be unique across all messages
+			// iv should be unique across all messages
 			return (this.getIv().equals(rhs.getIv()));
 		}
 	}
@@ -171,6 +176,14 @@ public class SurespotMessage {
 
 	public void setLoading(boolean mLoading) {
 		this.mLoading = mLoading;
+	}
+
+	public Integer getHeight() {
+		return mHeight;
+	}
+
+	public void setHeight(Integer mHeight) {
+		this.mHeight = mHeight;
 	}
 
 }

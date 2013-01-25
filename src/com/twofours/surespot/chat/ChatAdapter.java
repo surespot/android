@@ -10,6 +10,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -142,7 +145,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// Log.v(TAG, "getView, pos: " + position);
+//		Log.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -178,7 +181,7 @@ public class ChatAdapter extends BaseAdapter {
 			} else {
 				if (!item.isLoading()) {
 					item.setLoading(true);
-					chatMessageViewHolder.tvText.setText("");
+					chatMessageViewHolder.tvText.setText("");				
 					// decrypt
 					EncryptionController.symmetricDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
 							item.getCipherData(), new IAsyncCallback<String>() {
@@ -189,11 +192,13 @@ public class ChatAdapter extends BaseAdapter {
 									if (result != null) {
 										item.setPlainData(result);
 										chatMessageViewHolder.tvText.setText(result);
+										
 									} else {
 										chatMessageViewHolder.tvText.setText("Could not decrypt message.");
 									}
 
 									item.setLoading(false);
+									notifyDataSetChanged();
 								}
 
 							});
@@ -203,6 +208,11 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 
+			if (item.getHeight() > 0) {
+				Log.v(TAG, "Setting height: " + item.getHeight());
+				chatMessageViewHolder.imageView.getLayoutParams().height = item.getHeight();		
+			}
+
 			// check bitmap cache
 			Bitmap bitmap = null;
 
@@ -210,7 +220,9 @@ public class ChatAdapter extends BaseAdapter {
 
 			if (bitmap != null) {
 				Log.v(TAG, "Using cached bitmap for message: " + item.getId());
-				chatMessageViewHolder.imageView.setImageBitmap(bitmap);
+				
+				
+			    
 
 			} else {
 				if (!item.isLoading()) {
@@ -233,14 +245,25 @@ public class ChatAdapter extends BaseAdapter {
 
 												// clear out memory
 												decoded = null;
+												
+//												Animation fadeInAnimation = new AlphaAnimation(0, 1);
+//												fadeInAnimation.setDuration(500);
+//												chatMessageViewHolder.imageView.startAnimation(fadeInAnimation);
+//												chatMessageViewHolder.imageView.setImageBitmap(bitmap);
+//											    
 
-												chatMessageViewHolder.imageView.setImageBitmap(bitmap);
-
+												
 												// cache the bitmap
 												mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
-										//notifyDataSetChanged();
-												item.setLoading(false);
+										
+												// save the dimensions so we can rebuild nicer later
+												if (item.getHeight() == 0) {
+													notifyDataSetChanged();
+													item.setHeight(bitmap.getHeight());
+												}
 
+												item.setLoading(false);
+											
 											}
 										}
 
