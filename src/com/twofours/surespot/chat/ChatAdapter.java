@@ -6,6 +6,7 @@ import java.util.ListIterator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.BitmapCache;
+import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
@@ -33,6 +35,7 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
 	private final BitmapCache mBitmapCache = new BitmapCache();
+	private final ImageDownloader mImageDownloader = new ImageDownloader();
 
 	public ChatAdapter(Context context) {
 		Log.v(TAG, "Constructor.");
@@ -145,7 +148,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-//		Log.v(TAG, "getView, pos: " + position);
+		// Log.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -163,7 +166,7 @@ public class ChatAdapter extends BaseAdapter {
 				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
 				break;
 			}
-			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
+
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			convertView.setTag(chatMessageViewHolder);
@@ -175,110 +178,59 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.imageView.setVisibility(View.GONE);
+			chatMessageViewHolder.imageView.setVisibility(View.GONE);			
+			chatMessageViewHolder.imageView.clearAnimation();
+			
 			if (item.getPlainData() != null) {
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
 			} else {
+
 				if (!item.isLoading()) {
 					item.setLoading(true);
-					chatMessageViewHolder.tvText.setText("");				
-					// decrypt
-					EncryptionController.symmetricDecrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
-							item.getCipherData(), new IAsyncCallback<String>() {
+					
+					chatMessageViewHolder.tvText.setText(item.getCipherData());
 
-								@Override
-								public void handleResponse(String result) {
+					//decrypt on background thread
+					new AsyncTask<Void, Void, String>() {
 
-									if (result != null) {
-										item.setPlainData(result);
-										chatMessageViewHolder.tvText.setText(result);
-										
-									} else {
-										chatMessageViewHolder.tvText.setText("Could not decrypt message.");
-									}
+						@Override
+						protected String doInBackground(Void... params) {
+							// decrypt
+							String result = EncryptionController.symmetricDecryptSync((type == TYPE_US ? item.getTo() : item.getFrom()),
+									item.getIv(), item.getCipherData());
+							return result;
+						}
 
-									item.setLoading(false);
-									notifyDataSetChanged();
-								}
+						protected void onPostExecute(String result) {
 
-							});
+							if (result != null) {
+								item.setPlainData(result);
+								chatMessageViewHolder.tvText.setText(result);
+
+							} else {
+								chatMessageViewHolder.tvText.setText("Could not decrypt message.");
+							}
+
+							item.setLoading(false);
+						}
+					}.execute();
+
 				}
 			}
 		} else {
+			
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
+			chatMessageViewHolder.tvText.setText("");
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 
 			if (item.getHeight() > 0) {
 				Log.v(TAG, "Setting height: " + item.getHeight());
-				chatMessageViewHolder.imageView.getLayoutParams().height = item.getHeight();		
+				chatMessageViewHolder.imageView.getLayoutParams().height = item.getHeight();
 			}
 
-			// check bitmap cache
-			Bitmap bitmap = null;
+			mImageDownloader.download(item.getCipherData(), item.getId(), item.getIv(), Utils.getOtherUser(item.getFrom(), item.getTo()),
+					chatMessageViewHolder.imageView);
 
-			bitmap = mBitmapCache.getBitmapFromMemCache(item.getId());
-
-			if (bitmap != null) {
-				Log.v(TAG, "Using cached bitmap for message: " + item.getId());
-				
-				
-			    
-
-			} else {
-				if (!item.isLoading()) {
-					item.setLoading(true);
-					// download the encrypted image data
-					NetworkController.getFile(item.getCipherData(), new AsyncHttpResponseHandler() {
-						@Override
-						public void onSuccess(int statusCode, String content) {
-							// decrypt
-							EncryptionController.symmetricBase64Decrypt((type == TYPE_US ? item.getTo() : item.getFrom()), item.getIv(),
-									content, new IAsyncCallback<byte[]>() {
-										@Override
-						 				public void handleResponse(byte[] result) {
-											if (result != null) {
-
-												// TODO decode on thread
-												Log.v(TAG, "Generating bitmap from encrypted data for message: " + item.getId());
-												byte[] decoded = result;
-												Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-
-												// clear out memory
-												decoded = null;
-												
-//												Animation fadeInAnimation = new AlphaAnimation(0, 1);
-//												fadeInAnimation.setDuration(500);
-//												chatMessageViewHolder.imageView.startAnimation(fadeInAnimation);
-//												chatMessageViewHolder.imageView.setImageBitmap(bitmap);
-//											    
-
-												
-												// cache the bitmap
-												mBitmapCache.addBitmapToMemoryCache(item.getId(), bitmap);
-										
-												// save the dimensions so we can rebuild nicer later
-												if (item.getHeight() == 0) {
-													notifyDataSetChanged();
-													item.setHeight(bitmap.getHeight());
-												}
-
-												item.setLoading(false);
-											
-											}
-										}
-
-									});
-
-						}
-
-						@Override
-						public void onFailure(Throwable error, String content) {
-							item.setLoading(false);
-						}
-					});
-				}
-
-			}
 		}
 
 		if (type == TYPE_US) {

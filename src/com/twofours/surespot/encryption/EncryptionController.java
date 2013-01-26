@@ -345,6 +345,61 @@ public class EncryptionController {
 				callback.handleResponse(result);
 			}
 		}.execute();
+
+	}
+
+	public synchronized static byte[] symmetricBase64DecryptSync(final String username, final String ivs, final String cipherData) {
+
+		byte[] buf = new byte[1024]; // input buffer
+
+		try {
+			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+			byte[] cipherBytes = Utils.base64Decode(cipherData);
+			byte[] iv = Utils.base64Decode(ivs);
+			IvParameterSpec ivParams = new IvParameterSpec(iv);
+			ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			CipherOutputStream cos = new CipherOutputStream(out, ccm);
+
+			ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
+			int i = 0;
+			while ((i = in.read(buf)) != -1) {
+				cos.write(buf, 0, i);
+			}
+
+			in.close();
+			cos.close();
+			out.close();
+
+			return out.toByteArray();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidAlgorithmParameterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchProviderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
 	}
 
 	public static void symmetricBase64Encrypt(final String username, final String base64data, final IAsyncCallback<String[]> callback) {
@@ -426,7 +481,7 @@ public class EncryptionController {
 			protected byte[][] doInBackground(Void... params) {
 				byte[] iv = new byte[15];
 				byte[] buf = new byte[1024]; // input buffer
-			
+
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				mSecureRandom.nextBytes(iv);
 				IvParameterSpec ivParams = new IvParameterSpec(iv);
@@ -452,7 +507,7 @@ public class EncryptionController {
 
 					returns[0] = Utils.base64Encode(iv);
 					returns[1] = Utils.base64Encode(out.toByteArray());
-					
+
 					return returns;
 				} catch (IllegalStateException e) {
 					// TODO Auto-generated catch block
@@ -543,6 +598,48 @@ public class EncryptionController {
 				callback.handleResponse(result);
 			}
 		}.execute();
+	}
+
+	public static String symmetricDecryptSync(final String username, final String ivs, final String cipherData) {
+
+		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+
+		byte[] cipherBytes = null;
+		byte[] iv = null;
+		ParametersWithIV ivParams = null;
+		try {
+
+			cipherBytes = Utils.base64Decode(cipherData);
+			iv = Utils.base64Decode(ivs);
+			ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (InvalidCacheLoadException icle) {
+			icle.printStackTrace();
+			return null;
+		}
+
+		ccm.reset();
+		ccm.init(false, ivParams);
+
+		byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
+
+		int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
+		try {
+			len += ccm.doFinal(buf, len);
+			return new String(buf);
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidCipherTextException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
 	}
 
 	public static void symmetricEncrypt(final String username, final String plaintext, final IAsyncCallback<String[]> callback) {

@@ -365,5 +365,9 @@ public class NetworkController {
 	public static void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
 		get(relativeUrl, null, responseHandler);
 	}
+	
+	public static String getFileSync(String relativeUrl) {
+		return mSyncClient.get(SurespotConstants.BASE_URL + relativeUrl);
+	}
 
 }
