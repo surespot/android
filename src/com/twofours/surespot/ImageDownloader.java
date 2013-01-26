@@ -79,10 +79,11 @@ public class ImageDownloader {
 			forceDownload(url, id, iv, from, imageView);
 		} else {
 			cancelPotentialDownload(url, imageView);
+			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
 		}
 	}
-	
+
 	/*
 	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not
 	 * clear. private void forceDownload(String url, ImageView view) { forceDownload(url, view, null); }
@@ -143,19 +144,7 @@ public class ImageDownloader {
 		}
 		return null;
 	}
-
-	Bitmap downloadEncryptedBitmap(String url, final String id, final String iv, final String from) {
-
-		String content = NetworkController.getFileSync(url);
-		
-		if (content != null) {
-			byte[] decoded =EncryptionController.symmetricBase64DecryptSync(from, iv, content); 
-			return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-			
-		}
-		return null;	
-
-	}
+	
 
 	/*
 	 * An InputStream that skips the exact number of bytes provided, unless it reaches EOF.
@@ -206,8 +195,20 @@ public class ImageDownloader {
 			url = params[0];
 			id = params[1];
 			iv = params[2];
-			user = params[3];
-			return downloadEncryptedBitmap(url, id, iv, user);
+			user = params[3];	
+
+			String content = NetworkController.getFileSync(url);
+
+			if (!isCancelled()) {
+				if (content != null) {
+					byte[] decoded =EncryptionController.symmetricBase64DecryptSync(user, iv, content); 
+					return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+	
+				}
+			}
+			
+			return null;
+			
 		}
 
 		/**

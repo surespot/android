@@ -23,6 +23,7 @@ import com.twofours.surespot.BitmapCache;
 import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -36,6 +37,7 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private final BitmapCache mBitmapCache = new BitmapCache();
 	private final ImageDownloader mImageDownloader = new ImageDownloader();
+	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
 
 	public ChatAdapter(Context context) {
 		Log.v(TAG, "Constructor.");
@@ -178,50 +180,22 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.imageView.setVisibility(View.GONE);			
+			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
-			
+			chatMessageViewHolder.imageView.setImageBitmap(null);
+
 			if (item.getPlainData() != null) {
+				chatMessageViewHolder.tvText.clearAnimation();
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
 			} else {
-
-				if (!item.isLoading()) {
-					item.setLoading(true);
-					
-					chatMessageViewHolder.tvText.setText(item.getCipherData());
-
-					//decrypt on background thread
-					new AsyncTask<Void, Void, String>() {
-
-						@Override
-						protected String doInBackground(Void... params) {
-							// decrypt
-							String result = EncryptionController.symmetricDecryptSync((type == TYPE_US ? item.getTo() : item.getFrom()),
-									item.getIv(), item.getCipherData());
-							return result;
-						}
-
-						protected void onPostExecute(String result) {
-
-							if (result != null) {
-								item.setPlainData(result);
-								chatMessageViewHolder.tvText.setText(result);
-
-							} else {
-								chatMessageViewHolder.tvText.setText("Could not decrypt message.");
-							}
-
-							item.setLoading(false);
-						}
-					}.execute();
-
-				}
+				chatMessageViewHolder.tvText.setText(item.getCipherData());				
+				mTextDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
 		} else {
-			
+			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
-			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 
 			if (item.getHeight() > 0) {
 				Log.v(TAG, "Setting height: " + item.getHeight());
