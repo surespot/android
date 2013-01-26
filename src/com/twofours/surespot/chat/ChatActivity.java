@@ -53,7 +53,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 					SurespotMessage[] resendMessages = mChatController.getResendMessages();
 					for (SurespotMessage message : resendMessages) {
 						// set the last received id so the server knows which messages to check
-						String room = message.getRoom();
+						String room = message.getSpot();
 
 						// ideally get the last id from the fragment's chat adapter
 						String lastMessageID = null;

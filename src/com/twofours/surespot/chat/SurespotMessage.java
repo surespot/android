@@ -74,7 +74,7 @@ public class SurespotMessage {
 		this.mResendId = resendId;
 	}
 
-	public String getRoom() {
+	public String getSpot() {
 		return Utils.getOtherUser(this.mFrom, this.mTo);
 	}
 
@@ -185,5 +185,7 @@ public class SurespotMessage {
 	public void setHeight(Integer mHeight) {
 		this.mHeight = mHeight;
 	}
+	
+	
 
 }

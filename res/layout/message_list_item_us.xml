@@ -4,13 +4,24 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
+    <!-- <TextView -->
+    <!-- android:id="@+id/messageUser" -->
+    <!-- android:layout_width="wrap_content" -->
+    <!-- android:layout_height="wrap_content" -->
+    <!-- android:layout_marginBottom="2dp" -->
+    <!-- android:layout_marginLeft="2dp" -->
+    <!-- android:layout_marginRight="2sp" -->
+    <!-- android:layout_marginTop="2dp" -->
+    <!-- android:textSize="20sp" > -->
+    <!-- </TextView> -->
+
     <View
         android:id="@+id/messageSending"
         android:layout_width="3dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
         android:background="@drawable/empty_blue_rectangle"
-        android:visibility="visible"         >
+        android:visibility="visible" >
     </View>
 
     <View
@@ -28,20 +39,20 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="2dp"
         android:layout_marginLeft="2dp"
-        android:layout_marginRight="55sp"        
+        android:layout_marginRight="55dp"
         android:layout_marginTop="2dp"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:visibility="gone" />
 
     <ImageView
         android:id="@+id/messageImage"
         android:layout_width="wrap_content"
-        android:layout_height="240dp"
-        android:layout_marginBottom="2dp"        
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2sp"
-        android:layout_marginTop="2dp"
-        android:adjustViewBounds="true"
-        android:visibility="visible" />
+        android:layout_marginTop="2dp"        
+        android:minHeight="240dp"
+        android:visibility="gone" />
 
 </LinearLayout>

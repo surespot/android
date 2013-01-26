@@ -233,6 +233,7 @@ public class ChatFragment extends SherlockFragment {
 		super.onPause();
 		Log.v(TAG, "onPause, mUsername:  " + mUsername);
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
+		saveMessages();
 		mChatAdapter.evictCache();
 	}
 
@@ -240,7 +241,6 @@ public class ChatFragment extends SherlockFragment {
 	public void onDestroy() {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
-		saveMessages();
 	}
 
 	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {

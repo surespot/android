@@ -4,30 +4,19 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.BitmapCache;
 import com.twofours.surespot.ImageDownloader;
+import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -35,7 +24,6 @@ public class ChatAdapter extends BaseAdapter {
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
-	private final BitmapCache mBitmapCache = new BitmapCache();
 	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
 
@@ -45,7 +33,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public void evictCache() {
-		mBitmapCache.evictAll();
+		mImageDownloader.evictCache();
 	}
 
 	public ArrayList<SurespotMessage> getMessages() {
@@ -82,14 +70,16 @@ public class ChatAdapter extends BaseAdapter {
 		// if the id is null we're sending the message so just add it
 		if (message.getId() == null) {
 			mMessages.add(message);
-		} else {
+		}
+		else {
 			int index = mMessages.indexOf(message);
 			if (index == -1) {
 				// Log.v(TAG, "addMessage, could not find message");
 
 				//
 				mMessages.add(message);
-			} else {
+			}
+			else {
 				// Log.v(TAG, "addMessage, updating message");
 				SurespotMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
@@ -133,7 +123,8 @@ public class ChatAdapter extends BaseAdapter {
 		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
-		} else {
+		}
+		else {
 			return TYPE_US;
 		}
 	}
@@ -169,41 +160,36 @@ public class ChatAdapter extends BaseAdapter {
 				break;
 			}
 
+			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			convertView.setTag(chatMessageViewHolder);
-		} else {
+		}
+		else {
 			chatMessageViewHolder = (ChatMessageViewHolder) convertView.getTag();
 		}
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
-
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
 			chatMessageViewHolder.imageView.setImageBitmap(null);
-
 			if (item.getPlainData() != null) {
 				chatMessageViewHolder.tvText.clearAnimation();
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
-			} else {
-				chatMessageViewHolder.tvText.setText(item.getCipherData());				
+			}
+			else {
+				chatMessageViewHolder.tvText.setText("");
 				mTextDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
-		} else {
+		}
+		else {
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
-
-			if (item.getHeight() > 0) {
-				Log.v(TAG, "Setting height: " + item.getHeight());
-				chatMessageViewHolder.imageView.getLayoutParams().height = item.getHeight();
-			}
-
-			mImageDownloader.download(item.getCipherData(), item.getId(), item.getIv(), Utils.getOtherUser(item.getFrom(), item.getTo()),
-					chatMessageViewHolder.imageView);
+			mImageDownloader.download(chatMessageViewHolder.imageView, item);
 
 		}
 
@@ -216,8 +202,8 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public static class ChatMessageViewHolder {
-		// public TextView tvUser;
 		public TextView tvText;
+		public TextView tvUser;
 		public View vMessageSending;
 		public View vMessageSent;
 		public ImageView imageView;

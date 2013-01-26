@@ -19,8 +19,6 @@ package com.twofours.surespot;
 import java.lang.ref.WeakReference;
 
 import android.os.AsyncTask;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.TextView;
 
 import com.twofours.surespot.chat.SurespotMessage;
