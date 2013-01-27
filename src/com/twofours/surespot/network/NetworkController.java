@@ -349,7 +349,11 @@ public class NetworkController {
 	 */
 	public static void unregister(final Context context, final String regId) {
 		Log.i(TAG, "unregistering device (regId = " + regId + ")");
-		GCMRegistrar.setRegisteredOnServer(context, false);
+		try {
+			//this will puke on phone with no google account
+			GCMRegistrar.setRegisteredOnServer(context, false);
+		}
+		finally{}
 	}
 
 	public static void postFile(Context context, String user, String id, byte[] data, String mimeType,
