@@ -165,7 +165,19 @@ public class SignupActivity extends Activity {
 				}
 
 			}
+		
+		
+			
+			@Override
+			public void onFailure(Throwable error, String content) {
+				Log.e(TAG, "Signup Error: " + content);
+				mMpd.decrProgress();
+			}
 		});
+		
+		
+		
+	
 
 	}
 
