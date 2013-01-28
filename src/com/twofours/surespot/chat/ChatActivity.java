@@ -17,6 +17,9 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -27,6 +30,7 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.viewpagerindicator.TabPageIndicator;
@@ -46,6 +50,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreate");
+
+	
 		mChatController = new ChatController(new IConnectCallback() {
 
 			@Override
@@ -137,10 +143,18 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.addChatName(name);
 		}
 
-		final ActionBar actionBar = getSupportActionBar();		
+		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setTitle(name);
-
+		actionBar.setDisplayShowCustomEnabled(true);
+		actionBar.setDisplayShowTitleEnabled(false);		
+		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
+		TextView navView = (TextView) customNav.findViewById(R.id.nav);
+		TextView userView = (TextView) customNav.findViewById(R.id.user);
+		navView.setText("spots");
+		userView.setText(EncryptionController.getIdentityUsername());			
+		actionBar.setCustomView(customNav);
+		getSupportActionBar().setSubtitle("WTF");
+		
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
 		TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.indicator);
@@ -150,7 +164,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			@Override
 			public void onPageSelected(int position) {
 				String name = mPagerAdapter.getChatName(position);
-				actionBar.setTitle(name);
+				// actionBar.setTitle(name);
 				if (mLastViewedMessageIds != null) {
 					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
 					updateLastViewedMessageId(name);
@@ -362,7 +376,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
 			updateLastViewedMessageId(name);
-			getSupportActionBar().setTitle(name);
+			// getSupportActionBar().setTitle(name);
 
 		}
 	}

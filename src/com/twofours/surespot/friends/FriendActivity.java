@@ -16,6 +16,7 @@ import android.text.InputFilter;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -65,14 +66,27 @@ public class FriendActivity extends SherlockActivity {
 		Intent intent = getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-	
+		
+		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
+		TextView navView = (TextView) customNav.findViewById(R.id.nav);
+		TextView userView = (TextView) customNav.findViewById(R.id.user);
+		
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 			//set the title
-			getSupportActionBar().setTitle("send to");
+			
+			navView.setText("send");
+			userView.setText("?");
 		}
 		else {
-			getSupportActionBar().setTitle("surespot " + EncryptionController.getIdentityUsername());
+			navView.setText("home");
+			userView.setText(EncryptionController.getIdentityUsername());
 		}
+		
+		getSupportActionBar().setCustomView(customNav);
+		getSupportActionBar().setDisplayShowCustomEnabled(true);
+		getSupportActionBar().setDisplayShowTitleEnabled(false);
+		getSupportActionBar().setSubtitle("WTF");
+			
 
 		mChatController = new ChatController(new IConnectCallback() {
 
