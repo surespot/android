@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -39,6 +40,10 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import android.os.AsyncTask;
+import android.util.Base64;
+import android.util.Base64InputStream;
+import android.util.Log;
+
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -401,6 +406,63 @@ public class EncryptionController {
 		return null;
 
 	}
+	
+	public synchronized static OutputStream symmetricBase64DecryptSync(final String username, final String ivs, final InputStream base64data, ByteArrayOutputStream outStream) {
+
+		byte[] buf = new byte[1024]; // input buffer
+
+		try {
+			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+			//data.r
+			//byte[] cipherBytes = Utils.base64Decode();
+			byte[] iv = Utils.base64Decode(ivs);
+			IvParameterSpec ivParams = new IvParameterSpec(iv);
+			//ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);	
+			CipherOutputStream cos = new CipherOutputStream(outStream, ccm);
+			Base64InputStream in = new Base64InputStream(base64data, Base64.NO_WRAP | Base64.URL_SAFE);
+
+			ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
+			int i = 0;
+			while ((i = in.read(buf)) != -1) {
+				cos.write(buf, 0, i);
+			}
+
+			in.close();
+			cos.close();
+		//	out.close();
+			outStream.close();
+
+			return cos;
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidAlgorithmParameterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchProviderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+
 
 	public static void symmetricBase64Encrypt(final String username, final String base64data, final IAsyncCallback<String[]> callback) {
 		new AsyncTask<Void, Void, String[]>() {

@@ -12,5 +12,6 @@
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_image_view">ImageViewActivity</string>
 
 </resources>

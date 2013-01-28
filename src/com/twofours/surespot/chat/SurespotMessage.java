@@ -77,6 +77,21 @@ public class SurespotMessage {
 	public String getSpot() {
 		return Utils.getOtherUser(this.mFrom, this.mTo);
 	}
+	
+	public static SurespotMessage toSurespotMessage(String jsonString) {
+		JSONObject jsonObject;
+		try {
+			jsonObject = new JSONObject(jsonString);
+			return toSurespotMessage(jsonObject);
+		}
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+		
+	}
 
 	/**
 	 * @param jsonMessage

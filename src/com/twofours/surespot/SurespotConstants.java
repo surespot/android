@@ -18,6 +18,7 @@ public class SurespotConstants {
 		public static final String SHOW_CHAT_NAME = "show_chat_name";
 		public static final String GCM_CHANGED = "gcm_changed";
 		public static final String CONNECTED = "connected";
+		public static final String IMAGE_MESSAGE = "image_message";
 	}
 
 	public final static String BASE_URL = "http://alpha.surespot.me:8080";

@@ -28,7 +28,7 @@
     <application
         android:name="com.twofours.surespot.SurespotApplication"
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"        
+        android:icon="@drawable/ic_launcher"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar" >
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
@@ -41,7 +41,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".GCMIntentService" />
+        <service android:name="com.twofours.surespot.GCMIntentService" />
 
         <activity
             android:name="com.twofours.surespot.ui.activities.StartupActivity"
@@ -85,8 +85,12 @@
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
-            android:name="com.twofours.surespot.chat.ChatActivity"            
+            android:name="com.twofours.surespot.chat.ChatActivity"
             android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.ImageViewActivity"
+            android:label="@string/title_activity_image_view" >
         </activity>
     </application>
 

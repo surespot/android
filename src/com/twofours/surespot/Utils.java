@@ -93,7 +93,7 @@ public class Utils {
 	}
 
 	public static byte[] base64Decode(String buf) {
-		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
+		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);			
 	}
 
 	public static String getOtherUser(String from, String to) {
@@ -309,6 +309,8 @@ public class Utils {
 		// return null;
 
 	}
+	
+
 
 	public static Bitmap getSampledImage(byte[] data, int reqHeight) {
 		BitmapFactory.Options options = new Options();
