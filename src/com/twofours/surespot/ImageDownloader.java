@@ -157,23 +157,28 @@ public class ImageDownloader {
 				bitmap = null;
 			}
 
-			addBitmapToCache(mMessage.getCipherData(), bitmap);
+			if (bitmap != null) {
+				addBitmapToCache(mMessage.getCipherData(), bitmap);
 
-			if (imageViewReference != null) {
-				ImageView imageView = imageViewReference.get();
-				BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-				// Change bitmap only if this process is still associated with it
-				// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-				if ((this == bitmapDownloaderTask)) {
-					imageView.clearAnimation();
-					Animation fadeIn = new AlphaAnimation(0, 1);
-					fadeIn.setDuration(1000);
-					imageView.startAnimation(fadeIn);
-					imageView.setImageBitmap(bitmap);
-					if (mMessage.getHeight() == 0) {
-						bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
-						SurespotLog.v(TAG, "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom() + ", to: "
-								+ mMessage.getTo() + ", height: " + bitmap.getHeight() + ", width: " + bitmap.getWidth());
+				if (imageViewReference != null) {
+					ImageView imageView = imageViewReference.get();
+					BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+					// Change bitmap only if this process is still associated with it
+					// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+					if ((this == bitmapDownloaderTask)) {
+						imageView.clearAnimation();
+						Animation fadeIn = new AlphaAnimation(0, 1);
+						fadeIn.setDuration(1000);
+						imageView.startAnimation(fadeIn);
+						imageView.setImageBitmap(bitmap);
+						if (mMessage.getHeight() == 0) {
+							bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
+							SurespotLog.v(
+									TAG,
+									"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
+											+ ", to: " + mMessage.getTo() + ", height: " + bitmap.getHeight() + ", width: "
+											+ bitmap.getWidth());
+						}
 					}
 				}
 			}

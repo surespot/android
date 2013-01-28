@@ -398,4 +398,8 @@ public class NetworkController {
 
 	}
 
+	public static void clearCache() {
+		mClient.clearCache();		
+	}
+
 }

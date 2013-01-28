@@ -85,19 +85,21 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void handleResponse(Boolean result) {
 				// TODO Auto-generated method stub
+				if (getActivity() != null) {
 
-				((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-				// mEditText.requestFocus();
-				// TODO move "last viewed" logic to ChatActivity
-				String lastMessageId = getLatestMessageId();
-				if (lastMessageId != null) {
-					((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
-				}
+					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+					// mEditText.requestFocus();
+					// TODO move "last viewed" logic to ChatActivity
+					String lastMessageId = getLatestMessageId();
+					if (lastMessageId != null) {
+						((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
+					}
 
-				if (getView() != null) {
-					mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+					if (getView() != null) {
+						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+					}
+					mChatAdapter.notifyDataSetChanged();
 				}
-				mChatAdapter.notifyDataSetChanged();
 			}
 		};
 
@@ -182,9 +184,9 @@ public class ChatFragment extends SherlockFragment {
 				}
 
 				if (!mLoading && !mNoEarlierMessages && firstVisibleItem <= 10) {
-				//	SurespotLog.v(TAG, "onScroll: Loading more messages.");
-				//	SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
-				//			+ ", visibleItemCount: " + visibleItemCount);
+					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
+					// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+					// + ", visibleItemCount: " + visibleItemCount);
 					mLoading = true;
 					getEarlierMessages();
 
@@ -235,7 +237,7 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 		saveMessages();
-	//	mChatAdapter.evictCache();
+		// mChatAdapter.evictCache();
 	}
 
 	@Override
@@ -266,7 +268,8 @@ public class ChatFragment extends SherlockFragment {
 							message = SurespotMessage.toSurespotMessage(jsonMessage);
 							mChatAdapter.addOrUpdateMessage(message, false);
 						}
-					} catch (JSONException e) {
+					}
+					catch (JSONException e) {
 						SurespotLog.e(TAG, "Error creating chat message: " + e.toString(), e);
 					}
 
@@ -316,7 +319,8 @@ public class ChatFragment extends SherlockFragment {
 									mChatAdapter.insertMessage(message, false);
 
 								}
-							} catch (JSONException e) {
+							}
+							catch (JSONException e) {
 								SurespotLog.e(TAG, "Error creating chat message: " + e.toString(), e);
 							}
 
@@ -332,7 +336,8 @@ public class ChatFragment extends SherlockFragment {
 						SurespotLog.e(TAG, "getEarlierMessages: " + error.getMessage(), error);
 					}
 				});
-			} else {
+			}
+			else {
 				SurespotLog.v(TAG, "getEarlierMessages: no more messages.");
 				ChatFragment.this.mNoEarlierMessages = true;
 			}
@@ -380,7 +385,8 @@ public class ChatFragment extends SherlockFragment {
 						SurespotMessage chatMessage = Utils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 						((ChatActivity) getActivity()).sendMessage(chatMessage);
-					} else {
+					}
+					else {
 						// TODO handle encryption error
 					}
 				}
@@ -410,7 +416,8 @@ public class ChatFragment extends SherlockFragment {
 			ArrayList<SurespotMessage> messages = Utils.jsonStringToChatMessages(sMessages);
 			SurespotLog.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
 			mChatAdapter.addMessages(messages);
-		} else {
+		}
+		else {
 			SurespotLog.v(TAG, "Loaded: no messages from local storage.");
 		}
 	}
@@ -424,7 +431,8 @@ public class ChatFragment extends SherlockFragment {
 				SurespotLog.v(TAG, "received action send, data: " + sharedText);
 				mEditText.append(sharedText);
 				requestFocus();
-			} else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+			}
+			else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
@@ -437,7 +445,8 @@ public class ChatFragment extends SherlockFragment {
 					}
 				});
 			}
-		} else {
+		}
+		else {
 			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
 				// TODO implement
 			}

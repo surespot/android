@@ -23,8 +23,8 @@ public class StartupActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
+		super.onCreate(savedInstanceState);		
+		
 		try {
 			//device without GCM throws exception
 			GCMRegistrar.checkDevice(this);

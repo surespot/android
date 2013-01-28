@@ -417,6 +417,8 @@ public class FriendActivity extends SherlockActivity {
 			}
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
 
+			// clear cache
+			NetworkController.clearCache();
 			return true;
 		case R.id.menu_logout:
 			NetworkController.logout(new AsyncHttpResponseHandler() {
