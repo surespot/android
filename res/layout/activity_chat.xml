@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    tools:context=".ChatActivity" >
+    tools:context=".ChatActivity">
 
     <com.viewpagerindicator.TitlePageIndicator
         android:id="@+id/indicator"
@@ -17,7 +17,8 @@
         app:footerPadding="8dp"
         app:topPadding="0dp"
         app:selectedBold="true"
-        app:selectedColor="@color/abs__holo_blue_light" />
+        app:selectedColor="@color/abs__holo_blue_light"
+       android:textColor="#7733b5e5" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
