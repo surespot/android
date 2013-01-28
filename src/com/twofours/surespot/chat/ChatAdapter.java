@@ -190,7 +190,6 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
 			mImageDownloader.download(chatMessageViewHolder.imageView, item);
-
 		}
 
 		if (type == TYPE_US) {

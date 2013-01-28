@@ -22,6 +22,11 @@ public class SurespotConstants {
 
 	public final static String BASE_URL = "http://alpha.surespot.me:8080";
 	public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
+	
+	public final static int MAX_IMAGE_DIMENSION = 480;
+	
+	//TODO change by screen size
+	public final static int IMAGE_DISPLAY_HEIGHT = 320;
 
 	// public final static String BASE_URL = "http://192.168.10.68:3000";
 	 //public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";

@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -28,6 +29,8 @@ import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.viewpagerindicator.TabPageIndicator;
+import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
@@ -79,7 +82,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 						mChatController.sendMessage(message);
 
 					}
-				} else {
+				}
+				else {
 					Log.e(TAG, "Could not connect to chat server.");
 				}
 
@@ -123,7 +127,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 				mPagerAdapter.addChatNames(chatNames);
 			}
-		} catch (JSONException e1) {
+		}
+		catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -132,13 +137,16 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.addChatName(name);
 		}
 
-		final ActionBar actionBar = getSupportActionBar();
+		final ActionBar actionBar = getSupportActionBar();		
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setTitle(name);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
-		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+		TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.indicator);
+		indicator.setViewPager(mViewPager);
+
+		indicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
 				String name = mPagerAdapter.getChatName(position);
@@ -175,7 +183,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 					String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
 
-				} catch (JSONException e) {
+				}
+				catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -191,7 +200,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		// fragment might be null if user hasn't opened this chat
 		if (cf != null) {
 			cf.addMessage(message);
-		} else {
+		}
+		else {
 			Log.v(TAG, "Fragment null");
 		}
 
@@ -230,11 +240,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
 				Log.v(TAG, "Loaded last viewed ids: " + mLastViewedMessageIds);
-			} catch (Exception e1) {
+			}
+			catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		} else {
+		}
+		else {
 			mLastViewedMessageIds = new HashMap<String, Integer>();
 		}
 
@@ -261,7 +273,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
 			Log.v(TAG, "saved last viewed ids: " + mLastViewedMessageIds);
 
-		} else {
+		}
+		else {
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
 		}
 
@@ -300,7 +313,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		case R.id.menu_send_image_bar:
 		case R.id.menu_send_image_menu:
 
-			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the callback
+			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the
+			// callback
 			sendImage();
 			return true;
 		default:
@@ -341,7 +355,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (mPagerAdapter.getCount() == 1) {
 			mPagerAdapter.removeChat(0, false);
 			showMain();
-		} else {
+		}
+		else {
 
 			mPagerAdapter.removeChat(position, true);
 			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
@@ -403,7 +418,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 			int pos = mViewPager.getCurrentItem();
 			String name = mPagerAdapter.getChatName(pos);
 			return name;
-		} else {
+		}
+		else {
 			return null;
 		}
 	}

@@ -17,4 +17,35 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <style name="Theme.surespottabs" parent="Theme.Sherlock.Light.DarkActionBar">
+        <item name="vpiIconPageIndicatorStyle">@style/Widget.IconPageIndicator</item>
+        <item name="vpiTabPageIndicatorStyle">@style/Widget.TabPageIndicator</item>
+        
+    </style>
+    
+     <style name="Theme.Styled" parent="Theme.Sherlock.Light.DarkActionBar">
+        <item name="actionBarStyle">@style/Widget.Styled.ActionBar</item>
+        <item name="android:actionBarStyle">@style/Widget.Styled.ActionBar</item>
+    </style><!-- This is our ViewPagerIndicator theme. We inherit from the ABS theme -->
+    <style name="Theme.VPI" parent="Theme.Styled">
+       <item name="vpiTabPageIndicatorStyle">@style/Widget.TabPageIndicator</item>
+    </style>    
+    <!-- "Implementation" of our ABS custom theme -->
+    <style name="Widget.Styled.ActionBar" parent="Widget.Sherlock.Light.ActionBar.Solid.Inverse">
+        <item name="titleTextStyle">@style/TitleText</item>
+        <item name="android:titleTextStyle">@style/TitleText</item>
+    </style>
+     
+    <!-- "Implementation" of VPI theme. We just set the text size and color. -->
+    <style name="CustomTabPageIndicator" parent="Widget.TabPageIndicator">
+        <item name="android:textSize">50dip</item>
+        <item name="android:textColor">#FFB33E3E</item>
+    </style>
+     
+    <!-- More customizations for ABS -->
+     <style name="TitleText" >
+        <item name="android:textColor">@android:color/darker_gray</item>
+        <item name="android:textSize">17dip</item>
+    </style>
+
 </resources>

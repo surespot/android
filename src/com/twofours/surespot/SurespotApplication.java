@@ -21,6 +21,7 @@ public class SurespotApplication extends Application {
 			@Override
 			public void uncaughtException(Thread thread, Throwable ex) {
 				Log.e(TAG, "ERROR: Uncaught exception: " + ex.toString());
+				ex.printStackTrace();
 			}
 		});
 	}

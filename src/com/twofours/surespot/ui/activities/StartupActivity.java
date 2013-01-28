@@ -25,17 +25,24 @@ public class StartupActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		GCMRegistrar.checkDevice(this);
-		GCMRegistrar.checkManifest(this);
+		try {
+			//device without GCM throws exception
+			GCMRegistrar.checkDevice(this);
+			GCMRegistrar.checkManifest(this);
 
-		final String regId = GCMRegistrar.getRegistrationId(this);
-		// boolean registered = GCMRegistrar.isRegistered(this);
-		// boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
-		if (regId.equals("")) {
-			Log.v(TAG, "Registering for GCM.");
-			GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
-		} else {
-			Log.v(TAG, "GCM already registered.");
+			final String regId = GCMRegistrar.getRegistrationId(this);
+			// boolean registered = GCMRegistrar.isRegistered(this);
+			// boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
+			if (regId.equals("")) {
+				Log.v(TAG, "Registering for GCM.");
+				GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
+			}
+			else {
+				Log.v(TAG, "GCM already registered.");
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		// NetworkController.unregister(this, regId);
@@ -85,7 +92,8 @@ public class StartupActivity extends Activity {
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, intentName);
 					newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-				} else {
+				}
+				else {
 					// we have a send action so start friend activity so user can pick someone to send to
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 						newIntent = new Intent(this, FriendActivity.class);
@@ -93,7 +101,8 @@ public class StartupActivity extends Activity {
 						newIntent.setAction(action);
 						newIntent.setType(type);
 						newIntent.putExtras(intent);
-					} else {
+					}
+					else {
 						if (intent.getStringExtra(IntentFilters.INVITE_NOTIFICATION) == null) {
 							// we saved a chat name so load the chat activity with that name
 							String lastName = Utils.getSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT);
@@ -113,13 +122,15 @@ public class StartupActivity extends Activity {
 					newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				}
 				startActivity(newIntent);
-			} else {
+			}
+			else {
 				// identity but no session, login
 				Intent newIntent = new Intent(this, LoginActivity.class);
 				String name = intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 				if (name != null) {
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
-				} else {
+				}
+				else {
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 						newIntent.setAction(action);
 						newIntent.setType(type);

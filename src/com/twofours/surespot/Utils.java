@@ -20,9 +20,14 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
+import android.provider.MediaStore.Images;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -121,7 +126,8 @@ public class Utils {
 		Editor editor = settings.edit();
 		if (value == null) {
 			editor.remove(key);
-		} else {
+		}
+		else {
 			editor.putString(key, value);
 		}
 		editor.commit();
@@ -141,7 +147,8 @@ public class Utils {
 
 			return outMap;
 
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -155,7 +162,8 @@ public class Utils {
 		try {
 			jsonObject = new JSONObject(jsonString);
 			return jsonToMap(jsonObject);
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -180,7 +188,7 @@ public class Utils {
 	public static void uploadPictureMessage(final Context context, Uri imageUri, final String to, final IAsyncCallback<Boolean> callback) {
 
 		// TODO thread
-		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 320, 240);
+		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 480, 240);
 
 		// bitmap.
 
@@ -192,7 +200,8 @@ public class Utils {
 
 		try {
 			jpeg.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -222,45 +231,173 @@ public class Utils {
 		callback.handleResponse(null);
 	}
 
-	private void decodeImageBounds(Context context, Uri imageUri, BitmapFactory.Options options) {
-		// First decode with inJustDecodeBounds=true to check dimensions
-		
-		options.inJustDecodeBounds = true;
-		try {
-			BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			//return null;
+	private static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int reqWidth, int reqHeight) {
+
+		try {// First decode with inJustDecodeBounds=true to check dimensions
+			BitmapFactory.Options options = new BitmapFactory.Options();
+			InputStream is;
+			options.inJustDecodeBounds = true;
+
+			is = context.getContentResolver().openInputStream(imageUri);
+			BitmapFactory.decodeStream(is, null, options);
+			is.close();
+
+			// rotate as necessary
+			int rotatedWidth, rotatedHeight;
+			int orientation = (int) rotationForImage(context, imageUri);
+			if (orientation == 90 || orientation == 270) {
+				rotatedWidth = options.outHeight;
+				rotatedHeight = options.outWidth;
+			}
+			else {
+				rotatedWidth = options.outWidth;
+				rotatedHeight = options.outHeight;
+			}
+
+			Bitmap srcBitmap;
+			is = context.getContentResolver().openInputStream(imageUri);
+			if (rotatedWidth > SurespotConstants.MAX_IMAGE_DIMENSION || rotatedHeight > SurespotConstants.MAX_IMAGE_DIMENSION) {
+				float widthRatio = ((float) rotatedWidth) / ((float) SurespotConstants.MAX_IMAGE_DIMENSION);
+				float heightRatio = ((float) rotatedHeight) / ((float) SurespotConstants.MAX_IMAGE_DIMENSION);
+				float maxRatio = Math.max(widthRatio, heightRatio);
+
+				// Create the bitmap from file
+				options = new BitmapFactory.Options();
+				options.inSampleSize = (int) Math.round(maxRatio);
+				Log.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
+				srcBitmap = BitmapFactory.decodeStream(is, null, options);
+			}
+			else {
+				srcBitmap = BitmapFactory.decodeStream(is);
+			}
+
+			Log.v(TAG, "loaded width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+			is.close();
+
+			if (orientation > 0) {
+				Matrix matrix = new Matrix();
+				matrix.postRotate(orientation);
+
+				srcBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(), srcBitmap.getHeight(), matrix, true);
+				Log.v(TAG, "post rotated width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+			}
+
+			return srcBitmap;
 		}
-	}
-
-	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int reqWidth, int reqHeight) {
-
-		// First decode with inJustDecodeBounds=true to check dimensions
-		final BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inJustDecodeBounds = true;
-		try {
-			BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
-		} catch (FileNotFoundException e1) {
+		catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			return null;
 		}
-
-		// Calculate inSampleSize
-		options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-		// Decode bitmap with inSampleSize set
-		options.inJustDecodeBounds = false;
-		try {
-			return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
-		} catch (FileNotFoundException e) {
+		catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
 
+		// Calculate inSampleSize
+		// options.inSampleSize = 8;// calculateInSampleSize(options, reqWidth, reqHeight);
+		//
+		// // Decode bitmap with inSampleSize set
+		// options.inJustDecodeBounds = false;
+		// try {
+		// return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
+		// }
+		// catch (FileNotFoundException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// return null;
+
+	}
+
+	public static Bitmap getSampledImage(byte[] data, int reqHeight) {
+		BitmapFactory.Options options = new Options();
+		decodeBounds(options, data);
+
+		if (options.outHeight > reqHeight) {
+			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
+		}
+
+		options.inJustDecodeBounds = false;
+		return BitmapFactory.decodeByteArray(data, 0, data.length, options);
+	}
+
+	private static void decodeBounds(Options options, byte[] data) {
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeByteArray(data, 0, data.length, options);
+	}
+
+	private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		// Raw height and width of image
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+		//	if (width > height) {
+				inSampleSize = Math.round((float) height / (float) reqHeight);
+//			}
+//			else {
+//				inSampleSize = Math.round((float) width / (float) reqWidth);
+//			}
+
+			// This offers some additional logic in case the image has a strange
+			// aspect ratio. For example, a panorama may have a much larger
+			// width than height. In these cases the total pixels might still
+			// end up being too large to fit comfortably in memory, so we should
+			// be more aggressive with sample down the image (=larger
+			// inSampleSize).
+
+			if (reqWidth > 0 && reqHeight > 0) {
+				final float totalPixels = width * height;
+
+				// Anything more than 2x the requested pixels we'll sample down
+				// further.
+				final float totalReqPixelsCap = reqWidth * reqHeight * 2;
+
+				while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
+					inSampleSize++;
+
+				}
+			}
+		}
+		return inSampleSize;
+	}
+
+	public static float rotationForImage(Context context, Uri uri) {
+		if (uri.getScheme().equals("content")) {
+			String[] projection = { Images.ImageColumns.ORIENTATION };
+			Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
+			if (c.moveToFirst()) {
+				return c.getInt(0);
+			}
+		}
+		else if (uri.getScheme().equals("file")) {
+			try {
+				ExifInterface exif = new ExifInterface(uri.getPath());
+				int rotation = (int) exifOrientationToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+						ExifInterface.ORIENTATION_NORMAL));
+				return rotation;
+			}
+			catch (IOException e) {
+				Log.e(TAG, "Error checking exif", e);
+			}
+		}
+		return 0f;
+	}
+
+	private static float exifOrientationToDegrees(int exifOrientation) {
+		if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+			return 90;
+		}
+		else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+			return 180;
+		}
+		else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+			return 270;
+		}
+		return 0;
 	}
 
 	public static String mapToJsonString(Map<String, Integer> map) {
@@ -288,7 +425,8 @@ public class Utils {
 			for (int i = 0; i < jsonUM.length(); i++) {
 				messages.add(SurespotMessage.toSurespotMessage(jsonUM.getJSONObject(i)));
 			}
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -296,24 +434,4 @@ public class Utils {
 
 	}
 
-	public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-		// Raw height and width of image
-		final int height = options.outHeight;
-		final int width = options.outWidth;
-		int inSampleSize = 1;
-
-		if (height > reqHeight || width > reqWidth) {
-
-			// Calculate ratios of height and width to requested height and width
-			final int heightRatio = Math.round((float) height / (float) reqHeight);
-			final int widthRatio = Math.round((float) width / (float) reqWidth);
-
-			// Choose the smallest ratio as inSampleSize value, this will guarantee
-			// a final image with both dimensions larger than or equal to the
-			// requested height and width.
-			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-		}
-
-		return inSampleSize;
-	}
 }

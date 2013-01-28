@@ -23,6 +23,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
@@ -42,7 +45,7 @@ import com.twofours.surespot.network.NetworkController;
  */
 public class ImageDownloader {
 	private static final String TAG = "ImageDownloader";
-	private BitmapCache mBitmapCache = new BitmapCache();
+	private static BitmapCache mBitmapCache = new BitmapCache();
 
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
@@ -54,7 +57,7 @@ public class ImageDownloader {
 	 *            The ImageView to bind the downloaded image to.
 	 */
 	public void download(ImageView imageView, SurespotMessage message) {
-		Bitmap bitmap = getBitmapFromCache(message.getId());
+		Bitmap bitmap = getBitmapFromCache(message.getCipherData());
 
 		if (bitmap == null) {
 			forceDownload(imageView, message);
@@ -78,13 +81,10 @@ public class ImageDownloader {
 	private void forceDownload(ImageView imageView, SurespotMessage message) {
 		if (cancelPotentialDownload(imageView, message)) {
 			BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, message);
-			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
+			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
+					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
-			imageView.setMinimumHeight(message.getHeight() > 0 ? message.getHeight() : 200);
-			// imageView.getLayoutParams().height = (
-			// message.getHeight() == null ? LayoutParams.WRAP_CONTENT: message.getHeight());
 			task.execute();
-
 		}
 	}
 
@@ -145,7 +145,7 @@ public class ImageDownloader {
 			if (!isCancelled()) {
 				if (content != null) {
 					byte[] decoded = EncryptionController.symmetricBase64DecryptSync(mMessage.getSpot(), mMessage.getIv(), content);
-					return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+					return Utils.getSampledImage(decoded, SurespotConstants.IMAGE_DISPLAY_HEIGHT);
 				}
 			}
 
@@ -161,7 +161,7 @@ public class ImageDownloader {
 				bitmap = null;
 			}
 
-			addBitmapToCache(mMessage.getId(), bitmap);
+			addBitmapToCache(mMessage.getCipherData(), bitmap);
 
 			if (imageViewReference != null) {
 				ImageView imageView = imageViewReference.get();
@@ -174,7 +174,11 @@ public class ImageDownloader {
 					fadeIn.setDuration(1000);
 					imageView.startAnimation(fadeIn);
 					imageView.setImageBitmap(bitmap);
-					bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
+					if (mMessage.getHeight() == 0) {
+						bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
+						Log.v(TAG, "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom() + ", to: "
+								+ mMessage.getTo() + ", height: " + bitmap.getHeight() + ", width: " + bitmap.getWidth());
+					}
 				}
 			}
 		}
@@ -190,14 +194,24 @@ public class ImageDownloader {
 	 */
 	static class DownloadedDrawable extends ColorDrawable {
 		private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
+		private int mHeight;
 
-		public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask) {
-			// super(Color.BLACK);
+		public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask, int height) {
+			mHeight = height;
 			bitmapDownloaderTaskReference = new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
 		}
 
 		public BitmapDownloaderTask getBitmapDownloaderTask() {
 			return bitmapDownloaderTaskReference.get();
+		}
+
+		/**
+		 * Force ImageView to be a certain height
+		 */
+		@Override
+		public int getIntrinsicHeight() {
+
+			return mHeight;
 		}
 	}
 
@@ -207,9 +221,9 @@ public class ImageDownloader {
 	 * @param bitmap
 	 *            The newly downloaded bitmap.
 	 */
-	private void addBitmapToCache(String id, Bitmap bitmap) {
+	private void addBitmapToCache(String key, Bitmap bitmap) {
 		if (bitmap != null) {
-			mBitmapCache.addBitmapToMemoryCache(id, bitmap);
+			mBitmapCache.addBitmapToMemoryCache(key, bitmap);
 
 		}
 	}
@@ -219,9 +233,9 @@ public class ImageDownloader {
 	 *            The URL of the image that will be retrieved from the cache.
 	 * @return The cached bitmap or null if it was not found.
 	 */
-	private Bitmap getBitmapFromCache(String id) {
+	private Bitmap getBitmapFromCache(String key) {
 
-		return mBitmapCache.getBitmapFromMemCache(id);
+		return mBitmapCache.getBitmapFromMemCache(key);
 
 	}
 

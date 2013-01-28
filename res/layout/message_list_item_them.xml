@@ -19,7 +19,7 @@
         android:layout_width="3dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:background="@android:color/darker_gray"
+        android:background="#FFCC0000"
         android:visibility="visible" >
     </View>
 
@@ -43,7 +43,7 @@
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
         android:layout_marginTop="2dp"
-        android:minHeight="240dp"
+        android:adjustViewBounds="true"
         android:visibility="gone" />
 
 </LinearLayout>

@@ -234,7 +234,7 @@ public class ChatFragment extends SherlockFragment {
 		Log.v(TAG, "onPause, mUsername:  " + mUsername);
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 		saveMessages();
-		mChatAdapter.evictCache();
+	//	mChatAdapter.evictCache();
 	}
 
 	@Override
