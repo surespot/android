@@ -5,6 +5,13 @@
         android:orderInCategory="300"
         android:showAsAction="never"
         android:title="debug: clear local cache"/>
+        
+        
+        <item
+        android:id="@+id/menu_logout"
+        android:orderInCategory="400"
+        android:showAsAction="never"
+        android:title="logout"/>
     
 
 </menu>

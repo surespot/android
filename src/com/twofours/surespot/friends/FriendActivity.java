@@ -38,6 +38,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
@@ -45,6 +46,7 @@ import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.ui.activities.LoginActivity;
 
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
@@ -66,14 +68,14 @@ public class FriendActivity extends SherlockActivity {
 		Intent intent = getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-		
+
 		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
 		TextView navView = (TextView) customNav.findViewById(R.id.nav);
 		TextView userView = (TextView) customNav.findViewById(R.id.user);
-		
+
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-			//set the title
-			
+			// set the title
+
 			navView.setText("send");
 			userView.setText("?");
 		}
@@ -81,12 +83,11 @@ public class FriendActivity extends SherlockActivity {
 			navView.setText("home");
 			userView.setText(EncryptionController.getIdentityUsername());
 		}
-		
+
 		getSupportActionBar().setCustomView(customNav);
 		getSupportActionBar().setDisplayShowCustomEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
 		getSupportActionBar().setSubtitle("WTF");
-			
 
 		mChatController = new ChatController(new IConnectCallback() {
 
@@ -101,8 +102,6 @@ public class FriendActivity extends SherlockActivity {
 		mLastViewedMessageIds = new HashMap<String, Integer>();
 		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
-
-		
 
 		final ListView listView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new FriendAdapter(this);
@@ -121,21 +120,20 @@ public class FriendActivity extends SherlockActivity {
 
 					Intent newIntent = new Intent(FriendActivity.this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
-					//if we have a send intent, when we pick a user, propogate it
+					// if we have a send intent, when we pick a user, propogate it
 					// Get intent, action and MIME type
 					Intent intent = getIntent();
 					String action = intent.getAction();
 					String type = intent.getType();
-				
+
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 						newIntent.setAction(action);
 						newIntent.setType(type);
 						newIntent.putExtras(intent);
 					}
 
-					
 					FriendActivity.this.startActivity(newIntent);
-					//LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(newIntent);
+					// LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(newIntent);
 				}
 			}
 		});
@@ -158,10 +156,12 @@ public class FriendActivity extends SherlockActivity {
 					String name = jsonInviteResponse.getString("user");
 					if (jsonInviteResponse.getString("response").equals("accept")) {
 						mMainAdapter.addNewFriend(name);
-					} else {
+					}
+					else {
 						mMainAdapter.removeFriend(name);
 					}
-				} catch (JSONException e) {
+				}
+				catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					Log.e(TAG, "Invite Response Handler error: " + e.getMessage());
@@ -189,7 +189,8 @@ public class FriendActivity extends SherlockActivity {
 					messageJson = new JSONObject(message);
 					String name = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
 					mMainAdapter.messageReceived(name);
-				} catch (JSONException e) {
+				}
+				catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -233,8 +234,9 @@ public class FriendActivity extends SherlockActivity {
 		if (lastMessageIdJson != null) {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-				Log.v(TAG,"Loaded last viewed message ids: " + mLastViewedMessageIds);
-			} catch (Exception e1) {
+				Log.v(TAG, "Loaded last viewed message ids: " + mLastViewedMessageIds);
+			}
+			catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -276,7 +278,8 @@ public class FriendActivity extends SherlockActivity {
 									if (localId == null) {
 										mLastViewedMessageIds.put(user, serverId);
 										mMainAdapter.messageDeltaReceived(user, serverId);
-									} else {
+									}
+									else {
 
 										// compute delta
 										int messageDelta = serverId - localId;
@@ -383,7 +386,8 @@ public class FriendActivity extends SherlockActivity {
 							Log.e(TAG, "inviteFriend: " + content);
 							// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 						}
-					} else {
+					}
+					else {
 						Log.e(TAG, "inviteFriend: " + content);
 						// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 					}
@@ -396,27 +400,38 @@ public class FriendActivity extends SherlockActivity {
 			});
 		}
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_friend, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {	
+		switch (item.getItemId()) {
 		case R.id.menu_debug_clear:
 			for (String chatname : mMainAdapter.getFriends()) {
 				Utils.putSharedPrefsString("messages_" + chatname, null);
-				
-				
+
 			}
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
-		
 
 			return true;
+		case R.id.menu_logout:
+			NetworkController.logout(new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String content) {
+					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					SurespotApplication.getAppContext().startActivity(intent);
+					finish();
+				}
+			});
+
+			return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

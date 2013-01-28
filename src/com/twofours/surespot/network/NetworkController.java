@@ -72,6 +72,9 @@ public class NetworkController {
 	public static synchronized void setUnauthorized(boolean unauthorized) {
 
 		NetworkController.mUnauthorized = unauthorized;
+		if (unauthorized) {
+			mCookieStore.clear();
+		}
 	}
 
 	static {
@@ -82,7 +85,7 @@ public class NetworkController {
 		}
 
 		mClient = new AsyncHttpClient(SurespotApplication.getAppContext());
-		
+
 		mSyncClient = new SyncHttpClient(SurespotApplication.getAppContext()) {
 
 			@Override
@@ -124,13 +127,12 @@ public class NetworkController {
 
 		mClient.setCookieStore(mCookieStore);
 		mSyncClient.setCookieStore(mCookieStore);
-		
+
 		// handle 401s
 		((SurespotCachingHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 		((SurespotCachingHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
 
 	}
-
 
 	public static void addUser(String username, String password, String publicKey, final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
@@ -159,7 +161,8 @@ public class NetworkController {
 				if (mConnectCookie == null) {
 					Log.e(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
-				} else {
+				}
+				else {
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -224,7 +227,8 @@ public class NetworkController {
 				if (mConnectCookie == null) {
 					Log.e(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
-				} else {
+				}
+				else {
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -257,7 +261,8 @@ public class NetworkController {
 
 		if (id == null) {
 			get("/messages/" + room, null, responseHandler);
-		} else {
+		}
+		else {
 			get("/messages/" + room + "/after/" + id, null, responseHandler);
 		}
 	}
@@ -310,7 +315,8 @@ public class NetworkController {
 
 			params.put("gcmId", gcmIdReceived);
 			gcmUpdatedTemp = true;
-		} else {
+		}
+		else {
 			Log.v(TAG, "GCM does not need updating on server.");
 			return;
 		}
@@ -350,16 +356,17 @@ public class NetworkController {
 	public static void unregister(final Context context, final String regId) {
 		Log.i(TAG, "unregistering device (regId = " + regId + ")");
 		try {
-			//this will puke on phone with no google account
+			// this will puke on phone with no google account
 			GCMRegistrar.setRegisteredOnServer(context, false);
 		}
-		finally{}
+		finally {
+		}
 	}
 
 	public static void postFile(Context context, String user, String id, byte[] data, String mimeType,
 			AsyncHttpResponseHandler responseHandler) {
 
-		RequestParams params = new RequestParams();		
+		RequestParams params = new RequestParams();
 		params.put("image", new ByteArrayInputStream(data), id, mimeType);
 
 		post("/images/" + user, params, responseHandler);
@@ -369,9 +376,26 @@ public class NetworkController {
 	public static void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
 		get(relativeUrl, null, responseHandler);
 	}
-	
+
 	public static String getFileSync(String relativeUrl) {
 		return mSyncClient.get(SurespotConstants.BASE_URL + relativeUrl);
+	}
+
+	public static void logout(final AsyncHttpResponseHandler responseHandler) {
+		post("/logout", null, new AsyncHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, String content) {
+				setUnauthorized(true);
+				responseHandler.onSuccess(statusCode, content);
+			}
+
+			@Override
+			public void onFailure(Throwable error, String content) {
+				responseHandler.onFailure(error, content);
+			}
+
+		});
+
 	}
 
 }
