@@ -19,7 +19,8 @@
         android:layout_width="3dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:background="#FFCC0000"
+        android:background="#FF99CC00"
+        android:layout_marginLeft="50dp"
         android:visibility="visible" >
     </View>
 
