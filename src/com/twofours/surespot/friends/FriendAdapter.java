@@ -67,6 +67,7 @@ public class FriendAdapter extends BaseAdapter {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.incMessageCount(1);
+			mActiveChats.add(name);
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}

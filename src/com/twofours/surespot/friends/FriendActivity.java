@@ -51,7 +51,6 @@ import com.twofours.surespot.ui.activities.LoginActivity;
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
 	private static final String TAG = "FriendActivity";
-	private boolean mDisconnectSocket = true;
 	private MultiProgressDialog mMpdPopulateList;
 	private MultiProgressDialog mMpdInviteFriend;
 	private BroadcastReceiver mInvitationReceiver;
@@ -87,7 +86,6 @@ public class FriendActivity extends SherlockActivity {
 		getSupportActionBar().setCustomView(customNav);
 		getSupportActionBar().setDisplayShowCustomEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
-		getSupportActionBar().setSubtitle("WTF");
 
 		mChatController = new ChatController(new IConnectCallback() {
 
@@ -114,10 +112,6 @@ public class FriendActivity extends SherlockActivity {
 				Friend friend = (Friend) mMainAdapter.getItem(position);
 				if (friend.isFriend()) {
 					// start chat activity
-					// don't disconnect the socket io
-
-					// mDisconnectSocket = false;
-
 					Intent newIntent = new Intent(FriendActivity.this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, friend.getName());
 					// if we have a send intent, when we pick a user, propogate it

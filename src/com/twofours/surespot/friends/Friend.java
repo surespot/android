@@ -6,11 +6,15 @@ import org.json.JSONObject;
 import android.util.Log;
 
 public class Friend implements Comparable<Friend> {
-	// public static final int FRIEND = 1;
-	public static final int NEW_FRIEND = 2;
-	public static final int INVITED = 4;
+	public static final int INVITER = 32;
 	public static final int CHAT_ACTIVE = 8;
-	public static final int INVITER = 16;
+	public static final int HAS_NEW_MESSAGES = 16;
+	
+	public static final int INVITED = 4;
+	public static final int NEW_FRIEND = 2;
+	
+	
+	
 
 	private static final String TAG = "Friend";
 
@@ -86,11 +90,25 @@ public class Friend implements Comparable<Friend> {
 
 	public synchronized void incMessageCount(int messageCount) {
 		mMessageCount += messageCount;
+		setMessageCountFlag();
 		Log.v(TAG, "newCount: " + mMessageCount);
 	}
 
 	public synchronized void setMessageCount(int messageCount) {
 		mMessageCount = messageCount;
+		setMessageCountFlag();
+	}
+	
+	private void setMessageCountFlag() {
+		if (mMessageCount > 0) {
+			mFlags |= HAS_NEW_MESSAGES;
+			
+			//pretend the chat is active
+			mFlags |= CHAT_ACTIVE;
+		}
+		else {
+			mFlags &= ~HAS_NEW_MESSAGES;
+		}
 	}
 
 	public boolean isChatActive() {
@@ -100,9 +118,7 @@ public class Friend implements Comparable<Friend> {
 	@Override
 	public int compareTo(Friend another) {
 		// if the flags are the same sort by name
-		// not active or invite, sort by name
-		if ((another.getFlags() == this.getFlags())
-				|| (another.getFlags() < CHAT_ACTIVE && this.getFlags() < CHAT_ACTIVE)) {
+		if (another.getFlags() == this.getFlags()) {			
 			return this.getName().compareTo(another.getName());
 		} else {
 			//sort by flag value
@@ -132,6 +148,7 @@ public class Friend implements Comparable<Friend> {
 		// }
 
 		friend.setName(jsonFriend.getString("name"));
+		
 		return friend;
 	}
 };
