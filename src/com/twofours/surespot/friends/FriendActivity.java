@@ -58,32 +58,16 @@ public class FriendActivity extends SherlockActivity {
 	private BroadcastReceiver mMessageReceiver;
 	private HashMap<String, Integer> mLastViewedMessageIds;
 	private ChatController mChatController;
+	private View mCustomNav;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.v(TAG, "onCreateView");
 
-		Intent intent = getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();
+		mCustomNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
 
-		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
-		TextView navView = (TextView) customNav.findViewById(R.id.nav);
-		TextView userView = (TextView) customNav.findViewById(R.id.user);
-
-		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-			// set the title
-
-			navView.setText("send");
-			userView.setText("?");
-		}
-		else {
-			navView.setText("home");
-			userView.setText(EncryptionController.getIdentityUsername());
-		}
-
-		getSupportActionBar().setCustomView(customNav);
+		getSupportActionBar().setCustomView(mCustomNav);
 		getSupportActionBar().setDisplayShowCustomEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
 
@@ -124,10 +108,13 @@ public class FriendActivity extends SherlockActivity {
 						newIntent.setAction(action);
 						newIntent.setType(type);
 						newIntent.putExtras(intent);
+
+						// remove intent data so we don't ask user to select a user again
+						intent.setAction(null);
+						intent.setType(null);
 					}
 
 					FriendActivity.this.startActivity(newIntent);
-					// LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(newIntent);
 				}
 			}
 		});
@@ -218,6 +205,24 @@ public class FriendActivity extends SherlockActivity {
 				new IntentFilter(SurespotConstants.IntentFilters.INVITE_REQUEST));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
+
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+
+		TextView navView = (TextView) mCustomNav.findViewById(R.id.nav);
+		TextView userView = (TextView) mCustomNav.findViewById(R.id.user);
+
+		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+			// set the title
+
+			navView.setText("send");
+			userView.setText("select recipient");
+		}
+		else {
+			navView.setText("home");
+			userView.setText(EncryptionController.getIdentityUsername());
+		}
 
 		mChatController.connect();
 
