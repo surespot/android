@@ -29,7 +29,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore.Images;
 import android.util.Base64;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -215,12 +214,12 @@ public class Utils {
 					NetworkController.postFile(context, to, new String(results[0]), results[1], SurespotConstants.MimeTypes.IMAGE,
 							new AsyncHttpResponseHandler() {
 								public void onSuccess(int statusCode, String content) {
-									Log.v(TAG, "Received picture upload response: " + content);
+									SurespotLog.v(TAG, "Received picture upload response: " + content);
 									callback.handleResponse(true);
 								};
 
 								public void onFailure(Throwable error, String content) {
-									Log.v(TAG, "Error uploading picture: " + content);
+									SurespotLog.v(TAG, "Error uploading picture: " + content);
 									callback.handleResponse(false);
 								};
 							});
@@ -264,14 +263,14 @@ public class Utils {
 				// Create the bitmap from file
 				options = new BitmapFactory.Options();
 				options.inSampleSize = (int) Math.round(maxRatio);
-				Log.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
+				SurespotLog.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
 				srcBitmap = BitmapFactory.decodeStream(is, null, options);
 			}
 			else {
 				srcBitmap = BitmapFactory.decodeStream(is);
 			}
 
-			Log.v(TAG, "loaded width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+			SurespotLog.v(TAG, "loaded width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
 			is.close();
 
 			if (orientation > 0) {
@@ -279,7 +278,7 @@ public class Utils {
 				matrix.postRotate(orientation);
 
 				srcBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(), srcBitmap.getHeight(), matrix, true);
-				Log.v(TAG, "post rotated width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+				SurespotLog.v(TAG, "post rotated width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
 			}
 
 			return srcBitmap;
@@ -381,7 +380,7 @@ public class Utils {
 				return rotation;
 			}
 			catch (IOException e) {
-				Log.e(TAG, "Error checking exif", e);
+				SurespotLog.e(TAG, "Error checking exif", e);
 			}
 		}
 		return 0f;

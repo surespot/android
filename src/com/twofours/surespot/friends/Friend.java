@@ -3,7 +3,7 @@ package com.twofours.surespot.friends;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
+import com.twofours.surespot.SurespotLog;
 
 public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;
@@ -91,7 +91,7 @@ public class Friend implements Comparable<Friend> {
 	public synchronized void incMessageCount(int messageCount) {
 		mMessageCount += messageCount;
 		setMessageCountFlag();
-		Log.v(TAG, "newCount: " + mMessageCount);
+		SurespotLog.v(TAG, "newCount: " + mMessageCount);
 	}
 
 	public synchronized void setMessageCount(int messageCount) {

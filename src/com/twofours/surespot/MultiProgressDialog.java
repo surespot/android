@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 public class MultiProgressDialog {
 	private static final String TAG = "MultiProgressDialog";
@@ -25,7 +24,7 @@ public class MultiProgressDialog {
 
 	public void incrProgress() {
 		mProgressCounter++;
-		Log.v(TAG,"incr, progress counter: " + mProgressCounter);
+		SurespotLog.v(TAG,"incr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 1) {
 
 			if (mMultiProgressDialog == null) {
@@ -60,7 +59,7 @@ public class MultiProgressDialog {
 
 	public void decrProgress() {
 		mProgressCounter--;
-		Log.v(TAG,"decr, progress counter: " + mProgressCounter);
+		SurespotLog.v(TAG,"decr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 0) {
 			if (mMultiProgressDialog.isShowing()) {
 				mMultiProgressDialog.dismiss();

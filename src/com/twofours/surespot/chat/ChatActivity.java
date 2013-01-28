@@ -11,12 +11,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -29,11 +27,11 @@ import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.viewpagerindicator.TabPageIndicator;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatActivity extends SherlockFragmentActivity {
@@ -49,7 +47,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.v(TAG, "onCreate");
+		SurespotLog.v(TAG, "onCreate");
 
 	
 		mChatController = new ChatController(new IConnectCallback() {
@@ -83,14 +81,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 						if (lastMessageID == null) {
 							lastMessageID = "-1";
 						}
-						Log.v(TAG, "setting resendId, room: " + room + ", id: " + lastMessageID);
+						SurespotLog.v(TAG, "setting resendId, room: " + room + ", id: " + lastMessageID);
 						message.setResendId(lastMessageID);
 						mChatController.sendMessage(message);
 
 					}
 				}
 				else {
-					Log.e(TAG, "Could not connect to chat server.");
+					SurespotLog.w(TAG, "Could not connect to chat server.");
 				}
 
 			}
@@ -98,7 +96,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		setContentView(R.layout.activity_chat);
 
 		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
-		Log.v(TAG, "Intent contained name: " + name);
+		SurespotLog.v(TAG, "Intent contained name: " + name);
 
 		// if we don't have an intent, see if we have saved chat
 		if (name == null) {
@@ -165,7 +163,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 				String name = mPagerAdapter.getChatName(position);
 				// actionBar.setTitle(name);
 				if (mLastViewedMessageIds != null) {
-					Log.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
+					SurespotLog.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
 					updateLastViewedMessageId(name);
 
 					// getChatFragment(name).requestFocus();
@@ -185,7 +183,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				Log.v(TAG, "onReceiveMessage");
+				SurespotLog.v(TAG, "onReceiveMessage");
 				String sMessage = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
 				try {
 					JSONObject messageJson = new JSONObject(sMessage);
@@ -215,7 +213,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			cf.addMessage(message);
 		}
 		else {
-			Log.v(TAG, "Fragment null");
+			SurespotLog.v(TAG, "Fragment null");
 		}
 
 	}
@@ -224,7 +222,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		ChatFragment cf = getChatFragment(name);
 		if (cf != null) {
 			String sLastMessageId = cf.getLatestMessageId();
-			Log.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
+			SurespotLog.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
 			if (sLastMessageId != null) {
 				mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
 			}
@@ -232,9 +230,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 	}
 
 	public void updateLastViewedMessageId(String name, int lastMessageId) {
-		Log.v(TAG, "Received lastMessageId: " + lastMessageId + " for " + name);
+		SurespotLog.v(TAG, "Received lastMessageId: " + lastMessageId + " for " + name);
 		if (name.equals(getCurrentChatName())) {
-			Log.v(TAG, "The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
+			SurespotLog.v(TAG, "The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
 			mLastViewedMessageIds.put(name, lastMessageId);
 		}
 	}
@@ -242,7 +240,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.v(TAG, "onResume");
+		SurespotLog.v(TAG, "onResume");
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
@@ -252,7 +250,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (lastMessageIdJson != null) {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-				Log.v(TAG, "Loaded last viewed ids: " + mLastViewedMessageIds);
+				SurespotLog.v(TAG, "Loaded last viewed ids: " + mLastViewedMessageIds);
 			}
 			catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -271,7 +269,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onPause() {
 
 		super.onPause();
-		Log.v(TAG, "onPause");
+		SurespotLog.v(TAG, "onPause");
 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
 
@@ -284,7 +282,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (mLastViewedMessageIds.size() > 0) {
 			String jsonString = Utils.mapToJsonString(mLastViewedMessageIds);
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
-			Log.v(TAG, "saved last viewed ids: " + mLastViewedMessageIds);
+			SurespotLog.v(TAG, "saved last viewed ids: " + mLastViewedMessageIds);
 
 		}
 		else {
@@ -299,7 +297,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	private ChatFragment getChatFragment(String roomName) {
 		String tag = mPagerAdapter.getFragmentTag(roomName);
 
-		Log.v(TAG, "Fragment tag: " + tag);
+		SurespotLog.v(TAG, "Fragment tag: " + tag);
 
 		if (tag != null) {
 
@@ -391,21 +389,21 @@ public class ChatActivity extends SherlockFragmentActivity {
 	// @Override
 	// protected void onStart() {
 	// super.onStart();
-	// Log.v(TAG, "onStart");
+	// SurespotLog.v(TAG, "onStart");
 	//
 	// }
 	//
 	// @Override
 	// protected void onStop() {
 	// super.onStop();
-	// Log.v(TAG, "onStop");
+	// SurespotLog.v(TAG, "onStop");
 	//
 	// }
 	//
 	// @Override
 	// protected void onDestroy() {
 	// super.onDestroy();
-	// Log.v(TAG, "onDestroy");
+	// SurespotLog.v(TAG, "onDestroy");
 	//
 	//
 	//

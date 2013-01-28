@@ -39,13 +39,13 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -63,7 +63,7 @@ public class EncryptionController {
 	private static LoadingCache<String, byte[]> mSharedSecrets;
 
 	static {
-		Log.v(TAG, "constructor");
+		SurespotLog.v(TAG, "constructor");
 		// attempt to load key pair
 		mSecureRandom = new SecureRandom();
 
@@ -214,7 +214,7 @@ public class EncryptionController {
 		ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
 		ECPrivateKey ecpriv = (ECPrivateKey) identity.getKeyPair().getPrivate();
 
-		// Log.d("ke","encoded public key: " +
+		// SurespotLog.d("ke","encoded public key: " +
 		// ecpk.getEncoded().toString());
 		// pair.getPublic().
 		// ecpk.getW().;
@@ -222,8 +222,8 @@ public class EncryptionController {
 		String generatedPrivDHex = new String(Utils.base64Encode(ecpriv.getD().toByteArray()));
 
 		String publicKey = encodePublicKey(ecpub);
-		Log.d("ke", "generated public key:" + publicKey);
-		Log.d("ke", "generated private key d:" + generatedPrivDHex);
+		SurespotLog.d("ke", "generated public key:" + publicKey);
+		SurespotLog.d("ke", "generated private key d:" + generatedPrivDHex);
 
 		// save keypair in shared prefs json format (hex for now) TODO
 		// use something other than hex
@@ -259,7 +259,7 @@ public class EncryptionController {
 			ka.doPhase(mPublicKeys.get(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			Log.d("ke", "shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
+			SurespotLog.d("ke", "shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
 			return sharedSecret;
 
 		} catch (InvalidKeyException e) {

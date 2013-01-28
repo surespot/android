@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -23,6 +22,7 @@ import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
@@ -132,13 +132,13 @@ public class SignupActivity extends Activity {
 													finish();
 												}
 												else {
-													Log.e(TAG, "201 not returned on user create.");
+													SurespotLog.w(TAG, "201 not returned on user create.");
 												}
 
 											}
 
 											public void onFailure(Throwable arg0, String arg1) {												
-												Log.e("SignupActivity", arg1);
+												SurespotLog.e("SignupActivity", arg1, arg0);
 												mMpd.decrProgress();
 												if (arg0 instanceof HttpResponseException) {
 													HttpResponseException error = (HttpResponseException) arg0;
@@ -170,7 +170,7 @@ public class SignupActivity extends Activity {
 			
 			@Override
 			public void onFailure(Throwable error, String content) {
-				Log.e(TAG, "Signup Error: " + content);
+				SurespotLog.e(TAG, "Signup Error: " + content, error);
 				mMpd.decrProgress();
 			}
 		});

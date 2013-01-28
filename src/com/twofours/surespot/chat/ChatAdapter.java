@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,7 @@ import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 
 public class ChatAdapter extends BaseAdapter {
@@ -28,7 +28,7 @@ public class ChatAdapter extends BaseAdapter {
 	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
 
 	public ChatAdapter(Context context) {
-		Log.v(TAG, "Constructor.");
+		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
 	}
 
@@ -74,13 +74,13 @@ public class ChatAdapter extends BaseAdapter {
 		else {
 			int index = mMessages.indexOf(message);
 			if (index == -1) {
-				// Log.v(TAG, "addMessage, could not find message");
+				// SurespotLog.v(TAG, "addMessage, could not find message");
 
 				//
 				mMessages.add(message);
 			}
 			else {
-				// Log.v(TAG, "addMessage, updating message");
+				// SurespotLog.v(TAG, "addMessage, updating message");
 				SurespotMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
 			}
@@ -141,7 +141,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// Log.v(TAG, "getView, pos: " + position);
+		// SurespotLog.v(TAG, "getView, pos: " + position);
 
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

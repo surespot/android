@@ -9,7 +9,6 @@ import org.json.JSONException;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,6 +21,7 @@ import android.widget.TextView;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.NetworkController;
 
@@ -51,7 +51,7 @@ public class FriendAdapter extends BaseAdapter {
 					mActiveChats.add(chatName);
 				}
 			} catch (JSONException e) {
-				Log.e(TAG, "Error decoding active chat json list: " + e.toString());
+				SurespotLog.e(TAG, "Error decoding active chat json list: " + e.toString(), e);
 			}
 		}
 	}
@@ -63,7 +63,7 @@ public class FriendAdapter extends BaseAdapter {
 	 */
 
 	public void messageReceived(String name) {
-		Log.v(TAG, "message received");
+		SurespotLog.v(TAG, "message received");
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.incMessageCount(1);
@@ -132,7 +132,7 @@ public class FriendAdapter extends BaseAdapter {
 				mFriends.add(friend);
 			}
 		} catch (JSONException e) {
-			Log.e(TAG, e.toString());
+			SurespotLog.e(TAG, e.toString(), e);
 		}
 
 		Collections.sort(mFriends);
@@ -266,7 +266,7 @@ public class FriendAdapter extends BaseAdapter {
 			NetworkController.respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
 				public void onSuccess(String arg0) {
 
-					Log.d(TAG, "Invitation acted upon successfully: " + action);
+					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
 					if (action.equals("accept")) {
 						friend.setInvited(false);
 						friend.setNewFriend(true);
@@ -279,7 +279,7 @@ public class FriendAdapter extends BaseAdapter {
 				}
 
 				public void onFailure(Throwable error, String content) {
-					Log.e(TAG, content);
+					SurespotLog.e(TAG, content, error);
 				};
 			});
 		}

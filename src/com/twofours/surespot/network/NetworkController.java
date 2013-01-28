@@ -7,7 +7,6 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
@@ -26,6 +25,7 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.ui.activities.LoginActivity;
 
@@ -80,7 +80,7 @@ public class NetworkController {
 	static {
 		mCookieStore = new PersistentCookieStore(SurespotApplication.getAppContext());
 		if (mCookieStore.getCookies().size() > 0) {
-			Log.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
+			SurespotLog.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
 			mConnectCookie = extractConnectCookie(mCookieStore);
 		}
 
@@ -111,7 +111,7 @@ public class NetworkController {
 
 								mClient.cancelRequests(SurespotApplication.getAppContext(), true);
 
-								Log.v(TAG, "Got 401, launching login intent.");
+								SurespotLog.v(TAG, "Got 401, launching login intent.");
 								Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 								SurespotApplication.getAppContext().startActivity(intent);
@@ -159,7 +159,7 @@ public class NetworkController {
 			public void onSuccess(int responseCode, String result) {
 				setConnectCookie(extractConnectCookie(mCookieStore));
 				if (mConnectCookie == null) {
-					Log.e(TAG, "did not get cookie from signup");
+					SurespotLog.w(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
 				}
 				else {
@@ -225,7 +225,7 @@ public class NetworkController {
 			public void onSuccess(int responseCode, String result) {
 				setConnectCookie(extractConnectCookie(mCookieStore));
 				if (mConnectCookie == null) {
-					Log.e(TAG, "Did not get cookie from login.");
+					SurespotLog.w(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
 				}
 				else {
@@ -317,7 +317,7 @@ public class NetworkController {
 			gcmUpdatedTemp = true;
 		}
 		else {
-			Log.v(TAG, "GCM does not need updating on server.");
+			SurespotLog.v(TAG, "GCM does not need updating on server.");
 			return;
 		}
 
@@ -354,7 +354,7 @@ public class NetworkController {
 	 * Unregister this account/device pair within the server.
 	 */
 	public static void unregister(final Context context, final String regId) {
-		Log.i(TAG, "unregistering device (regId = " + regId + ")");
+		SurespotLog.i(TAG, "unregistering device (regId = " + regId + ")");
 		try {
 			// this will puke on phone with no google account
 			GCMRegistrar.setRegisteredOnServer(context, false);

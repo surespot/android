@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +39,7 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
@@ -63,7 +63,7 @@ public class FriendActivity extends SherlockActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.v(TAG, "onCreateView");
+		SurespotLog.v(TAG, "onCreateView");
 
 		mCustomNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
 
@@ -76,7 +76,7 @@ public class FriendActivity extends SherlockActivity {
 			@Override
 			public void connectStatus(boolean status) {
 				if (!status) {
-					Log.e(TAG, "Could not connect to chat server.");
+					SurespotLog.w(TAG, "Could not connect to chat server.");
 				}
 			}
 		});
@@ -145,7 +145,7 @@ public class FriendActivity extends SherlockActivity {
 				catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					Log.e(TAG, "Invite Response Handler error: " + e.getMessage());
+					SurespotLog.e(TAG, "Invite Response Handler error: " + e.getMessage(), e);
 				}
 
 			}
@@ -197,7 +197,7 @@ public class FriendActivity extends SherlockActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		Log.v(TAG, "onResume");
+		SurespotLog.v(TAG, "onResume");
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(InviteResponseReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
@@ -233,7 +233,7 @@ public class FriendActivity extends SherlockActivity {
 		if (lastMessageIdJson != null) {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-				Log.v(TAG, "Loaded last viewed message ids: " + mLastViewedMessageIds);
+				SurespotLog.v(TAG, "Loaded last viewed message ids: " + mLastViewedMessageIds);
 			}
 			catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -245,7 +245,7 @@ public class FriendActivity extends SherlockActivity {
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
-				Log.v(TAG, "getFriends success.");
+				SurespotLog.v(TAG, "getFriends success.");
 
 				if (jsonArray.length() > 0) {
 
@@ -257,7 +257,7 @@ public class FriendActivity extends SherlockActivity {
 					NetworkController.getLastMessageIds(new JsonHttpResponseHandler() {
 
 						public void onSuccess(int arg0, JSONObject arg1) {
-							Log.v(TAG, "getLastmessageids success status jsonobject");
+							SurespotLog.v(TAG, "getLastmessageids success status jsonobject");
 
 							HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
 
@@ -270,8 +270,8 @@ public class FriendActivity extends SherlockActivity {
 									// figure out new message counts
 									int serverId = serverMessageIds.get(user);
 									Integer localId = mLastViewedMessageIds.get(user);
-									Log.v(TAG, "last localId for " + user + ": " + localId);
-									Log.v(TAG, "last serverId for " + user + ": " + serverId);
+									SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
+									SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
 
 									// new chat, all messages are new
 									if (localId == null) {
@@ -298,7 +298,7 @@ public class FriendActivity extends SherlockActivity {
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
-							Log.e(TAG, "getLastMessageIds: " + arg0.toString());
+							SurespotLog.e(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
 						};
 					});
 				}
@@ -306,7 +306,7 @@ public class FriendActivity extends SherlockActivity {
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
-				Log.e(TAG, "getFriends: " + content);
+				SurespotLog.e(TAG, "getFriends: " + content, arg0);
 
 				Toast.makeText(FriendActivity.this.getApplicationContext(),
 						"Could not load friends. Please check your network connection.", Toast.LENGTH_SHORT).show();
@@ -323,7 +323,7 @@ public class FriendActivity extends SherlockActivity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Log.v(TAG, "onPause");
+		SurespotLog.v(TAG, "onPause");
 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
@@ -382,12 +382,12 @@ public class FriendActivity extends SherlockActivity {
 							Utils.makeToast("You have already invited this user.");
 							break;
 						default:
-							Log.e(TAG, "inviteFriend: " + content);
+							SurespotLog.e(TAG, "inviteFriend: " + content, arg0);
 							// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 						}
 					}
 					else {
-						Log.e(TAG, "inviteFriend: " + content);
+						SurespotLog.e(TAG, "inviteFriend: " + content, arg0);
 						// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
 					}
 				}

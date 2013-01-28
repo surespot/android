@@ -2,7 +2,6 @@ package com.twofours.surespot;
 
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
-import android.util.Log;
 
 public class BitmapCache {
 	private LruCache<String, Bitmap> mMemoryCache;
@@ -42,7 +41,7 @@ public class BitmapCache {
 	}
 
 	public void evictAll() {
-		Log.v(TAG, "evicting bitmap cache");
+		SurespotLog.v(TAG, "evicting bitmap cache");
 		mMemoryCache.evictAll();
 	}
 }

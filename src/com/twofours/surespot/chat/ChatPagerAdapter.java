@@ -5,9 +5,9 @@ import java.util.List;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 
 public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
@@ -23,7 +23,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 
 	@Override
 	public Fragment getItem(int i) {
-		Log.v(TAG, "getItem, I: " + i);
+		SurespotLog.v(TAG, "getItem, I: " + i);
 		return ChatFragment.newInstance(mChatNames.get(i));
 
 	}
@@ -31,7 +31,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	@Override
 	public int getItemPosition(Object object) {
 		ChatFragment chatFragment = (ChatFragment) object;
-		// Log.v(TAG, "getItemPosition, object: " + object.getClass().getName());
+		// SurespotLog.v(TAG, "getItemPosition, object: " + object.getClass().getName());
 		int index = mChatNames.indexOf(chatFragment.getUsername());
 		if (index == -1) {
 			return POSITION_NONE;

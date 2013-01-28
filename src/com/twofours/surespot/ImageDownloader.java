@@ -19,13 +19,9 @@ package com.twofours.surespot;
 import java.lang.ref.WeakReference;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
@@ -176,7 +172,7 @@ public class ImageDownloader {
 					imageView.setImageBitmap(bitmap);
 					if (mMessage.getHeight() == 0) {
 						bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
-						Log.v(TAG, "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom() + ", to: "
+						SurespotLog.v(TAG, "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom() + ", to: "
 								+ mMessage.getTo() + ", height: " + bitmap.getHeight() + ", width: " + bitmap.getWidth());
 					}
 				}

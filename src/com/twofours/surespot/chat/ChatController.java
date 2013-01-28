@@ -22,11 +22,11 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.LoginActivity;
@@ -57,7 +57,7 @@ public class ChatController {
 
 	//
 	public ChatController(IConnectCallback connectCallback) {
-		Log.v(TAG, "constructor.");
+		SurespotLog.v(TAG, "constructor.");
 		mConnectCallback = connectCallback;
 
 		setOnWifi();
@@ -67,7 +67,7 @@ public class ChatController {
 			@Override
 			public void onMessage(JSONObject json, IOAcknowledge ack) {
 				try {
-					Log.v(TAG, "JSON Server said:" + json.toString(2));
+					SurespotLog.v(TAG, "JSON Server said:" + json.toString(2));
 
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -76,12 +76,12 @@ public class ChatController {
 
 			@Override
 			public void onMessage(String data, IOAcknowledge ack) {
-				Log.v(TAG, "Server said: " + data);
+				SurespotLog.v(TAG, "Server said: " + data);
 			}
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				Log.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
+				SurespotLog.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
 
 				if (mResendTask != null) {
 					mResendTask.cancel();
@@ -96,7 +96,7 @@ public class ChatController {
 					}
 
 					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
-					Log.v(TAG, "Starting another task in: " + timerInterval);
+					SurespotLog.v(TAG, "Starting another task in: " + timerInterval);
 
 					mReconnectTask = new ReconnectTask();
 					if (mBackgroundTimer == null) {
@@ -105,7 +105,7 @@ public class ChatController {
 					mBackgroundTimer.schedule(mReconnectTask, timerInterval);
 				} else {
 					// TODO tell user
-					Log.e(TAG, "Socket.io reconnect retries exhausted, giving up.");
+					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
 					// Toast.makeText(SurespotApplication.getAppContext(),
@@ -120,12 +120,12 @@ public class ChatController {
 
 			@Override
 			public void onDisconnect() {
-				Log.v(TAG, "Connection terminated.");
+				SurespotLog.v(TAG, "Connection terminated.");
 			}
 
 			@Override
 			public void onConnect() {
-				Log.v(TAG, "socket.io connection established");
+				SurespotLog.v(TAG, "socket.io connection established");
 				setState(STATE_CONNECTED);
 				mRetries = 0;
 
@@ -135,7 +135,7 @@ public class ChatController {
 				}
 
 				if (mReconnectTask != null && mReconnectTask.cancel()) {
-					Log.v(TAG, "Cancelled reconnect timer.");
+					SurespotLog.v(TAG, "Cancelled reconnect timer.");
 					mReconnectTask = null;
 				}
 
@@ -154,7 +154,7 @@ public class ChatController {
 			@Override
 			public void on(String event, IOAcknowledge ack, Object... args) {
 
-				Log.v(TAG, "Server triggered event '" + event + "'");
+				SurespotLog.v(TAG, "Server triggered event '" + event + "'");
 
 				if (event.equals("notification")) {
 					JSONObject json = (JSONObject) args[0];
@@ -189,7 +189,7 @@ public class ChatController {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				Log.v(TAG, "Connectivity Action");
+				SurespotLog.v(TAG, "Connectivity Action");
 				ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 				if (networkInfo != null) {
@@ -199,12 +199,12 @@ public class ChatController {
 						synchronized (ChatController.this) {
 							// if we're not connecting, connect
 							if (getState() != STATE_CONNECTING && !mOnWifi) {
-								Log.v(TAG, "isconnected: " + networkInfo.isConnected());
-								Log.v(TAG, "failover: " + networkInfo.isFailover());
-								Log.v(TAG, "reason: " + networkInfo.getReason());
-								Log.v(TAG, "type: " + networkInfo.getTypeName());
+								SurespotLog.v(TAG, "isconnected: " + networkInfo.isConnected());
+								SurespotLog.v(TAG, "failover: " + networkInfo.isFailover());
+								SurespotLog.v(TAG, "reason: " + networkInfo.getReason());
+								SurespotLog.v(TAG, "type: " + networkInfo.getTypeName());
 
-								Log.v(TAG, "Network switch, Reconnecting...");
+								SurespotLog.v(TAG, "Network switch, Reconnecting...");
 
 								setState(STATE_CONNECTING);
 
@@ -215,7 +215,7 @@ public class ChatController {
 						}
 					}
 				} else {
-					Log.v(TAG, "networkinfo null");
+					SurespotLog.v(TAG, "networkinfo null");
 				}
 			}
 		};
@@ -245,7 +245,7 @@ public class ChatController {
 
 		if (cookie == null) {
 			// need to login
-			Log.v(TAG, "No session cookie, starting Login activity.");
+			SurespotLog.v(TAG, "No session cookie, starting Login activity.");
 			Intent startupIntent = new Intent(SurespotApplication.getAppContext(), StartupActivity.class);
 			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			SurespotApplication.getAppContext().startActivity(startupIntent);
@@ -293,12 +293,12 @@ public class ChatController {
 	}
 
 	private void checkAndSendNextMessage(SurespotMessage message) {
-		Log.v(TAG, "received message: " + message);
+		SurespotLog.v(TAG, "received message: " + message);
 		sendMessages();
 
 		if (mResendBuffer.size() > 0) {
 			if (mResendBuffer.remove(message)) {
-				Log.v(TAG, "Received and removed message from resend  buffer: " + message);
+				SurespotLog.v(TAG, "Received and removed message from resend  buffer: " + message);
 			}
 		}
 	}
@@ -319,7 +319,7 @@ public class ChatController {
 			mResendTask.cancel();
 		}
 
-		Log.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
+		SurespotLog.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
 		Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
 		while (iterator.hasNext()) {
@@ -331,7 +331,7 @@ public class ChatController {
 	}
 
 	public void disconnect() {
-		Log.v(TAG, "disconnect.");
+		SurespotLog.v(TAG, "disconnect.");
 		setState(STATE_DISCONNECTED);
 		if (socket.isConnected()) {
 			socket.disconnect();
@@ -367,7 +367,7 @@ public class ChatController {
 
 		@Override
 		public void run() {
-			Log.v(TAG, "Reconnect task run.");
+			SurespotLog.v(TAG, "Reconnect task run.");
 			connect();
 		}
 
@@ -386,7 +386,7 @@ public class ChatController {
 
 	public void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
-		Log.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
+		SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
 		Utils.putSharedPrefsString("unsentmessages", Utils.chatMessagesToJson(mResendBuffer).toString());
 
 	}
@@ -399,7 +399,7 @@ public class ChatController {
 			while (iterator.hasNext()) {
 				mSendBuffer.add(iterator.next());
 			}
-			Log.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
+			SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 		}
 
 		Utils.putSharedPrefsString("unsentmessages", null);
@@ -407,7 +407,7 @@ public class ChatController {
 	}
 
 	public void destroy() {
-		Log.v(TAG, "destroy.");
+		SurespotLog.v(TAG, "destroy.");
 		if (mBackgroundTimer != null) {
 			mBackgroundTimer.cancel();
 			mBackgroundTimer = null;
@@ -415,7 +415,7 @@ public class ChatController {
 		if (mReconnectTask != null) {
 			boolean cancel = mReconnectTask.cancel();
 			mReconnectTask = null;
-			Log.v(TAG, "Cancelled reconnect task: " + cancel);
+			SurespotLog.v(TAG, "Cancelled reconnect task: " + cancel);
 		}
 
 		socket = null;

@@ -13,6 +13,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/socket.io-java-client"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/socket.io.glue"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

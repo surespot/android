@@ -5,13 +5,13 @@ import java.util.Set;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotConstants.IntentFilters;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -34,11 +34,11 @@ public class StartupActivity extends Activity {
 			// boolean registered = GCMRegistrar.isRegistered(this);
 			// boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
 			if (regId.equals("")) {
-				Log.v(TAG, "Registering for GCM.");
+				SurespotLog.v(TAG, "Registering for GCM.");
 				GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
 			}
 			else {
-				Log.v(TAG, "GCM already registered.");
+				SurespotLog.v(TAG, "GCM already registered.");
 			}
 		}
 		catch (Exception e) {
@@ -54,10 +54,10 @@ public class StartupActivity extends Activity {
 			Bundle extras = intent.getExtras();
 			Set<String> categories = intent.getCategories();
 
-			Log.v(TAG, "Intent action: " + action);
-			Log.v(TAG, "Intent type: " + type);
-			Log.v(TAG, "Intent categories: " + (categories == null ? "null" : categories.toString()));
-			Log.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
+			SurespotLog.v(TAG, "Intent action: " + action);
+			SurespotLog.v(TAG, "Intent type: " + type);
+			SurespotLog.v(TAG, "Intent categories: " + (categories == null ? "null" : categories.toString()));
+			SurespotLog.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
 
 			// if we have a session assume we're logged in
 			if (NetworkController.hasSession()) {
@@ -72,12 +72,12 @@ public class StartupActivity extends Activity {
 				NetworkController.registerGcmId(new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int arg0, String arg1) {
-						Log.v(TAG, "GCM registered in surespot server");
+						SurespotLog.v(TAG, "GCM registered in surespot server");
 					}
 
 					@Override
 					public void onFailure(Throwable arg0, String arg1) {
-						Log.e(TAG, arg0.toString());
+						SurespotLog.e(TAG, arg0.toString(), arg0);
 					}
 
 				});

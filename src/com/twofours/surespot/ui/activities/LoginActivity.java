@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -19,6 +18,7 @@ import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -30,6 +30,7 @@ public class LoginActivity extends Activity {
 	private Button loginButton;
 	private static final String TAG = "LoginActivity";
 	MultiProgressDialog mMpd;
+	 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +73,7 @@ public class LoginActivity extends Activity {
 			usernameText.setText(username);
 		}
 		else {
-			Log.w(TAG, "In login activity with no identity stored.");
+			SurespotLog.w(TAG, "In login activity with no identity stored.");
 		}
 
 	}
@@ -94,7 +95,7 @@ public class LoginActivity extends Activity {
 
 				@Override
 				public void onFailure(Throwable arg0, String message) {
-					Log.e(TAG, arg0.toString());
+					SurespotLog.e(TAG, arg0.toString(), arg0);
 
 					if (arg0 instanceof HttpResponseException) {
 						HttpResponseException error = (HttpResponseException) arg0;

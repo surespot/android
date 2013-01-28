@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
@@ -29,7 +28,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 	public GCMIntentService() {
 		super(SENDER_ID);
-		Log.v(TAG, "GCMIntentService");
+		SurespotLog.v(TAG, "GCMIntentService");
 	}
 
 	@Override
@@ -40,7 +39,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 	@Override
 	protected void onMessage(Context context, Intent intent) {
-		Log.v(TAG, "received GCM message, extras: " + intent.getExtras());
+		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
 
 		String type = intent.getStringExtra("type");
 		if (type.equals("message")) {
@@ -62,20 +61,20 @@ public class GCMIntentService extends GCMBaseIntentService
 	@Override
 	protected void onRegistered(final Context context, final String id) {
 		// shoved it in shared prefs
-		Log.v(TAG, "Received gcm id, saving it in shared prefs.");
+		SurespotLog.v(TAG, "Received gcm id, saving it in shared prefs.");
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
 
 		// TODO use password instead of session?
 		// TODO retries?
 		if (NetworkController.hasSession()) {
-			Log.v(TAG, "Attempting to register gcm id on surespot server.");
+			SurespotLog.v(TAG, "Attempting to register gcm id on surespot server.");
 			// do this synchronously so android doesn't kill the service thread before it's done
 
 			SyncHttpClient client = new SyncHttpClient(this) {
 
 				@Override
 				public String onRequestFailed(Throwable arg0, String arg1) {
-					Log.v(TAG, "Error saving gcmId on surespot server: " + arg1);
+					SurespotLog.v(TAG, "Error saving gcmId on surespot server: " + arg1);
 					return "failed";
 				}
 			};
@@ -88,7 +87,7 @@ public class GCMIntentService extends GCMBaseIntentService
 			String result = client.post(SurespotConstants.BASE_URL + "/registergcm", new RequestParams(params));
 			// success returns 204 = null result
 			if (result == null) {
-				Log.v(TAG, "Successfully saved GCM id on surespot server.");
+				SurespotLog.v(TAG, "Successfully saved GCM id on surespot server.");
 
 				// the server and client match, we're golden
 				Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, id);
@@ -96,7 +95,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 			}
 		} else {
-			Log.v(TAG, "Can't save GCM id on surespot server as user is not logged in.");
+			SurespotLog.v(TAG, "Can't save GCM id on surespot server as user is not logged in.");
 		}
 	}
 
