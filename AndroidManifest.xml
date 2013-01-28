@@ -85,7 +85,6 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.chat.ChatActivity"            
-            android:theme="@style/Theme.surespot"
             android:windowSoftInputMode="stateHidden" >
         </activity>
     </application>
