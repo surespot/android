@@ -16,10 +16,10 @@
     <!-- </TextView> -->
 
     <View
-        android:layout_width="3dp"
+        android:layout_width="5dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:background="#FF99CC00"
+        android:background="@color/abs__holo_blue_light"
         android:layout_marginLeft="50dp"
         android:visibility="visible" >
     </View>
