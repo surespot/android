@@ -152,8 +152,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		TextView userView = (TextView) customNav.findViewById(R.id.user);
 		navView.setText("spots");
 		userView.setText(EncryptionController.getIdentityUsername());			
-		actionBar.setCustomView(customNav);
-		getSupportActionBar().setSubtitle("WTF");
+		actionBar.setCustomView(customNav);		
 		
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);

@@ -17,19 +17,4 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <style name="Theme.surespot" parent="Theme.Sherlock.Light.DarkActionBar">
-        <item name="actionBarStyle">@style/CustomActionBarStyle</item>   
-    </style>
-
-    <style name="CustomActionBarStyle" parent="@style/Widget.Sherlock.ActionBar">
-        <item name="titleTextStyle">@style/CustomTitleColorBar</item>
-        
-    </style>
-
-    <!-- Style for the color title bar -->
-    <style name="CustomTitleColorBar" parent="@style/TextAppearance.Sherlock.Widget.ActionBar.Title">
-        <item name="android:textColor">#FFBBBBBB</item>
-        <item name="android:textSize">50dp</item>
-    </style>
-
 </resources>

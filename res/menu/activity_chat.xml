@@ -2,30 +2,33 @@
 
     <item
         android:id="@+id/menu_send_image_bar"
+        android:icon="@drawable/ic_menu_gallery"
         android:orderInCategory="100"
-        android:showAsAction="ifRoom"
+        android:showAsAction="ifRoom|withText"
         android:title="send image"/>
     <item
         android:id="@+id/menu_send_image_menu"
+        android:icon="@drawable/ic_menu_gallery"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="send image"/>
-    <item
-        android:id="@+id/menu_capture_image_menu"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="capture image"/>
-    
+    <!-- <item -->
+    <!-- android:id="@+id/menu_capture_image_menu" -->
+    <!-- android:orderInCategory="100" -->
+    <!-- android:showAsAction="never" -->
+    <!-- android:title="capture image"/> -->
+
     <item
         android:id="@+id/menu_close_menu"
+        android:icon="@drawable/ic_menu_end_conversation"        
         android:orderInCategory="200"
         android:showAsAction="never"
         android:title="close tab"/>
     <item
         android:id="@+id/menu_close_bar"
+        android:icon="@drawable/ic_menu_end_conversation"
         android:orderInCategory="200"
-        android:showAsAction="ifRoom"
+        android:showAsAction="ifRoom|withText"
         android:title="close tab"/>
-
 
 </menu>
