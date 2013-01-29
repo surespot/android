@@ -17,18 +17,18 @@ public class SurespotLog {
 	}
 
 	public static void d(String tag, String msg) {
-		Log.v(tag, msg);
+		Log.d(tag, msg);
 
 	}
 
 	public static void e(String tag, String msg, Throwable tr) {
-		Log.v(tag, msg);
+		Log.e(tag, msg);
 		ACRA.getErrorReporter().handleException(tr);
 
 	}
 
 	public static void i(String tag, String msg) {
-		Log.v(tag, msg);
+		Log.i(tag, msg);
 
 	}
 
