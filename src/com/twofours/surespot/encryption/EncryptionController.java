@@ -25,6 +25,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.acra.ACRA;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.crypto.InvalidCipherTextException;
@@ -99,7 +100,8 @@ public class EncryptionController {
 	public static String getPublicKeyString() {
 		if (hasIdentity()) {
 			return encodePublicKey((ECPublicKey) mIdentity.getKeyPair().getPublic());
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -112,7 +114,8 @@ public class EncryptionController {
 		if (hasIdentity()) {
 			return mIdentity.getUsername();
 
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -133,7 +136,8 @@ public class EncryptionController {
 			SurespotIdentity identity = new SurespotIdentity(username, new KeyPair(recreatePublicKey(sPublicKey),
 					recreatePrivateKey(sPrivateKey)));
 			return identity;
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -147,7 +151,8 @@ public class EncryptionController {
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
 			return pubKey;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -164,13 +169,16 @@ public class EncryptionController {
 			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
 			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(priKeySpec);
 			return privKey;
-		} catch (NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
+		}
+		catch (NoSuchProviderException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidKeySpecException e) {
+		}
+		catch (InvalidKeySpecException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -191,13 +199,16 @@ public class EncryptionController {
 					KeyPair pair = g.generateKeyPair();
 					return pair;
 
-				} catch (NoSuchAlgorithmException e2) {
+				}
+				catch (NoSuchAlgorithmException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
-				} catch (NoSuchProviderException e2) {
+				}
+				catch (NoSuchProviderException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
-				} catch (InvalidAlgorithmParameterException e) {
+				}
+				catch (InvalidAlgorithmParameterException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -237,7 +248,8 @@ public class EncryptionController {
 			json.putOpt("private_key", generatedPrivDHex);
 			json.putOpt("public_key", publicKey);
 			Utils.putSharedPrefsString(IDENTITY_KEY, json.toString());
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -265,20 +277,25 @@ public class EncryptionController {
 			SurespotLog.d("ke", "shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
 			return sharedSecret;
 
-		} catch (InvalidKeyException e) {
+		}
+		catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 
-		} catch (NoSuchAlgorithmException e) {
+		}
+		catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
+		}
+		catch (NoSuchProviderException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (ExecutionException e) {
+		}
+		catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -315,30 +332,10 @@ public class EncryptionController {
 					out.close();
 
 					return out.toByteArray();
-				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
+				}
+				catch (Exception e) {
 					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvalidAlgorithmParameterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchProviderException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchPaddingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ACRA.getErrorReporter().handleException(e);
 				}
 				return null;
 			}
@@ -376,47 +373,28 @@ public class EncryptionController {
 			out.close();
 
 			return out.toByteArray();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
+		}
+		catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ACRA.getErrorReporter().handleException(e);
 		}
 		return null;
 
 	}
-	
-	public synchronized static OutputStream symmetricBase64DecryptSync(final String username, final String ivs, final InputStream base64data, ByteArrayOutputStream outStream) {
+
+	public synchronized static OutputStream symmetricBase64DecryptSync(final String username, final String ivs,
+			final InputStream base64data, ByteArrayOutputStream outStream) {
 
 		byte[] buf = new byte[1024]; // input buffer
 
 		try {
 			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
 			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
-			//data.r
-			//byte[] cipherBytes = Utils.base64Decode();
+			// data.r
+			// byte[] cipherBytes = Utils.base64Decode();
 			byte[] iv = Utils.base64Decode(ivs);
 			IvParameterSpec ivParams = new IvParameterSpec(iv);
-			//ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);	
+			// ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);
 			CipherOutputStream cos = new CipherOutputStream(outStream, ccm);
 			Base64InputStream in = new Base64InputStream(base64data, Base64.NO_WRAP | Base64.URL_SAFE);
 
@@ -428,39 +406,18 @@ public class EncryptionController {
 
 			in.close();
 			cos.close();
-		//	out.close();
+			// out.close();
 			outStream.close();
 
 			return cos;
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
+		}
+		catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ACRA.getErrorReporter().handleException(e);
 		}
 		return null;
 
 	}
-
 
 	public static void symmetricBase64Encrypt(final String username, final String base64data, final IAsyncCallback<String[]> callback) {
 		new AsyncTask<Void, Void, String[]>() {
@@ -498,30 +455,10 @@ public class EncryptionController {
 					returns[1] = new String(Utils.base64Encode(out.toByteArray()));
 
 					return returns;
-				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
+				}
+				catch (Exception e) {
 					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvalidAlgorithmParameterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchProviderException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchPaddingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ACRA.getErrorReporter().handleException(e);
 				}
 				return null;
 
@@ -569,30 +506,11 @@ public class EncryptionController {
 					returns[1] = Utils.base64Encode(out.toByteArray());
 
 					return returns;
-				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
+
+				}
+				catch (Exception e) {
 					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvalidKeyException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvalidAlgorithmParameterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchProviderException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchPaddingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ACRA.getErrorReporter().handleException(e);
 				}
 				return null;
 
@@ -624,11 +542,13 @@ public class EncryptionController {
 					iv = Utils.base64Decode(ivs);
 					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
-				} catch (ExecutionException e) {
+				}
+				catch (ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					return null;
-				} catch (InvalidCacheLoadException icle) {
+				}
+				catch (InvalidCacheLoadException icle) {
 					icle.printStackTrace();
 					return null;
 				}
@@ -642,12 +562,10 @@ public class EncryptionController {
 				try {
 					len += ccm.doFinal(buf, len);
 					return new String(buf);
-				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
+				}
+				catch (Exception e) {
 					e.printStackTrace();
-				} catch (InvalidCipherTextException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ACRA.getErrorReporter().handleException(e);
 				}
 				return null;
 
@@ -673,30 +591,19 @@ public class EncryptionController {
 			iv = Utils.base64Decode(ivs);
 			ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		} catch (InvalidCacheLoadException icle) {
-			icle.printStackTrace();
-			return null;
-		}
+			ccm.reset();
+			ccm.init(false, ivParams);
 
-		ccm.reset();
-		ccm.init(false, ivParams);
+			byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
 
-		byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
+			int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
 
-		int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
-		try {
 			len += ccm.doFinal(buf, len);
 			return new String(buf);
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
+		}
+		catch (Exception e) {
 			e.printStackTrace();
-		} catch (InvalidCipherTextException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ACRA.getErrorReporter().handleException(e);
 		}
 		return null;
 
@@ -715,20 +622,15 @@ public class EncryptionController {
 				ParametersWithIV ivParams;
 				try {
 					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
-				} catch (ExecutionException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-					return null;
-				}
 
-				ccm.reset();
-				ccm.init(true, ivParams);
+					ccm.reset();
+					ccm.init(true, ivParams);
 
-				byte[] enc = plaintext.getBytes();
-				byte[] buf = new byte[ccm.getOutputSize(enc.length)];
+					byte[] enc = plaintext.getBytes();
+					byte[] buf = new byte[ccm.getOutputSize(enc.length)];
 
-				int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
-				try {
+					int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
+
 					len += ccm.doFinal(buf, len);
 					String[] returns = new String[2];
 
@@ -737,12 +639,10 @@ public class EncryptionController {
 
 					return returns;
 
-				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
+				}
+				catch (Exception e) {
 					e.printStackTrace();
-				} catch (InvalidCipherTextException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ACRA.getErrorReporter().handleException(e);
 				}
 				return null;
 

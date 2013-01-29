@@ -339,7 +339,7 @@ public class ChatController {
 	public void disconnect() {
 		SurespotLog.v(TAG, "disconnect.");
 		setState(STATE_DISCONNECTED);
-		if (socket.isConnected()) {
+		if (socket != null && socket.isConnected()) {
 			socket.disconnect();
 
 			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147

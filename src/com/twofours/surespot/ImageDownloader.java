@@ -148,7 +148,9 @@ public class ImageDownloader {
 			if (!isCancelled()) {
 				if (content != null) {
 					byte[] decoded = EncryptionController.symmetricBase64DecryptSync(mMessage.getSpot(), mMessage.getIv(), content);
-					return Utils.getSampledImage(decoded, SurespotConstants.IMAGE_DISPLAY_HEIGHT);
+					if (decoded != null) {
+						return Utils.getSampledImage(decoded, SurespotConstants.IMAGE_DISPLAY_HEIGHT);
+					}
 				}
 			}
 
