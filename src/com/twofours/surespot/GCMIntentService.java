@@ -1,7 +1,10 @@
 package com.twofours.surespot;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.acra.ACRA;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -47,9 +50,10 @@ public class GCMIntentService extends GCMBaseIntentService
 			String from = intent.getStringExtra("sentfrom");
 			String otherUser = Utils.getOtherUser(from, to);
 			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);
-		} else {
+		}
+		else {
 			String user = intent.getStringExtra("user");
-			if (type.equals("invite")) {				
+			if (type.equals("invite")) {
 				generateInviteNotification(context, user, "surespot", "you have received a friend invite from " + user);
 			}
 			else {
@@ -70,14 +74,23 @@ public class GCMIntentService extends GCMBaseIntentService
 			SurespotLog.v(TAG, "Attempting to register gcm id on surespot server.");
 			// do this synchronously so android doesn't kill the service thread before it's done
 
-			SyncHttpClient client = new SyncHttpClient(this) {
+			SyncHttpClient client = null;
+			try {
+				client = new SyncHttpClient(this) {
 
-				@Override
-				public String onRequestFailed(Throwable arg0, String arg1) {
-					SurespotLog.v(TAG, "Error saving gcmId on surespot server: " + arg1);
-					return "failed";
-				}
-			};
+					@Override
+					public String onRequestFailed(Throwable arg0, String arg1) {
+						SurespotLog.v(TAG, "Error saving gcmId on surespot server: " + arg1);
+						return "failed";
+					}
+				};
+			}
+			catch (IOException e) {
+				// TODO tell user shit is fucked
+				e.printStackTrace();
+				ACRA.getErrorReporter().handleException(e);
+				return;
+			}
 
 			client.setCookieStore(NetworkController.getCookieStore());
 
@@ -94,7 +107,8 @@ public class GCMIntentService extends GCMBaseIntentService
 				GCMRegistrar.setRegisteredOnServer(context, true);
 
 			}
-		} else {
+		}
+		else {
 			SurespotLog.v(TAG, "Can't save GCM id on surespot server as user is not logged in.");
 		}
 	}
@@ -105,14 +119,13 @@ public class GCMIntentService extends GCMBaseIntentService
 
 	}
 
-	//TODO remove notifications when action taken
+	// TODO remove notifications when action taken
 	private static void generateMessageNotification(Context context, String user, String title, String message) {
 		int icon = R.drawable.ic_launcher;
 
-		NotificationManager notificationManager = (NotificationManager) context
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon)
-				.setContentTitle(title).setContentText(message);
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
+				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
 
@@ -135,17 +148,15 @@ public class GCMIntentService extends GCMBaseIntentService
 	private static void generateInviteNotification(Context context, String user, String title, String message) {
 		int icon = R.drawable.ic_launcher;
 
-		NotificationManager notificationManager = (NotificationManager) context
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon)
-				.setContentTitle(title).setContentText(message);
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
+				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(IntentFilters.INVITE_NOTIFICATION, IntentFilters.INVITE_NOTIFICATION);
 		stackBuilder.addNextIntent(mainIntent);
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
-		
 
 		builder.setContentIntent(resultPendingIntent);
 

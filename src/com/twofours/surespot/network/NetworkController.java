@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.acra.ACRA;
+
 import android.content.Context;
 import android.content.Intent;
 import ch.boye.httpclientandroidlib.HttpException;
@@ -84,16 +86,24 @@ public class NetworkController {
 			mConnectCookie = extractConnectCookie(mCookieStore);
 		}
 
-		mClient = new AsyncHttpClient(SurespotApplication.getAppContext());
+		try {
+			mClient = new AsyncHttpClient(SurespotApplication.getAppContext());
 
-		mSyncClient = new SyncHttpClient(SurespotApplication.getAppContext()) {
+			mSyncClient = new SyncHttpClient(SurespotApplication.getAppContext()) {
 
-			@Override
-			public String onRequestFailed(Throwable arg0, String arg1) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		};
+				@Override
+				public String onRequestFailed(Throwable arg0, String arg1) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			};
+		}
+		catch (IOException e) {
+			// TODO tell user shit is fucked
+			e.printStackTrace();
+			ACRA.getErrorReporter().handleException(e);
+			throw new RuntimeException(e);
+		}
 
 		HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
 
@@ -125,13 +135,15 @@ public class NetworkController {
 			}
 		};
 
-		mClient.setCookieStore(mCookieStore);
-		mSyncClient.setCookieStore(mCookieStore);
+		if (mClient != null && mSyncClient != null) {
 
-		// handle 401s
-		((SurespotCachingHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
-		((SurespotCachingHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+			mClient.setCookieStore(mCookieStore);
+			mSyncClient.setCookieStore(mCookieStore);
 
+			// handle 401s
+			((SurespotCachingHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+			((SurespotCachingHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+		}
 	}
 
 	public static void addUser(String username, String password, String publicKey, final AsyncHttpResponseHandler responseHandler) {
@@ -399,7 +411,7 @@ public class NetworkController {
 	}
 
 	public static void clearCache() {
-		mClient.clearCache();		
+		mClient.clearCache();
 	}
 
 }
