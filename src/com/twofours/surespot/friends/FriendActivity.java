@@ -306,7 +306,7 @@ public class FriendActivity extends SherlockActivity {
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
-				SurespotLog.e(TAG, "getFriends: " + content, arg0);
+				SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
 				Toast.makeText(FriendActivity.this.getApplicationContext(),
 						"Could not load friends. Please check your network connection.", Toast.LENGTH_SHORT).show();
