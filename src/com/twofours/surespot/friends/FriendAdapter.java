@@ -58,6 +58,10 @@ public class FriendAdapter extends BaseAdapter {
 		}
 	}
 
+	public ArrayList<String> getActiveChats() {
+		return mActiveChats;
+	}
+
 	/*
 	 * public void refreshFlags() { for (Friend friend : mFriends) { if (mActiveChats.contains(friend.getName())) {
 	 * friend.setFlags(friend.getFlags() | ~Friend.ACTIVE_CHAT ); } else { friend.setFlags(friend.getFlags() & ~Friend.ACTIVE_CHAT ); } }
@@ -69,7 +73,9 @@ public class FriendAdapter extends BaseAdapter {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.incMessageCount(1);
-			mActiveChats.add(name);
+			if (!mActiveChats.contains(name)) {
+				mActiveChats.add(name);
+			}
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
@@ -80,6 +86,9 @@ public class FriendAdapter extends BaseAdapter {
 		if (friend != null) {
 			friend.setMessageCount(delta);
 			Collections.sort(mFriends);
+			if (delta > 0 && !mActiveChats.contains(name)) {
+				mActiveChats.add(name);
+			}
 			// notifyDataSetChanged();
 		}
 	}

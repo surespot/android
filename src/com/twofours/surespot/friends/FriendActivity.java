@@ -330,6 +330,11 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 
 		Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, null);
+
+		// put the active chats in if we've fucked with them
+		JSONArray jsonArray = new JSONArray(mMainAdapter.getActiveChats());
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
+
 		mChatController.disconnect();
 		mChatController.destroy();
 
@@ -411,11 +416,16 @@ public class FriendActivity extends SherlockActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_debug_clear:
+			// clear out some shiznit
 			for (String chatname : mMainAdapter.getFriends()) {
 				Utils.putSharedPrefsString("messages_" + chatname, null);
 
 			}
 			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, null);
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, null);
+			Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
 
 			// clear cache
 			NetworkController.clearCache();

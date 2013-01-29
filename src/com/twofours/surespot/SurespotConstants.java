@@ -23,14 +23,14 @@ public class SurespotConstants {
 
 	public final static String BASE_URL = "http://alpha.surespot.me:8080";
 	public final static String WEBSOCKET_URL = "http://alpha.surespot.me:443";
-	
+
 	public final static int MAX_IMAGE_DIMENSION = 480;
-	
-	//TODO change by screen size
+
+	// TODO change by screen size
 	public final static int IMAGE_DISPLAY_HEIGHT = 320;
 
 	// public final static String BASE_URL = "http://192.168.10.68:3000";
-	 //public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
+	// public final static String WEBSOCKET_URL = "http://192.168.10.68:3000";
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";
@@ -39,8 +39,9 @@ public class SurespotConstants {
 		public final static String PREFS_ACTIVE_CHATS = "active_chats";
 		public final static String PREFS_LAST_VIEWED_MESSAGE_IDS = "last_message_ids";
 		public static final String LAST_CHAT = "last_chat";
+		public static final String UNSENT_MESSAGES = "unsentmessages";
 	}
-	
+
 	public class MimeTypes {
 		public final static String TEXT = "text/plain";
 		public final static String IMAGE = "image/";

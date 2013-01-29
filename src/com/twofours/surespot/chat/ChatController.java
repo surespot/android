@@ -69,7 +69,8 @@ public class ChatController {
 				try {
 					SurespotLog.v(TAG, "JSON Server said:" + json.toString(2));
 
-				} catch (JSONException e) {
+				}
+				catch (JSONException e) {
 					e.printStackTrace();
 				}
 			}
@@ -103,7 +104,8 @@ public class ChatController {
 						mBackgroundTimer = new Timer("backgroundTimer");
 					}
 					mBackgroundTimer.schedule(mReconnectTask, timerInterval);
-				} else {
+				}
+				else {
 					// TODO tell user
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
@@ -160,7 +162,8 @@ public class ChatController {
 					JSONObject json = (JSONObject) args[0];
 					try {
 						sendInviteRequest(json.getString("data"));
-					} catch (JSONException e) {
+					}
+					catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -176,7 +179,8 @@ public class ChatController {
 					try {
 						SurespotMessage cm = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
 						checkAndSendNextMessage(cm);
-					} catch (JSONException e) {
+					}
+					catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -214,7 +218,8 @@ public class ChatController {
 							}
 						}
 					}
-				} else {
+				}
+				else {
 					SurespotLog.v(TAG, "networkinfo null");
 				}
 			}
@@ -258,7 +263,8 @@ public class ChatController {
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
 			socket.connect(mSocketCallback);
 
-		} catch (MalformedURLException e1) {
+		}
+		catch (MalformedURLException e1) {
 			// Auto-generated
 			e1.printStackTrace();
 			// callback.connectStatus(false);
@@ -335,14 +341,16 @@ public class ChatController {
 		setState(STATE_DISCONNECTED);
 		if (socket.isConnected()) {
 			socket.disconnect();
-			
-			//workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+
+			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
 			try {
 				SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
-			} catch (IllegalArgumentException e) {
+			}
+			catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Receiver not registered")) {
 					// Ignore this exception. This is exactly what is desired
-				} else {
+				}
+				else {
 					// unexpected, re-throw
 					throw e;
 				}
@@ -387,7 +395,7 @@ public class ChatController {
 	public void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		Utils.putSharedPrefsString("unsentmessages", Utils.chatMessagesToJson(mResendBuffer).toString());
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, Utils.chatMessagesToJson(mResendBuffer).toString());
 
 	}
 
@@ -402,7 +410,7 @@ public class ChatController {
 			SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 		}
 
-		Utils.putSharedPrefsString("unsentmessages", null);
+		Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
 
 	}
 

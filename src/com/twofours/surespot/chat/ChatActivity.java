@@ -45,6 +45,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 	private HashMap<String, Integer> mLastViewedMessageIds;
 	private ChatController mChatController;
 
+	private TitlePageIndicator mIndicator;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -154,10 +156,10 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
-		TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.indicator);
-		indicator.setViewPager(mViewPager);
+		mIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
+		mIndicator.setViewPager(mViewPager);
 
-		indicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
 				String name = mPagerAdapter.getChatName(position);
@@ -193,7 +195,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 					// update last visited id for message
 					String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
 					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
-
+					mPagerAdapter.addChatName(otherUser);
+					mIndicator.notifyDataSetChanged();
 				}
 				catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -374,6 +377,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
 			updateLastViewedMessageId(name);
+			mIndicator.notifyDataSetChanged();
 		}
 	}
 

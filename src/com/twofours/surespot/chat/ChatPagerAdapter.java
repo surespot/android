@@ -35,7 +35,8 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		int index = mChatNames.indexOf(chatFragment.getUsername());
 		if (index == -1) {
 			return POSITION_NONE;
-		} else {
+		}
+		else {
 			return index;
 		}
 	}
@@ -56,8 +57,10 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	}
 
 	public void addChatName(String username) {
-		mChatNames.add(username);
-		this.notifyDataSetChanged();
+		if (!mChatNames.contains(username)) {
+			mChatNames.add(username);
+			this.notifyDataSetChanged();
+		}
 	}
 
 	public void addChatNames(List<String> names) {
@@ -106,8 +109,8 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 			notifyDataSetChanged();
 		}
 	}
-	
-    public long getItemId(int position) {
-        return mChatNames.get(position).hashCode();
-    }
+
+	public long getItemId(int position) {
+		return mChatNames.get(position).hashCode();
+	}
 }
