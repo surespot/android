@@ -137,15 +137,18 @@ public class FriendAdapter extends BaseAdapter {
 					mFriends.add(friend);
 				}
 				else {
-					mFriends.get(index).update(jsonFriend);
+					friend = mFriends.get(index);
+					friend.setChatActive(mActiveChats.contains(friend.getName()));
+					friend.update(jsonFriend);
+
 				}
+
 			}
 		}
 		catch (JSONException e) {
 			SurespotLog.e(TAG, e.toString(), e);
 		}
 
-		Collections.sort(mFriends);
 		// notifyDataSetChanged();
 	}
 
@@ -311,6 +314,12 @@ public class FriendAdapter extends BaseAdapter {
 
 	public ArrayList<String> getFriends() {
 		return mActiveChats;
+	}
+
+	public void sort() {
+		if (mFriends != null) {
+			Collections.sort(mFriends);
+		}
 	}
 
 }

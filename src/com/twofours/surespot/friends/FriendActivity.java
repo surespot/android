@@ -282,11 +282,8 @@ public class FriendActivity extends SherlockActivity {
 
 										// compute delta
 										int messageDelta = serverId - localId;
-										if (messageDelta > 0) {
-											mMainAdapter.messageDeltaReceived(user, messageDelta);
-										}
+										mMainAdapter.messageDeltaReceived(user, messageDelta);
 									}
-
 								}
 							}
 
@@ -296,6 +293,7 @@ public class FriendActivity extends SherlockActivity {
 
 							}
 
+							mMainAdapter.sort();
 							mMainAdapter.notifyDataSetChanged();
 						};
 
