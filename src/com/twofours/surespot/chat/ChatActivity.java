@@ -383,7 +383,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	private void showMain() {
 		Intent parentActivityIntent = new Intent(this, FriendActivity.class);
-		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(parentActivityIntent);
 	}
 
