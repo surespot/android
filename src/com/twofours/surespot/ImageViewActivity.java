@@ -6,6 +6,7 @@ import java.io.InputStream;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,21 +29,6 @@ public class ImageViewActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_view);
 
-		String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
-
-		SurespotMessage message = SurespotMessage.toSurespotMessage(sjmessage);
-
-		// TODO use streaming network get
-		String imageData = NetworkController.getFileSync(message.getCipherData());
-		InputStream inStream = new ByteArrayInputStream(imageData.getBytes());
-		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-		EncryptionController.symmetricBase64DecryptSync(message.getSpot(), message.getIv(), inStream, outStream);
-
-		Bitmap bitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(outStream.toByteArray()));
-
-		ImageView imageView = (ImageView) findViewById(R.id.imageViewer);
-		imageView.setImageBitmap(bitmap);
-
 		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setDisplayShowCustomEnabled(true);
@@ -53,6 +39,43 @@ public class ImageViewActivity extends SherlockActivity {
 		navView.setText("image");
 		userView.setText("pan and zoom");
 		actionBar.setCustomView(customNav);
+
+		String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
+
+		if (sjmessage != null) {
+			final SurespotMessage message = SurespotMessage.toSurespotMessage(sjmessage);
+
+			if (message != null) {
+				new AsyncTask<Void, Void, Bitmap>() {
+
+					@Override
+					protected Bitmap doInBackground(Void... params) {
+
+						// TODO use streaming network get
+						String imageData = NetworkController.getFileSync(message.getCipherData());
+						if (imageData != null) {
+							InputStream inStream = new ByteArrayInputStream(imageData.getBytes());
+							ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+							EncryptionController.symmetricBase64DecryptSync(message.getSpot(), message.getIv(), inStream, outStream);
+
+							Bitmap bitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(outStream.toByteArray()));
+
+							return bitmap;
+						}
+						return null;
+					}
+
+					protected void onPostExecute(Bitmap result) {
+
+						ImageView imageView = (ImageView) findViewById(R.id.imageViewer);
+						imageView.setImageBitmap(result);
+
+					}
+
+				}.execute();
+			}
+		}
+
 	}
 
 	@Override
