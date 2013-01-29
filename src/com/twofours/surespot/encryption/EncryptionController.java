@@ -2,7 +2,6 @@ package com.twofours.surespot.encryption;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -20,7 +19,6 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyAgreement;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -28,7 +26,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.acra.ACRA;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.modes.CCMBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
@@ -43,6 +40,7 @@ import org.spongycastle.jce.spec.ECPublicKeySpec;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Base64InputStream;
+import android.util.Log;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -589,7 +587,11 @@ public class EncryptionController {
 
 			cipherBytes = Utils.base64Decode(cipherData);
 			iv = Utils.base64Decode(ivs);
-			ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+			byte[] secret = mSharedSecrets.get(username);
+			if (secret == null) {
+				return null;
+			}
+			ivParams = new ParametersWithIV(new KeyParameter(secret, 0, AES_KEY_LENGTH), iv);
 
 			ccm.reset();
 			ccm.init(false, ivParams);
@@ -603,7 +605,8 @@ public class EncryptionController {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			ACRA.getErrorReporter().handleException(e);
+			Log.w(TAG, "error decrypting", e);
+			// ACRA.getErrorReporter().handleException(e);
 		}
 		return null;
 

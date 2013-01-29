@@ -59,6 +59,7 @@ public class FriendActivity extends SherlockActivity {
 	private HashMap<String, Integer> mLastViewedMessageIds;
 	private ChatController mChatController;
 	private View mCustomNav;
+	private ListView mListView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -85,12 +86,11 @@ public class FriendActivity extends SherlockActivity {
 		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
-		final ListView listView = (ListView) findViewById(R.id.main_list);
+		mListView = (ListView) findViewById(R.id.main_list);
 		mMainAdapter = new FriendAdapter(this);
-		listView.setAdapter(mMainAdapter);
 
 		// click on friend to join chat
-		listView.setOnItemClickListener(new OnItemClickListener() {
+		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Friend friend = (Friend) mMainAdapter.getItem(position);
@@ -294,11 +294,19 @@ public class FriendActivity extends SherlockActivity {
 							}
 
 							mMainAdapter.sort();
-							mMainAdapter.notifyDataSetChanged();
+
+							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+							mListView.setAdapter(mMainAdapter);
+							FriendActivity.this.mMpdPopulateList.decrProgress();
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
 							SurespotLog.e(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
+
+							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+							mListView.setAdapter(mMainAdapter);
+							FriendActivity.this.mMpdPopulateList.decrProgress();
+							// TODO show error / go back to login
 						};
 					});
 				}
@@ -310,11 +318,10 @@ public class FriendActivity extends SherlockActivity {
 
 				Toast.makeText(FriendActivity.this.getApplicationContext(),
 						"Could not load friends. Please check your network connection.", Toast.LENGTH_SHORT).show();
-			}
+				// TODO show error / go back to login
 
-			@Override
-			public void onFinish() {
 				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+				mListView.setAdapter(mMainAdapter);
 				FriendActivity.this.mMpdPopulateList.decrProgress();
 			}
 		});
