@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnLongClickListener;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -29,10 +29,26 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
+	private OnClickListener mOnImageClickListener;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
+		mOnImageClickListener = new OnClickListener() {
+			@Override
+			public void onClick(View v) {				
+				// tag should be set to the download task
+				SurespotMessage message = (SurespotMessage) v.getTag();
+
+				// pull the message out			
+				if (message != null) {
+					Intent newIntent = new Intent(mContext, ImageViewActivity.class);
+					newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+					mContext.startActivity(newIntent);
+				}			
+			}
+		};
+		
 	}
 
 	public void evictCache() {
@@ -142,6 +158,8 @@ public class ChatAdapter extends BaseAdapter {
 		return position;
 	}
 
+	
+	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
@@ -166,27 +184,7 @@ public class ChatAdapter extends BaseAdapter {
 			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
-			chatMessageViewHolder.imageView.setOnLongClickListener(new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					
-
-
-					
-					// tag should be set to the download task
-					SurespotMessage message = (SurespotMessage) v.getTag();
-
-					// pull the message out
-
-				
-					if (message != null) {
-						Intent newIntent = new Intent(mContext, ImageViewActivity.class);
-						newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
-						mContext.startActivity(newIntent);
-					}
-					return true;
-				}
-			});
+			chatMessageViewHolder.imageView.setOnClickListener(mOnImageClickListener);
 
 			convertView.setTag(chatMessageViewHolder);
 		}

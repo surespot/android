@@ -15,5 +15,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

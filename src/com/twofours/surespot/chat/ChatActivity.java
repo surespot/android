@@ -3,6 +3,7 @@ package com.twofours.surespot.chat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.acra.ACRA;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -254,6 +255,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 			catch (Exception e1) {
 				// TODO Auto-generated catch block
+				ACRA.getErrorReporter().handleException(e1);
 				e1.printStackTrace();
 			}
 		}
@@ -372,42 +374,15 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.removeChat(position, true);
 			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
-			updateLastViewedMessageId(name);
-			// getSupportActionBar().setTitle(name);
-
+			updateLastViewedMessageId(name);		
 		}
 	}
 
 	private void showMain() {
 		Intent parentActivityIntent = new Intent(this, FriendActivity.class);
-		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		startActivity(parentActivityIntent);
-		finish();
-
 	}
-
-	// @Override
-	// protected void onStart() {
-	// super.onStart();
-	// SurespotLog.v(TAG, "onStart");
-	//
-	// }
-	//
-	// @Override
-	// protected void onStop() {
-	// super.onStop();
-	// SurespotLog.v(TAG, "onStop");
-	//
-	// }
-	//
-	// @Override
-	// protected void onDestroy() {
-	// super.onDestroy();
-	// SurespotLog.v(TAG, "onDestroy");
-	//
-	//
-	//
-	// }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
