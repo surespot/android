@@ -42,8 +42,6 @@ import org.spongycastle.jce.spec.ECPublicKeySpec;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Base64InputStream;
-import android.util.Log;
-
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

@@ -2,25 +2,18 @@ package com.twofours.surespot;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
-import org.json.JSONObject;
+import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.view.Menu;
+import android.widget.ImageView;
 
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
-
-import android.net.Uri;
-import android.os.Bundle;
-import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
-import android.view.Menu;
-import android.widget.ImageView;
 
 public class ImageViewActivity extends Activity {
 

@@ -62,6 +62,7 @@ public class ImageDownloader {
 			cancelPotentialDownload(imageView, message);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
+			imageView.setTag(message);
 		}
 	}
 
@@ -80,6 +81,7 @@ public class ImageDownloader {
 			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
 					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
+			imageView.setTag(message);
 			task.execute();
 		}
 	}
@@ -109,7 +111,7 @@ public class ImageDownloader {
 	 *            Any imageView
 	 * @return Retrieve the currently active download task (if any) associated with this imageView. null if there is no such task.
 	 */
-	private static BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
+	public static BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
 		if (imageView != null) {
 			Drawable drawable = imageView.getDrawable();
 			if (drawable instanceof DownloadedDrawable) {
@@ -123,8 +125,13 @@ public class ImageDownloader {
 	/**
 	 * The actual AsyncTask that will asynchronously download the image.
 	 */
-	class BitmapDownloaderTask extends AsyncTask<Void, Void, Bitmap> {
-		public SurespotMessage mMessage;
+	public class BitmapDownloaderTask extends AsyncTask<Void, Void, Bitmap> {
+		private SurespotMessage mMessage;
+
+		public SurespotMessage getMessage() {
+			return mMessage;
+		}
+
 		private final WeakReference<ImageView> imageViewReference;
 
 		public BitmapDownloaderTask(ImageView imageView, SurespotMessage message) {
@@ -214,6 +221,7 @@ public class ImageDownloader {
 
 			return mHeight;
 		}
+
 	}
 
 	/**
@@ -244,4 +252,5 @@ public class ImageDownloader {
 		mBitmapCache.evictAll();
 
 	}
+
 }

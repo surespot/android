@@ -4,14 +4,17 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.ImageDownloader;
+import com.twofours.surespot.ImageViewActivity;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
@@ -163,6 +166,28 @@ public class ChatAdapter extends BaseAdapter {
 			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
+			chatMessageViewHolder.imageView.setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					
+
+
+					
+					// tag should be set to the download task
+					SurespotMessage message = (SurespotMessage) v.getTag();
+
+					// pull the message out
+
+				
+					if (message != null) {
+						Intent newIntent = new Intent(mContext, ImageViewActivity.class);
+						newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+						mContext.startActivity(newIntent);
+					}
+					return true;
+				}
+			});
+
 			convertView.setTag(chatMessageViewHolder);
 		}
 		else {

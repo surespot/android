@@ -270,8 +270,8 @@ public class FriendActivity extends SherlockActivity {
 									// figure out new message counts
 									int serverId = serverMessageIds.get(user);
 									Integer localId = mLastViewedMessageIds.get(user);
-									SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
-									SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
+								//	SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
+								//	SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
 
 									// new chat, all messages are new
 									if (localId == null) {
