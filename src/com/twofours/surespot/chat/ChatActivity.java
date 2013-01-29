@@ -50,7 +50,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
 
-	
 		mChatController = new ChatController(new IConnectCallback() {
 
 			@Override
@@ -145,14 +144,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);		
+		actionBar.setDisplayShowTitleEnabled(false);
 		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
 		TextView navView = (TextView) customNav.findViewById(R.id.nav);
 		TextView userView = (TextView) customNav.findViewById(R.id.user);
 		navView.setText("spots");
-		userView.setText(EncryptionController.getIdentityUsername());			
-		actionBar.setCustomView(customNav);		
-		
+		userView.setText(EncryptionController.getIdentityUsername());
+		actionBar.setCustomView(customNav);
+
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
 		TitlePageIndicator indicator = (TitlePageIndicator) findViewById(R.id.indicator);
@@ -374,13 +373,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.removeChat(position, true);
 			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
-			updateLastViewedMessageId(name);		
+			updateLastViewedMessageId(name);
 		}
 	}
 
 	private void showMain() {
 		Intent parentActivityIntent = new Intent(this, FriendActivity.class);
-		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		parentActivityIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		startActivity(parentActivityIntent);
 	}
 

@@ -250,7 +250,7 @@ public class FriendActivity extends SherlockActivity {
 				if (jsonArray.length() > 0) {
 
 					mMainAdapter.refreshActiveChats();
-					mMainAdapter.clearFriends(false);
+					// mMainAdapter.clearFriends(false);
 					mMainAdapter.addFriends(jsonArray);
 
 					// compute new message deltas
@@ -270,8 +270,8 @@ public class FriendActivity extends SherlockActivity {
 									// figure out new message counts
 									int serverId = serverMessageIds.get(user);
 									Integer localId = mLastViewedMessageIds.get(user);
-								//	SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
-								//	SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
+									// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
+									// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
 
 									// new chat, all messages are new
 									if (localId == null) {
@@ -295,6 +295,8 @@ public class FriendActivity extends SherlockActivity {
 								mLastViewedMessageIds = serverMessageIds;
 
 							}
+
+							mMainAdapter.notifyDataSetChanged();
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {

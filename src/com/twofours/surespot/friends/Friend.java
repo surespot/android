@@ -9,12 +9,9 @@ public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;
 	public static final int CHAT_ACTIVE = 8;
 	public static final int HAS_NEW_MESSAGES = 16;
-	
+
 	public static final int INVITED = 4;
 	public static final int NEW_FRIEND = 2;
-	
-	
-	
 
 	private static final String TAG = "Friend";
 
@@ -33,7 +30,8 @@ public class Friend implements Comparable<Friend> {
 	public void setChatActive(boolean set) {
 		if (set) {
 			mFlags |= CHAT_ACTIVE;
-		} else {
+		}
+		else {
 			mFlags &= ~CHAT_ACTIVE;
 		}
 	}
@@ -41,7 +39,8 @@ public class Friend implements Comparable<Friend> {
 	public void setInviter(boolean set) {
 		if (set) {
 			mFlags |= INVITER;
-		} else {
+		}
+		else {
 			mFlags &= ~INVITER;
 		}
 	}
@@ -53,7 +52,8 @@ public class Friend implements Comparable<Friend> {
 	public void setInvited(boolean set) {
 		if (set) {
 			mFlags |= INVITED;
-		} else {
+		}
+		else {
 			mFlags &= ~INVITED;
 		}
 	}
@@ -67,7 +67,8 @@ public class Friend implements Comparable<Friend> {
 			mFlags |= NEW_FRIEND;
 			mFlags &= ~INVITED;
 			mFlags &= ~INVITER;
-		} else {
+		}
+		else {
 			mFlags &= ~NEW_FRIEND;
 		}
 	}
@@ -98,12 +99,12 @@ public class Friend implements Comparable<Friend> {
 		mMessageCount = messageCount;
 		setMessageCountFlag();
 	}
-	
+
 	private void setMessageCountFlag() {
 		if (mMessageCount > 0) {
 			mFlags |= HAS_NEW_MESSAGES;
-			
-			//pretend the chat is active
+
+			// pretend the chat is active
 			mFlags |= CHAT_ACTIVE;
 		}
 		else {
@@ -116,26 +117,66 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (obj.getClass() != getClass())
+			return false;
+
+		Friend rhs = (Friend) obj;
+		return this.getName().equals(rhs.getName());
+	}
+
+	@Override
 	public int compareTo(Friend another) {
 		// if the flags are the same sort by name
-		if (another.getFlags() == this.getFlags()) {			
+		if (another.getFlags() == this.getFlags()) {
 			return this.getName().compareTo(another.getName());
-		} else {
-			//sort by flag value
+		}
+		else {
+			// sort by flag value
 			return Integer.valueOf(another.getFlags()).compareTo(this.getFlags());
 		}
 
+	}
+
+	public boolean update(JSONObject jsonFriend) {
+
+		String status;
+
+		try {
+
+			String name = jsonFriend.getString("name");
+			if (name.equals(this.getName())) {
+				status = jsonFriend.getString("status");
+
+				if (status.equals("invited")) {
+					this.setInvited(true);
+				}
+
+				else {
+					if (status.equals("invitee")) {
+						this.setInviter(true);
+					}
+				}
+
+				this.setName(jsonFriend.getString("name"));
+				return true;
+			}
+		}
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	public static Friend toFriend(JSONObject jsonFriend) throws JSONException {
 		Friend friend = new Friend();
 
 		String status = jsonFriend.getString("status");
-
-		int flags = 0;
-		// if (status.equals("friend")) {
-		// friend.set
-		// } else {
 		if (status.equals("invited")) {
 			friend.setInvited(true);
 		}
@@ -148,7 +189,7 @@ public class Friend implements Comparable<Friend> {
 		// }
 
 		friend.setName(jsonFriend.getString("name"));
-		
+
 		return friend;
 	}
 };

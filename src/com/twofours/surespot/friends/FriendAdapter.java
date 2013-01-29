@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -50,7 +51,8 @@ public class FriendAdapter extends BaseAdapter {
 					String chatName = jsonChats.getString(i);
 					mActiveChats.add(chatName);
 				}
-			} catch (JSONException e) {
+			}
+			catch (JSONException e) {
 				SurespotLog.e(TAG, "Error decoding active chat json list: " + e.toString(), e);
 			}
 		}
@@ -78,7 +80,7 @@ public class FriendAdapter extends BaseAdapter {
 		if (friend != null) {
 			friend.setMessageCount(delta);
 			Collections.sort(mFriends);
-			notifyDataSetChanged();
+			// notifyDataSetChanged();
 		}
 	}
 
@@ -127,16 +129,24 @@ public class FriendAdapter extends BaseAdapter {
 	public void addFriends(JSONArray friends) {
 		try {
 			for (int i = 0; i < friends.length(); i++) {
-				Friend friend = Friend.toFriend(friends.getJSONObject(i));
+				JSONObject jsonFriend = friends.getJSONObject(i);
+				Friend friend = Friend.toFriend(jsonFriend);
 				friend.setChatActive(mActiveChats.contains(friend.getName()));
-				mFriends.add(friend);
+				int index = mFriends.indexOf(friend);
+				if (index == -1) {
+					mFriends.add(friend);
+				}
+				else {
+					mFriends.get(index).update(jsonFriend);
+				}
 			}
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			SurespotLog.e(TAG, e.toString(), e);
 		}
 
 		Collections.sort(mFriends);
-		notifyDataSetChanged();
+		// notifyDataSetChanged();
 	}
 
 	public void clearFriends(boolean notify) {
@@ -182,12 +192,13 @@ public class FriendAdapter extends BaseAdapter {
 			((Button) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
 
 			friendViewHolder = new FriendViewHolder();
-			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);			
+			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
 			convertView.setTag(friendViewHolder);
 
-		} else {
+		}
+		else {
 			friendViewHolder = (FriendViewHolder) convertView.getTag();
 		}
 
@@ -210,19 +221,22 @@ public class FriendAdapter extends BaseAdapter {
 				friendViewHolder.tvStatus.setText("is inviting you to be friends");
 			}
 
-		} else {
+		}
+		else {
 			friendViewHolder.tvStatus.setVisibility(View.GONE);
 			// friendViewHolder.tvName.setTypeface(null, Typeface.NORMAL);
 		}
 
-		if (friend.isInviter()) {			
+		if (friend.isInviter()) {
 			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
-		} else {			
+		}
+		else {
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
 			if (friend.isChatActive()) {
 				convertView.setBackgroundColor(Color.WHITE);
-			} else {
+			}
+			else {
 				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
 
@@ -230,19 +244,18 @@ public class FriendAdapter extends BaseAdapter {
 
 				String currentStatus = friendViewHolder.tvStatus.getText().toString();
 				String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
-				
-				
-				
+
 				if (!currentStatus.isEmpty()) {
 					if (currentStatus.contains("unread message")) {
 						currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
-						
+
 					}
 					else {
 						currentStatus += "\n" + messageCountString;
-					}				
-					
-				} else {
+					}
+
+				}
+				else {
 					currentStatus = messageCountString;
 				}
 				friendViewHolder.tvStatus.setText(currentStatus);
@@ -271,7 +284,8 @@ public class FriendAdapter extends BaseAdapter {
 						friend.setInvited(false);
 						friend.setNewFriend(true);
 
-					} else {
+					}
+					else {
 						mFriends.remove(position);
 					}
 
@@ -292,7 +306,7 @@ public class FriendAdapter extends BaseAdapter {
 	public static class FriendViewHolder {
 		public TextView tvName;
 		public TextView tvStatus;
-		public View vgInvite;		
+		public View vgInvite;
 	}
 
 	public ArrayList<String> getFriends() {
