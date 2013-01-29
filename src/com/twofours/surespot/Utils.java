@@ -93,7 +93,7 @@ public class Utils {
 	}
 
 	public static byte[] base64Decode(String buf) {
-		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);			
+		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
 	}
 
 	public static String getOtherUser(String from, String to) {
@@ -263,7 +263,8 @@ public class Utils {
 				// Create the bitmap from file
 				options = new BitmapFactory.Options();
 				options.inSampleSize = (int) Math.round(maxRatio);
-				SurespotLog.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
+				SurespotLog.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: "
+						+ options.inSampleSize);
 				srcBitmap = BitmapFactory.decodeStream(is, null, options);
 			}
 			else {
@@ -309,8 +310,6 @@ public class Utils {
 		// return null;
 
 	}
-	
-
 
 	public static Bitmap getSampledImage(byte[] data, int reqHeight) {
 		BitmapFactory.Options options = new Options();
@@ -336,12 +335,12 @@ public class Utils {
 		int inSampleSize = 1;
 
 		if (height > reqHeight || width > reqWidth) {
-		//	if (width > height) {
-				inSampleSize = Math.round((float) height / (float) reqHeight);
-//			}
-//			else {
-//				inSampleSize = Math.round((float) width / (float) reqWidth);
-//			}
+			// if (width > height) {
+			inSampleSize = Math.round((float) height / (float) reqHeight);
+			// }
+			// else {
+			// inSampleSize = Math.round((float) width / (float) reqWidth);
+			// }
 
 			// This offers some additional logic in case the image has a strange
 			// aspect ratio. For example, a panorama may have a much larger

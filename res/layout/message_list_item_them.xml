@@ -19,32 +19,47 @@
         android:layout_width="5dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:background="@color/abs__holo_blue_light"
         android:layout_marginLeft="50dp"
+        android:background="@color/abs__holo_blue_light"
         android:visibility="visible" >
     </View>
 
-    <TextView
-        android:id="@+id/messageText"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
-        android:layout_marginLeft="2dp"
-        android:layout_marginRight="55dp"
-        android:layout_marginTop="2dp"
-        android:textSize="16sp"
-        android:visibility="gone" >
-    </TextView>
+        android:orientation="vertical" >
 
-    <ImageView
-        android:id="@+id/messageImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
-        android:layout_marginLeft="2dp"
-        android:layout_marginRight="2dp"
-        android:layout_marginTop="2dp"
-        android:adjustViewBounds="true"
-        android:visibility="gone" />
+        <TextView
+            android:id="@+id/messageTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"            
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginTop="2dp"
+            android:textSize="12sp"
+            android:visibility="visible" />
+
+        <TextView
+            android:id="@+id/messageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="55dp"
+
+            android:textSize="16sp"
+            android:visibility="gone" >
+        </TextView>
+
+        <ImageView
+            android:id="@+id/messageImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"            
+            android:adjustViewBounds="true"
+            android:visibility="gone" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -36,19 +37,19 @@ public class ChatAdapter extends BaseAdapter {
 		mContext = context;
 		mOnImageClickListener = new OnClickListener() {
 			@Override
-			public void onClick(View v) {				
+			public void onClick(View v) {
 				// tag should be set to the download task
 				SurespotMessage message = (SurespotMessage) v.getTag();
 
-				// pull the message out			
+				// pull the message out
 				if (message != null) {
 					Intent newIntent = new Intent(mContext, ImageViewActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
 					mContext.startActivity(newIntent);
-				}			
+				}
 			}
 		};
-		
+
 	}
 
 	public void evictCache() {
@@ -102,6 +103,7 @@ public class ChatAdapter extends BaseAdapter {
 				// SurespotLog.v(TAG, "addMessage, updating message");
 				SurespotMessage updateMessage = mMessages.get(index);
 				updateMessage.setId(message.getId());
+				updateMessage.setDateTime(message.getDateTime());
 			}
 		}
 	}
@@ -158,8 +160,6 @@ public class ChatAdapter extends BaseAdapter {
 		return position;
 	}
 
-	
-	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
@@ -182,6 +182,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 
 			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
+			chatMessageViewHolder.tvTime = (TextView) convertView.findViewById(R.id.messageTime);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			chatMessageViewHolder.imageView.setOnClickListener(mOnImageClickListener);
@@ -193,6 +194,23 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
+
+		if (item.getDateTime() != null) {
+			chatMessageViewHolder.tvTime.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+					item.getDateTime()));
+		}
+		else {
+			if (item.getId() == null) {
+				chatMessageViewHolder.tvTime.setVisibility(View.VISIBLE);
+				chatMessageViewHolder.tvTime.setText("sending...");
+			}
+			else {
+				chatMessageViewHolder.tvTime.setVisibility(View.VISIBLE);
+				chatMessageViewHolder.tvTime.setText("");
+			}
+		}
+
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
@@ -229,6 +247,7 @@ public class ChatAdapter extends BaseAdapter {
 		public View vMessageSending;
 		public View vMessageSent;
 		public ImageView imageView;
+		public TextView tvTime;
 	}
 
 	public void addOrUpdateMessage(SurespotMessage message, boolean notify) {

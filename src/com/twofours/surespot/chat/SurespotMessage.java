@@ -1,5 +1,7 @@
 package com.twofours.surespot.chat;
 
+import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,6 +21,7 @@ public class SurespotMessage {
 	private String mResendId;
 	private String mMimeType;
 	private int mHeight;
+	private Date mDateTime;
 
 	private boolean mLoading;
 
@@ -77,7 +80,7 @@ public class SurespotMessage {
 	public String getSpot() {
 		return Utils.getOtherUser(this.mFrom, this.mTo);
 	}
-	
+
 	public static SurespotMessage toSurespotMessage(String jsonString) {
 		JSONObject jsonObject;
 		try {
@@ -88,9 +91,9 @@ public class SurespotMessage {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return null;
-		
+
 	}
 
 	/**
@@ -117,6 +120,11 @@ public class SurespotMessage {
 			chatMessage.setResendId(resendId);
 		}
 
+		long datetime = jsonMessage.optLong("datetime");
+		if (datetime > 0) {
+			chatMessage.setDateTime(new Date(datetime));
+		}
+
 		return chatMessage;
 	}
 
@@ -134,11 +142,15 @@ public class SurespotMessage {
 			message.put("resendId", this.getResendId());
 			message.put("mimeType", this.getMimeType());
 			message.put("iv", this.getIv());
+			if (this.getDateTime() != null) {
+				message.put("datetime", this.getDateTime().getTime());
+			}
 
 			message.put("height", this.getHeight());
 
 			return message;
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -159,7 +171,8 @@ public class SurespotMessage {
 
 		if (this.getId() != null && rhs.getId() != null && this.getId().equals(rhs.getId())) {
 			return true;
-		} else {
+		}
+		else {
 			// iv should be unique across all messages
 			return (this.getIv().equals(rhs.getIv()));
 		}
@@ -200,7 +213,13 @@ public class SurespotMessage {
 	public void setHeight(Integer mHeight) {
 		this.mHeight = mHeight;
 	}
-	
-	
+
+	public Date getDateTime() {
+		return mDateTime;
+	}
+
+	public void setDateTime(Date mDateTime) {
+		this.mDateTime = mDateTime;
+	}
 
 }
