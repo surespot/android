@@ -90,13 +90,13 @@ public class ChatController {
 
 				setOnWifi();
 				// kick off another task
-				if (mRetries <= MAX_RETRIES) {
+				if (mRetries < MAX_RETRIES) {
 
 					if (mReconnectTask != null) {
 						mReconnectTask.cancel();
 					}
 
-					int timerInterval = (int) (Math.pow(2, ++mRetries) * 1000);
+					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
 					SurespotLog.v(TAG, "Starting another task in: " + timerInterval);
 
 					mReconnectTask = new ReconnectTask();

@@ -8,14 +8,22 @@
         android:id="@+id/message_list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_above="@+id/etMessage"        
+        android:layout_above="@+id/etMessage"
         android:drawSelectorOnTop="false"
         android:stackFromBottom="true"
         android:transcriptMode="normal" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/etMessage"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/message_list_empty"
-        android:layout_width="fill_parent"        
+        android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_above="@+id/etMessage"
         android:gravity="center"

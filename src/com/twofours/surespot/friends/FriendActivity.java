@@ -23,7 +23,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
@@ -86,7 +85,8 @@ public class FriendActivity extends SherlockActivity {
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
 		mListView = (ListView) findViewById(R.id.main_list);
-		mListView.setEmptyView(new ProgressBar(this));
+		mListView.setEmptyView(findViewById(R.id.progressBar));
+		// findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 		mMainAdapter = new FriendAdapter(this);
 
 		// click on friend to join chat
@@ -256,53 +256,66 @@ public class FriendActivity extends SherlockActivity {
 
 							HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
 
-							// if we have counts
-							if (mLastViewedMessageIds != null) {
+							if (serverMessageIds != null && serverMessageIds.size() > 0) {
+								// if we have counts
+								if (mLastViewedMessageIds != null) {
 
-								// set the deltas
-								for (String user : serverMessageIds.keySet()) {
+									// set the deltas
+									for (String user : serverMessageIds.keySet()) {
 
-									// figure out new message counts
-									int serverId = serverMessageIds.get(user);
-									Integer localId = mLastViewedMessageIds.get(user);
-									// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
-									// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
+										// figure out new message counts
+										int serverId = serverMessageIds.get(user);
+										Integer localId = mLastViewedMessageIds.get(user);
+										// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
+										// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
 
-									// new chat, all messages are new
-									if (localId == null) {
-										mLastViewedMessageIds.put(user, serverId);
-										mMainAdapter.messageDeltaReceived(user, serverId);
+										// new chat, all messages are new
+										if (localId == null) {
+											mLastViewedMessageIds.put(user, serverId);
+											mMainAdapter.messageDeltaReceived(user, serverId);
+										}
+										else {
+
+											// compute delta
+											int messageDelta = serverId - localId;
+											mMainAdapter.messageDeltaReceived(user, messageDelta);
+										}
 									}
-									else {
 
-										// compute delta
-										int messageDelta = serverId - localId;
-										mMainAdapter.messageDeltaReceived(user, messageDelta);
-									}
+								}
+
+								// if this is first time through store the last message ids
+								else {
+									mLastViewedMessageIds = serverMessageIds;
+
 								}
 							}
-
-							// if this is first time through store the last message ids
 							else {
-								mLastViewedMessageIds = serverMessageIds;
-
+								SurespotLog.v(TAG, "No conversations.");
 							}
-
 							mMainAdapter.sort();
 
 							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 							mListView.setAdapter(mMainAdapter);
+							findViewById(R.id.progressBar).setVisibility(View.GONE);
+
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
-							SurespotLog.e(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
+							SurespotLog.w(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
 
 							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+							findViewById(R.id.progressBar).setVisibility(View.GONE);
 							mListView.setAdapter(mMainAdapter);
 
 							// TODO show error / go back to login
 						};
 					});
+				}
+				else {
+					mListView.setAdapter(mMainAdapter);
+					((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+					findViewById(R.id.progressBar).setVisibility(View.GONE);
 				}
 			}
 
@@ -315,6 +328,7 @@ public class FriendActivity extends SherlockActivity {
 				// TODO show error / go back to login
 
 				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+				findViewById(R.id.progressBar).setVisibility(View.GONE);
 				mListView.setAdapter(mMainAdapter);
 			}
 		});

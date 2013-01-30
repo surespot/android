@@ -24,9 +24,9 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -94,6 +94,7 @@ public class ChatFragment extends SherlockFragment {
 					}
 
 					if (getView() != null) {
+						getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
 						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
 					}
 					mChatAdapter.notifyDataSetChanged();
@@ -111,9 +112,8 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setAdapter(mChatAdapter);
-		// mListView.setDivider(null);
 		mListView.setDividerHeight(1);
-		mListView.setEmptyView(new ProgressBar(this.getActivity()));
+		mListView.setEmptyView(view.findViewById(R.id.progressBar));
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -284,10 +284,14 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				SurespotLog.w(TAG, "getMessages: " + error.getMessage(), error);
+				SurespotLog.w(TAG, "getMessages", error);
+
 				if (callback != null) {
 					callback.handleResponse(false);
 				}
+
+				Toast.makeText(ChatFragment.this.getActivity(), "Could not load messages, please try again later.", Toast.LENGTH_LONG)
+						.show();
 			}
 		});
 	}

@@ -163,8 +163,10 @@ public class Friend implements Comparable<Friend> {
 				}
 
 				this.setName(jsonFriend.getString("name"));
+				setNewFriend(false);
 				return true;
 			}
+
 		}
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "update", e);
