@@ -349,13 +349,6 @@ public class FriendActivity extends SherlockActivity {
 
 		mChatController.disconnect();
 		mChatController.destroy();
-
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-
 	}
 
 	private void inviteFriend() {

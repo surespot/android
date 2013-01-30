@@ -245,7 +245,7 @@ public class EncryptionController {
 			ka.doPhase(mPublicKeys.get(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			SurespotLog.d("ke", "shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
+			SurespotLog.d(TAG, username + " shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
 			return sharedSecret;
 
 		}
