@@ -3,7 +3,6 @@ package com.twofours.surespot;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -148,8 +147,7 @@ public class Utils {
 
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "jsonToMap", e);
 		}
 		return null;
 
@@ -163,8 +161,7 @@ public class Utils {
 			return jsonToMap(jsonObject);
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "jsonStringToMap", e);
 		}
 
 		return null;
@@ -201,8 +198,7 @@ public class Utils {
 			jpeg.close();
 		}
 		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "uploadPictureMessage", e);
 		}
 
 		// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -284,14 +280,9 @@ public class Utils {
 
 			return srcBitmap;
 		}
-		catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			return null;
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		catch (Exception e) {
+			SurespotLog.w(TAG, "decodeSampledBitmapFromUri", e);
 		}
 		return null;
 
@@ -427,8 +418,7 @@ public class Utils {
 			}
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "jsonStringToChatMessages", e);
 		}
 		return messages;
 

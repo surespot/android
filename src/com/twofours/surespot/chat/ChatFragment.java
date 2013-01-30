@@ -2,7 +2,6 @@ package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
 
-import org.acra.ACRA;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -86,8 +85,6 @@ public class ChatFragment extends SherlockFragment {
 			public void handleResponse(Boolean result) {
 				// TODO Auto-generated method stub
 				if (getActivity() != null) {
-
-					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 					// mEditText.requestFocus();
 					// TODO move "last viewed" logic to ChatActivity
 					String lastMessageId = getLatestMessageId();
@@ -158,13 +155,15 @@ public class ChatFragment extends SherlockFragment {
 
 		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog
 		// (sshh)
+
 		mSocketConnectionStatusReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				boolean connected = intent.getBooleanExtra(SurespotConstants.ExtraNames.CONNECTED, false);
 				if (connected) {
-					getLatestMessages(mLatestMessageHandler);
+					getLatestMessages(mLatestMessageHandler, false);
+
 				}
 			}
 		};
@@ -221,8 +220,7 @@ public class ChatFragment extends SherlockFragment {
 		ChatActivity chatActivity = (ChatActivity) getActivity();
 
 		if (chatActivity.chatConnected()) {
-			chatActivity.startLoadingMessagesProgress();
-			getLatestMessages(mLatestMessageHandler);
+			getLatestMessages(mLatestMessageHandler, true);
 		}
 
 		if (isVisible()) {
@@ -246,11 +244,13 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onDestroy");
 	}
 
-	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {
+	private void getLatestMessages(final IAsyncCallback<Boolean> callback, final boolean withProgress) {
 
 		// get the list of messages
 		String lastMessageId = getLatestMessageId();
-
+		if (withProgress) {
+			((ChatActivity) getActivity()).startLoadingMessagesProgress();
+		}
 		SurespotLog.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
 		NetworkController.getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
 			@Override
@@ -278,15 +278,21 @@ public class ChatFragment extends SherlockFragment {
 					if (callback != null) {
 						callback.handleResponse(true);
 					}
+
+					if (withProgress) {
+						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
+					}
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				SurespotLog.e(TAG, "getMessages: " + error.getMessage(), error);
-				ACRA.getErrorReporter().handleException(error);
+				SurespotLog.w(TAG, "getMessages: " + error.getMessage(), error);
 				if (callback != null) {
 					callback.handleResponse(false);
+				}
+				if (withProgress) {
+					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 				}
 			}
 		});
@@ -333,7 +339,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.e(TAG, "getEarlierMessages: " + error.getMessage(), error);
+						SurespotLog.w(TAG, "getEarlierMessages", error);
 					}
 				});
 			}
@@ -384,7 +390,9 @@ public class ChatFragment extends SherlockFragment {
 					if (result != null) {
 						SurespotMessage chatMessage = Utils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
-						((ChatActivity) getActivity()).sendMessage(chatMessage);
+						if (getActivity() != null) {
+							((ChatActivity) getActivity()).sendMessage(chatMessage);
+						}
 					}
 					else {
 						// TODO handle encryption error

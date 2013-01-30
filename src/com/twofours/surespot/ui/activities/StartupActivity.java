@@ -23,10 +23,10 @@ public class StartupActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
-		
+		super.onCreate(savedInstanceState);
+
 		try {
-			//device without GCM throws exception
+			// device without GCM throws exception
 			GCMRegistrar.checkDevice(this);
 			GCMRegistrar.checkManifest(this);
 
@@ -42,7 +42,7 @@ public class StartupActivity extends Activity {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			SurespotLog.w(TAG, "onCreate", e);
 		}
 
 		// NetworkController.unregister(this, regId);

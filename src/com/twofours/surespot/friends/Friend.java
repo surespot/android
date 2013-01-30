@@ -167,8 +167,7 @@ public class Friend implements Comparable<Friend> {
 			}
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "update", e);
 		}
 		return false;
 	}

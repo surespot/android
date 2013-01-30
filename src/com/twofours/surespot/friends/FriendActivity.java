@@ -143,9 +143,7 @@ public class FriendActivity extends SherlockActivity {
 					}
 				}
 				catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					SurespotLog.e(TAG, "Invite Response Handler error: " + e.getMessage(), e);
+					SurespotLog.w(TAG, "onReceive (inviteResponse)", e);
 				}
 
 			}
@@ -172,8 +170,7 @@ public class FriendActivity extends SherlockActivity {
 					mMainAdapter.messageReceived(name);
 				}
 				catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					SurespotLog.w(TAG, "onReceive (message)", e);
 				}
 			}
 		};

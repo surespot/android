@@ -5,6 +5,7 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Utils;
 
 /**
@@ -12,6 +13,7 @@ import com.twofours.surespot.Utils;
  * 
  */
 public class SurespotMessage {
+	private static final String TAG = "SurespotMessage";
 	private String mFrom;
 	private String mTo;
 	private String mIv;
@@ -88,8 +90,7 @@ public class SurespotMessage {
 			return toSurespotMessage(jsonObject);
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "toSurespotMessage", e);
 		}
 
 		return null;
@@ -151,8 +152,7 @@ public class SurespotMessage {
 			return message;
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "toJSONObject", e);
 		}
 		return null;
 

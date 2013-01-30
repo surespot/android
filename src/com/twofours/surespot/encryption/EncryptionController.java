@@ -5,16 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.util.concurrent.ExecutionException;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -23,7 +17,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.acra.ACRA;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.crypto.engines.AESLightEngine;
@@ -40,7 +33,6 @@ import org.spongycastle.jce.spec.ECPublicKeySpec;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Base64InputStream;
-import android.util.Log;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -136,8 +128,7 @@ public class EncryptionController {
 			return identity;
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "loadIdentity", e);
 		}
 		return null;
 	}
@@ -145,14 +136,15 @@ public class EncryptionController {
 	private static ECPublicKey recreatePublicKey(String encodedKey) {
 
 		try {
-			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
-			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
-			ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
-			return pubKey;
+			if (encodedKey != null) {
+				ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
+				KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
+				ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
+				return pubKey;
+			}
 		}
 		catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "recreatePublicKey", e);
 		}
 
 		return null;
@@ -168,17 +160,8 @@ public class EncryptionController {
 			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(priKeySpec);
 			return privKey;
 		}
-		catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		catch (Exception e) {
+			SurespotLog.w(TAG, "recreatePrivateKey", e);
 		}
 
 		return null;
@@ -198,17 +181,8 @@ public class EncryptionController {
 					return pair;
 
 				}
-				catch (NoSuchAlgorithmException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-				}
-				catch (NoSuchProviderException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-				}
-				catch (InvalidAlgorithmParameterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				catch (Exception e) {
+					SurespotLog.w(TAG, "generateKeyPair", e);
 				}
 
 				return null;
@@ -248,8 +222,7 @@ public class EncryptionController {
 			Utils.putSharedPrefsString(IDENTITY_KEY, json.toString());
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, "saveIdentity", e);
 		}
 
 	}
@@ -276,26 +249,12 @@ public class EncryptionController {
 			return sharedSecret;
 
 		}
-		catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-
+		catch (InvalidCacheLoadException icle) {
+			// will occur if couldn't load key
+			SurespotLog.v(TAG, "generateSharedSecretSync", icle);
 		}
-		catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		catch (Exception e) {
+			SurespotLog.w(TAG, "generateSharedSecretSync", e);
 		}
 		return null;
 	}
@@ -331,9 +290,9 @@ public class EncryptionController {
 
 					return out.toByteArray();
 				}
+
 				catch (Exception e) {
-					e.printStackTrace();
-					ACRA.getErrorReporter().handleException(e);
+					SurespotLog.w(TAG, "symmetricBase64Decrypt", e);
 				}
 				return null;
 			}
@@ -372,9 +331,12 @@ public class EncryptionController {
 
 			return out.toByteArray();
 		}
+		catch (InvalidCacheLoadException icle) {
+			// will occur if couldn't load key
+			SurespotLog.v(TAG, "symmetricBase64DecryptSync", icle);
+		}
 		catch (Exception e) {
-			e.printStackTrace();
-			ACRA.getErrorReporter().handleException(e);
+			SurespotLog.w(TAG, "symmetricBase64DecryptSync", e);
 		}
 		return null;
 
@@ -409,9 +371,12 @@ public class EncryptionController {
 
 			return cos;
 		}
+		catch (InvalidCacheLoadException icle) {
+			// will occur if couldn't load key
+			SurespotLog.v(TAG, "symmetricBase64DecryptSync", icle);
+		}
 		catch (Exception e) {
-			e.printStackTrace();
-			ACRA.getErrorReporter().handleException(e);
+			SurespotLog.w(TAG, "symmetricBase64DecryptSync", e);
 		}
 		return null;
 
@@ -454,9 +419,12 @@ public class EncryptionController {
 
 					return returns;
 				}
+				catch (InvalidCacheLoadException icle) {
+					// will occur if couldn't load key
+					SurespotLog.v(TAG, "symmetricBase64Encrypt", icle);
+				}
 				catch (Exception e) {
-					e.printStackTrace();
-					ACRA.getErrorReporter().handleException(e);
+					SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
 				}
 				return null;
 
@@ -506,9 +474,13 @@ public class EncryptionController {
 					return returns;
 
 				}
+				catch (InvalidCacheLoadException icle) {
+					// will occur if couldn't load key
+					SurespotLog.v(TAG, "symmetricBase64Encrypt", icle);
+				}
+
 				catch (Exception e) {
-					e.printStackTrace();
-					ACRA.getErrorReporter().handleException(e);
+					SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
 				}
 				return null;
 
@@ -540,30 +512,22 @@ public class EncryptionController {
 					iv = Utils.base64Decode(ivs);
 					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
 
-				}
-				catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					return null;
-				}
-				catch (InvalidCacheLoadException icle) {
-					icle.printStackTrace();
-					return null;
-				}
+					ccm.reset();
+					ccm.init(false, ivParams);
 
-				ccm.reset();
-				ccm.init(false, ivParams);
+					byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
 
-				byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
+					int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
 
-				int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
-				try {
 					len += ccm.doFinal(buf, len);
 					return new String(buf);
 				}
+				catch (InvalidCacheLoadException icle) {
+					// will occur if couldn't load key
+					SurespotLog.v(TAG, "symmetricBase64DecryptSync", icle);
+				}
 				catch (Exception e) {
-					e.printStackTrace();
-					ACRA.getErrorReporter().handleException(e);
+					SurespotLog.w(TAG, "symmetricBase64DecryptSync", e);
 				}
 				return null;
 
@@ -604,9 +568,7 @@ public class EncryptionController {
 			return new String(buf);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
-			Log.w(TAG, "error decrypting", e);
-			// ACRA.getErrorReporter().handleException(e);
+			SurespotLog.w(TAG, "symmetricDecryptSync", e);
 		}
 		return null;
 
@@ -643,9 +605,12 @@ public class EncryptionController {
 					return returns;
 
 				}
+				catch (InvalidCacheLoadException icle) {
+					// will occur if couldn't load key
+					SurespotLog.v(TAG, "symmetricEncrypt", icle);
+				}
 				catch (Exception e) {
-					e.printStackTrace();
-					ACRA.getErrorReporter().handleException(e);
+					SurespotLog.w(TAG, "symmetricEncrypt", e);
 				}
 				return null;
 

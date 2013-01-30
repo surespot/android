@@ -199,8 +199,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 					mIndicator.notifyDataSetChanged();
 				}
 				catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					SurespotLog.w(TAG, "onReceive", e);
 				}
 
 			}

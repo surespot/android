@@ -87,7 +87,6 @@ public class GCMIntentService extends GCMBaseIntentService
 			}
 			catch (IOException e) {
 				// TODO tell user shit is fucked
-				e.printStackTrace();
 				ACRA.getErrorReporter().handleException(e);
 				return;
 			}

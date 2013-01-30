@@ -53,4 +53,8 @@ public class SurespotLog {
 
 	}
 
+	public static void v(String tag, String msg, Throwable tr) {
+		Log.v(tag, msg, tr);
+	}
+
 }

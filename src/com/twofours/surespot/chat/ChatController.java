@@ -39,7 +39,7 @@ public class ChatController {
 	private static final int STATE_CONNECTED = 1;
 	private static final int STATE_DISCONNECTED = 2;
 
-	private static final int MAX_RETRIES = 7;
+	private static final int MAX_RETRIES = 5;
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;
@@ -71,7 +71,7 @@ public class ChatController {
 
 				}
 				catch (JSONException e) {
-					e.printStackTrace();
+					SurespotLog.w(TAG, "onMessage", e);
 				}
 			}
 
@@ -96,7 +96,7 @@ public class ChatController {
 						mReconnectTask.cancel();
 					}
 
-					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
+					int timerInterval = (int) (Math.pow(2, ++mRetries) * 1000);
 					SurespotLog.v(TAG, "Starting another task in: " + timerInterval);
 
 					mReconnectTask = new ReconnectTask();
@@ -164,8 +164,7 @@ public class ChatController {
 						sendInviteRequest(json.getString("data"));
 					}
 					catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						SurespotLog.w(TAG, "on", e);
 					}
 					return;
 				}
@@ -181,8 +180,7 @@ public class ChatController {
 						checkAndSendNextMessage(cm);
 					}
 					catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						SurespotLog.w(TAG, "on", e);
 					}
 
 				}
