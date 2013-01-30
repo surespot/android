@@ -26,7 +26,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -290,8 +289,7 @@ public class ChatFragment extends SherlockFragment {
 					callback.handleResponse(false);
 				}
 
-				Toast.makeText(ChatFragment.this.getActivity(), "Could not load messages, please try again later.", Toast.LENGTH_LONG)
-						.show();
+				Utils.makeToast("Could not load messages, please try again later.");
 			}
 		});
 	}
@@ -442,12 +440,13 @@ public class ChatFragment extends SherlockFragment {
 
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
-				Utils.uploadPictureMessage(getActivity(), imageUri, mUsername, new IAsyncCallback<Boolean>() {
+				Utils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, new IAsyncCallback<Boolean>() {
 
 					@Override
 					public void handleResponse(Boolean result) {
-						// TODO Auto-generated method stub
-
+						if (!result) {
+							Utils.makeToast("Could not upload picture, please try again later.");
+						}
 					}
 				});
 			}

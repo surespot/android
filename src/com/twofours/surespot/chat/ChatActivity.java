@@ -345,12 +345,12 @@ public class ChatActivity extends SherlockFragmentActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
 			Uri selectedImageUri = data.getData();
-			Utils.uploadPictureMessage(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
-
+			Utils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
 				@Override
 				public void handleResponse(Boolean result) {
-					// TODO handle error
-
+					if (!result) {
+						Utils.makeToast("Could not upload picture, please try again later.");
+					}
 				}
 			});
 		}

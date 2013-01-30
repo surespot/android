@@ -494,6 +494,52 @@ public class EncryptionController {
 
 	}
 
+	public static byte[][] symmetricBase64EncryptSync(final String username, final InputStream data) {
+
+		byte[] iv = new byte[15];
+		byte[] buf = new byte[1024]; // input buffer
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		mSecureRandom.nextBytes(iv);
+		IvParameterSpec ivParams = new IvParameterSpec(iv);
+		InputStream in = data;
+
+		try {
+			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+
+			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+			ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
+			CipherOutputStream cos = new CipherOutputStream(out, ccm);
+
+			int i = 0;
+
+			while ((i = in.read(buf)) != -1) {
+				cos.write(buf, 0, i);
+			}
+
+			in.close();
+			cos.close();
+			out.close();
+			byte[][] returns = new byte[2][];
+
+			returns[0] = Utils.base64Encode(iv);
+			returns[1] = Utils.base64Encode(out.toByteArray());
+
+			return returns;
+
+		}
+		catch (InvalidCacheLoadException icle) {
+			// will occur if couldn't load key
+			SurespotLog.v(TAG, "symmetricBase64Encrypt", icle);
+		}
+
+		catch (Exception e) {
+			SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
+		}
+		return null;
+
+	}
+
 	public static void symmetricDecrypt(final String username, final String ivs, final String cipherData,
 			final IAsyncCallback<String> callback) {
 		new AsyncTask<Void, Void, String>() {

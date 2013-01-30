@@ -25,7 +25,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import android.widget.Toast;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -323,8 +322,7 @@ public class FriendActivity extends SherlockActivity {
 			public void onFailure(Throwable arg0, String content) {
 				SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
-				Toast.makeText(FriendActivity.this.getApplicationContext(), "Could not load friends, please try again later.",
-						Toast.LENGTH_LONG).show();
+				Utils.makeToast("Could not load friends, please try again later.");
 				// TODO show error / go back to login
 
 				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
@@ -402,13 +400,12 @@ public class FriendActivity extends SherlockActivity {
 							break;
 						default:
 							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-							Toast.makeText(FriendActivity.this.getBaseContext(), "Could not invite friend, please try again later.",
-									Toast.LENGTH_LONG).show();
+							Utils.makeToast("Could not invite friend, please try again later.");
 						}
 					}
 					else {
 						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-						Toast.makeText(FriendActivity.this, "Could not invite friend, please try again later.", Toast.LENGTH_LONG).show();
+						Utils.makeToast("Could not invite friend, please try again later.");
 					}
 				}
 

@@ -110,7 +110,7 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					// Toast.makeText(SurespotApplication.getAppContext(),
+					// Utils.makeToast(SurespotApplication.getAppContext(),
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
 					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);

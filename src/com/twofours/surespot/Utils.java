@@ -26,11 +26,11 @@ import android.graphics.BitmapFactory.Options;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 import android.util.Base64;
 import android.widget.Toast;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -181,50 +181,54 @@ public class Utils {
 		return chatMessage;
 	}
 
-	public static void uploadPictureMessage(final Context context, Uri imageUri, final String to, final IAsyncCallback<Boolean> callback) {
+	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to,
+			final IAsyncCallback<Boolean> callback) {
 
-		// TODO thread
-		Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 480, 240);
-
-		// bitmap.
-
-		// final String data = Utils.inputStreamToBase64(iStream);
-
-		final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
-		bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
-		bitmap = null;
-
-		try {
-			jpeg.close();
-		}
-		catch (IOException e) {
-			SurespotLog.w(TAG, "uploadPictureMessage", e);
-		}
-
-		// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-		EncryptionController.symmetricBase64Encrypt(to, new ByteArrayInputStream(jpeg.toByteArray()), new IAsyncCallback<byte[][]>() {
+		new AsyncTask<Void, Void, Boolean>() {
 
 			@Override
-			public void handleResponse(byte[][] results) {
-				if (results != null) {
-					NetworkController.postFile(context, to, new String(results[0]), results[1], SurespotConstants.MimeTypes.IMAGE,
-							new AsyncHttpResponseHandler() {
-								public void onSuccess(int statusCode, String content) {
-									SurespotLog.v(TAG, "Received picture upload response: " + content);
-									callback.handleResponse(true);
-								};
+			protected Boolean doInBackground(Void... params) {
+				// TODO thread
+				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 480, 240);
 
-								public void onFailure(Throwable arg0, String content) {
-									SurespotLog.v(TAG, "Error uploading picture: " + content);
-									Utils.makeToast("Could not upload picture, please try again later.");
-									callback.handleResponse(false);
-								};
-							});
+				// final String data = Utils.inputStreamToBase64(iStream);
+
+				final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
+				bitmap = null;
+
+				try {
+					jpeg.close();
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, "uploadPictureMessage", e);
 				}
 
+				// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+				byte[][] results = EncryptionController.symmetricBase64EncryptSync(to, new ByteArrayInputStream(jpeg.toByteArray()));
+
+				if (results != null) {
+					final String iv = new String(results[0]);
+					String content = NetworkController.postFileSync(context, to, iv, results[1], SurespotConstants.MimeTypes.IMAGE);
+					if (content != null) {
+						SurespotLog.v(TAG, "Received picture upload response: " + content);
+						return true;
+					}
+					else {
+						SurespotLog.v(TAG, "Error uploading picture: " + content);
+						return false;
+					}
+
+				}
+				return false;
 			}
-		});
-		callback.handleResponse(null);
+
+			protected void onPostExecute(Boolean result) {
+				callback.handleResponse(result);
+			};
+
+		}.execute();
+
 	}
 
 	private static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int reqWidth, int reqHeight) {

@@ -384,6 +384,15 @@ public class NetworkController {
 
 	}
 
+	public static String postFileSync(Context context, String user, String id, byte[] data, String mimeType) {
+
+		RequestParams params = new RequestParams();
+		params.put("image", new ByteArrayInputStream(data), id, mimeType);
+
+		return mSyncClient.post(SurespotConstants.BASE_URL + "/images/" + user, params);
+
+	}
+
 	public static void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
 		get(relativeUrl, null, responseHandler);
 	}

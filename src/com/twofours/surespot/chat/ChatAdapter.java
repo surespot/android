@@ -87,23 +87,24 @@ public class ChatAdapter extends BaseAdapter {
 
 	// update the id and sent status of the message once we received
 	private void addOrUpdateMessage(SurespotMessage message) {
-		// if the id is null we're sending the message so just add it
-		if (message.getId() == null) {
+		int index = mMessages.indexOf(message);
+		if (index == -1) {
+			// SurespotLog.v(TAG, "addMessage, could not find message");
+
+			//
 			mMessages.add(message);
 		}
 		else {
-			int index = mMessages.indexOf(message);
-			if (index == -1) {
-				// SurespotLog.v(TAG, "addMessage, could not find message");
-
-				//
-				mMessages.add(message);
-			}
-			else {
-				// SurespotLog.v(TAG, "addMessage, updating message");
-				SurespotMessage updateMessage = mMessages.get(index);
+			// SurespotLog.v(TAG, "addMessage, updating message");
+			SurespotMessage updateMessage = mMessages.get(index);
+			if (message.getId() != null) {
 				updateMessage.setId(message.getId());
+			}
+			if (message.getDateTime() != null) {
 				updateMessage.setDateTime(message.getDateTime());
+			}
+			if (message.getCipherData() != null) {
+				updateMessage.setCipherData(message.getCipherData());
 			}
 		}
 	}
