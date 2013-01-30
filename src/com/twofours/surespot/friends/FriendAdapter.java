@@ -305,7 +305,8 @@ public class FriendAdapter extends BaseAdapter {
 				}
 
 				public void onFailure(Throwable error, String content) {
-					SurespotLog.e(TAG, content, error);
+					SurespotLog.w(TAG, "respondToInvity", error);
+					Utils.makeToast("Could not respond to invite, please try again later.");
 				};
 			});
 		}

@@ -23,6 +23,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
@@ -51,7 +52,6 @@ import com.twofours.surespot.ui.activities.LoginActivity;
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
 	private static final String TAG = "FriendActivity";
-	private MultiProgressDialog mMpdPopulateList;
 	private MultiProgressDialog mMpdInviteFriend;
 	private BroadcastReceiver mInvitationReceiver;
 	private BroadcastReceiver InviteResponseReceiver;
@@ -83,10 +83,10 @@ public class FriendActivity extends SherlockActivity {
 		});
 		setContentView(R.layout.activity_friend);
 		mLastViewedMessageIds = new HashMap<String, Integer>();
-		mMpdPopulateList = new MultiProgressDialog(this, "loading", 750);
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
 		mListView = (ListView) findViewById(R.id.main_list);
+		mListView.setEmptyView(new ProgressBar(this));
 		mMainAdapter = new FriendAdapter(this);
 
 		// click on friend to join chat
@@ -223,8 +223,6 @@ public class FriendActivity extends SherlockActivity {
 
 		mChatController.connect();
 
-		this.mMpdPopulateList.incrProgress();
-
 		// get last message id's out of shared prefs
 		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS);
 		if (lastMessageIdJson != null) {
@@ -294,7 +292,6 @@ public class FriendActivity extends SherlockActivity {
 
 							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 							mListView.setAdapter(mMainAdapter);
-							FriendActivity.this.mMpdPopulateList.decrProgress();
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
@@ -302,7 +299,7 @@ public class FriendActivity extends SherlockActivity {
 
 							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 							mListView.setAdapter(mMainAdapter);
-							FriendActivity.this.mMpdPopulateList.decrProgress();
+
 							// TODO show error / go back to login
 						};
 					});
@@ -313,13 +310,12 @@ public class FriendActivity extends SherlockActivity {
 			public void onFailure(Throwable arg0, String content) {
 				SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
-				Toast.makeText(FriendActivity.this.getApplicationContext(),
-						"Could not load friends. Please check your network connection.", Toast.LENGTH_SHORT).show();
+				Toast.makeText(FriendActivity.this.getApplicationContext(), "Could not load friends, please try again later.",
+						Toast.LENGTH_LONG).show();
 				// TODO show error / go back to login
 
 				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 				mListView.setAdapter(mMainAdapter);
-				FriendActivity.this.mMpdPopulateList.decrProgress();
 			}
 		});
 	}
@@ -391,13 +387,14 @@ public class FriendActivity extends SherlockActivity {
 							Utils.makeToast("You have already invited this user.");
 							break;
 						default:
-							SurespotLog.e(TAG, "inviteFriend: " + content, arg0);
-							// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
+							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+							Toast.makeText(FriendActivity.this.getBaseContext(), "Could not invite friend, please try again later.",
+									Toast.LENGTH_LONG).show();
 						}
 					}
 					else {
-						SurespotLog.e(TAG, "inviteFriend: " + content, arg0);
-						// Toast.makeText(FriendFragment.this.getActivity(), "Error inviting friend.");
+						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+						Toast.makeText(FriendActivity.this, "Could not invite friend, please try again later.", Toast.LENGTH_LONG).show();
 					}
 				}
 

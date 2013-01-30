@@ -38,7 +38,7 @@ public class SignupActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
-		mMpd = new MultiProgressDialog(this,"creating a user and generating keys", 750);
+		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 750);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
@@ -75,7 +75,9 @@ public class SignupActivity extends Activity {
 		// TODO use char array
 		final String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText().toString();
 
-		if (!(username.length() > 0 && password.length() > 0)) { return; }
+		if (!(username.length() > 0 && password.length() > 0)) {
+			return;
+		}
 
 		mMpd.incrProgress();
 		// see if the user exists
@@ -87,8 +89,7 @@ public class SignupActivity extends Activity {
 					mMpd.decrProgress();
 				}
 				else {
-					
-				
+
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
 					// successful
@@ -98,15 +99,14 @@ public class SignupActivity extends Activity {
 						public void handleResponse(final KeyPair keyPair) {
 							if (keyPair != null) {
 
-								//TODO use password derived from user's password
-								
+								// TODO use password derived from user's password
+
 								NetworkController.addUser(username, password,
 										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
 										new AsyncHttpResponseHandler() {
 
 											@Override
 											public void onSuccess(int statusCode, String arg0) {
-												
 
 												if (statusCode == 201) {
 													// save key pair now
@@ -137,7 +137,7 @@ public class SignupActivity extends Activity {
 
 											}
 
-											public void onFailure(Throwable arg0, String arg1) {												
+											public void onFailure(Throwable arg0, String arg1) {
 												SurespotLog.e("SignupActivity", arg1, arg0);
 												mMpd.decrProgress();
 												if (arg0 instanceof HttpResponseException) {
@@ -148,14 +148,14 @@ public class SignupActivity extends Activity {
 													}
 													else {
 
-														Utils.makeToast("Error, could not create user.");
+														Utils.makeToast("Could not create user, please try again later.");
 													}
 												}
-												
-												
-												
-												
-											};																				
+												else {
+													Utils.makeToast("Could not create user, please try again later.");
+												}
+
+											};
 
 										});
 							}
@@ -165,21 +165,14 @@ public class SignupActivity extends Activity {
 				}
 
 			}
-		
-		
-			
+
 			@Override
 			public void onFailure(Throwable error, String content) {
-				SurespotLog.e(TAG, "Signup Error: " + content, error);
+				SurespotLog.w(TAG, "userExists", error);
 				mMpd.decrProgress();
 			}
 		});
-		
-		
-		
-	
 
 	}
-
 
 }

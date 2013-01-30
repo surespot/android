@@ -17,14 +17,17 @@
 package com.twofours.surespot;
 
 import java.lang.ref.WeakReference;
+import java.text.DateFormat;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -63,6 +66,15 @@ public class ImageDownloader {
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
 			imageView.setTag(message);
+
+			// TODO put the row in the tag
+			TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
+			if (message.getDateTime() == null) {
+				tvTime.setText("");
+			}
+			else {
+				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
+			}
 		}
 	}
 
@@ -187,6 +199,16 @@ public class ImageDownloader {
 									"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
 											+ ", to: " + mMessage.getTo() + ", height: " + bitmap.getHeight() + ", width: "
 											+ bitmap.getWidth());
+						}
+
+						// TODO put the row in the tag
+						TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
+						if (mMessage.getDateTime() == null) {
+							tvTime.setText("");
+						}
+						else {
+							tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+									.format(mMessage.getDateTime()));
 						}
 					}
 				}

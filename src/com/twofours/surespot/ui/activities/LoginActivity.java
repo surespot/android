@@ -30,7 +30,6 @@ public class LoginActivity extends Activity {
 	private Button loginButton;
 	private static final String TAG = "LoginActivity";
 	MultiProgressDialog mMpd;
-	 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,13 +88,13 @@ public class LoginActivity extends Activity {
 			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int responseCode, String arg0) {
-					
+
 					nextActivity();
 				}
 
 				@Override
 				public void onFailure(Throwable arg0, String message) {
-					SurespotLog.e(TAG, arg0.toString(), arg0);
+					SurespotLog.w(TAG, arg0.toString(), arg0);
 
 					if (arg0 instanceof HttpResponseException) {
 						HttpResponseException error = (HttpResponseException) arg0;

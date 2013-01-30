@@ -195,19 +195,22 @@ public class ChatAdapter extends BaseAdapter {
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 
-		if (item.getDateTime() != null) {
-			chatMessageViewHolder.tvTime.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-					item.getDateTime()));
+		if (item.getId() == null) {
+			chatMessageViewHolder.tvTime.setText("sending...");
 		}
 		else {
-			if (item.getId() == null) {
-				chatMessageViewHolder.tvTime.setVisibility(View.VISIBLE);
-				chatMessageViewHolder.tvTime.setText("sending...");
+			if (item.getPlainData() == null) {
+				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 			}
 			else {
-				chatMessageViewHolder.tvTime.setVisibility(View.VISIBLE);
-				chatMessageViewHolder.tvTime.setText("");
+				if (item.getDateTime() != null) {
+
+					chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+							item.getDateTime()));
+				}
+				else {
+					chatMessageViewHolder.tvTime.setText("");
+				}
 			}
 		}
 

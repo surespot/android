@@ -214,8 +214,9 @@ public class Utils {
 									callback.handleResponse(true);
 								};
 
-								public void onFailure(Throwable error, String content) {
+								public void onFailure(Throwable arg0, String content) {
 									SurespotLog.v(TAG, "Error uploading picture: " + content);
+									Utils.makeToast("Could not upload picture, please try again later.");
 									callback.handleResponse(false);
 								};
 							});

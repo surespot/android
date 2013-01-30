@@ -24,6 +24,7 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -112,6 +113,7 @@ public class ChatFragment extends SherlockFragment {
 		mListView.setAdapter(mChatAdapter);
 		// mListView.setDivider(null);
 		mListView.setDividerHeight(1);
+		mListView.setEmptyView(new ProgressBar(this.getActivity()));
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -162,7 +164,7 @@ public class ChatFragment extends SherlockFragment {
 			public void onReceive(Context context, Intent intent) {
 				boolean connected = intent.getBooleanExtra(SurespotConstants.ExtraNames.CONNECTED, false);
 				if (connected) {
-					getLatestMessages(mLatestMessageHandler, false);
+					getLatestMessages(mLatestMessageHandler);
 
 				}
 			}
@@ -220,7 +222,7 @@ public class ChatFragment extends SherlockFragment {
 		ChatActivity chatActivity = (ChatActivity) getActivity();
 
 		if (chatActivity.chatConnected()) {
-			getLatestMessages(mLatestMessageHandler, true);
+			getLatestMessages(mLatestMessageHandler);
 		}
 
 		if (isVisible()) {
@@ -244,13 +246,11 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onDestroy");
 	}
 
-	private void getLatestMessages(final IAsyncCallback<Boolean> callback, final boolean withProgress) {
+	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {
 
 		// get the list of messages
 		String lastMessageId = getLatestMessageId();
-		if (withProgress) {
-			((ChatActivity) getActivity()).startLoadingMessagesProgress();
-		}
+
 		SurespotLog.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
 		NetworkController.getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
 			@Override
@@ -279,9 +279,6 @@ public class ChatFragment extends SherlockFragment {
 						callback.handleResponse(true);
 					}
 
-					if (withProgress) {
-						((ChatActivity) getActivity()).stopLoadingMessagesProgress();
-					}
 				}
 			}
 
@@ -290,9 +287,6 @@ public class ChatFragment extends SherlockFragment {
 				SurespotLog.w(TAG, "getMessages: " + error.getMessage(), error);
 				if (callback != null) {
 					callback.handleResponse(false);
-				}
-				if (withProgress) {
-					((ChatActivity) getActivity()).stopLoadingMessagesProgress();
 				}
 			}
 		});

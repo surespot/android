@@ -25,7 +25,6 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
@@ -41,7 +40,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 	private ChatPagerAdapter mPagerAdapter;
 	private ViewPager mViewPager;
 	private BroadcastReceiver mMessageBroadcastReceiver;
-	private MultiProgressDialog mMpd;
 	private HashMap<String, Integer> mLastViewedMessageIds;
 	private ChatController mChatController;
 
@@ -106,7 +104,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 		}
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
-		mMpd = new MultiProgressDialog(this, "loading and decrypting messages", 750);
 
 		// get the chats
 		JSONArray jsonChats;
@@ -392,14 +389,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_chat, menu);
 		return true;
-	}
-
-	public void startLoadingMessagesProgress() {
-		mMpd.incrProgress();
-	}
-
-	public void stopLoadingMessagesProgress() {
-		mMpd.decrProgress();
 	}
 
 	public String getCurrentChatName() {
