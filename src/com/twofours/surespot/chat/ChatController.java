@@ -269,7 +269,7 @@ public class ChatController {
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
 
 			final KeyStore keyStore = KeyStore.getInstance("BKS");
-			keyStore.load(SurespotApplication.getAppContext().getResources().openRawResource(R.raw.dev_keystore), "wanker".toCharArray());
+			keyStore.load(SurespotApplication.getAppContext().getResources().openRawResource(R.raw.stage_keystore), "wanker".toCharArray());
 
 			final KeyManagerFactory keyManager = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 			keyManager.init(keyStore, null);
@@ -278,9 +278,9 @@ public class ChatController {
 			trustFactory.init(keyStore);
 
 			SSLContext sslContext = SSLContext.getInstance("TLS", "HarmonyJSSE");
-			sslContext.init(keyManager.getKeyManagers(), trustFactory.getTrustManagers(), null);
+			//sslContext.init(keyManager.getKeyManagers(), trustFactory.getTrustManagers(), null);
 			// sslContext.getSocketFactory().
-			// sslContext.init(null, getTrustingManager(), null);
+			sslContext.init(null, null, null);
 			// SSLContext sslContext = SSLContext.getDefault();
 			SocketIO.setDefaultSSLSocketFactory(sslContext);
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
