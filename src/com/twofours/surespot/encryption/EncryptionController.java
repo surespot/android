@@ -3,7 +3,6 @@ package com.twofours.surespot.encryption;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -31,8 +30,6 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import android.os.AsyncTask;
-import android.util.Base64;
-import android.util.Base64InputStream;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -342,45 +339,45 @@ public class EncryptionController {
 
 	}
 
-	public synchronized static OutputStream symmetricBase64DecryptSync(final String username, final String ivs,
-			final InputStream base64data, ByteArrayOutputStream outStream) {
-
-		byte[] buf = new byte[1024]; // input buffer
-
-		try {
-			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
-			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
-			// data.r
-			// byte[] cipherBytes = Utils.base64Decode();
-			byte[] iv = Utils.base64Decode(ivs);
-			IvParameterSpec ivParams = new IvParameterSpec(iv);
-			// ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);
-			CipherOutputStream cos = new CipherOutputStream(outStream, ccm);
-			Base64InputStream in = new Base64InputStream(base64data, Base64.NO_WRAP | Base64.URL_SAFE);
-
-			ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
-			int i = 0;
-			while ((i = in.read(buf)) != -1) {
-				cos.write(buf, 0, i);
-			}
-
-			in.close();
-			cos.close();
-			// out.close();
-			outStream.close();
-
-			return cos;
-		}
-		catch (InvalidCacheLoadException icle) {
-			// will occur if couldn't load key
-			SurespotLog.v(TAG, "symmetricBase64DecryptSync", icle);
-		}
-		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricBase64DecryptSync", e);
-		}
-		return null;
-
-	}
+	// public synchronized static OutputStream symmetricBase64DecryptSync(final String username, final String ivs,
+	// final InputStream base64data, ByteArrayOutputStream outStream) {
+	//
+	// byte[] buf = new byte[1024]; // input buffer
+	//
+	// try {
+	// Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+	// SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+	// // data.r
+	// // byte[] cipherBytes = Utils.base64Decode();
+	// byte[] iv = Utils.base64Decode(ivs);
+	// IvParameterSpec ivParams = new IvParameterSpec(iv);
+	// // ByteArrayInputStream in = new ByteArrayInputStream(cipherBytes);
+	// CipherOutputStream cos = new CipherOutputStream(outStream, ccm);
+	// Base64InputStream in = new Base64InputStream(base64data, Base64.NO_WRAP | Base64.URL_SAFE);
+	//
+	// ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
+	// int i = 0;
+	// while ((i = in.read(buf)) != -1) {
+	// cos.write(buf, 0, i);
+	// }
+	//
+	// in.close();
+	// cos.close();
+	// // out.close();
+	// outStream.close();
+	//
+	// return cos;
+	// }
+	// catch (InvalidCacheLoadException icle) {
+	// // will occur if couldn't load key
+	// SurespotLog.v(TAG, "symmetricBase64DecryptSync", icle);
+	// }
+	// catch (Exception e) {
+	// SurespotLog.w(TAG, "symmetricBase64DecryptSync", e);
+	// }
+	// return null;
+	//
+	// }
 
 	public static void symmetricBase64Encrypt(final String username, final String base64data, final IAsyncCallback<String[]> callback) {
 		new AsyncTask<Void, Void, String[]>() {

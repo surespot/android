@@ -62,7 +62,7 @@ public class FriendActivity extends SherlockActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		SurespotLog.v(TAG, "onCreateView");
+		SurespotLog.v(TAG, "onCreate");
 
 		mCustomNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
 

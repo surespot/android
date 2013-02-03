@@ -9,12 +9,11 @@ public class SurespotLog {
 
 	public static void w(String tag, String msg) {
 		Log.w(tag, msg);
-
 	}
 
 	public static void w(String tag, String msg, Throwable tr) {
 		Log.w(tag, msg, tr);
-
+		// ACRA.getErrorReporter().handleException(tr);
 	}
 
 	public static void v(String tag, String msg) {

@@ -5,12 +5,19 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
-import java.net.MalformedURLException;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +31,7 @@ import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
@@ -82,7 +90,8 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				SurespotLog.v(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries);
+				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
+						socketIOException);
 
 				if (mResendTask != null) {
 					mResendTask.cancel();
@@ -256,16 +265,32 @@ public class ChatController {
 		}
 
 		try {
-			Properties headers = new Properties();
+			HashMap<String, String> headers = new HashMap<String, String>();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
+
+			final KeyStore keyStore = KeyStore.getInstance("BKS");
+			keyStore.load(SurespotApplication.getAppContext().getResources().openRawResource(R.raw.dev_keystore), "wanker".toCharArray());
+
+			final KeyManagerFactory keyManager = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManager.init(keyStore, null);
+
+			final TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			trustFactory.init(keyStore);
+
+			SSLContext sslContext = SSLContext.getInstance("TLS", "HarmonyJSSE");
+			sslContext.init(keyManager.getKeyManagers(), trustFactory.getTrustManagers(), null);
+			// sslContext.getSocketFactory().
+			// sslContext.init(null, getTrustingManager(), null);
+			// SSLContext sslContext = SSLContext.getDefault();
+			SocketIO.setDefaultSSLSocketFactory(sslContext);
 			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
+
 			socket.connect(mSocketCallback);
 
 		}
-		catch (MalformedURLException e1) {
-			// Auto-generated
-			e1.printStackTrace();
-			// callback.connectStatus(false);
+		catch (Exception e) {
+
+			SurespotLog.w(TAG, "connect", e);
 		}
 
 	}
@@ -439,5 +464,26 @@ public class ChatController {
 
 	public boolean isConnected() {
 		return (getState() == STATE_CONNECTED);
+	}
+
+	public static TrustManager[] getTrustingManager() {
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			@Override
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+
+			@Override
+			public void checkClientTrusted(X509Certificate[] certs, String authType) {
+				// Do nothing
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] certs, String authType) {
+				// Do nothing
+			}
+
+		} };
+		return trustAllCerts;
 	}
 }
