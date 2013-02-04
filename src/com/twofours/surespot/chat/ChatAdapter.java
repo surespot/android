@@ -18,9 +18,8 @@ import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.ImageViewActivity;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -142,7 +141,7 @@ public class ChatAdapter extends BaseAdapter {
 	@Override
 	public int getItemViewType(int position) {
 		SurespotMessage message = mMessages.get(position);
-		String otherUser = Utils.getOtherUser(message.getFrom(), message.getTo());
+		String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
 		}

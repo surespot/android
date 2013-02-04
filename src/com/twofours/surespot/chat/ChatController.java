@@ -5,7 +5,6 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
-import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,10 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.json.JSONException;
@@ -31,11 +27,12 @@ import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.common.WebClientDevWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.LoginActivity;
 import com.twofours.surespot.ui.activities.StartupActivity;
@@ -119,7 +116,7 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					// Utils.makeToast(SurespotApplication.getAppContext(),
+					// Utils.makeToast(this,SurespotApplication.getAppContext(),
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
 					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
@@ -268,25 +265,9 @@ public class ChatController {
 			HashMap<String, String> headers = new HashMap<String, String>();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
 
-			final KeyStore keyStore = KeyStore.getInstance("BKS");
-			keyStore.load(SurespotApplication.getAppContext().getResources().openRawResource(R.raw.stage_keystore), "wanker".toCharArray());
-
-			final KeyManagerFactory keyManager = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			keyManager.init(keyStore, null);
-
-			final TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-			trustFactory.init(keyStore);
-
-			SSLContext sslContext = SSLContext.getInstance("TLS", "HarmonyJSSE");
-			//sslContext.init(keyManager.getKeyManagers(), trustFactory.getTrustManagers(), null);
-			// sslContext.getSocketFactory().
-			sslContext.init(null, null, null);
-			// SSLContext sslContext = SSLContext.getDefault();
-			SocketIO.setDefaultSSLSocketFactory(sslContext);
-			socket = new SocketIO(SurespotConstants.WEBSOCKET_URL, headers);
-
+			SocketIO.setDefaultSSLSocketFactory(WebClientDevWrapper.getSSLContext());
+			socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
 			socket.connect(mSocketCallback);
-
 		}
 		catch (Exception e) {
 
@@ -418,22 +399,23 @@ public class ChatController {
 	public void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, Utils.chatMessagesToJson(mResendBuffer).toString());
+		Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, ChatUtils
+				.chatMessagesToJson(mResendBuffer).toString());
 
 	}
 
 	public void loadUnsentMessages() {
-		String sUnsentMessages = Utils.getSharedPrefsString("unsentmessages");
+		String sUnsentMessages = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), "unsentmessages");
 
 		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
-			Iterator<SurespotMessage> iterator = Utils.jsonStringToChatMessages(sUnsentMessages).iterator();
+			Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sUnsentMessages).iterator();
 			while (iterator.hasNext()) {
 				mSendBuffer.add(iterator.next());
 			}
 			SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 		}
 
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
+		Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
 
 	}
 

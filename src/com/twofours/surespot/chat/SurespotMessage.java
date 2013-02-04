@@ -6,7 +6,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
 
 /**
  * @author adam
@@ -80,7 +79,7 @@ public class SurespotMessage {
 	}
 
 	public String getSpot() {
-		return Utils.getOtherUser(this.mFrom, this.mTo);
+		return ChatUtils.getOtherUser(this.mFrom, this.mTo);
 	}
 
 	public static SurespotMessage toSurespotMessage(String jsonString) {

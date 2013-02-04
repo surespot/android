@@ -13,6 +13,7 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 

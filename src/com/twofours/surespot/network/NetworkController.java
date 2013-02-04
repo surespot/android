@@ -25,15 +25,16 @@ import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotCachingHttpClient;
-import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.ui.activities.LoginActivity;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
 	private static Cookie mConnectCookie;
+	private static String mBaseUrl;
 
 	private static synchronized void setConnectCookie(Cookie connectCookie) {
 		// we be authorized
@@ -46,11 +47,11 @@ public class NetworkController {
 	private static SyncHttpClient mSyncClient;
 
 	public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-		mClient.get(SurespotConstants.BASE_URL + url, params, responseHandler);
+		mClient.get(mBaseUrl + url, params, responseHandler);
 	}
 
 	public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-		mClient.post(SurespotConstants.BASE_URL + url, params, responseHandler);
+		mClient.post(mBaseUrl + url, params, responseHandler);
 	}
 
 	public static Cookie getConnectCookie() {
@@ -80,6 +81,7 @@ public class NetworkController {
 	}
 
 	static {
+		mBaseUrl = SurespotConfiguration.getBaseUrl();
 		mCookieStore = new PersistentCookieStore(SurespotApplication.getAppContext());
 		if (mCookieStore.getCookies().size() > 0) {
 			SurespotLog.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
@@ -116,7 +118,7 @@ public class NetworkController {
 
 						if (!NetworkController.isUnauthorized()) {
 
-							if (!(origin.contains(SurespotConstants.BASE_URL.substring(7)) && origin.contains("/login"))) {
+							if (!(origin.contains(mBaseUrl.substring(7)) && origin.contains("/login"))) {
 
 								mClient.cancelRequests(SurespotApplication.getAppContext(), true);
 
@@ -140,8 +142,8 @@ public class NetworkController {
 			mSyncClient.setCookieStore(mCookieStore);
 
 			// handle 401s
-			((SurespotCachingHttpClient) mClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
-			((SurespotCachingHttpClient) mSyncClient.getHttpClient()).addResponseInterceptor(httpResponseInterceptor);
+			mClient.getDefaultHttpClient().addResponseInterceptor(httpResponseInterceptor);
+			mSyncClient.getDefaultHttpClient().addResponseInterceptor(httpResponseInterceptor);
 		}
 	}
 
@@ -151,7 +153,8 @@ public class NetworkController {
 		params.put("password", password);
 		params.put("publickey", publicKey);
 		// get the gcm id
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getAppContext(),
+				SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -176,7 +179,8 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+						Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
+								gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result);
@@ -216,8 +220,9 @@ public class NetworkController {
 		params.put("password", password);
 
 		// get the gcm id
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getAppContext(),
+				SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -242,7 +247,8 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+						Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
+								gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result);
@@ -293,7 +299,7 @@ public class NetworkController {
 	}
 
 	public static String getPublicKeySync(String username) {
-		return mSyncClient.get(SurespotConstants.BASE_URL + "/publickey/" + username);
+		return mSyncClient.get(mBaseUrl + "/publickey/" + username);
 	}
 
 	public static void invite(String friendname, AsyncHttpResponseHandler responseHandler) {
@@ -315,8 +321,9 @@ public class NetworkController {
 		// so we need to upload the gcm here if we haven't already
 		// get the gcm id
 
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT);
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getAppContext(),
+				SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -342,7 +349,7 @@ public class NetworkController {
 
 				// update shared prefs
 				if (gcmUpdated) {
-					Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+					Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 				}
 
 				responseHandler.onSuccess(responseCode, result);
@@ -389,7 +396,7 @@ public class NetworkController {
 		RequestParams params = new RequestParams();
 		params.put("image", new ByteArrayInputStream(data), id, mimeType);
 
-		return mSyncClient.post(SurespotConstants.BASE_URL + "/images/" + user, params);
+		return mSyncClient.post(mBaseUrl + "/images/" + user, params);
 
 	}
 
@@ -398,7 +405,7 @@ public class NetworkController {
 	}
 
 	public static String getFileSync(String relativeUrl) {
-		return mSyncClient.get(SurespotConstants.BASE_URL + relativeUrl);
+		return mSyncClient.get(mBaseUrl + relativeUrl);
 	}
 
 	public static void logout(final AsyncHttpResponseHandler responseHandler) {

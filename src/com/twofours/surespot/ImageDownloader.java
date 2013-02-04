@@ -29,7 +29,9 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
@@ -162,7 +164,7 @@ public class ImageDownloader {
 				if (content != null) {
 					byte[] decoded = EncryptionController.symmetricBase64DecryptSync(mMessage.getSpot(), mMessage.getIv(), content);
 					if (decoded != null) {
-						return Utils.getSampledImage(decoded, SurespotConstants.IMAGE_DISPLAY_HEIGHT);
+						return ChatUtils.getSampledImage(decoded, SurespotConstants.IMAGE_DISPLAY_HEIGHT);
 					}
 				}
 			}

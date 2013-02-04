@@ -30,9 +30,9 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -289,7 +289,7 @@ public class ChatFragment extends SherlockFragment {
 					callback.handleResponse(false);
 				}
 
-				Utils.makeToast("Could not load messages, please try again later.");
+				Utils.makeToast(ChatFragment.this.getActivity(), "Could not load messages, please try again later.");
 			}
 		});
 	}
@@ -384,7 +384,7 @@ public class ChatFragment extends SherlockFragment {
 				@Override
 				public void handleResponse(String[] result) {
 					if (result != null) {
-						SurespotMessage chatMessage = Utils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
+						SurespotMessage chatMessage = ChatUtils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
 						mChatAdapter.addOrUpdateMessage(chatMessage, true);
 						if (getActivity() != null) {
 							((ChatActivity) getActivity()).sendMessage(chatMessage);
@@ -409,15 +409,15 @@ public class ChatFragment extends SherlockFragment {
 		ArrayList<SurespotMessage> messages = mChatAdapter.getMessages();
 		int messagesSize = messages.size();
 		SurespotLog.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages to shared prefs");
-		Utils.putSharedPrefsString("messages_" + mUsername,
-				Utils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString());
+		Utils.putSharedPrefsString(ChatFragment.this.getActivity(), "messages_" + mUsername,
+				ChatUtils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString());
 
 	}
 
 	private void loadMessages() {
-		String sMessages = Utils.getSharedPrefsString("messages_" + mUsername);
+		String sMessages = Utils.getSharedPrefsString(ChatFragment.this.getActivity(), "messages_" + mUsername);
 		if (sMessages != null && !sMessages.isEmpty()) {
-			ArrayList<SurespotMessage> messages = Utils.jsonStringToChatMessages(sMessages);
+			ArrayList<SurespotMessage> messages = ChatUtils.jsonStringToChatMessages(sMessages);
 			SurespotLog.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
 			mChatAdapter.addMessages(messages);
 		}
@@ -440,12 +440,12 @@ public class ChatFragment extends SherlockFragment {
 
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
-				Utils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, new IAsyncCallback<Boolean>() {
+				ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, new IAsyncCallback<Boolean>() {
 
 					@Override
 					public void handleResponse(Boolean result) {
 						if (!result) {
-							Utils.makeToast("Could not upload picture, please try again later.");
+							Utils.makeToast(ChatFragment.this.getActivity(), "Could not upload picture, please try again later.");
 						}
 					}
 				});

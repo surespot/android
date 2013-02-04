@@ -18,8 +18,12 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
-import com.twofours.surespot.SurespotConstants.IntentFilters;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.StartupActivity;
 
@@ -49,7 +53,7 @@ public class GCMIntentService extends GCMBaseIntentService
 		if (type.equals("message")) {
 			String to = intent.getStringExtra("to");
 			String from = intent.getStringExtra("sentfrom");
-			String otherUser = Utils.getOtherUser(from, to);
+			String otherUser = ChatUtils.getOtherUser(from, to);
 			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);
 		}
 		else {
@@ -67,7 +71,7 @@ public class GCMIntentService extends GCMBaseIntentService
 	protected void onRegistered(final Context context, final String id) {
 		// shoved it in shared prefs
 		SurespotLog.v(TAG, "Received gcm id, saving it in shared prefs.");
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
+		Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
 
 		// TODO use password instead of session?
 		// TODO retries?
@@ -97,13 +101,13 @@ public class GCMIntentService extends GCMBaseIntentService
 			Map<String, String> params = new HashMap<String, String>();
 			params.put("gcmId", id);
 
-			String result = client.post(SurespotConstants.BASE_URL + "/registergcm", new RequestParams(params));
+			String result = client.post(SurespotConfiguration.getBaseUrl() + "/registergcm", new RequestParams(params));
 			// success returns 204 = null result
 			if (result == null) {
 				SurespotLog.v(TAG, "Successfully saved GCM id on surespot server.");
 
 				// the server and client match, we're golden
-				Utils.putSharedPrefsString(SurespotConstants.PrefNames.GCM_ID_SENT, id);
+				Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT, id);
 				GCMRegistrar.setRegisteredOnServer(context, true);
 
 			}

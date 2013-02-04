@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.widget.TextView;
 
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 
@@ -90,7 +91,7 @@ public class MessageDecryptor {
 		 */
 		@Override
 		protected String doInBackground(Void... params) {
-			return EncryptionController.symmetricDecryptSync(Utils.getOtherUser(mMessage.getFrom(), mMessage.getTo()), mMessage.getIv(),
+			return EncryptionController.symmetricDecryptSync(ChatUtils.getOtherUser(mMessage.getFrom(), mMessage.getTo()), mMessage.getIv(),
 					mMessage.getCipherData());
 		}
 

@@ -23,7 +23,7 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -85,7 +85,7 @@ public class SignupActivity extends Activity {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
-					Utils.makeToast("That username already exists, please choose another.");
+					Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
 					mMpd.decrProgress();
 				}
 				else {
@@ -144,15 +144,17 @@ public class SignupActivity extends Activity {
 													HttpResponseException error = (HttpResponseException) arg0;
 													int statusCode = error.getStatusCode();
 													if (statusCode == 409) {
-														Utils.makeToast("That username already exists, please choose another.");
+														Utils.makeToast(SignupActivity.this,
+																"That username already exists, please choose another.");
 													}
 													else {
 
-														Utils.makeToast("Could not create user, please try again later.");
+														Utils.makeToast(SignupActivity.this,
+																"Could not create user, please try again later.");
 													}
 												}
 												else {
-													Utils.makeToast("Could not create user, please try again later.");
+													Utils.makeToast(SignupActivity.this, "Could not create user, please try again later.");
 												}
 
 											};

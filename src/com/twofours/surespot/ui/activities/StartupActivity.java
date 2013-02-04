@@ -9,11 +9,11 @@ import android.os.Bundle;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotConstants.IntentFilters;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotConstants.IntentFilters;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
@@ -105,7 +105,7 @@ public class StartupActivity extends Activity {
 					else {
 						if (intent.getStringExtra(IntentFilters.INVITE_NOTIFICATION) == null) {
 							// we saved a chat name so load the chat activity with that name
-							String lastName = Utils.getSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT);
+							String lastName = Utils.getSharedPrefsString(this,SurespotConstants.PrefNames.LAST_CHAT);
 							if (lastName != null) {
 								newIntent = new Intent(this, ChatActivity.class);
 								newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, lastName);

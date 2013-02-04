@@ -37,12 +37,13 @@ import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.IConnectCallback;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.LoginActivity;
@@ -165,7 +166,7 @@ public class FriendActivity extends SherlockActivity {
 				JSONObject messageJson;
 				try {
 					messageJson = new JSONObject(message);
-					String name = Utils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
+					String name = ChatUtils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
 					mMainAdapter.messageReceived(name);
 				}
 				catch (JSONException e) {
@@ -220,10 +221,8 @@ public class FriendActivity extends SherlockActivity {
 			userView.setText(EncryptionController.getIdentityUsername());
 		}
 
-		mChatController.connect();
-
 		// get last message id's out of shared prefs
-		String lastMessageIdJson = Utils.getSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS);
+		String lastMessageIdJson = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS);
 		if (lastMessageIdJson != null) {
 			try {
 				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
@@ -298,6 +297,8 @@ public class FriendActivity extends SherlockActivity {
 							mListView.setAdapter(mMainAdapter);
 							findViewById(R.id.progressBar).setVisibility(View.GONE);
 
+							mChatController.connect();
+
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
@@ -322,7 +323,7 @@ public class FriendActivity extends SherlockActivity {
 			public void onFailure(Throwable arg0, String content) {
 				SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
-				Utils.makeToast("Could not load friends, please try again later.");
+				Utils.makeToast(FriendActivity.this, "Could not load friends, please try again later.");
 				// TODO show error / go back to login
 
 				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
@@ -341,11 +342,11 @@ public class FriendActivity extends SherlockActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, null);
+		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, null);
 
 		// put the active chats in if we've fucked with them
 		JSONArray jsonArray = new JSONArray(mMainAdapter.getActiveChats());
-		Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
+		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
 
 		mChatController.disconnect();
 		mChatController.destroy();
@@ -357,7 +358,7 @@ public class FriendActivity extends SherlockActivity {
 
 		if (friend.length() > 0) {
 			if (friend.equals(EncryptionController.getIdentityUsername())) {
-				Utils.makeToast("You can't be friends with yourself, bro.");
+				Utils.makeToast(this, "You can't be friends with yourself, bro.");
 				return;
 			}
 
@@ -373,7 +374,7 @@ public class FriendActivity extends SherlockActivity {
 					// pending somehow
 					TextKeyListener.clear(etFriend.getText());
 					mMainAdapter.addFriendInvited(friend);
-					Utils.makeToast(friend + " has been invited to be your friend.");
+					Utils.makeToast(FriendActivity.this, friend + " has been invited to be your friend.");
 				}
 
 				@Override
@@ -383,22 +384,22 @@ public class FriendActivity extends SherlockActivity {
 						int statusCode = error.getStatusCode();
 						switch (statusCode) {
 						case 404:
-							Utils.makeToast("User does not exist.");
+							Utils.makeToast(FriendActivity.this, "User does not exist.");
 							break;
 						case 409:
-							Utils.makeToast("You are already friends.");
+							Utils.makeToast(FriendActivity.this, "You are already friends.");
 							break;
 						case 403:
-							Utils.makeToast("You have already invited this user.");
+							Utils.makeToast(FriendActivity.this, "You have already invited this user.");
 							break;
 						default:
 							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-							Utils.makeToast("Could not invite friend, please try again later.");
+							Utils.makeToast(FriendActivity.this, "Could not invite friend, please try again later.");
 						}
 					}
 					else {
 						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-						Utils.makeToast("Could not invite friend, please try again later.");
+						Utils.makeToast(FriendActivity.this, "Could not invite friend, please try again later.");
 					}
 				}
 
@@ -423,14 +424,14 @@ public class FriendActivity extends SherlockActivity {
 		case R.id.menu_debug_clear:
 			// clear out some shiznit
 			for (String chatname : mMainAdapter.getFriends()) {
-				Utils.putSharedPrefsString("messages_" + chatname, null);
+				Utils.putSharedPrefsString(this, "messages_" + chatname, null);
 
 			}
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, null);
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.LAST_CHAT, null);
-			Utils.putSharedPrefsString(SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
+			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
+			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, null);
+			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
+			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, null);
+			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
 
 			// clear cache
 			NetworkController.clearCache();

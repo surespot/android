@@ -17,10 +17,10 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
@@ -100,14 +100,14 @@ public class LoginActivity extends Activity {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
 						if (statusCode == 401) {
-							Utils.makeToast("Could not login, please make sure your password is correct.");
+							Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
 						}
 						else {
-							Utils.makeToast("Error: " + message);
+							Utils.makeToast(LoginActivity.this, "Error: " + message);
 						}
 					}
 					else {
-						Utils.makeToast("Error logging in, please try again later.");
+						Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
 					}
 				}
 

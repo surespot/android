@@ -8,7 +8,7 @@ import android.support.v4.app.FragmentManager;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.Utils;
+import com.twofours.surespot.common.Utils;
 
 public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
 

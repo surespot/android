@@ -1,16 +1,11 @@
-package com.twofours.surespot;
+package com.twofours.surespot.chat;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -19,8 +14,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,145 +23,18 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
-import android.util.Base64;
-import android.widget.Toast;
 
-import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
-public class Utils {
-	private static Toast mToast;
-	private static final String TAG = "Utils";
-
-	// Fast Implementation
-	public static String inputStreamToString(InputStream is) throws IOException {
-		String line = "";
-		StringBuilder total = new StringBuilder();
-
-		// Wrap a BufferedReader around the InputStream
-		BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-
-		// Read response until the end
-		while ((line = rd.readLine()) != null) {
-			total.append(line);
-		}
-
-		// Return full string
-		rd.close();
-		is.close();
-		return total.toString();
-	}
-
-	public static byte[] inputStreamToBytes(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-		int bufferSize = 1024;
-		byte[] buffer = new byte[bufferSize];
-
-		int len = 0;
-		while ((len = inputStream.read(buffer)) != -1) {
-			byteBuffer.write(buffer, 0, len);
-		}
-		byteBuffer.close();
-		inputStream.close();
-		return byteBuffer.toByteArray();
-	}
-
-	public static String inputStreamToBase64(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-		int bufferSize = 1024;
-		byte[] buffer = new byte[bufferSize];
-
-		int len = 0;
-		while ((len = inputStream.read(buffer)) != -1) {
-			byteBuffer.write(buffer, 0, len);
-		}
-		byteBuffer.close();
-		inputStream.close();
-		return new String(base64Encode(byteBuffer.toByteArray()));
-	}
-
-	public static byte[] base64Encode(byte[] buf) {
-		return Base64.encode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
-	}
-
-	public static byte[] base64Decode(String buf) {
-		return Base64.decode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
-	}
+public class ChatUtils {
+	private static final String TAG = "ChatChatUtils";
 
 	public static String getOtherUser(String from, String to) {
 		return to.equals(EncryptionController.getIdentityUsername()) ? from : to;
-	}
-
-	public static String makePagerFragmentName(int viewId, long id) {
-		return "android:switcher:" + viewId + ":" + id;
-	}
-
-	public static void makeToast(String toast) {
-		if (mToast == null) {
-			mToast = Toast.makeText(SurespotApplication.getAppContext(), toast, Toast.LENGTH_SHORT);
-		}
-
-		mToast.setText(toast);
-		mToast.show();
-	}
-
-	public static String getSharedPrefsString(String key) {
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
-		return settings.getString(key, null);
-	}
-
-	public static void putSharedPrefsString(String key, String value) {
-		SharedPreferences settings = SurespotApplication.getAppContext().getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE,
-				android.content.Context.MODE_PRIVATE);
-		Editor editor = settings.edit();
-		if (value == null) {
-			editor.remove(key);
-		}
-		else {
-			editor.putString(key, value);
-		}
-		editor.commit();
-
-	}
-
-	public static HashMap<String, Integer> jsonToMap(JSONObject jsonObject) {
-		try {
-			HashMap<String, Integer> outMap = new HashMap<String, Integer>();
-
-			@SuppressWarnings("unchecked")
-			Iterator<String> names = jsonObject.keys();
-			while (names.hasNext()) {
-				String name = names.next();
-				outMap.put(name, jsonObject.getInt(name));
-			}
-
-			return outMap;
-
-		}
-		catch (JSONException e) {
-			SurespotLog.w(TAG, "jsonToMap", e);
-		}
-		return null;
-
-	}
-
-	public static HashMap<String, Integer> jsonStringToMap(String jsonString) {
-
-		JSONObject jsonObject;
-		try {
-			jsonObject = new JSONObject(jsonString);
-			return jsonToMap(jsonObject);
-		}
-		catch (JSONException e) {
-			SurespotLog.w(TAG, "jsonStringToMap", e);
-		}
-
-		return null;
-
 	}
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
@@ -194,7 +60,7 @@ public class Utils {
 				// TODO thread
 				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 480, 240);
 
-				// final String data = Utils.inputStreamToBase64(iStream);
+				// final String data = ChatUtils.inputStreamToBase64(iStream);
 
 				final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
@@ -432,23 +298,4 @@ public class Utils {
 
 	}
 
-	public String md5(String s) {
-		try {
-			// Create MD5 Hash
-			MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-			digest.update(s.getBytes());
-			byte messageDigest[] = digest.digest();
-
-			// Create Hex String
-			StringBuffer hexString = new StringBuffer();
-			for (int i = 0; i < messageDigest.length; i++)
-				hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
-			return hexString.toString();
-
-		}
-		catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
 }
