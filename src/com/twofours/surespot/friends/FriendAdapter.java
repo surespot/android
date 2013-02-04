@@ -22,7 +22,7 @@ import android.widget.TextView;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.NetworkController;
 

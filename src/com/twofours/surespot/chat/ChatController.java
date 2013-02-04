@@ -34,7 +34,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.LoginActivity;

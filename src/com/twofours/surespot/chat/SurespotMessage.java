@@ -5,7 +5,7 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 
 /**

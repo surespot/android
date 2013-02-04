@@ -19,6 +19,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.SurespotConstants.IntentFilters;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.StartupActivity;
 

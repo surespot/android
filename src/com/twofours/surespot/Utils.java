@@ -34,6 +34,7 @@ import android.util.Base64;
 import android.widget.Toast;
 
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;

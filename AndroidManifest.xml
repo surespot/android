@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"    
     package="com.twofours.surespot"
     android:versionCode="1"
     android:versionName="1.0" >
@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
+        android:label="surespot"
         android:name="com.twofours.surespot.SurespotApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

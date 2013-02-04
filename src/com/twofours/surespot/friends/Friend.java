@@ -3,7 +3,7 @@ package com.twofours.surespot.friends;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 
 public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;

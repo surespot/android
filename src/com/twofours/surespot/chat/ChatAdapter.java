@@ -19,7 +19,7 @@ import com.twofours.surespot.ImageViewActivity;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 
 public class ChatAdapter extends BaseAdapter {

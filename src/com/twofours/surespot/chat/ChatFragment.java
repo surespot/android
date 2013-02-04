@@ -31,7 +31,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;

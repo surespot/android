@@ -11,7 +11,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotConstants.IntentFilters;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.encryption.EncryptionController;

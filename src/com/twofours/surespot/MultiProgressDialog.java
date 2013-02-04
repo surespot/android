@@ -7,6 +7,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Handler;
 
+import com.twofours.surespot.common.SurespotLog;
+
 public class MultiProgressDialog {
 	private static final String TAG = "MultiProgressDialog";
 	private int mProgressCounter;
@@ -24,7 +26,7 @@ public class MultiProgressDialog {
 
 	public void incrProgress() {
 		mProgressCounter++;
-		SurespotLog.v(TAG,"incr, progress counter: " + mProgressCounter);
+		SurespotLog.v(TAG, "incr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 1) {
 
 			if (mMultiProgressDialog == null) {
@@ -59,7 +61,7 @@ public class MultiProgressDialog {
 
 	public void decrProgress() {
 		mProgressCounter--;
-		SurespotLog.v(TAG,"decr, progress counter: " + mProgressCounter);
+		SurespotLog.v(TAG, "decr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 0) {
 			if (mMultiProgressDialog.isShowing()) {
 				mMultiProgressDialog.dismiss();

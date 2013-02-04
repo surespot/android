@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/surespot.common"/>
 	<classpathentry kind="lib" path="libs/sc-light-jdk15on-1.47.0.2.jar" sourcepath="/home/adam/src/spongycastle"/>
 	<classpathentry kind="lib" path="libs/scprov-jdk15on-1.47.0.2.jar" sourcepath="/home/adam/src/spongycastle"/>
 	<classpathentry kind="lib" path="libs/gcm.jar"/>
@@ -12,8 +13,8 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/socket.io-java-client"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/socket.io.glue"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

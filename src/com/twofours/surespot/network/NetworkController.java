@@ -27,7 +27,7 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.Utils;
 import com.twofours.surespot.ui.activities.LoginActivity;
 
