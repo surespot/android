@@ -130,6 +130,7 @@ public class ChatController {
 			public void onConnect() {
 				SurespotLog.v(TAG, "socket.io connection established");
 				setState(STATE_CONNECTED);
+				setOnWifi();
 				mRetries = 0;
 
 				if (mBackgroundTimer != null) {
@@ -196,16 +197,16 @@ public class ChatController {
 				ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 				NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 				if (networkInfo != null) {
+					SurespotLog.v(TAG, "isconnected: " + networkInfo.isConnected());
+					SurespotLog.v(TAG, "failover: " + networkInfo.isFailover());
+					SurespotLog.v(TAG, "reason: " + networkInfo.getReason());
+					SurespotLog.v(TAG, "type: " + networkInfo.getTypeName());
 
 					// if it's not a failover and wifi is now active then initiate reconnect
 					if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
 						synchronized (ChatController.this) {
 							// if we're not connecting, connect
 							if (getState() != STATE_CONNECTING && !mOnWifi) {
-								SurespotLog.v(TAG, "isconnected: " + networkInfo.isConnected());
-								SurespotLog.v(TAG, "failover: " + networkInfo.isFailover());
-								SurespotLog.v(TAG, "reason: " + networkInfo.getReason());
-								SurespotLog.v(TAG, "type: " + networkInfo.getTypeName());
 
 								SurespotLog.v(TAG, "Network switch, Reconnecting...");
 
