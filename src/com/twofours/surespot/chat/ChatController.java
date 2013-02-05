@@ -27,7 +27,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.common.WebClientDevWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.activities.LoginActivity;
 import com.twofours.surespot.ui.activities.StartupActivity;
@@ -260,8 +259,6 @@ public class ChatController {
 		try {
 			HashMap<String, String> headers = new HashMap<String, String>();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
-
-			SocketIO.setDefaultSSLSocketFactory(WebClientDevWrapper.getWebSocketSSLContext());
 			socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
 			socket.connect(mSocketCallback);
 		}
