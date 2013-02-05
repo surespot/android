@@ -71,7 +71,7 @@ public class GCMIntentService extends GCMBaseIntentService
 	protected void onRegistered(final Context context, final String id) {
 		// shoved it in shared prefs
 		SurespotLog.v(TAG, "Received gcm id, saving it in shared prefs.");
-		Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
+		Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
 
 		// TODO use password instead of session?
 		// TODO retries?
@@ -107,7 +107,7 @@ public class GCMIntentService extends GCMBaseIntentService
 				SurespotLog.v(TAG, "Successfully saved GCM id on surespot server.");
 
 				// the server and client match, we're golden
-				Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT, id);
+				Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT, id);
 				GCMRegistrar.setRegisteredOnServer(context, true);
 
 			}

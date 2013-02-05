@@ -5,15 +5,11 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +23,6 @@ import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -116,12 +111,12 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					// Utils.makeToast(this,SurespotApplication.getAppContext(),
+					// Utils.makeToast(this,SurespotConfiguration.getContext(),
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+					Intent intent = new Intent(SurespotConfiguration.getContext(), LoginActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					SurespotApplication.getAppContext().startActivity(intent);
+					SurespotConfiguration.getContext().startActivity(intent);
 
 				}
 			}
@@ -154,7 +149,7 @@ public class ChatController {
 				sendConnectStatus(true);
 
 				sendMessages();
-				SurespotApplication.getAppContext().registerReceiver(mConnectivityReceiver,
+				SurespotConfiguration.getContext().registerReceiver(mConnectivityReceiver,
 						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			}
@@ -235,7 +230,7 @@ public class ChatController {
 
 	private void setOnWifi() {
 		// get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
-		ConnectivityManager connectivityManager = (ConnectivityManager) SurespotApplication.getAppContext().getSystemService(
+		ConnectivityManager connectivityManager = (ConnectivityManager) SurespotConfiguration.getContext().getSystemService(
 				Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null) {
@@ -255,9 +250,9 @@ public class ChatController {
 		if (cookie == null) {
 			// need to login
 			SurespotLog.v(TAG, "No session cookie, starting Login activity.");
-			Intent startupIntent = new Intent(SurespotApplication.getAppContext(), StartupActivity.class);
+			Intent startupIntent = new Intent(SurespotConfiguration.getContext(), StartupActivity.class);
 			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			SurespotApplication.getAppContext().startActivity(startupIntent);
+			SurespotConfiguration.getContext().startActivity(startupIntent);
 			return;
 		}
 
@@ -265,7 +260,7 @@ public class ChatController {
 			HashMap<String, String> headers = new HashMap<String, String>();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
 
-			SocketIO.setDefaultSSLSocketFactory(WebClientDevWrapper.getSSLContext());
+			SocketIO.setDefaultSSLSocketFactory(WebClientDevWrapper.getWebSocketSSLContext());
 			socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
 			socket.connect(mSocketCallback);
 		}
@@ -279,26 +274,26 @@ public class ChatController {
 	private void sendInviteRequest(String friend) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_REQUEST);
 		intent.putExtra(SurespotConstants.ExtraNames.NAME, friend);
-		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
 	}
 
 	private void sendInviteResponse(String response) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_RESPONSE);
 		intent.putExtra(SurespotConstants.ExtraNames.INVITE_RESPONSE, response);
-		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
 	}
 
 	private void sendMessageReceived(String message) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED);
 		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
-		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
 
 	}
 
 	private void sendConnectStatus(boolean connected) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED);
 		intent.putExtra(SurespotConstants.ExtraNames.CONNECTED, connected);
-		LocalBroadcastManager.getInstance(SurespotApplication.getAppContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
 
 	}
 
@@ -343,23 +338,25 @@ public class ChatController {
 	public void disconnect() {
 		SurespotLog.v(TAG, "disconnect.");
 		setState(STATE_DISCONNECTED);
+
 		if (socket != null && socket.isConnected()) {
 			socket.disconnect();
+		}
 
-			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-			try {
-				SurespotApplication.getAppContext().unregisterReceiver(mConnectivityReceiver);
+		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+		try {
+			SurespotConfiguration.getContext().unregisterReceiver(mConnectivityReceiver);
+		}
+		catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Receiver not registered")) {
+				// Ignore this exception. This is exactly what is desired
 			}
-			catch (IllegalArgumentException e) {
-				if (e.getMessage().contains("Receiver not registered")) {
-					// Ignore this exception. This is exactly what is desired
-				}
-				else {
-					// unexpected, re-throw
-					throw e;
-				}
+			else {
+				// unexpected, re-throw
+				throw e;
 			}
 		}
+
 		sendConnectStatus(false);
 
 		// socket = null;
@@ -382,7 +379,6 @@ public class ChatController {
 			SurespotLog.v(TAG, "Reconnect task run.");
 			connect();
 		}
-
 	}
 
 	private class ResendTask extends TimerTask {
@@ -391,21 +387,19 @@ public class ChatController {
 		public void run() {
 			// resend message
 			sendMessages();
-
 		}
-
 	}
 
 	public void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, ChatUtils
+		Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, ChatUtils
 				.chatMessagesToJson(mResendBuffer).toString());
 
 	}
 
 	public void loadUnsentMessages() {
-		String sUnsentMessages = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), "unsentmessages");
+		String sUnsentMessages = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), "unsentmessages");
 
 		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
 			Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sUnsentMessages).iterator();
@@ -415,7 +409,7 @@ public class ChatController {
 			SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 		}
 
-		Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
+		Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
 
 	}
 
@@ -434,38 +428,15 @@ public class ChatController {
 		socket = null;
 	}
 
-	public void sendMessage(SurespotMessage message) {
+	public void sendMessage(final SurespotMessage message) {
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
 			// TODO handle different mime types
-
 			socket.send(message.toJSONObject().toString());
 		}
-
 	}
 
 	public boolean isConnected() {
 		return (getState() == STATE_CONNECTED);
-	}
-
-	public static TrustManager[] getTrustingManager() {
-		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-			@Override
-			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-				return null;
-			}
-
-			@Override
-			public void checkClientTrusted(X509Certificate[] certs, String authType) {
-				// Do nothing
-			}
-
-			@Override
-			public void checkServerTrusted(X509Certificate[] certs, String authType) {
-				// Do nothing
-			}
-
-		} };
-		return trustAllCerts;
 	}
 }

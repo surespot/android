@@ -35,8 +35,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -109,7 +109,7 @@ public class EncryptionController {
 	}
 
 	private static SurespotIdentity loadIdentity() {
-		String jsonIdentity = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), IDENTITY_KEY);
+		String jsonIdentity = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), IDENTITY_KEY);
 		if (jsonIdentity == null)
 			return null;
 
@@ -217,7 +217,7 @@ public class EncryptionController {
 			json.putOpt("username", identity.getUsername());
 			json.putOpt("private_key", generatedPrivDHex);
 			json.putOpt("public_key", publicKey);
-			Utils.putSharedPrefsString(SurespotApplication.getAppContext(), IDENTITY_KEY, json.toString());
+			Utils.putSharedPrefsString(SurespotConfiguration.getContext(), IDENTITY_KEY, json.toString());
 		}
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "saveIdentity", e);

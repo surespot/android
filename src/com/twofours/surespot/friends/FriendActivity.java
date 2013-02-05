@@ -36,7 +36,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -234,6 +233,8 @@ public class FriendActivity extends SherlockActivity {
 			}
 		}
 
+		mChatController.connect();
+
 		// get the list of friends
 		NetworkController.getFriends(new JsonHttpResponseHandler() {
 			@Override
@@ -296,9 +297,6 @@ public class FriendActivity extends SherlockActivity {
 							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
 							mListView.setAdapter(mMainAdapter);
 							findViewById(R.id.progressBar).setVisibility(View.GONE);
-
-							mChatController.connect();
-
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
@@ -440,9 +438,9 @@ public class FriendActivity extends SherlockActivity {
 			NetworkController.logout(new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String content) {
-					Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+					Intent intent = new Intent(FriendActivity.this, LoginActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					SurespotApplication.getAppContext().startActivity(intent);
+					FriendActivity.this.startActivity(intent);
 					finish();
 				}
 			});

@@ -9,12 +9,11 @@
 	<classpathentry kind="lib" path="libs/android-support-v4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/actionbarsherlock"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-async-http"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/socket.io-java-client"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/socket.io.glue"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SSLWebSocket"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

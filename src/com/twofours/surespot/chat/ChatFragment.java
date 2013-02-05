@@ -220,9 +220,9 @@ public class ChatFragment extends SherlockFragment {
 		// if it's not connected we'll load them when it connects
 		ChatActivity chatActivity = (ChatActivity) getActivity();
 
-		if (chatActivity.chatConnected()) {
-			getLatestMessages(mLatestMessageHandler);
-		}
+		// if (chatActivity.chatConnected()) {
+		getLatestMessages(mLatestMessageHandler);
+		// }
 
 		if (isVisible()) {
 			SurespotLog.v(TAG, "onResume " + mUsername + " visible");

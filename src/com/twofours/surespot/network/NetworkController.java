@@ -82,16 +82,16 @@ public class NetworkController {
 
 	static {
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
-		mCookieStore = new PersistentCookieStore(SurespotApplication.getAppContext());
+		mCookieStore = new PersistentCookieStore(SurespotConfiguration.getContext());
 		if (mCookieStore.getCookies().size() > 0) {
 			SurespotLog.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
 			mConnectCookie = extractConnectCookie(mCookieStore);
 		}
 
 		try {
-			mClient = new AsyncHttpClient(SurespotApplication.getAppContext());
+			mClient = new AsyncHttpClient(SurespotConfiguration.getContext());
 
-			mSyncClient = new SyncHttpClient(SurespotApplication.getAppContext()) {
+			mSyncClient = new SyncHttpClient(SurespotConfiguration.getContext()) {
 
 				@Override
 				public String onRequestFailed(Throwable arg0, String arg1) {
@@ -120,12 +120,12 @@ public class NetworkController {
 
 							if (!(origin.contains(mBaseUrl.substring(7)) && origin.contains("/login"))) {
 
-								mClient.cancelRequests(SurespotApplication.getAppContext(), true);
+								mClient.cancelRequests(SurespotConfiguration.getContext(), true);
 
 								SurespotLog.v(TAG, "Got 401, launching login intent.");
-								Intent intent = new Intent(SurespotApplication.getAppContext(), LoginActivity.class);
+								Intent intent = new Intent(SurespotConfiguration.getContext(), LoginActivity.class);
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-								SurespotApplication.getAppContext().startActivity(intent);
+								SurespotConfiguration.getContext().startActivity(intent);
 
 								setUnauthorized(true);
 							}
@@ -153,7 +153,7 @@ public class NetworkController {
 		params.put("password", password);
 		params.put("publickey", publicKey);
 		// get the gcm id
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getAppContext(),
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConfiguration.getContext(),
 				SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
 		boolean gcmUpdatedTemp = false;
@@ -179,7 +179,7 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
+						Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
 								gcmIdReceived);
 					}
 
@@ -220,9 +220,9 @@ public class NetworkController {
 		params.put("password", password);
 
 		// get the gcm id
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getAppContext(),
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConfiguration.getContext(),
 				SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
@@ -247,7 +247,7 @@ public class NetworkController {
 				else {
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
+						Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
 								gcmIdReceived);
 					}
 
@@ -321,9 +321,9 @@ public class NetworkController {
 		// so we need to upload the gcm here if we haven't already
 		// get the gcm id
 
-		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getAppContext(),
+		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotConfiguration.getContext(),
 				SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
+		String gcmIdSent = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		Map<String, String> params = new HashMap<String, String>();
 
@@ -349,7 +349,7 @@ public class NetworkController {
 
 				// update shared prefs
 				if (gcmUpdated) {
-					Utils.putSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+					Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 				}
 
 				responseHandler.onSuccess(responseCode, result);

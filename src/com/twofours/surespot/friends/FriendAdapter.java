@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -42,7 +42,7 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public void refreshActiveChats() {
-		String sChats = Utils.getSharedPrefsString(SurespotApplication.getAppContext(), SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS);
+		String sChats = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS);
 		mActiveChats.clear();
 		if (sChats != null) {
 			JSONArray jsonChats;
@@ -307,7 +307,7 @@ public class FriendAdapter extends BaseAdapter {
 
 				public void onFailure(Throwable error, String content) {
 					SurespotLog.w(TAG, "respondToInvity", error);
-					Utils.makeToast(SurespotApplication.getAppContext(), "Could not respond to invite, please try again later.");
+					Utils.makeToast(SurespotConfiguration.getContext(), "Could not respond to invite, please try again later.");
 				};
 			});
 		}
