@@ -64,7 +64,12 @@ public class MultiProgressDialog {
 		SurespotLog.v(TAG, "decr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 0) {
 			if (mMultiProgressDialog.isShowing()) {
-				mMultiProgressDialog.dismiss();
+				try {
+					mMultiProgressDialog.dismiss();
+				}
+				catch (Exception e) {
+					SurespotLog.w(TAG, "decrProgress", e);
+				}
 			}
 		}
 	}

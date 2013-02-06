@@ -301,7 +301,7 @@ public class ChatFragment extends SherlockFragment {
 		String firstMessageId = getEarliestMessageId();
 
 		if (firstMessageId != null) {
-			// todo make all the ints #s
+			// TODO make all the ints #s
 			if (Integer.parseInt(firstMessageId) > 1) {
 				SurespotLog.v(TAG, "Asking server for messages before messageId: " + firstMessageId);
 				NetworkController.getEarlierMessages(mUsername, firstMessageId, new JsonHttpResponseHandler() {
