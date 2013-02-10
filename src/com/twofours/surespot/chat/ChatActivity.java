@@ -263,6 +263,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mLastViewedMessageIds = new HashMap<String, Integer>();
 		}
 
+		mChatController.loadUnsentMessages();
 		mChatController.connect();
 
 	}

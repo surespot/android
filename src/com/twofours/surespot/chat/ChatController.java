@@ -224,8 +224,6 @@ public class ChatController {
 			}
 		};
 
-		loadUnsentMessages();
-
 	}
 
 	private void setOnWifi() {

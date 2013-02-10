@@ -1,6 +1,8 @@
 package com.twofours.surespot.friends;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +42,8 @@ import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.IConnectCallback;
+import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -233,6 +237,26 @@ public class FriendActivity extends SherlockActivity {
 			}
 		}
 
+		// get unsent messages out of shared prefs
+		String sUnsentMessages = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), "unsentmessages");
+		final Map<String, Integer> unsentCount = new HashMap<String, Integer>();
+		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
+			Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sUnsentMessages).iterator();
+			while (iterator.hasNext()) {
+				SurespotMessage message = iterator.next();
+				String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
+				Integer count = unsentCount.get(otherUser);
+				if (count == null) {
+					count = 1;
+				}
+				else {
+					count++;
+				}
+
+				unsentCount.put(otherUser, count);
+			}
+		}
+
 		mChatController.connect();
 
 		// get the list of friends
@@ -277,7 +301,9 @@ public class FriendActivity extends SherlockActivity {
 
 											// compute delta
 											int messageDelta = serverId - localId;
-											mMainAdapter.messageDeltaReceived(user, messageDelta);
+											Integer unsent1 = unsentCount.get(user);
+											int unsent = messageDelta - (unsent1 == null ? 0 : unsent1);
+											mMainAdapter.messageDeltaReceived(user, messageDelta > 0 ? messageDelta : 0);
 										}
 									}
 
