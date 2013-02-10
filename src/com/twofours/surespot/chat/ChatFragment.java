@@ -218,7 +218,7 @@ public class ChatFragment extends SherlockFragment {
 
 		// if the socket is connected, load new messages
 		// if it's not connected we'll load them when it connects
-		ChatActivity chatActivity = (ChatActivity) getActivity();
+		// ChatActivity chatActivity = (ChatActivity) getActivity();
 
 		// if (chatActivity.chatConnected()) {
 		getLatestMessages(mLatestMessageHandler);
@@ -283,13 +283,15 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				SurespotLog.w(TAG, "getMessages", error);
+				if (!NetworkController.isUnauthorized()) {
+					SurespotLog.w(TAG, "getMessages", error);
 
-				if (callback != null) {
-					callback.handleResponse(false);
+					if (callback != null) {
+						callback.handleResponse(false);
+					}
+
+					Utils.makeToast(ChatFragment.this.getActivity(), "Could not load messages, please try again later.");
 				}
-
-				Utils.makeToast(ChatFragment.this.getActivity(), "Could not load messages, please try again later.");
 			}
 		});
 	}
@@ -335,7 +337,9 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.w(TAG, "getEarlierMessages", error);
+						if (!NetworkController.isUnauthorized()) {
+							SurespotLog.w(TAG, "getEarlierMessages", error);
+						}
 					}
 				});
 			}
@@ -441,7 +445,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void handleResponse(Boolean result) {
-						if (!result) {
+						if (!result && !NetworkController.isUnauthorized()) {
 							Utils.makeToast(ChatFragment.this.getActivity(), "Could not upload picture, please try again later.");
 						}
 					}

@@ -134,8 +134,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 		}
 		catch (JSONException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			SurespotLog.w(TAG, "onCreate", e1);
 		}
 
 		if (!foundChat && name != null) {

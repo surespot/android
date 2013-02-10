@@ -345,13 +345,16 @@ public class FriendActivity extends SherlockActivity {
 						};
 
 						public void onFailure(Throwable arg0, String arg1) {
-							SurespotLog.w(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
+							// if we didn't get a 401
+							if (!NetworkController.isUnauthorized()) {
 
-							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-							findViewById(R.id.progressBar).setVisibility(View.GONE);
-							mListView.setAdapter(mMainAdapter);
+								SurespotLog.w(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
 
-							// TODO show error / go back to login
+								((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+								findViewById(R.id.progressBar).setVisibility(View.GONE);
+								mListView.setAdapter(mMainAdapter);
+
+							}
 						};
 					});
 				}
@@ -364,14 +367,18 @@ public class FriendActivity extends SherlockActivity {
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
-				SurespotLog.w(TAG, "getFriends: " + content, arg0);
+				// if we didn't get a 401
+				if (!NetworkController.isUnauthorized()) {
 
-				Utils.makeToast(FriendActivity.this, "Could not load friends, please try again later.");
-				// TODO show error / go back to login
+					SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
-				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-				findViewById(R.id.progressBar).setVisibility(View.GONE);
-				mListView.setAdapter(mMainAdapter);
+					Utils.makeToast(FriendActivity.this, "Could not load friends, please try again later.");
+					// TODO show error / go back to login
+
+					((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+					findViewById(R.id.progressBar).setVisibility(View.GONE);
+					mListView.setAdapter(mMainAdapter);
+				}
 			}
 		});
 	}

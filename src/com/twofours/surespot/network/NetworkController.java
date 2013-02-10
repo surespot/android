@@ -67,7 +67,7 @@ public class NetworkController {
 
 	private static boolean mUnauthorized;
 
-	private static boolean isUnauthorized() {
+	public static boolean isUnauthorized() {
 		return mUnauthorized;
 	}
 
@@ -118,15 +118,16 @@ public class NetworkController {
 						if (!NetworkController.isUnauthorized()) {
 
 							if (!(origin.contains(mBaseUrl.substring(7)) && origin.contains("/login"))) {
+								setUnauthorized(true);
 
 								mClient.cancelRequests(SurespotConfiguration.getContext(), true);
+								mSyncClient.cancelRequests(SurespotConfiguration.getContext(), true);
 
 								SurespotLog.v(TAG, "Got 401, launching login intent.");
 								Intent intent = new Intent(SurespotConfiguration.getContext(), LoginActivity.class);
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 								SurespotConfiguration.getContext().startActivity(intent);
 
-								setUnauthorized(true);
 							}
 
 						}
