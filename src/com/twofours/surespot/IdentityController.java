@@ -84,10 +84,10 @@ public class IdentityController {
 
 			@Override
 			public boolean accept(File dir, String filename) {
-				return filename.endsWith(".ssi");
+				return filename.endsWith(IDENTITY_EXTENSION);
 			}
 		})) {
-			identityNames.add(f.getName().substring(0, f.getName().length() - ".ssi".length()));
+			identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_EXTENSION.length()));
 		}
 
 		return identityNames;

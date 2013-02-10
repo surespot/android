@@ -80,6 +80,8 @@ public class LoginActivity extends Activity {
 			adapter.add(name);
 		}
 
+		spinner.setAdapter(adapter);
+
 		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
