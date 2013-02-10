@@ -58,7 +58,7 @@ public class ChatUtils {
 			@Override
 			protected Boolean doInBackground(Void... params) {
 				// TODO thread
-				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, 480, 240);
+				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
 
 				// final String data = ChatUtils.inputStreamToBase64(iStream);
 
@@ -100,7 +100,7 @@ public class ChatUtils {
 
 	}
 
-	private static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int reqWidth, int reqHeight) {
+	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri) {
 
 		try {// First decode with inJustDecodeBounds=true to check dimensions
 			BitmapFactory.Options options = new BitmapFactory.Options();

@@ -1,12 +1,14 @@
 package com.twofours.surespot;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,6 +19,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 
 public class ImageSelectActivity extends Activity {
@@ -98,8 +101,26 @@ public class ImageSelectActivity extends Activity {
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
+			// scale the image down
+			// TODO on thread
+			Uri uri = Uri.fromFile(new File(mCurrentPhotoPath));
+			Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri);
 
-			mImageView.setImageURI(Uri.fromFile(new File(mCurrentPhotoPath)));
+			// save the image to file
+			File file = new File(mCurrentPhotoPath);
+			try {
+				FileOutputStream fos = new FileOutputStream(file);
+
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
+				bitmap = null;
+
+				fos.close();
+			}
+			catch (IOException e) {
+				SurespotLog.w(TAG, "uploadPictureMessage", e);
+			}
+
+			mImageView.setImageURI(uri);
 
 		}
 		else {
