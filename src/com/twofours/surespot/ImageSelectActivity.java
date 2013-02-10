@@ -13,21 +13,23 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.Menu;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 
-public class ImageSelectActivity extends Activity {
-	private static final int REQUEST_SELECT_IMAGE = 1;
-	private static final int CAMERA_REQUEST = 3;
+public class ImageSelectActivity extends SherlockActivity {
 	private static final String TAG = "ImageSelectActivity";
-	public static final int EXISTING = 1;
-	public static final int CAPTURE = 2;
+	public static final int REQUEST_EXISTING_IMAGE = 1;
+	public static final int REQUEST_CAPTURE_IMAGE = 2;
 
 	private ImageView mImageView;
 	private Button mOKButton;
@@ -39,6 +41,19 @@ public class ImageSelectActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
+
+		final ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayShowCustomEnabled(true);
+		actionBar.setDisplayShowTitleEnabled(false);
+		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
+		final TextView navView = (TextView) customNav.findViewById(R.id.nav);
+		TextView userView = (TextView) customNav.findViewById(R.id.user);
+		actionBar.setCustomView(customNav);
+
+		final String to = getIntent().getStringExtra("to");
+		userView.setText(to);
+
 		mImageView = (ImageView) this.findViewById(R.id.image);
 		mOKButton = (Button) this.findViewById(R.id.ok);
 		mOKButton.setOnClickListener(new OnClickListener() {
@@ -47,6 +62,7 @@ public class ImageSelectActivity extends Activity {
 			public void onClick(View v) {
 				Intent dataIntent = new Intent();
 				dataIntent.setData(Uri.fromFile(new File(mCurrentPhotoPath)));
+				dataIntent.putExtra("to", to);
 				// if (getParent() == null) {
 				setResult(Activity.RESULT_OK, dataIntent);
 				// }
@@ -68,9 +84,11 @@ public class ImageSelectActivity extends Activity {
 			}
 		});
 
-		mSource = getIntent().getExtras().getInt("source");
+		mSource = getIntent().getIntExtra("source", 0);
+
 		switch (mSource) {
-		case EXISTING:
+		case REQUEST_EXISTING_IMAGE:
+
 			try {
 				createImageFile();
 			}
@@ -82,14 +100,16 @@ public class ImageSelectActivity extends Activity {
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			startActivityForResult(Intent.createChooser(intent, "Select Image"), REQUEST_SELECT_IMAGE);
+			navView.setText("select image");
+			startActivityForResult(Intent.createChooser(intent, "Select Image"), REQUEST_EXISTING_IMAGE);
 			break;
-		case CAPTURE:
-			Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
+		case REQUEST_CAPTURE_IMAGE:
+			Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+			navView.setText("capture image");
 			try {
 				cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createImageFile()));
-				startActivityForResult(cameraIntent, CAMERA_REQUEST);
+				startActivityForResult(cameraIntent, REQUEST_CAPTURE_IMAGE);
 			}
 			catch (IOException e) {
 				// TODO tell user
@@ -121,7 +141,7 @@ public class ImageSelectActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_image_select, menu);
+		getSupportMenuInflater().inflate(R.menu.activity_image_select, menu);
 		return true;
 	}
 
@@ -129,7 +149,7 @@ public class ImageSelectActivity extends Activity {
 		if (resultCode == RESULT_OK) {
 			// TODO on thread
 			Uri uri = null;
-			if (requestCode == CAMERA_REQUEST) {
+			if (requestCode == REQUEST_CAPTURE_IMAGE) {
 				// scale the image down
 
 				uri = Uri.fromFile(new File(mCurrentPhotoPath));

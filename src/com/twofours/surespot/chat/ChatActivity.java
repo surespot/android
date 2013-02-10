@@ -326,22 +326,16 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		case R.id.menu_send_image_bar:
 			// case R.id.menu_send_image_menu:
-
-			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the
-			// callback
 			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("source", ImageSelectActivity.EXISTING);
+			intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
+			intent.putExtra("to", getCurrentChatName());
 			startActivityForResult(intent, REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
 			// case R.id.menu_capture_image_menu:
-
-			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the
-			// callback
-			//
-
 			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("source", ImageSelectActivity.CAPTURE);
+			intent.putExtra("source", ImageSelectActivity.REQUEST_CAPTURE_IMAGE);
+			intent.putExtra("to", getCurrentChatName());
 			startActivityForResult(intent, REQUEST_SELECT_IMAGE);
 
 			return true;
@@ -359,8 +353,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			case REQUEST_SELECT_IMAGE:
 				selectedImageUri = data.getData();
+				String to = data.getStringExtra("to");
 				if (selectedImageUri != null) {
-					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), false, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
 							if (!result) {

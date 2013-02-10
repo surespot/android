@@ -20,6 +20,7 @@
         android:id="@+id/menu_capture_image_bar"
         android:orderInCategory="100"
         android:showAsAction="ifRoom|withText"
+        android:icon="@drawable/ic_menu_camera"
         android:title="capture image"/>
 <!--     <item -->
 <!--         android:id="@+id/menu_close_menu" -->
