@@ -2,6 +2,7 @@ package com.twofours.surespot.chat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -50,31 +51,46 @@ public class ChatUtils {
 		return chatMessage;
 	}
 
-	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to,
+	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
 			final IAsyncCallback<Boolean> callback) {
 
 		new AsyncTask<Void, Void, Boolean>() {
 
 			@Override
 			protected Boolean doInBackground(Void... params) {
-				// TODO thread
-				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
+				byte[][] results = null;
+				if (scale) {
 
-				// final String data = ChatUtils.inputStreamToBase64(iStream);
+					// TODO thread
+					Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
 
-				final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
-				bitmap = null;
+					// final String data = ChatUtils.inputStreamToBase64(iStream);
 
-				try {
-					jpeg.close();
+					final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
+					bitmap = null;
+
+					try {
+						jpeg.close();
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, "uploadPictureMessage", e);
+					}
+
+					// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+					results = EncryptionController.symmetricBase64EncryptSync(to, new ByteArrayInputStream(jpeg.toByteArray()));
+
 				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, "uploadPictureMessage", e);
-				}
+				else {
 
-				// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-				byte[][] results = EncryptionController.symmetricBase64EncryptSync(to, new ByteArrayInputStream(jpeg.toByteArray()));
+					try {
+						results = EncryptionController.symmetricBase64EncryptSync(to, context.getContentResolver()
+								.openInputStream(imageUri));
+					}
+					catch (FileNotFoundException e) {
+						SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
+					}
+				}
 
 				if (results != null) {
 					final String iv = new String(results[0]);

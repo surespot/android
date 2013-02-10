@@ -440,7 +440,7 @@ public class ChatFragment extends SherlockFragment {
 
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
-				ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, new IAsyncCallback<Boolean>() {
+				ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, true, new IAsyncCallback<Boolean>() {
 
 					@Override
 					public void handleResponse(Boolean result) {

@@ -357,20 +357,35 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Uri selectedImageUri = null;
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 			case REQUEST_SELECT_IMAGE:
-			case REQUEST_CAPTURE_IMAGE:
-				Uri selectedImageUri = data.getData();
-				ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
-					@Override
-					public void handleResponse(Boolean result) {
-						if (!result) {
-							Utils.makeToast(ChatActivity.this, "Could not upload picture, please try again later.");
+				selectedImageUri = data.getData();
+				if (selectedImageUri != null) {
+					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), true, new IAsyncCallback<Boolean>() {
+						@Override
+						public void handleResponse(Boolean result) {
+							if (!result) {
+								Utils.makeToast(ChatActivity.this, "Could not upload picture, please try again later.");
+							}
 						}
-					}
-				});
+					});
+				}
 				break;
+			case REQUEST_CAPTURE_IMAGE:
+				selectedImageUri = data.getData();
+				if (selectedImageUri != null) {
+					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), false, new IAsyncCallback<Boolean>() {
+						@Override
+						public void handleResponse(Boolean result) {
+							if (!result) {
+								Utils.makeToast(ChatActivity.this, "Could not upload picture, please try again later.");
+							}
+						}
+					});
+					break;
+				}
 			}
 		}
 	}
