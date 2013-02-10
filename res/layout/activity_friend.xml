@@ -11,13 +11,18 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <ProgressBar
+    <FrameLayout
         android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_gravity="center"
         android:layout_weight="1"
-        android:visibility="gone" />
+        android:visibility="gone" >
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/main_list_empty"
