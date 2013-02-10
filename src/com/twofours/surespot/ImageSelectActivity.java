@@ -43,7 +43,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		setContentView(R.layout.activity_image_select);
 
 		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
+		// actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setDisplayShowCustomEnabled(true);
 		actionBar.setDisplayShowTitleEnabled(false);
 		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
