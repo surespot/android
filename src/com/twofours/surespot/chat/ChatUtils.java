@@ -25,6 +25,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 
+import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -32,15 +34,15 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class ChatUtils {
-	private static final String TAG = "ChatChatUtils";
+	private static final String TAG = "ChatUtils";
 
 	public static String getOtherUser(String from, String to) {
-		return to.equals(EncryptionController.getIdentityUsername()) ? from : to;
+		return to.equals(IdentityController.getLoggedInUser(SurespotConfiguration.getContext())) ? from : to;
 	}
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
-		chatMessage.setFrom(EncryptionController.getIdentityUsername());
+		chatMessage.setFrom(IdentityController.getLoggedInUser(SurespotConfiguration.getContext()));
 		chatMessage.setTo(to);
 		chatMessage.setCipherData(cipherData);
 		chatMessage.setPlainData(plainData);

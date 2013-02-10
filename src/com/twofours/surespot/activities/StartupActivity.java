@@ -9,12 +9,12 @@ import android.os.Bundle;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
 
@@ -46,7 +46,9 @@ public class StartupActivity extends Activity {
 		}
 
 		// NetworkController.unregister(this, regId);
-		if (EncryptionController.hasIdentity()) {
+
+		// if we have any users
+		if (IdentityController.hasIdentity(this)) {
 
 			Intent intent = getIntent();
 			String action = intent.getAction();
@@ -59,8 +61,8 @@ public class StartupActivity extends Activity {
 			SurespotLog.v(TAG, "Intent categories: " + (categories == null ? "null" : categories.toString()));
 			SurespotLog.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
 
-			// if we have a session assume we're logged in
-			if (NetworkController.hasSession()) {
+			// if we have a current user we're logged in
+			if (IdentityController.hasLoggedInUser(this)) {
 				// make sure the gcm is set
 				// use case:
 				// user signs-up without google account (unlikely)
@@ -105,7 +107,7 @@ public class StartupActivity extends Activity {
 					else {
 						if (intent.getStringExtra(IntentFilters.INVITE_NOTIFICATION) == null) {
 							// we saved a chat name so load the chat activity with that name
-							String lastName = Utils.getSharedPrefsString(this,SurespotConstants.PrefNames.LAST_CHAT);
+							String lastName = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT);
 							if (lastName != null) {
 								newIntent = new Intent(this, ChatActivity.class);
 								newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, lastName);
@@ -152,5 +154,4 @@ public class StartupActivity extends Activity {
 
 		finish();
 	}
-
 }

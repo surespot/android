@@ -33,6 +33,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
@@ -47,7 +48,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 
 public class FriendActivity extends SherlockActivity {
@@ -230,7 +230,7 @@ public class FriendActivity extends SherlockActivity {
 			Utils.setActionBarTitles(this, "send", "select recipient");
 		}
 		else {
-			Utils.setActionBarTitles(this, "home", EncryptionController.getIdentityUsername());
+			Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser(this));
 		}
 
 		// get last message id's out of shared prefs
@@ -397,7 +397,7 @@ public class FriendActivity extends SherlockActivity {
 		final String friend = etFriend.getText().toString();
 
 		if (friend.length() > 0) {
-			if (friend.equals(EncryptionController.getIdentityUsername())) {
+			if (friend.equals(IdentityController.getLoggedInUser(this))) {
 				// TODO let them be friends with themselves?
 				Utils.makeToast(this, "You can't be friends with yourself, bro.");
 				return;

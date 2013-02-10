@@ -23,13 +23,13 @@ import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.NetworkController;
 
 public class ChatController {
 
@@ -243,7 +243,7 @@ public class ChatController {
 		 * if (socket != null && socket.isConnected()) { if (mConnectCallback != null) { mConnectCallback.connectStatus(true); } return; }
 		 */
 
-		Cookie cookie = NetworkController.getConnectCookie();
+		Cookie cookie = IdentityController.getCookie(SurespotConfiguration.getContext());
 
 		if (cookie == null) {
 			// need to login

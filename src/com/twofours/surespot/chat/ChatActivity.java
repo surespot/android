@@ -21,13 +21,13 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ImageSelectActivity;
 import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -139,7 +139,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.addChatName(name);
 		}
 
-		Utils.configureActionBar(this, "spots", EncryptionController.getIdentityUsername(), true);
+		Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(this), true);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);

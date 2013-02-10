@@ -16,8 +16,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
+import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
@@ -104,10 +106,10 @@ public class SignupActivity extends Activity {
 
 								NetworkController.addUser(username, password,
 										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
-										new AsyncHttpResponseHandler() {
+										new CookieResponseHandler() {
 
 											@Override
-											public void onSuccess(int statusCode, String arg0) {
+											public void onSuccess(int statusCode, String arg0, Cookie cookie) {
 
 												if (statusCode == 201) {
 													// save key pair now
@@ -123,8 +125,8 @@ public class SignupActivity extends Activity {
 													// and back into the
 													// encryption
 													// controller
-													IdentityController.saveIdentity(SignupActivity.this, new SurespotIdentity(username,
-															keyPair));
+													IdentityController.setLoggedInIdentity(SignupActivity.this, new SurespotIdentity(username,
+															keyPair, cookie));
 
 													// SurespotApplication.getUserData().setUsername(username);
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
@@ -159,7 +161,7 @@ public class SignupActivity extends Activity {
 													Utils.makeToast(SignupActivity.this, "Could not create user, please try again later.");
 												}
 
-											};
+											}
 
 										});
 							}

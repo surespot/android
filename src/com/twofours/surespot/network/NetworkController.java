@@ -15,15 +15,17 @@ import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
 import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
+import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.PersistentCookieStore;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
+import com.twofours.surespot.CookieResponseHandler;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -32,14 +34,7 @@ import com.twofours.surespot.common.Utils;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
-	private static Cookie mConnectCookie;
 	private static String mBaseUrl;
-
-	private static synchronized void setConnectCookie(Cookie connectCookie) {
-		// we be authorized
-		NetworkController.mConnectCookie = connectCookie;
-		setUnauthorized(false);
-	}
 
 	private static AsyncHttpClient mClient;
 	private static CookieStore mCookieStore;
@@ -51,14 +46,6 @@ public class NetworkController {
 
 	public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.post(mBaseUrl + url, params, responseHandler);
-	}
-
-	public static Cookie getConnectCookie() {
-		return mConnectCookie;
-	}
-
-	public static boolean hasSession() {
-		return mConnectCookie != null;
 	}
 
 	public static CookieStore getCookieStore() {
@@ -81,15 +68,14 @@ public class NetworkController {
 
 	static {
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
-		mCookieStore = new PersistentCookieStore(SurespotConfiguration.getContext());
-		if (mCookieStore.getCookies().size() > 0) {
-			SurespotLog.v(TAG, "mmm cookies in the jar: " + mCookieStore.getCookies().size());
-			mConnectCookie = extractConnectCookie(mCookieStore);
+		mCookieStore = new BasicCookieStore();
+		Cookie cookie = IdentityController.getCookie(SurespotConfiguration.getContext());
+		if (cookie != null) {
+			mCookieStore.addCookie(cookie);
 		}
 
 		try {
 			mClient = new AsyncHttpClient(SurespotConfiguration.getContext());
-
 			mSyncClient = new SyncHttpClient(SurespotConfiguration.getContext()) {
 
 				@Override
@@ -147,7 +133,7 @@ public class NetworkController {
 		}
 	}
 
-	public static void addUser(String username, String password, String publicKey, final AsyncHttpResponseHandler responseHandler) {
+	public static void addUser(final String username, String password, String publicKey, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -171,19 +157,21 @@ public class NetworkController {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
-				setConnectCookie(extractConnectCookie(mCookieStore));
-				if (mConnectCookie == null) {
+				Cookie cookie = extractConnectCookie(mCookieStore);
+
+				if (cookie == null) {
 					SurespotLog.w(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
 				}
 				else {
+					setUnauthorized(false);
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT,
 								gcmIdReceived);
 					}
 
-					responseHandler.onSuccess(responseCode, result);
+					responseHandler.onSuccess(responseCode, result, cookie);
 				}
 
 			}
@@ -214,7 +202,7 @@ public class NetworkController {
 
 	}
 
-	public static void login(String username, String password, final AsyncHttpResponseHandler responseHandler) {
+	public static void login(String username, String password, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -239,8 +227,8 @@ public class NetworkController {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
-				setConnectCookie(extractConnectCookie(mCookieStore));
-				if (mConnectCookie == null) {
+				Cookie cookie = extractConnectCookie(mCookieStore);
+				if (cookie == null) {
 					SurespotLog.w(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
 				}
@@ -251,7 +239,7 @@ public class NetworkController {
 								gcmIdReceived);
 					}
 
-					responseHandler.onSuccess(responseCode, result);
+					responseHandler.onSuccess(responseCode, result, cookie);
 				}
 
 			}
@@ -413,6 +401,7 @@ public class NetworkController {
 			@Override
 			public void onSuccess(int statusCode, String content) {
 				setUnauthorized(true);
+
 				responseHandler.onSuccess(statusCode, content);
 			}
 

@@ -17,8 +17,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
+import ch.boye.httpclientandroidlib.cookie.Cookie;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
@@ -119,10 +120,10 @@ public class LoginActivity extends Activity {
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
 
-			NetworkController.login(username, password, new AsyncHttpResponseHandler() {
+			NetworkController.login(username, password, new CookieResponseHandler() {
 				@Override
-				public void onSuccess(int responseCode, String arg0) {
-
+				public void onSuccess(int responseCode, String arg0, Cookie cookie) {
+					IdentityController.userLoggedIn(LoginActivity.this, username, cookie);
 					nextActivity();
 				}
 

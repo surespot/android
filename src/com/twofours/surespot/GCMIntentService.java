@@ -75,7 +75,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
 		// TODO use password instead of session?
 		// TODO retries?
-		if (NetworkController.hasSession()) {
+		if (IdentityController.hasLoggedInUser(this)) {
 			SurespotLog.v(TAG, "Attempting to register gcm id on surespot server.");
 			// do this synchronously so android doesn't kill the service thread before it's done
 

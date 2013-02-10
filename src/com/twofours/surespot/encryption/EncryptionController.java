@@ -16,8 +16,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.modes.CCMBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
@@ -29,6 +27,7 @@ import org.spongycastle.jce.spec.ECParameterSpec;
 import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.google.common.cache.CacheBuilder;
@@ -49,7 +48,6 @@ public class EncryptionController {
 	private static final int AES_KEY_LENGTH = 32;
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
-	private static SurespotIdentity mIdentity;
 	private static SecureRandom mSecureRandom;
 
 	private static LoadingCache<String, ECPublicKey> mPublicKeys;
@@ -59,14 +57,12 @@ public class EncryptionController {
 		SurespotLog.v(TAG, "constructor");
 		// attempt to load key pair
 		mSecureRandom = new SecureRandom();
-
-		mIdentity = loadIdentity();
 		CacheLoader<String, byte[]> secretCacheLoader = new CacheLoader<String, byte[]>() {
 
 			@Override
 			public byte[] load(String username) throws Exception {
 
-				return generateSharedSecretSync(username);
+				return generateSharedSecretSync(SurespotConfiguration.getContext(), username);
 			}
 		};
 
@@ -86,56 +82,18 @@ public class EncryptionController {
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
 	}
 
-	public static String getPublicKeyString() {
-		if (hasIdentity()) {
-			return encodePublicKey((ECPublicKey) mIdentity.getKeyPair().getPublic());
+	public static String getPublicKeyString(Context context, String username) {
+		SurespotIdentity identity = IdentityController.getIdentity(context, username);
+
+		if (identity != null) {
+			return encodePublicKey((ECPublicKey) identity.getKeyPair().getPublic());
 		}
 		else {
 			return null;
 		}
 	}
 
-	public static Boolean hasIdentity() {
-		return mIdentity != null;
-	}
-
-	public static String getIdentityUsername() {
-		if (hasIdentity()) {
-			return mIdentity.getUsername();
-
-		}
-		else {
-			return null;
-		}
-	}
-
-	private static SurespotIdentity loadIdentity() {
-		String jsonIdentity = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), IDENTITY_KEY);
-		if (jsonIdentity == null)
-			return null;
-
-		// we have a identity stored, load the fucker up and reconstruct the keys
-
-		try {
-			JSONObject json = new JSONObject(jsonIdentity);
-			String username = (String) json.get("username");
-			String sPrivateKey = (String) json.get("private_key");
-			String sPublicKey = (String) json.get("public_key");
-
-			SurespotIdentity identity = new SurespotIdentity(username, new KeyPair(recreatePublicKey(sPublicKey),
-					recreatePrivateKey(sPrivateKey)));
-
-			IdentityController.saveIdentity(SurespotConfiguration.getContext(), identity);
-
-			return identity;
-		}
-		catch (JSONException e) {
-			SurespotLog.w(TAG, "loadIdentity", e);
-		}
-		return null;
-	}
-
-	private static ECPublicKey recreatePublicKey(String encodedKey) {
+	public static ECPublicKey recreatePublicKey(String encodedKey) {
 
 		try {
 			if (encodedKey != null) {
@@ -153,7 +111,7 @@ public class EncryptionController {
 
 	}
 
-	private static ECPrivateKey recreatePrivateKey(String encodedKey) {
+	public static ECPrivateKey recreatePrivateKey(String encodedKey) {
 		// recreate key from hex string
 		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
 
@@ -196,10 +154,6 @@ public class EncryptionController {
 		}.execute();
 	}
 
-	public static synchronized void setIdentity(SurespotIdentity identity) {
-		mIdentity = identity;
-	}
-
 	public static String encodePublicKey(ECPublicKey publicKey) {
 		return new String(Utils.base64Encode(publicKey.getQ().getEncoded()));
 	}
@@ -209,12 +163,13 @@ public class EncryptionController {
 	// new AsyncGenerateSharedSecret(username, callback).execute();
 	// }
 
-	private static byte[] generateSharedSecretSync(String username) {
-		if (mIdentity == null)
+	private static byte[] generateSharedSecretSync(Context context, String username) {
+		SurespotIdentity identity = IdentityController.getIdentity(context);
+		if (identity == null)
 			return null;
 		try {
 			KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
-			ka.init(mIdentity.getKeyPair().getPrivate());
+			ka.init(identity.getKeyPair().getPrivate());
 			ka.doPhase(mPublicKeys.get(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
