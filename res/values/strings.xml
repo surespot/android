@@ -13,5 +13,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_chat">ChatActivity</string>
     <string name="title_activity_image_view">ImageViewActivity</string>
+    <string name="title_activity_image_select">ImageSelectActivity</string>
 
 </resources>

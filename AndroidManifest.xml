@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"    
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
     android:versionCode="1"
     android:versionName="1.0" >
@@ -24,12 +24,15 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
+   	<uses-feature android:name="android.hardware.camera" android:required="false"/>
+    
+    
+    
     <application
-        android:label="surespot"
         android:name="com.twofours.surespot.SurespotApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
+        android:label="surespot"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar" >
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
@@ -92,6 +95,10 @@
         <activity
             android:name="com.twofours.surespot.ImageViewActivity"
             android:label="@string/title_activity_image_view" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.ImageSelectActivity"
+            android:label="@string/title_activity_image_select" >
         </activity>
     </application>
 

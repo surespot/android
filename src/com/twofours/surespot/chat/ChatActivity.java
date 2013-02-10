@@ -25,6 +25,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.ImageSelectActivity;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -36,6 +37,8 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
+	private static final int REQUEST_SELECT_IMAGE = 1;
+	private static final int REQUEST_CAPTURE_IMAGE = 2;
 
 	private ChatPagerAdapter mPagerAdapter;
 	private ViewPager mViewPager;
@@ -317,16 +320,27 @@ public class ChatActivity extends SherlockFragmentActivity {
 			showMain();
 			return true;
 		case R.id.menu_close_bar:
-		case R.id.menu_close_menu:
+			// case R.id.menu_close_menu:
 			closeTab(mViewPager.getCurrentItem());
 			return true;
 
 		case R.id.menu_send_image_bar:
-		case R.id.menu_send_image_menu:
+			// case R.id.menu_send_image_menu:
 
 			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the
 			// callback
 			sendImage();
+			return true;
+		case R.id.menu_capture_image_bar:
+			// case R.id.menu_capture_image_menu:
+
+			// TODO set chat name on selection and propogate to result handler (instead of relying on getCurrentChatName() below in the
+			// callback
+			//
+
+			Intent intent = new Intent(this, ImageSelectActivity.class);
+			startActivityForResult(intent, REQUEST_CAPTURE_IMAGE);
+
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -338,21 +352,26 @@ public class ChatActivity extends SherlockFragmentActivity {
 		Intent intent = new Intent();
 		intent.setType("image/*");
 		intent.setAction(Intent.ACTION_GET_CONTENT);
-		startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+		startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_SELECT_IMAGE);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
-			Uri selectedImageUri = data.getData();
-			ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
-				@Override
-				public void handleResponse(Boolean result) {
-					if (!result) {
-						Utils.makeToast(ChatActivity.this, "Could not upload picture, please try again later.");
+			switch (requestCode) {
+			case REQUEST_SELECT_IMAGE:
+			case REQUEST_CAPTURE_IMAGE:
+				Uri selectedImageUri = data.getData();
+				ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, getCurrentChatName(), new IAsyncCallback<Boolean>() {
+					@Override
+					public void handleResponse(Boolean result) {
+						if (!result) {
+							Utils.makeToast(ChatActivity.this, "Could not upload picture, please try again later.");
+						}
 					}
-				}
-			});
+				});
+				break;
+			}
 		}
 	}
 
