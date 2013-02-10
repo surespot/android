@@ -1,27 +1,31 @@
 package com.twofours.surespot.activities;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.LetterOrDigitInputFilter;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
 
@@ -30,6 +34,7 @@ public class LoginActivity extends Activity {
 	private Button loginButton;
 	private static final String TAG = "LoginActivity";
 	MultiProgressDialog mMpd;
+	private List<String> mIdentityNames;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,22 +69,49 @@ public class LoginActivity extends Activity {
 
 		});
 
-		// set the username
-		EditText usernameText = (EditText) findViewById(R.id.etUsername);
-		usernameText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
-		String username = EncryptionController.getIdentityUsername();
-		if (username != null) {
-			usernameText.setText(username);
+		// set the identities
+
+		Spinner spinner = (Spinner) findViewById(R.id.spinnerUsername);
+
+		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item);
+		mIdentityNames = IdentityController.getIdentityNames(this);
+
+		for (String name : mIdentityNames) {
+			adapter.add(name);
 		}
-		else {
-			SurespotLog.w(TAG, "In login activity with no identity stored.");
-		}
+
+		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				((EditText) LoginActivity.this.findViewById(R.id.etPassword)).setText("");
+
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+		// EditText usernameText = (EditText) findViewById(R.id.etUsername);
+		// usernameText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
+		// String username = EncryptionController.getIdentityUsername();
+		// if (username != null) {
+		// usernameText.setText(username);
+		// }
+		// else {
+		// SurespotLog.w(TAG, "In login activity with no identity stored.");
+		// }
 
 	}
 
 	private void login() {
 
-		final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
+		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername))
+				.getSelectedItemPosition());
+		// final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
 		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {

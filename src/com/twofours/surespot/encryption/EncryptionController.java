@@ -35,6 +35,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
@@ -123,6 +124,9 @@ public class EncryptionController {
 
 			SurespotIdentity identity = new SurespotIdentity(username, new KeyPair(recreatePublicKey(sPublicKey),
 					recreatePrivateKey(sPrivateKey)));
+
+			IdentityController.saveIdentity(SurespotConfiguration.getContext(), identity);
+
 			return identity;
 		}
 		catch (JSONException e) {
@@ -192,37 +196,8 @@ public class EncryptionController {
 		}.execute();
 	}
 
-	public static synchronized void saveIdentity(SurespotIdentity identity) {
-
+	public static synchronized void setIdentity(SurespotIdentity identity) {
 		mIdentity = identity;
-		ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
-		ECPrivateKey ecpriv = (ECPrivateKey) identity.getKeyPair().getPrivate();
-
-		// SurespotLog.d("ke","encoded public key: " +
-		// ecpk.getEncoded().toString());
-		// pair.getPublic().
-		// ecpk.getW().;
-		// ecprik.getD().toByteArray();
-		String generatedPrivDHex = new String(Utils.base64Encode(ecpriv.getD().toByteArray()));
-
-		String publicKey = encodePublicKey(ecpub);
-		SurespotLog.d("ke", "generated public key:" + publicKey);
-		SurespotLog.d("ke", "generated private key d:" + generatedPrivDHex);
-
-		// save keypair in shared prefs json format (hex for now) TODO
-		// use something other than hex
-
-		JSONObject json = new JSONObject();
-		try {
-			json.putOpt("username", identity.getUsername());
-			json.putOpt("private_key", generatedPrivDHex);
-			json.putOpt("public_key", publicKey);
-			Utils.putSharedPrefsString(SurespotConfiguration.getContext(), IDENTITY_KEY, json.toString());
-		}
-		catch (JSONException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
-		}
-
 	}
 
 	public static String encodePublicKey(ECPublicKey publicKey) {

@@ -12,21 +12,18 @@
         android:layout_height="wrap_content"
         android:text="username" />
 
-    <EditText
-        android:id="@+id/etUsername"
+    <Spinner
+        android:id="@+id/spinnerUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dip"
         android:layout_marginTop="5dip"
-        android:layout_marginBottom="20dip"         
-        android:singleLine="true"        
-        android:imeOptions="actionNext"
-        android:enabled="false"/>
+        android:imeOptions="actionNext" />
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        
         android:text="password" />
 
     <EditText
@@ -40,9 +37,9 @@
 
     <Button
         android:id="@+id/bLogin"
-        android:layout_marginTop="10dip"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"        
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
         android:text="login" />
 
 </LinearLayout>

@@ -10,26 +10,28 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
     </Spinner>
+    
+    <Button
+        android:id="@+id/bIdentityExport"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="export..." >
+    </Button>
 
     <Button
         android:id="@+id/bIdentityCreate"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="create" >
+        android:text="create..." >
     </Button>
 
     <Button
         android:id="@+id/bIdentityImport"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="create" >
+        android:text="import..." >
     </Button>
 
-    <Button
-        android:id="@+id/bIdentityExport"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="create" >
-    </Button>
+
 
 </LinearLayout>

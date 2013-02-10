@@ -18,6 +18,7 @@ import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
@@ -122,7 +123,8 @@ public class SignupActivity extends Activity {
 													// and back into the
 													// encryption
 													// controller
-													EncryptionController.saveIdentity(new SurespotIdentity(username, keyPair));
+													IdentityController.saveIdentity(SignupActivity.this, new SurespotIdentity(username,
+															keyPair));
 
 													// SurespotApplication.getUserData().setUsername(username);
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
