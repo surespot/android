@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 
@@ -43,7 +44,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		setContentView(R.layout.activity_image_select);
 
 		final ActionBar actionBar = getSupportActionBar();
-		// actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setDisplayShowCustomEnabled(true);
 		actionBar.setDisplayShowTitleEnabled(false);
 		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
@@ -162,6 +163,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 			// save the image to file
 			File file = new File(mCurrentPhotoPath);
+			uri = Uri.fromFile(file);
 			try {
 				FileOutputStream fos = new FileOutputStream(file);
 
@@ -178,6 +180,19 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 		else {
 			finish();
+		}
+
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 
 	}
