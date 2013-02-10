@@ -16,17 +16,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.twofours.surespot.ImageSelectActivity;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.ImageSelectActivity;
+import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -38,6 +35,7 @@ import com.viewpagerindicator.TitlePageIndicator;
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
 	private static final int REQUEST_SELECT_IMAGE = 1;
+	private static final int REQUEST_SETTINGS = 2;
 
 	private ChatPagerAdapter mPagerAdapter;
 	private ViewPager mViewPager;
@@ -141,16 +139,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.addChatName(name);
 		}
 
-		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);
-		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
-		TextView navView = (TextView) customNav.findViewById(R.id.nav);
-		TextView userView = (TextView) customNav.findViewById(R.id.user);
-		navView.setText("spots");
-		userView.setText(EncryptionController.getIdentityUsername());
-		actionBar.setCustomView(customNav);
+		Utils.configureActionBar(this, "spots", EncryptionController.getIdentityUsername(), true);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
@@ -338,6 +327,10 @@ public class ChatActivity extends SherlockFragmentActivity {
 			intent.putExtra("to", getCurrentChatName());
 			startActivityForResult(intent, REQUEST_SELECT_IMAGE);
 
+			return true;
+		case R.id.menu_settings:
+			intent = new Intent(this, SettingsActivity.class);
+			startActivityForResult(intent, REQUEST_SETTINGS);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

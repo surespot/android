@@ -15,9 +15,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.ImageDownloader;
-import com.twofours.surespot.ImageViewActivity;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.ImageViewActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 

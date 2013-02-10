@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui.activities;
+package com.twofours.surespot.activities;
 
 import java.security.KeyPair;
 

@@ -18,6 +18,7 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
+import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -25,7 +26,6 @@ import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.ui.activities.StartupActivity;
 
 public class GCMIntentService extends GCMBaseIntentService
 

@@ -24,10 +24,11 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-   	<uses-feature android:name="android.hardware.camera" android:required="false"/>
-    
-    
-    
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:name="com.twofours.surespot.SurespotApplication"
         android:allowBackup="true"
@@ -48,7 +49,7 @@
         <service android:name="com.twofours.surespot.GCMIntentService" />
 
         <activity
-            android:name="com.twofours.surespot.ui.activities.StartupActivity"
+            android:name="com.twofours.surespot.activities.StartupActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
@@ -77,11 +78,11 @@
             <!-- </intent-filter> -->
         </activity>
         <activity
-            android:name="com.twofours.surespot.ui.activities.SignupActivity"
+            android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup" >
         </activity>
         <activity
-            android:name="com.twofours.surespot.ui.activities.LoginActivity"
+            android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
@@ -93,12 +94,29 @@
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
-            android:name="com.twofours.surespot.ImageViewActivity"
+            android:name="com.twofours.surespot.activities.ImageViewActivity"
             android:label="@string/title_activity_image_view" >
         </activity>
         <activity
-            android:name="com.twofours.surespot.ImageSelectActivity"
+            android:name="com.twofours.surespot.activities.ImageSelectActivity"
             android:label="@string/title_activity_image_select" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.IdentityManagementActivity"
+            android:label="@string/title_activity_identity_management" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.IdentityManagementActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName="com.actionbarsherlock.app.SherlockPreferenceActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
         </activity>
     </application>
 

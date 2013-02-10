@@ -1,19 +1,17 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.R;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
 
@@ -25,17 +23,7 @@ public class ImageViewActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_view);
-
-		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);
-		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
-		TextView navView = (TextView) customNav.findViewById(R.id.nav);
-		TextView userView = (TextView) customNav.findViewById(R.id.user);
-		navView.setText("image");
-		userView.setText("pan and zoom");
-		actionBar.setCustomView(customNav);
+		Utils.configureActionBar(this, "image", "pan and zoom", true);
 
 		String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
 

@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,19 +13,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 
 public class ImageSelectActivity extends SherlockActivity {
 	private static final String TAG = "ImageSelectActivity";
@@ -43,17 +42,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
 
-		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);
-		View customNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
-		final TextView navView = (TextView) customNav.findViewById(R.id.nav);
-		TextView userView = (TextView) customNav.findViewById(R.id.user);
-		actionBar.setCustomView(customNav);
-
 		final String to = getIntent().getStringExtra("to");
-		userView.setText(to);
 
 		mImageView = (ImageView) this.findViewById(R.id.image);
 		mOKButton = (Button) this.findViewById(R.id.ok);
@@ -101,13 +90,13 @@ public class ImageSelectActivity extends SherlockActivity {
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			navView.setText("select image");
+			Utils.configureActionBar(this, "select image", to, true);
 			startActivityForResult(Intent.createChooser(intent, "Select Image"), REQUEST_EXISTING_IMAGE);
 			break;
 
 		case REQUEST_CAPTURE_IMAGE:
 			Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-			navView.setText("capture image");
+			Utils.configureActionBar(this, "capture image", to, true);
 			try {
 				cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createImageFile()));
 				startActivityForResult(cameraIntent, REQUEST_CAPTURE_IMAGE);

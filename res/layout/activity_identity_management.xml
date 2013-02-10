@@ -1,0 +1,35 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".IdentityManagementActivity" >
+
+    <Spinner
+        android:id="@+id/identitySpinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </Spinner>
+
+    <Button
+        android:id="@+id/bIdentityCreate"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="create" >
+    </Button>
+
+    <Button
+        android:id="@+id/bIdentityImport"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="create" >
+    </Button>
+
+    <Button
+        android:id="@+id/bIdentityExport"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="create" >
+    </Button>
+
+</LinearLayout>

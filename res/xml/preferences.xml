@@ -1,0 +1,7 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+	<Preference android:title="identity management">
+	    <intent android:action="com.twofours.surespot.activities.IdentityManagementActivity"></intent>
+	</Preference>
+    
+    
+</PreferenceScreen>

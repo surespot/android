@@ -16,7 +16,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -37,6 +36,8 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -48,11 +49,11 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.ui.activities.LoginActivity;
 
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
 	private static final String TAG = "FriendActivity";
+	private static final int REQUEST_SETTINGS = 1;
 	private MultiProgressDialog mMpdInviteFriend;
 	private BroadcastReceiver mInvitationReceiver;
 	private BroadcastReceiver InviteResponseReceiver;
@@ -60,7 +61,6 @@ public class FriendActivity extends SherlockActivity {
 	private HashMap<String, Integer> mLastViewedMessageIds;
 	private HashMap<String, Integer> mUnsentCount;
 	private ChatController mChatController;
-	private View mCustomNav;
 	private ListView mListView;
 
 	@Override
@@ -68,11 +68,7 @@ public class FriendActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
 
-		mCustomNav = LayoutInflater.from(this).inflate(R.layout.actionbar_title, null);
-
-		getSupportActionBar().setCustomView(mCustomNav);
-		getSupportActionBar().setDisplayShowCustomEnabled(true);
-		getSupportActionBar().setDisplayShowTitleEnabled(false);
+		Utils.configureActionBar(this, null, null, false);
 
 		mChatController = new ChatController(new IConnectCallback() {
 
@@ -229,18 +225,12 @@ public class FriendActivity extends SherlockActivity {
 		String action = intent.getAction();
 		String type = intent.getType();
 
-		TextView navView = (TextView) mCustomNav.findViewById(R.id.nav);
-		TextView userView = (TextView) mCustomNav.findViewById(R.id.user);
-
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 			// set the title
-
-			navView.setText("send");
-			userView.setText("select recipient");
+			Utils.setActionBarTitles(this, "send", "select recipient");
 		}
 		else {
-			navView.setText("home");
-			userView.setText(EncryptionController.getIdentityUsername());
+			Utils.setActionBarTitles(this, "home", EncryptionController.getIdentityUsername());
 		}
 
 		// get last message id's out of shared prefs
@@ -408,6 +398,7 @@ public class FriendActivity extends SherlockActivity {
 
 		if (friend.length() > 0) {
 			if (friend.equals(EncryptionController.getIdentityUsername())) {
+				// TODO let them be friends with themselves?
 				Utils.makeToast(this, "You can't be friends with yourself, bro.");
 				return;
 			}
@@ -499,6 +490,10 @@ public class FriendActivity extends SherlockActivity {
 
 			return true;
 
+		case R.id.menu_settings:
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivityForResult(intent, REQUEST_SETTINGS);
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}

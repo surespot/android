@@ -14,5 +14,7 @@
     <string name="title_activity_chat">ChatActivity</string>
     <string name="title_activity_image_view">ImageViewActivity</string>
     <string name="title_activity_image_select">ImageSelectActivity</string>
+    <string name="title_activity_identity_management">IdentityManagementActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
 
 </resources>
