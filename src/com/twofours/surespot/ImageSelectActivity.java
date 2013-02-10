@@ -23,13 +23,17 @@ import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 
 public class ImageSelectActivity extends Activity {
-	private static final int CAMERA_REQUEST = 1888;
+	private static final int REQUEST_SELECT_IMAGE = 1;
+	private static final int CAMERA_REQUEST = 3;
 	private static final String TAG = "ImageSelectActivity";
+	public static final int EXISTING = 1;
+	public static final int CAPTURE = 2;
 
 	private ImageView mImageView;
 	private Button mOKButton;
 	private Button mCancelButton;
 	private String mCurrentPhotoPath;
+	private int mSource;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,15 +68,37 @@ public class ImageSelectActivity extends Activity {
 			}
 		});
 
-		Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+		mSource = getIntent().getExtras().getInt("source");
+		switch (mSource) {
+		case EXISTING:
+			try {
+				createImageFile();
+			}
+			catch (IOException e1) {
+				// TODO tell user
+				SurespotLog.w(TAG, "selectImage", e1);
+				finish();
+			}
+			Intent intent = new Intent();
+			intent.setType("image/*");
+			intent.setAction(Intent.ACTION_GET_CONTENT);
+			startActivityForResult(Intent.createChooser(intent, "Select Image"), REQUEST_SELECT_IMAGE);
+			break;
+		case CAPTURE:
+			Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
-		try {
-			cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createImageFile()));
-			startActivityForResult(cameraIntent, CAMERA_REQUEST);
-		}
-		catch (IOException e) {
-			// TODO tell user
-			SurespotLog.w(TAG, "selectImage", e);
+			try {
+				cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createImageFile()));
+				startActivityForResult(cameraIntent, CAMERA_REQUEST);
+			}
+			catch (IOException e) {
+				// TODO tell user
+				SurespotLog.w(TAG, "selectImage", e);
+				finish();
+			}
+			break;
+
+		default:
 			finish();
 		}
 
@@ -100,10 +126,18 @@ public class ImageSelectActivity extends Activity {
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
-			// scale the image down
+		if (resultCode == RESULT_OK) {
 			// TODO on thread
-			Uri uri = Uri.fromFile(new File(mCurrentPhotoPath));
+			Uri uri = null;
+			if (requestCode == CAMERA_REQUEST) {
+				// scale the image down
+
+				uri = Uri.fromFile(new File(mCurrentPhotoPath));
+			}
+			else {
+				uri = data.getData();
+			}
+
 			Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri);
 
 			// save the image to file
@@ -121,10 +155,10 @@ public class ImageSelectActivity extends Activity {
 			}
 
 			mImageView.setImageURI(uri);
-
 		}
 		else {
 			finish();
 		}
+
 	}
 }

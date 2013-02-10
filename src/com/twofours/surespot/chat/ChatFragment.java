@@ -429,7 +429,6 @@ public class ChatFragment extends SherlockFragment {
 	// populate the edit box
 	private void handleSendIntent(String action, final String type, Bundle extras) {
 		if (action.equals(Intent.ACTION_SEND)) {
-
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = extras.getString(Intent.EXTRA_TEXT);
 				SurespotLog.v(TAG, "received action send, data: " + sharedText);
@@ -437,9 +436,7 @@ public class ChatFragment extends SherlockFragment {
 				requestFocus();
 			}
 			else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
-
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
-
 				ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, true, new IAsyncCallback<Boolean>() {
 
 					@Override
