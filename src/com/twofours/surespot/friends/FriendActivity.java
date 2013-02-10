@@ -2,7 +2,6 @@ package com.twofours.surespot.friends;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,6 +58,7 @@ public class FriendActivity extends SherlockActivity {
 	private BroadcastReceiver InviteResponseReceiver;
 	private BroadcastReceiver mMessageReceiver;
 	private HashMap<String, Integer> mLastViewedMessageIds;
+	private HashMap<String, Integer> mUnsentCount;
 	private ChatController mChatController;
 	private View mCustomNav;
 	private ListView mListView;
@@ -170,7 +170,26 @@ public class FriendActivity extends SherlockActivity {
 				try {
 					messageJson = new JSONObject(message);
 					String name = ChatUtils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
-					mMainAdapter.messageReceived(name);
+					Integer id = messageJson.getInt("id");
+
+					int serverId = 0;
+					if (id != null) {
+						serverId = id;
+					}
+
+					Integer localId = mLastViewedMessageIds.get(name);
+					if (localId == null) {
+						localId = 0;
+					}
+					// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
+					// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
+
+					// compute delta
+					int messageDelta = serverId - localId;
+					Integer unsent1 = mUnsentCount.get(name);
+					messageDelta = messageDelta - (unsent1 == null ? 0 : unsent1);
+					mMainAdapter.messageDeltaReceived(name, messageDelta > 0 ? messageDelta : 0);
+
 				}
 				catch (JSONException e) {
 					SurespotLog.w(TAG, "onReceive (message)", e);
@@ -239,13 +258,13 @@ public class FriendActivity extends SherlockActivity {
 
 		// get unsent messages out of shared prefs
 		String sUnsentMessages = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), "unsentmessages");
-		final Map<String, Integer> unsentCount = new HashMap<String, Integer>();
+		mUnsentCount = new HashMap<String, Integer>();
 		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
 			Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sUnsentMessages).iterator();
 			while (iterator.hasNext()) {
 				SurespotMessage message = iterator.next();
 				String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
-				Integer count = unsentCount.get(otherUser);
+				Integer count = mUnsentCount.get(otherUser);
 				if (count == null) {
 					count = 1;
 				}
@@ -253,7 +272,7 @@ public class FriendActivity extends SherlockActivity {
 					count++;
 				}
 
-				unsentCount.put(otherUser, count);
+				mUnsentCount.put(otherUser, count);
 			}
 		}
 
@@ -301,8 +320,8 @@ public class FriendActivity extends SherlockActivity {
 
 											// compute delta
 											int messageDelta = serverId - localId;
-											Integer unsent1 = unsentCount.get(user);
-											int unsent = messageDelta - (unsent1 == null ? 0 : unsent1);
+											Integer unsent1 = mUnsentCount.get(user);
+											messageDelta = messageDelta - (unsent1 == null ? 0 : unsent1);
 											mMainAdapter.messageDeltaReceived(user, messageDelta > 0 ? messageDelta : 0);
 										}
 									}
