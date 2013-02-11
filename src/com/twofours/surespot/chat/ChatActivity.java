@@ -21,15 +21,18 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ImageSelectActivity;
+import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatActivity extends SherlockFragmentActivity {
@@ -331,6 +334,18 @@ public class ChatActivity extends SherlockFragmentActivity {
 		case R.id.menu_settings:
 			intent = new Intent(this, SettingsActivity.class);
 			startActivityForResult(intent, REQUEST_SETTINGS);
+			return true;
+		case R.id.menu_logout:
+			NetworkController.logout(new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String content) {
+					Intent intent = new Intent(ChatActivity.this, LoginActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					ChatActivity.this.startActivity(intent);
+					finish();
+				}
+			});
+
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

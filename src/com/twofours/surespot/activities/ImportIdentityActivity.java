@@ -1,7 +1,6 @@
 package com.twofours.surespot.activities;
 
 import java.io.File;
-import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.Utils;
 
 public class ImportIdentityActivity extends SherlockActivity {
-	private List<String> mIdentityNames;
 	private boolean mSignup;
 
 	@Override

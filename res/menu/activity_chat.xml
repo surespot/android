@@ -40,5 +40,12 @@
         android:orderInCategory="200"
         android:showAsAction="ifRoom|withText"
         android:title="settings"/>
+    
+    
+     <item
+        android:id="@+id/menu_logout"
+        android:orderInCategory="400"
+        android:showAsAction="ifRoom|withText"
+        android:title="logout"/>
 
 </menu>
