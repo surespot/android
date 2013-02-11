@@ -11,6 +11,10 @@
             <intent android:action="com.twofours.surespot.activities.ExportIdentityActivity" >
             </intent>
         </Preference>
+        <Preference android:title="@string/create_identity_label" >
+            <intent android:action="com.twofours.surespot.activities.SignupActivity" >
+            </intent>
+        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>

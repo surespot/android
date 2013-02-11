@@ -5,17 +5,21 @@ import java.io.File;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.IdentityOperationResult;
 import com.twofours.surespot.R;
+import com.twofours.surespot.UIUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class ImportIdentityActivity extends SherlockActivity {
 	private boolean mSignup;
@@ -30,10 +34,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		ListView lvIdentities = (ListView) findViewById(R.id.lvIdentities);
 
-		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_selectable_list_item);
+		final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_selectable_list_item);
 
 		// query the filesystem for identities
 		final File exportDir = FileUtils.getIdentityExportDir();
+
+		TextView tvFound = (TextView) findViewById(R.id.foundText);
+		tvFound.setText("discovered the identities below in " + exportDir + ", click to import");
 
 		for (String name : IdentityController.getIdentityNames(this, exportDir.getPath())) {
 			adapter.add(name);
@@ -41,24 +48,47 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		lvIdentities.setAdapter(adapter);
 
-		Button importFromSdCardButton = (Button) findViewById(R.id.bImportSd);
-		importFromSdCardButton.setEnabled(adapter.getCount() > 0);
-
-		importFromSdCardButton.setOnClickListener(new OnClickListener() {
+		lvIdentities.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onClick(View v) {
-				IdentityController.importIdentities(ImportIdentityActivity.this, exportDir, "yourmama");
-				Utils.makeLongToast(ImportIdentityActivity.this, "Identities imported.");
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				final String user = adapter.getItem(position).toString();
 
-				// if launched from signup and successful import, go to login screen
-				if (mSignup) {
-					Intent intent = new Intent(ImportIdentityActivity.this, LoginActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					startActivity(intent);
-				}
+				UIUtils.passwordDialog(ImportIdentityActivity.this, user, new IAsyncCallback<String>() {
+
+					@Override
+					public void handleResponse(String result) {
+						if (result != null && !result.isEmpty()) {
+							IdentityController.importIdentity(ImportIdentityActivity.this, exportDir, user, result,
+									new IAsyncCallback<IdentityOperationResult>() {
+
+										@Override
+										public void handleResponse(IdentityOperationResult response) {
+
+											Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
+
+											if (response.getResultSuccess()) {
+												// if launched from signup and successful import, go to login screen
+												if (mSignup) {
+													Intent intent = new Intent(ImportIdentityActivity.this, LoginActivity.class);
+													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+													startActivity(intent);
+												}
+											}
+
+										}
+
+									});
+
+						}
+						else {
+							Utils.makeToast(ImportIdentityActivity.this, getText(R.string.no_identity_imported).toString());
+						}
+					}
+				});
 
 			}
+
 		});
 	}
 

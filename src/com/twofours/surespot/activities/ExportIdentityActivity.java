@@ -13,7 +13,9 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
+import com.twofours.surespot.UIUtils;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class ExportIdentityActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
@@ -40,11 +42,35 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO get and validate password
+				final String user = (String) spinner.getSelectedItem();
+				UIUtils.passwordDialog(ExportIdentityActivity.this, user, new IAsyncCallback<String>() {
 
-				String user = (String) spinner.getSelectedItem();
-				String fileName = IdentityController.exportIdentity(ExportIdentityActivity.this, user, "yourmama");
-				Utils.makeLongToast(ExportIdentityActivity.this, "Identity exported to: " + fileName);
+					@Override
+					public void handleResponse(String result) {
+						if (result != null && !result.isEmpty()) {
+							exportIdentity(user, result);
+						}
+						else {
+							Utils.makeToast(ExportIdentityActivity.this, getText(R.string.no_identity_exported).toString());
+						}
+					}
+				});
+
+			}
+		});
+	}
+
+	private void exportIdentity(String user, String password) {
+		IdentityController.exportIdentity(ExportIdentityActivity.this, user, password, new IAsyncCallback<String>() {
+			@Override
+			public void handleResponse(String response) {
+				if (response == null) {
+					Utils.makeToast(ExportIdentityActivity.this, getText(R.string.no_identity_exported).toString());
+				}
+				else {
+					Utils.makeLongToast(ExportIdentityActivity.this, response);
+				}
+
 			}
 		});
 	}

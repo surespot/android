@@ -66,6 +66,7 @@ public class StartupActivity extends Activity {
 			String user = IdentityController.getLoggedInUser(this);
 			if (user != null && SurespotApplication.getCachingService() != null
 					&& SurespotApplication.getCachingService().getCookie(user) != null) {
+				SurespotLog.v(TAG, "using cached credentials");
 				// make sure the gcm is set
 				// use case:
 				// user signs-up without google account (unlikely)
@@ -97,6 +98,7 @@ public class StartupActivity extends Activity {
 
 				// if we have an intent name it's coming from a notification so show the chat
 				if (intentName != null) {
+					SurespotLog.v(TAG, "found chat name, starting chat activity: " + intentName);
 					newIntent = new Intent(this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, intentName);
 					newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -105,6 +107,7 @@ public class StartupActivity extends Activity {
 				else {
 					// we have a send action so start friend activity so user can pick someone to send to
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+						SurespotLog.v(TAG, "send action, starting home activity so user can select recipient");
 						newIntent = new Intent(this, FriendActivity.class);
 						newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						newIntent.setAction(action);
@@ -113,9 +116,11 @@ public class StartupActivity extends Activity {
 					}
 					else {
 						if (intent.getStringExtra(IntentFilters.INVITE_NOTIFICATION) == null) {
+
 							// we saved a chat name so load the chat activity with that name
 							String lastName = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT);
 							if (lastName != null) {
+								SurespotLog.v(TAG, "starting chat activity based on LAST_CHAT name");
 								newIntent = new Intent(this, ChatActivity.class);
 								newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, lastName);
 								newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -133,14 +138,17 @@ public class StartupActivity extends Activity {
 				startActivity(newIntent);
 			}
 			else {
+				SurespotLog.v(TAG, "no cached credentials, starting Login activity");
 				// identity but no session, login
 				Intent newIntent = new Intent(this, LoginActivity.class);
 				String name = intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 				if (name != null) {
+					SurespotLog.v(TAG, "setting intent chat name: " + name);
 					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
 				}
 				else {
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+						SurespotLog.v(TAG, "setting intent action");
 						newIntent.setAction(action);
 						newIntent.setType(type);
 						newIntent.putExtras(intent);
@@ -154,6 +162,7 @@ public class StartupActivity extends Activity {
 		}
 		// otherwise show the user / key management activity
 		else {
+			SurespotLog.v(TAG, "starting signup activity");
 			Intent intent = new Intent(this, SignupActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);

@@ -22,5 +22,9 @@
     <string name="import_identity_label">import identity...</string>
     <string name="export_identity_label">export identity...</string>
     <string name="import_identities">import identities...</string>
-
+    <string name="create_identity_label">create new identity...</string>
+	<string name="no_identity_exported">no identity exported</string>
+	<string name="no_identity_imported">no identity imported</string>
+	<string name="identity_imported_successfully">identity imported successfully</string>
+	<string name="could_not_import_identity">could not import identity</string>
 </resources>

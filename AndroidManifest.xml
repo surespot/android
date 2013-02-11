@@ -47,7 +47,10 @@
         </receiver>
 
         <service android:name="com.twofours.surespot.GCMIntentService" />
-        <service android:name="com.twofours.surespot.services.CredentialCachingService" android:exported="false"></service>
+        <service
+            android:name="com.twofours.surespot.services.CredentialCachingService"
+            android:exported="false" >
+        </service>
 
         <activity
             android:name="com.twofours.surespot.activities.StartupActivity"
@@ -81,6 +84,11 @@
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.SignupActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.LoginActivity"

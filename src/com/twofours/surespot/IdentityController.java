@@ -22,14 +22,17 @@ import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.Context;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.SerializableCookie;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class IdentityController {
 	private static final String TAG = "IdentityController";
@@ -79,6 +82,8 @@ public class IdentityController {
 			idWrapper.put("iv", ciphers[0]);
 			idWrapper.put("salt", ciphers[1]);
 			idWrapper.put("identity", ciphers[2]);
+			// idWrapper.put("time", new Date().getTime());
+			// idWrapper.put("username", identity.getUsername());
 			FileOutputStream fos = new FileOutputStream(identityFile);
 			fos.write(idWrapper.toString().getBytes());
 			fos.close();
@@ -265,28 +270,120 @@ public class IdentityController {
 
 	}
 
-	public static String exportIdentity(Context context, String user, String password) {
-		SurespotIdentity identity = getIdentity(context, user, password);
+	public static void exportIdentity(Context context, String username, final String password, final IAsyncCallback<String> callback) {
+		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null)
-			return null;
+			callback.handleResponse(null);
 
-		File exportDir = FileUtils.getIdentityExportDir();
+		final File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
-			return saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
+			SurespotApplication.getNetworkController().validate(username, password, null, new AsyncHttpResponseHandler() {
+				public void onSuccess(int statusCode, String content) {
+
+					String path = saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
+					callback.handleResponse(path == null ? null : "identity exported to " + path);
+
+				}
+
+				public void onFailure(Throwable error) {
+
+					if (error instanceof HttpResponseException) {
+						int statusCode = ((HttpResponseException) error).getStatusCode();
+						// would use 401 but we're intercepting those and I don't feel like special casing it
+						switch (statusCode) {
+						case 403:
+							callback.handleResponse("incorrect password");
+							break;
+						case 404:
+							callback.handleResponse("no such user");
+							break;
+
+						default:
+							SurespotLog.w(TAG, "exportIdentity", error);
+							callback.handleResponse(null);
+						}
+					}
+					else {
+						callback.handleResponse(null);
+					}
+				}
+			});
 		}
 		else {
-			return null;
+			callback.handleResponse(null);
 		}
 
 	}
 
-	public static void importIdentities(Context context, File exportDir, String password) {
-		List<String> idNames = getIdentityNames(context, exportDir.getPath());
-		for (String name : idNames) {
-			SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), name, password);
-			saveIdentity(getIdentityDir(context), identity, password);
+	public static void importIdentity(final Context context, File exportDir, String username, final String password,
+			final IAsyncCallback<IdentityOperationResult> callback) {
+		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
+		if (identity != null) {
+			SurespotApplication.getNetworkController().validate(username, password,
+					EncryptionController.encodePublicKey((ECPublicKey) identity.getKeyPair().getPublic()), new AsyncHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, String content) {
+							if (content.equals("true")) {
+								saveIdentity(getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+								callback.handleResponse(new IdentityOperationResult(context
+										.getText(R.string.identity_imported_successfully).toString(), true));
+							}
+							else {
+								callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
+										.toString(), false));
+							}
+						}
+
+						@Override
+						public void onFailure(Throwable error) {
+
+							if (error instanceof HttpResponseException) {
+								int statusCode = ((HttpResponseException) error).getStatusCode();
+								// would use 401 but we're intercepting those and I don't feel like special casing it
+								switch (statusCode) {
+								case 403:
+									callback.handleResponse(new IdentityOperationResult("incorrect password", false));
+									break;
+								case 404:
+									callback.handleResponse(new IdentityOperationResult("no such user", false));
+									break;
+
+								default:
+									SurespotLog.w(TAG, "importIdentity", error);
+									callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
+											.toString(), false));
+								}
+							}
+							else {
+								callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
+										.toString(), false));
+							}
+						}
+					});
+
+		}
+		else {
+			callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity).toString(), false));
 		}
 
+	}
+
+	public static void logout(final Context context, final IAsyncCallback<Boolean> callback) {
+		SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, String content) {
+				SurespotApplication.getCachingService().clear(getLoggedInUser(context));
+				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.CURRENT_USER, null);
+				mLoggedInUser = null;
+				callback.handleResponse(true);
+			}
+
+			@Override
+			public void onFailure(Throwable error, String content) {
+				SurespotLog.w(TAG, "logout onFailure", error);
+				callback.handleResponse(false);
+			}
+		});
 	}
 
 }

@@ -352,6 +352,21 @@ public class NetworkController {
 
 	}
 
+	public void validate(String username, String password, String publickey, AsyncHttpResponseHandler responseHandler) {
+		RequestParams params = new RequestParams();
+
+		params.put("username", username);
+		params.put("password", password);
+		if (publickey != null) {
+			params.put("publickey", publickey);
+		}
+
+		// ideally would use a get here but putting body in a get request is frowned upon apparently:
+		// http://stackoverflow.com/questions/978061/http-get-with-request-body
+		// It's also not a good idea to put passwords in the url
+		post("/validate", params, responseHandler);
+	}
+
 	public void userExists(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/users/" + username + "/exists", null, responseHandler);
 	}
