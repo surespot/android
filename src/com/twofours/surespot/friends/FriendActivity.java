@@ -37,6 +37,7 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.chat.ChatActivity;
@@ -48,7 +49,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.NetworkController;
 
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
@@ -269,7 +269,7 @@ public class FriendActivity extends SherlockActivity {
 		mChatController.connect();
 
 		// get the list of friends
-		NetworkController.getFriends(new JsonHttpResponseHandler() {
+		SurespotApplication.getNetworkController().getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				SurespotLog.v(TAG, "getFriends success.");
@@ -281,7 +281,7 @@ public class FriendActivity extends SherlockActivity {
 					mMainAdapter.addFriends(jsonArray);
 
 					// compute new message deltas
-					NetworkController.getLastMessageIds(new JsonHttpResponseHandler() {
+					SurespotApplication.getNetworkController().getLastMessageIds(new JsonHttpResponseHandler() {
 
 						public void onSuccess(int arg0, JSONObject arg1) {
 							SurespotLog.v(TAG, "getLastmessageids success status jsonobject");
@@ -336,7 +336,7 @@ public class FriendActivity extends SherlockActivity {
 
 						public void onFailure(Throwable arg0, String arg1) {
 							// if we didn't get a 401
-							if (!NetworkController.isUnauthorized()) {
+							if (!SurespotApplication.getNetworkController().isUnauthorized()) {
 
 								SurespotLog.w(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
 
@@ -358,7 +358,7 @@ public class FriendActivity extends SherlockActivity {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				// if we didn't get a 401
-				if (!NetworkController.isUnauthorized()) {
+				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
 
 					SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
@@ -404,7 +404,7 @@ public class FriendActivity extends SherlockActivity {
 			}
 
 			mMpdInviteFriend.incrProgress();
-			NetworkController.invite(friend, new AsyncHttpResponseHandler() {
+			SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) { // TODO
 																		// indicate
@@ -475,10 +475,10 @@ public class FriendActivity extends SherlockActivity {
 			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
 
 			// clear cache
-			NetworkController.clearCache();
+			SurespotApplication.getNetworkController().clearCache();
 			return true;
 		case R.id.menu_logout:
-			NetworkController.logout(new AsyncHttpResponseHandler() {
+			SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String content) {
 					Intent intent = new Intent(FriendActivity.this, LoginActivity.class);

@@ -47,6 +47,7 @@
         </receiver>
 
         <service android:name="com.twofours.surespot.GCMIntentService" />
+        <service android:name="com.twofours.surespot.services.CredentialCachingService" android:exported="false"></service>
 
         <activity
             android:name="com.twofours.surespot.activities.StartupActivity"

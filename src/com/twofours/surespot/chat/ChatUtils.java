@@ -26,12 +26,12 @@ import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 
 public class ChatUtils {
 	private static final String TAG = "ChatUtils";
@@ -96,7 +96,8 @@ public class ChatUtils {
 
 				if (results != null) {
 					final String iv = new String(results[0]);
-					String content = NetworkController.postFileSync(context, to, iv, results[1], SurespotConstants.MimeTypes.IMAGE);
+					String content = SurespotApplication.getNetworkController().postFileSync(context, to, iv, results[1],
+							SurespotConstants.MimeTypes.IMAGE);
 					if (content != null) {
 						SurespotLog.v(TAG, "Received picture upload response: " + content);
 						return true;

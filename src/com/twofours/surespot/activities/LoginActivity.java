@@ -23,12 +23,12 @@ import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendActivity;
-import com.twofours.surespot.network.NetworkController;
 
 public class LoginActivity extends Activity {
 
@@ -115,15 +115,15 @@ public class LoginActivity extends Activity {
 		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername))
 				.getSelectedItemPosition());
 		// final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
-		String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
+		final String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
 
-			NetworkController.login(username, password, new CookieResponseHandler() {
+			SurespotApplication.getNetworkController().login(username, password, new CookieResponseHandler() {
 				@Override
 				public void onSuccess(int responseCode, String arg0, Cookie cookie) {
-					IdentityController.userLoggedIn(LoginActivity.this, username, cookie);
+					IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
 					nextActivity();
 				}
 

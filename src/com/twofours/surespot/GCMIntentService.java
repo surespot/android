@@ -25,7 +25,6 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.NetworkController;
 
 public class GCMIntentService extends GCMBaseIntentService
 
@@ -96,7 +95,7 @@ public class GCMIntentService extends GCMBaseIntentService
 				return;
 			}
 
-			client.setCookieStore(NetworkController.getCookieStore());
+			client.setCookieStore(SurespotApplication.getNetworkController().getCookieStore());
 
 			Map<String, String> params = new HashMap<String, String>();
 			params.put("gcmId", id);
@@ -136,7 +135,8 @@ public class GCMIntentService extends GCMBaseIntentService
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION,
+				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
 
@@ -160,7 +160,8 @@ public class GCMIntentService extends GCMBaseIntentService
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(IntentFilters.INVITE_NOTIFICATION, IntentFilters.INVITE_NOTIFICATION);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.INVITE_NOTIFICATION,
+				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
 

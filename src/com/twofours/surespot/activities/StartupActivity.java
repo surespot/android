@@ -10,6 +10,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotConstants.IntentFilters;
@@ -62,7 +63,9 @@ public class StartupActivity extends Activity {
 			SurespotLog.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
 
 			// if we have a current user we're logged in
-			if (IdentityController.hasLoggedInUser(this)) {
+			String user = IdentityController.getLoggedInUser(this);
+			if (user != null && SurespotApplication.getCachingService() != null
+					&& SurespotApplication.getCachingService().getCookie(user) != null) {
 				// make sure the gcm is set
 				// use case:
 				// user signs-up without google account (unlikely)
@@ -71,18 +74,22 @@ public class StartupActivity extends Activity {
 
 				// so we need to upload the gcm here if we haven't already
 
-				NetworkController.registerGcmId(new AsyncHttpResponseHandler() {
-					@Override
-					public void onSuccess(int arg0, String arg1) {
-						SurespotLog.v(TAG, "GCM registered in surespot server");
-					}
+				NetworkController networkController = SurespotApplication.getNetworkController();
+				if (networkController != null) {
+					networkController.registerGcmId(new AsyncHttpResponseHandler() {
 
-					@Override
-					public void onFailure(Throwable arg0, String arg1) {
-						SurespotLog.e(TAG, arg0.toString(), arg0);
-					}
+						@Override
+						public void onSuccess(int arg0, String arg1) {
+							SurespotLog.v(TAG, "GCM registered in surespot server");
+						}
 
-				});
+						@Override
+						public void onFailure(Throwable arg0, String arg1) {
+							SurespotLog.e(TAG, arg0.toString(), arg0);
+						}
+
+					});
+				}
 
 				Intent newIntent = null;
 				// if we have a chat intent go to chat

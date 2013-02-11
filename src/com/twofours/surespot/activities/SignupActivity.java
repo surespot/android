@@ -27,13 +27,12 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 
 public class SignupActivity extends SherlockActivity {
 	private static final String TAG = "SignupActivity";
@@ -87,7 +86,7 @@ public class SignupActivity extends SherlockActivity {
 
 		mMpd.incrProgress();
 		// see if the user exists
-		NetworkController.userExists(username, new AsyncHttpResponseHandler() {
+		SurespotApplication.getNetworkController().userExists(username, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
@@ -107,7 +106,7 @@ public class SignupActivity extends SherlockActivity {
 
 								// TODO use password derived from user's password
 
-								NetworkController.addUser(username, password,
+								SurespotApplication.getNetworkController().addUser(username, password,
 										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
 										new CookieResponseHandler() {
 
@@ -128,9 +127,8 @@ public class SignupActivity extends SherlockActivity {
 													// and back into the
 													// encryption
 													// controller
-													IdentityController.setLoggedInIdentity(SignupActivity.this, new SurespotIdentity(
-															username, keyPair, cookie));
-
+													IdentityController.createIdentity(SignupActivity.this, username, password, keyPair,
+															cookie);
 													// SurespotApplication.getUserData().setUsername(username);
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
 													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

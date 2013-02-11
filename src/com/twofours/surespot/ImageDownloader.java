@@ -34,7 +34,6 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.network.NetworkController;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -159,7 +158,7 @@ public class ImageDownloader {
 		 */
 		@Override
 		protected Bitmap doInBackground(Void... params) {
-			String content = NetworkController.getFileSync(mMessage.getCipherData());
+			String content = SurespotApplication.getNetworkController().getFileSync(mMessage.getCipherData());
 			if (!isCancelled()) {
 				if (content != null) {
 					byte[] decoded = EncryptionController.symmetricBase64DecryptSync(mMessage.getSpot(), mMessage.getIv(), content);

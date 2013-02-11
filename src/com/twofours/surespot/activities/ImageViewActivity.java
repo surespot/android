@@ -9,11 +9,11 @@ import android.widget.ImageView;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.network.NetworkController;
 
 public class ImageViewActivity extends SherlockActivity {
 
@@ -37,7 +37,7 @@ public class ImageViewActivity extends SherlockActivity {
 					protected Bitmap doInBackground(Void... params) {
 
 						// TODO use streaming network get
-						String imageData = NetworkController.getFileSync(message.getCipherData());
+						String imageData = SurespotApplication.getNetworkController().getFileSync(message.getCipherData());
 						if (imageData != null) {
 							byte[] output = EncryptionController.symmetricBase64DecryptSync(message.getSpot(), message.getIv(), imageData);
 							Bitmap bitmap = BitmapFactory.decodeByteArray(output, 0, output.length);

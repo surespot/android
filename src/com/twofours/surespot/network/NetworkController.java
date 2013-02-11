@@ -36,37 +36,37 @@ public class NetworkController {
 	protected static final String TAG = "NetworkController";
 	private static String mBaseUrl;
 
-	private static AsyncHttpClient mClient;
-	private static CookieStore mCookieStore;
-	private static SyncHttpClient mSyncClient;
+	private AsyncHttpClient mClient;
+	private CookieStore mCookieStore;
+	private SyncHttpClient mSyncClient;
 
-	public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+	public void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.get(mBaseUrl + url, params, responseHandler);
 	}
 
-	public static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+	public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.post(mBaseUrl + url, params, responseHandler);
 	}
 
-	public static CookieStore getCookieStore() {
+	public CookieStore getCookieStore() {
 		return mCookieStore;
 	}
 
-	private static boolean mUnauthorized;
+	private boolean mUnauthorized;
 
-	public static boolean isUnauthorized() {
+	public boolean isUnauthorized() {
 		return mUnauthorized;
 	}
 
-	public static synchronized void setUnauthorized(boolean unauthorized) {
+	public synchronized void setUnauthorized(boolean unauthorized) {
 
-		NetworkController.mUnauthorized = unauthorized;
+		mUnauthorized = unauthorized;
 		if (unauthorized) {
 			mCookieStore.clear();
 		}
 	}
 
-	static {
+	public NetworkController() {
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
 		mCookieStore = new BasicCookieStore();
 		Cookie cookie = IdentityController.getCookie(SurespotConfiguration.getContext());
@@ -101,7 +101,7 @@ public class NetworkController {
 
 					if (origin != null) {
 
-						if (!NetworkController.isUnauthorized()) {
+						if (!isUnauthorized()) {
 
 							if (!(origin.contains(mBaseUrl.substring(7)) && origin.contains("/login"))) {
 								setUnauthorized(true);
@@ -133,7 +133,7 @@ public class NetworkController {
 		}
 	}
 
-	public static void addUser(final String username, String password, String publicKey, final CookieResponseHandler responseHandler) {
+	public void addUser(final String username, String password, String publicKey, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -202,7 +202,7 @@ public class NetworkController {
 
 	}
 
-	public static void login(String username, String password, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -257,12 +257,12 @@ public class NetworkController {
 
 	}
 
-	public static void getFriends(AsyncHttpResponseHandler responseHandler) {
+	public void getFriends(AsyncHttpResponseHandler responseHandler) {
 		get("/friends", null, responseHandler);
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public static void getMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
+	public void getMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
 
 		if (id == null) {
 			get("/messages/" + room, null, responseHandler);
@@ -273,34 +273,34 @@ public class NetworkController {
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public static void getEarlierMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
+	public void getEarlierMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
 		get("/messages/" + room + "/before/" + id, null, responseHandler);
 	}
 
-	public static void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
+	public void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
 		get("/conversations/ids", null, responseHandler);
 	}
 
-	public static void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
+	public void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/publickey/" + username, null, responseHandler);
 
 	}
 
-	public static String getPublicKeySync(String username) {
+	public String getPublicKeySync(String username) {
 		return mSyncClient.get(mBaseUrl + "/publickey/" + username);
 	}
 
-	public static void invite(String friendname, AsyncHttpResponseHandler responseHandler) {
+	public void invite(String friendname, AsyncHttpResponseHandler responseHandler) {
 
 		post("/invite/" + friendname, null, responseHandler);
 
 	}
 
-	public static void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
+	public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
 		post("/invites/" + friendname + "/" + action, null, responseHandler);
 	}
 
-	public static void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
+	public void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
 		// make sure the gcm is set
 		// use case:
 		// user signs-up without google account (unlikely)
@@ -352,7 +352,7 @@ public class NetworkController {
 
 	}
 
-	public static void userExists(String username, AsyncHttpResponseHandler responseHandler) {
+	public void userExists(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/users/" + username + "/exists", null, responseHandler);
 	}
 
@@ -369,8 +369,7 @@ public class NetworkController {
 		}
 	}
 
-	public static void postFile(Context context, String user, String id, byte[] data, String mimeType,
-			AsyncHttpResponseHandler responseHandler) {
+	public void postFile(Context context, String user, String id, byte[] data, String mimeType, AsyncHttpResponseHandler responseHandler) {
 
 		RequestParams params = new RequestParams();
 		params.put("image", new ByteArrayInputStream(data), id, mimeType);
@@ -379,7 +378,7 @@ public class NetworkController {
 
 	}
 
-	public static String postFileSync(Context context, String user, String id, byte[] data, String mimeType) {
+	public String postFileSync(Context context, String user, String id, byte[] data, String mimeType) {
 
 		RequestParams params = new RequestParams();
 		params.put("image", new ByteArrayInputStream(data), id, mimeType);
@@ -388,15 +387,15 @@ public class NetworkController {
 
 	}
 
-	public static void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
+	public void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
 		get(relativeUrl, null, responseHandler);
 	}
 
-	public static String getFileSync(String relativeUrl) {
+	public String getFileSync(String relativeUrl) {
 		return mSyncClient.get(mBaseUrl + relativeUrl);
 	}
 
-	public static void logout(final AsyncHttpResponseHandler responseHandler) {
+	public void logout(final AsyncHttpResponseHandler responseHandler) {
 		post("/logout", null, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, String content) {
@@ -414,7 +413,7 @@ public class NetworkController {
 
 	}
 
-	public static void clearCache() {
+	public void clearCache() {
 		mClient.clearCache();
 	}
 

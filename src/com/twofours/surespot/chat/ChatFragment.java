@@ -30,12 +30,12 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 
 public class ChatFragment extends SherlockFragment {
 	private ChatAdapter mChatAdapter;
@@ -251,7 +251,7 @@ public class ChatFragment extends SherlockFragment {
 		String lastMessageId = getLatestMessageId();
 
 		SurespotLog.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
-		NetworkController.getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
+		SurespotApplication.getNetworkController().getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				// on async http request, response seems to come back
@@ -283,7 +283,7 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				if (!NetworkController.isUnauthorized()) {
+				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
 					SurespotLog.w(TAG, "getMessages", error);
 
 					if (callback != null) {
@@ -306,7 +306,7 @@ public class ChatFragment extends SherlockFragment {
 			// TODO make all the ints #s
 			if (Integer.parseInt(firstMessageId) > 1) {
 				SurespotLog.v(TAG, "Asking server for messages before messageId: " + firstMessageId);
-				NetworkController.getEarlierMessages(mUsername, firstMessageId, new JsonHttpResponseHandler() {
+				SurespotApplication.getNetworkController().getEarlierMessages(mUsername, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray jsonArray) {
 						// on async http request, response seems to come back
@@ -337,7 +337,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						if (!NetworkController.isUnauthorized()) {
+						if (!SurespotApplication.getNetworkController().isUnauthorized()) {
 							SurespotLog.w(TAG, "getEarlierMessages", error);
 						}
 					}
@@ -445,7 +445,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void handleResponse(Boolean result) {
-						if (!result && !NetworkController.isUnauthorized()) {
+						if (!result && !SurespotApplication.getNetworkController().isUnauthorized()) {
 							Utils.makeToast(ChatFragment.this.getActivity(), "Could not upload picture, please try again later.");
 						}
 					}

@@ -24,6 +24,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.ImageSelectActivity;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.SettingsActivity;
@@ -32,7 +33,6 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatActivity extends SherlockFragmentActivity {
@@ -336,7 +336,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			startActivityForResult(intent, REQUEST_SETTINGS);
 			return true;
 		case R.id.menu_logout:
-			NetworkController.logout(new AsyncHttpResponseHandler() {
+			SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String content) {
 					Intent intent = new Intent(ChatActivity.this, LoginActivity.class);

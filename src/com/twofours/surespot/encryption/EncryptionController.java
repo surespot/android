@@ -38,17 +38,17 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 
 public class EncryptionController {
 	private static final String TAG = "EncryptionController";
-	private static final String IDENTITY_KEY = "surespot_identity";
 	private static final int AES_KEY_LENGTH = 32;
+	private static final int SALT_LENGTH = 16;
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private static SecureRandom mSecureRandom;
@@ -73,7 +73,7 @@ public class EncryptionController {
 
 			@Override
 			public ECPublicKey load(String username) throws Exception {
-				String result = NetworkController.getPublicKeySync(username);
+				String result = SurespotApplication.getNetworkController().getPublicKeySync(username);
 				if (result != null) {
 					return recreatePublicKey(result);
 				}
@@ -85,16 +85,16 @@ public class EncryptionController {
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
 	}
 
-	public static String getPublicKeyString(Context context, String username) {
-		SurespotIdentity identity = IdentityController.getIdentity(context, username);
-
-		if (identity != null) {
-			return encodePublicKey((ECPublicKey) identity.getKeyPair().getPublic());
-		}
-		else {
-			return null;
-		}
-	}
+	// public static String getPublicKeyString(Context context, String username) {
+	// SurespotIdentity identity = IdentityController.getIdentity(context, username);
+	//
+	// if (identity != null) {
+	// return encodePublicKey((ECPublicKey) identity.getKeyPair().getPublic());
+	// }
+	// else {
+	// return null;
+	// }
+	// }
 
 	public static ECPublicKey recreatePublicKey(String encodedKey) {
 
@@ -601,7 +601,14 @@ public class EncryptionController {
 
 	}
 
-	public static String[] symmetricEncryptSync(final String password, final String plaintext) {
+	/**
+	 * Derive key from password.
+	 * 
+	 * @param password
+	 * @param plaintext
+	 * @return
+	 */
+	public static String[] symmetricEncryptSyncPK(final String password, final String plaintext) {
 
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
 
@@ -625,8 +632,8 @@ public class EncryptionController {
 			String[] returns = new String[3];
 
 			returns[0] = new String(Utils.base64Encode(iv));
-			returns[1] = new String(Utils.base64Encode(buf));
-			returns[2] = new String(Utils.base64Encode(derived[0]));
+			returns[1] = new String(Utils.base64Encode(derived[0]));
+			returns[2] = new String(Utils.base64Encode(buf));
 
 			return returns;
 
@@ -642,6 +649,15 @@ public class EncryptionController {
 
 	}
 
+	/**
+	 * Derive key from password
+	 * 
+	 * @param password
+	 * @param ivs
+	 * @param salts
+	 * @param cipherData
+	 * @return
+	 */
 	public static String symmetricDecryptSyncPK(final String password, final String ivs, final String salts, final String cipherData) {
 
 		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
@@ -680,7 +696,7 @@ public class EncryptionController {
 
 	private static byte[][] derive(String password) {
 		int iterationCount = 1000;
-		int saltLength = 32;
+		int saltLength = 16;
 		int keyLength = 256;
 
 		byte[][] derived = new byte[2][];
@@ -706,6 +722,7 @@ public class EncryptionController {
 	private static byte[] derive(String password, byte[] salt) {
 		int iterationCount = 1000;
 		int keyLength = 256;
+
 		byte[] keyBytes = null;
 
 		KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterationCount, keyLength);
@@ -721,12 +738,4 @@ public class EncryptionController {
 		return keyBytes;
 	}
 
-	//
-	// public static void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
-	// symmetricEncrypt(username, plaintext, callback);
-	// }
-	//
-	// public static void eccDecrypt(final String from, final String ciphertext, final IAsyncCallback<String> callback) {
-	// symmetricDecrypt(from, ciphertext, callback);
-	// }
 }

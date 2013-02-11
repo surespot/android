@@ -34,14 +34,17 @@ import com.twofours.surespot.encryption.EncryptionController;
 public class IdentityController {
 	private static final String TAG = "IdentityController";
 	public static final String IDENTITY_EXTENSION = ".ssi";
+	public static final String CACHE_IDENTITY_ID = "_cache_identity";
+	public static final String EXPORT_IDENTITY_ID = "_export_identity";
 	private static final Map<String, SurespotIdentity> mIdentities = new HashMap<String, SurespotIdentity>();
 	private static String mLoggedInUser;
 
-	public static synchronized void setLoggedInIdentity(Context context, SurespotIdentity identity) {
+	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPair, Cookie cookie) {
 		// TODO thread
 		String identityDir = getIdentityDir(context);
-		saveIdentity(identityDir, identity, "surespot");
-		setLoggedInUser(context, identity.getUsername());
+		SurespotIdentity identity = new SurespotIdentity(username, keyPair);
+		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+		setLoggedInUser(context, username, password, cookie);
 	}
 
 	private static String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
@@ -63,9 +66,6 @@ public class IdentityController {
 			json.putOpt("username", identity.getUsername());
 			json.putOpt("private_key", generatedPrivDHex);
 			json.putOpt("public_key", publicKey);
-			if (identity.getCookie() != null) {
-				json.putOpt("cookie", encodeCookie(new SerializableCookie(identity.getCookie())));
-			}
 
 			if (!FileUtils.ensureDir(identityDir)) {
 				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
@@ -73,12 +73,12 @@ public class IdentityController {
 				return null;
 			}
 
-			String[] ciphers = EncryptionController.symmetricEncryptSync(password, json.toString());
+			String[] ciphers = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
 
 			JSONObject idWrapper = new JSONObject();
 			idWrapper.put("iv", ciphers[0]);
-			idWrapper.put("identity", ciphers[1]);
-			idWrapper.put("salt", ciphers[2]);
+			idWrapper.put("salt", ciphers[1]);
+			idWrapper.put("identity", ciphers[2]);
 			FileOutputStream fos = new FileOutputStream(identityFile);
 			fos.write(idWrapper.toString().getBytes());
 			fos.close();
@@ -130,15 +130,14 @@ public class IdentityController {
 		return getIdentityNames(context, cacheDir.getPath());
 	}
 
-	public static void userLoggedIn(Context context, String username, Cookie cookie) {
-		SurespotIdentity identity = getIdentity(context, username);
-		identity.setCookie(cookie);
-		setLoggedInIdentity(context, identity);
+	public static void userLoggedIn(Context context, String username, String password, Cookie cookie) {
+		setLoggedInUser(context, username, password, cookie);
 	}
 
-	private synchronized static void setLoggedInUser(Context context, String username) {
+	private synchronized static void setLoggedInUser(Context context, String username, String password, Cookie cookie) {
 		mLoggedInUser = username;
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.CURRENT_USER, username);
+		SurespotApplication.getCachingService().setPasswordAndCookie(username, password, cookie);
 	}
 
 	public static synchronized String getLoggedInUser(Context context) {
@@ -148,12 +147,27 @@ public class IdentityController {
 		return mLoggedInUser;
 	}
 
+	public static SurespotIdentity getIdentity(Context context) {
+		return getIdentity(context, getLoggedInUser(context));
+	}
+
 	public static SurespotIdentity getIdentity(Context context, String username) {
+		return getIdentity(context, username, null);
+	}
+
+	public static SurespotIdentity getIdentity(Context context, String username, String password) {
 		SurespotIdentity identity = mIdentities.get(username);
 		if (identity == null) {
+			// get the password from the caching service
+			if (password == null) {
+				password = SurespotApplication.getCachingService().getPassword(username);
+			}
 
-			identity = loadIdentity(context, getIdentityDir(context), username, "surespot");
-			mIdentities.put(username, identity);
+			if (password != null) {
+				identity = loadIdentity(context, getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+				mIdentities.put(username, identity);
+			}
+
 		}
 		return identity;
 	}
@@ -221,11 +235,9 @@ public class IdentityController {
 
 			String sPrivateKey = (String) json.get("private_key");
 			String sPublicKey = (String) json.get("public_key");
-			String sCookie = json.optString("cookie");
-			Cookie cookie = (sCookie == null || sCookie.isEmpty() ? null : decodeCookie(sCookie));
 
 			return new SurespotIdentity(name, new KeyPair(EncryptionController.recreatePublicKey(sPublicKey),
-					EncryptionController.recreatePrivateKey(sPrivateKey)), cookie);
+					EncryptionController.recreatePrivateKey(sPrivateKey)));
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "loadIdentity", e);
@@ -247,28 +259,20 @@ public class IdentityController {
 		Cookie cookie = null;
 		String user = getLoggedInUser(context);
 		if (user != null) {
-
-			SurespotIdentity identity = getIdentity(context, user);
-			if (identity != null) {
-				cookie = identity.getCookie();
-			}
+			cookie = SurespotApplication.getCachingService().getCookie(user);
 		}
 		return cookie;
 
 	}
 
-	public static SurespotIdentity getIdentity(Context context) {
-		return getIdentity(context, getLoggedInUser(context));
-	}
-
 	public static String exportIdentity(Context context, String user, String password) {
-		SurespotIdentity identity = getIdentity(context, user);
+		SurespotIdentity identity = getIdentity(context, user, password);
 		if (identity == null)
 			return null;
 
 		File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
-			return saveIdentity(exportDir.getPath(), identity, password);
+			return saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
 		}
 		else {
 			return null;
