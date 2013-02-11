@@ -1,7 +1,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-	<Preference android:title="identity management">
-	    <intent android:action="com.twofours.surespot.activities.IdentityManagementActivity"></intent>
-	</Preference>
-    
-    
+
+    <PreferenceCategory
+        android:key="pref_identity_management_settings"
+        android:title="identity management" >
+         <Preference android:title="@string/import_identity_label" >
+            <intent android:action="com.twofours.surespot.activities.ImportIdentityActivity" >
+            </intent>
+        </Preference>
+        <Preference android:title="@string/export_identity_label" >
+            <intent android:action="com.twofours.surespot.activities.ExportIdentityActivity" >
+            </intent>
+        </Preference>
+    </PreferenceCategory>
+
 </PreferenceScreen>

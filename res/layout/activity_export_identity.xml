@@ -3,35 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".IdentityManagementActivity" >
+    tools:context=".ExportIdentityActivity" >
 
     <Spinner
         android:id="@+id/identitySpinner"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
     </Spinner>
-    
-    <Button
-        android:id="@+id/bIdentityExport"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="export..." >
-    </Button>
 
     <Button
-        android:id="@+id/bIdentityCreate"
+        android:id="@+id/bExportSd"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="create..." >
+        android:text="@string/export_sd" >
     </Button>
-
-    <Button
-        android:id="@+id/bIdentityImport"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="import..." >
-    </Button>
-
-
 
 </LinearLayout>

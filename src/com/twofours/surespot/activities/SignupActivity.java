@@ -4,7 +4,6 @@ import java.security.KeyPair;
 
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -18,6 +17,10 @@ import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
@@ -32,7 +35,7 @@ import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
-public class SignupActivity extends Activity {
+public class SignupActivity extends SherlockActivity {
 	private static final String TAG = "SignupActivity";
 	private Button signupButton;
 	private MultiProgressDialog mMpd;
@@ -125,8 +128,8 @@ public class SignupActivity extends Activity {
 													// and back into the
 													// encryption
 													// controller
-													IdentityController.setLoggedInIdentity(SignupActivity.this, new SurespotIdentity(username,
-															keyPair, cookie));
+													IdentityController.setLoggedInIdentity(SignupActivity.this, new SurespotIdentity(
+															username, keyPair, cookie));
 
 													// SurespotApplication.getUserData().setUsername(username);
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
@@ -178,6 +181,27 @@ public class SignupActivity extends Activity {
 				mMpd.decrProgress();
 			}
 		});
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.activity_signup, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_import_identities:
+			Intent intent = new Intent(this, ImportIdentityActivity.class);
+			intent.putExtra("signup", true);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 
 	}
 

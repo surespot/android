@@ -11,10 +11,16 @@
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
+    <string name="export_sd">export to external storage</string>
+    <string name="import_sd">import from external storage</string>
     <string name="title_activity_chat">ChatActivity</string>
     <string name="title_activity_image_view">ImageViewActivity</string>
     <string name="title_activity_image_select">ImageSelectActivity</string>
     <string name="title_activity_identity_management">IdentityManagementActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_export_identity">ExportIdentityActivity</string>
+    <string name="import_identity_label">import identity...</string>
+    <string name="export_identity_label">export identity...</string>
+    <string name="import_identities">import identities...</string>
 
 </resources>

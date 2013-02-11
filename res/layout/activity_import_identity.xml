@@ -1,0 +1,21 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ImportIdentityActivity" >
+
+    <ListView
+        android:id="@+id/lvIdentities"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+    <Button
+        android:id="@+id/bImportSd"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/import_sd" >
+    </Button>
+
+</LinearLayout>

@@ -93,30 +93,30 @@
             android:name="com.twofours.surespot.chat.ChatActivity"
             android:windowSoftInputMode="stateHidden" >
         </activity>
-        <activity
-            android:name="com.twofours.surespot.activities.ImageViewActivity"
-            android:label="@string/title_activity_image_view" >
+        <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>
-        <activity
-            android:name="com.twofours.surespot.activities.ImageSelectActivity"
-            android:label="@string/title_activity_image_select" >
-        </activity>
-        <activity
-            android:name="com.twofours.surespot.activities.IdentityManagementActivity"
-            android:label="@string/title_activity_identity_management" >
-            <intent-filter>
-                <action android:name="com.twofours.surespot.activities.IdentityManagementActivity" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+        <activity android:name="com.twofours.surespot.activities.ImageSelectActivity" >
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.SettingsActivity"
-            android:label="@string/title_activity_settings"
             android:parentActivityName="com.actionbarsherlock.app.SherlockPreferenceActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
+        </activity>
+        <activity android:name="com.twofours.surespot.activities.ExportIdentityActivity" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.ExportIdentityActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.twofours.surespot.activities.ImportIdentityActivity" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.ImportIdentityActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 
