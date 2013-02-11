@@ -8,12 +8,15 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
+import java.security.spec.KeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.spongycastle.crypto.engines.AESLightEngine;
@@ -597,6 +600,127 @@ public class EncryptionController {
 		}.execute();
 
 	}
+
+	public static String[] symmetricEncryptSync(final String password, final String plaintext) {
+
+		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+
+		// crashes with getBlockSize() bytes, don't know why?
+		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
+		mSecureRandom.nextBytes(iv);
+		ParametersWithIV ivParams;
+		try {
+			byte[][] derived = EncryptionController.derive(password);
+			ivParams = new ParametersWithIV(new KeyParameter(derived[1], 0, AES_KEY_LENGTH), iv);
+
+			ccm.reset();
+			ccm.init(true, ivParams);
+
+			byte[] enc = plaintext.getBytes();
+			byte[] buf = new byte[ccm.getOutputSize(enc.length)];
+
+			int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
+
+			len += ccm.doFinal(buf, len);
+			String[] returns = new String[3];
+
+			returns[0] = new String(Utils.base64Encode(iv));
+			returns[1] = new String(Utils.base64Encode(buf));
+			returns[2] = new String(Utils.base64Encode(derived[0]));
+
+			return returns;
+
+		}
+		catch (InvalidCacheLoadException icle) {
+			// will occur if couldn't load key
+			SurespotLog.v(TAG, "symmetricEncrypt", icle);
+		}
+		catch (Exception e) {
+			SurespotLog.w(TAG, "symmetricEncrypt", e);
+		}
+		return null;
+
+	}
+
+	public static String symmetricDecryptSyncPK(final String password, final String ivs, final String salts, final String cipherData) {
+
+		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+
+		byte[] cipherBytes = null;
+		byte[] iv = null;
+		byte[] salt = null;
+		ParametersWithIV ivParams = null;
+		try {
+
+			cipherBytes = Utils.base64Decode(cipherData);
+			iv = Utils.base64Decode(ivs);
+			salt = Utils.base64Decode(salts);
+			byte[] derived = derive(password, salt);
+			if (derived == null) {
+				return null;
+			}
+			ivParams = new ParametersWithIV(new KeyParameter(derived, 0, AES_KEY_LENGTH), iv);
+
+			ccm.reset();
+			ccm.init(false, ivParams);
+
+			byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
+
+			int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
+
+			len += ccm.doFinal(buf, len);
+			return new String(buf);
+		}
+		catch (Exception e) {
+			SurespotLog.w(TAG, "symmetricDecryptSync", e);
+		}
+		return null;
+
+	}
+
+	private static byte[][] derive(String password) {
+		int iterationCount = 1000;
+		int saltLength = 32;
+		int keyLength = 256;
+
+		byte[][] derived = new byte[2][];
+		byte[] keyBytes = null;
+		SecureRandom random = new SecureRandom();
+		byte[] salt = new byte[saltLength];
+		random.nextBytes(salt);
+		KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterationCount, keyLength);
+		SecretKeyFactory keyFactory;
+		try {
+			keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA-256AND256BITAES-CBC-BC", "SC");
+			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
+		}
+		catch (Exception e) {
+			SurespotLog.e(TAG, "deriveKey", e);
+		}
+
+		derived[0] = salt;
+		derived[1] = keyBytes;
+		return derived;
+	}
+
+	private static byte[] derive(String password, byte[] salt) {
+		int iterationCount = 1000;
+		int keyLength = 256;
+		byte[] keyBytes = null;
+
+		KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterationCount, keyLength);
+		SecretKeyFactory keyFactory;
+		try {
+			keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA-256AND256BITAES-CBC-BC", "SC");
+			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
+		}
+		catch (Exception e) {
+			SurespotLog.e(TAG, "deriveKey", e);
+		}
+
+		return keyBytes;
+	}
+
 	//
 	// public static void eccEncrypt(final String username, final String plaintext, final IAsyncCallback<String> callback) {
 	// symmetricEncrypt(username, plaintext, callback);

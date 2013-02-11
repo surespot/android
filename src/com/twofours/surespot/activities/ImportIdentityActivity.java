@@ -48,7 +48,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				IdentityController.importIdentities(ImportIdentityActivity.this, exportDir);
+				IdentityController.importIdentities(ImportIdentityActivity.this, exportDir, "yourmama");
 				Utils.makeLongToast(ImportIdentityActivity.this, "Identities imported.");
 
 				// if launched from signup and successful import, go to login screen

@@ -40,8 +40,10 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
+				// TODO get and validate password
+
 				String user = (String) spinner.getSelectedItem();
-				String fileName = IdentityController.exportIdentity(ExportIdentityActivity.this, user);
+				String fileName = IdentityController.exportIdentity(ExportIdentityActivity.this, user, "yourmama");
 				Utils.makeLongToast(ExportIdentityActivity.this, "Identity exported to: " + fileName);
 			}
 		});

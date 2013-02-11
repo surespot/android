@@ -40,11 +40,11 @@ public class IdentityController {
 	public static synchronized void setLoggedInIdentity(Context context, SurespotIdentity identity) {
 		// TODO thread
 		String identityDir = getIdentityDir(context);
-		saveIdentity(identityDir, identity);
+		saveIdentity(identityDir, identity, "surespot");
 		setLoggedInUser(context, identity.getUsername());
 	}
 
-	private static String saveIdentity(String identityDir, SurespotIdentity identity) {
+	private static String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
 		String identityFile = identityDir + File.separator + identity.getUsername() + IDENTITY_EXTENSION;
 
 		SurespotLog.v(TAG, "saving identity: " + identityFile);
@@ -73,8 +73,14 @@ public class IdentityController {
 				return null;
 			}
 
+			String[] ciphers = EncryptionController.symmetricEncryptSync(password, json.toString());
+
+			JSONObject idWrapper = new JSONObject();
+			idWrapper.put("iv", ciphers[0]);
+			idWrapper.put("identity", ciphers[1]);
+			idWrapper.put("salt", ciphers[2]);
 			FileOutputStream fos = new FileOutputStream(identityFile);
-			fos.write(json.toString().getBytes());
+			fos.write(idWrapper.toString().getBytes());
 			fos.close();
 
 			return identityFile;
@@ -146,7 +152,7 @@ public class IdentityController {
 		SurespotIdentity identity = mIdentities.get(username);
 		if (identity == null) {
 
-			identity = loadIdentity(context, getIdentityDir(context), username);
+			identity = loadIdentity(context, getIdentityDir(context), username, "surespot");
 			mIdentities.put(username, identity);
 		}
 		return identity;
@@ -180,7 +186,7 @@ public class IdentityController {
 		return cookie;
 	}
 
-	private synchronized static SurespotIdentity loadIdentity(Context context, String dir, String username) {
+	private synchronized static SurespotIdentity loadIdentity(Context context, String dir, String username, String password) {
 
 		// try to load identity
 		String identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
@@ -197,7 +203,14 @@ public class IdentityController {
 			idStream.read(idBytes);
 			idStream.close();
 
-			JSONObject json = new JSONObject(new String(idBytes));
+			JSONObject jsonWrapper = new JSONObject(new String(idBytes));
+			String ivs = jsonWrapper.getString("iv");
+			String cipherId = jsonWrapper.getString("identity");
+			String salt = jsonWrapper.getString("salt");
+
+			String identity = EncryptionController.symmetricDecryptSyncPK(password, ivs, salt, cipherId);
+
+			JSONObject json = new JSONObject(identity);
 			String name = (String) json.get("username");
 
 			if (!name.equals(username)) {
@@ -248,14 +261,14 @@ public class IdentityController {
 		return getIdentity(context, getLoggedInUser(context));
 	}
 
-	public static String exportIdentity(Context context, String user) {
+	public static String exportIdentity(Context context, String user, String password) {
 		SurespotIdentity identity = getIdentity(context, user);
 		if (identity == null)
 			return null;
 
 		File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
-			return saveIdentity(exportDir.getPath(), identity);
+			return saveIdentity(exportDir.getPath(), identity, password);
 		}
 		else {
 			return null;
@@ -263,11 +276,11 @@ public class IdentityController {
 
 	}
 
-	public static void importIdentities(Context context, File exportDir) {
+	public static void importIdentities(Context context, File exportDir, String password) {
 		List<String> idNames = getIdentityNames(context, exportDir.getPath());
 		for (String name : idNames) {
-			SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), name);
-			saveIdentity(getIdentityDir(context), identity);
+			SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), name, password);
+			saveIdentity(getIdentityDir(context), identity, password);
 		}
 
 	}
