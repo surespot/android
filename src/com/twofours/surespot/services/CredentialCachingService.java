@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -19,6 +20,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -38,10 +40,10 @@ public class CredentialCachingService extends Service {
 	public void onCreate() {
 		SurespotLog.v(TAG, "onCreate");
 		Notification notification = new Notification(R.drawable.ic_launcher, "surespot", System.currentTimeMillis());
-		// Intent notificationIntent = new Intent(this, CredentialCachingService.class);
-		// PendingIntent pendingIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION,
-		// notificationIntent, 0);
-		notification.setLatestEventInfo(this, "surespot", "caching credentials", null);
+		Intent notificationIntent = new Intent(this, StartupActivity.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION,
+				notificationIntent, 0);
+		notification.setLatestEventInfo(this, "surespot", "caching credentials", pendingIntent);
 		startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
 
 		CacheLoader<String, ECPublicKey> keyCacheLoader = new CacheLoader<String, ECPublicKey>() {
