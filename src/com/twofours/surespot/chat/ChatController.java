@@ -26,7 +26,6 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -247,10 +246,10 @@ public class ChatController {
 
 		if (cookie == null) {
 			// need to login
-			SurespotLog.v(TAG, "No session cookie, starting Login activity.");
-			Intent startupIntent = new Intent(SurespotApplication.getContext(), StartupActivity.class);
-			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			SurespotApplication.getContext().startActivity(startupIntent);
+			// SurespotLog.v(TAG, "No session cookie, starting Login activity.");
+			// Intent startupIntent = new Intent(SurespotApplication.getContext(), StartupActivity.class);
+			// startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			// SurespotApplication.getContext().startActivity(startupIntent);
 			return;
 		}
 

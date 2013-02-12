@@ -236,9 +236,12 @@ public class IdentityController {
 
 	public static Cookie getCookie() {
 		Cookie cookie = null;
-		String user = SurespotApplication.getCachingService().getLoggedInUser();
-		if (user != null) {
-			cookie = SurespotApplication.getCachingService().getCookie(user);
+		CredentialCachingService service = SurespotApplication.getCachingService();
+		if (service != null) {
+			String user = service.getLoggedInUser();
+			if (user != null) {
+				cookie = SurespotApplication.getCachingService().getCookie(user);
+			}
 		}
 		return cookie;
 

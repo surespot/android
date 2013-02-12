@@ -156,9 +156,10 @@ public class ImageSelectActivity extends SherlockActivity {
 			try {
 				FileOutputStream fos = new FileOutputStream(file);
 
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-				bitmap = null;
-
+				if (bitmap != null) {
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
+					bitmap = null;
+				}
 				fos.close();
 			}
 			catch (IOException e) {
