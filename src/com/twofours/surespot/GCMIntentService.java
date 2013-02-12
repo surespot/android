@@ -1,9 +1,9 @@
 package com.twofours.surespot;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.acra.ACRA;
 
@@ -27,23 +27,13 @@ import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
-public class GCMIntentService extends GCMBaseIntentService
-
-{
-
+public class GCMIntentService extends GCMBaseIntentService {
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
-	private static Map<String, Integer> mMessageNotificationIds;
-	private static Map<String, Integer> mInviteRequestIds;
-	private static Map<String, Integer> mInviteResponseIds;
-	private int mNotificationId;
 
 	public GCMIntentService() {
 		super(SENDER_ID);
 		SurespotLog.v(TAG, "GCMIntentService");
-		mMessageNotificationIds = new ConcurrentHashMap<String, Integer>();
-		mInviteRequestIds = new ConcurrentHashMap<String, Integer>();
-		mInviteResponseIds = new ConcurrentHashMap<String, Integer>();
 	}
 
 	@Override
@@ -145,9 +135,9 @@ public class GCMIntentService extends GCMBaseIntentService
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, IntentFilters.MESSAGE_RECEIVED);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION,
-				PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
 
@@ -161,13 +151,6 @@ public class GCMIntentService extends GCMBaseIntentService
 	}
 
 	private void generateInviteRequestNotification(Context context, String from, String to, String title, String message) {
-		String spot = ChatUtils.getSpot(from, to);
-		Integer id = mInviteRequestIds.get(spot);
-		if (id == null) {
-			id = mNotificationId++;
-			mInviteRequestIds.put(spot, id);
-		}
-
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -178,11 +161,9 @@ public class GCMIntentService extends GCMBaseIntentService
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
-
-		mainIntent.putExtra(IntentFilters.INVITE_REQUEST, IntentFilters.INVITE_REQUEST);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, IntentFilters.INVITE_REQUEST);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION,
-				PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
 
@@ -192,17 +173,10 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
-		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION, notification);
+		notificationManager.notify(to, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION, notification);
 	}
 
 	private void generateInviteResponseNotification(Context context, String from, String to, String title, String message) {
-		String spot = ChatUtils.getSpot(from, to);
-		Integer id = mInviteResponseIds.get(spot);
-		if (id == null) {
-			id = mNotificationId++;
-			mInviteResponseIds.put(spot, id);
-		}
-
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -213,11 +187,9 @@ public class GCMIntentService extends GCMBaseIntentService
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
-
-		mainIntent.putExtra(IntentFilters.INVITE_RESPONSE, IntentFilters.INVITE_RESPONSE);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, IntentFilters.INVITE_RESPONSE);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
-				SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
 
@@ -227,6 +199,6 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
-		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, notification);
+		notificationManager.notify(to, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, notification);
 	}
 }

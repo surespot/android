@@ -36,6 +36,7 @@ public class IdentityController {
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
 	private static final Map<String, SurespotIdentity> mIdentities = new HashMap<String, SurespotIdentity>();
+	private static boolean mHasIdentity;
 
 	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPair, Cookie cookie) {
 		// TODO thread
@@ -210,8 +211,11 @@ public class IdentityController {
 		return null;
 	}
 
-	public static boolean hasIdentity(Context context) {
-		return getIdentityNames(context).size() > 0;
+	public static boolean hasIdentity() {
+		if (!mHasIdentity) {
+			mHasIdentity = getIdentityNames(SurespotApplication.getContext()).size() > 0;
+		}
+		return mHasIdentity;
 	}
 
 	public static boolean hasLoggedInUser() {

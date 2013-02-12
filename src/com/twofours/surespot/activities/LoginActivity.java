@@ -86,7 +86,6 @@ public class LoginActivity extends Activity {
 		// select last user if there was one
 		String to = getIntent().getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 		if (to == null) {
-
 			to = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER);
 		}
 
@@ -169,19 +168,20 @@ public class LoginActivity extends Activity {
 		// if we have a chat name, we may have started from a
 		// message, so in that case
 		// go straight to the chat now we've logged in
-		String to = getIntent().getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
-		if (to == null) {
-			Intent intent = new Intent(LoginActivity.this, FriendActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			LoginActivity.this.startActivity(intent);
-		}
-		else {
-			Intent intent = new Intent(LoginActivity.this, ChatActivity.class);
+		String notificationType = getIntent().getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
+			Intent intent = new Intent(this, ChatActivity.class);
 			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, getIntent()
 					.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM));
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			LoginActivity.this.startActivity(intent);
+			this.startActivity(intent);
 		}
+		else {
+			Intent intent = new Intent(this, FriendActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			this.startActivity(intent);
+		}
+
 		finish();
 	}
 
