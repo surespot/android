@@ -6,15 +6,13 @@ import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 
 import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
-import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 
 @ReportsCrashes(formKey = "dHBRcnQzWFR5c0JwZW9tNEdOLW9oNHc6MQ")
 public class SurespotApplication extends Application {
@@ -36,33 +34,27 @@ public class SurespotApplication extends Application {
 		SurespotConfiguration.LoadConfigProperties(mContext);
 
 		Intent intent = new Intent(this, CredentialCachingService.class);
+		SurespotLog.v(TAG, "starting cache service");
 		startService(intent);
-		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
+		mStateController = new StateController();
 	}
-
-	private ServiceConnection mConnection = new ServiceConnection() {
-		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-
-			CredentialCachingBinder binder = (CredentialCachingBinder) service;
-			mCredentialCachingService = binder.getService();
-			mNetworkController = new NetworkController();
-			mStateController = new StateController();
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-
-		}
-	};
 
 	public static CredentialCachingService getCachingService() {
 
 		return mCredentialCachingService;
 	}
 
+	public static void setCachingService(CredentialCachingService cachingService) {
+		mCredentialCachingService = cachingService;
+	}
+
 	public static NetworkController getNetworkController() {
 		return mNetworkController;
+	}
+
+	public static void setNetworkController(NetworkController networkController) {
+		mNetworkController = networkController;
 	}
 
 	public static StateController getStateController() {

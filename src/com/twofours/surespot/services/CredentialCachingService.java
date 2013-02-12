@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -37,11 +36,12 @@ public class CredentialCachingService extends Service {
 
 	@Override
 	public void onCreate() {
+		SurespotLog.v(TAG, "onCreate");
 		Notification notification = new Notification(R.drawable.ic_launcher, "surespot", System.currentTimeMillis());
-		Intent notificationIntent = new Intent(this, CredentialCachingService.class);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION,
-				notificationIntent, 0);
-		notification.setLatestEventInfo(this, "surespot", "caching credentials", pendingIntent);
+		// Intent notificationIntent = new Intent(this, CredentialCachingService.class);
+		// PendingIntent pendingIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION,
+		// notificationIntent, 0);
+		notification.setLatestEventInfo(this, "surespot", "caching credentials", null);
 		startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
 
 		CacheLoader<String, ECPublicKey> keyCacheLoader = new CacheLoader<String, ECPublicKey>() {
@@ -79,6 +79,7 @@ public class CredentialCachingService extends Service {
 	}
 
 	public synchronized void login(String username, String password, Cookie cookie) {
+		SurespotLog.v(TAG, "Logging in: " + username);
 		mLoggedInUser = username;
 		this.mPasswords.put(username, password);
 		this.mCookies.put(username, cookie);
@@ -111,6 +112,7 @@ public class CredentialCachingService extends Service {
 
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
+			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
 			mPasswords.remove(mLoggedInUser);
 			mCookies.remove(mLoggedInUser);
 			mLoggedInUser = null;
@@ -144,4 +146,10 @@ public class CredentialCachingService extends Service {
 			return null;
 		}
 	}
+
+	@Override
+	public void onDestroy() {
+		SurespotLog.v(TAG, "onDestroy");
+	}
+
 }

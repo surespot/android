@@ -3,7 +3,10 @@ package com.twofours.surespot.activities;
 import java.util.Set;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -18,14 +21,42 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 
 public class StartupActivity extends Activity {
 	private static final String TAG = "StartupActivity";
 
+	private CredentialCachingService mCredentialCachingService;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 
+		super.onCreate(savedInstanceState);
+		Intent intent = new Intent(this, CredentialCachingService.class);
+		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+	}
+
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+			SurespotLog.v(TAG, "caching service bound");
+			CredentialCachingBinder binder = (CredentialCachingBinder) service;
+			mCredentialCachingService = binder.getService();
+
+			// make sure these are there so startup code can execute
+			SurespotApplication.setCachingService(mCredentialCachingService);
+			SurespotApplication.setNetworkController(new NetworkController(StartupActivity.this));
+			startup();
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+
+		}
+	};
+
+	private void startup() {
 		try {
 			// device without GCM throws exception
 			GCMRegistrar.checkDevice(this);
@@ -63,6 +94,7 @@ public class StartupActivity extends Activity {
 			SurespotLog.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
 
 			// if we have a current user we're logged in
+
 			String user = IdentityController.getLoggedInUser();
 			if (user != null) {
 				SurespotLog.v(TAG, "using cached credentials");
@@ -168,5 +200,12 @@ public class StartupActivity extends Activity {
 		}
 
 		finish();
+	}
+
+	@Override
+	protected void onDestroy() {
+
+		super.onDestroy();
+		unbindService(mConnection);
 	}
 }

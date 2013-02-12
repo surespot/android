@@ -49,6 +49,7 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
@@ -465,12 +466,13 @@ public class FriendActivity extends SherlockActivity {
 			SurespotApplication.getNetworkController().clearCache();
 			return true;
 		case R.id.menu_logout:
-			SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
+			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
 				@Override
-				public void onSuccess(int statusCode, String content) {
+				public void handleResponse(Boolean result) {
 					Intent intent = new Intent(FriendActivity.this, LoginActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					FriendActivity.this.startActivity(intent);
+					Utils.putSharedPrefsString(FriendActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 					finish();
 				}
 			});
