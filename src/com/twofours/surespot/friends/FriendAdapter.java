@@ -22,8 +22,6 @@ import android.widget.TextView;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -31,7 +29,7 @@ public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
 
 	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
-	private final ArrayList<String> mActiveChats = new ArrayList<String>();
+	private ArrayList<String> mActiveChats = new ArrayList<String>();
 
 	private Context mContext;
 
@@ -42,21 +40,7 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public void refreshActiveChats() {
-		String sChats = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS);
-		mActiveChats.clear();
-		if (sChats != null) {
-			JSONArray jsonChats;
-			try {
-				jsonChats = new JSONArray(sChats);
-				for (int i = 0; i < jsonChats.length(); i++) {
-					String chatName = jsonChats.getString(i);
-					mActiveChats.add(chatName);
-				}
-			}
-			catch (JSONException e) {
-				SurespotLog.e(TAG, "Error decoding active chat json list: " + e.toString(), e);
-			}
-		}
+		mActiveChats = SurespotApplication.getStateController().loadActiveChats();
 	}
 
 	public ArrayList<String> getActiveChats() {
@@ -90,7 +74,7 @@ public class FriendAdapter extends BaseAdapter {
 			if (delta > 0 && !mActiveChats.contains(name)) {
 				mActiveChats.add(name);
 			}
-			// notifyDataSetChanged();
+			notifyDataSetChanged();
 		}
 	}
 
@@ -307,7 +291,7 @@ public class FriendAdapter extends BaseAdapter {
 
 				public void onFailure(Throwable error, String content) {
 					SurespotLog.w(TAG, "respondToInvity", error);
-					Utils.makeToast(SurespotConfiguration.getContext(), "Could not respond to invite, please try again later.");
+					Utils.makeToast(SurespotApplication.getContext(), "Could not respond to invite, please try again later.");
 				};
 			});
 		}

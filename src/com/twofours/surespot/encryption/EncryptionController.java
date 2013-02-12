@@ -30,17 +30,12 @@ import org.spongycastle.jce.spec.ECParameterSpec;
 import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
-import android.content.Context;
 import android.os.AsyncTask;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
-import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
-import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -51,50 +46,7 @@ public class EncryptionController {
 	private static final int SALT_LENGTH = 16;
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
-	private static SecureRandom mSecureRandom;
-
-	private static LoadingCache<String, ECPublicKey> mPublicKeys;
-	private static LoadingCache<String, byte[]> mSharedSecrets;
-
-	static {
-		SurespotLog.v(TAG, "constructor");
-		// attempt to load key pair
-		mSecureRandom = new SecureRandom();
-		CacheLoader<String, byte[]> secretCacheLoader = new CacheLoader<String, byte[]>() {
-
-			@Override
-			public byte[] load(String username) throws Exception {
-
-				return generateSharedSecretSync(SurespotConfiguration.getContext(), username);
-			}
-		};
-
-		CacheLoader<String, ECPublicKey> keyCacheLoader = new CacheLoader<String, ECPublicKey>() {
-
-			@Override
-			public ECPublicKey load(String username) throws Exception {
-				String result = SurespotApplication.getNetworkController().getPublicKeySync(username);
-				if (result != null) {
-					return recreatePublicKey(result);
-				}
-				return null;
-			}
-		};
-
-		mPublicKeys = CacheBuilder.newBuilder().build(keyCacheLoader);
-		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
-	}
-
-	// public static String getPublicKeyString(Context context, String username) {
-	// SurespotIdentity identity = IdentityController.getIdentity(context, username);
-	//
-	// if (identity != null) {
-	// return encodePublicKey((ECPublicKey) identity.getKeyPair().getPublic());
-	// }
-	// else {
-	// return null;
-	// }
-	// }
+	private static SecureRandom mSecureRandom = new SecureRandom();
 
 	public static ECPublicKey recreatePublicKey(String encodedKey) {
 
@@ -166,14 +118,14 @@ public class EncryptionController {
 	// new AsyncGenerateSharedSecret(username, callback).execute();
 	// }
 
-	private static byte[] generateSharedSecretSync(Context context, String username) {
-		SurespotIdentity identity = IdentityController.getIdentity(context);
+	public static byte[] generateSharedSecretSync(String username) {
+		SurespotIdentity identity = IdentityController.getIdentity(SurespotApplication.getContext());
 		if (identity == null)
 			return null;
 		try {
 			KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
 			ka.init(identity.getKeyPair().getPrivate());
-			ka.doPhase(mPublicKeys.get(username), true);
+			ka.doPhase(SurespotApplication.getCachingService().getPublickey(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 
 			SurespotLog.d(TAG, username + " shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
@@ -201,7 +153,8 @@ public class EncryptionController {
 
 				try {
 					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
-					SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
+							"AES");
 					byte[] cipherBytes = Utils.base64Decode(cipherData);
 					byte[] iv = Utils.base64Decode(ivs);
 					IvParameterSpec ivParams = new IvParameterSpec(iv);
@@ -242,7 +195,7 @@ public class EncryptionController {
 
 		try {
 			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
-			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+			SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH, "AES");
 			byte[] cipherBytes = Utils.base64Decode(cipherData);
 			byte[] iv = Utils.base64Decode(ivs);
 			IvParameterSpec ivParams = new IvParameterSpec(iv);
@@ -329,7 +282,8 @@ public class EncryptionController {
 				try {
 					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
 
-					SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
+							"AES");
 					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 					CipherOutputStream cos = new CipherOutputStream(out, ccm);
 
@@ -384,7 +338,8 @@ public class EncryptionController {
 				try {
 					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
 
-					SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
+							"AES");
 					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 					CipherOutputStream cos = new CipherOutputStream(out, ccm);
 
@@ -438,7 +393,7 @@ public class EncryptionController {
 		try {
 			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
 
-			SecretKey key = new SecretKeySpec(mSharedSecrets.get(username), 0, AES_KEY_LENGTH, "AES");
+			SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH, "AES");
 			ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 			CipherOutputStream cos = new CipherOutputStream(out, ccm);
 
@@ -487,7 +442,8 @@ public class EncryptionController {
 
 					cipherBytes = Utils.base64Decode(cipherData);
 					iv = Utils.base64Decode(ivs);
-					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+					ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(username), 0,
+							AES_KEY_LENGTH), iv);
 
 					ccm.reset();
 					ccm.init(false, ivParams);
@@ -528,7 +484,7 @@ public class EncryptionController {
 
 			cipherBytes = Utils.base64Decode(cipherData);
 			iv = Utils.base64Decode(ivs);
-			byte[] secret = mSharedSecrets.get(username);
+			byte[] secret = SurespotApplication.getCachingService().getSharedSecret(username);
 			if (secret == null) {
 				return null;
 			}
@@ -563,7 +519,8 @@ public class EncryptionController {
 				mSecureRandom.nextBytes(iv);
 				ParametersWithIV ivParams;
 				try {
-					ivParams = new ParametersWithIV(new KeyParameter(mSharedSecrets.get(username), 0, AES_KEY_LENGTH), iv);
+					ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(username), 0,
+							AES_KEY_LENGTH), iv);
 
 					ccm.reset();
 					ccm.init(true, ivParams);
@@ -696,7 +653,7 @@ public class EncryptionController {
 
 	private static byte[][] derive(String password) {
 		int iterationCount = 1000;
-		int saltLength = 16;
+		int saltLength = SALT_LENGTH;
 		int keyLength = 256;
 
 		byte[][] derived = new byte[2][];

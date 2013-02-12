@@ -1,15 +1,11 @@
 package com.twofours.surespot;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,13 +22,13 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.SerializableCookie;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.services.CredentialCachingService;
 
 public class IdentityController {
 	private static final String TAG = "IdentityController";
@@ -40,7 +36,6 @@ public class IdentityController {
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
 	private static final Map<String, SurespotIdentity> mIdentities = new HashMap<String, SurespotIdentity>();
-	private static String mLoggedInUser;
 
 	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPair, Cookie cookie) {
 		// TODO thread
@@ -140,20 +135,12 @@ public class IdentityController {
 	}
 
 	private synchronized static void setLoggedInUser(Context context, String username, String password, Cookie cookie) {
-		mLoggedInUser = username;
-		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.CURRENT_USER, username);
-		SurespotApplication.getCachingService().setPasswordAndCookie(username, password, cookie);
-	}
-
-	public static synchronized String getLoggedInUser(Context context) {
-		if (mLoggedInUser == null) {
-			mLoggedInUser = Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.CURRENT_USER);
-		}
-		return mLoggedInUser;
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, username);
+		SurespotApplication.getCachingService().login(username, password, cookie);
 	}
 
 	public static SurespotIdentity getIdentity(Context context) {
-		return getIdentity(context, getLoggedInUser(context));
+		return getIdentity(context, SurespotApplication.getCachingService().getLoggedInUser());
 	}
 
 	public static SurespotIdentity getIdentity(Context context, String username) {
@@ -175,34 +162,6 @@ public class IdentityController {
 
 		}
 		return identity;
-	}
-
-	protected static String encodeCookie(SerializableCookie cookie) {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		try {
-			ObjectOutputStream outputStream = new ObjectOutputStream(os);
-			outputStream.writeObject(cookie);
-		}
-		catch (Exception e) {
-			return null;
-		}
-
-		return new String(Utils.base64Encode(os.toByteArray()));
-	}
-
-	protected static Cookie decodeCookie(String cookieStr) {
-		byte[] bytes = Utils.base64Decode(cookieStr);
-		ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-		Cookie cookie = null;
-		try {
-			ObjectInputStream ois = new ObjectInputStream(is);
-			cookie = ((SerializableCookie) ois.readObject()).getCookie();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return cookie;
 	}
 
 	private synchronized static SurespotIdentity loadIdentity(Context context, String dir, String username, String password) {
@@ -255,14 +214,25 @@ public class IdentityController {
 		return getIdentityNames(context).size() > 0;
 	}
 
-	public static boolean hasLoggedInUser(Context context) {
-		return getLoggedInUser(context) != null;
+	public static boolean hasLoggedInUser() {
+		return getLoggedInUser() != null;
 
 	}
 
-	public static Cookie getCookie(Context context) {
+	public static String getLoggedInUser() {
+		CredentialCachingService service = SurespotApplication.getCachingService();
+		if (service != null) {
+			return service.getLoggedInUser();
+
+		}
+		else {
+			return null;
+		}
+	}
+
+	public static Cookie getCookie() {
 		Cookie cookie = null;
-		String user = getLoggedInUser(context);
+		String user = SurespotApplication.getCachingService().getLoggedInUser();
 		if (user != null) {
 			cookie = SurespotApplication.getCachingService().getCookie(user);
 		}
@@ -372,9 +342,9 @@ public class IdentityController {
 		SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, String content) {
-				SurespotApplication.getCachingService().clear(getLoggedInUser(context));
-				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.CURRENT_USER, null);
-				mLoggedInUser = null;
+				SurespotApplication.getCachingService().logout();
+				// Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
+
 				callback.handleResponse(true);
 			}
 

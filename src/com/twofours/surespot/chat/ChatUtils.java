@@ -8,11 +8,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -27,7 +25,6 @@ import android.provider.MediaStore.Images;
 
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -37,12 +34,12 @@ public class ChatUtils {
 	private static final String TAG = "ChatUtils";
 
 	public static String getOtherUser(String from, String to) {
-		return to.equals(IdentityController.getLoggedInUser(SurespotConfiguration.getContext())) ? from : to;
+		return to.equals(IdentityController.getLoggedInUser()) ? from : to;
 	}
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
-		chatMessage.setFrom(IdentityController.getLoggedInUser(SurespotConfiguration.getContext()));
+		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		chatMessage.setTo(to);
 		chatMessage.setCipherData(cipherData);
 		chatMessage.setPlainData(plainData);
@@ -282,11 +279,6 @@ public class ChatUtils {
 			return 270;
 		}
 		return 0;
-	}
-
-	public static String mapToJsonString(Map<String, Integer> map) {
-		JSONObject jsonObject = new JSONObject(map);
-		return jsonObject.toString();
 	}
 
 	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {

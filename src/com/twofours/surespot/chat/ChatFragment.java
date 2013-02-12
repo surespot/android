@@ -1,7 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.util.ArrayList;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -409,25 +407,12 @@ public class ChatFragment extends SherlockFragment {
 
 	private void saveMessages() {
 		// save last 30? messages
-
-		ArrayList<SurespotMessage> messages = mChatAdapter.getMessages();
-		int messagesSize = messages.size();
-		SurespotLog.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages to shared prefs");
-		Utils.putSharedPrefsString(ChatFragment.this.getActivity(), "messages_" + mUsername,
-				ChatUtils.chatMessagesToJson(messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString());
-
+		SurespotApplication.getStateController().saveMessages(mUsername, mChatAdapter.getMessages());
 	}
 
 	private void loadMessages() {
-		String sMessages = Utils.getSharedPrefsString(ChatFragment.this.getActivity(), "messages_" + mUsername);
-		if (sMessages != null && !sMessages.isEmpty()) {
-			ArrayList<SurespotMessage> messages = ChatUtils.jsonStringToChatMessages(sMessages);
-			SurespotLog.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
-			mChatAdapter.addMessages(messages);
-		}
-		else {
-			SurespotLog.v(TAG, "Loaded: no messages from local storage.");
-		}
+		// SurespotLog.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
+		mChatAdapter.addMessages(SurespotApplication.getStateController().loadMessages(mUsername));
 	}
 
 	// populate the edit box

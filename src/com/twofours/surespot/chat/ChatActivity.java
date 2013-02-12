@@ -3,8 +3,6 @@ package com.twofours.surespot.chat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.acra.ACRA;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,6 +21,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.ImageSelectActivity;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.SettingsActivity;
@@ -107,40 +106,27 @@ public class ChatActivity extends SherlockFragmentActivity {
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
 
 		// get the chats
-		JSONArray jsonChats;
+
 		boolean foundChat = false;
-		try {
-			String sChats = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS);
-			if (sChats != null) {
-				jsonChats = new JSONArray(sChats);
+		ArrayList<String> chatNames = SurespotApplication.getStateController().loadActiveChats();
 
-				ArrayList<String> chatNames = new ArrayList<String>(jsonChats.length() + 1);
+		if (name != null) {
+			for (String chatName : chatNames) {
 
-				for (int i = 0; i < jsonChats.length(); i++) {
-					String chatName = jsonChats.getString(i);
-					if (chatName.equals(name)) {
-						foundChat = true;
-					}
-					chatNames.add(chatName);
-
-				}
-				if (!foundChat) {
-					chatNames.add(name);
+				if (chatName.equals(name)) {
 					foundChat = true;
 				}
+			}
 
-				mPagerAdapter.addChatNames(chatNames);
+			if (!foundChat) {
+				chatNames.add(name);
+				foundChat = true;
 			}
 		}
-		catch (JSONException e1) {
-			SurespotLog.w(TAG, "onCreate", e1);
-		}
 
-		if (!foundChat && name != null) {
-			mPagerAdapter.addChatName(name);
-		}
+		mPagerAdapter.addChatNames(chatNames);
 
-		Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(this), true);
+		Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), true);
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mPagerAdapter);
@@ -235,22 +221,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
-		// get last message id's out of shared prefs
-		String lastMessageIdJson = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS);
-		if (lastMessageIdJson != null) {
-			try {
-				mLastViewedMessageIds = Utils.jsonStringToMap(lastMessageIdJson);
-				SurespotLog.v(TAG, "Loaded last viewed ids: " + mLastViewedMessageIds);
-			}
-			catch (Exception e1) {
-				// TODO Auto-generated catch block
-				ACRA.getErrorReporter().handleException(e1);
-				e1.printStackTrace();
-			}
-		}
-		else {
-			mLastViewedMessageIds = new HashMap<String, Integer>();
-		}
+		mLastViewedMessageIds = SurespotApplication.getStateController().loadLastViewMessageIds();
 
 		mChatController.loadUnsentMessages();
 		mChatController.connect();
@@ -267,19 +238,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mChatController.disconnect();
 		// save chat names
-		JSONArray jsonArray = new JSONArray(mPagerAdapter.getChatNames());
-		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
+		SurespotApplication.getStateController().saveActiveChats(mPagerAdapter.getChatNames());
+
 		mChatController.saveUnsentMessages();
 		// store chats the user went into
-		if (mLastViewedMessageIds.size() > 0) {
-			String jsonString = ChatUtils.mapToJsonString(mLastViewedMessageIds);
-			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, jsonString);
-			SurespotLog.v(TAG, "saved last viewed ids: " + mLastViewedMessageIds);
-
-		}
-		else {
-			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_LAST_VIEWED_MESSAGE_IDS, null);
-		}
+		SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 
 		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChatName());
 

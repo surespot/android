@@ -63,9 +63,8 @@ public class StartupActivity extends Activity {
 			SurespotLog.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
 
 			// if we have a current user we're logged in
-			String user = IdentityController.getLoggedInUser(this);
-			if (user != null && SurespotApplication.getCachingService() != null
-					&& SurespotApplication.getCachingService().getCookie(user) != null) {
+			String user = IdentityController.getLoggedInUser();
+			if (user != null) {
 				SurespotLog.v(TAG, "using cached credentials");
 				// make sure the gcm is set
 				// use case:

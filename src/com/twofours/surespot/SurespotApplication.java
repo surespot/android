@@ -22,6 +22,8 @@ public class SurespotApplication extends Application {
 	protected static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
 	private static NetworkController mNetworkController;
+	private static StateController mStateController;
+	private static Context mContext;
 
 	public void onCreate() {
 		super.onCreate();
@@ -29,10 +31,9 @@ public class SurespotApplication extends Application {
 		ACRA.init(this);
 
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
-		Context context = getApplicationContext();
+		mContext = getApplicationContext();
 
-		SurespotConfiguration.setContext(context);
-		SurespotConfiguration.LoadConfigProperties(context);
+		SurespotConfiguration.LoadConfigProperties(mContext);
 
 		Intent intent = new Intent(this, CredentialCachingService.class);
 		startService(intent);
@@ -46,6 +47,7 @@ public class SurespotApplication extends Application {
 			CredentialCachingBinder binder = (CredentialCachingBinder) service;
 			mCredentialCachingService = binder.getService();
 			mNetworkController = new NetworkController();
+			mStateController = new StateController();
 		}
 
 		@Override
@@ -61,6 +63,14 @@ public class SurespotApplication extends Application {
 
 	public static NetworkController getNetworkController() {
 		return mNetworkController;
+	}
+
+	public static StateController getStateController() {
+		return mStateController;
+	}
+
+	public static Context getContext() {
+		return mContext;
 	}
 
 }

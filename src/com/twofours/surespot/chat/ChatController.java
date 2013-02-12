@@ -24,12 +24,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 
 public class ChatController {
 
@@ -110,12 +110,12 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					// Utils.makeToast(this,SurespotConfiguration.getContext(),
+					// Utils.makeToast(this,SurespotApplication.getContext(),
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-					Intent intent = new Intent(SurespotConfiguration.getContext(), LoginActivity.class);
+					Intent intent = new Intent(SurespotApplication.getContext(), LoginActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					SurespotConfiguration.getContext().startActivity(intent);
+					SurespotApplication.getContext().startActivity(intent);
 
 				}
 			}
@@ -149,7 +149,7 @@ public class ChatController {
 				sendConnectStatus(true);
 
 				sendMessages();
-				SurespotConfiguration.getContext().registerReceiver(mConnectivityReceiver,
+				SurespotApplication.getContext().registerReceiver(mConnectivityReceiver,
 						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			}
@@ -228,7 +228,7 @@ public class ChatController {
 
 	private void setOnWifi() {
 		// get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
-		ConnectivityManager connectivityManager = (ConnectivityManager) SurespotConfiguration.getContext().getSystemService(
+		ConnectivityManager connectivityManager = (ConnectivityManager) SurespotApplication.getContext().getSystemService(
 				Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null) {
@@ -243,14 +243,14 @@ public class ChatController {
 		 * if (socket != null && socket.isConnected()) { if (mConnectCallback != null) { mConnectCallback.connectStatus(true); } return; }
 		 */
 
-		Cookie cookie = IdentityController.getCookie(SurespotConfiguration.getContext());
+		Cookie cookie = IdentityController.getCookie();
 
 		if (cookie == null) {
 			// need to login
 			SurespotLog.v(TAG, "No session cookie, starting Login activity.");
-			Intent startupIntent = new Intent(SurespotConfiguration.getContext(), StartupActivity.class);
+			Intent startupIntent = new Intent(SurespotApplication.getContext(), StartupActivity.class);
 			startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			SurespotConfiguration.getContext().startActivity(startupIntent);
+			SurespotApplication.getContext().startActivity(startupIntent);
 			return;
 		}
 
@@ -270,26 +270,26 @@ public class ChatController {
 	private void sendInviteRequest(String friend) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_REQUEST);
 		intent.putExtra(SurespotConstants.ExtraNames.NAME, friend);
-		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotApplication.getContext()).sendBroadcast(intent);
 	}
 
 	private void sendInviteResponse(String response) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.INVITE_RESPONSE);
 		intent.putExtra(SurespotConstants.ExtraNames.INVITE_RESPONSE, response);
-		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotApplication.getContext()).sendBroadcast(intent);
 	}
 
 	private void sendMessageReceived(String message) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.MESSAGE_RECEIVED);
 		intent.putExtra(SurespotConstants.ExtraNames.MESSAGE, message);
-		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotApplication.getContext()).sendBroadcast(intent);
 
 	}
 
 	private void sendConnectStatus(boolean connected) {
 		Intent intent = new Intent(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED);
 		intent.putExtra(SurespotConstants.ExtraNames.CONNECTED, connected);
-		LocalBroadcastManager.getInstance(SurespotConfiguration.getContext()).sendBroadcast(intent);
+		LocalBroadcastManager.getInstance(SurespotApplication.getContext()).sendBroadcast(intent);
 
 	}
 
@@ -341,7 +341,7 @@ public class ChatController {
 
 		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
 		try {
-			SurespotConfiguration.getContext().unregisterReceiver(mConnectivityReceiver);
+			SurespotApplication.getContext().unregisterReceiver(mConnectivityReceiver);
 		}
 		catch (IllegalArgumentException e) {
 			if (e.getMessage().contains("Receiver not registered")) {
@@ -389,24 +389,15 @@ public class ChatController {
 	public void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, ChatUtils
-				.chatMessagesToJson(mResendBuffer).toString());
-
+		SurespotApplication.getStateController().saveUnsentMessages(mResendBuffer);
 	}
 
 	public void loadUnsentMessages() {
-		String sUnsentMessages = Utils.getSharedPrefsString(SurespotConfiguration.getContext(), "unsentmessages");
-
-		if (sUnsentMessages != null && !sUnsentMessages.isEmpty()) {
-			Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sUnsentMessages).iterator();
-			while (iterator.hasNext()) {
-				mSendBuffer.add(iterator.next());
-			}
-			SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
+		Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages().iterator();
+		while (iterator.hasNext()) {
+			mSendBuffer.add(iterator.next());
 		}
-
-		Utils.putSharedPrefsString(SurespotConfiguration.getContext(), SurespotConstants.PrefNames.UNSENT_MESSAGES, null);
-
+		SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 	}
 
 	public void destroy() {

@@ -83,6 +83,13 @@ public class LoginActivity extends Activity {
 
 		spinner.setAdapter(adapter);
 
+		// select last user if there was one
+		String lastUser = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER);
+
+		if (lastUser != null && mIdentityNames.contains(lastUser)) {
+			spinner.setSelection(adapter.getPosition(lastUser));
+		}
+
 		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
