@@ -87,6 +87,8 @@ public class StartupActivity extends Activity {
 			String type = intent.getType();
 			Bundle extras = intent.getExtras();
 			Set<String> categories = intent.getCategories();
+			String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+			String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 
 			SurespotLog.v(TAG, "Intent action: " + action);
 			SurespotLog.v(TAG, "Intent type: " + type);
@@ -124,15 +126,26 @@ public class StartupActivity extends Activity {
 				}
 
 				Intent newIntent = null;
-				// if we have a chat intent go to chat
-				String intentName = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
 
-				// if we have an intent name it's coming from a notification so show the chat
-				if (intentName != null) {
-					SurespotLog.v(TAG, "found chat name, starting chat activity: " + intentName);
-					newIntent = new Intent(this, ChatActivity.class);
-					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, intentName);
-					newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				// if we have a message to the currently logged in user, set the from and start the chat activity
+				if (messageTo != null) {
+					if (messageTo.equals(user)) {
+						SurespotLog.v(TAG, "found chat name, starting chat activity: " + messageTo);
+						newIntent = new Intent(this, ChatActivity.class);
+						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
+						newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					}
+					else {
+
+						SurespotLog.v(TAG, "need different user, starting Login activity");
+						// identity but no session, login
+						newIntent = new Intent(this, LoginActivity.class);
+						SurespotLog.v(TAG, "setting message to, " + messageFrom + ", from: " + messageTo);
+						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
+						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(newIntent);
+					}
 
 				}
 				else {
@@ -153,7 +166,7 @@ public class StartupActivity extends Activity {
 							if (lastName != null) {
 								SurespotLog.v(TAG, "starting chat activity based on LAST_CHAT name");
 								newIntent = new Intent(this, ChatActivity.class);
-								newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, lastName);
+								newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
 								newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 							}
 						}
@@ -172,10 +185,10 @@ public class StartupActivity extends Activity {
 				SurespotLog.v(TAG, "no cached credentials, starting Login activity");
 				// identity but no session, login
 				Intent newIntent = new Intent(this, LoginActivity.class);
-				String name = intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
-				if (name != null) {
-					SurespotLog.v(TAG, "setting intent chat name: " + name);
-					newIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, name);
+				if (messageTo != null) {
+					SurespotLog.v(TAG, "setting message to, " + messageFrom + ", from: " + messageTo);
+					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
+					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
 				}
 				else {
 					if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {

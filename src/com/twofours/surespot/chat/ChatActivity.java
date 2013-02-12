@@ -60,7 +60,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 					SurespotMessage[] resendMessages = mChatController.getResendMessages();
 					for (SurespotMessage message : resendMessages) {
 						// set the last received id so the server knows which messages to check
-						String room = message.getSpot();
+						String room = message.getOtherUser();
 
 						// ideally get the last id from the fragment's chat adapter
 						String lastMessageID = null;
@@ -95,7 +95,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		});
 		setContentView(R.layout.activity_chat);
 
-		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 		SurespotLog.v(TAG, "Intent contained name: " + name);
 
 		// if we don't have an intent, see if we have saved chat

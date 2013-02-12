@@ -37,6 +37,10 @@ public class ChatUtils {
 		return to.equals(IdentityController.getLoggedInUser()) ? from : to;
 	}
 
+	public static String getSpot(String from, String to) {
+		return (to.compareTo(from) < 0 ? to + ":" + from : from + ":" + to);
+	}
+
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());

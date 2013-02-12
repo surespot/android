@@ -161,7 +161,7 @@ public class ImageDownloader {
 			String content = SurespotApplication.getNetworkController().getFileSync(mMessage.getCipherData());
 			if (!isCancelled()) {
 				if (content != null) {
-					byte[] decoded = EncryptionController.symmetricBase64DecryptSync(mMessage.getSpot(), mMessage.getIv(), content);
+					byte[] decoded = EncryptionController.symmetricBase64DecryptSync(mMessage.getOtherUser(), mMessage.getIv(), content);
 					if (decoded != null) {
 						return ChatUtils.getSampledImage(decoded, SurespotConstants.IMAGE_DISPLAY_HEIGHT);
 					}

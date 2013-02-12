@@ -136,7 +136,8 @@ public class ChatFragment extends SherlockFragment {
 		Intent intent = getActivity().getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+
+		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 
 		// if the intent is meant for this chat
 		if (intentName != null && intentName.equals(mUsername)) {
@@ -148,7 +149,7 @@ public class ChatFragment extends SherlockFragment {
 				// remove intent data so we don't upload an image on restart
 				intent.setAction(null);
 				intent.setType(null);
-				intent.removeExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME);
+				intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 			}
 		}
 

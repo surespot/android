@@ -78,7 +78,7 @@ public class SurespotMessage {
 		this.mResendId = resendId;
 	}
 
-	public String getSpot() {
+	public String getOtherUser() {
 		return ChatUtils.getOtherUser(this.mFrom, this.mTo);
 	}
 

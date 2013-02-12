@@ -39,7 +39,7 @@ public class ImageViewActivity extends SherlockActivity {
 						// TODO use streaming network get
 						String imageData = SurespotApplication.getNetworkController().getFileSync(message.getCipherData());
 						if (imageData != null) {
-							byte[] output = EncryptionController.symmetricBase64DecryptSync(message.getSpot(), message.getIv(), imageData);
+							byte[] output = EncryptionController.symmetricBase64DecryptSync(message.getOtherUser(), message.getIv(), imageData);
 							Bitmap bitmap = BitmapFactory.decodeByteArray(output, 0, output.length);
 							return bitmap;
 						}

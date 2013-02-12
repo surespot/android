@@ -3,6 +3,7 @@ package com.twofours.surespot;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.acra.ACRA;
 
@@ -32,10 +33,17 @@ public class GCMIntentService extends GCMBaseIntentService
 
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
+	private static Map<String, Integer> mMessageNotificationIds;
+	private static Map<String, Integer> mInviteRequestIds;
+	private static Map<String, Integer> mInviteResponseIds;
+	private int mNotificationId;
 
 	public GCMIntentService() {
 		super(SENDER_ID);
 		SurespotLog.v(TAG, "GCMIntentService");
+		mMessageNotificationIds = new ConcurrentHashMap<String, Integer>();
+		mInviteRequestIds = new ConcurrentHashMap<String, Integer>();
+		mInviteResponseIds = new ConcurrentHashMap<String, Integer>();
 	}
 
 	@Override
@@ -49,19 +57,19 @@ public class GCMIntentService extends GCMBaseIntentService
 		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
 
 		String type = intent.getStringExtra("type");
+		String to = intent.getStringExtra("to");
+		String from = intent.getStringExtra("sentfrom");
 		if (type.equals("message")) {
-			String to = intent.getStringExtra("to");
-			String from = intent.getStringExtra("sentfrom");
-			String otherUser = ChatUtils.getOtherUser(from, to);
-			generateMessageNotification(context, otherUser, "surespot", "new message from " + otherUser);
+
+			// String otherUser = ChatUtils.getOtherUser(from, to);
+			generateMessageNotification(context, from, to, "surespot", to + ": new message from " + from);
 		}
 		else {
-			String user = intent.getStringExtra("user");
 			if (type.equals("invite")) {
-				generateInviteNotification(context, user, "surespot", "you have received a friend invite from " + user);
+				generateInviteRequestNotification(context, from, to, "surespot", to + ": friend invite from " + from);
 			}
 			else {
-				generateInviteNotification(context, user, "surespot", user + " has accepted your friend invite");
+				generateInviteResponseNotification(context, from, to, "surespot", to + ": " + from + " has accepted your friend invite");
 			}
 		}
 	}
@@ -123,7 +131,9 @@ public class GCMIntentService extends GCMBaseIntentService
 	}
 
 	// TODO remove notifications when action taken
-	private static void generateMessageNotification(Context context, String user, String title, String message) {
+	private void generateMessageNotification(Context context, String from, String to, String title, String message) {
+		// inc notification id
+		String spot = ChatUtils.getSpot(from, to);
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -133,7 +143,8 @@ public class GCMIntentService extends GCMBaseIntentService
 		// if we're logged in, go to the chat, otherwise go to login
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.SHOW_CHAT_NAME, user);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
 		stackBuilder.addNextIntent(mainIntent);
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION,
 				PendingIntent.FLAG_CANCEL_CURRENT);
@@ -146,10 +157,17 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
-		notificationManager.notify(1, notification);
+		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION, notification);
 	}
 
-	private static void generateInviteNotification(Context context, String user, String title, String message) {
+	private void generateInviteRequestNotification(Context context, String from, String to, String title, String message) {
+		String spot = ChatUtils.getSpot(from, to);
+		Integer id = mInviteRequestIds.get(spot);
+		if (id == null) {
+			id = mNotificationId++;
+			mInviteRequestIds.put(spot, id);
+		}
+
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -158,9 +176,12 @@ public class GCMIntentService extends GCMBaseIntentService
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
 		Intent mainIntent = new Intent(context, StartupActivity.class);
-		mainIntent.putExtra(IntentFilters.INVITE_NOTIFICATION, IntentFilters.INVITE_NOTIFICATION);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
+
+		mainIntent.putExtra(IntentFilters.INVITE_REQUEST, IntentFilters.INVITE_REQUEST);
 		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.INVITE_NOTIFICATION,
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
@@ -171,6 +192,41 @@ public class GCMIntentService extends GCMBaseIntentService
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		notification.defaults |= Notification.DEFAULT_VIBRATE;
 
-		notificationManager.notify(1, notification);
+		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION, notification);
+	}
+
+	private void generateInviteResponseNotification(Context context, String from, String to, String title, String message) {
+		String spot = ChatUtils.getSpot(from, to);
+		Integer id = mInviteResponseIds.get(spot);
+		if (id == null) {
+			id = mNotificationId++;
+			mInviteResponseIds.put(spot, id);
+		}
+
+		int icon = R.drawable.ic_launcher;
+
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
+				.setContentText(message);
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+
+		Intent mainIntent = new Intent(context, StartupActivity.class);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
+
+		mainIntent.putExtra(IntentFilters.INVITE_RESPONSE, IntentFilters.INVITE_RESPONSE);
+		stackBuilder.addNextIntent(mainIntent);
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(
+				SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, PendingIntent.FLAG_CANCEL_CURRENT);
+
+		builder.setContentIntent(resultPendingIntent);
+
+		Notification notification = builder.build();
+		notification.flags = Notification.FLAG_AUTO_CANCEL;
+		notification.defaults |= Notification.DEFAULT_LIGHTS;
+		notification.defaults |= Notification.DEFAULT_SOUND;
+		notification.defaults |= Notification.DEFAULT_VIBRATE;
+
+		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, notification);
 	}
 }
