@@ -43,18 +43,18 @@ public class ExportIdentityActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				final String user = (String) spinner.getSelectedItem();
-				UIUtils.passwordDialog(ExportIdentityActivity.this, user, new IAsyncCallback<String>() {
-
-					@Override
-					public void handleResponse(String result) {
-						if (result != null && !result.isEmpty()) {
-							exportIdentity(user, result);
-						}
-						else {
-							Utils.makeToast(ExportIdentityActivity.this, getText(R.string.no_identity_exported).toString());
-						}
-					}
-				});
+				UIUtils.passwordDialog(ExportIdentityActivity.this, "export " + user + " identity", "enter password for " + user,
+						new IAsyncCallback<String>() {
+							@Override
+							public void handleResponse(String result) {
+								if (result != null && !result.isEmpty()) {
+									exportIdentity(user, result);
+								}
+								else {
+									Utils.makeToast(ExportIdentityActivity.this, getText(R.string.no_identity_exported).toString());
+								}
+							}
+						});
 
 			}
 		});

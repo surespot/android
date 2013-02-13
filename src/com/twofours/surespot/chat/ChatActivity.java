@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -369,8 +370,15 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_chat, menu);
+
+		if (Camera.getNumberOfCameras() == 0) {
+			SurespotLog.v(TAG, "hiding capture image menu option");
+			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
+		}
+
 		return true;
 	}
 

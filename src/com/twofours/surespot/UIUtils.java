@@ -10,14 +10,14 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class UIUtils {
 
-	public static void passwordDialog(Context context, String username, final IAsyncCallback<String> callback) {
+	public static void passwordDialog(Context context, String title, String message, final IAsyncCallback<String> callback) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(context);
-		alert.setTitle("export " + username + " identity");
-		alert.setMessage("enter password for " + username);
+		alert.setTitle(title);
+		alert.setMessage(message);
 		final EditText editText = new EditText(context);
 		alert.setView(editText);
 
-		alert.setPositiveButton("OK", new OnClickListener() {
+		alert.setPositiveButton("ok", new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -26,7 +26,7 @@ public class UIUtils {
 			}
 		});
 
-		alert.setNegativeButton("Cancel", new OnClickListener() {
+		alert.setNegativeButton("cancel", new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {

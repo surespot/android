@@ -54,38 +54,38 @@ public class ImportIdentityActivity extends SherlockActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				final String user = adapter.getItem(position).toString();
 
-				UIUtils.passwordDialog(ImportIdentityActivity.this, user, new IAsyncCallback<String>() {
+				UIUtils.passwordDialog(ImportIdentityActivity.this, "import " + user + " identity", "enter password for " + user,
+						new IAsyncCallback<String>() {
+							@Override
+							public void handleResponse(String result) {
+								if (result != null && !result.isEmpty()) {
+									IdentityController.importIdentity(ImportIdentityActivity.this, exportDir, user, result,
+											new IAsyncCallback<IdentityOperationResult>() {
 
-					@Override
-					public void handleResponse(String result) {
-						if (result != null && !result.isEmpty()) {
-							IdentityController.importIdentity(ImportIdentityActivity.this, exportDir, user, result,
-									new IAsyncCallback<IdentityOperationResult>() {
+												@Override
+												public void handleResponse(IdentityOperationResult response) {
 
-										@Override
-										public void handleResponse(IdentityOperationResult response) {
+													Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
 
-											Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
+													if (response.getResultSuccess()) {
+														// if launched from signup and successful import, go to login screen
+														if (mSignup) {
+															Intent intent = new Intent(ImportIdentityActivity.this, LoginActivity.class);
+															intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+															startActivity(intent);
+														}
+													}
 
-											if (response.getResultSuccess()) {
-												// if launched from signup and successful import, go to login screen
-												if (mSignup) {
-													Intent intent = new Intent(ImportIdentityActivity.this, LoginActivity.class);
-													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-													startActivity(intent);
 												}
-											}
 
-										}
+											});
 
-									});
-
-						}
-						else {
-							Utils.makeToast(ImportIdentityActivity.this, getText(R.string.no_identity_imported).toString());
-						}
-					}
-				});
+								}
+								else {
+									Utils.makeToast(ImportIdentityActivity.this, getText(R.string.no_identity_imported).toString());
+								}
+							}
+						});
 
 			}
 
