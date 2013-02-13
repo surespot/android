@@ -28,7 +28,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
-		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
+		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
 		for (String name : mIdentityNames) {
