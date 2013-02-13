@@ -1,9 +1,11 @@
 package com.twofours.surespot.activities;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.Utils;
 
@@ -13,8 +15,13 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// TODO put in fragment
-		addPreferencesFromResource(R.xml.preferences);
-		Utils.configureActionBar(this, "settings", "", true);
+		PreferenceManager prefMgr = getPreferenceManager();
+		String user = IdentityController.getLoggedInUser();
+		if (user != null) {
+			prefMgr.setSharedPreferencesName(user);
+			addPreferencesFromResource(R.xml.preferences);
+			Utils.configureActionBar(this, "settings", user, true);
+		}
 
 	}
 

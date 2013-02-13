@@ -1,9 +1,28 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory
-        android:key="pref_identity_management_settings"
-        android:title="identity management" >
-         <Preference android:title="@string/import_identity_label" >
+    <PreferenceCategory android:title="@string/notifications_title" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/pref_notifications_enabled"
+            android:title="@string/notifications_enabled" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_notifications_enabled"
+            android:key="pref_notifications_sound"
+            android:title="@string/notifications_sound" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="pref_notifications_enabled"
+            android:key="@string/pref_notifications_vibration"
+            android:title="@string/notifications_vibration" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="@string/pref_notifications_enabled"
+            android:key="pref_notifications_led"
+            android:title="@string/notifications_led" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="identity management" >
+        <Preference android:title="@string/import_identity_label" >
             <intent android:action="com.twofours.surespot.activities.ImportIdentityActivity" >
             </intent>
         </Preference>

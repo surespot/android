@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
@@ -38,7 +39,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onError(Context arg0, String arg1) {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stubgb
 
 	}
 
@@ -122,6 +123,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	// TODO remove notifications when action taken
 	private void generateMessageNotification(Context context, String from, String to, String title, String message) {
+
+		// get shared prefs
+		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
+		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), false)) {
+			return;
+		}
+
 		// inc notification id
 		String spot = ChatUtils.getSpot(from, to);
 		int icon = R.drawable.ic_launcher;
@@ -143,14 +151,26 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		notification.defaults |= Notification.DEFAULT_LIGHTS;
-		notification.defaults |= Notification.DEFAULT_SOUND;
-		notification.defaults |= Notification.DEFAULT_VIBRATE;
+		if (pm.getBoolean(getString(R.string.pref_notifications_led), false)) {
+			notification.defaults |= Notification.DEFAULT_LIGHTS;
+		}
+		if (pm.getBoolean(getString(R.string.pref_notifications_sound), false)) {
+			notification.defaults |= Notification.DEFAULT_SOUND;
+		}
+		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), false)) {
+			notification.defaults |= Notification.DEFAULT_VIBRATE;
+		}
 
 		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION, notification);
 	}
 
 	private void generateInviteRequestNotification(Context context, String from, String to, String title, String message) {
+		// get shared prefs
+		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
+		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), false)) {
+			return;
+		}
+
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -169,14 +189,26 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		notification.defaults |= Notification.DEFAULT_LIGHTS;
-		notification.defaults |= Notification.DEFAULT_SOUND;
-		notification.defaults |= Notification.DEFAULT_VIBRATE;
+		if (pm.getBoolean(getString(R.string.pref_notifications_led), false)) {
+			notification.defaults |= Notification.DEFAULT_LIGHTS;
+		}
+		if (pm.getBoolean(getString(R.string.pref_notifications_sound), false)) {
+			notification.defaults |= Notification.DEFAULT_SOUND;
+		}
+		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), false)) {
+			notification.defaults |= Notification.DEFAULT_VIBRATE;
+		}
 
 		notificationManager.notify(to, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION, notification);
 	}
 
 	private void generateInviteResponseNotification(Context context, String from, String to, String title, String message) {
+		// get shared prefs
+		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
+		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), false)) {
+			return;
+		}
+
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -195,9 +227,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		notification.defaults |= Notification.DEFAULT_LIGHTS;
-		notification.defaults |= Notification.DEFAULT_SOUND;
-		notification.defaults |= Notification.DEFAULT_VIBRATE;
+		if (pm.getBoolean(getString(R.string.pref_notifications_led), false)) {
+			notification.defaults |= Notification.DEFAULT_LIGHTS;
+		}
+		if (pm.getBoolean(getString(R.string.pref_notifications_sound), false)) {
+			notification.defaults |= Notification.DEFAULT_SOUND;
+		}
+		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), false)) {
+			notification.defaults |= Notification.DEFAULT_VIBRATE;
+		}
 
 		notificationManager.notify(to, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, notification);
 	}

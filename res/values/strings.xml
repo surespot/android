@@ -23,8 +23,18 @@
     <string name="export_identity_label">export identity...</string>
     <string name="import_identities">import identities...</string>
     <string name="create_identity_label">create new identity...</string>
-	<string name="no_identity_exported">no identity exported</string>
-	<string name="no_identity_imported">no identity imported</string>
-	<string name="identity_imported_successfully">identity imported successfully</string>
-	<string name="could_not_import_identity">could not import identity</string>
+    <string name="no_identity_exported">no identity exported</string>
+    <string name="no_identity_imported">no identity imported</string>
+    <string name="identity_imported_successfully">identity imported successfully</string>
+    <string name="could_not_import_identity">could not import identity</string>
+    <string name="notifications_title">notifications</string>
+    <string name="notifications_vibration">vibration</string>
+    <string name="notifications_sound">sound</string>
+    <string name="notifications_led">led</string>
+    <string name="notifications_enabled">enabled</string>
+    <string name="pref_notifications_enabled">pref_notifications_enabled"</string>
+    <string name="pref_notifications_sound">pref_notifications_sound"</string>
+    <string name="pref_notifications_vibration">pref_notifications_vibration"</string>
+    <string name="pref_notifications_led">pref_notifications_led"</string>
+
 </resources>
