@@ -34,7 +34,6 @@ public class StateController {
 		String filename = getFilename(ACTIVE_CHATS);
 		ArrayList<String> activeChats = new ArrayList<String>();
 		if (filename != null) {
-
 			String sActiveChatsJson = readFile(filename);
 			if (sActiveChatsJson != null) {
 				SurespotLog.v(TAG, "Loaded active chats: " + sActiveChatsJson);
@@ -192,15 +191,16 @@ public class StateController {
 	}
 
 	private String getFilename(String filename) {
-		File dir = FileUtils.getDiskCacheDir(SurespotApplication.getContext(), STATE_DIR);
-		dir = new File(dir.getPath() + File.separator + IdentityController.getLoggedInUser());
-		if (FileUtils.ensureDir(dir)) {
-			return dir + File.separator + filename + STATE_EXTENSION;
+		String user = IdentityController.getLoggedInUser();
+		if (user != null) {
+			File dir = FileUtils.getDiskCacheDir(SurespotApplication.getContext(), STATE_DIR);
+			dir = new File(dir.getPath() + File.separator + user);
+			if (FileUtils.ensureDir(dir)) {
+				return dir + File.separator + filename + STATE_EXTENSION;
+			}
+
 		}
-		else {
-			return null;
-		}
+		return null;
 
 	}
-
 }
