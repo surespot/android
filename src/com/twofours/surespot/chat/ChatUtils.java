@@ -1,11 +1,14 @@
 package com.twofours.surespot.chat;
 
-import java.io.FileNotFoundException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.TimerTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,12 +21,15 @@ import android.graphics.BitmapFactory.Options;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.provider.MediaStore.Images;
 
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatUtils {
@@ -54,67 +60,78 @@ public class ChatUtils {
 			final IAsyncCallback<Boolean> callback) {
 
 		// new AsyncTask<Void, Void, Boolean>() {
-		//
+
 		// @Override
 		// protected Boolean doInBackground(Void... params) {
 
+		// try {
+		// SurespotApplication.getNetworkController().postFileStream(context, to, "test",
+		// context.getContentResolver().openInputStream(imageUri), SurespotConstants.MimeTypes.IMAGE, callback);
+		// }
+		// catch (FileNotFoundException e) {
+		// SurespotLog.w(TAG, "Error uploading picture", e);
+		// }
+
 		try {
-			SurespotApplication.getNetworkController().postFileStream(context, to, "test",
-					context.getContentResolver().openInputStream(imageUri), SurespotConstants.MimeTypes.IMAGE, callback);
-		}
-		catch (FileNotFoundException e) {
-			SurespotLog.w(TAG, "Error uploading picture", e);
+			InputStream dataStream;
+			if (scale) {
+				PipedOutputStream jpegOutputStream = new PipedOutputStream();
+
+				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
+
+				// final String data = ChatUtils.inputStreamToBase64(iStream);
+
+				dataStream = new PipedInputStream(jpegOutputStream);
+
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpegOutputStream);
+				bitmap = null;
+
+			}
+			else {
+				dataStream = context.getContentResolver().openInputStream(imageUri);
+			}
+
+			PipedOutputStream fileOutputStream = new PipedOutputStream();
+			PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
+			// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
+
+			Runnable producer = EncryptionController.createEncryptTask(to, new BufferedInputStream(dataStream),
+					fileOutputStream);
+			Runnable consumer = SurespotApplication.getNetworkController().createPostFileStreamTask(context, to,
+					"test", fileInputStream, SurespotConstants.MimeTypes.IMAGE, callback);
+			new Thread(producer).start();
+			new Thread(consumer).start();
+		    //producer.execute();
+			//consumer.execute();
+
+			// final String iv = new String(results[0]);
+			// SurespotApplication.getNetworkController().postFile(context, to, new String(iv), fileInputStream,
+			// SurespotConstants.MimeTypes.IMAGE,
+
+			// new IAsyncCallback<Boolean>() {
+			// };() {
+			// @Override
+			// public void onSuccess(int statusCode, String content) {
+			// SurespotLog.v(TAG, "Received picture upload response: " + content);
+			// callback.handleResponse(true);
+			// }
+			//
+			// @Override
+			// public void onFailure(Throwable error) {
+			// SurespotLog.w(TAG, "Error uploading picture", error);
+			// callback.handleResponse(true);
+			// }
+			//
+			// });
 		}
 
-		// try {
-		// InputStream dataStream;
-		// if (scale) {
-		// PipedOutputStream jpegOutputStream = new PipedOutputStream();
-		//
-		// Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
-		//
-		// // final String data = ChatUtils.inputStreamToBase64(iStream);
-		//
-		// dataStream = new PipedInputStream(jpegOutputStream);
-		//
-		// bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpegOutputStream);
-		// bitmap = null;
-		//
-		// }
-		// else {
-		// dataStream = context.getContentResolver().openInputStream(imageUri);
-		// }
-		//
-		// PipedOutputStream fileOutputStream = new PipedOutputStream();
-		// PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
-		// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
-		//
-		// // final String iv = new String(results[0]);
-		// SurespotApplication.getNetworkController().postFile(context, to, new String(iv), fileInputStream,
-		// SurespotConstants.MimeTypes.IMAGE, new AsyncHttpResponseHandler() {
-		// @Override
-		// public void onSuccess(int statusCode, String content) {
-		// SurespotLog.v(TAG, "Received picture upload response: " + content);
-		// callback.handleResponse(true);
-		// }
-		//
-		// @Override
-		// public void onFailure(Throwable error) {
-		// SurespotLog.w(TAG, "Error uploading picture", error);
-		// callback.handleResponse(true);
-		// }
-		//
-		// });
-		//
-		// }
-		//
-		// catch (IOException e) {
-		// SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
-		// }
-		//
+		catch (IOException e) {
+			SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
+		}
+
 		// return null;
 		// }
-		//
+
 		// }.execute();
 
 	}
@@ -206,7 +223,26 @@ public class ChatUtils {
 		options.inJustDecodeBounds = false;
 		return BitmapFactory.decodeByteArray(data, 0, data.length, options);
 	}
+	
 
+	public static Bitmap getSampledImage(InputStream data, int reqHeight) {
+		BitmapFactory.Options options = new Options();
+		
+		decodeBounds(options, data);
+
+		if (options.outHeight > reqHeight) {
+			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
+		}
+
+		options.inJustDecodeBounds = false;
+		return BitmapFactory.decodeStream(data);
+	}
+
+	private static void decodeBounds(Options options, InputStream data) {
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeStream(data);
+	}
+	
 	private static void decodeBounds(Options options, byte[] data) {
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeByteArray(data, 0, data.length, options);

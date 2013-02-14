@@ -9,15 +9,15 @@ import org.acra.ACRA;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.os.Looper;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
-import ch.boye.httpclientandroidlib.client.ClientProtocolException;
 import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.client.HttpClient;
+import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
@@ -409,12 +409,15 @@ public class NetworkController {
 
 	}
 
-	public void postFileStream(Context context, final String user, final String id, final InputStream fileInputStream,
+	public Runnable createPostFileStreamTask(Context context, final String user, final String id, final InputStream fileInputStream,
 			final String mimeType, final IAsyncCallback<Boolean> callback) {
-		new AsyncTask<Void, Void, Boolean>() {
+		return new Runnable() {
 
 			@Override
-			protected Boolean doInBackground(Void... params) {
+			public void run() {
+				// TODO Auto-generated method stub
+
+				SurespotLog.v(TAG, "posting file stream");
 
 				HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
 				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user);
@@ -429,31 +432,74 @@ public class NetworkController {
 				Cookie cookie = IdentityController.getCookie();
 				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 
+				HttpResponse response = null;
+
+				try {
+					response = httpclient.execute(httppost);
+					// HttpEntity resEntity = response.getEntity();
+					Looper.prepare();
+					if (response.getStatusLine().getStatusCode() == 202) {
+
+						callback.handleResponse(true);
+					}
+					else {
+						callback.handleResponse(false);
+					}
+
+				}
+				catch (Exception e) {
+					SurespotLog.w(TAG, "createPostFile", e);
+					Looper.prepare();
+					callback.handleResponse(false);
+
+				}
+
+			}
+		};
+
+	}
+
+	public Runnable createGetFileStreamTask(Context context, final String url, final IAsyncCallback<InputStream> callback) {
+		return new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+
+				SurespotLog.v(TAG, "getting file stream");
+
+				HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
+				HttpGet httppost = new HttpGet(mBaseUrl + url);
+
+				// InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
+				// StringBody comment = new StringBody("Filename: " + fileName);
+
+				// MultipartEntity reqEntity = new MultipartEntity();
+				// reqEntity.addPart("image", isBody);
+				// reqEntity.addPart("comment", comment);
+				// httppost.setEntity(reqEntity);
+				Cookie cookie = IdentityController.getCookie();
+				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
+
 				HttpResponse response;
 				try {
 					response = httpclient.execute(httppost);
 					HttpEntity resEntity = response.getEntity();
-					if (response.getStatusLine().getStatusCode() == 202) {
-						return true;
+					if (response.getStatusLine().getStatusCode() == 200) {
+						callback.handleResponse(resEntity.getContent());
+					}
+					else {
+						callback.handleResponse(null);
 					}
 				}
 
-				catch (ClientProtocolException e) {
-					SurespotLog.w(TAG, "postFileStream", e);
+				catch (Exception e) {
+					SurespotLog.w(TAG, "getFileStream", e);
+					callback.handleResponse(null);
 				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, "postFileStream", e);
-				}
-
-				return false;
 
 			}
-
-			protected void onPostExecute(Boolean result) {
-				callback.handleResponse(result);
-			};
-
-		}.execute();
+		};
 
 	}
 

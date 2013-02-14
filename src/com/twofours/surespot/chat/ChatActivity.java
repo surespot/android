@@ -329,8 +329,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
-							if (!result) {
-								Utils.makeToast(ChatActivity.this, "Could not upload picture, please try again later.");
+							if (result) {
+								Utils.makeToast(ChatActivity.this, "picture successfully uploaded");
+							}
+							else {
+								Utils.makeToast(ChatActivity.this, "could not upload picture, please try again later");
 							}
 						}
 					});

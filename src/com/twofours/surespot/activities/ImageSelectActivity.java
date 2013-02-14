@@ -1,12 +1,14 @@
 package com.twofours.surespot.activities;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +22,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -33,7 +36,6 @@ public class ImageSelectActivity extends SherlockActivity {
 	private Button mCancelButton;
 	private String mCurrentPhotoPath;
 	private int mSource;
-	private Uri mUri;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +51,9 @@ public class ImageSelectActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				Intent dataIntent = new Intent();
-				// dataIntent.setData(Uri.fromFile(new File(mCurrentPhotoPath)));
+				dataIntent.setData(Uri.fromFile(new File(mCurrentPhotoPath)));
 
-				dataIntent.setData(mUri);
+				// dataIntent.setData(mUri);
 				dataIntent.putExtra("to", to);
 				// if (getParent() == null) {
 				setResult(Activity.RESULT_OK, dataIntent);
@@ -88,7 +90,8 @@ public class ImageSelectActivity extends SherlockActivity {
 				finish();
 			}
 			Intent intent = new Intent();
-			intent.setType("*/*");
+			// TODO paid version allows any file
+			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
 			Utils.configureActionBar(this, "select image", to, true);
 			startActivityForResult(Intent.createChooser(intent, "Select Image"), REQUEST_EXISTING_IMAGE);
@@ -147,25 +150,24 @@ public class ImageSelectActivity extends SherlockActivity {
 			else {
 				uri = data.getData();
 			}
-			mUri = uri;
 
-			// Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri);
-			//
-			// // save the image to file
-			// File file = new File(mCurrentPhotoPath);
-			// uri = Uri.fromFile(file);
-			// try {
-			// FileOutputStream fos = new FileOutputStream(file);
-			//
-			// if (bitmap != null) {
-			// bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-			// bitmap = null;
-			// }
-			// fos.close();
-			// }
-			// catch (IOException e) {
-			// SurespotLog.w(TAG, "uploadPictureMessage", e);
-			// }
+			Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri);
+
+			// save the image to file
+			File file = new File(mCurrentPhotoPath);
+			uri = Uri.fromFile(file);
+			try {
+				FileOutputStream fos = new FileOutputStream(file);
+
+				if (bitmap != null) {
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
+					bitmap = null;
+				}
+				fos.close();
+			}
+			catch (IOException e) {
+				SurespotLog.w(TAG, "uploadPictureMessage", e);
+			}
 
 			mImageView.setImageURI(uri);
 		}

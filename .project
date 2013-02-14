@@ -31,4 +31,16 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>libs/sc-light-jdk15on-1.47.0.3-SNAPSHOT.jar</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/libs/android/github/forks/spongycastle/sc-light-jdk15on/target/sc-light-jdk15on-1.47.0.3-SNAPSHOT.jar</locationURI>
+		</link>
+		<link>
+			<name>libs/scprov-jdk15on-1.47.0.3-SNAPSHOT.jar</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/libs/android/github/forks/spongycastle/scprov-jdk15on/target/scprov-jdk15on-1.47.0.3-SNAPSHOT.jar</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
