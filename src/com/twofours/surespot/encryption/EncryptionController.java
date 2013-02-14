@@ -20,7 +20,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.spongycastle.crypto.engines.AESLightEngine;
-import org.spongycastle.crypto.modes.CCMBlockCipher;
+import org.spongycastle.crypto.modes.GCMBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
 import org.spongycastle.jce.ECNamedCurveTable;
@@ -44,6 +44,7 @@ public class EncryptionController {
 	private static final String TAG = "EncryptionController";
 	private static final int AES_KEY_LENGTH = 32;
 	private static final int SALT_LENGTH = 16;
+	private static final int IV_LENGTH = 16;
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private static SecureRandom mSecureRandom = new SecureRandom();
@@ -152,7 +153,7 @@ public class EncryptionController {
 				byte[] buf = new byte[1024]; // input buffer
 
 				try {
-					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
 							"AES");
 					byte[] cipherBytes = Utils.base64Decode(cipherData);
@@ -194,7 +195,7 @@ public class EncryptionController {
 		byte[] buf = new byte[1024]; // input buffer
 
 		try {
-			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+			Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 			SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH, "AES");
 			byte[] cipherBytes = Utils.base64Decode(cipherData);
 			byte[] iv = Utils.base64Decode(ivs);
@@ -280,7 +281,7 @@ public class EncryptionController {
 				IvParameterSpec ivParams = new IvParameterSpec(iv);
 
 				try {
-					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
 					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
 							"AES");
@@ -327,7 +328,7 @@ public class EncryptionController {
 		new AsyncTask<Void, Void, byte[][]>() {
 			@Override
 			protected byte[][] doInBackground(Void... params) {
-				byte[] iv = new byte[15];
+				byte[] iv = new byte[IV_LENGTH];
 				byte[] buf = new byte[1024]; // input buffer
 
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -336,7 +337,7 @@ public class EncryptionController {
 				InputStream in = data;
 
 				try {
-					Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
 					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
 							"AES");
@@ -382,7 +383,7 @@ public class EncryptionController {
 
 	public static byte[][] symmetricBase64EncryptSync(final String username, final InputStream data) {
 
-		byte[] iv = new byte[15];
+		byte[] iv = new byte[16];
 		byte[] buf = new byte[1024]; // input buffer
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -391,7 +392,7 @@ public class EncryptionController {
 		InputStream in = data;
 
 		try {
-			Cipher ccm = Cipher.getInstance("AES/CCM/NoPadding", "SC");
+			Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
 			SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH, "AES");
 			ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
@@ -433,7 +434,7 @@ public class EncryptionController {
 			@Override
 			protected String doInBackground(Void... params) {
 
-				CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+				GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 				byte[] cipherBytes = null;
 				byte[] iv = null;
@@ -475,7 +476,7 @@ public class EncryptionController {
 
 	public static String symmetricDecryptSync(final String username, final String ivs, final String cipherData) {
 
-		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 		byte[] cipherBytes = null;
 		byte[] iv = null;
@@ -512,7 +513,7 @@ public class EncryptionController {
 			@Override
 			protected String[] doInBackground(Void... params) {
 
-				CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+				GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 				// crashes with getBlockSize() bytes, don't know why?
 				byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
@@ -567,7 +568,7 @@ public class EncryptionController {
 	 */
 	public static String[] symmetricEncryptSyncPK(final String password, final String plaintext) {
 
-		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 		// crashes with getBlockSize() bytes, don't know why?
 		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
@@ -617,7 +618,7 @@ public class EncryptionController {
 	 */
 	public static String symmetricDecryptSyncPK(final String password, final String ivs, final String salts, final String cipherData) {
 
-		CCMBlockCipher ccm = new CCMBlockCipher(new AESLightEngine());
+		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 		byte[] cipherBytes = null;
 		byte[] iv = null;
@@ -654,7 +655,7 @@ public class EncryptionController {
 	private static byte[][] derive(String password) {
 		int iterationCount = 1000;
 		int saltLength = SALT_LENGTH;
-		int keyLength = 256;
+		int keyLength = AES_KEY_LENGTH;
 
 		byte[][] derived = new byte[2][];
 		byte[] keyBytes = null;
@@ -678,7 +679,7 @@ public class EncryptionController {
 
 	private static byte[] derive(String password, byte[] salt) {
 		int iterationCount = 1000;
-		int keyLength = 256;
+		int keyLength = AES_KEY_LENGTH;
 
 		byte[] keyBytes = null;
 
