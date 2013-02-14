@@ -1,7 +1,7 @@
 package com.twofours.surespot.network;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,13 +9,21 @@ import org.acra.ACRA;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
+import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
+import ch.boye.httpclientandroidlib.client.ClientProtocolException;
 import ch.boye.httpclientandroidlib.client.CookieStore;
+import ch.boye.httpclientandroidlib.client.HttpClient;
+import ch.boye.httpclientandroidlib.client.methods.HttpPost;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
+import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
+import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
+import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -31,6 +39,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.common.WebClientDevWrapper;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
@@ -381,21 +390,70 @@ public class NetworkController {
 		}
 	}
 
-	public void postFile(Context context, String user, String id, byte[] data, String mimeType, AsyncHttpResponseHandler responseHandler) {
+	public void postFile(Context context, String user, String id, InputStream fileStream, String mimeType,
+			AsyncHttpResponseHandler responseHandler) {
 
 		RequestParams params = new RequestParams();
-		params.put("image", new ByteArrayInputStream(data), id, mimeType);
+		params.put("image", fileStream, id, mimeType);
 
 		post("/images/" + user, params, responseHandler);
 
 	}
 
-	public String postFileSync(Context context, String user, String id, byte[] data, String mimeType) {
+	public String postFileSync(Context context, String user, String id, InputStream fileStream, String mimeType) {
 
 		RequestParams params = new RequestParams();
-		params.put("image", new ByteArrayInputStream(data), id, mimeType);
+		params.put("image", fileStream, id, mimeType);
 
 		return mSyncClient.post(mBaseUrl + "/images/" + user, params);
+
+	}
+
+	public void postFileStream(Context context, final String user, final String id, final InputStream fileInputStream,
+			final String mimeType, final IAsyncCallback<Boolean> callback) {
+		new AsyncTask<Void, Void, Boolean>() {
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+
+				HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user);
+
+				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
+				// StringBody comment = new StringBody("Filename: " + fileName);
+
+				MultipartEntity reqEntity = new MultipartEntity();
+				reqEntity.addPart("image", isBody);
+				// reqEntity.addPart("comment", comment);
+				httppost.setEntity(reqEntity);
+				Cookie cookie = IdentityController.getCookie();
+				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
+
+				HttpResponse response;
+				try {
+					response = httpclient.execute(httppost);
+					HttpEntity resEntity = response.getEntity();
+					if (response.getStatusLine().getStatusCode() == 202) {
+						return true;
+					}
+				}
+
+				catch (ClientProtocolException e) {
+					SurespotLog.w(TAG, "postFileStream", e);
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, "postFileStream", e);
+				}
+
+				return false;
+
+			}
+
+			protected void onPostExecute(Boolean result) {
+				callback.handleResponse(result);
+			};
+
+		}.execute();
 
 	}
 

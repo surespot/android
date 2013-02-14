@@ -3,6 +3,7 @@ package com.twofours.surespot.encryption;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -31,6 +32,8 @@ import org.spongycastle.jce.spec.ECPrivateKeySpec;
 import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import android.os.AsyncTask;
+import android.util.Base64;
+import android.util.Base64InputStream;
 
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.twofours.surespot.IdentityController;
@@ -379,6 +382,53 @@ public class EncryptionController {
 			}
 		}.execute();
 
+	}
+
+	public static byte[] symmetricBase64Encrypt(final String username, final InputStream in, final OutputStream out) {
+		final byte[] iv = new byte[IV_LENGTH];
+		mSecureRandom.nextBytes(iv);
+		final IvParameterSpec ivParams = new IvParameterSpec(iv);
+
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				byte[] buf = new byte[1024]; // input buffer
+				try {
+					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
+
+					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
+							"AES");
+					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
+					CipherOutputStream cos = new CipherOutputStream(out, ccm);
+					Base64InputStream base64is = new Base64InputStream(in, Base64.NO_PADDING | Base64.NO_WRAP);
+
+					int i = 0;
+
+					while ((i = base64is.read(buf)) != -1) {
+						cos.write(buf, 0, i);
+					}
+
+					in.close();
+					base64is.close();
+					cos.close();
+					out.close();
+
+				}
+				catch (InvalidCacheLoadException icle) {
+					// will occur if couldn't load key
+					SurespotLog.v(TAG, "symmetricBase64Encrypt", icle);
+				}
+
+				catch (Exception e) {
+					SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
+				}
+				return null;
+
+			}
+
+		}.execute();
+
+		return iv;
 	}
 
 	public static byte[][] symmetricBase64EncryptSync(final String username, final InputStream data) {

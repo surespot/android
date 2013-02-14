@@ -1,7 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,14 +18,12 @@ import android.graphics.BitmapFactory.Options;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.MediaStore.Images;
 
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatUtils {
@@ -57,66 +53,69 @@ public class ChatUtils {
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
 			final IAsyncCallback<Boolean> callback) {
 
-		new AsyncTask<Void, Void, Boolean>() {
+		// new AsyncTask<Void, Void, Boolean>() {
+		//
+		// @Override
+		// protected Boolean doInBackground(Void... params) {
 
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				byte[][] results = null;
-				if (scale) {
+		try {
+			SurespotApplication.getNetworkController().postFileStream(context, to, "test",
+					context.getContentResolver().openInputStream(imageUri), SurespotConstants.MimeTypes.IMAGE, callback);
+		}
+		catch (FileNotFoundException e) {
+			SurespotLog.w(TAG, "Error uploading picture", e);
+		}
 
-					// TODO thread
-					Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
-
-					// final String data = ChatUtils.inputStreamToBase64(iStream);
-
-					final ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
-					bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpeg);
-					bitmap = null;
-
-					try {
-						jpeg.close();
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, "uploadPictureMessage", e);
-					}
-
-					// Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-					results = EncryptionController.symmetricBase64EncryptSync(to, new ByteArrayInputStream(jpeg.toByteArray()));
-
-				}
-				else {
-
-					try {
-						results = EncryptionController.symmetricBase64EncryptSync(to, context.getContentResolver()
-								.openInputStream(imageUri));
-					}
-					catch (FileNotFoundException e) {
-						SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
-					}
-				}
-
-				if (results != null) {
-					final String iv = new String(results[0]);
-					String content = SurespotApplication.getNetworkController().postFileSync(context, to, iv, results[1],
-							SurespotConstants.MimeTypes.IMAGE);
-					if (content != null) {
-						SurespotLog.v(TAG, "Received picture upload response: " + content);
-						return true;
-					}
-					else {
-						SurespotLog.v(TAG, "Error uploading picture: " + content);
-						return false;
-					}
-
-				}
-				return false;
-			}
-
-			protected void onPostExecute(Boolean result) {
-				callback.handleResponse(result);
-			};
-
-		}.execute();
+		// try {
+		// InputStream dataStream;
+		// if (scale) {
+		// PipedOutputStream jpegOutputStream = new PipedOutputStream();
+		//
+		// Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
+		//
+		// // final String data = ChatUtils.inputStreamToBase64(iStream);
+		//
+		// dataStream = new PipedInputStream(jpegOutputStream);
+		//
+		// bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpegOutputStream);
+		// bitmap = null;
+		//
+		// }
+		// else {
+		// dataStream = context.getContentResolver().openInputStream(imageUri);
+		// }
+		//
+		// PipedOutputStream fileOutputStream = new PipedOutputStream();
+		// PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
+		// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
+		//
+		// // final String iv = new String(results[0]);
+		// SurespotApplication.getNetworkController().postFile(context, to, new String(iv), fileInputStream,
+		// SurespotConstants.MimeTypes.IMAGE, new AsyncHttpResponseHandler() {
+		// @Override
+		// public void onSuccess(int statusCode, String content) {
+		// SurespotLog.v(TAG, "Received picture upload response: " + content);
+		// callback.handleResponse(true);
+		// }
+		//
+		// @Override
+		// public void onFailure(Throwable error) {
+		// SurespotLog.w(TAG, "Error uploading picture", error);
+		// callback.handleResponse(true);
+		// }
+		//
+		// });
+		//
+		// }
+		//
+		// catch (IOException e) {
+		// SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
+		// }
+		//
+		// return null;
+		// }
+		//
+		// }.execute();
 
 	}
 
