@@ -8,7 +8,6 @@ import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.TimerTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,8 +20,6 @@ import android.graphics.BitmapFactory.Options;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.provider.MediaStore.Images;
 
 import com.twofours.surespot.IdentityController;
@@ -57,7 +54,7 @@ public class ChatUtils {
 	}
 
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
-			final IAsyncCallback<Boolean> callback) {
+			final String fileName, final IAsyncCallback<Boolean> callback) {
 
 		// new AsyncTask<Void, Void, Boolean>() {
 
@@ -89,20 +86,20 @@ public class ChatUtils {
 			}
 			else {
 				dataStream = context.getContentResolver().openInputStream(imageUri);
+
 			}
 
 			PipedOutputStream fileOutputStream = new PipedOutputStream();
 			PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
 			// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
 
-			Runnable producer = EncryptionController.createEncryptTask(to, new BufferedInputStream(dataStream),
-					fileOutputStream);
-			Runnable consumer = SurespotApplication.getNetworkController().createPostFileStreamTask(context, to,
-					"test", fileInputStream, SurespotConstants.MimeTypes.IMAGE, callback);
+			Runnable producer = EncryptionController.createEncryptTask(to, new BufferedInputStream(dataStream), fileOutputStream);
+			Runnable consumer = SurespotApplication.getNetworkController().createPostFileStreamTask(context, to, "test", fileInputStream,
+					SurespotConstants.MimeTypes.IMAGE, callback);
 			new Thread(producer).start();
 			new Thread(consumer).start();
-		    //producer.execute();
-			//consumer.execute();
+			// producer.execute();
+			// consumer.execute();
 
 			// final String iv = new String(results[0]);
 			// SurespotApplication.getNetworkController().postFile(context, to, new String(iv), fileInputStream,
@@ -223,11 +220,10 @@ public class ChatUtils {
 		options.inJustDecodeBounds = false;
 		return BitmapFactory.decodeByteArray(data, 0, data.length, options);
 	}
-	
 
 	public static Bitmap getSampledImage(InputStream data, int reqHeight) {
 		BitmapFactory.Options options = new Options();
-		
+
 		decodeBounds(options, data);
 
 		if (options.outHeight > reqHeight) {
@@ -242,7 +238,7 @@ public class ChatUtils {
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeStream(data);
 	}
-	
+
 	private static void decodeBounds(Options options, byte[] data) {
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeByteArray(data, 0, data.length, options);

@@ -325,8 +325,9 @@ public class ChatActivity extends SherlockFragmentActivity {
 			case REQUEST_SELECT_IMAGE:
 				selectedImageUri = data.getData();
 				String to = data.getStringExtra("to");
+				String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
-					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, filename, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
 							if (result) {

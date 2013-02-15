@@ -427,7 +427,7 @@ public class ChatFragment extends SherlockFragment {
 			}
 			else if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 				Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
-				ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, true, new IAsyncCallback<Boolean>() {
+				ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, true, null, new IAsyncCallback<Boolean>() {
 
 					@Override
 					public void handleResponse(Boolean result) {
