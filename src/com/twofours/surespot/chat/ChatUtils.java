@@ -2,6 +2,7 @@ package com.twofours.surespot.chat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,13 +56,14 @@ public class ChatUtils {
 	}
 
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
-			boolean captured, final IAsyncCallback<Boolean> callback) {
+			final String fileName, final IAsyncCallback<Boolean> callback) {
 
 		new AsyncTask<Void, Void, Boolean>() {
 
 			@Override
 			protected Boolean doInBackground(Void... params) {
 				byte[][] results = null;
+				boolean success = false;
 				if (scale) {
 
 					// TODO thread
@@ -101,15 +103,18 @@ public class ChatUtils {
 							SurespotConstants.MimeTypes.IMAGE);
 					if (content != null) {
 						SurespotLog.v(TAG, "Received picture upload response: " + content);
-						return true;
+						success = true;
 					}
 					else {
 						SurespotLog.v(TAG, "Error uploading picture: " + content);
-						return false;
 					}
-
 				}
-				return false;
+
+				// delete temp image file if there was one
+				if (fileName != null) {
+					new File(fileName).delete();
+				}
+				return success;
 			}
 
 			protected void onPostExecute(Boolean result) {

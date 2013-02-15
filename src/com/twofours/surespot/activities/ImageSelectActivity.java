@@ -27,7 +27,6 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
 public class ImageSelectActivity extends SherlockActivity {
-	private static final String IMAGE_CAPTURE_DIR = "image_captures";
 	private static final String TAG = "ImageSelectActivity";
 	public static final int REQUEST_EXISTING_IMAGE = 1;
 	public static final int REQUEST_CAPTURE_IMAGE = 2;
@@ -37,7 +36,6 @@ public class ImageSelectActivity extends SherlockActivity {
 	private Button mCancelButton;
 	private File mCurrentPhotoPath;
 	private int mSource;
-	private boolean mCapture;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +55,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 				// dataIntent.setData(mUri);
 				dataIntent.putExtra("to", to);
-				dataIntent.putExtra("captured", mCapture);
+				dataIntent.putExtra("filename", mCurrentPhotoPath.getPath());
 				// if (getParent() == null) {
 				setResult(Activity.RESULT_OK, dataIntent);
 				// }
@@ -97,12 +95,10 @@ public class ImageSelectActivity extends SherlockActivity {
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
 			Utils.configureActionBar(this, "select image", to, true);
-			intent.putExtra("captured", false);
 			startActivityForResult(Intent.createChooser(intent, "select Image"), REQUEST_EXISTING_IMAGE);
 			break;
 
 		case REQUEST_CAPTURE_IMAGE:
-			mCapture = true;
 			Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 			Utils.configureActionBar(this, "capture image", to, true);
 			try {
@@ -127,9 +123,9 @@ public class ImageSelectActivity extends SherlockActivity {
 	private void createImageFile() throws IOException {
 		// Create an image file name
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		String imageFileName = "surespot" + timeStamp + "_";
+		String imageFileName = "image" + "_" + timeStamp;
 
-		File dir = FileUtils.getDiskCacheDir(this, IMAGE_CAPTURE_DIR);
+		File dir = FileUtils.getImageCaptureDir();
 		if (FileUtils.ensureDir(dir)) {
 			mCurrentPhotoPath = new File(dir.getPath(), imageFileName);
 		}
