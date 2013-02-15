@@ -40,7 +40,7 @@ public class IdentityController {
 
 	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPair, Cookie cookie) {
 		// TODO thread
-		String identityDir = getIdentityDir(context);
+		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = new SurespotIdentity(username, keyPair);
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, username, password, cookie);
@@ -99,12 +99,6 @@ public class IdentityController {
 		return null;
 	}
 
-	private static String getIdentityDir(Context context) {
-		File cacheDir = FileUtils.getDiskCacheDir(context, SurespotConstants.FileLocations.IDENTITIES);
-		return cacheDir.getPath();
-
-	}
-
 	public static List<String> getIdentityNames(Context context, String dir) {
 
 		ArrayList<String> identityNames = new ArrayList<String>();
@@ -127,8 +121,7 @@ public class IdentityController {
 	}
 
 	public static List<String> getIdentityNames(Context context) {
-		File cacheDir = FileUtils.getDiskCacheDir(context, SurespotConstants.FileLocations.IDENTITIES);
-		return getIdentityNames(context, cacheDir.getPath());
+		return getIdentityNames(context, FileUtils.getIdentityDir(context));
 	}
 
 	public static void userLoggedIn(Context context, String username, String password, Cookie cookie) {
@@ -157,7 +150,7 @@ public class IdentityController {
 			}
 
 			if (password != null) {
-				identity = loadIdentity(context, getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+				identity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
 				mIdentities.put(username, identity);
 			}
 
@@ -301,7 +294,7 @@ public class IdentityController {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 							if (content.equals("true")) {
-								saveIdentity(getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+								saveIdentity(FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
 								callback.handleResponse(new IdentityOperationResult(context
 										.getText(R.string.identity_imported_successfully).toString(), true));
 							}

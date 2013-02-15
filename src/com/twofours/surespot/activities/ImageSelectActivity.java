@@ -121,13 +121,18 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	@SuppressWarnings("static-access")
 	private void createImageFile() throws IOException {
+
 		// Create an image file name
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		String imageFileName = "image" + "_" + timeStamp;
 
-		File dir = FileUtils.getImageCaptureDir();
+		File dir = FileUtils.getImageCaptureDir(this);
+
 		if (FileUtils.ensureDir(dir)) {
+			dir.setExecutable(true, false);
 			mCurrentPhotoPath = new File(dir.getPath(), imageFileName);
+			mCurrentPhotoPath.createNewFile();
+			mCurrentPhotoPath.setWritable(true, false);
 		}
 		else {
 			throw new IOException("Could not create image temp file dir: " + dir.getPath());
@@ -152,19 +157,14 @@ public class ImageSelectActivity extends SherlockActivity {
 			// TODO on thread
 			Uri uri = null;
 			if (requestCode == REQUEST_CAPTURE_IMAGE) {
-				// scale the image down
-
 				uri = Uri.fromFile(mCurrentPhotoPath);
 			}
 			else {
 				uri = data.getData();
 			}
 
+			// scale, compress and save the image
 			Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri);
-
-			// save the image to file
-			// File file = mCurrentPhotoPath;
-			// uri = Uri.fromFile(file);
 			try {
 				FileOutputStream fos = new FileOutputStream(mCurrentPhotoPath);
 

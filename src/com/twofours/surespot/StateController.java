@@ -27,7 +27,7 @@ public class StateController {
 	private static final String ACTIVE_CHATS = "activeChats";
 	private static final String MESSAGE_IDS = "messageIds";
 	private static final String STATE_EXTENSION = ".sss";
-	private static final String STATE_DIR = "state";
+
 	private static final String TAG = "StateController";
 
 	public ArrayList<String> loadActiveChats() {
@@ -193,8 +193,7 @@ public class StateController {
 	private String getFilename(String filename) {
 		String user = IdentityController.getLoggedInUser();
 		if (user != null) {
-			File dir = FileUtils.getDiskCacheDir(SurespotApplication.getContext(), STATE_DIR);
-			dir = new File(dir.getPath() + File.separator + user);
+			String dir = FileUtils.getStateDir(SurespotApplication.getContext()) + File.separator + user;
 			if (FileUtils.ensureDir(dir)) {
 				return dir + File.separator + filename + STATE_EXTENSION;
 			}
