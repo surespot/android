@@ -55,7 +55,7 @@ public class ChatUtils {
 	}
 
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
-			final IAsyncCallback<Boolean> callback) {
+			boolean captured, final IAsyncCallback<Boolean> callback) {
 
 		new AsyncTask<Void, Void, Boolean>() {
 
