@@ -289,7 +289,8 @@ public class ChatFragment extends SherlockFragment {
 						callback.handleResponse(false);
 					}
 
-					Utils.makeToast(ChatFragment.this.getActivity(), "Could not load messages, please try again later.");
+					// TODO only show for visible fragment
+					// Utils.makeToast(ChatFragment.this.getActivity(), "Could not load messages, please try again later.");
 				}
 			}
 		});
