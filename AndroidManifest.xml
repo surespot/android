@@ -24,8 +24,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-        
-        <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -106,7 +105,10 @@
         </activity>
         <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>
-        <activity android:name="com.twofours.surespot.activities.ImageSelectActivity" >
+        <activity
+            android:name="com.twofours.surespot.activities.ImageSelectActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|keyboardHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.SettingsActivity"

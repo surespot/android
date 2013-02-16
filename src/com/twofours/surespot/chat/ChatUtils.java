@@ -67,7 +67,7 @@ public class ChatUtils {
 				if (scale) {
 
 					// TODO thread
-					Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
+					Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, -1);
 
 					// final String data = ChatUtils.inputStreamToBase64(iStream);
 
@@ -125,7 +125,7 @@ public class ChatUtils {
 
 	}
 
-	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri) {
+	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate) {
 
 		try {// First decode with inJustDecodeBounds=true to check dimensions
 			BitmapFactory.Options options = new BitmapFactory.Options();
@@ -138,7 +138,16 @@ public class ChatUtils {
 
 			// rotate as necessary
 			int rotatedWidth, rotatedHeight;
-			int orientation = (int) rotationForImage(context, imageUri);
+
+			int orientation = 0;
+
+			// if we have a rotation use it otherwise look at the EXIF
+			if (rotate > -1) {
+				orientation = rotate;
+			}
+			else {
+				orientation = (int) rotationForImage(context, imageUri);
+			}
 			if (orientation == 90 || orientation == 270) {
 				rotatedWidth = options.outHeight;
 				rotatedHeight = options.outWidth;
