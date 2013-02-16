@@ -85,44 +85,58 @@ public class ImageSelectActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				mCaptureOrientation = mOrientation;
-				mCamera.takePicture(null, null, new PictureCallback() {
+				// if we have an image captured already, they are clicking reject
+				if (mCompressedImagePath != null) {
+					deleteCompressedImage();
+					mCaptureButton.setText("capture");
+					mSendButton.setEnabled(false);
+					mCamera.startPreview();
+				}
+				else {
+					mCaptureOrientation = mOrientation;
+					mCamera.takePicture(null, null, new PictureCallback() {
 
-					@Override
-					public void onPictureTaken(byte[] data, Camera camera) {
+						@Override
+						public void onPictureTaken(byte[] data, Camera camera) {
 
-						if (data == null) {
-							SurespotLog.e(TAG, "onPictureTaken", new IOException("could not get postview image data"));
-						}
-						else {
-							try {
-								deleteCapturedImage();
+							if (data == null) {
+								SurespotLog.e(TAG, "onPictureTaken", new IOException("could not get postview image data"));
+							}
+							else {
+								try {
+									deleteCapturedImage();
 
-								mCapturedImagePath = createImageFile();
-								FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
-								fos.write(data);
-								fos.close();
+									mCapturedImagePath = createImageFile();
+									FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
+									fos.write(data);
+									fos.close();
 
-								int rotation = (mCaptureOrientation + 45) / 90 * 90;
+									int rotation = (mCaptureOrientation + 45) / 90 * 90;
 
-								// leave it upside down
-								if (rotation == 360 || rotation == 180) {
-									rotation = 0;
+									// leave it upside down
+									if (rotation == 360 || rotation == 180) {
+										rotation = 0;
+									}
+
+									// compress image
+									compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
+									deleteCapturedImage();
+									mCaptureButton.setText("reject");
+
+								}
+								catch (FileNotFoundException e) {
+									SurespotLog.d(TAG, "File not found: " + e.getMessage());
+								}
+								catch (IOException e) {
+									SurespotLog.d(TAG, "Error accessing file: " + e.getMessage());
 								}
 
-								// compress image
-								compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
 							}
-							catch (FileNotFoundException e) {
-								SurespotLog.d(TAG, "File not found: " + e.getMessage());
-							}
-							catch (IOException e) {
-								SurespotLog.d(TAG, "Error accessing file: " + e.getMessage());
-							}
-
 						}
-					}
-				});
+
+					});
+				}
+
 			}
 
 		});
@@ -144,14 +158,6 @@ public class ImageSelectActivity extends SherlockActivity {
 		case REQUEST_EXISTING_IMAGE:
 			mImageView = (ImageView) this.findViewById(R.id.image);
 			mImageView.setVisibility(View.VISIBLE);
-			// try {
-			// createImageFile();
-			// }
-			// catch (IOException e1) {
-			// // TODO tell user
-			// SurespotLog.w(TAG, "selectImage", e1);
-			// finish();
-			// }
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
