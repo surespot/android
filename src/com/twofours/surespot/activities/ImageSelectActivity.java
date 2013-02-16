@@ -9,7 +9,6 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
@@ -62,13 +61,11 @@ public class ImageSelectActivity extends SherlockActivity {
 			public void onOrientationChanged(int orientation) {
 				// SurespotLog.v(TAG, "orientation: " + orientation);
 				mOrientation = orientation;
-
 			}
 		};
 
 		final String to = getIntent().getStringExtra("to");
 
-		mImageView = (ImageView) this.findViewById(R.id.image);
 		mSendButton = (Button) this.findViewById(R.id.send);
 		mSendButton.setOnClickListener(new OnClickListener() {
 
@@ -76,20 +73,11 @@ public class ImageSelectActivity extends SherlockActivity {
 			public void onClick(View v) {
 				Intent dataIntent = new Intent();
 				dataIntent.setData(Uri.fromFile(mCompressedImagePath));
-
-				// dataIntent.setData(mUri);
 				dataIntent.putExtra("to", to);
 				dataIntent.putExtra("filename", mCompressedImagePath.getPath());
-				// if (getParent() == null) {
 				setResult(Activity.RESULT_OK, dataIntent);
-				// }
-				// else {
-				// getParent().setResult(Activity.RESULT_OK, data);
-				// }
 				finish();
-
 			}
-
 		});
 
 		mCaptureButton = (Button) this.findViewById(R.id.capture);
@@ -115,7 +103,6 @@ public class ImageSelectActivity extends SherlockActivity {
 								fos.write(data);
 								fos.close();
 
-								// portrait orientation is really 90 not 0
 								int rotation = (mCaptureOrientation + 45) / 90 * 90;
 
 								// leave it upside down
@@ -124,7 +111,7 @@ public class ImageSelectActivity extends SherlockActivity {
 								}
 
 								// compress image
-								mImageView.setImageBitmap(compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation));
+								compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
 							}
 							catch (FileNotFoundException e) {
 								SurespotLog.d(TAG, "File not found: " + e.getMessage());
@@ -145,30 +132,26 @@ public class ImageSelectActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				mCompressedImagePath = null;
+				deleteCapturedImage();
+				deleteCompressedImage();
 				finish();
 			}
 		});
 
-		mSource = getIntent().getIntExtra("source", 0);
-
-		if (Camera.getNumberOfCameras() == 0) {
-
-			// if we don't have a camera we shouldn't be here but in case we are let them pick an image
-			mSource = REQUEST_EXISTING_IMAGE;
-		}
+		mSource = getIntent().getIntExtra("source", REQUEST_EXISTING_IMAGE);
 
 		switch (mSource) {
 		case REQUEST_EXISTING_IMAGE:
-
-			try {
-				createImageFile();
-			}
-			catch (IOException e1) {
-				// TODO tell user
-				SurespotLog.w(TAG, "selectImage", e1);
-				finish();
-			}
+			mImageView = (ImageView) this.findViewById(R.id.image);
+			mImageView.setVisibility(View.VISIBLE);
+			// try {
+			// createImageFile();
+			// }
+			// catch (IOException e1) {
+			// // TODO tell user
+			// SurespotLog.w(TAG, "selectImage", e1);
+			// finish();
+			// }
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -177,37 +160,20 @@ public class ImageSelectActivity extends SherlockActivity {
 			break;
 
 		case REQUEST_CAPTURE_IMAGE:
-
-			captureImage();
-			// Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-			// Utils.configureActionBar(this, "capture image", to, true);
-			// try {
-			// createImageFile();
-			// cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCompressedImagePath));
-			// startActivityForResult(cameraIntent, REQUEST_CAPTURE_IMAGE);
-			// }
-			// catch (IOException e) {
-			// // TODO tell user
-			// SurespotLog.w(TAG, "selectImage", e);
-			// finish();
-			// }
+			mCaptureButton.setVisibility(View.VISIBLE);
+			mCamera = getCameraInstance();
+			if (mCamera != null) {
+				CameraPreview cameraPreview = new CameraPreview(this, mCamera);
+				FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+				preview.setVisibility(View.VISIBLE);
+				preview.addView(cameraPreview);
+			}
 			break;
 
 		default:
 			finish();
 		}
 
-	}
-
-	private void captureImage() {
-		mCaptureButton.setVisibility(View.VISIBLE);
-		mCamera = getCameraInstance();
-		if (mCamera != null) {
-			CameraPreview cameraPreview = new CameraPreview(this, mCamera);
-			FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-			preview.setVisibility(View.VISIBLE);
-			preview.addView(cameraPreview);
-		}
 	}
 
 	/** A safe way to get an instance of the Camera object. */
@@ -225,6 +191,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		return c; // returns null if camera is unavailable
 	}
 
+	// TODO handle forward camera
 	public void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
 		android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
 		android.hardware.Camera.getCameraInfo(cameraId, info);
@@ -267,11 +234,8 @@ public class ImageSelectActivity extends SherlockActivity {
 		String imageFileName = "image" + "_" + timeStamp;
 
 		File dir = FileUtils.getImageCaptureDir(this);
-
 		if (FileUtils.ensureDir(dir)) {
-
 			return new File(dir.getPath(), imageFileName);
-
 		}
 		else {
 			throw new IOException("Could not create image temp file dir: " + dir.getPath());
@@ -307,9 +271,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			// scale, compress and save the image
 			mImageView.setImageBitmap(compressImage(uri, -1));
 		}
-		else {
-			finish();
-		}
 
 	}
 
@@ -323,7 +284,6 @@ public class ImageSelectActivity extends SherlockActivity {
 
 			if (bitmap != null) {
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-				bitmap = null;
 			}
 			fos.close();
 			mSendButton.setEnabled(true);
@@ -371,19 +331,6 @@ public class ImageSelectActivity extends SherlockActivity {
 		if (mCamera != null) {
 			mCamera.release(); // release the camera for other applications
 			mCamera = null;
-		}
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		// super.onConfigurationChanged(newConfig);
-
-		// Checks the orientation of the screen
-		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			SurespotLog.v(TAG, "orientationChanged to landscape");
-		}
-		else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-			SurespotLog.v(TAG, "orientationChanged to portrait");
 		}
 	}
 }
