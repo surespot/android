@@ -460,14 +460,14 @@ public class NetworkController {
 			}
 
 			protected void onPostExecute(HttpResponse response) {
-
-				if (response.getStatusLine().getStatusCode() == 202) {
+				if (response != null && response.getStatusLine().getStatusCode() == 202) {
 
 					callback.handleResponse(true);
 				}
 				else {
 					callback.handleResponse(false);
 				}
+
 			};
 		}.execute();
 

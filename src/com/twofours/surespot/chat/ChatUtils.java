@@ -1,6 +1,7 @@
 package com.twofours.surespot.chat;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -53,6 +54,7 @@ public class ChatUtils {
 		return chatMessage;
 	}
 
+	@SuppressWarnings("resource")
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
 			final String fileName, final IAsyncCallback<Boolean> callback) {
 
@@ -60,20 +62,13 @@ public class ChatUtils {
 			InputStream dataStream;
 			if (scale) {
 				PipedOutputStream jpegOutputStream = new PipedOutputStream();
-
 				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, -1);
-
-				// final String data = ChatUtils.inputStreamToBase64(iStream);
-
 				dataStream = new PipedInputStream(jpegOutputStream);
-
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpegOutputStream);
 				bitmap = null;
-
 			}
 			else {
 				dataStream = context.getContentResolver().openInputStream(imageUri);
-
 			}
 
 			PipedOutputStream fileOutputStream = new PipedOutputStream();
@@ -86,6 +81,7 @@ public class ChatUtils {
 
 		catch (IOException e) {
 			SurespotLog.e(TAG, "uploadPictureMessageAsync", e);
+			new File(fileName).delete();
 		}
 
 	}

@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.OrientationEventListener;
 import android.view.Surface;
@@ -32,11 +33,14 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class ImageSelectActivity extends SherlockActivity {
 	private static final String TAG = "ImageSelectActivity";
 	public static final int REQUEST_EXISTING_IMAGE = 1;
 	public static final int REQUEST_CAPTURE_IMAGE = 2;
+	private static final String COMPRESS_SUFFIX = "compress";
+	private static final String CAPTURE_SUFFIX = "capture";
 
 	private ImageView mImageView;
 	private Button mSendButton;
@@ -99,6 +103,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 						@Override
 						public void onPictureTaken(byte[] data, Camera camera) {
+							// SurespotLog.v(TAG, "onPictureTaken");
 
 							if (data == null) {
 								SurespotLog.e(TAG, "onPictureTaken", new IOException("could not get postview image data"));
@@ -106,7 +111,7 @@ public class ImageSelectActivity extends SherlockActivity {
 							else {
 								try {
 									deleteCapturedImage();
-									mCapturedImagePath = createImageFile();
+									mCapturedImagePath = createImageFile(CAPTURE_SUFFIX);
 									FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
 									fos.write(data);
 									fos.close();
@@ -119,16 +124,32 @@ public class ImageSelectActivity extends SherlockActivity {
 									}
 
 									// compress image
-									compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
-									deleteCapturedImage();
-									mCaptureButton.setText("reject");
+									compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation,
+											new IAsyncCallback<Bitmap>() {
+
+												@Override
+												public void handleResponse(Bitmap result) {
+													if (result != null) {
+														mCaptureButton.setText("reject");
+														mSendButton.setEnabled(true);
+													}
+													else {
+														Utils.makeToast(ImageSelectActivity.this, "could not capture image");
+														mSendButton.setEnabled(false);
+													}
+
+													deleteCapturedImage();
+												}
+											});
 
 								}
 								catch (FileNotFoundException e) {
-									SurespotLog.d(TAG, "File not found: " + e.getMessage());
+									SurespotLog.w(TAG, "File not found: " + e.getMessage());
+									Utils.makeToast(ImageSelectActivity.this, "could not capture image");
 								}
 								catch (IOException e) {
-									SurespotLog.d(TAG, "Error accessing file: " + e.getMessage());
+									SurespotLog.w(TAG, "Error accessing file: " + e.getMessage());
+									Utils.makeToast(ImageSelectActivity.this, "could not capture image");
 								}
 
 							}
@@ -236,15 +257,18 @@ public class ImageSelectActivity extends SherlockActivity {
 	}
 
 	@SuppressWarnings("static-access")
-	private File createImageFile() throws IOException {
+	private synchronized File createImageFile(String suffix) throws IOException {
 
-		// Create an image file name
+		// Create a unique image file name
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		String imageFileName = "image" + "_" + timeStamp;
+		String imageFileName = "image" + "_" + timeStamp + "_" + suffix;
 
 		File dir = FileUtils.getImageCaptureDir(this);
 		if (FileUtils.ensureDir(dir)) {
-			return new File(dir.getPath(), imageFileName);
+			File file = new File(dir.getPath(), imageFileName);
+			file.createNewFile();
+			// SurespotLog.v(TAG, "createdFile: " + file.getPath());
+			return file;
 		}
 		else {
 			throw new IOException("Could not create image temp file dir: " + dir.getPath());
@@ -261,7 +285,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	private void deleteCompressedImage() {
 		if (mCompressedImagePath != null) {
-			SurespotLog.v(TAG, "deleteCompressedImage: " + mCompressedImagePath.getPath());
+			// SurespotLog.v(TAG, "deleteCompressedImage: " + mCompressedImagePath.getPath());
 			mCompressedImagePath.delete();
 			mCompressedImagePath = null;
 		}
@@ -269,6 +293,8 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	private void deleteCapturedImage() {
 		if (mCapturedImagePath != null) {
+			// SurespotLog.v(TAG, "deleteCapturedImage: " + mCapturedImagePath.getPath());
+			// Thread.dumpStack();
 			mCapturedImagePath.delete();
 			mCapturedImagePath = null;
 		}
@@ -279,35 +305,64 @@ public class ImageSelectActivity extends SherlockActivity {
 			// TODO on thread
 			Uri uri = data.getData();
 			// scale, compress and save the image
-			mImageView.setImageBitmap(compressImage(uri, -1));
+
+			compressImage(uri, -1, new IAsyncCallback<Bitmap>() {
+
+				@Override
+				public void handleResponse(Bitmap result) {
+					if (result != null) {
+						mImageView.setImageBitmap(result);
+						mSendButton.setEnabled(true);
+					}
+					else {
+						mSendButton.setEnabled(false);
+					}
+				}
+			});
+
 		}
 
 	}
 
-	private synchronized Bitmap compressImage(Uri uri, int rotate) {
-		// scale, compress and save the image
-		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri, rotate);
-		try {
-			deleteCompressedImage();
-			mCompressedImagePath = createImageFile();
-			SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
-			FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
-			if (bitmap != null) {
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-			}
-			fos.close();
-			mSendButton.setEnabled(true);
-			return bitmap;
+	private synchronized void compressImage(final Uri uri, final int rotate, final IAsyncCallback<Bitmap> callback) {
+		new AsyncTask<Void, Void, Bitmap>() {
 
-		}
-		catch (IOException e) {
-			SurespotLog.w(TAG, "onActivityResult", e);
-			if (mCompressedImagePath != null) {
-				mCompressedImagePath.delete();
-				mCompressedImagePath = null;
+			@Override
+			protected Bitmap doInBackground(Void... params) {
+
+				// scale, compress and save the image
+				Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, uri, rotate);
+				try {
+					deleteCompressedImage();
+					if (bitmap != null) {
+						mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
+						// SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
+						FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
+
+						bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
+
+						fos.close();
+						// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
+					}
+					return bitmap;
+
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, "onActivityResult", e);
+					if (mCompressedImagePath != null) {
+						mCompressedImagePath.delete();
+						mCompressedImagePath = null;
+					}
+					return null;
+				}
+
 			}
-			return null;
-		}
+
+			protected void onPostExecute(Bitmap result) {
+				callback.handleResponse(result);
+
+			};
+		}.execute();
 
 	}
 

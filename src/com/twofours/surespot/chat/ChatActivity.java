@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -35,8 +36,6 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatActivity extends SherlockFragmentActivity {
 	public static final String TAG = "ChatActivity";
-	private static final int REQUEST_SELECT_IMAGE = 1;
-	private static final int REQUEST_SETTINGS = 2;
 
 	private ChatPagerAdapter mPagerAdapter;
 	private ViewPager mViewPager;
@@ -283,19 +282,19 @@ public class ChatActivity extends SherlockFragmentActivity {
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
 			intent.putExtra("to", getCurrentChatName());
-			startActivityForResult(intent, REQUEST_SELECT_IMAGE);
+			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
 			// case R.id.menu_capture_image_menu:
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("source", ImageSelectActivity.REQUEST_CAPTURE_IMAGE);
 			intent.putExtra("to", getCurrentChatName());
-			startActivityForResult(intent, REQUEST_SELECT_IMAGE);
+			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 
 			return true;
 		case R.id.menu_settings:
 			intent = new Intent(this, SettingsActivity.class);
-			startActivityForResult(intent, REQUEST_SETTINGS);
+			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
 			return true;
 		case R.id.menu_logout:
 			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
@@ -322,20 +321,23 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 
-			case REQUEST_SELECT_IMAGE:
+			case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 				selectedImageUri = data.getData();
 				String to = data.getStringExtra("to");
-				String filename = data.getStringExtra("filename");
+				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
 					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, filename, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
 							if (result) {
 								Utils.makeToast(ChatActivity.this, "picture successfully uploaded");
+
 							}
 							else {
-								Utils.makeToast(ChatActivity.this, "could not upload picture, please try again later");
+								Utils.makeToast(ChatActivity.this, "could not upload picture");
 							}
+
+							new File(filename).delete();
 						}
 					});
 					break;
