@@ -56,25 +56,12 @@ public class ChatUtils {
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
 			final String fileName, final IAsyncCallback<Boolean> callback) {
 
-		// new AsyncTask<Void, Void, Boolean>() {
-
-		// @Override
-		// protected Boolean doInBackground(Void... params) {
-
-		// try {
-		// SurespotApplication.getNetworkController().postFileStream(context, to, "test",
-		// context.getContentResolver().openInputStream(imageUri), SurespotConstants.MimeTypes.IMAGE, callback);
-		// }
-		// catch (FileNotFoundException e) {
-		// SurespotLog.w(TAG, "Error uploading picture", e);
-		// }
-
 		try {
 			InputStream dataStream;
 			if (scale) {
 				PipedOutputStream jpegOutputStream = new PipedOutputStream();
 
-				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri);
+				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, -1);
 
 				// final String data = ChatUtils.inputStreamToBase64(iStream);
 
@@ -98,42 +85,15 @@ public class ChatUtils {
 					SurespotConstants.MimeTypes.IMAGE, callback);
 			new Thread(producer).start();
 			new Thread(consumer).start();
-			// producer.execute();
-			// consumer.execute();
-
-			// final String iv = new String(results[0]);
-			// SurespotApplication.getNetworkController().postFile(context, to, new String(iv), fileInputStream,
-			// SurespotConstants.MimeTypes.IMAGE,
-
-			// new IAsyncCallback<Boolean>() {
-			// };() {
-			// @Override
-			// public void onSuccess(int statusCode, String content) {
-			// SurespotLog.v(TAG, "Received picture upload response: " + content);
-			// callback.handleResponse(true);
-			// }
-			//
-			// @Override
-			// public void onFailure(Throwable error) {
-			// SurespotLog.w(TAG, "Error uploading picture", error);
-			// callback.handleResponse(true);
-			// }
-			//
-			// });
 		}
 
 		catch (IOException e) {
 			SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
 		}
 
-		// return null;
-		// }
-
-		// }.execute();
-
 	}
 
-	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri) {
+	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate) {
 
 		try {// First decode with inJustDecodeBounds=true to check dimensions
 			BitmapFactory.Options options = new BitmapFactory.Options();
@@ -146,7 +106,16 @@ public class ChatUtils {
 
 			// rotate as necessary
 			int rotatedWidth, rotatedHeight;
-			int orientation = (int) rotationForImage(context, imageUri);
+
+			int orientation = 0;
+
+			// if we have a rotation use it otherwise look at the EXIF
+			if (rotate > -1) {
+				orientation = rotate;
+			}
+			else {
+				orientation = (int) rotationForImage(context, imageUri);
+			}
 			if (orientation == 90 || orientation == 270) {
 				rotatedWidth = options.outHeight;
 				rotatedHeight = options.outWidth;
