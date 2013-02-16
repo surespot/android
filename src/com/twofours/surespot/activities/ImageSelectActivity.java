@@ -33,7 +33,6 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.IAsyncCallback;
 
 public class ImageSelectActivity extends SherlockActivity {
 	private static final String TAG = "ImageSelectActivity";
@@ -54,12 +53,13 @@ public class ImageSelectActivity extends SherlockActivity {
 	private int mOrientation;
 	private int mCaptureOrientation;
 	private int mCameraOrientation;
+	private CameraPreview mCameraPreview;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
-
+		findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 		mOrientationEventListener = new OrientationEventListener(this) {
 
 			@Override
@@ -99,67 +99,68 @@ public class ImageSelectActivity extends SherlockActivity {
 				}
 				else {
 					mCaptureOrientation = mOrientation;
+					mCaptureButton.setEnabled(false);
+					mSendButton.setEnabled(false);
 					mCamera.takePicture(null, null, new PictureCallback() {
 
 						@Override
-						public void onPictureTaken(byte[] data, Camera camera) {
+						public void onPictureTaken(final byte[] data, Camera camera) {
 							// SurespotLog.v(TAG, "onPictureTaken");
+							new AsyncTask<Void, Void, Bitmap>() {
 
-							if (data == null) {
-								SurespotLog.e(TAG, "onPictureTaken", new IOException("could not get postview image data"));
-							}
-							else {
-								try {
-									deleteCapturedImage();
-									mCapturedImagePath = createImageFile(CAPTURE_SUFFIX);
-									FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
-									fos.write(data);
-									fos.close();
+								@Override
+								protected Bitmap doInBackground(Void... params) {
+									if (data == null) {
+										SurespotLog.e(TAG, "onPictureTaken", new IOException("could not get postview image data"));
+									}
+									else {
+										try {
+											deleteCapturedImage();
+											mCapturedImagePath = createImageFile(CAPTURE_SUFFIX);
+											FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
+											fos.write(data);
+											fos.close();
 
-									int rotation = (mCaptureOrientation + 45) / 90 * 90;
+											int rotation = (mCaptureOrientation + 45) / 90 * 90;
 
-									// leave it upside down
-									if (rotation == 360 || rotation == 180) {
-										rotation = 0;
+											// leave it upside down
+											if (rotation == 360 || rotation == 180) {
+												rotation = 0;
+											}
+
+											// compress image
+											return compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
+										}
+										catch (FileNotFoundException e) {
+											SurespotLog.w(TAG, "File not found: " + e.getMessage());
+										}
+										catch (IOException e) {
+											SurespotLog.w(TAG, "Error accessing file: " + e.getMessage());
+										}
+									}
+									return null;
+								}
+
+								@Override
+								protected void onPostExecute(Bitmap result) {
+									if (result != null) {
+
+										mCaptureButton.setText("reject");
+										mSendButton.setEnabled(true);
+									}
+									else {
+										Utils.makeToast(ImageSelectActivity.this, "could not capture image");
+										mSendButton.setEnabled(false);
 									}
 
-									// compress image
-									compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation,
-											new IAsyncCallback<Bitmap>() {
-
-												@Override
-												public void handleResponse(Bitmap result) {
-													if (result != null) {
-														mCaptureButton.setText("reject");
-														mSendButton.setEnabled(true);
-													}
-													else {
-														Utils.makeToast(ImageSelectActivity.this, "could not capture image");
-														mSendButton.setEnabled(false);
-													}
-
-													deleteCapturedImage();
-												}
-											});
-
+									deleteCapturedImage();
+									mCaptureButton.setEnabled(true);
 								}
-								catch (FileNotFoundException e) {
-									SurespotLog.w(TAG, "File not found: " + e.getMessage());
-									Utils.makeToast(ImageSelectActivity.this, "could not capture image");
-								}
-								catch (IOException e) {
-									SurespotLog.w(TAG, "Error accessing file: " + e.getMessage());
-									Utils.makeToast(ImageSelectActivity.this, "could not capture image");
-								}
-
-							}
+							}.execute();
 						}
-
 					});
 				}
-
 			}
-
 		});
 
 		mCancelButton = (Button) this.findViewById(R.id.cancel);
@@ -191,13 +192,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		case REQUEST_CAPTURE_IMAGE:
 			mCaptureButton.setVisibility(View.VISIBLE);
 			Utils.configureActionBar(this, "capture image", to, true);
-			mCamera = getCameraInstance();
-			if (mCamera != null) {
-				CameraPreview cameraPreview = new CameraPreview(this, mCamera);
-				FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-				preview.setVisibility(View.VISIBLE);
-				preview.addView(cameraPreview);
-			}
+			initCamera();
 			break;
 
 		default:
@@ -206,8 +201,29 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	}
 
+	private void initCamera() {
+		new AsyncTask<Void, Void, Camera>() {
+			protected Camera doInBackground(Void... params) {
+				return getCameraInstance();
+			};
+
+			protected void onPostExecute(Camera result) {
+				if (result != null) {
+					// TODO show something while this be going on
+					mCamera = result;
+					mCameraPreview = new CameraPreview(ImageSelectActivity.this, mCamera);
+					FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+					preview.setVisibility(View.VISIBLE);
+					preview.addView(mCameraPreview);
+					findViewById(R.id.progressBar).setVisibility(View.GONE);
+				}
+			};
+
+		}.execute();
+	}
+
 	/** A safe way to get an instance of the Camera object. */
-	public Camera getCameraInstance() {
+	private Camera getCameraInstance() {
 		Camera c = null;
 		try {
 			c = Camera.open(); // attempt to get a Camera instance
@@ -222,7 +238,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	}
 
 	// TODO handle forward camera
-	public void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
+	private void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
 		android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
 		android.hardware.Camera.getCameraInfo(cameraId, info);
 		int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
@@ -256,7 +272,6 @@ public class ImageSelectActivity extends SherlockActivity {
 		camera.setDisplayOrientation(result);
 	}
 
-	@SuppressWarnings("static-access")
 	private synchronized File createImageFile(String suffix) throws IOException {
 
 		// Create a unique image file name
@@ -300,16 +315,17 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 	}
 
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
 		if (resultCode == RESULT_OK && requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
-			// TODO on thread
-			Uri uri = data.getData();
-			// scale, compress and save the image
-
-			compressImage(uri, -1, new IAsyncCallback<Bitmap>() {
-
+			new AsyncTask<Void, Void, Bitmap>() {
 				@Override
-				public void handleResponse(Bitmap result) {
+				protected Bitmap doInBackground(Void... params) {
+					Uri uri = data.getData();
+					// scale, compress and save the image
+					return compressImage(uri, -1);
+				}
+
+				protected void onPostExecute(Bitmap result) {
 					if (result != null) {
 						mImageView.setImageBitmap(result);
 						mSendButton.setEnabled(true);
@@ -318,52 +334,36 @@ public class ImageSelectActivity extends SherlockActivity {
 						mSendButton.setEnabled(false);
 					}
 				}
-			});
-
+			}.execute();
 		}
-
 	}
 
-	private synchronized void compressImage(final Uri uri, final int rotate, final IAsyncCallback<Bitmap> callback) {
-		new AsyncTask<Void, Void, Bitmap>() {
+	private Bitmap compressImage(final Uri uri, final int rotate) {
+		// scale, compress and save the image
+		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, uri, rotate);
+		try {
+			deleteCompressedImage();
+			if (bitmap != null) {
+				mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
+				// SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
+				FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
 
-			@Override
-			protected Bitmap doInBackground(Void... params) {
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
 
-				// scale, compress and save the image
-				Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, uri, rotate);
-				try {
-					deleteCompressedImage();
-					if (bitmap != null) {
-						mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
-						// SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
-						FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
-
-						bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-
-						fos.close();
-						// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
-					}
-					return bitmap;
-
-				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, "onActivityResult", e);
-					if (mCompressedImagePath != null) {
-						mCompressedImagePath.delete();
-						mCompressedImagePath = null;
-					}
-					return null;
-				}
-
+				fos.close();
+				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
 			}
+			return bitmap;
 
-			protected void onPostExecute(Bitmap result) {
-				callback.handleResponse(result);
-
-			};
-		}.execute();
-
+		}
+		catch (IOException e) {
+			SurespotLog.w(TAG, "onActivityResult", e);
+			if (mCompressedImagePath != null) {
+				mCompressedImagePath.delete();
+				mCompressedImagePath = null;
+			}
+			return null;
+		}
 	}
 
 	@Override
@@ -376,7 +376,6 @@ public class ImageSelectActivity extends SherlockActivity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-
 	}
 
 	@Override
@@ -389,11 +388,17 @@ public class ImageSelectActivity extends SherlockActivity {
 	protected void onPause() {
 		super.onPause();
 		mOrientationEventListener.disable();
-		releaseCamera();
+		new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... params) {
+				releaseCamera();
+				return null;
+			};
+		}.execute();
 	}
 
 	private void releaseCamera() {
 		if (mCamera != null) {
+			mCamera.stopPreview();
 			mCamera.release(); // release the camera for other applications
 			mCamera = null;
 		}
