@@ -14,7 +14,6 @@ import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -397,20 +396,20 @@ public class EncryptionController {
 					final byte[] iv = new byte[IV_LENGTH];
 					mSecureRandom.nextBytes(iv);
 
-					SurespotLog.w(TAG, "iv: " + Utils.base64Encode(iv));
-					final IvParameterSpec ivParams = new IvParameterSpec(iv);
-
+					SurespotLog.w(TAG, username + " encrypt iv: " + new String(Utils.base64Encode(iv)));
+					// final IvParameterSpec ivParams = new IvParameterSpec(iv);
+					final IvParameterSpec ivParams = new IvParameterSpec(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
 					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
 							"AES");
 					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 
-					// Base64OutputStream base64os = new Base64OutputStream(out, Base64.NO_PADDING | Base64.NO_WRAP);
-					CipherOutputStream cos = new CipherOutputStream(out, ccm);
-					BufferedOutputStream bos = new BufferedOutputStream(cos);
+					// out.write(iv);
 
-					out.write(iv);
+					// Base64OutputStream base64os = new Base64OutputStream(out, Base64.NO_PADDING | Base64.NO_WRAP);
+					// CipherOutputStream cos = new CipherOutputStream(out, ccm);
+					BufferedOutputStream bos = new BufferedOutputStream(out);
 
 					int i = 0;
 
@@ -459,14 +458,15 @@ public class EncryptionController {
 					// Base64InputStream base64is = new Base64InputStream(in, Base64.NO_PADDING | Base64.NO_WRAP);
 					BufferedInputStream bis = new BufferedInputStream(in);
 
-					if (bis.read(iv) != IV_LENGTH) {
-						SurespotLog.w(TAG, "could not read iv");
-					}
-					else {
-						SurespotLog.w(TAG, "iv: " + Utils.base64Encode(iv));
-					}
+					// if (bis.read(iv) != IV_LENGTH) {
+					// SurespotLog.w(TAG, "could not read iv");
+					// }
+					// else {
+					// SurespotLog.w(TAG, username + " decrypt iv: " + new String(Utils.base64Encode(iv)));
+					// }
 
-					final IvParameterSpec ivParams = new IvParameterSpec(iv);
+					// final IvParameterSpec ivParams = new IvParameterSpec(iv);
+					final IvParameterSpec ivParams = new IvParameterSpec(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
@@ -474,11 +474,11 @@ public class EncryptionController {
 							"AES");
 					ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
 
-					CipherInputStream cis = new CipherInputStream(bis, ccm);
+					// CipherInputStream cis = new CipherInputStream(bis, ccm);
 
 					int i = 0;
 
-					while ((i = cis.read(buf)) != -1) {
+					while ((i = bis.read(buf)) != -1) {
 						if (Thread.interrupted()) {
 							break;
 						}
@@ -489,7 +489,7 @@ public class EncryptionController {
 
 					in.close();
 
-					cis.close();
+					// cis.close();
 					// base64is.close();
 					bis.close();
 					out.close();

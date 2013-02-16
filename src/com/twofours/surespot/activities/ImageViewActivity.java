@@ -1,5 +1,11 @@
 package com.twofours.surespot.activities;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -12,6 +18,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 
@@ -36,14 +43,28 @@ public class ImageViewActivity extends SherlockActivity {
 					@Override
 					protected Bitmap doInBackground(Void... params) {
 
-						// TODO use streaming network get
-						String imageData = SurespotApplication.getNetworkController().getFileSync(message.getCipherData());
-						if (imageData != null) {
-							byte[] output = EncryptionController.symmetricBase64DecryptSync(message.getOtherUser(), message.getIv(), imageData);
-							Bitmap bitmap = BitmapFactory.decodeByteArray(output, 0, output.length);
-							return bitmap;
+						InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(ImageViewActivity.this,
+								message.getCipherData());
+
+						Bitmap bitmap = null;
+						PipedOutputStream out = new PipedOutputStream();
+						PipedInputStream inputStream;
+						try {
+							inputStream = new PipedInputStream(out);
+
+							Runnable decrypt = EncryptionController.createDecryptTask(message.getOtherUser(), new BufferedInputStream(
+									imageStream), out);
+
+							SurespotApplication.THREAD_POOL_EXECUTOR.execute(decrypt);
+							bitmap = BitmapFactory.decodeStream(inputStream);
+
 						}
-						return null;
+						catch (IOException e) {
+							SurespotLog.w(TAG, "BitmapDownloaderTask", e);
+						}
+
+						return bitmap;
+
 					}
 
 					protected void onPostExecute(Bitmap result) {

@@ -16,30 +16,29 @@
 
 package com.twofours.surespot;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
-import java.util.concurrent.Executors;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Looper;
+import android.os.AsyncTask;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.network.IAsyncCallback;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -102,7 +101,7 @@ public class ImageDownloader {
 					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
 			imageView.setTag(message);
-			Executors.defaultThreadFactory().newThread(task).start();
+			task.execute();
 		}
 	}
 
@@ -116,7 +115,7 @@ public class ImageDownloader {
 		if (bitmapDownloaderTask != null) {
 			SurespotMessage taskMessage = bitmapDownloaderTask.mMessage;
 			if ((taskMessage == null) || (!taskMessage.equals(message))) {
-				bitmapDownloaderTask.interrupt();
+				bitmapDownloaderTask.cancel(true);
 			}
 			else {
 				// The same URL is already being downloaded.
@@ -145,7 +144,7 @@ public class ImageDownloader {
 	/**
 	 * The actual AsyncTask that will asynchronously download the image.
 	 */
-	public class BitmapDownloaderTask extends Thread {
+	public class BitmapDownloaderTask extends AsyncTask<Void, Void, Bitmap> {
 		private SurespotMessage mMessage;
 
 		public SurespotMessage getMessage() {
@@ -160,74 +159,70 @@ public class ImageDownloader {
 		}
 
 		@Override
-		public void run() {
-			Runnable runnable = SurespotApplication.getNetworkController().createGetFileStreamTask(SurespotApplication.getContext(),
-					mMessage.getCipherData(), new IAsyncCallback<InputStream>() {
+		protected Bitmap doInBackground(Void... params) {
+			InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(SurespotApplication.getContext(),
+					mMessage.getCipherData());
 
-						@Override
-						public void handleResponse(InputStream result) {
-							if (result == null)
-								return;
-							try {
-								PipedOutputStream out = new PipedOutputStream();
-								PipedInputStream inputStream;
-								inputStream = new PipedInputStream(out);
+			Bitmap bitmap = null;
+			PipedOutputStream out = new PipedOutputStream();
+			PipedInputStream inputStream;
+			try {
+				inputStream = new PipedInputStream(out);
 
-								Runnable decrypt = EncryptionController.createDecryptTask(mMessage.getOtherUser(), result, out);
-								Thread t = new Thread(decrypt);
-								t.start();
-								Bitmap bitmap = ChatUtils.getSampledImage(new FlushedInputStream(inputStream),
-										SurespotConstants.IMAGE_DISPLAY_HEIGHT);
-								t.join();
+				Runnable decrypt = EncryptionController.createDecryptTask(mMessage.getOtherUser(), new BufferedInputStream(imageStream),
+						out);
 
-								if (bitmap != null && !Thread.interrupted()) {
-									addBitmapToCache(mMessage.getCipherData(), bitmap);
+				SurespotApplication.THREAD_POOL_EXECUTOR.execute(decrypt);
+				bitmap = BitmapFactory.decodeStream(inputStream);
 
-									if (imageViewReference != null) {
-										ImageView imageView = imageViewReference.get();
-										BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-										// Change bitmap only if this process is still associated with it
-										// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-										if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
-											Looper.prepare();
-											imageView.clearAnimation();
-											Animation fadeIn = new AlphaAnimation(0, 1);
-											fadeIn.setDuration(1000);
-											imageView.startAnimation(fadeIn);
-											imageView.setImageBitmap(bitmap);
-											if (mMessage.getHeight() == 0) {
-												bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
-												SurespotLog.v(
-														TAG,
-														"Setting message height from image, id: " + mMessage.getId() + " from: "
-																+ mMessage.getFrom() + ", to: " + mMessage.getTo() + ", height: "
-																+ bitmap.getHeight() + ", width: " + bitmap.getWidth());
-											}
+			}
+			catch (IOException e) {
+				SurespotLog.w(TAG, "BitmapDownloaderTask", e);
+			}
 
-											// TODO put the row in the tag
-											TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
-											if (mMessage.getDateTime() == null) {
-												tvTime.setText("");
-											}
-											else {
-												tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-														mMessage.getDateTime()));
-											}
-										}
-									}
-								}
-							}
-							catch (IOException e) {
-								SurespotLog.w(TAG, "decryptTask", e);
-							}
-							catch (InterruptedException e) {
-								SurespotLog.w(TAG, "decryptTask", e);
-							}
+			return bitmap;
+
+		}
+
+		@Override
+		protected void onPostExecute(Bitmap bitmap) {
+
+			if (bitmap != null && !isCancelled()) {
+				addBitmapToCache(mMessage.getCipherData(), bitmap);
+
+				if (imageViewReference != null) {
+					ImageView imageView = imageViewReference.get();
+					BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+					// Change bitmap only if this process is still associated with it
+					// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+					if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
+
+						imageView.clearAnimation();
+						Animation fadeIn = new AlphaAnimation(0, 1);
+						fadeIn.setDuration(1000);
+						imageView.startAnimation(fadeIn);
+						imageView.setImageBitmap(bitmap);
+						if (mMessage.getHeight() == 0) {
+							bitmapDownloaderTask.mMessage.setHeight(bitmap.getHeight());
+							SurespotLog.v(
+									TAG,
+									"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
+											+ ", to: " + mMessage.getTo() + ", height: " + bitmap.getHeight() + ", width: "
+											+ bitmap.getWidth());
 						}
-					});
 
-			// TODO Auto-generated method stub
-			Executors.defaultThreadFactory().newThread(runnable).start();
+						// TODO put the row in the tag
+						TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
+						if (mMessage.getDateTime() == null) {
+							tvTime.setText("");
+						}
+						else {
+							tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+									.format(mMessage.getDateTime()));
+						}
+					}
+				}
+			}
 
 		}
 	}

@@ -81,14 +81,14 @@ public class ChatUtils {
 			// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
 
 			Runnable producer = EncryptionController.createEncryptTask(to, new BufferedInputStream(dataStream), fileOutputStream);
-			Runnable consumer = SurespotApplication.getNetworkController().createPostFileStreamTask(context, to, "test", fileInputStream,
+			SurespotApplication.getNetworkController().postFileStream(context, to, "test", fileInputStream,
 					SurespotConstants.MimeTypes.IMAGE, callback);
-			new Thread(producer).start();
-			new Thread(consumer).start();
+			SurespotApplication.THREAD_POOL_EXECUTOR.execute(producer);
+
 		}
 
 		catch (IOException e) {
-			SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
+			SurespotLog.e(TAG, "uploadPictureMessageAsync", e);
 		}
 
 	}
@@ -188,24 +188,6 @@ public class ChatUtils {
 
 		options.inJustDecodeBounds = false;
 		return BitmapFactory.decodeByteArray(data, 0, data.length, options);
-	}
-
-	public static Bitmap getSampledImage(InputStream data, int reqHeight) {
-		BitmapFactory.Options options = new Options();
-
-		decodeBounds(options, data);
-
-		if (options.outHeight > reqHeight) {
-			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
-		}
-
-		options.inJustDecodeBounds = false;
-		return BitmapFactory.decodeStream(data);
-	}
-
-	private static void decodeBounds(Options options, InputStream data) {
-		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeStream(data);
 	}
 
 	private static void decodeBounds(Options options, byte[] data) {

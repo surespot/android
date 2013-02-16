@@ -105,7 +105,6 @@ public class ImageSelectActivity extends SherlockActivity {
 							else {
 								try {
 									deleteCapturedImage();
-
 									mCapturedImagePath = createImageFile();
 									FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
 									fos.write(data);
@@ -260,6 +259,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	private void deleteCompressedImage() {
 		if (mCompressedImagePath != null) {
+			SurespotLog.v(TAG, "deleteCompressedImage: " + mCompressedImagePath.getPath());
 			mCompressedImagePath.delete();
 			mCompressedImagePath = null;
 		}
@@ -289,7 +289,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			deleteCompressedImage();
 			mCompressedImagePath = createImageFile();
 			FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
-
 			if (bitmap != null) {
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
 			}
@@ -308,45 +307,6 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 
 	}
-
-	// protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	// if (resultCode == RESULT_OK) {
-	// // TODO on thread
-	// Uri uri = null;
-	// if (requestCode == REQUEST_CAPTURE_IMAGE) {
-	// // scale the image down
-	//
-	// uri = Uri.fromFile(new File(mCurrentPhotoPath));
-	// }
-	// else {
-	// uri = data.getData();
-	// }
-	//
-	// Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri);
-	//
-	// // save the image to file
-	// File file = new File(mCurrentPhotoPath);
-	// uri = Uri.fromFile(file);
-	// try {
-	// FileOutputStream fos = new FileOutputStream(file);
-	//
-	// if (bitmap != null) {
-	// bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-	// bitmap = null;
-	// }
-	// fos.close();
-	// }
-	// catch (IOException e) {
-	// SurespotLog.w(TAG, "uploadPictureMessage", e);
-	// }
-	//
-	// mImageView.setImageURI(uri);
-	// }
-	// else {
-	// finish();
-	// }
-	//
-	// }
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

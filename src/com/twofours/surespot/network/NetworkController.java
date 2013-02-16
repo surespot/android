@@ -9,7 +9,7 @@ import org.acra.ACRA;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Looper;
+import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
@@ -409,13 +409,12 @@ public class NetworkController {
 
 	}
 
-	public Runnable createPostFileStreamTask(Context context, final String user, final String id, final InputStream fileInputStream,
+	public void postFileStream(Context context, final String user, final String id, final InputStream fileInputStream,
 			final String mimeType, final IAsyncCallback<Boolean> callback) {
-		return new Runnable() {
+		new AsyncTask<Void, Void, HttpResponse>() {
 
 			@Override
-			public void run() {
-				// TODO Auto-generated method stub
+			protected HttpResponse doInBackground(Void... params) {
 
 				SurespotLog.v(TAG, "posting file stream");
 
@@ -436,70 +435,55 @@ public class NetworkController {
 
 				try {
 					response = httpclient.execute(httppost);
-					// HttpEntity resEntity = response.getEntity();
-					Looper.prepare();
-					if (response.getStatusLine().getStatusCode() == 202) {
-
-						callback.handleResponse(true);
-					}
-					else {
-						callback.handleResponse(false);
-					}
 
 				}
 				catch (Exception e) {
 					SurespotLog.w(TAG, "createPostFile", e);
-					Looper.prepare();
-					callback.handleResponse(false);
-
 				}
+				return response;
 
 			}
-		};
+
+			protected void onPostExecute(HttpResponse response) {
+
+				if (response.getStatusLine().getStatusCode() == 202) {
+
+					callback.handleResponse(true);
+				}
+				else {
+					callback.handleResponse(false);
+				}
+			};
+		}.execute();
 
 	}
 
-	public Runnable createGetFileStreamTask(Context context, final String url, final IAsyncCallback<InputStream> callback) {
-		return new Runnable() {
+	public InputStream getFileStream(Context context, final String url) {
 
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
+		SurespotLog.v(TAG, "getting file stream");
 
-				SurespotLog.v(TAG, "getting file stream");
+		HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
+		HttpGet httpGet = new HttpGet(mBaseUrl + url);
 
-				HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
-				HttpGet httppost = new HttpGet(mBaseUrl + url);
+		Cookie cookie = IdentityController.getCookie();
+		httpGet.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 
-				// InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
-				// StringBody comment = new StringBody("Filename: " + fileName);
-
-				// MultipartEntity reqEntity = new MultipartEntity();
-				// reqEntity.addPart("image", isBody);
-				// reqEntity.addPart("comment", comment);
-				// httppost.setEntity(reqEntity);
-				Cookie cookie = IdentityController.getCookie();
-				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
-
-				HttpResponse response;
-				try {
-					response = httpclient.execute(httppost);
-					HttpEntity resEntity = response.getEntity();
-					if (response.getStatusLine().getStatusCode() == 200) {
-						callback.handleResponse(resEntity.getContent());
-					}
-					else {
-						callback.handleResponse(null);
-					}
-				}
-
-				catch (Exception e) {
-					SurespotLog.w(TAG, "getFileStream", e);
-					callback.handleResponse(null);
-				}
-
+		HttpResponse response;
+		try {
+			response = httpclient.execute(httpGet);
+			HttpEntity resEntity = response.getEntity();
+			if (response.getStatusLine().getStatusCode() == 200) {
+				return resEntity.getContent();
 			}
-		};
+
+		}
+
+		catch (Exception e) {
+			SurespotLog.w(TAG, "getFileStream", e);
+
+		}
+
+		return null;
 
 	}
 
