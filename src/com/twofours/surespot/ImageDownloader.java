@@ -26,7 +26,6 @@ import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -36,9 +35,11 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 
 /**
@@ -172,7 +173,8 @@ public class ImageDownloader {
 
 				EncryptionController.runDecryptTask(mMessage.getOtherUser(), mMessage.getIv(), new BufferedInputStream(imageStream), out);
 
-				bitmap = BitmapFactory.decodeStream(inputStream);
+				byte[] bytes = Utils.inputStreamToBytes(inputStream);
+				bitmap = ChatUtils.getSampledImage(bytes);
 
 			}
 			catch (InterruptedIOException ioe) {

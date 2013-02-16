@@ -78,8 +78,6 @@ public class ChatUtils {
 
 			PipedOutputStream fileOutputStream = new PipedOutputStream();
 			PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
-			// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
-
 			String iv = EncryptionController.runEncryptTask(to, new BufferedInputStream(dataStream), fileOutputStream);
 			SurespotApplication.getNetworkController().postFileStream(context, to, iv, fileInputStream, SurespotConstants.MimeTypes.IMAGE,
 					callback);
@@ -177,10 +175,11 @@ public class ChatUtils {
 
 	}
 
-	public static Bitmap getSampledImage(byte[] data, int reqHeight) {
+	public static Bitmap getSampledImage(byte[] data) {
 		BitmapFactory.Options options = new Options();
 		decodeBounds(options, data);
 
+		int reqHeight = SurespotConstants.IMAGE_DISPLAY_HEIGHT;
 		if (options.outHeight > reqHeight) {
 			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
 		}

@@ -28,7 +28,7 @@ import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
 import ch.boye.httpclientandroidlib.impl.client.AbstractHttpClient;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
 import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.impl.conn.PoolingClientConnectionManager;
+import ch.boye.httpclientandroidlib.impl.conn.tsccm.ThreadSafeClientConnManager;
 import ch.boye.httpclientandroidlib.params.BasicHttpParams;
 import ch.boye.httpclientandroidlib.params.HttpConnectionParams;
 import ch.boye.httpclientandroidlib.params.HttpProtocolParams;
@@ -48,7 +48,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.common.WebClientDevWrapper;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
@@ -97,6 +96,7 @@ public class NetworkController {
 		}
 
 		try {
+
 			BasicHttpParams httpParams = new BasicHttpParams();
 
 			ConnManagerParams.setTimeout(httpParams, 15000);
@@ -111,13 +111,13 @@ public class NetworkController {
 			HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
 
 			SchemeRegistry schemeRegistry = new SchemeRegistry();
-			// ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
+			ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
 
-			PoolingClientConnectionManager pm = new PoolingClientConnectionManager(schemeRegistry);
-			pm.setDefaultMaxPerRoute(100);
+			AbstractHttpClient defaultHttpClient = new DefaultHttpClient(cm, httpParams);
+			// PoolingClientConnectionManager pm = new PoolingClientConnectionManager(schemeRegistry);
+			// pm.setDefaultMaxPerRoute(100);
 
 			// httpContext = new SyncBasicHttpContext(new BasicHttpContext());
-			AbstractHttpClient defaultHttpClient = WebClientDevWrapper.wrapClient(new DefaultHttpClient(pm, httpParams));
 
 			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context, defaultHttpClient, "images");
 			mClient = new AsyncHttpClient(mContext);
@@ -125,7 +125,6 @@ public class NetworkController {
 
 				@Override
 				public String onRequestFailed(Throwable arg0, String arg1) {
-					// TODO Auto-generated method stub
 					return null;
 				}
 			};
@@ -167,7 +166,7 @@ public class NetworkController {
 			}
 		};
 
-		if (mClient != null && mSyncClient != null) {
+		if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
 
 			mClient.setCookieStore(mCookieStore);
 			mSyncClient.setCookieStore(mCookieStore);
@@ -435,7 +434,6 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				// HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
 				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user);
 
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
@@ -443,8 +441,10 @@ public class NetworkController {
 				MultipartEntity reqEntity = new MultipartEntity();
 				reqEntity.addPart("image", isBody);
 				httppost.setEntity(reqEntity);
-				// Cookie cookie = IdentityController.getCookie();
-				// httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
+
+				// TODO why isn't setting the cookie store taking care of this?
+				Cookie cookie = IdentityController.getCookie();
+				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 
 				HttpResponse response = null;
 
@@ -477,9 +477,9 @@ public class NetworkController {
 
 		SurespotLog.v(TAG, "getting file stream");
 
-		// HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
 		HttpGet httpGet = new HttpGet(mBaseUrl + url);
 
+		// TODO why isn't setting the cookie store taking care of this?
 		Cookie cookie = IdentityController.getCookie();
 		httpGet.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 
