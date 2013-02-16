@@ -169,10 +169,8 @@ public class ImageDownloader {
 			try {
 				inputStream = new PipedInputStream(out);
 
-				Runnable decrypt = EncryptionController.createDecryptTask(mMessage.getOtherUser(), new BufferedInputStream(imageStream),
-						out);
+				EncryptionController.runDecryptTask(mMessage.getOtherUser(), mMessage.getIv(), new BufferedInputStream(imageStream), out);
 
-				SurespotApplication.THREAD_POOL_EXECUTOR.execute(decrypt);
 				bitmap = BitmapFactory.decodeStream(inputStream);
 
 			}

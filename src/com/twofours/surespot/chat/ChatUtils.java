@@ -80,10 +80,9 @@ public class ChatUtils {
 			PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
 			// byte[] iv = EncryptionController.symmetricBase64Encrypt(to, dataStream, fileOutputStream);
 
-			Runnable producer = EncryptionController.createEncryptTask(to, new BufferedInputStream(dataStream), fileOutputStream);
-			SurespotApplication.getNetworkController().postFileStream(context, to, "test", fileInputStream,
-					SurespotConstants.MimeTypes.IMAGE, callback);
-			SurespotApplication.THREAD_POOL_EXECUTOR.execute(producer);
+			String iv = EncryptionController.runEncryptTask(to, new BufferedInputStream(dataStream), fileOutputStream);
+			SurespotApplication.getNetworkController().postFileStream(context, to, iv, fileInputStream, SurespotConstants.MimeTypes.IMAGE,
+					callback);
 
 		}
 

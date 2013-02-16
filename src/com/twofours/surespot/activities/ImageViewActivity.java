@@ -52,10 +52,9 @@ public class ImageViewActivity extends SherlockActivity {
 						try {
 							inputStream = new PipedInputStream(out);
 
-							Runnable decrypt = EncryptionController.createDecryptTask(message.getOtherUser(), new BufferedInputStream(
+							EncryptionController.runDecryptTask(message.getOtherUser(), message.getIv(), new BufferedInputStream(
 									imageStream), out);
 
-							SurespotApplication.THREAD_POOL_EXECUTOR.execute(decrypt);
 							bitmap = BitmapFactory.decodeStream(inputStream);
 
 						}

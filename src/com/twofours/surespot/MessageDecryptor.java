@@ -91,7 +91,7 @@ public class MessageDecryptor {
 		 */
 		@Override
 		protected String doInBackground(Void... params) {
-			return EncryptionController.symmetricDecryptSync(ChatUtils.getOtherUser(mMessage.getFrom(), mMessage.getTo()), mMessage.getIv(),
+			return EncryptionController.symmetricDecrypt(ChatUtils.getOtherUser(mMessage.getFrom(), mMessage.getTo()), mMessage.getIv(),
 					mMessage.getCipherData());
 		}
 
