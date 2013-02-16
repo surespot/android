@@ -179,11 +179,11 @@ public class EncryptionController {
 				}
 				catch (InvalidCacheLoadException icle) {
 					// will occur if couldn't load key
-					SurespotLog.v(TAG, "symmetricBase64Encrypt", icle);
+					SurespotLog.v(TAG, "encryptTask", icle);
 				}
 
 				catch (Exception e) {
-					SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
+					SurespotLog.w(TAG, "encryptTask", e);
 				}
 				finally {
 					try {
@@ -288,7 +288,7 @@ public class EncryptionController {
 			return new String(buf);
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricDecryptSync", e);
+			SurespotLog.w(TAG, "symmetricDecrypt", e);
 		}
 		return null;
 
@@ -384,10 +384,10 @@ public class EncryptionController {
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
-			SurespotLog.v(TAG, "symmetricEncrypt", icle);
+			SurespotLog.v(TAG, "symmetricEncryptSyncPK", icle);
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricEncrypt", e);
+			SurespotLog.w(TAG, "symmetricEncryptSyncPK", e);
 		}
 		return null;
 
@@ -432,7 +432,7 @@ public class EncryptionController {
 			return new String(buf);
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricDecryptSync", e);
+			SurespotLog.w(TAG, "symmetricDecryptSyncPK", e);
 		}
 		return null;
 
@@ -476,7 +476,7 @@ public class EncryptionController {
 			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
 		}
 		catch (Exception e) {
-			SurespotLog.e(TAG, "deriveKey", e);
+			SurespotLog.e(TAG, "derive", e);
 		}
 
 		return keyBytes;
