@@ -19,7 +19,7 @@
     <item
         android:id="@+id/menu_capture_image_bar"
         android:icon="@drawable/ic_menu_camera"
-        android:orderInCategory="100"
+        android:orderInCategory="200"
         android:showAsAction="ifRoom|withText"
         android:title="capture image"/>
     <!-- <item -->
@@ -27,16 +27,11 @@
     <!-- android:orderInCategory="200" -->
     <!-- android:showAsAction="never" -->
     <!-- android:title="close tab"/> -->
-    <item
-        android:id="@+id/menu_close_bar"
-        android:icon="@drawable/ic_menu_end_conversation"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom|withText"
-        android:title="close tab"/>
+
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_menu_preferences"
-        android:orderInCategory="200"
+        android:orderInCategory="300"
         android:showAsAction="ifRoom|withText"
         android:title="settings"/>
     <item
@@ -44,5 +39,11 @@
         android:orderInCategory="400"
         android:showAsAction="ifRoom|withText"
         android:title="logout"/>
+    <item
+        android:id="@+id/menu_close_bar"
+        android:icon="@drawable/ic_menu_end_conversation"
+        android:orderInCategory="500"
+        android:showAsAction="ifRoom|withText"
+        android:title="close tab"/>
 
 </menu>

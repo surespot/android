@@ -522,6 +522,8 @@ public class NetworkController {
 
 	public void clearCache() {
 		mClient.clearCache();
+		mSyncClient.clearCache();
+		mCachingHttpClient.clearCache();
 	}
 
 }

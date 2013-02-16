@@ -35,5 +35,10 @@
             </intent>
         </Preference>
     </PreferenceCategory>
+    <PreferenceCategory android:title="cache management" >
+        <Preference
+            android:key="pref_clear_local_cache"
+            android:title="clear local cache" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

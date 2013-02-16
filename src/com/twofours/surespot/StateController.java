@@ -131,11 +131,16 @@ public class StateController {
 	public void saveMessages(String spot, ArrayList<SurespotMessage> messages) {
 		String filename = getFilename(MESSAGES_PREFIX + spot);
 		if (filename != null) {
-			int messagesSize = messages.size();
-			SurespotLog.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages");
-			String sMessages = ChatUtils.chatMessagesToJson(
-					messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString();
-			writeFile(filename, sMessages);
+			if (messages != null) {
+				int messagesSize = messages.size();
+				SurespotLog.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages");
+				String sMessages = ChatUtils.chatMessagesToJson(
+						messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString();
+				writeFile(filename, sMessages);
+			}
+			else {
+				new File(filename).delete();
+			}
 		}
 	}
 
@@ -203,5 +208,18 @@ public class StateController {
 		}
 		return null;
 
+	}
+
+	public static void wipeState(String identityName) {
+
+		deleteRecursive(new File(FileUtils.getStateDir(SurespotApplication.getContext()) + File.separator + identityName));
+
+	}
+
+	private static void deleteRecursive(File fileOrDirectory) {
+		if (fileOrDirectory.isDirectory())
+			for (File child : fileOrDirectory.listFiles())
+				deleteRecursive(child);
+		fileOrDirectory.delete();
 	}
 }

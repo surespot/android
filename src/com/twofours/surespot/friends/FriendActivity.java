@@ -451,20 +451,6 @@ public class FriendActivity extends SherlockActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menu_debug_clear:
-			// clear out some shiznit
-			for (String chatname : mMainAdapter.getFriends()) {
-				Utils.putSharedPrefsString(this, "messages_" + chatname, null);
-
-			}
-			SurespotApplication.getStateController().saveActiveChats(null);
-			SurespotApplication.getStateController().saveLastViewedMessageIds(null);
-			SurespotApplication.getStateController().saveUnsentMessages(null);
-			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, null);
-
-			// clear cache
-			SurespotApplication.getNetworkController().clearCache();
-			return true;
 		case R.id.menu_logout:
 			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
 				@Override
