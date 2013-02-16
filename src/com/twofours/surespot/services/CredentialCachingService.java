@@ -106,7 +106,7 @@ public class CredentialCachingService extends Service {
 			return loadingCache.get(username);
 		}
 		catch (ExecutionException e) {
-			SurespotLog.w(TAG, "getSharedSecret", e);
+			SurespotLog.w(TAG, "getSharedSecret: " + e.getMessage());
 			return null;
 		}
 

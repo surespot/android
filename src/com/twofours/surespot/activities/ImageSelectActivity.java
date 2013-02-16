@@ -59,7 +59,6 @@ public class ImageSelectActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
-		findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 		mOrientationEventListener = new OrientationEventListener(this) {
 
 			@Override
@@ -180,16 +179,37 @@ public class ImageSelectActivity extends SherlockActivity {
 		case REQUEST_EXISTING_IMAGE:
 			mImageView = (ImageView) this.findViewById(R.id.image);
 			mImageView.setVisibility(View.VISIBLE);
-			Intent intent = new Intent();
-			// TODO paid version allows any file
-			intent.setType("image/*");
-			intent.setAction(Intent.ACTION_GET_CONTENT);
-			Utils.configureActionBar(this, "select image", to, true);
-			startActivityForResult(Intent.createChooser(intent, "select Image"),
-					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
+
+			new AsyncTask<Void, Void, Bitmap>() {
+				@Override
+				protected Bitmap doInBackground(Void... params) {
+					Uri uri = getIntent().getData();
+					// scale, compress and save the image
+					return compressImage(uri, -1);
+				}
+
+				protected void onPostExecute(Bitmap result) {
+					if (result != null) {
+						mImageView.setImageBitmap(result);
+						mSendButton.setEnabled(true);
+					}
+					else {
+						mSendButton.setEnabled(false);
+					}
+				}
+			}.execute();
+			//
+			// Intent intent = new Intent();
+			// // TODO paid version allows any file
+			// intent.setType("image/*");
+			// intent.setAction(Intent.ACTION_GET_CONTENT);
+			// Utils.configureActionBar(this, "select image", to, true);
+			// startActivityForResult(Intent.createChooser(intent, "select Image"),
+			// SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 			break;
 
 		case REQUEST_CAPTURE_IMAGE:
+			findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 			mCaptureButton.setVisibility(View.VISIBLE);
 			Utils.configureActionBar(this, "capture image", to, true);
 			initCamera();

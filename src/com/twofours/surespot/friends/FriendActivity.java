@@ -456,7 +456,7 @@ public class FriendActivity extends SherlockActivity {
 				@Override
 				public void handleResponse(Boolean result) {
 					Intent intent = new Intent(FriendActivity.this, LoginActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 					FriendActivity.this.startActivity(intent);
 					Utils.putSharedPrefsString(FriendActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 					finish();

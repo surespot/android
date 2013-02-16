@@ -481,21 +481,23 @@ public class NetworkController {
 
 		// TODO why isn't setting the cookie store taking care of this?
 		Cookie cookie = IdentityController.getCookie();
-		httpGet.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
+		if (cookie != null) {
+			httpGet.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 
-		HttpResponse response;
-		try {
-			response = mCachingHttpClient.execute(httpGet);
-			HttpEntity resEntity = response.getEntity();
-			if (response.getStatusLine().getStatusCode() == 200) {
-				return resEntity.getContent();
+			HttpResponse response;
+			try {
+				response = mCachingHttpClient.execute(httpGet);
+				HttpEntity resEntity = response.getEntity();
+				if (response.getStatusLine().getStatusCode() == 200) {
+					return resEntity.getContent();
+				}
+
 			}
 
-		}
+			catch (Exception e) {
+				SurespotLog.w(TAG, "getFileStream", e);
 
-		catch (Exception e) {
-			SurespotLog.w(TAG, "getFileStream", e);
-
+			}
 		}
 
 		return null;

@@ -273,16 +273,27 @@ public class ChatActivity extends SherlockFragmentActivity {
 			showMain();
 			return true;
 		case R.id.menu_close_bar:
-			// case R.id.menu_close_menu:
 			closeTab(mViewPager.getCurrentItem());
 			return true;
 
 		case R.id.menu_send_image_bar:
-			// case R.id.menu_send_image_menu:
-			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
-			intent.putExtra("to", getCurrentChatName());
-			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+			intent = new Intent();
+			// TODO paid version allows any file
+			intent.setType("image/*");
+			intent.setAction(Intent.ACTION_GET_CONTENT);
+			Utils.configureActionBar(this, "select image", getCurrentChatName(), true);
+			startActivityForResult(Intent.createChooser(intent, "select Image"),
+					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
+
+			//
+			// intent = new Intent(this, ImageSelectActivity.class);
+			// intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
+			// intent.putExtra("to", getCurrentChatName());
+			// intent.setType("image/*");
+			// intent.setAction(Intent.ACTION_GET_CONTENT);
+			//
+			// startActivityForResult(Intent.createChooser(intent, "select image"),
+			// SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
 			// case R.id.menu_capture_image_menu:
@@ -301,7 +312,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 				@Override
 				public void handleResponse(Boolean result) {
 					Intent intent = new Intent(ChatActivity.this, LoginActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					ChatActivity.this.startActivity(intent);
 					Utils.putSharedPrefsString(ChatActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 					finish();
@@ -321,20 +332,31 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 
+			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
+				Intent intent = new Intent(this, ImageSelectActivity.class);
+				intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
+				intent.putExtra("to", getCurrentChatName());
+				intent.setData(data.getData());
+				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+
+				break;
+
 			case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 				selectedImageUri = data.getData();
 				String to = data.getStringExtra("to");
 				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
+
+					Utils.makeToast(this, "uploading image");
 					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, filename, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
 							if (result) {
-								Utils.makeToast(ChatActivity.this, "picture successfully uploaded");
+								Utils.makeToast(ChatActivity.this, "image successfully uploaded");
 
 							}
 							else {
-								Utils.makeToast(ChatActivity.this, "could not upload picture");
+								Utils.makeToast(ChatActivity.this, "could not upload image");
 							}
 
 							new File(filename).delete();
