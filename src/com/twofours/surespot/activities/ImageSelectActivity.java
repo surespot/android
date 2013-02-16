@@ -288,6 +288,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		try {
 			deleteCompressedImage();
 			mCompressedImagePath = createImageFile();
+			SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
 			FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
 			if (bitmap != null) {
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);

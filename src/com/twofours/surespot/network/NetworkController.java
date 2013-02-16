@@ -15,15 +15,23 @@ import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
+import ch.boye.httpclientandroidlib.HttpVersion;
 import ch.boye.httpclientandroidlib.client.CookieStore;
-import ch.boye.httpclientandroidlib.client.HttpClient;
 import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
+import ch.boye.httpclientandroidlib.conn.params.ConnManagerParams;
+import ch.boye.httpclientandroidlib.conn.params.ConnPerRouteBean;
+import ch.boye.httpclientandroidlib.conn.scheme.SchemeRegistry;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
+import ch.boye.httpclientandroidlib.impl.client.AbstractHttpClient;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
 import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
+import ch.boye.httpclientandroidlib.impl.conn.PoolingClientConnectionManager;
+import ch.boye.httpclientandroidlib.params.BasicHttpParams;
+import ch.boye.httpclientandroidlib.params.HttpConnectionParams;
+import ch.boye.httpclientandroidlib.params.HttpProtocolParams;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -34,6 +42,7 @@ import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -49,6 +58,7 @@ public class NetworkController {
 	private AsyncHttpClient mClient;
 	private CookieStore mCookieStore;
 	private SyncHttpClient mSyncClient;
+	private SurespotCachingHttpClient mCachingHttpClient;
 
 	public void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		mClient.get(mBaseUrl + url, params, responseHandler);
@@ -64,7 +74,7 @@ public class NetworkController {
 
 	private boolean mUnauthorized;
 
-	public boolean isUnauthorized() {
+	public synchronized boolean isUnauthorized() {
 		return mUnauthorized;
 	}
 
@@ -78,6 +88,7 @@ public class NetworkController {
 
 	public NetworkController(Context context) {
 		mContext = context;
+
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
 		mCookieStore = new BasicCookieStore();
 		Cookie cookie = IdentityController.getCookie();
@@ -86,6 +97,29 @@ public class NetworkController {
 		}
 
 		try {
+			BasicHttpParams httpParams = new BasicHttpParams();
+
+			ConnManagerParams.setTimeout(httpParams, 15000);
+			ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(100));
+			ConnManagerParams.setMaxTotalConnections(httpParams, 100);
+
+			HttpConnectionParams.setSoTimeout(httpParams, 15000);
+			HttpConnectionParams.setConnectionTimeout(httpParams, 1500);
+			HttpConnectionParams.setTcpNoDelay(httpParams, true);
+			HttpConnectionParams.setSocketBufferSize(httpParams, 8192);
+
+			HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
+
+			SchemeRegistry schemeRegistry = new SchemeRegistry();
+			// ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
+
+			PoolingClientConnectionManager pm = new PoolingClientConnectionManager(schemeRegistry);
+			pm.setDefaultMaxPerRoute(100);
+
+			// httpContext = new SyncBasicHttpContext(new BasicHttpContext());
+			AbstractHttpClient defaultHttpClient = WebClientDevWrapper.wrapClient(new DefaultHttpClient(pm, httpParams));
+
+			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context, defaultHttpClient, "images");
 			mClient = new AsyncHttpClient(mContext);
 			mSyncClient = new SyncHttpClient(mContext) {
 
@@ -137,10 +171,12 @@ public class NetworkController {
 
 			mClient.setCookieStore(mCookieStore);
 			mSyncClient.setCookieStore(mCookieStore);
+			mCachingHttpClient.setCookieStore(mCookieStore);
 
 			// handle 401s
 			mClient.getDefaultHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mSyncClient.getDefaultHttpClient().addResponseInterceptor(httpResponseInterceptor);
+			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
 		}
 	}
 
@@ -399,7 +435,7 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
+				// HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
 				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user);
 
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
@@ -407,13 +443,13 @@ public class NetworkController {
 				MultipartEntity reqEntity = new MultipartEntity();
 				reqEntity.addPart("image", isBody);
 				httppost.setEntity(reqEntity);
-				Cookie cookie = IdentityController.getCookie();
-				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
+				// Cookie cookie = IdentityController.getCookie();
+				// httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
 
 				HttpResponse response = null;
 
 				try {
-					response = httpclient.execute(httppost);
+					response = mCachingHttpClient.execute(httppost);
 
 				}
 				catch (Exception e) {
@@ -441,7 +477,7 @@ public class NetworkController {
 
 		SurespotLog.v(TAG, "getting file stream");
 
-		HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
+		// HttpClient httpclient = WebClientDevWrapper.wrapClient(new DefaultHttpClient());
 		HttpGet httpGet = new HttpGet(mBaseUrl + url);
 
 		Cookie cookie = IdentityController.getCookie();
@@ -449,7 +485,7 @@ public class NetworkController {
 
 		HttpResponse response;
 		try {
-			response = httpclient.execute(httpGet);
+			response = mCachingHttpClient.execute(httpGet);
 			HttpEntity resEntity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() == 200) {
 				return resEntity.getContent();

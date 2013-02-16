@@ -151,8 +151,6 @@ public class EncryptionController {
 
 				byte[] buf = new byte[BUFFER_SIZE]; // input buffer
 				try {
-
-					// SurespotLog.w(TAG, username + " encrypt iv: " + new String(Utils.base64Encode(iv)));
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
@@ -172,8 +170,9 @@ public class EncryptionController {
 						bos.write(buf, 0, i);
 					}
 
+					// cos.close();
 					bos.close();
-					cos.close();
+
 					SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
@@ -209,7 +208,6 @@ public class EncryptionController {
 				byte[] buf = new byte[BUFFER_SIZE]; // input buffer
 				try {
 					final byte[] iv = Utils.base64Decode(ivs);
-					// SurespotLog.w(TAG, username + " decrypt iv: " + new String(Utils.base64Encode(iv)));
 					BufferedInputStream bis = new BufferedInputStream(in);
 
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
@@ -230,8 +228,8 @@ public class EncryptionController {
 						out.write(buf, 0, i);
 					}
 
-					cis.close();
 					bis.close();
+					cis.close();
 
 					SurespotLog.v(TAG, "read/write " + i + " bytes");
 

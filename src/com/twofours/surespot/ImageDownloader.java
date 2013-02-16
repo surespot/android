@@ -19,6 +19,7 @@ package com.twofours.surespot;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
@@ -174,8 +175,12 @@ public class ImageDownloader {
 				bitmap = BitmapFactory.decodeStream(inputStream);
 
 			}
+			catch (InterruptedIOException ioe) {
+				SurespotLog.w(TAG, "BitmapDownloaderTask: " + ioe.getMessage());
+				this.cancel(true);
+			}
 			catch (IOException e) {
-				SurespotLog.w(TAG, "BitmapDownloaderTask", e);
+				SurespotLog.w(TAG, "BitmapDownloaderTask: " + e.getMessage());
 			}
 
 			return bitmap;
