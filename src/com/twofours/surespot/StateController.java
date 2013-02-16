@@ -170,17 +170,19 @@ public class StateController {
 
 	private static String readFile(String filename) {
 		File file = new File(filename);
-		try {
-			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-			byte[] input = new byte[(int) file.length()];
-			int read = bis.read(input);
-			bis.close();
-			if (read == file.length()) {
-				return new String(input);
+		if (file.exists()) {
+			try {
+				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+				byte[] input = new byte[(int) file.length()];
+				int read = bis.read(input);
+				bis.close();
+				if (read == file.length()) {
+					return new String(input);
+				}
 			}
-		}
-		catch (Exception e) {
-			SurespotLog.w(TAG, "readFile, " + filename, e);
+			catch (Exception e) {
+				SurespotLog.w(TAG, "readFile, " + filename, e);
+			}
 		}
 		return null;
 	}

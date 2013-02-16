@@ -2,6 +2,7 @@ package com.twofours.surespot.encryption;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -12,6 +13,8 @@ import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -156,7 +159,6 @@ public class EncryptionController {
 
 					SurespotLog.w(TAG, username + " encrypt iv: " + new String(Utils.base64Encode(iv)));
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
-					// final IvParameterSpec ivParams = new IvParameterSpec(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
 					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
@@ -164,8 +166,9 @@ public class EncryptionController {
 					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 
 					// Base64OutputStream base64os = new Base64OutputStream(out, Base64.NO_PADDING | Base64.NO_WRAP);
-					// CipherOutputStream cos = new CipherOutputStream(out, ccm);
-					BufferedOutputStream bos = new BufferedOutputStream(out);
+					//
+					CipherOutputStream cos = new CipherOutputStream(out, ccm);
+					BufferedOutputStream bos = new BufferedOutputStream(cos);
 
 					int i = 0;
 
@@ -176,14 +179,10 @@ public class EncryptionController {
 						bos.write(buf, 0, i);
 						// SurespotLog.v(TAG, "read/write " + i + " bytes");
 					}
-					SurespotLog.v(TAG, "read/write " + i + " bytes");
-
-					in.close();
 
 					bos.close();
-					// cos.close();
-					// base64os.close();
-					out.close();
+					cos.close();
+					SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
 				catch (InvalidCacheLoadException icle) {
@@ -193,6 +192,20 @@ public class EncryptionController {
 
 				catch (Exception e) {
 					SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
+				}
+				finally {
+
+					// bos.close();
+					// cos.close();
+					// base64os.close();
+					try {
+						in.close();
+						out.close();
+					}
+					catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		};
@@ -222,25 +235,22 @@ public class EncryptionController {
 							"AES");
 					ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
 
-					// CipherInputStream cis = new CipherInputStream(bis, ccm);
+					CipherInputStream cis = new CipherInputStream(bis, ccm);
 
 					int i = 0;
 
-					while ((i = bis.read(buf)) != -1) {
+					while ((i = cis.read(buf)) != -1) {
 						if (Thread.interrupted()) {
 							break;
 						}
 						out.write(buf, 0, i);
 						// SurespotLog.v(TAG, "read/write " + i + " bytes");
 					}
-					SurespotLog.v(TAG, "read/write " + i + " bytes");
 
-					in.close();
-
-					// cis.close();
-					// base64is.close();
+					cis.close();
 					bis.close();
-					out.close();
+
+					SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
 				catch (InvalidCacheLoadException icle) {
@@ -250,6 +260,20 @@ public class EncryptionController {
 
 				catch (Exception e) {
 					SurespotLog.w(TAG, "decryptTask", e);
+				}
+				finally {
+					try {
+						in.close();
+						out.close();
+					}
+					catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					// cis.close();
+					// base64is.close();
+					// bis.close();
+
 				}
 			}
 		};

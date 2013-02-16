@@ -390,25 +390,6 @@ public class NetworkController {
 		}
 	}
 
-	public void postFile(Context context, String user, String id, InputStream fileStream, String mimeType,
-			AsyncHttpResponseHandler responseHandler) {
-
-		RequestParams params = new RequestParams();
-		params.put("image", fileStream, id, mimeType);
-
-		post("/images/" + user, params, responseHandler);
-
-	}
-
-	public String postFileSync(Context context, String user, String id, InputStream fileStream, String mimeType) {
-
-		RequestParams params = new RequestParams();
-		params.put("image", fileStream, id, mimeType);
-
-		return mSyncClient.post(mBaseUrl + "/images/" + user, params);
-
-	}
-
 	public void postFileStream(Context context, final String user, final String id, final InputStream fileInputStream,
 			final String mimeType, final IAsyncCallback<Boolean> callback) {
 		new AsyncTask<Void, Void, HttpResponse>() {
@@ -485,14 +466,6 @@ public class NetworkController {
 
 		return null;
 
-	}
-
-	public void getFile(String relativeUrl, AsyncHttpResponseHandler responseHandler) {
-		get(relativeUrl, null, responseHandler);
-	}
-
-	public String getFileSync(String relativeUrl) {
-		return mSyncClient.get(mBaseUrl + relativeUrl);
 	}
 
 	public void logout(final AsyncHttpResponseHandler responseHandler) {
