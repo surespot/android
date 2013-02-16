@@ -167,6 +167,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 		case REQUEST_CAPTURE_IMAGE:
 			mCaptureButton.setVisibility(View.VISIBLE);
+			Utils.configureActionBar(this, "capture image", to, true);
 			mCamera = getCameraInstance();
 			if (mCamera != null) {
 				CameraPreview cameraPreview = new CameraPreview(this, mCamera);
