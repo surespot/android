@@ -403,11 +403,9 @@ public class NetworkController {
 				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user);
 
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
-				// StringBody comment = new StringBody("Filename: " + fileName);
 
 				MultipartEntity reqEntity = new MultipartEntity();
 				reqEntity.addPart("image", isBody);
-				// reqEntity.addPart("comment", comment);
 				httppost.setEntity(reqEntity);
 				Cookie cookie = IdentityController.getCookie();
 				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());

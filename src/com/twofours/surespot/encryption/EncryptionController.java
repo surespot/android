@@ -118,11 +118,6 @@ public class EncryptionController {
 		return new String(Utils.base64Encode(publicKey.getQ().getEncoded()));
 	}
 
-	//
-	// private static void generateSharedSecret(String username, IAsyncCallback<byte[]> callback) {
-	// new AsyncGenerateSharedSecret(username, callback).execute();
-	// }
-
 	public static byte[] generateSharedSecretSync(String username) {
 		SurespotIdentity identity = IdentityController.getIdentity(SurespotApplication.getContext());
 		if (identity == null)
@@ -154,10 +149,10 @@ public class EncryptionController {
 			@Override
 			public void run() {
 
-				byte[] buf = new byte[1024]; // input buffer
+				byte[] buf = new byte[BUFFER_SIZE]; // input buffer
 				try {
 
-					SurespotLog.w(TAG, username + " encrypt iv: " + new String(Utils.base64Encode(iv)));
+					// SurespotLog.w(TAG, username + " encrypt iv: " + new String(Utils.base64Encode(iv)));
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
@@ -165,8 +160,6 @@ public class EncryptionController {
 							"AES");
 					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 
-					// Base64OutputStream base64os = new Base64OutputStream(out, Base64.NO_PADDING | Base64.NO_WRAP);
-					//
 					CipherOutputStream cos = new CipherOutputStream(out, ccm);
 					BufferedOutputStream bos = new BufferedOutputStream(cos);
 
@@ -177,7 +170,6 @@ public class EncryptionController {
 							break;
 						}
 						bos.write(buf, 0, i);
-						// SurespotLog.v(TAG, "read/write " + i + " bytes");
 					}
 
 					bos.close();
@@ -194,17 +186,12 @@ public class EncryptionController {
 					SurespotLog.w(TAG, "symmetricBase64Encrypt", e);
 				}
 				finally {
-
-					// bos.close();
-					// cos.close();
-					// base64os.close();
 					try {
 						in.close();
 						out.close();
 					}
 					catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						SurespotLog.w(TAG, "encryptTask", e);
 					}
 				}
 			}
@@ -219,16 +206,13 @@ public class EncryptionController {
 			@Override
 			public void run() {
 
-				byte[] buf = new byte[1024]; // input buffer
+				byte[] buf = new byte[BUFFER_SIZE]; // input buffer
 				try {
 					final byte[] iv = Utils.base64Decode(ivs);
-					SurespotLog.w(TAG, username + " decrypt iv: " + new String(Utils.base64Encode(iv)));
-
-					// Base64InputStream base64is = new Base64InputStream(in, Base64.NO_PADDING | Base64.NO_WRAP);
+					// SurespotLog.w(TAG, username + " decrypt iv: " + new String(Utils.base64Encode(iv)));
 					BufferedInputStream bis = new BufferedInputStream(in);
 
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
-
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
 					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(username), 0, AES_KEY_LENGTH,
@@ -244,7 +228,6 @@ public class EncryptionController {
 							break;
 						}
 						out.write(buf, 0, i);
-						// SurespotLog.v(TAG, "read/write " + i + " bytes");
 					}
 
 					cis.close();
@@ -267,12 +250,8 @@ public class EncryptionController {
 						out.close();
 					}
 					catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						SurespotLog.w(TAG, "decryptTask", e);
 					}
-					// cis.close();
-					// base64is.close();
-					// bis.close();
 
 				}
 			}
