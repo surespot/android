@@ -29,6 +29,7 @@ import com.twofours.surespot.CameraPreview;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -162,7 +163,8 @@ public class ImageSelectActivity extends SherlockActivity {
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
 			Utils.configureActionBar(this, "select image", to, true);
-			startActivityForResult(Intent.createChooser(intent, "select Image"), REQUEST_EXISTING_IMAGE);
+			startActivityForResult(Intent.createChooser(intent, "select Image"),
+					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 			break;
 
 		case REQUEST_CAPTURE_IMAGE:
@@ -273,7 +275,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_OK) {
+		if (resultCode == RESULT_OK && requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
 			// TODO on thread
 			Uri uri = data.getData();
 			// scale, compress and save the image
@@ -282,7 +284,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	}
 
-	private Bitmap compressImage(Uri uri, int rotate) {
+	private synchronized Bitmap compressImage(Uri uri, int rotate) {
 		// scale, compress and save the image
 		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(this, uri, rotate);
 		try {
