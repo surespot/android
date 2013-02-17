@@ -90,10 +90,7 @@ public class StartupActivity extends Activity {
 			String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-			SurespotLog.v(TAG, "Intent action: " + action);
-			SurespotLog.v(TAG, "Intent type: " + type);
-			SurespotLog.v(TAG, "Intent categories: " + (categories == null ? "null" : categories.toString()));
-			SurespotLog.v(TAG, "Extras: " + (extras == null ? "null" : extras.toString()));
+			Utils.logIntent(intent);
 
 			// if we have a current user we're logged in
 			String user = IdentityController.getLoggedInUser();
@@ -134,7 +131,7 @@ public class StartupActivity extends Activity {
 					newIntent = new Intent(this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-					// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				}
 				else {
 					SurespotLog.v(TAG, "need different user, starting Login activity");

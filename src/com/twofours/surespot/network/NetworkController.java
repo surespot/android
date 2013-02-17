@@ -81,7 +81,7 @@ public class NetworkController {
 
 		mUnauthorized = unauthorized;
 		if (unauthorized) {
-			mCookieStore.clear();
+			// mCookieStore.clear();
 		}
 	}
 
@@ -101,7 +101,7 @@ public class NetworkController {
 
 			ConnManagerParams.setTimeout(httpParams, 15000);
 			ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(100));
-			ConnManagerParams.setMaxTotalConnections(httpParams, 100);
+			ConnManagerParams.setMaxTotalConnections(httpParams, 200);
 
 			HttpConnectionParams.setSoTimeout(httpParams, 15000);
 			HttpConnectionParams.setConnectionTimeout(httpParams, 1500);
@@ -119,7 +119,7 @@ public class NetworkController {
 
 			// httpContext = new SyncBasicHttpContext(new BasicHttpContext());
 
-			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context, defaultHttpClient, "images");
+			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context, defaultHttpClient);
 			mClient = new AsyncHttpClient(mContext);
 			mSyncClient = new SyncHttpClient(mContext) {
 
@@ -441,11 +441,6 @@ public class NetworkController {
 				MultipartEntity reqEntity = new MultipartEntity();
 				reqEntity.addPart("image", isBody);
 				httppost.setEntity(reqEntity);
-
-				// TODO why isn't setting the cookie store taking care of this?
-				Cookie cookie = IdentityController.getCookie();
-				httppost.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
-
 				HttpResponse response = null;
 
 				try {
@@ -478,26 +473,19 @@ public class NetworkController {
 		SurespotLog.v(TAG, "getting file stream");
 
 		HttpGet httpGet = new HttpGet(mBaseUrl + url);
-
-		// TODO why isn't setting the cookie store taking care of this?
-		Cookie cookie = IdentityController.getCookie();
-		if (cookie != null) {
-			httpGet.addHeader("cookie", cookie.getName() + "=" + cookie.getValue());
-
-			HttpResponse response;
-			try {
-				response = mCachingHttpClient.execute(httpGet);
-				HttpEntity resEntity = response.getEntity();
-				if (response.getStatusLine().getStatusCode() == 200) {
-					return resEntity.getContent();
-				}
-
+		HttpResponse response;
+		try {
+			response = mCachingHttpClient.execute(httpGet);
+			HttpEntity resEntity = response.getEntity();
+			if (response.getStatusLine().getStatusCode() == 200) {
+				return resEntity.getContent();
 			}
 
-			catch (Exception e) {
-				SurespotLog.w(TAG, "getFileStream", e);
+		}
 
-			}
+		catch (Exception e) {
+			SurespotLog.w(TAG, "getFileStream", e);
+
 		}
 
 		return null;
@@ -523,9 +511,8 @@ public class NetworkController {
 	}
 
 	public void clearCache() {
+		// all the clients share a cache
 		mClient.clearCache();
-		mSyncClient.clearCache();
-		mCachingHttpClient.clearCache();
 	}
 
 }

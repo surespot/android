@@ -72,6 +72,8 @@ public class ChatFragment extends SherlockFragment {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
 
+		Utils.logIntent(getActivity().getIntent());
+
 		mChatAdapter = new ChatAdapter(getActivity());
 		setUsername(getArguments().getString("username"));
 		// load messages from local storage
@@ -204,6 +206,8 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		Utils.logIntent(getActivity().getIntent());
 
 		// reget the messages in case any were added while we were gone
 		SurespotLog.v(TAG, "onResume, mUsername:  " + mUsername);

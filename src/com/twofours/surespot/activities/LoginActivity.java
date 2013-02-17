@@ -45,6 +45,8 @@ public class LoginActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 
+		Utils.logIntent(getIntent());
+
 		mMpd = new MultiProgressDialog(this, "logging in", 750);
 
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);

@@ -284,16 +284,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 			Utils.configureActionBar(this, "select image", getCurrentChatName(), true);
 			startActivityForResult(Intent.createChooser(intent, "select Image"),
 					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
-
-			//
-			// intent = new Intent(this, ImageSelectActivity.class);
-			// intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
-			// intent.putExtra("to", getCurrentChatName());
-			// intent.setType("image/*");
-			// intent.setAction(Intent.ACTION_GET_CONTENT);
-			//
-			// startActivityForResult(Intent.createChooser(intent, "select image"),
-			// SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
 			// case R.id.menu_capture_image_menu:

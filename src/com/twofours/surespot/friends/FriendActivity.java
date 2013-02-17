@@ -69,6 +69,8 @@ public class FriendActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
 
+		Utils.logIntent(getIntent());
+
 		Utils.configureActionBar(this, null, null, false);
 
 		mChatController = new ChatController(new IConnectCallback() {
@@ -214,6 +216,8 @@ public class FriendActivity extends SherlockActivity {
 	public void onResume() {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
+
+		Utils.logIntent(getIntent());
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(InviteResponseReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
