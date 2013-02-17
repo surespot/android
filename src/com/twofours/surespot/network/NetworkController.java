@@ -15,23 +15,13 @@ import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
-import ch.boye.httpclientandroidlib.HttpVersion;
 import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
-import ch.boye.httpclientandroidlib.conn.params.ConnManagerParams;
-import ch.boye.httpclientandroidlib.conn.params.ConnPerRouteBean;
-import ch.boye.httpclientandroidlib.conn.scheme.SchemeRegistry;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
-import ch.boye.httpclientandroidlib.impl.client.AbstractHttpClient;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
-import ch.boye.httpclientandroidlib.impl.client.DefaultHttpClient;
-import ch.boye.httpclientandroidlib.impl.conn.tsccm.ThreadSafeClientConnManager;
-import ch.boye.httpclientandroidlib.params.BasicHttpParams;
-import ch.boye.httpclientandroidlib.params.HttpConnectionParams;
-import ch.boye.httpclientandroidlib.params.HttpProtocolParams;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -81,7 +71,7 @@ public class NetworkController {
 
 		mUnauthorized = unauthorized;
 		if (unauthorized) {
-			// mCookieStore.clear();
+			mCookieStore.clear();
 		}
 	}
 
@@ -97,29 +87,7 @@ public class NetworkController {
 
 		try {
 
-			BasicHttpParams httpParams = new BasicHttpParams();
-
-			ConnManagerParams.setTimeout(httpParams, 15000);
-			ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(100));
-			ConnManagerParams.setMaxTotalConnections(httpParams, 200);
-
-			HttpConnectionParams.setSoTimeout(httpParams, 15000);
-			HttpConnectionParams.setConnectionTimeout(httpParams, 1500);
-			HttpConnectionParams.setTcpNoDelay(httpParams, true);
-			HttpConnectionParams.setSocketBufferSize(httpParams, 8192);
-
-			HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-
-			SchemeRegistry schemeRegistry = new SchemeRegistry();
-			ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
-
-			AbstractHttpClient defaultHttpClient = new DefaultHttpClient(cm, httpParams);
-			// PoolingClientConnectionManager pm = new PoolingClientConnectionManager(schemeRegistry);
-			// pm.setDefaultMaxPerRoute(100);
-
-			// httpContext = new SyncBasicHttpContext(new BasicHttpContext());
-
-			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context, defaultHttpClient);
+			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context);
 			mClient = new AsyncHttpClient(mContext);
 			mSyncClient = new SyncHttpClient(mContext) {
 
@@ -159,7 +127,6 @@ public class NetworkController {
 								mContext.startActivity(intent);
 
 							}
-
 						}
 					}
 				}
@@ -173,8 +140,8 @@ public class NetworkController {
 			mCachingHttpClient.setCookieStore(mCookieStore);
 
 			// handle 401s
-			mClient.getDefaultHttpClient().addResponseInterceptor(httpResponseInterceptor);
-			mSyncClient.getDefaultHttpClient().addResponseInterceptor(httpResponseInterceptor);
+			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
+			mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
 		}
 	}
@@ -217,7 +184,6 @@ public class NetworkController {
 
 					responseHandler.onSuccess(responseCode, result, cookie);
 				}
-
 			}
 
 			@Override
