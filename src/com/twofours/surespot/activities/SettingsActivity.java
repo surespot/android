@@ -13,9 +13,11 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
 public class SettingsActivity extends SherlockPreferenceActivity {
+	private static final String TAG = "SettingsActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					new AsyncTask<Void, Void, Void>() {
 						protected Void doInBackground(Void... params) {
 							// clear out some shiznit
+							SurespotLog.v(TAG, "clearing local cache");
 
 							// state
 							for (String identityName : IdentityController.getIdentityNames(SettingsActivity.this)) {
