@@ -45,7 +45,16 @@ public class LoginActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 
-		Utils.logIntent(getIntent());
+		// if we're starting up from network controller because of 401 pull the intent out
+		Intent intent = getIntent();
+		Boolean is401 = intent.getBooleanExtra("401", false);
+
+		if (is401) {
+			SurespotLog.v(TAG, "using startup intent due to 401");
+			setIntent(SurespotApplication.getStartupIntent());
+		}
+
+		Utils.logIntent(TAG, getIntent());
 
 		mMpd = new MultiProgressDialog(this, "logging in", 750);
 
@@ -113,17 +122,6 @@ public class LoginActivity extends SherlockActivity {
 
 			}
 		});
-
-		// EditText usernameText = (EditText) findViewById(R.id.etUsername);
-		// usernameText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
-		// String username = EncryptionController.getIdentityUsername();
-		// if (username != null) {
-		// usernameText.setText(username);
-		// }
-		// else {
-		// SurespotLog.w(TAG, "In login activity with no identity stored.");
-		// }
-
 	}
 
 	private void login() {
@@ -179,12 +177,20 @@ public class LoginActivity extends SherlockActivity {
 			Intent intent = new Intent(this, ChatActivity.class);
 			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, getIntent()
 					.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM));
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 		}
 		else {
 			Intent intent = new Intent(this, FriendActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			String action = getIntent().getAction();
+			String type = getIntent().getType();
+
+			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+				intent.setAction(action);
+				intent.setType(type);
+				intent.putExtras(getIntent());
+			}
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			this.startActivity(intent);
 		}
 

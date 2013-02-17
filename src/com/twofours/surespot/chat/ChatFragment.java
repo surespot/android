@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
@@ -39,7 +40,7 @@ public class ChatFragment extends SherlockFragment {
 	private ChatAdapter mChatAdapter;
 	private String mUsername;
 	private ListView mListView;
-	private static final String TAG = "ChatFragment";
+	private String TAG = "ChatFragment";
 	private EditText mEditText;
 	private BroadcastReceiver mSocketConnectionStatusReceiver;
 	private IAsyncCallback<Boolean> mLatestMessageHandler;
@@ -70,12 +71,14 @@ public class ChatFragment extends SherlockFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		SurespotLog.v(TAG, mUsername + ": onCreate");
-
-		Utils.logIntent(getActivity().getIntent());
+		SurespotLog.v(TAG, "onCreate");
 
 		mChatAdapter = new ChatAdapter(getActivity());
 		setUsername(getArguments().getString("username"));
+		TAG = TAG + ":" + getUsername();
+
+		Utils.logIntent(TAG, getActivity().getIntent());
+
 		// load messages from local storage
 		loadMessages();
 
@@ -101,7 +104,7 @@ public class ChatFragment extends SherlockFragment {
 			}
 		};
 
-		SurespotLog.v(TAG, mUsername + ": onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
+		SurespotLog.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
 
 	}
 
@@ -185,8 +188,8 @@ public class ChatFragment extends SherlockFragment {
 				}
 
 				if (!mLoading && !mNoEarlierMessages && firstVisibleItem <= 10) {
-					// SurespotLog.v(TAG, mUsername + ": onScroll: Loading more messages.");
-					// SurespotLog.v(TAG, mUsername + ": onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
+					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
+					// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
 					// firstVisibleItem
 					// + ", visibleItemCount: " + visibleItemCount);
 					mLoading = true;
@@ -208,11 +211,11 @@ public class ChatFragment extends SherlockFragment {
 	public void onResume() {
 		super.onResume();
 
-		Utils.logIntent(getActivity().getIntent());
+		Utils.logIntent(TAG, getActivity().getIntent());
 
 		// reget the messages in case any were added while we were gone
-		SurespotLog.v(TAG, mUsername + ": onResume, mUsername:  " + mUsername);
-		SurespotLog.v(TAG, mUsername + ": message count: " + mChatAdapter.getCount());
+		SurespotLog.v(TAG, "onResume, mUsername:  " + mUsername);
+		SurespotLog.v(TAG, "message count: " + mChatAdapter.getCount());
 
 		LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(mSocketConnectionStatusReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED));
@@ -229,7 +232,7 @@ public class ChatFragment extends SherlockFragment {
 		// }
 
 		if (isVisible()) {
-			SurespotLog.v(TAG, mUsername + ": onResume " + mUsername + " visible");
+			SurespotLog.v(TAG, "onResume " + mUsername + " visible");
 			requestFocus();
 		}
 	}
@@ -237,7 +240,7 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onPause() {
 		super.onPause();
-		SurespotLog.v(TAG, mUsername + ": onPause, mUsername:  " + mUsername);
+		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
 		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
 		saveMessages();
 		// mChatAdapter.evictCache();
@@ -246,7 +249,7 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		SurespotLog.v(TAG, mUsername + ": onDestroy");
+		SurespotLog.v(TAG, "onDestroy");
 	}
 
 	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {
@@ -254,7 +257,7 @@ public class ChatFragment extends SherlockFragment {
 		// get the list of messages
 		String lastMessageId = getLatestMessageId();
 
-		SurespotLog.v(TAG, mUsername + ": Asking server for messages after messageId: " + lastMessageId);
+		SurespotLog.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
 		SurespotApplication.getNetworkController().getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
@@ -273,10 +276,10 @@ public class ChatFragment extends SherlockFragment {
 						}
 					}
 					catch (JSONException e) {
-						SurespotLog.e(TAG, mUsername + ": Error creating chat message: " + e.toString(), e);
+						SurespotLog.e(TAG, "Error creating chat message: " + e.toString(), e);
 					}
 
-					SurespotLog.v(TAG, mUsername + ": loaded: " + jsonArray.length() + " messages from the server.");
+					SurespotLog.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
 
 					if (callback != null) {
 						callback.handleResponse(true);
@@ -288,7 +291,7 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onFailure(Throwable error, String content) {
 				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
-					SurespotLog.w(TAG, mUsername + ": getMessages", error);
+					SurespotLog.w(TAG, "getMessages", error);
 
 					if (callback != null) {
 						callback.handleResponse(false);
@@ -310,7 +313,7 @@ public class ChatFragment extends SherlockFragment {
 		if (firstMessageId != null) {
 			// TODO make all the ints #s
 			if (Integer.parseInt(firstMessageId) > 1) {
-				SurespotLog.v(TAG, mUsername + ": Asking server for messages before messageId: " + firstMessageId);
+				SurespotLog.v(TAG, "Asking server for messages before messageId: " + firstMessageId);
 				SurespotApplication.getNetworkController().getEarlierMessages(mUsername, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray jsonArray) {
@@ -330,10 +333,10 @@ public class ChatFragment extends SherlockFragment {
 								}
 							}
 							catch (JSONException e) {
-								SurespotLog.e(TAG, mUsername + ": Error creating chat message: " + e.toString(), e);
+								SurespotLog.e(TAG, "Error creating chat message: " + e.toString(), e);
 							}
 
-							SurespotLog.v(TAG, mUsername + ": loaded: " + jsonArray.length() + " messages from the server.");
+							SurespotLog.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
 
 							mChatAdapter.notifyDataSetChanged();
 
@@ -343,13 +346,13 @@ public class ChatFragment extends SherlockFragment {
 					@Override
 					public void onFailure(Throwable error, String content) {
 						if (!SurespotApplication.getNetworkController().isUnauthorized()) {
-							SurespotLog.w(TAG, mUsername + ": getEarlierMessages", error);
+							SurespotLog.w(TAG, "getEarlierMessages", error);
 						}
 					}
 				});
 			}
 			else {
-				SurespotLog.v(TAG, mUsername + ": getEarlierMessages: no more messages.");
+				SurespotLog.v(TAG, "getEarlierMessages: no more messages.");
 				ChatFragment.this.mNoEarlierMessages = true;
 			}
 		}
@@ -408,7 +411,7 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	public void addMessage(final SurespotMessage message) {
-		SurespotLog.v(TAG, mUsername + ": addMessage: " + message.getTo());
+		SurespotLog.v(TAG, "addMessage: " + message.getTo());
 		mChatAdapter.addOrUpdateMessage(message, true);
 	}
 
@@ -418,7 +421,7 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	private void loadMessages() {
-		// SurespotLog.v(TAG, mUsername + ": Loaded: " + messages.size() + " messages from local storage.");
+		// SurespotLog.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
 		mChatAdapter.addMessages(SurespotApplication.getStateController().loadMessages(mUsername));
 	}
 
@@ -427,7 +430,7 @@ public class ChatFragment extends SherlockFragment {
 		if (action.equals(Intent.ACTION_SEND)) {
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = extras.getString(Intent.EXTRA_TEXT);
-				SurespotLog.v(TAG, mUsername + ": received action send, data: " + sharedText);
+				SurespotLog.v(TAG, "received action send, data: " + sharedText);
 				mEditText.append(sharedText);
 				requestFocus();
 			}
@@ -440,25 +443,23 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void run() {
-						SurespotLog.v(TAG, mUsername + ": received image data, upload image");
-						ChatUtils.uploadPictureMessageAsync(getActivity(), imageUri, mUsername, true, null, new IAsyncCallback<Boolean>() {
+						SurespotLog.v(TAG, "received image data, upload image");
+						final FragmentActivity activity = getActivity();
+						ChatUtils.uploadPictureMessageAsync(activity, imageUri, mUsername, true, null, new IAsyncCallback<Boolean>() {
 
 							@Override
 							public void handleResponse(final Boolean result) {
-								SurespotLog.v(TAG, mUsername + ": upload picture response: " + result);
+								SurespotLog.v(TAG, "upload picture response: " + result);
+								activity.runOnUiThread(new Runnable() {
 
-								if (!SurespotApplication.getNetworkController().isUnauthorized()) {
-									ChatFragment.this.getActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
+												: R.string.could_not_upload_image));
 
-										@Override
-										public void run() {
-											Utils.makeToast(ChatFragment.this.getActivity(),
-													getString(result ? R.string.image_successfully_uploaded
-															: R.string.could_not_upload_image));
+									}
+								});
 
-										}
-									});
-								}
 							}
 						});
 					}

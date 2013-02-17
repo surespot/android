@@ -29,6 +29,7 @@ public class SurespotApplication extends Application {
 	private static NetworkController mNetworkController;
 	private static StateController mStateController;
 	private static Context mContext;
+	private static Intent mStartupIntent;
 
 	private static final int CORE_POOL_SIZE = 10;
 	private static final int MAXIMUM_POOL_SIZE = 128;
@@ -91,6 +92,14 @@ public class SurespotApplication extends Application {
 
 	public static Context getContext() {
 		return mContext;
+	}
+
+	public static Intent getStartupIntent() {
+		return mStartupIntent;
+	}
+
+	public static void setStartupIntent(Intent startupIntent) {
+		mStartupIntent = startupIntent;
 	}
 
 }

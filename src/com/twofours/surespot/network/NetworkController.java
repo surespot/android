@@ -123,7 +123,8 @@ public class NetworkController {
 
 								SurespotLog.v(TAG, "Got 401, launching login intent.");
 								Intent intent = new Intent(mContext, LoginActivity.class);
-								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+								intent.putExtra("401", true);
+								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 								mContext.startActivity(intent);
 
 							}

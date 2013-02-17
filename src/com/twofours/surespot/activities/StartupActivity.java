@@ -35,6 +35,8 @@ public class StartupActivity extends Activity {
 		Intent intent = new Intent(this, CredentialCachingService.class);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
+		SurespotApplication.setStartupIntent(getIntent());
+
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -90,7 +92,7 @@ public class StartupActivity extends Activity {
 			String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-			Utils.logIntent(intent);
+			Utils.logIntent(TAG,intent);
 
 			// if we have a current user we're logged in
 			String user = IdentityController.getLoggedInUser();
