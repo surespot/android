@@ -57,15 +57,29 @@ public class ChatUtils {
 	@SuppressWarnings("resource")
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
 			final String fileName, final IAsyncCallback<Boolean> callback) {
-
+		SurespotLog.v(TAG, "uploadPictureMessageAsync");
 		try {
 			InputStream dataStream;
 			if (scale) {
-				PipedOutputStream jpegOutputStream = new PipedOutputStream();
-				Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, -1);
-				dataStream = new PipedInputStream(jpegOutputStream);
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, jpegOutputStream);
-				bitmap = null;
+				SurespotLog.v(TAG, "scalingImage");
+				final Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, -1);
+				final PipedOutputStream pos = new PipedOutputStream();
+				dataStream = new PipedInputStream(pos);
+				Runnable runnable = new Runnable() {
+					@Override
+					public void run() {
+						SurespotLog.v(TAG, "compressingImage");
+						bitmap.compress(Bitmap.CompressFormat.JPEG, 75, pos);
+						try {
+							pos.close();
+							SurespotLog.v(TAG, "imageCompressed");
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, "error compressing image", e);
+						}
+					}
+				};
+				SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 			}
 			else {
 				dataStream = context.getContentResolver().openInputStream(imageUri);

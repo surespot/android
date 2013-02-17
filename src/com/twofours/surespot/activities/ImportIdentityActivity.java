@@ -34,7 +34,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		ListView lvIdentities = (ListView) findViewById(R.id.lvIdentities);
 
-		final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_selectable_list_item);
+		final ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
+		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 
 		// query the filesystem for identities
 		final File exportDir = FileUtils.getIdentityExportDir();

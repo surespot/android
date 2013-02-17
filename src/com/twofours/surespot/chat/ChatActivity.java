@@ -281,14 +281,14 @@ public class ChatActivity extends SherlockFragmentActivity {
 			// TODO paid version allows any file
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			Utils.configureActionBar(this, "select image", getCurrentChatName(), true);
-			startActivityForResult(Intent.createChooser(intent, "select Image"),
+			Utils.configureActionBar(this, getString(R.string.select_image), getCurrentChatName(), true);
+			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
 					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
 			// case R.id.menu_capture_image_menu:
 			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("source", ImageSelectActivity.REQUEST_CAPTURE_IMAGE);
+			intent.putExtra("source", ImageSelectActivity.SOURCE_CAPTURE_IMAGE);
 			intent.putExtra("to", getCurrentChatName());
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 
@@ -324,7 +324,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
 				Intent intent = new Intent(this, ImageSelectActivity.class);
-				intent.putExtra("source", ImageSelectActivity.REQUEST_EXISTING_IMAGE);
+				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
 				intent.putExtra("to", getCurrentChatName());
 				intent.setData(data.getData());
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
@@ -337,16 +337,16 @@ public class ChatActivity extends SherlockFragmentActivity {
 				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
 
-					Utils.makeToast(this, "uploading image");
+					Utils.makeToast(this, getString(R.string.uploading_image));
 					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, filename, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
 							if (result) {
-								Utils.makeToast(ChatActivity.this, "image successfully uploaded");
+								Utils.makeToast(ChatActivity.this, getString(R.string.image_successfully_uploaded));
 
 							}
 							else {
-								Utils.makeToast(ChatActivity.this, "could not upload image");
+								Utils.makeToast(ChatActivity.this, getString(R.string.could_not_upload_image));
 							}
 
 							new File(filename).delete();

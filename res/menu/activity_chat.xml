@@ -5,7 +5,7 @@
         android:icon="@drawable/ic_menu_gallery"
         android:orderInCategory="100"
         android:showAsAction="ifRoom|withText"
-        android:title="select image"/>
+        android:title="@string/select_image"/>
     <!-- <item -->
     <!-- android:id="@+id/menu_send_image_menu" -->
     <!-- android:orderInCategory="100" -->
@@ -21,7 +21,7 @@
         android:icon="@drawable/ic_menu_camera"
         android:orderInCategory="200"
         android:showAsAction="ifRoom|withText"
-        android:title="capture image"/>
+        android:title="@string/capture_image"/>
     <!-- <item -->
     <!-- android:id="@+id/menu_close_menu" -->
     <!-- android:orderInCategory="200" -->
@@ -38,7 +38,7 @@
         android:id="@+id/menu_logout"
         android:orderInCategory="400"
         android:showAsAction="ifRoom|withText"
-        android:title="logout"/>
+        android:title="@string/logout"/>
     <item
         android:id="@+id/menu_close_bar"
         android:icon="@drawable/ic_menu_end_conversation"

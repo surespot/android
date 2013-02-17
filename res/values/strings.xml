@@ -37,5 +37,16 @@
     <string name="pref_notifications_vibration">pref_notifications_vibration"</string>
     <string name="pref_notifications_led">pref_notifications_led"</string>
     <string name="camera_init">initializing camera"</string>
+    <string name="uploading_image">uploading image</string>
+    <string name="could_not_upload_image">could not upload image</string>
+    <string name="image_successfully_uploaded">image successfully uploaded</string>
+    <string name="select_image">select Image</string>
+    <string name="capture_image">capture image</string>
+    <string name="logout">logout</string>
+    <string name="settings">settings</string>
+    <string name="welcome_to_surespot">Welcome to surespot. Messages sent using this software are end to end encrypted using 256 bit AES and 512+ bit ECC key exchange. Enjoy.</string>
+    <string name="no_friends">No friends...yet. Invite friends by entering their username and touching &amp;apos;invite friend&amp;apos;.</string>
+    <string name="navigate_between_chat_tabs">Navigate between chat tabs by swiping.</string>
+    <string name="early_pre_beta">This is early pre-beta software, your logins and encrypted conversatations can and probably will be erased at any time. If this happens you will need to &amp;apos;Clear data&amp;apos; for the surespot application in your phone and create a new user.</string>
 
 </resources>

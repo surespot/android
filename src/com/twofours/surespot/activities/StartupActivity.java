@@ -131,7 +131,7 @@ public class StartupActivity extends Activity {
 					newIntent = new Intent(this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-					newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				}
 				else {
 					SurespotLog.v(TAG, "need different user, starting Login activity");
@@ -140,8 +140,8 @@ public class StartupActivity extends Activity {
 					SurespotLog.v(TAG, "setting message to, " + messageFrom + ", from: " + messageTo);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-					newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					// newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				}
 
 			}
@@ -150,7 +150,7 @@ public class StartupActivity extends Activity {
 				if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 					SurespotLog.v(TAG, "send action, starting home activity so user can select recipient");
 					newIntent = new Intent(this, FriendActivity.class);
-					newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					newIntent.setAction(action);
 					newIntent.setType(type);
 					newIntent.putExtras(intent);
@@ -162,8 +162,7 @@ public class StartupActivity extends Activity {
 						if (!messageTo.equals(user)) {
 							SurespotLog.v(TAG, "need different user, starting Login activity");
 							newIntent = new Intent(this, LoginActivity.class);
-							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP
-									| Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 							newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
 							newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE,
 									SurespotConstants.IntentFilters.INVITE_NOTIFICATION);
@@ -176,8 +175,7 @@ public class StartupActivity extends Activity {
 							SurespotLog.v(TAG, "starting chat activity based on LAST_CHAT name");
 							newIntent = new Intent(this, ChatActivity.class);
 							newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
-							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP
-									| Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						}
 					}
 				}
@@ -189,16 +187,17 @@ public class StartupActivity extends Activity {
 				}
 				else {
 					newIntent = new Intent(this, FriendActivity.class);
-				} // newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				}
 			}
 
+			newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(newIntent);
 		}
 		// otherwise show the user / key management activity
 		else {
 			SurespotLog.v(TAG, "starting signup activity");
 			Intent intent = new Intent(this, SignupActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 		}
 
