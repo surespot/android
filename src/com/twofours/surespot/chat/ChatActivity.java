@@ -244,20 +244,22 @@ public class ChatActivity extends SherlockFragmentActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
 
 		mChatController.disconnect();
+		mChatController.saveUnsentMessages();
+		mChatController.destroy();
+
 		// save chat names
 		SurespotApplication.getStateController().saveActiveChats(mPagerAdapter.getChatNames());
 
-		mChatController.saveUnsentMessages();
 		// store chats the user went into
 		SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 
 		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChatName());
 
-		mChatController.destroy();
-
 		// cancel any message notifications for the currently showing tab
-		mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), getCurrentChatName()),
-				SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+		if (IdentityController.getLoggedInUser() != null) {
+			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), getCurrentChatName()),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+		}
 	}
 
 	private ChatFragment getChatFragment(String roomName) {
