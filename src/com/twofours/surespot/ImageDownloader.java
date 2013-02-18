@@ -117,7 +117,7 @@ public class ImageDownloader {
 		if (bitmapDownloaderTask != null) {
 			SurespotMessage taskMessage = bitmapDownloaderTask.mMessage;
 			if ((taskMessage == null) || (!taskMessage.equals(message))) {
-				bitmapDownloaderTask.cancel(true);
+				bitmapDownloaderTask.cancel(false);
 			}
 			else {
 				// The same URL is already being downloaded.
@@ -166,23 +166,25 @@ public class ImageDownloader {
 					mMessage.getCipherData());
 
 			Bitmap bitmap = null;
-			PipedOutputStream out = new PipedOutputStream();
-			PipedInputStream inputStream;
-			try {
-				inputStream = new PipedInputStream(out);
 
-				EncryptionController.runDecryptTask(mMessage.getOtherUser(), mMessage.getIv(), new BufferedInputStream(imageStream), out);
+			if (!isCancelled()) {
+				PipedOutputStream out = new PipedOutputStream();
+				PipedInputStream inputStream;
+				try {
+					inputStream = new PipedInputStream(out);
 
-				byte[] bytes = Utils.inputStreamToBytes(inputStream);
-				bitmap = ChatUtils.getSampledImage(bytes);
+					EncryptionController.runDecryptTask(mMessage.getOtherUser(), mMessage.getIv(), new BufferedInputStream(imageStream),
+							out);
 
-			}
-			catch (InterruptedIOException ioe) {
-				SurespotLog.w(TAG, "BitmapDownloaderTask: " + ioe.getMessage());
-				this.cancel(true);
-			}
-			catch (IOException e) {
-				SurespotLog.w(TAG, "BitmapDownloaderTask: " + e.getMessage());
+					byte[] bytes = Utils.inputStreamToBytes(inputStream);
+					bitmap = ChatUtils.getSampledImage(bytes);
+				}
+				catch (InterruptedIOException ioe) {
+					SurespotLog.w(TAG, "BitmapDownloaderTask ioe", ioe);
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, "BitmapDownloaderTask e", e);
+				}
 			}
 
 			return bitmap;

@@ -218,18 +218,17 @@ public class EncryptionController {
 					ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
 
 					CipherInputStream cis = new CipherInputStream(bis, ccm);
+					BufferedOutputStream bos = new BufferedOutputStream(out);
 
 					int i = 0;
 
 					while ((i = cis.read(buf)) != -1) {
-						if (Thread.interrupted()) {
-							break;
-						}
-						out.write(buf, 0, i);
+						bos.write(buf, 0, i);
 					}
 
 					bis.close();
 					cis.close();
+					bos.close();
 
 					SurespotLog.v(TAG, "read/write " + i + " bytes");
 
@@ -240,7 +239,7 @@ public class EncryptionController {
 				}
 
 				catch (Exception e) {
-					SurespotLog.w(TAG, "decryptTask", e);
+					SurespotLog.w(TAG, "decryptTask exception", e);
 				}
 				finally {
 					try {
@@ -248,7 +247,7 @@ public class EncryptionController {
 						out.close();
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, "decryptTask", e);
+						SurespotLog.w(TAG, "decryptTask finally", e);
 					}
 
 				}

@@ -31,8 +31,8 @@ public class SurespotApplication extends Application {
 	private static Context mContext;
 	private static Intent mStartupIntent;
 
-	private static final int CORE_POOL_SIZE = 10;
-	private static final int MAXIMUM_POOL_SIZE = 128;
+	private static final int CORE_POOL_SIZE = 5;
+	private static final int MAXIMUM_POOL_SIZE = 20;
 	private static final int KEEP_ALIVE = 1;
 
 	private static final ThreadFactory sThreadFactory = new ThreadFactory() {
