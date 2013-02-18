@@ -147,11 +147,13 @@ public class NetworkController {
 		}
 	}
 
-	public void addUser(final String username, String password, String publicKey, final CookieResponseHandler responseHandler) {
+	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA,
+			final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
-		params.put("publickey", publicKey);
+		params.put("pkdh", publicKeyDH);
+		params.put("pkecdsa", publicKeyECDSA);
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 

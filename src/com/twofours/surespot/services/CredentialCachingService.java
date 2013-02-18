@@ -30,7 +30,7 @@ public class CredentialCachingService extends Service {
 	private Map<String, String> mPasswords = new HashMap<String, String>();
 	private Map<String, Cookie> mCookies = new HashMap<String, Cookie>();
 	private static String mLoggedInUser;
-	private LoadingCache<String, ECPublicKey> mPublicKeys;
+	private LoadingCache<String, ECPublicKey> mPublicKeysDH;
 	private LoadingCache<String, LoadingCache<String, byte[]>> mSharedSecrets;
 
 	@Override
@@ -52,7 +52,7 @@ public class CredentialCachingService extends Service {
 			public ECPublicKey load(String username) throws Exception {
 				String result = SurespotApplication.getNetworkController().getPublicKeySync(username);
 				if (result != null) {
-					return EncryptionController.recreatePublicKey(result);
+					return EncryptionController.recreatePublicKey("ECDH", result);
 				}
 				return null;
 			}
@@ -76,7 +76,7 @@ public class CredentialCachingService extends Service {
 			}
 		};
 
-		mPublicKeys = CacheBuilder.newBuilder().build(keyCacheLoader);
+		mPublicKeysDH = CacheBuilder.newBuilder().build(keyCacheLoader);
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheCacheLoader);
 	}
 
@@ -141,7 +141,7 @@ public class CredentialCachingService extends Service {
 
 	public Key getPublickey(String username) {
 		try {
-			return mPublicKeys.get(username);
+			return mPublicKeysDH.get(username);
 		}
 		catch (ExecutionException e) {
 			SurespotLog.w(TAG, "getPublicKey", e);

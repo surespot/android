@@ -4,18 +4,24 @@ import java.security.KeyPair;
 
 public class SurespotIdentity {
 	private String mUsername;
-	private KeyPair mKeyPair;
+	private KeyPair mKeyPairDH;
+	private KeyPair mKeyPairECDSA;
 
-	public SurespotIdentity(String username, KeyPair keyPair) {
+	public SurespotIdentity(String username, KeyPair keyPairDH, KeyPair keyPairECDSA) {
 		this.mUsername = username;
-		this.mKeyPair = keyPair;
+		this.mKeyPairDH = keyPairDH;
+		this.mKeyPairECDSA = keyPairECDSA;
 	}
 
 	public String getUsername() {
 		return mUsername;
 	}
 
-	public KeyPair getKeyPair() {
-		return mKeyPair;
+	public KeyPair getKeyPairDH() {
+		return mKeyPairDH;
+	}
+
+	public KeyPair getKeyPairECDSA() {
+		return mKeyPairECDSA;
 	}
 }

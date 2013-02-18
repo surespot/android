@@ -9,8 +9,11 @@ import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -53,13 +56,16 @@ public class EncryptionController {
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private static SecureRandom mSecureRandom = new SecureRandom();
 
-	public static ECPublicKey recreatePublicKey(String encodedKey) {
+	public static ECPublicKey recreatePublicKey(String algorithm, String encodedKey) {
 
 		try {
 			if (encodedKey != null) {
-				ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
-				KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
-				ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(pubKeySpec);
+				
+				X509EncodedKeySpec spec = new X509EncodedKeySpec(Utils.base64Decode(encodedKey));
+				//ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
+				
+				KeyFactory fact = KeyFactory.getInstance(algorithm, "SC");
+				ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(spec);
 				return pubKey;
 			}
 		}
@@ -71,13 +77,14 @@ public class EncryptionController {
 
 	}
 
-	public static ECPrivateKey recreatePrivateKey(String encodedKey) {
+	public static ECPrivateKey recreatePrivateKey(String algorithm, String encodedKey) {
 		// recreate key from hex string
-		ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
+	//	ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
 
+		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Utils.base64Decode(encodedKey));
 		try {
-			KeyFactory fact = KeyFactory.getInstance("ECDH", "SC");
-			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(priKeySpec);
+			KeyFactory fact = KeyFactory.getInstance(algorithm, "SC");
+			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(spec);
 			return privKey;
 		}
 		catch (Exception e) {
@@ -87,18 +94,28 @@ public class EncryptionController {
 		return null;
 	}
 
-	public static void generateKeyPair(final IAsyncCallback<KeyPair> callback) {
-		new AsyncTask<Void, Void, KeyPair>() {
+	public static void generateKeyPairs(final IAsyncCallback<KeyPair[]> callback) {
+		new AsyncTask<Void, Void, KeyPair[]>() {
 
 			@Override
-			protected KeyPair doInBackground(Void... arg0) {
-				// perform async
+			protected KeyPair[] doInBackground(Void... arg0) {
 
 				try {
+					//generate ECDH keys
+					
 					KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
 					g.initialize(curve, new SecureRandom());
 					KeyPair pair = g.generateKeyPair();
-					return pair;
+					KeyPair[] pairs = new KeyPair[2];
+					pairs[0] = pair;
+
+					//generate ECDSA keys
+					KeyPairGenerator gECDSA = KeyPairGenerator.getInstance("ECDSA", "SC");
+					gECDSA.initialize(curve, new SecureRandom());
+					pair = gECDSA.generateKeyPair();
+					
+					pairs[1] = pair;
+					return pairs;
 
 				}
 				catch (Exception e) {
@@ -108,14 +125,14 @@ public class EncryptionController {
 				return null;
 			}
 
-			protected void onPostExecute(KeyPair result) {
+			protected void onPostExecute(KeyPair[] result) {
 				callback.handleResponse(result);
 			}
 		}.execute();
 	}
 
-	public static String encodePublicKey(ECPublicKey publicKey) {
-		return new String(Utils.base64Encode(publicKey.getQ().getEncoded()));
+	public static String encodePublicKey(PublicKey publicKey) {
+		return new String(Utils.base64Encode(publicKey.getEncoded()));
 	}
 
 	public static byte[] generateSharedSecretSync(String username) {
@@ -124,7 +141,7 @@ public class EncryptionController {
 			return null;
 		try {
 			KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
-			ka.init(identity.getKeyPair().getPrivate());
+			ka.init(identity.getKeyPairDH().getPrivate());
 			ka.doPhase(SurespotApplication.getCachingService().getPublickey(username), true);
 			byte[] sharedSecret = ka.generateSecret();
 

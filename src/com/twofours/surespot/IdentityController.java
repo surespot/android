@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.Context;
@@ -38,10 +37,11 @@ public class IdentityController {
 	private static final Map<String, SurespotIdentity> mIdentities = new HashMap<String, SurespotIdentity>();
 	private static boolean mHasIdentity;
 
-	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPair, Cookie cookie) {
+	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPairDH,
+			KeyPair keyPairECDSA, Cookie cookie) {
 		// TODO thread
 		String identityDir = FileUtils.getIdentityDir(context);
-		SurespotIdentity identity = new SurespotIdentity(username, keyPair);
+		SurespotIdentity identity = new SurespotIdentity(username, keyPairDH, keyPairECDSA);
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, username, password, cookie);
 	}
@@ -51,20 +51,28 @@ public class IdentityController {
 
 		SurespotLog.v(TAG, "saving identity: " + identityFile);
 
-		ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
-		ECPrivateKey ecpriv = (ECPrivateKey) identity.getKeyPair().getPrivate();
+		String spubDH = EncryptionController.encodePublicKey(identity.getKeyPairDH().getPublic());
+		String sprivDH = new String(Utils.base64Encode(identity.getKeyPairDH().getPrivate().getEncoded()));
+		String spubECDSA = EncryptionController.encodePublicKey(identity.getKeyPairECDSA().getPublic());
+		String sprivECDSA = new String(Utils.base64Encode(identity.getKeyPairECDSA().getPrivate().getEncoded()));
+		// identity.getKeyPairDH()
 
-		String generatedPrivDHex = new String(Utils.base64Encode(ecpriv.getD().toByteArray()));
+		// ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
+		// ECPrivateKey ecpriv = (ECPrivateKey) identity.getKeyPair().getPrivate();
 
-		String publicKey = EncryptionController.encodePublicKey(ecpub);
-		// SurespotLog.d(TAG, "saving public key:" + publicKey);
-		// SurespotLog.d(TAG, "saving private key d:" + generatedPrivDHex);
+		// String generatedPrivDHex = new String(Utils.base64Encode(ecpriv.getD().toByteArray()));
+
+		// String publicKey = EncryptionController.encodePublicKey(ecpub);
+		SurespotLog.d(TAG, "saving dh public key:" + spubDH);
+		SurespotLog.d(TAG, "saving ecdsa public key:" + spubECDSA);
 
 		JSONObject json = new JSONObject();
 		try {
 			json.putOpt("username", identity.getUsername());
-			json.putOpt("private_key", generatedPrivDHex);
-			json.putOpt("public_key", publicKey);
+			json.putOpt("private_key_dh", sprivDH);
+			json.putOpt("public_key_dh", spubDH);
+			json.putOpt("private_key_ecdsa", sprivECDSA);
+			json.putOpt("public_key_ecdsa", spubECDSA);
 
 			if (!FileUtils.ensureDir(identityDir)) {
 				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
@@ -191,11 +199,14 @@ public class IdentityController {
 				return null;
 			}
 
-			String sPrivateKey = (String) json.get("private_key");
-			String sPublicKey = (String) json.get("public_key");
+			String spubDH = json.getString("public_key_dh");
+			String sprivDH = json.getString("private_key_dh");
+			String spubECDSA = json.getString("public_key_ecdsa");
+			String sprivECDSA = json.getString("private_key_ecdsa");
 
-			return new SurespotIdentity(name, new KeyPair(EncryptionController.recreatePublicKey(sPublicKey),
-					EncryptionController.recreatePrivateKey(sPrivateKey)));
+			return new SurespotIdentity(name, new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH),
+					EncryptionController.recreatePrivateKey("ECDH", sprivDH)), new KeyPair(EncryptionController.recreatePublicKey("ECDSA",
+					spubECDSA), EncryptionController.recreatePrivateKey("ECDSA", sprivECDSA)));
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "loadIdentity", e);
@@ -290,7 +301,8 @@ public class IdentityController {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 			SurespotApplication.getNetworkController().validate(username, password,
-					EncryptionController.encodePublicKey((ECPublicKey) identity.getKeyPair().getPublic()), new AsyncHttpResponseHandler() {
+					EncryptionController.encodePublicKey((ECPublicKey) identity.getKeyPairDH().getPublic()),
+					new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 							if (content.equals("true")) {

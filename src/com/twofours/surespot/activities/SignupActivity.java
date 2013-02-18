@@ -98,16 +98,18 @@ public class SignupActivity extends SherlockActivity {
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
 					// successful
-					EncryptionController.generateKeyPair(new IAsyncCallback<KeyPair>() {
+					EncryptionController.generateKeyPairs(new IAsyncCallback<KeyPair[]>() {
 
 						@Override
-						public void handleResponse(final KeyPair keyPair) {
+						public void handleResponse(final KeyPair[] keyPair) {
 							if (keyPair != null) {
 
 								// TODO use password derived from user's password
+								// get the publick keys
+								String sPublicDH = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
+								String sPublicECDSA = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
 
-								SurespotApplication.getNetworkController().addUser(username, password,
-										EncryptionController.encodePublicKey((ECPublicKey) keyPair.getPublic()),
+								SurespotApplication.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA,
 										new CookieResponseHandler() {
 
 											@Override
@@ -127,8 +129,8 @@ public class SignupActivity extends SherlockActivity {
 													// and back into the
 													// encryption
 													// controller
-													IdentityController.createIdentity(SignupActivity.this, username, password, keyPair,
-															cookie);
+													IdentityController.createIdentity(SignupActivity.this, username, password, keyPair[0],
+															keyPair[1], cookie);
 													// SurespotApplication.getUserData().setUsername(username);
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
 													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
