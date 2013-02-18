@@ -92,7 +92,7 @@ public class StartupActivity extends Activity {
 			String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-			Utils.logIntent(TAG,intent);
+			Utils.logIntent(TAG, intent);
 
 			// if we have a current user we're logged in
 			String user = IdentityController.getLoggedInUser();
@@ -142,8 +142,8 @@ public class StartupActivity extends Activity {
 					SurespotLog.v(TAG, "setting message to, " + messageFrom + ", from: " + messageTo);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-					// newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
+					// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				}
 
 			}

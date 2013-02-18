@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -63,13 +64,14 @@ public class FriendActivity extends SherlockActivity {
 	private HashMap<String, Integer> mUnsentCount;
 	private ChatController mChatController;
 	private ListView mListView;
+	private NotificationManager mNotificationManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
 
-		Utils.logIntent(TAG,getIntent());
+		Utils.logIntent(TAG, getIntent());
 		Utils.configureActionBar(this, null, null, false);
 
 		mChatController = new ChatController(new IConnectCallback() {
@@ -209,6 +211,8 @@ public class FriendActivity extends SherlockActivity {
 				return handled;
 			}
 		});
+
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	@Override
@@ -216,7 +220,7 @@ public class FriendActivity extends SherlockActivity {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
 
-		Utils.logIntent(TAG,getIntent());
+		Utils.logIntent(TAG, getIntent());
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(InviteResponseReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
@@ -363,6 +367,10 @@ public class FriendActivity extends SherlockActivity {
 				}
 			}
 		});
+
+		// clear invite response notifications
+		mNotificationManager
+				.cancel(IdentityController.getLoggedInUser(), SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 	}
 
 	@Override

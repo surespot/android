@@ -7,6 +7,7 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -44,6 +45,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 	private ChatController mChatController;
 
 	private TitlePageIndicator mIndicator;
+	private NotificationManager mNotificationManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +181,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			}
 		};
 
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	private void sendMessageToFragment(SurespotMessage message) {
@@ -201,6 +204,8 @@ public class ChatActivity extends SherlockFragmentActivity {
 			SurespotLog.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
 			if (sLastMessageId != null) {
 				mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
+				mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), name),
+						SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 			}
 		}
 	}
@@ -210,6 +215,10 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (name.equals(getCurrentChatName())) {
 			SurespotLog.v(TAG, "The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
 			mLastViewedMessageIds.put(name, lastMessageId);
+
+			// if we viewed a message we should probably remove the associated notifications
+			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), name),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 		}
 	}
 
@@ -225,7 +234,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mChatController.loadUnsentMessages();
 		mChatController.connect();
-
 	}
 
 	@Override
@@ -233,7 +241,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		super.onPause();
 		SurespotLog.v(TAG, "onPause");
-
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
 
 		mChatController.disconnect();
@@ -247,6 +254,10 @@ public class ChatActivity extends SherlockFragmentActivity {
 		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChatName());
 
 		mChatController.destroy();
+
+		// cancel any message notifications for the currently showing tab
+		mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), getCurrentChatName()),
+				SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 	}
 
 	private ChatFragment getChatFragment(String roomName) {

@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -30,12 +32,15 @@ public class FriendAdapter extends BaseAdapter {
 
 	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	private ArrayList<String> mActiveChats = new ArrayList<String>();
+	private NotificationManager mNotificationManager;
 
 	private Context mContext;
 
 	public FriendAdapter(Context context) {
 		mContext = context;
 		// refreshActiveChats();
+		// clear invite notifications
+		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 	}
 
@@ -280,12 +285,11 @@ public class FriendAdapter extends BaseAdapter {
 					if (action.equals("accept")) {
 						friend.setInvited(false);
 						friend.setNewFriend(true);
-
 					}
 					else {
 						mFriends.remove(position);
 					}
-
+					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 					notifyDataSetChanged();
 				}
 

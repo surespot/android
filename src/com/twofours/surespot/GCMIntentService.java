@@ -25,6 +25,7 @@ import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotConstants.IntentFilters;
+import com.twofours.surespot.common.SurespotConstants.IntentRequestCodes;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -41,28 +42,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	protected void onError(Context arg0, String arg1) {
 		// TODO Auto-generated method stubgb
 
-	}
-
-	@Override
-	protected void onMessage(Context context, Intent intent) {
-		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
-
-		String type = intent.getStringExtra("type");
-		String to = intent.getStringExtra("to");
-		String from = intent.getStringExtra("sentfrom");
-		if (type.equals("message")) {
-
-			// String otherUser = ChatUtils.getOtherUser(from, to);
-			generateMessageNotification(context, from, to, "surespot", to + ": new message from " + from);
-		}
-		else {
-			if (type.equals("invite")) {
-				generateInviteRequestNotification(context, from, to, "surespot", to + ": friend invite from " + from);
-			}
-			else {
-				generateInviteResponseNotification(context, from, to, "surespot", to + ": " + from + " has accepted your friend invite");
-			}
-		}
 	}
 
 	@Override
@@ -121,8 +100,32 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	}
 
-	// TODO remove notifications when action taken
-	private void generateMessageNotification(Context context, String from, String to, String title, String message) {
+	@Override
+	protected void onMessage(Context context, Intent intent) {
+		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
+
+		String type = intent.getStringExtra("type");
+		String to = intent.getStringExtra("to");
+		String from = intent.getStringExtra("sentfrom");
+
+		if (type.equals("message")) {
+			String spot = ChatUtils.getSpot(from, to);
+			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, "surespot", to + ": new message from " + from, spot,
+					IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+		}
+		else {
+			if (type.equals("invite")) {
+				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, "surespot", to + ": friend invite from " + from,
+						from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			}
+			else {
+				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, "surespot", to + ": " + from
+						+ " has accepted your friend invite", to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+			}
+		}
+	}
+
+	private void generateNotification(Context context, String type, String from, String to, String title, String message, String tag, int id) {
 
 		// get shared prefs
 		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
@@ -130,8 +133,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 			return;
 		}
 
-		// inc notification id
-		String spot = ChatUtils.getSpot(from, to);
 		int icon = R.drawable.ic_launcher;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -143,7 +144,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Intent mainIntent = new Intent(context, StartupActivity.class);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, IntentFilters.MESSAGE_RECEIVED);
+		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, type);
 		stackBuilder.addNextIntent(mainIntent);
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -161,82 +162,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			notification.defaults |= Notification.DEFAULT_VIBRATE;
 		}
 
-		notificationManager.notify(spot, SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION, notification);
+		notificationManager.notify(tag, id, notification);
 	}
 
-	private void generateInviteRequestNotification(Context context, String from, String to, String title, String message) {
-		// get shared prefs
-		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
-		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), false)) {
-			return;
-		}
-
-		int icon = R.drawable.ic_launcher;
-
-		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
-				.setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-
-		Intent mainIntent = new Intent(context, StartupActivity.class);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, IntentFilters.INVITE_REQUEST);
-		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
-
-		builder.setContentIntent(resultPendingIntent);
-
-		Notification notification = builder.build();
-		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		if (pm.getBoolean(getString(R.string.pref_notifications_led), false)) {
-			notification.defaults |= Notification.DEFAULT_LIGHTS;
-		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_sound), false)) {
-			notification.defaults |= Notification.DEFAULT_SOUND;
-		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), false)) {
-			notification.defaults |= Notification.DEFAULT_VIBRATE;
-		}
-
-		notificationManager.notify(to, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION, notification);
-	}
-
-	private void generateInviteResponseNotification(Context context, String from, String to, String title, String message) {
-		// get shared prefs
-		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
-		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), false)) {
-			return;
-		}
-
-		int icon = R.drawable.ic_launcher;
-
-		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
-				.setContentText(message);
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-
-		Intent mainIntent = new Intent(context, StartupActivity.class);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
-		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, IntentFilters.INVITE_RESPONSE);
-		stackBuilder.addNextIntent(mainIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
-
-		builder.setContentIntent(resultPendingIntent);
-
-		Notification notification = builder.build();
-		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		if (pm.getBoolean(getString(R.string.pref_notifications_led), false)) {
-			notification.defaults |= Notification.DEFAULT_LIGHTS;
-		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_sound), false)) {
-			notification.defaults |= Notification.DEFAULT_SOUND;
-		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), false)) {
-			notification.defaults |= Notification.DEFAULT_VIBRATE;
-		}
-
-		notificationManager.notify(to, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION, notification);
-	}
 }
