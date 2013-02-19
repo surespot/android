@@ -154,9 +154,9 @@ public class NetworkController {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
-		params.put("pkdh", publicKeyDH);
-		params.put("pkecdsa", publicKeyECDSA);
-		params.put("signature", signature);
+		params.put("dhPub", publicKeyDH);
+		params.put("dhDsa", publicKeyECDSA);
+		params.put("authSig", signature);
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
@@ -222,7 +222,7 @@ public class NetworkController {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
-		params.put("signature", signature);
+		params.put("authSig", signature);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -296,13 +296,13 @@ public class NetworkController {
 		get("/conversations/ids", null, responseHandler);
 	}
 
-	public void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
-		get("/publickey/" + username, null, responseHandler);
+	// public void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
+	// get("/publickey/" + username, null, responseHandler);
+	//
+	// }
 
-	}
-
-	public String getPublicKeySync(String username) {
-		return mSyncClient.get(mBaseUrl + "/publickey/" + username);
+	public String getPublicIdentitySync(String username) {
+		return mSyncClient.get(mBaseUrl + "/publicidentity/" + username);
 	}
 
 	public void invite(String friendname, AsyncHttpResponseHandler responseHandler) {

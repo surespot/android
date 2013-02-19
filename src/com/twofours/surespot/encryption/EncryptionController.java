@@ -47,6 +47,7 @@ import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -60,6 +61,8 @@ public class EncryptionController {
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private static SecureRandom mSecureRandom = new SecureRandom();
+
+	public static final PublicKey ServerPublicKey = recreatePublicKey("ecdsa", SurespotConstants.SERVER_PUBLIC_KEY);
 
 	public static ECPublicKey recreatePublicKey(String algorithm, String encodedKey) {
 
@@ -192,6 +195,37 @@ public class EncryptionController {
 
 	}
 
+	public static boolean verifyPublicKey(PublicKey publicKey, String signature, String data) {
+		try {
+
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
+
+			// throw some random data in there so the signature is different every time
+			byte[] random = new byte[16];
+			mSecureRandom.nextBytes(random);
+
+			dsa.initVerify(publicKey);
+			dsa.update(Base64.decode(data.getBytes(), Base64.DEFAULT));
+			return dsa.verify(Base64.decode(signature.getBytes(), Base64.DEFAULT));
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, "sign", e);
+
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, "sign", e);
+
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		return false;
+
+	}
+
 	public static byte[] generateSharedSecretSync(String username) {
 		SurespotIdentity identity = IdentityController.getIdentity(SurespotApplication.getContext());
 		if (identity == null)
@@ -199,7 +233,7 @@ public class EncryptionController {
 		try {
 			KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
 			ka.init(identity.getKeyPairDH().getPrivate());
-			ka.doPhase(SurespotApplication.getCachingService().getPublickey(username), true);
+			ka.doPhase(SurespotApplication.getCachingService().getSurespotPublicIdentity(username).getDHPubKey(), true);
 			byte[] sharedSecret = ka.generateSecret();
 
 			SurespotLog.d(TAG, username + " shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
@@ -332,7 +366,6 @@ public class EncryptionController {
 	}
 
 	public static String symmetricDecrypt(final String username, final String ivs, final String cipherData) {
-
 		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 		byte[] cipherBytes = null;

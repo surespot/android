@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.security.KeyException;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,10 +64,10 @@ public class IdentityController {
 		JSONObject json = new JSONObject();
 		try {
 			json.putOpt("username", identity.getUsername());
-			json.putOpt("private_key_dh", sprivDH);
-			json.putOpt("public_key_dh", spubDH);
-			json.putOpt("private_key_ecdsa", sprivECDSA);
-			json.putOpt("public_key_ecdsa", spubECDSA);
+			json.putOpt("dhPriv", sprivDH);
+			json.putOpt("dhPub", spubDH);
+			json.putOpt("dsaPriv", sprivECDSA);
+			json.putOpt("dsaPub", spubECDSA);
 
 			if (!FileUtils.ensureDir(identityDir)) {
 				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
@@ -96,6 +98,46 @@ public class IdentityController {
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, "saveIdentity", e);
+		}
+		return null;
+	}
+
+	public static SurespotPublicIdentity recreatePublicIdentity(String jsonIdentity) {
+
+		try {
+			JSONObject json = new JSONObject(jsonIdentity);
+			String username = json.getString("username");
+			String spubDH = json.getString("dhPub");
+			String sSigDH = json.getString("dhPubSig");
+
+			String spubECDSA = json.getString("dsaPub");
+			String sSigECDSA = json.getString("dsaPubSig");
+
+			PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
+			PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
+			// verify sig against the server pk
+			boolean dhVerify = EncryptionController.verifyPublicKey(dhPub, sSigDH, spubDH);
+			if (!dhVerify) {
+				// TODO inform user
+				// alert alert
+				SurespotLog.e(TAG, "could not verify DH key against server signature", new KeyException(
+						"Could not verify DH key against server signature."));
+				return null;
+			}
+
+			boolean dsaVerify = EncryptionController.verifyPublicKey(dsaPub, sSigECDSA, spubECDSA);
+			if (!dsaVerify) {
+				// alert alert
+				SurespotLog.e(TAG, "could not verify DSA key against server signature", new KeyException(
+						"Could not verify DSA key against server signature."));
+				return null;
+			}
+
+			return new SurespotPublicIdentity(username, dhPub, dsaPub, sSigDH, sSigECDSA);
+
+		}
+		catch (JSONException e) {
+			SurespotLog.w(TAG, "recreatePublicIdentity", e);
 		}
 		return null;
 	}
@@ -192,10 +234,10 @@ public class IdentityController {
 				return null;
 			}
 
-			String spubDH = json.getString("public_key_dh");
-			String sprivDH = json.getString("private_key_dh");
-			String spubECDSA = json.getString("public_key_ecdsa");
-			String sprivECDSA = json.getString("private_key_ecdsa");
+			String spubDH = json.getString("dhPub");
+			String sprivDH = json.getString("dhPriv");
+			String spubECDSA = json.getString("dsaPub");
+			String sprivECDSA = json.getString("dsaPriv");
 
 			return new SurespotIdentity(name, new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH),
 					EncryptionController.recreatePrivateKey("ECDH", sprivDH)), new KeyPair(EncryptionController.recreatePublicKey("ECDSA",

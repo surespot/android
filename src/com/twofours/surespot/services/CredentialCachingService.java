@@ -1,11 +1,8 @@
 package com.twofours.surespot.services;
 
-import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
-import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.app.Notification;
 import android.app.Service;
@@ -17,7 +14,9 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotPublicIdentity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -30,7 +29,7 @@ public class CredentialCachingService extends Service {
 	private Map<String, String> mPasswords = new HashMap<String, String>();
 	private Map<String, Cookie> mCookies = new HashMap<String, Cookie>();
 	private static String mLoggedInUser;
-	private LoadingCache<String, ECPublicKey> mPublicKeysDH;
+	private LoadingCache<String, SurespotPublicIdentity> mPublicIdentities;
 	private LoadingCache<String, LoadingCache<String, byte[]>> mSharedSecrets;
 
 	@Override
@@ -46,13 +45,12 @@ public class CredentialCachingService extends Service {
 		// notification.setLatestEventInfo(this, "surespot", "caching credentials", pendingIntent);
 		startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
 
-		CacheLoader<String, ECPublicKey> keyCacheLoader = new CacheLoader<String, ECPublicKey>() {
-
+		CacheLoader<String, SurespotPublicIdentity> keyCacheLoader = new CacheLoader<String, SurespotPublicIdentity>() {
 			@Override
-			public ECPublicKey load(String username) throws Exception {
-				String result = SurespotApplication.getNetworkController().getPublicKeySync(username);
+			public SurespotPublicIdentity load(String username) throws Exception {
+				String result = SurespotApplication.getNetworkController().getPublicIdentitySync(username);
 				if (result != null) {
-					return EncryptionController.recreatePublicKey("ECDH", result);
+					return IdentityController.recreatePublicIdentity(result);
 				}
 				return null;
 			}
@@ -76,7 +74,7 @@ public class CredentialCachingService extends Service {
 			}
 		};
 
-		mPublicKeysDH = CacheBuilder.newBuilder().build(keyCacheLoader);
+		mPublicIdentities = CacheBuilder.newBuilder().build(keyCacheLoader);
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheCacheLoader);
 	}
 
@@ -139,9 +137,10 @@ public class CredentialCachingService extends Service {
 
 	}
 
-	public Key getPublickey(String username) {
+	// /should probably be done on a thread considering all the work it has to do to load the key the first time
+	public SurespotPublicIdentity getSurespotPublicIdentity(String username) {
 		try {
-			return mPublicKeysDH.get(username);
+			return mPublicIdentities.get(username);
 		}
 		catch (ExecutionException e) {
 			SurespotLog.w(TAG, "getPublicKey", e);
