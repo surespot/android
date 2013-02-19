@@ -111,7 +111,7 @@ public class SignupActivity extends SherlockActivity {
 								String sPublicECDSA = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
 
 								String signThis = username + password + sPublicDH;
-								final String signature = EncryptionController.sign(keyPair[1].getPrivate(), username);
+								final String signature = EncryptionController.sign(keyPair[0].getPrivate(), username);
 
 								SurespotApplication.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA, signature,
 										new CookieResponseHandler() {

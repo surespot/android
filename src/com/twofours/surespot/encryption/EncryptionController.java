@@ -155,11 +155,11 @@ public class EncryptionController {
 
 	public static String sign(PrivateKey privateKey, String toSign) {
 		try {
-			Signature dsa = Signature.getInstance("SHA1withECDSA", "SC");
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 			dsa.initSign(privateKey);
 			dsa.update(toSign.getBytes());
 			byte[] sig = dsa.sign();
-			return new String(Utils.base64Encode(sig));
+			return new String(Base64.encode(sig, Base64.DEFAULT));
 		}
 		catch (SignatureException e) {
 			SurespotLog.e(TAG, "sign", e);
