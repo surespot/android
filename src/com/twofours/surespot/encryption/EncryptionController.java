@@ -195,16 +195,10 @@ public class EncryptionController {
 
 	}
 
-	public static boolean verifyPublicKey(PublicKey publicKey, String signature, String data) {
+	public static boolean verifyPublicKey(String signature, String data) {
 		try {
-
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
-
-			// throw some random data in there so the signature is different every time
-			byte[] random = new byte[16];
-			mSecureRandom.nextBytes(random);
-
-			dsa.initVerify(publicKey);
+			dsa.initVerify(ServerPublicKey);
 			dsa.update(Base64.decode(data.getBytes(), Base64.DEFAULT));
 			return dsa.verify(Base64.decode(signature.getBytes(), Base64.DEFAULT));
 		}

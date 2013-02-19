@@ -155,7 +155,7 @@ public class NetworkController {
 		params.put("username", username);
 		params.put("password", password);
 		params.put("dhPub", publicKeyDH);
-		params.put("dhDsa", publicKeyECDSA);
+		params.put("dsaPub", publicKeyECDSA);
 		params.put("authSig", signature);
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);

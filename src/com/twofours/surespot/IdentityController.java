@@ -113,25 +113,32 @@ public class IdentityController {
 			String spubECDSA = json.getString("dsaPub");
 			String sSigECDSA = json.getString("dsaPubSig");
 
-			PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
-			PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
 			// verify sig against the server pk
-			boolean dhVerify = EncryptionController.verifyPublicKey(dhPub, sSigDH, spubDH);
+			boolean dhVerify = EncryptionController.verifyPublicKey(sSigDH, spubDH);
 			if (!dhVerify) {
 				// TODO inform user
 				// alert alert
-				SurespotLog.e(TAG, "could not verify DH key against server signature", new KeyException(
+				SurespotLog.w(TAG, "could not verify DH key against server signature", new KeyException(
 						"Could not verify DH key against server signature."));
 				return null;
 			}
+			else {
+				SurespotLog.i(TAG, username + ": DH key successfully verified");
+			}
 
-			boolean dsaVerify = EncryptionController.verifyPublicKey(dsaPub, sSigECDSA, spubECDSA);
+			boolean dsaVerify = EncryptionController.verifyPublicKey(sSigECDSA, spubECDSA);
 			if (!dsaVerify) {
 				// alert alert
-				SurespotLog.e(TAG, "could not verify DSA key against server signature", new KeyException(
+				SurespotLog.w(TAG, "could not verify DSA key against server signature", new KeyException(
 						"Could not verify DSA key against server signature."));
 				return null;
 			}
+			else {
+				SurespotLog.i(TAG, username = ": DSA key successfully verified");
+			}
+
+			PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
+			PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
 
 			return new SurespotPublicIdentity(username, dhPub, dsaPub, sSigDH, sSigECDSA);
 
