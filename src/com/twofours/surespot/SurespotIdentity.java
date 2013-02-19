@@ -6,13 +6,11 @@ public class SurespotIdentity {
 	private String mUsername;
 	private KeyPair mKeyPairDH;
 	private KeyPair mKeyPairECDSA;
-	private String mSignature;
 
-	public SurespotIdentity(String username, KeyPair keyPairDH, KeyPair keyPairECDSA, String signature) {
+	public SurespotIdentity(String username, KeyPair keyPairDH, KeyPair keyPairECDSA) {
 		this.mUsername = username;
 		this.mKeyPairDH = keyPairDH;
 		this.mKeyPairECDSA = keyPairECDSA;
-		this.mSignature = signature;
 	}
 
 	public String getUsername() {
@@ -27,7 +25,4 @@ public class SurespotIdentity {
 		return mKeyPairECDSA;
 	}
 
-	public String getSignature() {
-		return mSignature;
-	}
 }

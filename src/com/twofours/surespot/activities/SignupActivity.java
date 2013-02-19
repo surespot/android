@@ -109,9 +109,7 @@ public class SignupActivity extends SherlockActivity {
 
 								String sPublicDH = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
 								String sPublicECDSA = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
-
-								String signThis = username + password + sPublicDH;
-								final String signature = EncryptionController.sign(keyPair[0].getPrivate(), username);
+								String signature = EncryptionController.sign(keyPair[1].getPrivate(), username, password);
 
 								SurespotApplication.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA, signature,
 										new CookieResponseHandler() {
@@ -134,7 +132,7 @@ public class SignupActivity extends SherlockActivity {
 													// encryption
 													// controller
 													IdentityController.createIdentity(SignupActivity.this, username, password, keyPair[0],
-															keyPair[1], signature, cookie);
+															keyPair[1], cookie);
 													// SurespotApplication.getUserData().setUsername(username);
 													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
 													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

@@ -33,13 +33,11 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotCachingHttpClient;
-import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
@@ -218,13 +216,11 @@ public class NetworkController {
 
 	}
 
-	public void login(SurespotIdentity identity, String password, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("username", identity.getUsername());
+		params.put("username", username);
 		params.put("password", password);
-		params.put("pkdh", EncryptionController.encodePublicKey(identity.getKeyPairDH().getPublic()));
-		params.put("pkdsa", EncryptionController.encodePublicKey(identity.getKeyPairECDSA().getPublic()));
-		params.put("signature", identity.getSignature());
+		params.put("signature", signature);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);

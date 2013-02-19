@@ -32,6 +32,7 @@ import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendActivity;
 
 public class LoginActivity extends SherlockActivity {
@@ -136,7 +137,10 @@ public class LoginActivity extends SherlockActivity {
 			mMpd.incrProgress();
 
 			SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
-			SurespotApplication.getNetworkController().login(identity, password, new CookieResponseHandler() {
+			
+			#TODO thread
+			String signature = EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password);
+			SurespotApplication.getNetworkController().login(username, password, signature, new CookieResponseHandler() {
 				@Override
 				public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 					IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
