@@ -9,6 +9,7 @@ import org.acra.ACRA;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
@@ -115,7 +116,8 @@ public class NetworkController {
 
 						if (!isUnauthorized()) {
 
-							if (!(origin.contains(mBaseUrl.substring(7)) && origin.contains("/login"))) {
+							Uri uri = Uri.parse(mBaseUrl);
+							if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
 								setUnauthorized(true);
 
 								mClient.cancelRequests(mContext, true);

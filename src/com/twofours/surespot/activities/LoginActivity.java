@@ -135,10 +135,9 @@ public class LoginActivity extends SherlockActivity {
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
-
 			SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
-			
-			#TODO thread
+
+			// TODO thread signing
 			String signature = EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password);
 			SurespotApplication.getNetworkController().login(username, password, signature, new CookieResponseHandler() {
 				@Override
