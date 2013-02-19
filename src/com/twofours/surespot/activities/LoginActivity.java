@@ -27,6 +27,7 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -134,7 +135,8 @@ public class LoginActivity extends SherlockActivity {
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
 
-			SurespotApplication.getNetworkController().login(username, password, new CookieResponseHandler() {
+			SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
+			SurespotApplication.getNetworkController().login(identity, password, new CookieResponseHandler() {
 				@Override
 				public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 					IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);

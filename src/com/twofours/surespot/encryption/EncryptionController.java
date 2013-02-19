@@ -6,11 +6,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -33,10 +39,9 @@ import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 import org.spongycastle.jce.spec.ECParameterSpec;
-import org.spongycastle.jce.spec.ECPrivateKeySpec;
-import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import android.os.AsyncTask;
+import android.util.Base64;
 
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.twofours.surespot.IdentityController;
@@ -60,10 +65,10 @@ public class EncryptionController {
 
 		try {
 			if (encodedKey != null) {
-				
-				X509EncodedKeySpec spec = new X509EncodedKeySpec(Utils.base64Decode(encodedKey));
-				//ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
-				
+
+				X509EncodedKeySpec spec = new X509EncodedKeySpec(decodePublicKey(encodedKey));
+				// ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
+
 				KeyFactory fact = KeyFactory.getInstance(algorithm, "SC");
 				ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(spec);
 				return pubKey;
@@ -79,7 +84,7 @@ public class EncryptionController {
 
 	public static ECPrivateKey recreatePrivateKey(String algorithm, String encodedKey) {
 		// recreate key from hex string
-	//	ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
+		// ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
 
 		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Utils.base64Decode(encodedKey));
 		try {
@@ -101,19 +106,19 @@ public class EncryptionController {
 			protected KeyPair[] doInBackground(Void... arg0) {
 
 				try {
-					//generate ECDH keys
-					
+					// generate ECDH keys
+
 					KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
 					g.initialize(curve, new SecureRandom());
 					KeyPair pair = g.generateKeyPair();
 					KeyPair[] pairs = new KeyPair[2];
 					pairs[0] = pair;
 
-					//generate ECDSA keys
+					// generate ECDSA keys
 					KeyPairGenerator gECDSA = KeyPairGenerator.getInstance("ECDSA", "SC");
 					gECDSA.initialize(curve, new SecureRandom());
 					pair = gECDSA.generateKeyPair();
-					
+
 					pairs[1] = pair;
 					return pairs;
 
@@ -132,7 +137,46 @@ public class EncryptionController {
 	}
 
 	public static String encodePublicKey(PublicKey publicKey) {
-		return new String(Utils.base64Encode(publicKey.getEncoded()));
+		byte[] encoded = publicKey.getEncoded();
+		return new String(Base64.encode(encoded, Base64.DEFAULT));
+	}
+
+	public static byte[] decodePublicKey(String publicKey) {
+		byte[] encoded = publicKey.getBytes();
+		return Base64.decode(encoded, Base64.DEFAULT);
+
+		// return new String(Utils.base64decode(encoded));
+	}
+
+	// public static String pemEncodePublicKey(PublicKey publicKey) {
+	// byte[] encoded = publicKey.getEncoded();
+	// return new String(Base64.encode(encoded, Base64.DEFAULT));
+	// }
+
+	public static String sign(PrivateKey privateKey, String toSign) {
+		try {
+			Signature dsa = Signature.getInstance("SHA1withECDSA", "SC");
+			dsa.initSign(privateKey);
+			dsa.update(toSign.getBytes());
+			byte[] sig = dsa.sign();
+			return new String(Utils.base64Encode(sig));
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, "sign", e);
+
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, "sign", e);
+
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		return null;
+
 	}
 
 	public static byte[] generateSharedSecretSync(String username) {

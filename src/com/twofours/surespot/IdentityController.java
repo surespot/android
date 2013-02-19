@@ -38,10 +38,10 @@ public class IdentityController {
 	private static boolean mHasIdentity;
 
 	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPairDH,
-			KeyPair keyPairECDSA, Cookie cookie) {
+			KeyPair keyPairECDSA, String signature, Cookie cookie) {
 		// TODO thread
 		String identityDir = FileUtils.getIdentityDir(context);
-		SurespotIdentity identity = new SurespotIdentity(username, keyPairDH, keyPairECDSA);
+		SurespotIdentity identity = new SurespotIdentity(username, keyPairDH, keyPairECDSA, signature);
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, username, password, cookie);
 	}
@@ -55,6 +55,7 @@ public class IdentityController {
 		String sprivDH = new String(Utils.base64Encode(identity.getKeyPairDH().getPrivate().getEncoded()));
 		String spubECDSA = EncryptionController.encodePublicKey(identity.getKeyPairECDSA().getPublic());
 		String sprivECDSA = new String(Utils.base64Encode(identity.getKeyPairECDSA().getPrivate().getEncoded()));
+		String signature = identity.getSignature();
 		// identity.getKeyPairDH()
 
 		// ECPublicKey ecpub = (ECPublicKey) identity.getKeyPair().getPublic();
@@ -73,6 +74,7 @@ public class IdentityController {
 			json.putOpt("public_key_dh", spubDH);
 			json.putOpt("private_key_ecdsa", sprivECDSA);
 			json.putOpt("public_key_ecdsa", spubECDSA);
+			json.putOpt("signature", signature);
 
 			if (!FileUtils.ensureDir(identityDir)) {
 				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
@@ -203,10 +205,11 @@ public class IdentityController {
 			String sprivDH = json.getString("private_key_dh");
 			String spubECDSA = json.getString("public_key_ecdsa");
 			String sprivECDSA = json.getString("private_key_ecdsa");
+			String signature = json.getString("signature");
 
 			return new SurespotIdentity(name, new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH),
 					EncryptionController.recreatePrivateKey("ECDH", sprivDH)), new KeyPair(EncryptionController.recreatePublicKey("ECDSA",
-					spubECDSA), EncryptionController.recreatePrivateKey("ECDSA", sprivECDSA)));
+					spubECDSA), EncryptionController.recreatePrivateKey("ECDSA", sprivECDSA)), signature);
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "loadIdentity", e);
