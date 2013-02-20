@@ -134,13 +134,16 @@ public class EncryptionController {
 
 	public static String encodePublicKey(PublicKey publicKey) {
 		byte[] encoded = publicKey.getEncoded();
+
 		// SSL doesn't like any other encoding but DEFAULT
-		return new String(Base64.encode(encoded, Base64.DEFAULT));
+		String unpem = new String(Base64.encode(encoded, Base64.DEFAULT));
+		return "-----BEGIN PUBLIC KEY-----\n" + unpem + "-----END PUBLIC KEY-----";
 	}
 
 	public static byte[] decodePublicKey(String publicKey) {
-		byte[] encoded = publicKey.getBytes();
-		return Base64.decode(encoded, Base64.DEFAULT);
+		String afterHeader = publicKey.substring(publicKey.indexOf('\n') + 1);
+		String beforeHeader = afterHeader.substring(0, afterHeader.lastIndexOf('\n'));
+		return Base64.decode(beforeHeader.getBytes(), Base64.DEFAULT);
 	}
 
 	public static String sign(PrivateKey privateKey, String sign1, String sign2) {
@@ -185,7 +188,7 @@ public class EncryptionController {
 		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 			dsa.initVerify(ServerPublicKey);
-			dsa.update(Base64.decode(data.getBytes(), Base64.DEFAULT));
+			dsa.update(data.getBytes());
 			return dsa.verify(Base64.decode(signature.getBytes(), Base64.DEFAULT));
 		}
 		catch (SignatureException e) {
