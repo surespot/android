@@ -5,6 +5,7 @@ import java.security.KeyPair;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.KeyEvent;
@@ -107,68 +108,94 @@ public class SignupActivity extends SherlockActivity {
 								// TODO use password derived from user's password
 								// get the publick keys
 
-								String sPublicDH = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
-								String sPublicECDSA = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
-								String signature = EncryptionController.sign(keyPair[1].getPrivate(), username, password);
+								new AsyncTask<Void, Void, String[]>() {
+									protected String[] doInBackground(Void... params) {
 
-								SurespotApplication.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA, signature,
-										new CookieResponseHandler() {
+										String[] data = new String[3];
+										data[0] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
+										data[1] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
+										data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, password);
+										return data;
+									}
 
-											@Override
-											public void onSuccess(int statusCode, String arg0, Cookie cookie) {
+									protected void onPostExecute(String[] result) {
+										String sPublicDH = result[0];
+										String sPublicECDSA = result[1];
+										String signature = result[2];
+										SurespotApplication.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA,
+												signature, new CookieResponseHandler() {
 
-												if (statusCode == 201) {
-													// save key pair now
-													// that we've created
-													// a
-													// user successfully
-													// TODO add setkey pair
-													// method to
-													// encryption
-													// controller to not
-													// have to pass it
-													// into the callback
-													// and back into the
-													// encryption
-													// controller
-													IdentityController.createIdentity(SignupActivity.this, username, password, keyPair[0],
-															keyPair[1], cookie);
-													// SurespotApplication.getUserData().setUsername(username);
-													Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
-													intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-													startActivity(intent);
-													mMpd.decrProgress();
-													finish();
-												}
-												else {
-													SurespotLog.w(TAG, "201 not returned on user create.");
-												}
+													@Override
+													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
 
-											}
+														if (statusCode == 201) {
+															// save key pair now
+															// that we've created
+															// a
+															// user successfully
+															// TODO add setkey pair
+															// method to
+															// encryption
+															// controller to not
+															// have to pass it
+															// into the callback
+															// and back into the
+															// encryption
+															// controller
+															new AsyncTask<Void, Void, Void>() {
 
-											public void onFailure(Throwable arg0, String arg1) {
-												SurespotLog.e("SignupActivity", arg1, arg0);
-												mMpd.decrProgress();
-												if (arg0 instanceof HttpResponseException) {
-													HttpResponseException error = (HttpResponseException) arg0;
-													int statusCode = error.getStatusCode();
-													if (statusCode == 409) {
-														Utils.makeToast(SignupActivity.this,
-																"That username already exists, please choose another.");
+																@Override
+																protected Void doInBackground(Void... params) {
+
+																	IdentityController.createIdentity(SignupActivity.this, username,
+																			password, keyPair[0], keyPair[1], cookie);
+																	return null;
+																}
+
+																protected void onPostExecute(Void result) {
+																	// SurespotApplication.getUserData().setUsername(username);
+																	Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
+																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+																	startActivity(intent);
+																	mMpd.decrProgress();
+																	finish();
+																};
+															}.execute();
+
+														}
+														else {
+															SurespotLog.w(TAG, "201 not returned on user create.");
+														}
+
 													}
-													else {
 
-														Utils.makeToast(SignupActivity.this,
-																"Could not create user, please try again later.");
+													public void onFailure(Throwable arg0, String arg1) {
+														SurespotLog.e("SignupActivity", arg1, arg0);
+														mMpd.decrProgress();
+														if (arg0 instanceof HttpResponseException) {
+															HttpResponseException error = (HttpResponseException) arg0;
+															int statusCode = error.getStatusCode();
+															if (statusCode == 409) {
+																Utils.makeToast(SignupActivity.this,
+																		"that username already exists, please choose another");
+															}
+															else {
+
+																Utils.makeToast(SignupActivity.this,
+																		"could not create user, please try again later");
+															}
+														}
+														else {
+															Utils.makeToast(SignupActivity.this,
+																	"could not create user, please try again later");
+														}
+
 													}
-												}
-												else {
-													Utils.makeToast(SignupActivity.this, "Could not create user, please try again later.");
-												}
 
-											}
+												});
+									};
+								}.execute();
 
-										});
 							}
 						}
 					});

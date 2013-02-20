@@ -366,13 +366,13 @@ public class NetworkController {
 
 	}
 
-	public void validate(String username, String password, String publickey, AsyncHttpResponseHandler responseHandler) {
+	public void validate(String username, String password, String signature, AsyncHttpResponseHandler responseHandler) {
 		RequestParams params = new RequestParams();
 
 		params.put("username", username);
 		params.put("password", password);
-		if (publickey != null) {
-			params.put("publickey", publickey);
+		if (signature != null) {
+			params.put("signature", signature);
 		}
 
 		// ideally would use a get here but putting body in a get request is frowned upon apparently:

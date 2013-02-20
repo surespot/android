@@ -68,10 +68,7 @@ public class EncryptionController {
 
 		try {
 			if (encodedKey != null) {
-
 				X509EncodedKeySpec spec = new X509EncodedKeySpec(decodePublicKey(encodedKey));
-				// ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(curve.getCurve().decodePoint(Utils.base64Decode(encodedKey)), curve);
-
 				KeyFactory fact = KeyFactory.getInstance(algorithm, "SC");
 				ECPublicKey pubKey = (ECPublicKey) fact.generatePublic(spec);
 				return pubKey;
@@ -86,9 +83,6 @@ public class EncryptionController {
 	}
 
 	public static ECPrivateKey recreatePrivateKey(String algorithm, String encodedKey) {
-		// recreate key from hex string
-		// ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(new BigInteger(Utils.base64Decode(encodedKey)), curve);
-
 		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Utils.base64Decode(encodedKey));
 		try {
 			KeyFactory fact = KeyFactory.getInstance(algorithm, "SC");
@@ -110,7 +104,6 @@ public class EncryptionController {
 
 				try {
 					// generate ECDH keys
-
 					KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
 					g.initialize(curve, new SecureRandom());
 					KeyPair pair = g.generateKeyPair();
@@ -148,14 +141,7 @@ public class EncryptionController {
 	public static byte[] decodePublicKey(String publicKey) {
 		byte[] encoded = publicKey.getBytes();
 		return Base64.decode(encoded, Base64.DEFAULT);
-
-		// return new String(Utils.base64decode(encoded));
 	}
-
-	// public static String pemEncodePublicKey(PublicKey publicKey) {
-	// byte[] encoded = publicKey.getEncoded();
-	// return new String(Base64.encode(encoded, Base64.DEFAULT));
-	// }
 
 	public static String sign(PrivateKey privateKey, String sign1, String sign2) {
 		try {
@@ -398,9 +384,7 @@ public class EncryptionController {
 			protected String[] doInBackground(Void... params) {
 
 				GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
-
-				// crashes with getBlockSize() bytes, don't know why?
-				byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
+				byte[] iv = new byte[IV_LENGTH];
 				mSecureRandom.nextBytes(iv);
 				ParametersWithIV ivParams;
 				try {
@@ -450,12 +434,10 @@ public class EncryptionController {
 	 * @param plaintext
 	 * @return
 	 */
-	public static String[] symmetricEncryptSyncPK(final String password, final String plaintext) {
+	public static byte[] symmetricEncryptSyncPK(final String password, final String plaintext) {
 
 		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
-
-		// crashes with getBlockSize() bytes, don't know why?
-		byte[] iv = new byte[ccm.getUnderlyingCipher().getBlockSize() - 1];
+		byte[] iv = new byte[IV_LENGTH];
 		mSecureRandom.nextBytes(iv);
 		ParametersWithIV ivParams;
 		try {
@@ -471,13 +453,14 @@ public class EncryptionController {
 			int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
 
 			len += ccm.doFinal(buf, len);
-			String[] returns = new String[3];
 
-			returns[0] = new String(Utils.base64Encode(iv));
-			returns[1] = new String(Utils.base64Encode(derived[0]));
-			returns[2] = new String(Utils.base64Encode(buf));
+			byte[] returnBuffer = new byte[IV_LENGTH + SALT_LENGTH + buf.length];
 
-			return returns;
+			System.arraycopy(iv, 0, returnBuffer, 0, IV_LENGTH);
+			System.arraycopy(derived[0], 0, returnBuffer, IV_LENGTH, SALT_LENGTH);
+			System.arraycopy(buf, 0, returnBuffer, IV_LENGTH + SALT_LENGTH, buf.length);
+
+			return returnBuffer;
 
 		}
 		catch (InvalidCacheLoadException icle) {
@@ -494,25 +477,21 @@ public class EncryptionController {
 	/**
 	 * Derive key from password
 	 * 
-	 * @param password
-	 * @param ivs
-	 * @param salts
-	 * @param cipherData
 	 * @return
 	 */
-	public static String symmetricDecryptSyncPK(final String password, final String ivs, final String salts, final String cipherData) {
+	public static String symmetricDecryptSyncPK(final String password, final byte[] cipherData) {
 
 		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
-		byte[] cipherBytes = null;
-		byte[] iv = null;
-		byte[] salt = null;
+		byte[] cipherBytes = new byte[cipherData.length - IV_LENGTH - SALT_LENGTH];
+		byte[] iv = new byte[IV_LENGTH];
+		byte[] salt = new byte[SALT_LENGTH];
 		ParametersWithIV ivParams = null;
 		try {
+			System.arraycopy(cipherData, 0, iv, 0, IV_LENGTH);
+			System.arraycopy(cipherData, IV_LENGTH, salt, 0, SALT_LENGTH);
+			System.arraycopy(cipherData, IV_LENGTH + SALT_LENGTH, cipherBytes, 0, cipherData.length - IV_LENGTH - SALT_LENGTH);
 
-			cipherBytes = Utils.base64Decode(cipherData);
-			iv = Utils.base64Decode(ivs);
-			salt = Utils.base64Decode(salts);
 			byte[] derived = derive(password, salt);
 			if (derived == null) {
 				return null;

@@ -16,7 +16,6 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.Context;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
@@ -39,16 +38,15 @@ public class IdentityController {
 	private static final Map<String, SurespotIdentity> mIdentities = new HashMap<String, SurespotIdentity>();
 	private static boolean mHasIdentity;
 
-	public static synchronized void createIdentity(Context context, String username, String password, KeyPair keyPairDH,
-			KeyPair keyPairECDSA, Cookie cookie) {
-		// TODO thread
+	public static synchronized void createIdentity(final Context context, final String username, final String password,
+			final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = new SurespotIdentity(username, keyPairDH, keyPairECDSA);
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, username, password, cookie);
 	}
 
-	private static String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
+	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
 		String identityFile = identityDir + File.separator + identity.getUsername() + IDENTITY_EXTENSION;
 
 		SurespotLog.v(TAG, "saving identity: " + identityFile);
@@ -75,16 +73,9 @@ public class IdentityController {
 				return null;
 			}
 
-			String[] ciphers = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
-
-			JSONObject idWrapper = new JSONObject();
-			idWrapper.put("iv", ciphers[0]);
-			idWrapper.put("salt", ciphers[1]);
-			idWrapper.put("identity", ciphers[2]);
-			// idWrapper.put("time", new Date().getTime());
-			// idWrapper.put("username", identity.getUsername());
+			byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
 			FileOutputStream fos = new FileOutputStream(identityFile);
-			fos.write(idWrapper.toString().getBytes());
+			fos.write(identityBytes);
 			fos.close();
 
 			return identityFile;
@@ -134,7 +125,7 @@ public class IdentityController {
 				return null;
 			}
 			else {
-				SurespotLog.i(TAG, username = ": DSA key successfully verified");
+				SurespotLog.i(TAG, username + ": DSA key successfully verified");
 			}
 
 			PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
@@ -187,7 +178,7 @@ public class IdentityController {
 		return getIdentity(context, SurespotApplication.getCachingService().getLoggedInUser());
 	}
 
-	public static SurespotIdentity getIdentity(Context context, String username) {
+	private static SurespotIdentity getIdentity(Context context, String username) {
 		return getIdentity(context, username, null);
 	}
 
@@ -225,12 +216,7 @@ public class IdentityController {
 			idStream.read(idBytes);
 			idStream.close();
 
-			JSONObject jsonWrapper = new JSONObject(new String(idBytes));
-			String ivs = jsonWrapper.getString("iv");
-			String cipherId = jsonWrapper.getString("identity");
-			String salt = jsonWrapper.getString("salt");
-
-			String identity = EncryptionController.symmetricDecryptSyncPK(password, ivs, salt, cipherId);
+			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
 
 			JSONObject json = new JSONObject(identity);
 			String name = (String) json.get("username");
@@ -293,44 +279,45 @@ public class IdentityController {
 
 	}
 
-	public static void exportIdentity(Context context, String username, final String password, final IAsyncCallback<String> callback) {
+	public static void exportIdentity(final Context context, String username, final String password, final IAsyncCallback<String> callback) {
 		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null)
 			callback.handleResponse(null);
 
 		final File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
-			SurespotApplication.getNetworkController().validate(username, password, null, new AsyncHttpResponseHandler() {
-				public void onSuccess(int statusCode, String content) {
 
-					String path = saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
-					callback.handleResponse(path == null ? null : "identity exported to " + path);
-
-				}
-
-				public void onFailure(Throwable error) {
-
-					if (error instanceof HttpResponseException) {
-						int statusCode = ((HttpResponseException) error).getStatusCode();
-						// would use 401 but we're intercepting those and I don't feel like special casing it
-						switch (statusCode) {
-						case 403:
-							callback.handleResponse("incorrect password");
-							break;
-						case 404:
-							callback.handleResponse("no such user");
-							break;
-
-						default:
-							SurespotLog.w(TAG, "exportIdentity", error);
-							callback.handleResponse(null);
+			// do OOB verification
+			SurespotApplication.getNetworkController().validate(username, password,
+					EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
+						public void onSuccess(int statusCode, String content) {
+							String path = saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
+							callback.handleResponse(path == null ? null : "identity exported to " + path);
 						}
-					}
-					else {
-						callback.handleResponse(null);
-					}
-				}
-			});
+
+						public void onFailure(Throwable error) {
+
+							if (error instanceof HttpResponseException) {
+								int statusCode = ((HttpResponseException) error).getStatusCode();
+								// would use 401 but we're intercepting those and I don't feel like special casing it
+								switch (statusCode) {
+								case 403:
+									callback.handleResponse(context.getString(R.string.incorrect_password_or_key));
+									break;
+								case 404:
+									callback.handleResponse(context.getString(R.string.incorrect_password_or_key));
+									break;
+
+								default:
+									SurespotLog.w(TAG, "exportIdentity", error);
+									callback.handleResponse(null);
+								}
+							}
+							else {
+								callback.handleResponse(null);
+							}
+						}
+					});
 		}
 		else {
 			callback.handleResponse(null);
@@ -343,19 +330,12 @@ public class IdentityController {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 			SurespotApplication.getNetworkController().validate(username, password,
-					EncryptionController.encodePublicKey((ECPublicKey) identity.getKeyPairDH().getPublic()),
-					new AsyncHttpResponseHandler() {
+					EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-							if (content.equals("true")) {
-								saveIdentity(FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
-								callback.handleResponse(new IdentityOperationResult(context
-										.getText(R.string.identity_imported_successfully).toString(), true));
-							}
-							else {
-								callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
-										.toString(), false));
-							}
+							saveIdentity(FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+							callback.handleResponse(new IdentityOperationResult(context.getText(R.string.identity_imported_successfully)
+									.toString(), true));
 						}
 
 						@Override
@@ -366,10 +346,11 @@ public class IdentityController {
 								// would use 401 but we're intercepting those and I don't feel like special casing it
 								switch (statusCode) {
 								case 403:
-									callback.handleResponse(new IdentityOperationResult("incorrect password", false));
+									callback.handleResponse(new IdentityOperationResult(context
+											.getString(R.string.incorrect_password_or_key), false));
 									break;
 								case 404:
-									callback.handleResponse(new IdentityOperationResult("no such user", false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.no_such_user), false));
 									break;
 
 								default:

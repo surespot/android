@@ -3,6 +3,7 @@ package com.twofours.surespot.activities;
 import java.util.List;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -130,46 +131,62 @@ public class LoginActivity extends SherlockActivity {
 
 		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername))
 				.getSelectedItemPosition());
-		// final String username = ((EditText) LoginActivity.this.findViewById(R.id.etUsername)).getText().toString();
 		final String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
-			SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
 
-			// TODO thread signing
-			String signature = EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password);
-			SurespotApplication.getNetworkController().login(username, password, signature, new CookieResponseHandler() {
+			new AsyncTask<Void, Void, String>() {
+
 				@Override
-				public void onSuccess(int responseCode, String arg0, Cookie cookie) {
-					IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
-					nextActivity();
+				protected String doInBackground(Void... params) {
+					SurespotIdentity identity = IdentityController.getIdentity(LoginActivity.this, username, password);
+					if (identity != null) {
+						return EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password);
+					}
+					return null;
 				}
 
-				@Override
-				public void onFailure(Throwable arg0, String message) {
-					SurespotLog.w(TAG, arg0.toString(), arg0);
+				protected void onPostExecute(String signature) {
+					if (signature != null) {
+						SurespotApplication.getNetworkController().login(username, password, signature, new CookieResponseHandler() {
+							@Override
+							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
+								IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
+								nextActivity();
+							}
 
-					if (arg0 instanceof HttpResponseException) {
-						HttpResponseException error = (HttpResponseException) arg0;
-						int statusCode = error.getStatusCode();
-						if (statusCode == 401) {
-							Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
-						}
-						else {
-							Utils.makeToast(LoginActivity.this, "Error: " + message);
-						}
+							@Override
+							public void onFailure(Throwable arg0, String message) {
+								SurespotLog.w(TAG, arg0.toString(), arg0);
+
+								if (arg0 instanceof HttpResponseException) {
+									HttpResponseException error = (HttpResponseException) arg0;
+									int statusCode = error.getStatusCode();
+									if (statusCode == 401) {
+										Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
+									}
+									else {
+										Utils.makeToast(LoginActivity.this, "Error: " + message);
+									}
+								}
+								else {
+									Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
+								}
+							}
+
+							@Override
+							public void onFinish() {
+								mMpd.decrProgress();
+							}
+						});
 					}
 					else {
-						Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
+						mMpd.decrProgress();
 					}
-				}
 
-				@Override
-				public void onFinish() {
-					mMpd.decrProgress();
-				}
-			});
+				};
+			}.execute();
 		}
 	}
 
