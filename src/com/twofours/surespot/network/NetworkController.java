@@ -371,9 +371,7 @@ public class NetworkController {
 
 		params.put("username", username);
 		params.put("password", password);
-		if (signature != null) {
-			params.put("signature", signature);
-		}
+		params.put("authSig", signature);
 
 		// ideally would use a get here but putting body in a get request is frowned upon apparently:
 		// http://stackoverflow.com/questions/978061/http-get-with-request-body
