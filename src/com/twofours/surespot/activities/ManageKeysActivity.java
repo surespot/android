@@ -127,7 +127,8 @@ public class ManageKeysActivity extends SherlockActivity {
 						SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 						// create token sig
-						final String tokenSignature = EncryptionController.signToken(pk, Base64.decode(keyToken.getBytes(), Base64.DEFAULT));
+						final String tokenSignature = EncryptionController.signToken(pk,
+								Base64.decode(keyToken.getBytes(), Base64.DEFAULT), password);
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 						// generate new key pairs
@@ -150,7 +151,7 @@ public class ManageKeysActivity extends SherlockActivity {
 										public void onSuccess(int statusCode, String content) {
 											// save the key pairs
 											IdentityController.getIdentity(username).addKeyPairs(result.keyVersion, result.keyPairs[0],
-													result.keyPairs[0]);
+													result.keyPairs[1]);
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));
 										};
 

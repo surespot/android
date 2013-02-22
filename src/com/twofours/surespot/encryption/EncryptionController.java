@@ -210,7 +210,7 @@ public class EncryptionController {
 
 	}
 
-	public static String signToken(PrivateKey privateKey, byte[] sign1) {
+	public static String signToken(PrivateKey privateKey, byte[] sign1, String sign2) {
 		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 
@@ -220,7 +220,7 @@ public class EncryptionController {
 
 			dsa.initSign(privateKey);
 			dsa.update(sign1);
-			// dsa.update(sign2.getBytes());
+			dsa.update(sign2.getBytes());
 			// dsa.update(random);
 
 			byte[] sig = dsa.sign();
