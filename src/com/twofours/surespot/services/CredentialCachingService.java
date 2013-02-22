@@ -165,6 +165,7 @@ public class CredentialCachingService extends Service {
 	 * @param username
 	 * @return
 	 */
+
 	public String getLatestVersion(String username) {
 
 		String latestVersion = mLatestVersions.get(username);
@@ -179,13 +180,19 @@ public class CredentialCachingService extends Service {
 				if (publicKeys != null) {
 					latestVersion = publicKeys.getVersion();
 					mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(username, latestVersion)), publicKeys);
-					mLatestVersions.put(username, latestVersion);
+					synchronized (this) {
+						mLatestVersions.put(username, latestVersion);
+					}
 				}
 			}
 
 		}
 
 		return latestVersion;
+	}
+
+	public synchronized void clearLatestVersion(String username) {
+		mLatestVersions.remove(username);
 	}
 
 	private class VersionMap {
