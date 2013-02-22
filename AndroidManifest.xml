@@ -107,8 +107,8 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.ImageSelectActivity"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize|keyboardHidden" >
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.SettingsActivity"
@@ -127,7 +127,12 @@
         <activity android:name="com.twofours.surespot.activities.ImportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ImportIdentityActivity" />
-
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.twofours.surespot.activities.ManageKeysActivity" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

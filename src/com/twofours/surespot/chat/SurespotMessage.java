@@ -23,6 +23,9 @@ public class SurespotMessage {
 	private String mMimeType;
 	private int mHeight;
 	private Date mDateTime;
+	private String mToVersion;
+
+	private String mFromVersion;
 
 	private boolean mLoading;
 
@@ -82,6 +85,26 @@ public class SurespotMessage {
 		return ChatUtils.getOtherUser(this.mFrom, this.mTo);
 	}
 
+	public String getTheirVersion() {
+		String otherUser = ChatUtils.getOtherUser(this.mFrom, this.mTo);
+		if (mFrom.equals(otherUser)) {
+			return getFromVersion();
+		}
+		else {
+			return getToVersion();
+		}
+	}
+
+	public String getOurVersion() {
+		String otherUser = ChatUtils.getOtherUser(this.mFrom, this.mTo);
+		if (mFrom.equals(otherUser)) {
+			return getToVersion();
+		}
+		else {
+			return getFromVersion();
+		}
+	}
+
 	public static SurespotMessage toSurespotMessage(String jsonString) {
 		JSONObject jsonObject;
 		try {
@@ -115,6 +138,8 @@ public class SurespotMessage {
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setIv(jsonMessage.getString("iv"));
 		chatMessage.setHeight(jsonMessage.optInt("height"));
+		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
+		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		String resendId = jsonMessage.optString("resendId");
 		if (resendId != null && !resendId.isEmpty()) {
 			chatMessage.setResendId(resendId);
@@ -142,6 +167,8 @@ public class SurespotMessage {
 			message.put("resendId", this.getResendId());
 			message.put("mimeType", this.getMimeType());
 			message.put("iv", this.getIv());
+			message.put("toVersion", this.getToVersion());
+			message.put("fromVersion", this.getFromVersion());
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
@@ -219,6 +246,22 @@ public class SurespotMessage {
 
 	public void setDateTime(Date mDateTime) {
 		this.mDateTime = mDateTime;
+	}
+
+	public String getToVersion() {
+		return mToVersion;
+	}
+
+	public void setToVersion(String toVersion) {
+		mToVersion = toVersion;
+	}
+
+	public String getFromVersion() {
+		return mFromVersion;
+	}
+
+	public void setFromVersion(String fromVersion) {
+		mFromVersion = fromVersion;
 	}
 
 }

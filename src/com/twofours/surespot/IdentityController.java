@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,31 +42,36 @@ public class IdentityController {
 	public static synchronized void createIdentity(final Context context, final String username, final String password,
 			final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
 		String identityDir = FileUtils.getIdentityDir(context);
-		SurespotIdentity identity = new SurespotIdentity(username, keyPairDH, keyPairECDSA);
+		SurespotIdentity identity = new SurespotIdentity(username);
+		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
+
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, username, password, cookie);
 	}
 
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
 		String identityFile = identityDir + File.separator + identity.getUsername() + IDENTITY_EXTENSION;
-
 		SurespotLog.v(TAG, "saving identity: " + identityFile);
-
-		String spubDH = EncryptionController.encodePublicKey(identity.getKeyPairDH().getPublic());
-		String sprivDH = new String(Utils.base64Encode(identity.getKeyPairDH().getPrivate().getEncoded()));
-		String spubECDSA = EncryptionController.encodePublicKey(identity.getKeyPairECDSA().getPublic());
-		String sprivECDSA = new String(Utils.base64Encode(identity.getKeyPairECDSA().getPrivate().getEncoded()));
-
-		SurespotLog.d(TAG, "saving dh public key:" + spubDH);
-		SurespotLog.d(TAG, "saving ecdsa public key:" + spubECDSA);
 
 		JSONObject json = new JSONObject();
 		try {
-			json.putOpt("username", identity.getUsername());
-			json.putOpt("dhPriv", sprivDH);
-			json.putOpt("dhPub", spubDH);
-			json.putOpt("dsaPriv", sprivECDSA);
-			json.putOpt("dsaPub", spubECDSA);
+			json.put("username", identity.getUsername());
+
+			JSONArray keys = new JSONArray();
+
+			for (PrivateKeyPairs keyPair : identity.getKeyPairs()) {
+				JSONObject jsonKeyPair = new JSONObject();
+
+				jsonKeyPair.put("version", keyPair.getVersion());
+				jsonKeyPair.put("dhPriv", new String(Utils.base64Encode(keyPair.getKeyPairDH().getPrivate().getEncoded())));
+				jsonKeyPair.put("dhPub", EncryptionController.encodePublicKey(keyPair.getKeyPairDH().getPublic()));
+				jsonKeyPair.put("dsaPriv", new String(Utils.base64Encode(keyPair.getKeyPairDSA().getPrivate().getEncoded())));
+				jsonKeyPair.put("dsaPub", EncryptionController.encodePublicKey(keyPair.getKeyPairDSA().getPublic()));
+
+				keys.put(jsonKeyPair);
+			}
+
+			json.put("keys", keys);
 
 			if (!FileUtils.ensureDir(identityDir)) {
 				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
@@ -93,11 +99,11 @@ public class IdentityController {
 		return null;
 	}
 
-	public static SurespotPublicIdentity recreatePublicIdentity(String jsonIdentity) {
+	public static PublicKeys recreatePublicKeyPair(String jsonIdentity) {
 
 		try {
 			JSONObject json = new JSONObject(jsonIdentity);
-			String username = json.getString("username");
+			String version = json.getString("version");
 			String spubDH = json.getString("dhPub");
 			String sSigDH = json.getString("dhPubSig");
 
@@ -114,7 +120,7 @@ public class IdentityController {
 				return null;
 			}
 			else {
-				SurespotLog.i(TAG, username + ": DH key successfully verified");
+				SurespotLog.i(TAG, "DH key successfully verified");
 			}
 
 			boolean dsaVerify = EncryptionController.verifyPublicKey(sSigECDSA, spubECDSA);
@@ -125,13 +131,13 @@ public class IdentityController {
 				return null;
 			}
 			else {
-				SurespotLog.i(TAG, username + ": DSA key successfully verified");
+				SurespotLog.i(TAG, "DSA key successfully verified");
 			}
 
 			PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
 			PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
 
-			return new SurespotPublicIdentity(username, dhPub, dsaPub, sSigDH, sSigECDSA);
+			return new PublicKeys(version, dhPub, dsaPub);
 
 		}
 		catch (JSONException e) {
@@ -172,6 +178,10 @@ public class IdentityController {
 	private synchronized static void setLoggedInUser(Context context, String username, String password, Cookie cookie) {
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, username);
 		SurespotApplication.getCachingService().login(username, password, cookie);
+	}
+
+	public static SurespotIdentity getIdentity(String username) {
+		return getIdentity(SurespotApplication.getContext(), username);
 	}
 
 	public static SurespotIdentity getIdentity(Context context) {
@@ -218,8 +228,8 @@ public class IdentityController {
 
 			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
 
-			JSONObject json = new JSONObject(identity);
-			String name = (String) json.get("username");
+			JSONObject jsonIdentity = new JSONObject(identity);
+			String name = (String) jsonIdentity.get("username");
 
 			if (!name.equals(username)) {
 				SurespotLog.e(TAG, "internal identity did not match", new RuntimeException("internal identity: " + name
@@ -227,14 +237,26 @@ public class IdentityController {
 				return null;
 			}
 
-			String spubDH = json.getString("dhPub");
-			String sprivDH = json.getString("dhPriv");
-			String spubECDSA = json.getString("dsaPub");
-			String sprivECDSA = json.getString("dsaPriv");
+			SurespotIdentity si = new SurespotIdentity(username);
 
-			return new SurespotIdentity(name, new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH),
-					EncryptionController.recreatePrivateKey("ECDH", sprivDH)), new KeyPair(EncryptionController.recreatePublicKey("ECDSA",
-					spubECDSA), EncryptionController.recreatePrivateKey("ECDSA", sprivECDSA)));
+			JSONArray keys = jsonIdentity.getJSONArray("keys");
+			for (int i = 0; i < keys.length(); i++) {
+				JSONObject json = keys.getJSONObject(i);
+				String version = json.getString("version");
+				String spubDH = json.getString("dhPub");
+				String sprivDH = json.getString("dhPriv");
+				String spubECDSA = json.getString("dsaPub");
+				String sprivECDSA = json.getString("dsaPriv");
+				si.addKeyPairs(
+						version,
+						new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH), EncryptionController.recreatePrivateKey("ECDH",
+								sprivDH)),
+						new KeyPair(EncryptionController.recreatePublicKey("ECDSA", spubECDSA), EncryptionController.recreatePrivateKey(
+								"ECDSA", sprivECDSA)));
+
+			}
+
+			return si;
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "loadIdentity", e);
@@ -289,7 +311,7 @@ public class IdentityController {
 
 			// do OOB verification
 			SurespotApplication.getNetworkController().validate(username, password,
-					EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
+					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
 							String path = saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
 							callback.handleResponse(path == null ? null : "identity exported to " + path);
@@ -330,7 +352,7 @@ public class IdentityController {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 			SurespotApplication.getNetworkController().validate(username, password,
-					EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
+					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 							saveIdentity(FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
@@ -391,4 +413,21 @@ public class IdentityController {
 		});
 	}
 
+	/**
+	 * run this on a thread
+	 * 
+	 * @param username
+	 * @return
+	 */
+	public static String getTheirLatestVersion(String username) {
+		return SurespotApplication.getCachingService().getLatestVersion(username);
+	}
+
+	public static String getOurLatestVersion() {
+		return getIdentity(SurespotApplication.getContext()).getLatestVersion();
+	}
+
+	public static String getOurLatestVersion(String username) {
+		return getIdentity(SurespotApplication.getContext(), username).getLatestVersion();
+	}
 }

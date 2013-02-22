@@ -142,7 +142,7 @@ public class LoginActivity extends SherlockActivity {
 				protected String doInBackground(Void... params) {
 					SurespotIdentity identity = IdentityController.getIdentity(LoginActivity.this, username, password);
 					if (identity != null) {
-						return EncryptionController.sign(identity.getKeyPairECDSA().getPrivate(), username, password);
+						return EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, password);
 					}
 					return null;
 				}

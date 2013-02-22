@@ -206,6 +206,24 @@ public class NetworkController {
 
 	}
 
+	public void getKeyToken(JsonHttpResponseHandler jsonHttpResponseHandler) {
+		get("/keytoken", null, jsonHttpResponseHandler);
+	}
+
+	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature,
+			String tokenSignature, String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("dhPub", publicKeyDH);
+		params.put("dsaPub", publicKeyECDSA);
+		params.put("authSig", authSignature);
+		params.put("tokenSig", tokenSignature);
+		params.put("keyVersion", keyVersion);
+
+		post("/keys", new RequestParams(params), asyncHttpResponseHandler);
+	}
+
 	private static Cookie extractConnectCookie(CookieStore cookieStore) {
 		for (Cookie c : cookieStore.getCookies()) {
 			// System.out.println("Cookie name: " + c.getName() + " value: " +
@@ -301,8 +319,13 @@ public class NetworkController {
 	//
 	// }
 
-	public String getPublicIdentitySync(String username) {
-		return mSyncClient.get(mBaseUrl + "/publicidentity/" + username);
+	public String getPublicKeysSync(String username, String version) {
+		if (version != null) {
+			return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
+		}
+		else {
+			return mSyncClient.get(mBaseUrl + "/publickeys/" + username);
+		}
 	}
 
 	public void invite(String friendname, AsyncHttpResponseHandler responseHandler) {
@@ -396,8 +419,8 @@ public class NetworkController {
 		}
 	}
 
-	public void postFileStream(Context context, final String user, final String id, final InputStream fileInputStream,
-			final String mimeType, final IAsyncCallback<Boolean> callback) {
+	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
+			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Boolean> callback) {
 		new AsyncTask<Void, Void, HttpResponse>() {
 
 			@Override
@@ -405,7 +428,7 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user);
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);
 
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
 

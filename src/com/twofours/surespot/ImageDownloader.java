@@ -173,8 +173,8 @@ public class ImageDownloader {
 				try {
 					inputStream = new PipedInputStream(out);
 
-					EncryptionController.runDecryptTask(mMessage.getOtherUser(), mMessage.getIv(), new BufferedInputStream(imageStream),
-							out);
+					EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
+							mMessage.getIv(), new BufferedInputStream(imageStream), out);
 
 					byte[] bytes = Utils.inputStreamToBytes(inputStream);
 					bitmap = ChatUtils.getSampledImage(bytes);

@@ -50,5 +50,10 @@
     <string name="early_pre_beta">This is early pre-beta software, your logins and encrypted conversatations can and probably will be erased at any time. If this happens you will need to &amp;apos;Clear data&amp;apos; for the surespot application in your phone and create a new user.</string>
     <string name="incorrect_password_or_key">incorrect password or key</string>
     <string name="no_such_user">no such user</string>
+    <string name="roll_keys">roll keys</string>
+    <string name="key_management">key management...</string>
+    <string name="regenerate_keys">regenerate keys</string>
+    <string name="could_not_create_new_keys">could not create new keys</string>
+    <string name="keys_created">keys created and successfully uploaded to the server</string>
 
 </resources>

@@ -44,10 +44,13 @@ public class ChatUtils {
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
+		chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
+		chatMessage.setToVersion(IdentityController.getTheirLatestVersion(to));
 		chatMessage.setCipherData(cipherData);
 		chatMessage.setPlainData(plainData);
 		chatMessage.setIv(iv);
+
 		// store the mime type outside teh encrypted envelope, this way we can offload resources
 		// by mime type
 		chatMessage.setMimeType(mimeType);
@@ -87,9 +90,12 @@ public class ChatUtils {
 
 			PipedOutputStream fileOutputStream = new PipedOutputStream();
 			PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
-			String iv = EncryptionController.runEncryptTask(to, new BufferedInputStream(dataStream), fileOutputStream);
-			SurespotApplication.getNetworkController().postFileStream(context, to, iv, fileInputStream, SurespotConstants.MimeTypes.IMAGE,
-					callback);
+			String ourVersion = IdentityController.getOurLatestVersion();
+			String theirVersion = IdentityController.getTheirLatestVersion(to);
+			String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
+					fileOutputStream);
+			SurespotApplication.getNetworkController().postFileStream(context, ourVersion, to, theirVersion, iv, fileInputStream,
+					SurespotConstants.MimeTypes.IMAGE, callback);
 
 		}
 

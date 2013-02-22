@@ -86,6 +86,7 @@ public class SignupActivity extends SherlockActivity {
 		}
 
 		mMpd.incrProgress();
+
 		// see if the user exists
 		SurespotApplication.getNetworkController().userExists(username, new AsyncHttpResponseHandler() {
 			@Override

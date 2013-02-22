@@ -34,7 +34,13 @@
             <intent android:action="com.twofours.surespot.activities.SignupActivity" >
             </intent>
         </Preference>
+    	<Preference android:title="@string/key_management" >
+            <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
+            </intent>
+        </Preference>    
     </PreferenceCategory>
+    
+    
     <PreferenceCategory android:title="cache management" >
         <Preference
             android:key="pref_clear_local_cache"

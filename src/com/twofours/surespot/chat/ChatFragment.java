@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
@@ -28,6 +29,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
@@ -276,7 +278,7 @@ public class ChatFragment extends SherlockFragment {
 						}
 					}
 					catch (JSONException e) {
-						SurespotLog.e(TAG, "Error creating chat message: " + e.toString(), e);
+						SurespotLog.w(TAG, "Error creating chat message: " + e.toString(), e);
 					}
 
 					SurespotLog.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
@@ -389,24 +391,32 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	private void sendMessage(final String plainText, final String mimeType) {
-
 		if (plainText.length() > 0) {
+			new AsyncTask<Void, Void, SurespotMessage>() {
 
-			EncryptionController.symmetricEncrypt(mUsername, plainText, new IAsyncCallback<String[]>() {
 				@Override
-				public void handleResponse(String[] result) {
+				protected SurespotMessage doInBackground(Void... arg0) {
+
+					String[] result = EncryptionController.symmetricEncrypt(IdentityController.getOurLatestVersion(), mUsername,
+							IdentityController.getTheirLatestVersion(mUsername), plainText);
+
 					if (result != null) {
 						SurespotMessage chatMessage = ChatUtils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
-						mChatAdapter.addOrUpdateMessage(chatMessage, true);
+						return chatMessage;
+					}
+
+					return null;
+				}
+
+				protected void onPostExecute(SurespotMessage result) {
+					if (result != null) {
+						mChatAdapter.addOrUpdateMessage(result, true);
 						if (getActivity() != null) {
-							((ChatActivity) getActivity()).sendMessage(chatMessage);
+							((ChatActivity) getActivity()).sendMessage(result);
 						}
 					}
-					else {
-						// TODO handle encryption error
-					}
-				}
-			});
+				};
+			}.execute();
 		}
 	}
 
