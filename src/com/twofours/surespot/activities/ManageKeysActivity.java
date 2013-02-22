@@ -6,10 +6,10 @@ import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.util.encoders.Base64;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -25,17 +25,19 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.UIUtils;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ManageKeysActivity extends SherlockActivity {
+	private static final String TAG = "ManageKeysActivity";
 	private List<String> mIdentityNames;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_export_identity);
+		setContentView(R.layout.activity_manage_keys);
 		Utils.configureActionBar(this, "settings", "keys", true);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
@@ -104,6 +106,7 @@ public class ManageKeysActivity extends SherlockActivity {
 
 						try {
 							keyToken = response.getString("token");
+							SurespotLog.v(TAG, "received key token: " + keyToken);
 							keyVersion = response.getString("keyversion");
 						}
 						catch (JSONException e) {
@@ -121,11 +124,12 @@ public class ManageKeysActivity extends SherlockActivity {
 
 						// create auth sig
 						final String authSignature = EncryptionController.sign(pk, username, password);
+						SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, new String(Base64.decode(keyToken.getBytes())),
-								password);
+						final String tokenSignature = EncryptionController.signToken(pk, Base64.decode(keyToken.getBytes(), Base64.DEFAULT));
 
+						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 						// generate new key pairs
 						KeyPair[] keys = EncryptionController.generateKeyPairsSync();
 						if (keys == null) {
@@ -149,6 +153,13 @@ public class ManageKeysActivity extends SherlockActivity {
 													result.keyPairs[0]);
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));
 										};
+
+										@Override
+										public void onFailure(Throwable error, String content) {
+											SurespotLog.w(TAG, "rollKeys", error);
+											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
+
+										}
 									});
 						}
 						else {

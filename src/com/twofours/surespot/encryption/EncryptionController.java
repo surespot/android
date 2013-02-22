@@ -196,11 +196,47 @@ public class EncryptionController {
 		}
 		catch (SignatureException e) {
 			SurespotLog.e(TAG, "sign", e);
-
 		}
 		catch (NoSuchAlgorithmException e) {
 			SurespotLog.e(TAG, "sign", e);
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		return null;
 
+	}
+
+	public static String signToken(PrivateKey privateKey, byte[] sign1) {
+		try {
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
+
+			// throw some random data in there so the signature is different every time
+			byte[] random = new byte[16];
+			mSecureRandom.nextBytes(random);
+
+			dsa.initSign(privateKey);
+			dsa.update(sign1);
+			// dsa.update(sign2.getBytes());
+			// dsa.update(random);
+
+			byte[] sig = dsa.sign();
+
+			byte[] signature = new byte[random.length + sig.length];
+			System.arraycopy(random, 0, signature, 0, 16);
+			System.arraycopy(sig, 0, signature, 16, sig.length);
+			// return new String(Base64.encode(signature, Base64.DEFAULT));
+
+			return new String(Base64.encode(sig, Base64.DEFAULT));
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, "sign", e);
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, "sign", e);
 		}
 		catch (InvalidKeyException e) {
 			SurespotLog.e(TAG, "sign", e);
