@@ -173,11 +173,26 @@ public class ChatController {
 					return;
 				}
 				if (event.equals("message")) {
-					sendMessageReceived((String) args[0]);
+
 					// TODO check who from
 					try {
 						SurespotMessage cm = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
-						checkAndSendNextMessage(cm);
+
+						// check the type
+						if (cm.getType().equals("system")) {
+							// revoke the cert
+							if (cm.getSubType().equals("revoke")) {
+								String username = cm.getFrom();
+								String version = cm.getFromVersion();
+
+								// this will force download of key
+								IdentityController.updateLatestVersion(SurespotApplication.getContext(), username, version);
+							}
+						}
+						else {
+							sendMessageReceived((String) args[0]);
+							checkAndSendNextMessage(cm);
+						}
 					}
 					catch (JSONException e) {
 						SurespotLog.w(TAG, "on", e);

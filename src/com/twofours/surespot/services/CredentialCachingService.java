@@ -185,14 +185,22 @@ public class CredentialCachingService extends Service {
 					}
 				}
 			}
-
 		}
 
 		return latestVersion;
 	}
 
-	public synchronized void clearLatestVersion(String username) {
-		mLatestVersions.remove(username);
+	public synchronized void updateLatestVersion(String username, String version) {
+		if (username != null && version != null) {
+			String latestVersion = mLatestVersions.get(username);
+
+			if (latestVersion != null) {
+				// force download of new key
+				if (version.compareTo(latestVersion) > 0) {
+					mLatestVersions.remove(username);
+				}
+			}
+		}
 	}
 
 	private class VersionMap {

@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
@@ -267,15 +268,26 @@ public class ChatFragment extends SherlockFragment {
 				// after app is destroyed sometimes
 				// (ie. on rotation on gingerbread)
 				// so check for null here
+				SherlockFragmentActivity activity = getSherlockActivity();
 
-				if (getActivity() != null) {
+				if (activity != null) {
 					SurespotMessage message = null;
 
 					for (int i = 0; i < jsonArray.length(); i++) {
 						try {
 							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 							message = SurespotMessage.toSurespotMessage(jsonMessage);
-							mChatAdapter.addOrUpdateMessage(message, false);
+
+							// if it's a system message from another user then check version
+							if (message.getType().equals("system")) {
+								if (message.getSubType().equals("revoke")
+										&& !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+									IdentityController.updateLatestVersion(activity, message.getFrom(), message.getFromVersion());
+								}
+							}
+							else {
+								mChatAdapter.addOrUpdateMessage(message, false);
+							}
 						}
 						catch (JSONException e) {
 							SurespotLog.w(TAG, "Error creating chat message: " + e.toString(), e);
@@ -332,7 +344,11 @@ public class ChatFragment extends SherlockFragment {
 								for (int i = jsonArray.length() - 1; i >= 0; i--) {
 									JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 									message = SurespotMessage.toSurespotMessage(jsonMessage);
-									mChatAdapter.insertMessage(message, false);
+
+									// if it's a system message ignore it
+									if (message.getType().equals("user")) {
+										mChatAdapter.insertMessage(message, false);
+									}
 
 								}
 							}

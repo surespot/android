@@ -43,6 +43,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
+				// TODO progress
 				final String user = (String) spinner.getSelectedItem();
 				UIUtils.passwordDialog(ExportIdentityActivity.this, "export " + user + " identity", "enter password for " + user,
 						new IAsyncCallback<String>() {

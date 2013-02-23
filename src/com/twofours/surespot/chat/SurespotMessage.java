@@ -13,6 +13,8 @@ import com.twofours.surespot.common.SurespotLog;
  */
 public class SurespotMessage {
 	private static final String TAG = "SurespotMessage";
+	private String mType;
+	private String mSubtype;
 	private String mFrom;
 	private String mTo;
 	private String mIv;
@@ -29,8 +31,20 @@ public class SurespotMessage {
 
 	private boolean mLoading;
 
-	public SurespotMessage() {
+	public String getSubType() {
+		return mSubtype;
+	}
 
+	public void setSubType(String subtype) {
+		mSubtype = subtype;
+	}
+
+	public String getType() {
+		return mType;
+	}
+
+	public void setType(String type) {
+		mType = type;
 	}
 
 	public String getFrom() {
@@ -132,14 +146,17 @@ public class SurespotMessage {
 		if (id != null && !id.isEmpty()) {
 			chatMessage.setId(id);
 		}
+		chatMessage.setType(jsonMessage.getString("type"));
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
 		chatMessage.setCipherData(jsonMessage.optString("data", null));
-		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
-		chatMessage.setIv(jsonMessage.getString("iv"));
+
+		chatMessage.setSubType(jsonMessage.optString("subtype"));
+		chatMessage.setMimeType(jsonMessage.optString("mimeType"));
+		chatMessage.setIv(jsonMessage.optString("iv"));
 		chatMessage.setHeight(jsonMessage.optInt("height"));
-		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
-		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
+		chatMessage.setToVersion(jsonMessage.optString("toVersion"));
+		chatMessage.setFromVersion(jsonMessage.optString("fromVersion"));
 		String resendId = jsonMessage.optString("resendId");
 		if (resendId != null && !resendId.isEmpty()) {
 			chatMessage.setResendId(resendId);
@@ -161,9 +178,13 @@ public class SurespotMessage {
 				message.put("id", this.getId());
 			}
 
-			message.put("data", this.getCipherData());
+			message.put("type", this.getType());
+			message.put("subtype", this.getSubType());
 			message.put("to", this.getTo());
 			message.put("from", this.getFrom());
+
+			message.put("data", this.getCipherData());
+
 			message.put("resendId", this.getResendId());
 			message.put("mimeType", this.getMimeType());
 			message.put("iv", this.getIv());

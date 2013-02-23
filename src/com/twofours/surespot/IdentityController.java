@@ -19,10 +19,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -436,6 +438,36 @@ public class IdentityController {
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+
+	}
+
+	public static void updateLatestVersion(Context context, String username, String version) {
+		// see if we are the user that's been revoked
+		// if we have the latest version locally, if we don't then this user has been revoked from a different device
+		// and should not be used on this device anymore
+		if (username.equals(getLoggedInUser()) && version.compareTo(getOurLatestVersion()) > 0) {
+			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
+
+			// bad news
+			// first log them out
+			SurespotApplication.getCachingService().logout();
+
+			// clear the data
+			StateController.wipeState(username);
+
+			// delete identities locally?
+
+			// boot them out
+			Intent intent = new Intent(context, LoginActivity.class);
+			intent.putExtra("revoked", true);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			context.startActivity(intent);
+
+			// TODO notify user?
+		}
+		else {
+			SurespotApplication.getCachingService().updateLatestVersion(username, version);
+		}
 
 	}
 }
