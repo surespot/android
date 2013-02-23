@@ -430,4 +430,12 @@ public class IdentityController {
 	public static String getOurLatestVersion(String username) {
 		return getIdentity(SurespotApplication.getContext(), username).getLatestVersion();
 	}
+
+	public static void rollKeys(Context context, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {
+		String identityDir = FileUtils.getIdentityDir(context);
+		SurespotIdentity identity = getIdentity(context, username, password);
+		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
+		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+
+	}
 }

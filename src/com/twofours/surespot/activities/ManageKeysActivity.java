@@ -150,8 +150,8 @@ public class ManageKeysActivity extends SherlockActivity {
 									result.keyVersion, new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// save the key pairs
-											IdentityController.getIdentity(username).addKeyPairs(result.keyVersion, result.keyPairs[0],
-													result.keyPairs[1]);
+											IdentityController.rollKeys(ManageKeysActivity.this, username, password, result.keyVersion,
+													result.keyPairs[0], result.keyPairs[1]);
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));
 										};
 

@@ -270,15 +270,17 @@ public class ChatFragment extends SherlockFragment {
 
 				if (getActivity() != null) {
 					SurespotMessage message = null;
-					try {
-						for (int i = 0; i < jsonArray.length(); i++) {
+
+					for (int i = 0; i < jsonArray.length(); i++) {
+						try {
 							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 							message = SurespotMessage.toSurespotMessage(jsonMessage);
 							mChatAdapter.addOrUpdateMessage(message, false);
 						}
-					}
-					catch (JSONException e) {
-						SurespotLog.w(TAG, "Error creating chat message: " + e.toString(), e);
+						catch (JSONException e) {
+							SurespotLog.w(TAG, "Error creating chat message: " + e.toString(), e);
+						}
+
 					}
 
 					SurespotLog.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
