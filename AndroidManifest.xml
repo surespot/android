@@ -55,7 +55,7 @@
 
         <activity
             android:name="com.twofours.surespot.activities.StartupActivity"
-            android:label="@string/title_activity_main"
+            android:label="@string/title_activity_main"       
             android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -85,7 +85,6 @@
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup" 
-            android:launchMode="singleTask"
             >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.SignupActivity" />
@@ -99,11 +98,13 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.friends.FriendActivity"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden" 
+              android:launchMode="singleTop">
         </activity>
         <activity
             android:name="com.twofours.surespot.chat.ChatActivity"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden" 
+              android:launchMode="singleTop">
         </activity>
         <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>

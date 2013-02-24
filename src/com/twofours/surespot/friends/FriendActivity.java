@@ -92,6 +92,7 @@ public class FriendActivity extends SherlockActivity {
 					// start chat activity
 					Intent newIntent = new Intent(FriendActivity.this, ChatActivity.class);
 					newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, friend.getName());
+					newIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 					// if we have a send intent, when we pick a user, propogate it
 					// Get intent, action and MIME type
 					Intent intent = getIntent();

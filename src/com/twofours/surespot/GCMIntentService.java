@@ -21,7 +21,6 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.activities.StartupActivity;
-import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -30,7 +29,6 @@ import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotConstants.IntentRequestCodes;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.friends.FriendActivity;
 
 public class GCMIntentService extends GCMBaseIntentService {
 	private static final String TAG = "GCMIntentService";
@@ -87,7 +85,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				SurespotLog.v(TAG, "Successfully saved GCM id on surespot server.");
 
 				// the server and client match, we're golden
-				Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT, id);
+				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
 				GCMRegistrar.setRegisteredOnServer(context, true);
 
 			}
@@ -154,17 +152,25 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Intent mainIntent = null;
 		if (to.equals(IdentityController.getLoggedInUser()) && id == IntentRequestCodes.NEW_MESSAGE_NOTIFICATION) {
 			SurespotLog.v(TAG, "user already logged in, going directly to chat activity");
-			mainIntent = new Intent(context, ChatActivity.class);
-			mainIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			mainIntent = new Intent(context, StartupActivity.class);
+			mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		}
 		else {
 			mainIntent = new Intent(context, StartupActivity.class);
 		}
+
+		// mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+		// mainIntent.setAction("android.intent.action.MAIN");
+		// mainIntent.addCategory("android.intent.category.LAUNCHER");
+
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, type);
-		stackBuilder.addNextIntent(new Intent(context, FriendActivity.class));
+
+		// stackBuilder.addParentStack(FriendActivity.class);
 		stackBuilder.addNextIntent(mainIntent);
+
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
 		builder.setContentIntent(resultPendingIntent);
@@ -183,5 +189,4 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		notificationManager.notify(tag, id, notification);
 	}
-
 }

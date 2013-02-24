@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.support.v4.app.TaskStackBuilder;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -163,10 +164,19 @@ public class StartupActivity extends Activity {
 		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
 			if (messageTo.equals(user)) {
 				SurespotLog.v(TAG, "found chat name, starting chat activity: " + messageTo);
+
+				TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+				stackBuilder.addParentStack(FriendActivity.class);
+
 				newIntent = new Intent(this, ChatActivity.class);
+
 				newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
 				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
 				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+				stackBuilder.addNextIntent(newIntent);
+				stackBuilder.startActivities();
+				finish();
 			}
 			else {
 				SurespotLog.v(TAG, "need different user, starting Login activity");
@@ -207,11 +217,17 @@ public class StartupActivity extends Activity {
 					String lastName = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT);
 					if (lastName != null && user != null) {
 						// build back stack to login screen for consistency
+						TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+						stackBuilder.addParentStack(FriendActivity.class);
 
 						SurespotLog.v(TAG, "starting chat activity based on LAST_CHAT name");
 						newIntent = new Intent(this, ChatActivity.class);
 						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
 						newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+						stackBuilder.addNextIntent(newIntent);
+						stackBuilder.startActivities();
+						finish();
 					}
 				}
 			}

@@ -44,9 +44,18 @@ public class ChatActivity extends SherlockFragmentActivity {
 	private TitlePageIndicator mIndicator;
 
 	@Override
+	protected void onNewIntent(Intent intent) {
+		// TODO Auto-generated method stub
+		super.onNewIntent(intent);
+		SurespotLog.v(TAG, "on new intent");
+	}
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
+
+		Utils.logIntent(TAG, getIntent());
 
 		mChatController = SurespotApplication.getChatController();
 
