@@ -412,12 +412,18 @@ public class EncryptionController {
 
 	}
 
-	public static String[] symmetricEncrypt(final String ourVersion, final String username, final String theirVersion,
-			final String plaintext) {
-
-		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
+	public static byte[] getIv() {
 		byte[] iv = new byte[IV_LENGTH];
 		mSecureRandom.nextBytes(iv);
+		return iv;
+	}
+
+	public static String symmetricEncrypt(final String ourVersion, final String username, final String theirVersion,
+			final String plaintext, byte[] iv) {
+
+		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
+		// byte[] iv = new byte[IV_LENGTH];
+		// mSecureRandom.nextBytes(iv);
 		ParametersWithIV ivParams;
 		try {
 			ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(ourVersion, username,
@@ -432,12 +438,12 @@ public class EncryptionController {
 			int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
 
 			len += ccm.doFinal(buf, len);
-			String[] returns = new String[2];
+			// String[] returns = new String[2];
 
-			returns[0] = new String(Utils.base64Encode(iv));
-			returns[1] = new String(Utils.base64Encode(buf));
+			// returns[0] = new String(Utils.base64Encode(iv));
+			// returns[1] = new String(Utils.base64Encode(buf));
 
-			return returns;
+			return new String(Utils.base64Encode(buf));
 
 		}
 		catch (InvalidCacheLoadException icle) {

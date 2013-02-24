@@ -719,29 +719,42 @@ public class ChatController {
 
 	void sendMessage(final String username, final String plainText, final String mimeType) {
 		if (plainText.length() > 0) {
+
+			// display the message immediately
+			final byte[] iv = EncryptionController.getIv();
+
+			// build a message without the encryption values set as they could take a while
+			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, plainText,
+					new String(Utils.base64Encode(iv)));
+			getChatAdapter(mContext, username).addOrUpdateMessage(chatMessage, true);
+
+			// do encryption in background
 			new AsyncTask<Void, Void, SurespotMessage>() {
 
 				@Override
 				protected SurespotMessage doInBackground(Void... arg0) {
+					String ourLatestVersion = IdentityController.getOurLatestVersion();
+					String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
 
-					String[] result = EncryptionController.symmetricEncrypt(IdentityController.getOurLatestVersion(), username,
-							IdentityController.getTheirLatestVersion(username), plainText);
+					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
 
 					if (result != null) {
-						SurespotMessage chatMessage = ChatUtils.buildMessage(username, mimeType, plainText, result[0], result[1]);
-						return chatMessage;
+						chatMessage.setCipherData(result);
+						chatMessage.setFromVersion(ourLatestVersion);
+						chatMessage.setToVersion(theirLatestVersion);
+						ChatController.this.sendMessage(chatMessage);
 					}
 
 					return null;
 				}
 
-				protected void onPostExecute(SurespotMessage result) {
-					if (result != null) {
-						getChatAdapter(mContext, username).addOrUpdateMessage(result, true);
-						sendMessage(result);
-					}
-
-				};
+				// protected void onPostExecute(SurespotMessage result) {
+				// if (result != null) {
+				//
+				//
+				// }
+				//
+				// };
 			}.execute();
 		}
 	}

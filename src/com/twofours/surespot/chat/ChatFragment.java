@@ -81,18 +81,21 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onChanged() {
 				view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-				if (chatAdapter.getCount() == 0) {
-					view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-				}
+
+				mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+				// view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+
+				// else {
 				// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 				chatAdapter.unregisterDataSetObserver(this);
+				// }
 			}
 		});
 		mListView.setAdapter(chatAdapter);
 		mListView.setDividerHeight(1);
 		// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 		view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		view.findViewById(R.id.message_list_empty).setVisibility(View.GONE);
+		// view.findViewById(R.id.message_list_empty).setVisibility(View.GONE);
 		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
