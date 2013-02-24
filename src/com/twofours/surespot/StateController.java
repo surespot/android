@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
+
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -90,7 +92,7 @@ public class StateController {
 			if (messageIds != null && messageIds.size() > 0) {
 				String smessageIds = mapToJsonString(messageIds);
 				writeFile(filename, smessageIds);
-				SurespotLog.v(TAG, "saved messageIds: " + smessageIds);
+				SurespotLog.v(TAG, "saved last viewed messageIds: " + smessageIds);
 
 			}
 			else {
@@ -213,9 +215,9 @@ public class StateController {
 
 	}
 
-	public static void wipeState(String identityName) {
+	public static synchronized void wipeState(Context context, String identityName) {
 
-		deleteRecursive(new File(FileUtils.getStateDir(SurespotApplication.getContext()) + File.separator + identityName));
+		deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 
 	}
 

@@ -10,6 +10,7 @@ import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -43,8 +44,14 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 							// state
 							for (String identityName : IdentityController.getIdentityNames(SettingsActivity.this)) {
-								SurespotApplication.getStateController().wipeState(identityName);
+								StateController.wipeState(SettingsActivity.this, identityName);
 							}
+
+							// wipe last viewed message ids
+							SurespotApplication.getStateController().saveLastViewedMessageIds(null);
+
+							// wipe active chats
+							SurespotApplication.getStateController().saveActiveChats(null);
 
 							// last chat and user we had open
 							Utils.putSharedPrefsString(SettingsActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
@@ -85,4 +92,4 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 		}
 
 	}
-}
+};

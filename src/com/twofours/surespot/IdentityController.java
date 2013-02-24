@@ -453,7 +453,7 @@ public class IdentityController {
 			SurespotApplication.getCachingService().logout();
 
 			// clear the data
-			StateController.wipeState(username);
+			StateController.wipeState(context, username);
 
 			// delete identities locally?
 

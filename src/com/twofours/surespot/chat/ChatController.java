@@ -61,6 +61,7 @@ public class ChatController {
 	private BroadcastReceiver mConnectivityReceiver;
 	private HashMap<String, ChatAdapter> mChatAdapters;
 	private HashMap<String, Integer> mLastViewedMessageIds;
+	private HashMap<String, Boolean> mReadSinceReconnect;
 	private static String mCurrentChat;
 
 	private static boolean mTrackChat;
@@ -77,6 +78,7 @@ public class ChatController {
 		mContext = context;
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		mChatAdapters = new HashMap<String, ChatAdapter>();
+		mReadSinceReconnect = new HashMap<String, Boolean>();
 
 		loadState();
 
@@ -165,8 +167,6 @@ public class ChatController {
 
 				connected();
 
-				sendConnectStatus(true);
-
 				sendMessages();
 				SurespotApplication.getContext().registerReceiver(mConnectivityReceiver,
 						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -217,7 +217,7 @@ public class ChatController {
 
 							}
 
-							updateLastSentMessageId(cm.getOtherUser(), cm.getId());
+							updateLastViewedMessageId(cm.getOtherUser(), cm.getId());
 							checkAndSendNextMessage(cm);
 						}
 					}
@@ -318,10 +318,6 @@ public class ChatController {
 				throw e;
 			}
 		}
-
-		sendConnectStatus(false);
-
-		// socket = null;
 	}
 
 	private void connected() {
@@ -351,6 +347,15 @@ public class ChatController {
 			message.setResendId(lastMessageID);
 			sendMessage(message);
 
+		}
+
+		// reset read since reconnect flags
+		for (String chat : mReadSinceReconnect.keySet()) {
+			mReadSinceReconnect.put(chat, false);
+		}
+
+		if (mTrackChat) {
+			loadLatestMessages(mCurrentChat);
 		}
 	}
 
@@ -384,12 +389,12 @@ public class ChatController {
 
 	}
 
-	private void sendConnectStatus(boolean connected) {
-		Intent intent = new Intent(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED);
-		intent.putExtra(SurespotConstants.ExtraNames.CONNECTED, connected);
-		LocalBroadcastManager.getInstance(SurespotApplication.getContext()).sendBroadcast(intent);
-
-	}
+	// private void sendConnectStatus(boolean connected) {
+	// Intent intent = new Intent(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED);
+	// intent.putExtra(SurespotConstants.ExtraNames.CONNECTED, connected);
+	// LocalBroadcastManager.getInstance(SurespotApplication.getContext()).sendBroadcast(intent);
+	//
+	// }
 
 	private void checkAndSendNextMessage(SurespotMessage message) {
 		SurespotLog.v(TAG, "received message: " + message);
@@ -469,7 +474,7 @@ public class ChatController {
 		return (getState() == STATE_CONNECTED);
 	}
 
-	private void updateLastSentMessageId(String username, Integer id) {
+	private void updateLastViewedMessageId(String username, Integer id) {
 
 		if (mTrackChat && username.equals(mCurrentChat)) {
 
@@ -523,14 +528,17 @@ public class ChatController {
 				if (message != null) {
 					SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
 					chatAdapter.notifyDataSetChanged();
-					updateLastSentMessageId(username, message.getId());
+					updateLastViewedMessageId(username, message.getId());
 
 				}
 				else {
 					// update to the last id if we didn't load any messages because they could have been added to the adapter when
 					// the tab wasn't showing
-					updateLastSentMessageId(username, null);
+					updateLastViewedMessageId(username, null);
 				}
+
+				// we've read the messages now, yay
+				mReadSinceReconnect.put(username, true);
 			}
 
 			@Override
@@ -605,8 +613,10 @@ public class ChatController {
 			SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 		}
 
-		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
-		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+		if (mTrackChat) {
+			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+		}
 
 	}
 
@@ -617,13 +627,12 @@ public class ChatController {
 	}
 
 	public void onResume(boolean trackChat) {
-		SurespotLog.v(TAG, "onResume");
+		SurespotLog.v(TAG, "onResume, mtrackchat: " + mTrackChat);
 		mPaused = false;
 
 		connect();
 
 		mTrackChat = trackChat;
-		SurespotLog.v(TAG, "mtrackchat: " + mTrackChat);
 
 	}
 
@@ -669,16 +678,27 @@ public class ChatController {
 
 	}
 
-	void setCurrentChat(String username) {
+	void setCurrentChat(String username, boolean creating) {
 
-		SurespotLog.v(TAG, "setCurrentChat: " + username);
+		SurespotLog.v(TAG, username + ": setCurrentChat");
 		mCurrentChat = username;
 
-		updateLastSentMessageId(username, null);
+		// if we've read since we connected, don't read again
+		Boolean read = mReadSinceReconnect.get(username);
+		if (read != null && read.booleanValue()) {
+			SurespotLog.v(TAG, username + ": not asking the server for more messages as we've read since connecting");
 
-		// cancel associated notifications
-		mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
-				SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			updateLastViewedMessageId(username, null);
+
+			// cancel associated notifications
+			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+		}
+		else {
+			if (!creating) {
+				loadLatestMessages(username);
+			}
+		}
 
 	}
 

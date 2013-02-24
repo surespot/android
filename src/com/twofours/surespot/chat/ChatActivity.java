@@ -95,7 +95,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			public void onPageSelected(int position) {
 				SurespotLog.v(TAG, "onPageSelected, position: " + position);
 				String name = mPagerAdapter.getChatName(position);
-				mChatController.setCurrentChat(name);
+				mChatController.setCurrentChat(name, false);
 
 			}
 		});
@@ -106,10 +106,10 @@ public class ChatActivity extends SherlockFragmentActivity {
 			if (wantedPosition != mViewPager.getCurrentItem()) {
 				mViewPager.setCurrentItem(wantedPosition);
 			}
-			// mChatController.setCurrentChat(name);
+			mChatController.setCurrentChat(name, true);
 		}
 		else {
-			mChatController.setCurrentChat(getCurrentChatName());
+			mChatController.setCurrentChat(getCurrentChatName(), true);
 		}
 
 		// register for notifications

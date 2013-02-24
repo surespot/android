@@ -11,7 +11,7 @@ import com.twofours.surespot.common.SurespotLog;
  * @author adam
  * 
  */
-public class SurespotMessage {
+public class SurespotMessage implements Comparable {
 	private static final String TAG = "SurespotMessage";
 	private String mType;
 	private String mSubtype;
@@ -283,6 +283,28 @@ public class SurespotMessage {
 
 	public void setFromVersion(String fromVersion) {
 		mFromVersion = fromVersion;
+	}
+
+	@Override
+	public int compareTo(Object arg0) {
+
+		Integer thisId = this.getId();
+		Integer rhsId = ((SurespotMessage) arg0).getId();
+
+		if (thisId == rhsId)
+			return 0;
+
+		// if we're null we want to be at the bottom of list
+		if (thisId == null && rhsId != null) {
+			return 1;
+		}
+
+		if (rhsId == null && thisId != null) {
+			// should never be true
+			return -1;
+		}
+
+		return thisId.compareTo(rhsId);
 	}
 
 }

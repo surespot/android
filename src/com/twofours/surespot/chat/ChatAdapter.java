@@ -2,6 +2,7 @@ package com.twofours.surespot.chat;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ListIterator;
 
 import android.content.Context;
@@ -92,6 +93,7 @@ public class ChatAdapter extends BaseAdapter {
 
 			//
 			mMessages.add(message);
+
 		}
 		else {
 			// SurespotLog.v(TAG, "addMessage, updating message");
@@ -106,6 +108,8 @@ public class ChatAdapter extends BaseAdapter {
 				updateMessage.setCipherData(message.getCipherData());
 			}
 		}
+
+		Collections.sort(mMessages);
 	}
 
 	private void insertMessage(SurespotMessage message) {
@@ -116,6 +120,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (messages.size() > 0) {
 			mMessages.clear();
 			mMessages.addAll(messages);
+
 			// notifyDataSetChanged();
 		}
 	}
