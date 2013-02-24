@@ -30,7 +30,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -79,8 +79,6 @@ public class ChatController {
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		mReadSinceReconnect = new HashMap<String, Boolean>();
-
-		loadState();
 
 		setOnWifi();
 
@@ -136,7 +134,7 @@ public class ChatController {
 					// Utils.makeToast(this,SurespotApplication.getContext(),
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-					Intent intent = new Intent(SurespotApplication.getContext(), LoginActivity.class);
+					Intent intent = new Intent(SurespotApplication.getContext(), StartupActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					SurespotApplication.getContext().startActivity(intent);
 
@@ -527,7 +525,7 @@ public class ChatController {
 
 				if (message != null) {
 					SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
-					chatAdapter.notifyDataSetChanged();
+
 					updateLastViewedMessageId(username, message.getId());
 
 				}
@@ -539,6 +537,7 @@ public class ChatController {
 
 				// we've read the messages now, yay
 				mReadSinceReconnect.put(username, true);
+				chatAdapter.notifyDataSetChanged();
 			}
 
 			@Override
@@ -574,14 +573,17 @@ public class ChatController {
 
 	private void loadMessages(String username) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
-		getChatAdapter(mContext, username).addMessages(SurespotApplication.getStateController().loadMessages(username));
+		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
+		getChatAdapter(mContext, username).addMessages(SurespotApplication.getStateController().loadMessages(spot));
 	}
 
 	private void saveMessages() {
 		// save last 30? messages
 		SurespotLog.v(TAG, "saveMessages");
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			SurespotApplication.getStateController().saveMessages(entry.getKey(), entry.getValue().getMessages());
+			String us = entry.getKey();
+			String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), us);
+			SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages());
 		}
 
 	}
@@ -613,10 +615,9 @@ public class ChatController {
 			SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 		}
 
-		if (mTrackChat) {
-			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
-			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-		}
+		// TODO save per user?
+		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 
 	}
 
@@ -629,6 +630,8 @@ public class ChatController {
 	public void onResume(boolean trackChat) {
 		SurespotLog.v(TAG, "onResume, mtrackchat: " + mTrackChat);
 		mPaused = false;
+
+		loadState();
 
 		connect();
 
@@ -678,7 +681,7 @@ public class ChatController {
 
 	}
 
-	void setCurrentChat(String username, boolean creating) {
+	void setCurrentChat(final String username, boolean creating) {
 
 		SurespotLog.v(TAG, username + ": setCurrentChat");
 		mCurrentChat = username;
@@ -697,6 +700,18 @@ public class ChatController {
 		else {
 			if (!creating) {
 				loadLatestMessages(username);
+			}
+			else {
+				new AsyncTask<Void, Void, Void>() {
+					protected Void doInBackground(Void... params) {
+						// get the key going
+						final String ourVersion = IdentityController.getOurLatestVersion();
+						final String theirVersion = IdentityController.getTheirLatestVersion(username);
+
+						SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
+						return null;
+					}
+				}.execute();
 			}
 		}
 
@@ -797,6 +812,22 @@ public class ChatController {
 
 	public static boolean isPaused() {
 		return mPaused;
+	}
+
+	public boolean hasEarlierMessages(String username) {
+		Integer id = getEarliestMessageId(username);
+		if (id != null && id > 1) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public synchronized void logout() {
+		mTrackChat = false;
+		// mLastViewedMessageIds.clear();
+		mChatAdapters.clear();
+		// mCurrentChat = null;
 	}
 
 }

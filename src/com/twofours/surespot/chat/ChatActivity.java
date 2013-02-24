@@ -24,8 +24,8 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.ImageSelectActivity;
-import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.SettingsActivity;
+import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -104,7 +104,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		if (name != null) {
 			int wantedPosition = mPagerAdapter.getChatFragmentPosition(name);
 			if (wantedPosition != mViewPager.getCurrentItem()) {
-				mViewPager.setCurrentItem(wantedPosition);
+				mViewPager.setCurrentItem(wantedPosition, true);
 			}
 			mChatController.setCurrentChat(name, true);
 		}
@@ -122,18 +122,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 				try {
 					JSONObject messageJson = new JSONObject(sMessage);
 					SurespotMessage message = SurespotMessage.toSurespotMessage(messageJson);
-					// sendMessageToFragment(message);
-
-					// update last visited id for message
 					String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
-					// updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
 					mPagerAdapter.addChatName(otherUser);
 					mIndicator.notifyDataSetChanged();
 				}
 				catch (JSONException e) {
 					SurespotLog.w(TAG, "onReceive", e);
 				}
-
 			}
 		};
 	}
@@ -160,11 +155,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 		// save open tabs
 		SurespotApplication.getStateController().saveActiveChats(mPagerAdapter.getChatNames());
 
-		// // cancel any message notifications for the currently showing tab
-		// if (IdentityController.getLoggedInUser() != null && mCurrentChat != null) {
-		// mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), mCurrentChat),
-		// SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-		// }
 	}
 
 	@Override
@@ -205,7 +195,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
 				@Override
 				public void handleResponse(Boolean result) {
-					Intent intent = new Intent(ChatActivity.this, LoginActivity.class);
+					Intent intent = new Intent(ChatActivity.this, StartupActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					ChatActivity.this.startActivity(intent);
 					Utils.putSharedPrefsString(ChatActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
@@ -316,6 +306,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 		else {
 			return null;
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+
+		super.onDestroy();
+		SurespotLog.v(TAG, "onDestroy");
 	}
 
 }

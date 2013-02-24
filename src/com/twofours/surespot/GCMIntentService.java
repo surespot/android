@@ -21,6 +21,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.activities.StartupActivity;
+import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -29,6 +30,7 @@ import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotConstants.IntentRequestCodes;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.friends.FriendActivity;
 
 public class GCMIntentService extends GCMBaseIntentService {
 	private static final String TAG = "GCMIntentService";
@@ -112,7 +114,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (type.equals("message")) {
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
-			if (IdentityController.hasLoggedInUser() && ChatController.getTrackChat() && !ChatController.isPaused() && from.equals(ChatController.getCurrentChat())) {
+			if (IdentityController.hasLoggedInUser() && ChatController.getTrackChat() && !ChatController.isPaused()
+					&& from.equals(ChatController.getCurrentChat())) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
 			}
@@ -137,7 +140,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		// get shared prefs
 		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
-		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), false)) {
+		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), true)) {
 			return;
 		}
 
@@ -148,11 +151,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 				.setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
-
-		Intent mainIntent = new Intent(context, StartupActivity.class);
+		Intent mainIntent = null;
+		if (to.equals(IdentityController.getLoggedInUser()) && id == IntentRequestCodes.NEW_MESSAGE_NOTIFICATION) {
+			SurespotLog.v(TAG, "user already logged in, going directly to chat activity");
+			mainIntent = new Intent(context, ChatActivity.class);
+			mainIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		}
+		else {
+			mainIntent = new Intent(context, StartupActivity.class);
+		}
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, type);
+		stackBuilder.addNextIntent(new Intent(context, FriendActivity.class));
 		stackBuilder.addNextIntent(mainIntent);
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -160,13 +171,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		if (pm.getBoolean(getString(R.string.pref_notifications_led), false)) {
+		if (pm.getBoolean(getString(R.string.pref_notifications_led), true)) {
 			notification.defaults |= Notification.DEFAULT_LIGHTS;
 		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_sound), false)) {
+		if (pm.getBoolean(getString(R.string.pref_notifications_sound), true)) {
 			notification.defaults |= Notification.DEFAULT_SOUND;
 		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), false)) {
+		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), true)) {
 			notification.defaults |= Notification.DEFAULT_VIBRATE;
 		}
 

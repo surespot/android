@@ -166,7 +166,7 @@ public class StartupActivity extends Activity {
 				newIntent = new Intent(this, ChatActivity.class);
 				newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
 				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-				// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 			}
 			else {
 				SurespotLog.v(TAG, "need different user, starting Login activity");
@@ -185,7 +185,7 @@ public class StartupActivity extends Activity {
 			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 				SurespotLog.v(TAG, "send action, starting home activity so user can select recipient");
 				newIntent = new Intent(this, FriendActivity.class);
-				// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				newIntent.setAction(action);
 				newIntent.setType(type);
 				newIntent.putExtras(intent);
@@ -197,7 +197,6 @@ public class StartupActivity extends Activity {
 					if (!messageTo.equals(user)) {
 						SurespotLog.v(TAG, "need different user, starting Login activity");
 						newIntent = new Intent(this, LoginActivity.class);
-						// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
 						newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE,
 								SurespotConstants.IntentFilters.INVITE_NOTIFICATION);
@@ -207,10 +206,12 @@ public class StartupActivity extends Activity {
 					// we saved a chat name so load the chat activity with that name
 					String lastName = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT);
 					if (lastName != null && user != null) {
+						// build back stack to login screen for consistency
+
 						SurespotLog.v(TAG, "starting chat activity based on LAST_CHAT name");
 						newIntent = new Intent(this, ChatActivity.class);
 						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
-						// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 					}
 				}
 			}
@@ -222,6 +223,7 @@ public class StartupActivity extends Activity {
 			}
 			else {
 				newIntent = new Intent(this, FriendActivity.class);
+				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 			}
 		}
 

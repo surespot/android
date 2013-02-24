@@ -40,8 +40,8 @@ import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.SettingsActivity;
+import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -264,7 +264,7 @@ public class FriendActivity extends SherlockActivity {
 				if (jsonArray.length() > 0) {
 
 					mMainAdapter.refreshActiveChats();
-					// mMainAdapter.clearFriends(false);
+					mMainAdapter.clearFriends(false);
 					mMainAdapter.addFriends(jsonArray);
 
 					// compute new message deltas
@@ -456,7 +456,7 @@ public class FriendActivity extends SherlockActivity {
 			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
 				@Override
 				public void handleResponse(Boolean result) {
-					Intent intent = new Intent(FriendActivity.this, LoginActivity.class);
+					Intent intent = new Intent(FriendActivity.this, StartupActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 					FriendActivity.this.startActivity(intent);
 					Utils.putSharedPrefsString(FriendActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
@@ -476,4 +476,10 @@ public class FriendActivity extends SherlockActivity {
 
 	}
 
+	@Override
+	protected void onDestroy() {
+
+		super.onDestroy();
+		SurespotLog.v(TAG, "onDestroy");
+	}
 }

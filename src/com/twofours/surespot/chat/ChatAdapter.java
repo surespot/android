@@ -44,6 +44,7 @@ public class ChatAdapter extends BaseAdapter {
 				// pull the message out
 				if (message != null) {
 					Intent newIntent = new Intent(mContext, ImageViewActivity.class);
+					newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
 					mContext.startActivity(newIntent);
 				}

@@ -24,7 +24,7 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -398,21 +398,29 @@ public class IdentityController {
 	}
 
 	public static void logout(final Context context, final IAsyncCallback<Boolean> callback) {
+
+		SurespotApplication.getChatController().logout();
+		SurespotApplication.getCachingService().logout();
 		SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, String content) {
-				SurespotApplication.getCachingService().logout();
-				// Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 
-				callback.handleResponse(true);
+				//
+
+				if (callback != null) {
+					callback.handleResponse(true);
+				}
 			}
 
 			@Override
 			public void onFailure(Throwable error, String content) {
 				SurespotLog.w(TAG, "logout onFailure", error);
-				callback.handleResponse(false);
+				if (callback != null) {
+					callback.handleResponse(false);
+				}
 			}
 		});
+
 	}
 
 	/**
@@ -458,7 +466,7 @@ public class IdentityController {
 			// delete identities locally?
 
 			// boot them out
-			Intent intent = new Intent(context, LoginActivity.class);
+			Intent intent = new Intent(context, StartupActivity.class);
 			intent.putExtra("revoked", true);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			context.startActivity(intent);

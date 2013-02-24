@@ -71,7 +71,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 													if (response.getResultSuccess()) {
 														// if launched from signup and successful import, go to login screen
 														if (mSignup) {
-															Intent intent = new Intent(ImportIdentityActivity.this, LoginActivity.class);
+															IdentityController.logout(ImportIdentityActivity.this, null);
+															Intent intent = new Intent(ImportIdentityActivity.this, StartupActivity.class);
 															intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 															startActivity(intent);
 														}

@@ -1,6 +1,7 @@
 package com.twofours.surespot.chat;
 
 import android.content.Intent;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -59,25 +60,40 @@ public class ChatFragment extends SherlockFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mChatController = SurespotApplication.getChatController();
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		super.onCreateView(inflater, container, savedInstanceState);
 
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
 		SurespotLog.v(TAG, "onCreate, username: " + mUsername);
 
-		if (getView() != null) {
-			getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
-			mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-		}
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
+		//
+
 		mListView = (ListView) view.findViewById(R.id.message_list);
-		mListView.setAdapter(mChatController.getChatAdapter(this.getSherlockActivity().getBaseContext(), mUsername));
+		final ChatAdapter chatAdapter = mChatController.getChatAdapter(this.getSherlockActivity().getBaseContext(), mUsername);
+
+		// listen for first change then set empty list view
+		chatAdapter.registerDataSetObserver(new DataSetObserver() {
+			@Override
+			public void onChanged() {
+				view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+				if (chatAdapter.getCount() == 0) {
+					view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+				}
+				// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+				chatAdapter.unregisterDataSetObserver(this);
+			}
+		});
+		mListView.setAdapter(chatAdapter);
 		mListView.setDividerHeight(1);
-		mListView.setEmptyView(view.findViewById(R.id.progressBar));
+		// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+		view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+		view.findViewById(R.id.message_list_empty).setVisibility(View.GONE);
+		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 
 		Button sendButton = (Button) view.findViewById(R.id.bSend);
 		sendButton.setOnClickListener(new View.OnClickListener() {
@@ -134,7 +150,7 @@ public class ChatFragment extends SherlockFragment {
 					}
 				}
 
-				if (!mLoading && !mNoEarlierMessages && firstVisibleItem <= 10) {
+				if (!mLoading && mChatController.hasEarlierMessages(mUsername) && firstVisibleItem <= 10) {
 					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
 					// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
 					// firstVisibleItem
@@ -160,10 +176,6 @@ public class ChatFragment extends SherlockFragment {
 
 		Utils.logIntent(TAG, getActivity().getIntent());
 
-		if (isVisible()) {
-			SurespotLog.v(TAG, "onResume " + mUsername + " visible");
-			requestFocus();
-		}
 	}
 
 	@Override
@@ -176,7 +188,9 @@ public class ChatFragment extends SherlockFragment {
 
 	public void onDestroy() {
 		super.onDestroy();
-	};
+		SurespotLog.v(TAG, "onDestroy");
+
+	}
 
 	private void sendMessage() {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));

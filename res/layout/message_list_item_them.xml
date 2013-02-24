@@ -35,7 +35,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:layout_marginTop="2dp"           
+            android:layout_marginTop="2dp"
+            android:textColor="@android:color/black"
             android:textSize="12sp"
             android:visibility="visible" />
 
@@ -47,6 +48,7 @@
             android:layout_marginLeft="2dp"
             android:layout_marginRight="55dp"
             android:autoLink="all"
+            android:textColor="@android:color/black"
             android:textSize="16sp"
             android:visibility="gone" >
         </TextView>
@@ -57,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"            
+            android:layout_marginRight="2dp"
             android:adjustViewBounds="true"
             android:visibility="gone" />
     </LinearLayout>
