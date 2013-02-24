@@ -88,7 +88,10 @@ public class StateController {
 		String filename = getFilename(MESSAGE_IDS);
 		if (filename != null) {
 			if (messageIds != null && messageIds.size() > 0) {
-				writeFile(filename, mapToJsonString(messageIds));
+				String smessageIds = mapToJsonString(messageIds);
+				writeFile(filename, smessageIds);
+				SurespotLog.v(TAG, "saved messageIds: " + smessageIds);
+
 			}
 			else {
 				new File(filename).delete();
@@ -161,7 +164,7 @@ public class StateController {
 	}
 
 	private static void writeFile(String filename, String data) {
-		SurespotLog.v(TAG, "writeFile, " + filename + ": " + data);
+		SurespotLog.v(TAG, "writeFile, " + filename + ": " + data.substring(0, data.length() > 100 ? 100 : data.length()));
 		FileOutputStream fos;
 		try {
 			fos = new FileOutputStream(filename);

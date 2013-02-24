@@ -1,18 +1,9 @@
 package com.twofours.surespot.chat;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -28,25 +19,19 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatFragment extends SherlockFragment {
-	private ChatAdapter mChatAdapter;
+	private String TAG = "ChatFragment";
+	private ChatController mChatController;
 	private String mUsername;
 	private ListView mListView;
-	private String TAG = "ChatFragment";
 	private EditText mEditText;
-	private BroadcastReceiver mSocketConnectionStatusReceiver;
-	private IAsyncCallback<Boolean> mLatestMessageHandler;
 	private boolean mLoading;
 	private int mPreviousTotal;
 	private boolean mNoEarlierMessages = false;
@@ -72,43 +57,17 @@ public class ChatFragment extends SherlockFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		SurespotLog.v(TAG, "onCreate");
+		mChatController = SurespotApplication.getChatController();
 
-		mChatAdapter = new ChatAdapter(getActivity());
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
+		SurespotLog.v(TAG, "onCreate, username: " + mUsername);
 
-		Utils.logIntent(TAG, getActivity().getIntent());
-
-		// load messages from local storage
-		loadMessages();
-
-		mLatestMessageHandler = new IAsyncCallback<Boolean>() {
-
-			@Override
-			public void handleResponse(Boolean result) {
-				// TODO Auto-generated method stub
-				if (getActivity() != null) {
-					// mEditText.requestFocus();
-					// TODO move "last viewed" logic to ChatActivity
-					String lastMessageId = getLatestMessageId();
-					if (lastMessageId != null) {
-						((ChatActivity) getActivity()).updateLastViewedMessageId(mUsername, Integer.parseInt(lastMessageId));
-					}
-
-					if (getView() != null) {
-						getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
-						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-					}
-					mChatAdapter.notifyDataSetChanged();
-				}
-			}
-		};
-
-		SurespotLog.v(TAG, "onCreate, username: " + mUsername + ", messageCount: " + mChatAdapter.getCount());
-
+		if (getView() != null) {
+			getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
+			mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+		}
 	}
 
 	@Override
@@ -116,7 +75,7 @@ public class ChatFragment extends SherlockFragment {
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
-		mListView.setAdapter(mChatAdapter);
+		mListView.setAdapter(mChatController.getChatAdapter(this.getSherlockActivity().getBaseContext(), mUsername));
 		mListView.setDividerHeight(1);
 		mListView.setEmptyView(view.findViewById(R.id.progressBar));
 
@@ -124,7 +83,7 @@ public class ChatFragment extends SherlockFragment {
 		sendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendTextMessage();
+				sendMessage();
 			}
 		});
 		mEditText = (EditText) view.findViewById(R.id.etMessage);
@@ -134,7 +93,7 @@ public class ChatFragment extends SherlockFragment {
 				boolean handled = false;
 				if (actionId == EditorInfo.IME_ACTION_SEND) {
 					//
-					sendTextMessage();
+					sendMessage();
 					handled = true;
 				}
 				return handled;
@@ -161,21 +120,6 @@ public class ChatFragment extends SherlockFragment {
 			}
 		}
 
-		// if the connection status changed we need to reload any messages we missed, without showing a progress dialog
-		// (sshh)
-
-		mSocketConnectionStatusReceiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				boolean connected = intent.getBooleanExtra(SurespotConstants.ExtraNames.CONNECTED, false);
-				if (connected) {
-					getLatestMessages(mLatestMessageHandler);
-
-				}
-			}
-		};
-
 		// listen to scroll changes
 		mListView.setOnScrollListener(new OnScrollListener() {
 
@@ -196,7 +140,7 @@ public class ChatFragment extends SherlockFragment {
 					// firstVisibleItem
 					// + ", visibleItemCount: " + visibleItemCount);
 					mLoading = true;
-					getEarlierMessages();
+					mChatController.loadEarlierMessages(mUsername);
 
 				}
 			}
@@ -216,24 +160,6 @@ public class ChatFragment extends SherlockFragment {
 
 		Utils.logIntent(TAG, getActivity().getIntent());
 
-		// reget the messages in case any were added while we were gone
-		SurespotLog.v(TAG, "onResume, mUsername:  " + mUsername);
-		SurespotLog.v(TAG, "message count: " + mChatAdapter.getCount());
-
-		LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(mSocketConnectionStatusReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.SOCKET_CONNECTION_STATUS_CHANGED));
-
-		// make sure the public key is there
-		// TODO move this into network controller
-
-		// if the socket is connected, load new messages
-		// if it's not connected we'll load them when it connects
-		// ChatActivity chatActivity = (ChatActivity) getActivity();
-
-		// if (chatActivity.chatConnected()) {
-		getLatestMessages(mLatestMessageHandler);
-		// }
-
 		if (isVisible()) {
 			SurespotLog.v(TAG, "onResume " + mUsername + " visible");
 			requestFocus();
@@ -244,213 +170,21 @@ public class ChatFragment extends SherlockFragment {
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
-		LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(mSocketConnectionStatusReceiver);
-		saveMessages();
+		// mChatController.saveMessages(mUsername);
 		// mChatAdapter.evictCache();
 	}
 
-	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		SurespotLog.v(TAG, "onDestroy");
-	}
+	};
 
-	private void getLatestMessages(final IAsyncCallback<Boolean> callback) {
-
-		// get the list of messages
-		String lastMessageId = getLatestMessageId();
-
-		SurespotLog.v(TAG, "Asking server for messages after messageId: " + lastMessageId);
-		SurespotApplication.getNetworkController().getMessages(mUsername, lastMessageId, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONArray jsonArray) {
-				// on async http request, response seems to come back
-				// after app is destroyed sometimes
-				// (ie. on rotation on gingerbread)
-				// so check for null here
-				SherlockFragmentActivity activity = getSherlockActivity();
-
-				if (activity != null) {
-					SurespotMessage message = null;
-
-					for (int i = 0; i < jsonArray.length(); i++) {
-						try {
-							JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-							message = SurespotMessage.toSurespotMessage(jsonMessage);
-
-							// if it's a system message from another user then check version
-							if (message.getType().equals("system")) {
-								if (message.getSubType().equals("revoke")
-										&& !message.getFrom().equals(IdentityController.getLoggedInUser())) {
-									IdentityController.updateLatestVersion(activity, message.getFrom(), message.getFromVersion());
-								}
-							}
-							else {
-								mChatAdapter.addOrUpdateMessage(message, false);
-							}
-						}
-						catch (JSONException e) {
-							SurespotLog.w(TAG, "Error creating chat message: " + e.toString(), e);
-						}
-
-					}
-
-					SurespotLog.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
-
-					if (callback != null) {
-						callback.handleResponse(true);
-					}
-
-				}
-			}
-
-			@Override
-			public void onFailure(Throwable error, String content) {
-				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
-					SurespotLog.w(TAG, "getMessages", error);
-
-					if (callback != null) {
-						callback.handleResponse(false);
-					}
-
-					// TODO only show for visible fragment
-					// Utils.makeToast(ChatFragment.this.getActivity(), "Could not load messages, please try again later.");
-				}
-			}
-		});
-	}
-
-	private void getEarlierMessages() {
-
-		mLoading = true;
-		// get the list of messages
-		String firstMessageId = getEarliestMessageId();
-
-		if (firstMessageId != null) {
-			// TODO make all the ints #s
-			if (Integer.parseInt(firstMessageId) > 1) {
-				SurespotLog.v(TAG, "Asking server for messages before messageId: " + firstMessageId);
-				SurespotApplication.getNetworkController().getEarlierMessages(mUsername, firstMessageId, new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(JSONArray jsonArray) {
-						// on async http request, response seems to come back
-						// after app is destroyed sometimes
-						// (ie. on rotation on gingerbread)
-						// so check for null here
-
-						if (getActivity() != null) {
-							SurespotMessage message = null;
-							try {
-								for (int i = jsonArray.length() - 1; i >= 0; i--) {
-									JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-									message = SurespotMessage.toSurespotMessage(jsonMessage);
-
-									// if it's a system message ignore it
-									if (message.getType().equals("user")) {
-										mChatAdapter.insertMessage(message, false);
-									}
-
-								}
-							}
-							catch (JSONException e) {
-								SurespotLog.e(TAG, "Error creating chat message: " + e.toString(), e);
-							}
-
-							SurespotLog.v(TAG, "loaded: " + jsonArray.length() + " messages from the server.");
-
-							mChatAdapter.notifyDataSetChanged();
-
-						}
-					}
-
-					@Override
-					public void onFailure(Throwable error, String content) {
-						if (!SurespotApplication.getNetworkController().isUnauthorized()) {
-							SurespotLog.w(TAG, "getEarlierMessages", error);
-						}
-					}
-				});
-			}
-			else {
-				SurespotLog.v(TAG, "getEarlierMessages: no more messages.");
-				ChatFragment.this.mNoEarlierMessages = true;
-			}
-		}
-	}
-
-	public String getLatestMessageId() {
-		SurespotMessage lastMessage = mChatAdapter.getLastMessageWithId();
-		String lastMessageId = null;
-
-		if (lastMessage != null) {
-			lastMessageId = lastMessage.getId();
-		}
-		return lastMessageId;
-
-	}
-
-	public String getEarliestMessageId() {
-		SurespotMessage firstMessage = mChatAdapter.getFirstMessageWithId();
-		String firstMessageId = null;
-
-		if (firstMessage != null) {
-			firstMessageId = firstMessage.getId();
-		}
-		return firstMessageId;
-	}
-
-	private void sendTextMessage() {
+	private void sendMessage() {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
 		final String message = etMessage.getText().toString();
-		sendMessage(message, SurespotConstants.MimeTypes.TEXT);
+		mChatController.sendMessage(mUsername, message, SurespotConstants.MimeTypes.TEXT);
 
 		// TODO only clear on success
 		TextKeyListener.clear(etMessage.getText());
-	}
-
-	private void sendMessage(final String plainText, final String mimeType) {
-		if (plainText.length() > 0) {
-			new AsyncTask<Void, Void, SurespotMessage>() {
-
-				@Override
-				protected SurespotMessage doInBackground(Void... arg0) {
-
-					String[] result = EncryptionController.symmetricEncrypt(IdentityController.getOurLatestVersion(), mUsername,
-							IdentityController.getTheirLatestVersion(mUsername), plainText);
-
-					if (result != null) {
-						SurespotMessage chatMessage = ChatUtils.buildMessage(mUsername, mimeType, plainText, result[0], result[1]);
-						return chatMessage;
-					}
-
-					return null;
-				}
-
-				protected void onPostExecute(SurespotMessage result) {
-					if (result != null) {
-						mChatAdapter.addOrUpdateMessage(result, true);
-						if (getActivity() != null) {
-							((ChatActivity) getActivity()).sendMessage(result);
-						}
-					}
-				};
-			}.execute();
-		}
-	}
-
-	public void addMessage(final SurespotMessage message) {
-		SurespotLog.v(TAG, "addMessage: " + message.getTo());
-		mChatAdapter.addOrUpdateMessage(message, true);
-	}
-
-	private void saveMessages() {
-		// save last 30? messages
-		SurespotApplication.getStateController().saveMessages(mUsername, mChatAdapter.getMessages());
-	}
-
-	private void loadMessages() {
-		// SurespotLog.v(TAG, "Loaded: " + messages.size() + " messages from local storage.");
-		mChatAdapter.addMessages(SurespotApplication.getStateController().loadMessages(mUsername));
 	}
 
 	// populate the edit box

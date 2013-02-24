@@ -2,12 +2,10 @@ package com.twofours.surespot.chat;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -41,60 +39,17 @@ public class ChatActivity extends SherlockFragmentActivity {
 	private ChatPagerAdapter mPagerAdapter;
 	private ViewPager mViewPager;
 	private BroadcastReceiver mMessageBroadcastReceiver;
-	private HashMap<String, Integer> mLastViewedMessageIds;
 	private ChatController mChatController;
 
 	private TitlePageIndicator mIndicator;
-	private NotificationManager mNotificationManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		SurespotLog.v(TAG, "onCreate");
 
-		mChatController = new ChatController(new IConnectCallback() {
+		mChatController = SurespotApplication.getChatController();
 
-			@Override
-			public void connectStatus(boolean status) {
-				if (status) {
-
-					// get the resend messages
-					SurespotMessage[] resendMessages = mChatController.getResendMessages();
-					for (SurespotMessage message : resendMessages) {
-						// set the last received id so the server knows which messages to check
-						String room = message.getOtherUser();
-
-						// ideally get the last id from the fragment's chat adapter
-						String lastMessageID = null;
-						ChatFragment cf = getChatFragment(ChatUtils.getOtherUser(message.getFrom(), message.getTo()));
-						if (cf != null) {
-							lastMessageID = cf.getLatestMessageId();
-						}
-
-						// failing that use the last viewed id
-						if (lastMessageID == null) {
-							Object oId = mLastViewedMessageIds.get(room);
-							if (oId != null) {
-								lastMessageID = oId.toString();
-							}
-						}
-
-						// last option, check last x messages for dupes
-						if (lastMessageID == null) {
-							lastMessageID = "-1";
-						}
-						SurespotLog.v(TAG, "setting resendId, room: " + room + ", id: " + lastMessageID);
-						message.setResendId(lastMessageID);
-						mChatController.sendMessage(message);
-
-					}
-				}
-				else {
-					SurespotLog.w(TAG, "Could not connect to chat server.");
-				}
-
-			}
-		});
 		setContentView(R.layout.activity_chat);
 
 		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
@@ -107,7 +62,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
 
-		// get the chats
+		// get the tabs
 
 		boolean foundChat = false;
 		ArrayList<String> chatNames = SurespotApplication.getStateController().loadActiveChats();
@@ -138,22 +93,23 @@ public class ChatActivity extends SherlockFragmentActivity {
 		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
+				SurespotLog.v(TAG, "onPageSelected, position: " + position);
 				String name = mPagerAdapter.getChatName(position);
-				// actionBar.setTitle(name);
-				if (mLastViewedMessageIds != null) {
-					SurespotLog.v(TAG, "onPageSelected name: " + name + ", pos: " + position);
-					updateLastViewedMessageId(name);
+				mChatController.setCurrentChat(name);
 
-					// getChatFragment(name).requestFocus();
-
-				}
 			}
-
 		});
 		mViewPager.setOffscreenPageLimit(2);
 
 		if (name != null) {
-			mViewPager.setCurrentItem(mPagerAdapter.getChatFragmentPosition(name));
+			int wantedPosition = mPagerAdapter.getChatFragmentPosition(name);
+			if (wantedPosition != mViewPager.getCurrentItem()) {
+				mViewPager.setCurrentItem(wantedPosition);
+			}
+			// mChatController.setCurrentChat(name);
+		}
+		else {
+			mChatController.setCurrentChat(getCurrentChatName());
 		}
 
 		// register for notifications
@@ -166,11 +122,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 				try {
 					JSONObject messageJson = new JSONObject(sMessage);
 					SurespotMessage message = SurespotMessage.toSurespotMessage(messageJson);
-					sendMessageToFragment(message);
+					// sendMessageToFragment(message);
 
 					// update last visited id for message
 					String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
-					updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
+					// updateLastViewedMessageId(otherUser, messageJson.getInt("id"));
 					mPagerAdapter.addChatName(otherUser);
 					mIndicator.notifyDataSetChanged();
 				}
@@ -180,46 +136,6 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 			}
 		};
-
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	}
-
-	private void sendMessageToFragment(SurespotMessage message) {
-		String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
-		ChatFragment cf = getChatFragment(otherUser);
-		// fragment might be null if user hasn't opened this chat
-		if (cf != null) {
-			cf.addMessage(message);
-		}
-		else {
-			SurespotLog.v(TAG, "Fragment null");
-		}
-
-	}
-
-	public void updateLastViewedMessageId(String name) {
-		ChatFragment cf = getChatFragment(name);
-		if (cf != null) {
-			String sLastMessageId = cf.getLatestMessageId();
-			SurespotLog.v(TAG, "updating lastViewedMessageId for " + name + " to: " + sLastMessageId);
-			if (sLastMessageId != null) {
-				mLastViewedMessageIds.put(name, Integer.parseInt(sLastMessageId));
-				mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), name),
-						SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-			}
-		}
-	}
-
-	public void updateLastViewedMessageId(String name, int lastMessageId) {
-		SurespotLog.v(TAG, "Received lastMessageId: " + lastMessageId + " for " + name);
-		if (name.equals(getCurrentChatName())) {
-			SurespotLog.v(TAG, "The tab is visible so updating lastViewedMessageId for " + name + " to: " + lastMessageId);
-			mLastViewedMessageIds.put(name, lastMessageId);
-
-			// if we viewed a message we should probably remove the associated notifications
-			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), name),
-					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-		}
 	}
 
 	@Override
@@ -230,10 +146,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
-		mLastViewedMessageIds = SurespotApplication.getStateController().loadLastViewMessageIds();
-
-		mChatController.loadUnsentMessages();
-		mChatController.connect();
+		mChatController.onResume(true);
 	}
 
 	@Override
@@ -241,39 +154,17 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		super.onPause();
 		SurespotLog.v(TAG, "onPause");
+		mChatController.onPause();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
 
-		mChatController.disconnect();
-		mChatController.saveUnsentMessages();
-		mChatController.destroy();
-
-		// save chat names
+		// save open tabs
 		SurespotApplication.getStateController().saveActiveChats(mPagerAdapter.getChatNames());
 
-		// store chats the user went into
-		SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
-
-		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChatName());
-
-		// cancel any message notifications for the currently showing tab
-		if (IdentityController.getLoggedInUser() != null) {
-			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), getCurrentChatName()),
-					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-		}
-	}
-
-	private ChatFragment getChatFragment(String roomName) {
-		String tag = mPagerAdapter.getFragmentTag(roomName);
-
-		SurespotLog.v(TAG, "Fragment tag: " + tag);
-
-		if (tag != null) {
-
-			ChatFragment cf = (ChatFragment) getSupportFragmentManager().findFragmentByTag(tag);
-			return cf;
-		}
-		return null;
-
+		// // cancel any message notifications for the currently showing tab
+		// if (IdentityController.getLoggedInUser() != null && mCurrentChat != null) {
+		// mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), mCurrentChat),
+		// SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+		// }
 	}
 
 	@Override
@@ -387,7 +278,10 @@ public class ChatActivity extends SherlockFragmentActivity {
 			mPagerAdapter.removeChat(position, true);
 			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
-			updateLastViewedMessageId(name);
+			// mChatController.setCurrentChat(name);
+
+			// if they explicitly close the tab, remove the adapter
+			mChatController.destroyChatAdapter(name);
 			mIndicator.notifyDataSetChanged();
 		}
 	}
@@ -424,12 +318,4 @@ public class ChatActivity extends SherlockFragmentActivity {
 		}
 	}
 
-	public void sendMessage(SurespotMessage message) {
-		mChatController.sendMessage(message);
-
-	}
-
-	public boolean chatConnected() {
-		return mChatController.isConnected();
-	}
 }

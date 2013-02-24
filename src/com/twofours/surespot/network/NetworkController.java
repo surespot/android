@@ -295,7 +295,7 @@ public class NetworkController {
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public void getMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
+	public void getMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
 
 		if (id == null) {
 			get("/messages/" + room, null, responseHandler);
@@ -306,7 +306,7 @@ public class NetworkController {
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public void getEarlierMessages(String room, String id, AsyncHttpResponseHandler responseHandler) {
+	public void getEarlierMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
 		get("/messages/" + room + "/before/" + id, null, responseHandler);
 	}
 

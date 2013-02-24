@@ -45,7 +45,6 @@ import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.IConnectCallback;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -74,15 +73,7 @@ public class FriendActivity extends SherlockActivity {
 		Utils.logIntent(TAG, getIntent());
 		Utils.configureActionBar(this, null, null, false);
 
-		mChatController = new ChatController(new IConnectCallback() {
-
-			@Override
-			public void connectStatus(boolean status) {
-				if (!status) {
-					SurespotLog.w(TAG, "Could not connect to chat server.");
-				}
-			}
-		});
+		mChatController = SurespotApplication.getChatController();
 		setContentView(R.layout.activity_friend);
 		mLastViewedMessageIds = new HashMap<String, Integer>();
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
@@ -262,7 +253,7 @@ public class FriendActivity extends SherlockActivity {
 
 		}
 
-		mChatController.connect();
+		mChatController.onResume(false);
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getFriends(new JsonHttpResponseHandler() {
@@ -388,8 +379,7 @@ public class FriendActivity extends SherlockActivity {
 		SurespotApplication.getStateController().saveActiveChats(mMainAdapter.getActiveChats());
 		// Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
 
-		mChatController.disconnect();
-		mChatController.destroy();
+		mChatController.onPause();
 	}
 
 	private void inviteFriend() {

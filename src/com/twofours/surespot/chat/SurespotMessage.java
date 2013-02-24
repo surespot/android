@@ -20,8 +20,8 @@ public class SurespotMessage {
 	private String mIv;
 	private String mCipherData;
 	private String mPlainData;
-	private String mId;
-	private String mResendId;
+	private Integer mId;
+	private Integer mResendId;
 	private String mMimeType;
 	private int mHeight;
 	private Date mDateTime;
@@ -79,19 +79,19 @@ public class SurespotMessage {
 		mPlainData = plainText;
 	}
 
-	public String getId() {
+	public Integer getId() {
 		return mId;
 	}
 
-	public void setId(String id) {
+	public void setId(Integer id) {
 		mId = id;
 	}
 
-	public String getResendId() {
+	public Integer getResendId() {
 		return mResendId;
 	}
 
-	public void setResendId(String resendId) {
+	public void setResendId(Integer resendId) {
 		this.mResendId = resendId;
 	}
 
@@ -142,8 +142,8 @@ public class SurespotMessage {
 
 		SurespotMessage chatMessage = new SurespotMessage();
 
-		String id = jsonMessage.optString("id");
-		if (id != null && !id.isEmpty()) {
+		Integer id = jsonMessage.optInt("id");
+		if (id != null) {
 			chatMessage.setId(id);
 		}
 		chatMessage.setType(jsonMessage.getString("type"));
@@ -157,8 +157,8 @@ public class SurespotMessage {
 		chatMessage.setHeight(jsonMessage.optInt("height"));
 		chatMessage.setToVersion(jsonMessage.optString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.optString("fromVersion"));
-		String resendId = jsonMessage.optString("resendId");
-		if (resendId != null && !resendId.isEmpty()) {
+		Integer resendId = jsonMessage.optInt("resendId");
+		if (resendId != null) {
 			chatMessage.setResendId(resendId);
 		}
 

@@ -77,6 +77,8 @@ public class CredentialCachingService extends Service {
 
 			@Override
 			public byte[] load(SharedSecretKey key) throws Exception {
+				SurespotLog.v(TAG, "loadSharedSecret, ourVersion: " + key.getOurVersion() + ", theirUsername: " + key.getTheirUsername()
+						+ ", theirVersion: " + key.getTheirVersion());
 
 				PublicKey publicKey = mPublicIdentities.get(
 						new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
@@ -113,8 +115,6 @@ public class CredentialCachingService extends Service {
 
 	public byte[] getSharedSecret(String ourVersion, String theirUsername, String theirVersion) {
 		// get the cache for this user
-		SurespotLog.v(TAG, "getSharedSecret, ourVersion: " + ourVersion + ", theirUsername: " + theirUsername + ", theirVersion: "
-				+ theirVersion);
 		try {
 			return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername,
 					theirVersion)));

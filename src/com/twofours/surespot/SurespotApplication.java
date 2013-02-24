@@ -16,6 +16,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.NetworkController;
@@ -30,6 +31,7 @@ public class SurespotApplication extends Application {
 	private static StateController mStateController;
 	private static Context mContext;
 	private static Intent mStartupIntent;
+	private static ChatController mChatController;
 
 	private static final int CORE_POOL_SIZE = 5;
 	private static final int MAXIMUM_POOL_SIZE = 20;
@@ -100,6 +102,14 @@ public class SurespotApplication extends Application {
 
 	public static void setStartupIntent(Intent startupIntent) {
 		mStartupIntent = startupIntent;
+	}
+
+	public static void setChatController(ChatController chatController) {
+		mChatController = chatController;
+	}
+
+	public static ChatController getChatController() {
+		return mChatController;
 	}
 
 }

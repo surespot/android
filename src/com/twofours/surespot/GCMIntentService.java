@@ -21,6 +21,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.activities.StartupActivity;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -109,6 +110,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String from = intent.getStringExtra("sentfrom");
 
 		if (type.equals("message")) {
+			// if the chat is currently showing don't show a notification
+			// TODO setting for this
+			if (IdentityController.hasLoggedInUser() && ChatController.getTrackChat() && !ChatController.isPaused() && from.equals(ChatController.getCurrentChat())) {
+				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
+				return;
+			}
+
 			String spot = ChatUtils.getSpot(from, to);
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, "surespot", to + ": new message from " + from, spot,
 					IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);

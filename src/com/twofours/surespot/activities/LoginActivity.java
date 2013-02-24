@@ -29,12 +29,10 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
-import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.friends.FriendActivity;
 
 public class LoginActivity extends SherlockActivity {
 
@@ -153,7 +151,8 @@ public class LoginActivity extends SherlockActivity {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
-								nextActivity();
+								setResult(RESULT_OK);
+								finish();
 							}
 
 							@Override
@@ -188,35 +187,6 @@ public class LoginActivity extends SherlockActivity {
 				};
 			}.execute();
 		}
-	}
-
-	private void nextActivity() {
-		// if we have a chat name, we may have started from a
-		// message, so in that case
-		// go straight to the chat now we've logged in
-		String notificationType = getIntent().getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
-		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
-			Intent intent = new Intent(this, ChatActivity.class);
-			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, getIntent()
-					.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM));
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			this.startActivity(intent);
-		}
-		else {
-			Intent intent = new Intent(this, FriendActivity.class);
-			String action = getIntent().getAction();
-			String type = getIntent().getType();
-
-			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-				intent.setAction(action);
-				intent.setType(type);
-				intent.putExtras(getIntent());
-			}
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			this.startActivity(intent);
-		}
-
-		finish();
 	}
 
 	@Override
