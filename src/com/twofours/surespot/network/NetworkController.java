@@ -459,7 +459,6 @@ public class NetworkController {
 
 			};
 		}.execute();
-
 	}
 
 	public InputStream getFileStream(Context context, final String url) {
@@ -474,34 +473,19 @@ public class NetworkController {
 			if (response.getStatusLine().getStatusCode() == 200) {
 				return resEntity.getContent();
 			}
-
 		}
 
 		catch (Exception e) {
 			SurespotLog.w(TAG, "getFileStream", e);
 
 		}
-
 		return null;
-
 	}
 
-	public void logout(final AsyncHttpResponseHandler responseHandler) {
+	public void logout() {
 		post("/logout", null, new AsyncHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, String content) {
-				setUnauthorized(true);
-
-				responseHandler.onSuccess(statusCode, content);
-			}
-
-			@Override
-			public void onFailure(Throwable error, String content) {
-				responseHandler.onFailure(error, content);
-			}
-
 		});
-
+		setUnauthorized(true);
 	}
 
 	public void clearCache() {

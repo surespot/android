@@ -66,7 +66,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		// if we don't have an intent, see if we have saved chat
 		if (name == null) {
-			name = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT);
+			name = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 		}
 
 		mPagerAdapter = new ChatPagerAdapter(getSupportFragmentManager());
@@ -201,16 +201,11 @@ public class ChatActivity extends SherlockFragmentActivity {
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
 			return true;
 		case R.id.menu_logout:
-			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
-				@Override
-				public void handleResponse(Boolean result) {
-					Intent intent = new Intent(ChatActivity.this, StartupActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					ChatActivity.this.startActivity(intent);
-					Utils.putSharedPrefsString(ChatActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
-					finish();
-				}
-			});
+			IdentityController.logout();
+			intent = new Intent(ChatActivity.this, StartupActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			ChatActivity.this.startActivity(intent);
+			finish();
 
 			return true;
 		default:

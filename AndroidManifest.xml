@@ -55,7 +55,7 @@
 
         <activity
             android:name="com.twofours.surespot.activities.StartupActivity"
-            android:label="@string/title_activity_main"       
+            android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -84,13 +84,7 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
-            android:label="@string/title_activity_signup" 
-            >
-            <intent-filter>
-                <action android:name="com.twofours.surespot.activities.SignupActivity" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+            android:label="@string/title_activity_signup" >
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.LoginActivity"
@@ -98,13 +92,11 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.friends.FriendActivity"
-            android:windowSoftInputMode="stateHidden" 
-              android:launchMode="singleTop">
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.chat.ChatActivity"
-            android:windowSoftInputMode="stateHidden" 
-              android:launchMode="singleTop">
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>
@@ -130,12 +122,14 @@
         <activity android:name="com.twofours.surespot.activities.ImportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ImportIdentityActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name="com.twofours.surespot.activities.ManageKeysActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

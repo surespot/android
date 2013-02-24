@@ -30,17 +30,15 @@
             <intent android:action="com.twofours.surespot.activities.ExportIdentityActivity" >
             </intent>
         </Preference>
-        <Preference android:title="@string/create_identity_label" >
-            <intent android:action="com.twofours.surespot.activities.SignupActivity" >
-            </intent>
+        <Preference
+            android:key="@string/pref_create_identity"
+            android:title="@string/create_identity_label" >
         </Preference>
-    	<Preference android:title="@string/key_management" >
+        <Preference android:title="@string/key_management" >
             <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
             </intent>
-        </Preference>    
+        </Preference>
     </PreferenceCategory>
-    
-    
     <PreferenceCategory android:title="cache management" >
         <Preference
             android:key="pref_clear_local_cache"

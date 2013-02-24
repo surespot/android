@@ -616,8 +616,10 @@ public class ChatController {
 		}
 
 		// TODO save per user?
-		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
-		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+		if (mCurrentChat != null) {
+			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+		}
 
 	}
 
@@ -701,18 +703,18 @@ public class ChatController {
 			if (!creating) {
 				loadLatestMessages(username);
 			}
-			else {
-				new AsyncTask<Void, Void, Void>() {
-					protected Void doInBackground(Void... params) {
-						// get the key going
-						final String ourVersion = IdentityController.getOurLatestVersion();
-						final String theirVersion = IdentityController.getTheirLatestVersion(username);
-
-						SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
-						return null;
-					}
-				}.execute();
-			}
+			// else {
+			// new AsyncTask<Void, Void, Void>() {
+			// protected Void doInBackground(Void... params) {
+			// // get the key going
+			// final String ourVersion = IdentityController.getOurLatestVersion();
+			// final String theirVersion = IdentityController.getTheirLatestVersion(username);
+			//
+			// // SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
+			// return null;
+			// }
+			// }.execute();
+			// }
 		}
 
 	}
@@ -840,7 +842,8 @@ public class ChatController {
 		mTrackChat = false;
 		// mLastViewedMessageIds.clear();
 		mChatAdapters.clear();
-		// mCurrentChat = null;
+		mCurrentChat = null;
+		Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.LAST_CHAT, null);
 	}
 
 }

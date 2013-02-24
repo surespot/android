@@ -49,7 +49,6 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendActivity extends SherlockActivity {
 	private FriendAdapter mMainAdapter;
@@ -452,23 +451,18 @@ public class FriendActivity extends SherlockActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent intent;
 		switch (item.getItemId()) {
 		case R.id.menu_logout:
-			IdentityController.logout(this, new IAsyncCallback<Boolean>() {
-				@Override
-				public void handleResponse(Boolean result) {
-					Intent intent = new Intent(FriendActivity.this, StartupActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-					FriendActivity.this.startActivity(intent);
-					Utils.putSharedPrefsString(FriendActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
-					finish();
-				}
-			});
-
+			IdentityController.logout();
+			intent = new Intent(FriendActivity.this, StartupActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+			FriendActivity.this.startActivity(intent);
+			Utils.putSharedPrefsString(FriendActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
+			finish();
 			return true;
-
 		case R.id.menu_settings:
-			Intent intent = new Intent(this, SettingsActivity.class);
+			intent = new Intent(this, SettingsActivity.class);
 			startActivityForResult(intent, REQUEST_SETTINGS);
 			return true;
 		default:

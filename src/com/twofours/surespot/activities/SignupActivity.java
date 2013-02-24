@@ -156,7 +156,8 @@ public class SignupActivity extends SherlockActivity {
 																protected void onPostExecute(Void result) {
 																	// SurespotApplication.getUserData().setUsername(username);
 																	Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
-																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+																			| Intent.FLAG_ACTIVITY_NEW_TASK);
 																	startActivity(intent);
 																	mMpd.decrProgress();
 																	finish();

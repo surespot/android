@@ -175,11 +175,18 @@ public class IdentityController {
 
 	public static void userLoggedIn(Context context, String username, String password, Cookie cookie) {
 		setLoggedInUser(context, username, password, cookie);
+
 	}
 
 	private synchronized static void setLoggedInUser(Context context, String username, String password, Cookie cookie) {
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, username);
 		SurespotApplication.getCachingService().login(username, password, cookie);
+	}
+
+	public static void logout() {
+		SurespotApplication.getChatController().logout();
+		SurespotApplication.getCachingService().logout();
+		SurespotApplication.getNetworkController().logout();
 	}
 
 	public static SurespotIdentity getIdentity(String username) {
@@ -394,32 +401,6 @@ public class IdentityController {
 		else {
 			callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity).toString(), false));
 		}
-
-	}
-
-	public static void logout(final Context context, final IAsyncCallback<Boolean> callback) {
-
-		SurespotApplication.getChatController().logout();
-		SurespotApplication.getCachingService().logout();
-		SurespotApplication.getNetworkController().logout(new AsyncHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, String content) {
-
-				//
-
-				if (callback != null) {
-					callback.handleResponse(true);
-				}
-			}
-
-			@Override
-			public void onFailure(Throwable error, String content) {
-				SurespotLog.w(TAG, "logout onFailure", error);
-				if (callback != null) {
-					callback.handleResponse(false);
-				}
-			}
-		});
 
 	}
 

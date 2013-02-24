@@ -1,5 +1,6 @@
 package com.twofours.surespot.activities;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -72,6 +73,23 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 						};
 
 					}.execute();
+					return true;
+
+				}
+			});
+
+			Preference createIdentityPref = findPreference(getString(R.string.pref_create_identity));
+			createIdentityPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+
+					// logout and start signup activity
+					IdentityController.logout();
+					Intent intent = new Intent(SettingsActivity.this, SignupActivity.class);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+					startActivity(intent);
+					finish();
 					return true;
 
 				}

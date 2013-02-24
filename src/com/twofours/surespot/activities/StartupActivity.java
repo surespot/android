@@ -50,7 +50,7 @@ public class StartupActivity extends Activity {
 
 			// make sure these are there so startup code can execute
 			SurespotApplication.setCachingService(mCredentialCachingService);
-			SurespotApplication.setNetworkController(new NetworkController(StartupActivity.this));
+			SurespotApplication.setNetworkController(new NetworkController(getApplicationContext()));
 			SurespotApplication.setChatController(new ChatController(getApplicationContext()));
 			startup();
 		}
@@ -214,7 +214,7 @@ public class StartupActivity extends Activity {
 				}
 				else {
 					// we saved a chat name so load the chat activity with that name
-					String lastName = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT);
+					String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 					if (lastName != null && user != null) {
 						// build back stack to login screen for consistency
 						TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
