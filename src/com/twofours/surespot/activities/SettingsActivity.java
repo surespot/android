@@ -92,7 +92,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					// by launching the startup activity with a create extra
 					Intent intent = new Intent(SettingsActivity.this, StartupActivity.class);
 					intent.putExtra("create", true);
-					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					startActivity(intent);
 					finish();
 					return true;
