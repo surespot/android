@@ -82,23 +82,29 @@ public class StartupActivity extends Activity {
 
 		// NetworkController.unregister(this, regId);
 		Intent intent = getIntent();
-		// if we have any users or we've used the signup intent to workaround can't clear back stack insanity
-		if (IdentityController.hasIdentity() || intent.getBooleanExtra("signup", false)) {
+		// if we have any users or we don't need to create a user, figure out if we need to login
+		if (IdentityController.hasIdentity() && !intent.getBooleanExtra("create", false)) {
 
 			// if we have a current user we're logged in
 			String user = IdentityController.getLoggedInUser();
 
 			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 			String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+			
+			SurespotLog.v(TAG, "user: " + user);
+			SurespotLog.v(TAG, "type: " + notificationType);
+			SurespotLog.v(TAG, "messageTo: " + messageTo);
 
 			// if we have a message to the currently logged in user, set the from and start the chat activity
 			if ((user == null)
-					|| (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType) || (SurespotConstants.IntentFilters.INVITE_REQUEST
-							.equals(notificationType) || (SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType))
-							&& (!messageTo.equals(user))))) {
+					|| (intent.getBooleanExtra("401", false))
+					|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_REQUEST
+							.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType))
+							&& (!messageTo.equals(user)))) {
 
 				SurespotLog.v(TAG, "need a (different) user, showing login");
 				Intent newIntent = new Intent(this, LoginActivity.class);
+				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
 				startActivityForResult(newIntent, SurespotConstants.IntentRequestCodes.LOGIN);
 			}
 			else {
@@ -111,6 +117,7 @@ public class StartupActivity extends Activity {
 			SurespotLog.v(TAG, "starting signup activity");
 			Intent newIntent = new Intent(this, SignupActivity.class);
 			// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
 			startActivity(newIntent);
 			// finish();
 		}
@@ -121,7 +128,7 @@ public class StartupActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 		if (requestCode == SurespotConstants.IntentRequestCodes.LOGIN && resultCode == RESULT_OK) {
-			launch(data);
+			launch(SurespotApplication.getStartupIntent());
 		}
 	}
 
@@ -161,10 +168,26 @@ public class StartupActivity extends Activity {
 
 		Intent newIntent = null;
 		String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
-		// if we have a message to the currently logged in user, or we don't need to pick someone to send to, set the from and start the
-		// chat activity
-		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
-				|| (!Intent.ACTION_SEND.equals(action) && lastName != null)) {
+
+		// if we're coming from an invite notification, or we need to send to someone
+		// then display friends
+		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
+				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)
+				|| (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
+
+			newIntent = new Intent(this, FriendActivity.class);
+
+			// if we're sending, set the type
+			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+				newIntent.setAction(action);
+				newIntent.setType(type);
+			}
+
+			startActivity(newIntent);
+		}
+
+		// message received show chat activity for user
+		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
 
 			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
 
@@ -172,12 +195,8 @@ public class StartupActivity extends Activity {
 			stackBuilder.addParentStack(FriendActivity.class);
 
 			newIntent = new Intent(this, ChatActivity.class);
-			if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
-				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-			}
-			else {
-				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
-			}
+			newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
+		
 			// newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 			stackBuilder.addNextIntent(newIntent);
@@ -185,21 +204,22 @@ public class StartupActivity extends Activity {
 			// finish();
 
 		}
-		else {
-			newIntent = new Intent(this, FriendActivity.class);
+
+		// fall through
+		if (newIntent == null) {
+			if (lastName == null) {
+
+				newIntent = new Intent(this, FriendActivity.class);
+				startActivity(newIntent);
+			}
+			else {
+				newIntent = new Intent(this, ChatActivity.class);
+				startActivity(newIntent);
+			}
+
 		}
 
-		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-			newIntent.setAction(action);
-			newIntent.setType(type);
-
-			// newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-			newIntent.putExtras(intent);
-		}
-
-		newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		startActivity(newIntent);
-		finish();
+		// finish();
 	}
 
 	@Override

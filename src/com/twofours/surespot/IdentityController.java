@@ -49,6 +49,8 @@ public class IdentityController {
 
 		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, username, password, cookie);
+
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_CHAT, null);
 	}
 
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
