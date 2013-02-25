@@ -1,7 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.util.Set;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -83,31 +81,38 @@ public class StartupActivity extends Activity {
 		}
 
 		// NetworkController.unregister(this, regId);
-
-		// if we have any users
-		if (IdentityController.hasIdentity()) {
+		Intent intent = getIntent();
+		// if we have any users or we've used the signup intent to workaround can't clear back stack insanity
+		if (IdentityController.hasIdentity() || intent.getBooleanExtra("signup", false)) {
 
 			// if we have a current user we're logged in
 			String user = IdentityController.getLoggedInUser();
 
-			// if we don't have a user, start login activity
+			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+			String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
-			if (user != null) {
-				launch();
-			}
-			else {
-				SurespotLog.v(TAG, "don't have a logged in user, showing login");
+			// if we have a message to the currently logged in user, set the from and start the chat activity
+			if ((user == null)
+					|| (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType) || (SurespotConstants.IntentFilters.INVITE_REQUEST
+							.equals(notificationType) || (SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType))
+							&& (!messageTo.equals(user))))) {
+
+				SurespotLog.v(TAG, "need a (different) user, showing login");
 				Intent newIntent = new Intent(this, LoginActivity.class);
 				startActivityForResult(newIntent, SurespotConstants.IntentRequestCodes.LOGIN);
 			}
+			else {
+				launch(getIntent());
+			}
+
 		}
 		// otherwise show the signup activity
 		else {
 			SurespotLog.v(TAG, "starting signup activity");
-			Intent intent = new Intent(this, SignupActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
-			finish();
+			Intent newIntent = new Intent(this, SignupActivity.class);
+			// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(newIntent);
+			// finish();
 		}
 
 	}
@@ -116,23 +121,11 @@ public class StartupActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 		if (requestCode == SurespotConstants.IntentRequestCodes.LOGIN && resultCode == RESULT_OK) {
-			launch();
+			launch(data);
 		}
 	}
 
-	private void launch() {
-		Intent intent = getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();
-		Bundle extras = intent.getExtras();
-		Set<String> categories = intent.getCategories();
-		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
-		String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
-
-		Intent newIntent = null;
-
-		String user = IdentityController.getLoggedInUser();
+	private void launch(Intent intent) {
 
 		NetworkController networkController = SurespotApplication.getNetworkController();
 		if (networkController != null) {
@@ -156,91 +149,52 @@ public class StartupActivity extends Activity {
 				public void onFailure(Throwable arg0, String arg1) {
 					SurespotLog.e(TAG, arg0.toString(), arg0);
 				}
-
 			});
 		}
 
-		// if we have a message to the currently logged in user, set the from and start the chat activity
-		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
-			if (messageTo.equals(user)) {
-				SurespotLog.v(TAG, "found chat name, starting chat activity: " + messageTo);
+		String action = intent.getAction();
+		String type = intent.getType();
 
-				TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-				stackBuilder.addParentStack(FriendActivity.class);
+		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+		String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-				newIntent = new Intent(this, ChatActivity.class);
+		Intent newIntent = null;
+		String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
+		// if we have a message to the currently logged in user, or we don't need to pick someone to send to, set the from and start the
+		// chat activity
+		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+				|| (!Intent.ACTION_SEND.equals(action) && lastName != null)) {
 
-				newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
+			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
+
+			TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+			stackBuilder.addParentStack(FriendActivity.class);
+
+			newIntent = new Intent(this, ChatActivity.class);
+			if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
 				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-				stackBuilder.addNextIntent(newIntent);
-				stackBuilder.startActivities();
-				finish();
 			}
 			else {
-				SurespotLog.v(TAG, "need different user, starting Login activity");
-				// identity but no session, login
-				newIntent = new Intent(this, LoginActivity.class);
-				SurespotLog.v(TAG, "setting message to, " + messageFrom + ", from: " + messageTo);
-				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
-				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-				newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, notificationType);
-				// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
 			}
+			// newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+			stackBuilder.addNextIntent(newIntent);
+			stackBuilder.startActivities();
+			// finish();
 
 		}
 		else {
-			// we have a send action so start friend activity so user can pick someone to send to
-			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-				SurespotLog.v(TAG, "send action, starting home activity so user can select recipient");
-				newIntent = new Intent(this, FriendActivity.class);
-				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-				newIntent.setAction(action);
-				newIntent.setType(type);
-				newIntent.putExtras(intent);
-			}
-			else {
-				if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
-						|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
-
-					if (!messageTo.equals(user)) {
-						SurespotLog.v(TAG, "need different user, starting Login activity");
-						newIntent = new Intent(this, LoginActivity.class);
-						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
-						newIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE,
-								SurespotConstants.IntentFilters.INVITE_NOTIFICATION);
-					}
-				}
-				else {
-					// we saved a chat name so load the chat activity with that name
-					String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
-					if (lastName != null && user != null) {
-						// build back stack to login screen for consistency
-						TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-						stackBuilder.addParentStack(FriendActivity.class);
-
-						SurespotLog.v(TAG, "starting chat activity based on LAST_CHAT name");
-						newIntent = new Intent(this, ChatActivity.class);
-						newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, lastName);
-						newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-						stackBuilder.addNextIntent(newIntent);
-						stackBuilder.startActivities();
-						finish();
-					}
-				}
-			}
+			newIntent = new Intent(this, FriendActivity.class);
 		}
 
-		if (newIntent == null) {
-			if (user == null) {
-				newIntent = new Intent(this, LoginActivity.class);
-			}
-			else {
-				newIntent = new Intent(this, FriendActivity.class);
-				newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-			}
+		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+			newIntent.setAction(action);
+			newIntent.setType(type);
+
+			// newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
+			newIntent.putExtras(intent);
 		}
 
 		newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

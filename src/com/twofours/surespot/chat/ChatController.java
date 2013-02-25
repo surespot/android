@@ -839,6 +839,8 @@ public class ChatController {
 	}
 
 	public synchronized void logout() {
+		// saveState();
+
 		mTrackChat = false;
 		// mLastViewedMessageIds.clear();
 		mChatAdapters.clear();

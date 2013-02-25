@@ -83,10 +83,15 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
-
+					SurespotLog.v(TAG, "create identity click..logging out");
 					// logout and start signup activity
 					IdentityController.logout();
-					Intent intent = new Intent(SettingsActivity.this, SignupActivity.class);
+
+					// work around back stack insanity:
+					// http://stackoverflow.com/questions/3007998/on-logout-clear-activity-history-stack-preventing-back-button-from-opening-l
+					// by launching the startup activity with a create extra
+					Intent intent = new Intent(SettingsActivity.this, StartupActivity.class);
+					intent.putExtra("create", true);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 					startActivity(intent);
 					finish();

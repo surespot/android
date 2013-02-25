@@ -151,7 +151,8 @@ public class LoginActivity extends SherlockActivity {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
-								setResult(RESULT_OK);
+
+								setResult(RESULT_OK, getIntent());
 								finish();
 							}
 
