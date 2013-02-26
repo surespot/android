@@ -142,23 +142,32 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 
 		SurespotMessage chatMessage = new SurespotMessage();
 
-		Integer id = jsonMessage.optInt("id");
-		if (id != null) {
-			chatMessage.setId(id);
-		}
+		
 		chatMessage.setType(jsonMessage.getString("type"));
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
+		chatMessage.setIv(jsonMessage.getString("iv"));
 		
 		chatMessage.setCipherData(jsonMessage.optString("data", null));
-		chatMessage.setSubType(jsonMessage.optString("subtype"));
-		chatMessage.setMimeType(jsonMessage.optString("mimeType"));
-		chatMessage.setIv(jsonMessage.optString("iv"));
-		chatMessage.setHeight(jsonMessage.optInt("height"));
-		chatMessage.setToVersion(jsonMessage.optString("toVersion"));
-		chatMessage.setFromVersion(jsonMessage.optString("fromVersion"));
+		chatMessage.setSubType(jsonMessage.optString("subtype", null));
+		chatMessage.setMimeType(jsonMessage.optString("mimeType", null));
+		
+		chatMessage.setToVersion(jsonMessage.optString("toVersion",null));
+		chatMessage.setFromVersion(jsonMessage.optString("fromVersion",null));
+		
+		Integer id = jsonMessage.optInt("id");
+		if (id > 0) {
+			chatMessage.setId(id);
+		}
+		
+		Integer height = jsonMessage.optInt("resendId");
+		if (height > 0) {
+			chatMessage.setHeight(jsonMessage.optInt("height"));
+		}
+	
+
 		Integer resendId = jsonMessage.optInt("resendId");
-		if (resendId != null) {
+		if (resendId > 0) {
 			chatMessage.setResendId(resendId);
 		}
 
@@ -176,7 +185,9 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		try {
 			message.put("type", this.getType());
 			message.put("to", this.getTo());
-			message.put("from", this.getFrom());
+			message.put("from", this.getFrom());			
+			message.put("iv", this.getIv());
+			
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
@@ -195,9 +206,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			if (this.getMimeType() != null) {
 				message.put("mimeType", this.getMimeType());
 			}
-			if (this.getIv() != null) {
-				message.put("iv", this.getIv());
-			}
+		
 
 			if (this.getToVersion() != null) {
 				message.put("toVersion", this.getToVersion());
@@ -223,6 +232,28 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	}
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((mCipherData == null) ? 0 : mCipherData.hashCode());
+		result = prime * result + ((mDateTime == null) ? 0 : mDateTime.hashCode());
+		result = prime * result + ((mFrom == null) ? 0 : mFrom.hashCode());
+		result = prime * result + ((mFromVersion == null) ? 0 : mFromVersion.hashCode());
+		result = prime * result + mHeight;
+		result = prime * result + ((mId == null) ? 0 : mId.hashCode());
+		result = prime * result + ((mIv == null) ? 0 : mIv.hashCode());
+		result = prime * result + (mLoading ? 1231 : 1237);
+		result = prime * result + ((mMimeType == null) ? 0 : mMimeType.hashCode());
+		result = prime * result + ((mPlainData == null) ? 0 : mPlainData.hashCode());
+		result = prime * result + ((mResendId == null) ? 0 : mResendId.hashCode());
+		result = prime * result + ((mSubtype == null) ? 0 : mSubtype.hashCode());
+		result = prime * result + ((mTo == null) ? 0 : mTo.hashCode());
+		result = prime * result + ((mToVersion == null) ? 0 : mToVersion.hashCode());
+		result = prime * result + ((mType == null) ? 0 : mType.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
 			return false;
@@ -242,9 +273,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		}
 	}
 
-	public int hashCode() {
-		return this.getCipherData().hashCode() + this.getFrom().hashCode() + this.getTo().hashCode();
-	}
+
 
 	public String getMimeType() {
 		return mMimeType;

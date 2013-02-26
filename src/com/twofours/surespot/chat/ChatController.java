@@ -223,7 +223,8 @@ public class ChatController {
 							else {
 								if (message.getSubType().equals("delete")) {
 									String otherUser = message.getOtherUser();
-									mChatAdapters.get(otherUser).deleteMessage(Integer.parseInt(message.getIv()));									
+									mChatAdapters.get(otherUser).deleteMessage(Integer.parseInt(message.getIv()));
+									checkAndSendNextMessage(message);
 								}
 							}
 						}
