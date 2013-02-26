@@ -442,7 +442,7 @@ public class IdentityController {
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
 
-		byte[] identityBytes = createIdentityBytes(identity, password);
+		byte[] identityBytes = createIdentityBytes(identity, password + CACHE_IDENTITY_ID);
 
 		String idFile = saveIdentity(identityDir, identity.getUsername(), identityBytes);
 		String idFileBackup = saveIdentity(identityDir, identity.getUsername() + "_backup", identityBytes);
@@ -473,10 +473,11 @@ public class IdentityController {
 			StateController.wipeState(context, username);
 
 			// delete identities locally?
+			SurespotApplication.getNetworkController().setUnauthorized(true);
 
 			// boot them out
 			Intent intent = new Intent(context, StartupActivity.class);
-			intent.putExtra("revoked", true);
+			intent.putExtra("401", true);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			context.startActivity(intent);
 

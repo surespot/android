@@ -21,6 +21,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
@@ -33,12 +34,14 @@ import com.twofours.surespot.network.IAsyncCallback;
 public class ManageKeysActivity extends SherlockActivity {
 	private static final String TAG = "ManageKeysActivity";
 	private List<String> mIdentityNames;
+	private MultiProgressDialog mMpd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage_keys);
 		Utils.configureActionBar(this, "settings", "keys", true);
+		mMpd =  new MultiProgressDialog(this, "generating and uploading new keys", 750);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
@@ -93,8 +96,25 @@ public class ManageKeysActivity extends SherlockActivity {
 	}
 
 	private void rollKeys(final String username, final String password) {
+		
+		mMpd.incrProgress();
+		SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
+
+		if (identity == null) {
+			mMpd.decrProgress();
+			Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
+			return;
+		}
+
+		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
+		
+		// create auth sig
+		final String authSignature = EncryptionController.sign(pk, username, password);
+		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
+
+		
 		// get a key update token from the server
-		SurespotApplication.getNetworkController().getKeyToken(new JsonHttpResponseHandler() {
+		SurespotApplication.getNetworkController().getKeyToken(username, password, authSignature, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, final JSONObject response) {
 
@@ -109,23 +129,10 @@ public class ManageKeysActivity extends SherlockActivity {
 							SurespotLog.v(TAG, "received key token: " + keyToken);
 							keyVersion = response.getString("keyversion");
 						}
-						catch (JSONException e) {
-							Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
+						catch (JSONException e) {							
 							return null;
-						}
-
-						SurespotIdentity identity = IdentityController.getIdentity(ManageKeysActivity.this, username, password);
-
-						if (identity == null) {
-							return null;
-						}
-
-						PrivateKey pk = identity.getKeyPairDSA().getPrivate();
-
-						// create auth sig
-						final String authSignature = EncryptionController.sign(pk, username, password);
-						SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
-
+						}				
+					
 						// create token sig
 						final String tokenSignature = EncryptionController.sign(pk, Base64.decode(keyToken.getBytes(), Base64.DEFAULT),
 								password.getBytes());
@@ -138,7 +145,6 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						return new RollKeysWrapper(keys, tokenSignature, authSignature, keyVersion);
-
 					}
 
 					protected void onPostExecute(final RollKeysWrapper result) {
@@ -152,18 +158,21 @@ public class ManageKeysActivity extends SherlockActivity {
 											// save the key pairs
 											IdentityController.rollKeys(ManageKeysActivity.this, username, password, result.keyVersion,
 													result.keyPairs[0], result.keyPairs[1]);
+											mMpd.decrProgress();
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));
 										};
 
 										@Override
 										public void onFailure(Throwable error, String content) {
 											SurespotLog.w(TAG, "rollKeys", error);
+											mMpd.decrProgress();
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 
 										}
 									});
 						}
 						else {
+							mMpd.decrProgress();
 							Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 						}
 
@@ -174,6 +183,7 @@ public class ManageKeysActivity extends SherlockActivity {
 
 			@Override
 			public void onFailure(Throwable error, String content) {
+				mMpd.decrProgress();
 				Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 
 			}

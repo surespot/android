@@ -207,8 +207,12 @@ public class NetworkController {
 
 	}
 
-	public void getKeyToken(JsonHttpResponseHandler jsonHttpResponseHandler) {
-		get("/keytoken", null, jsonHttpResponseHandler);
+	public void getKeyToken(final String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("authSig", authSignature);
+		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature,

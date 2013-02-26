@@ -102,19 +102,19 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
-				//socket.io returns 403 for can't login
+				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					SurespotApplication.getNetworkController().setUnauthorized(true);
-				
+
 					SurespotLog.v(TAG, "Got 403 from socket.io, launching login intent.");
 					Intent intent = new Intent(mContext, StartupActivity.class);
 					intent.putExtra("401", true);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					mContext.startActivity(intent);
-					
+
 					return;
 				}
-				
+
 				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
 						socketIOException);
 
@@ -298,7 +298,7 @@ public class ChatController {
 		try {
 			HashMap<String, String> headers = new HashMap<String, String>();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
-			socket = new SocketIO( SurespotConfiguration.getBaseUrl(),  headers);
+			socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
 			socket.connect(mSocketCallback);
 		}
 		catch (Exception e) {
@@ -359,7 +359,7 @@ public class ChatController {
 			sendMessage(message);
 
 		}
-		
+
 		// reset read since reconnect flags
 		for (String chat : mReadSinceReconnect.keySet()) {
 			mReadSinceReconnect.put(chat, false);
@@ -522,7 +522,7 @@ public class ChatController {
 
 						// if it's a system message from another user then check version
 						if (message.getType().equals("system")) {
-							if (message.getSubType().equals("revoke") && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+							if (message.getSubType().equals("revoke")) {
 								IdentityController.updateLatestVersion(mContext, message.getFrom(), message.getFromVersion());
 							}
 						}
@@ -616,24 +616,25 @@ public class ChatController {
 	}
 
 	private void saveState() {
+
 		SurespotLog.v(TAG, "saveState");
+		if (IdentityController.hasLoggedInUser()) {
+			saveUnsentMessages();
 
-		saveUnsentMessages();
+			saveMessages();
+			// store chats the user went into
 
-		saveMessages();
-		// store chats the user went into
+			if (!mLastViewedMessageIds.isEmpty()) {
+				SurespotLog.v(TAG, "saving last viewed message ids");
+				SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
+			}
 
-		if (!mLastViewedMessageIds.isEmpty()) {
-			SurespotLog.v(TAG, "saving last viewed message ids");
-			SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
+			// TODO save per user?
+			if (mTrackChat && mCurrentChat != null) {
+				SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+				Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+			}
 		}
-
-		// TODO save per user?
-		if (mTrackChat && mCurrentChat != null) {
-			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
-			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-		}
-
 	}
 
 	private void loadState() {
@@ -852,12 +853,13 @@ public class ChatController {
 	}
 
 	public synchronized void logout() {
-		// saveState();
+		
 
 		mTrackChat = false;
 		// mLastViewedMessageIds.clear();
 		mChatAdapters.clear();
 		mCurrentChat = null;
+		saveState();
 		Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.LAST_CHAT, null);
 	}
 
