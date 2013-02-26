@@ -35,7 +35,7 @@ public class ChatFragment extends SherlockFragment {
 	private EditText mEditText;
 	private boolean mLoading;
 	private int mPreviousTotal;
-	private DataSetObserver mDataSetObserver;
+	private boolean mDataLoaded;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -68,7 +68,7 @@ public class ChatFragment extends SherlockFragment {
 
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
-		SurespotLog.v(TAG, "onCreate, username: " + mUsername);
+		SurespotLog.v(TAG, "onCreateView, username: " + mUsername);
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		//
@@ -78,39 +78,23 @@ public class ChatFragment extends SherlockFragment {
 
 		// listen for first change then set empty list view
 
-		mDataSetObserver = new DataSetObserver() {
-			@Override
-			public void onChanged() {
-				if (mDataSetObserver != null) {
-					view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+		if (!mDataLoaded) {
+			chatAdapter.registerDataSetObserver(new DataSetObserver() {
+				@Override
+				public void onChanged() {
+					if (!mDataLoaded) {
+						mDataLoaded = true;
 
-					mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-					// // view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-					//
-					// // else {
-					// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-
-					// if i do this without starting a new thread in gingerbread i get concurrentmodificationexception
-					Runnable unsubscribe = new Runnable() {
-
-						@Override
-						public void run() {
-							if (mDataSetObserver != null) {
-								
-								chatAdapter.unregisterDataSetObserver(mDataSetObserver);
-								mDataSetObserver = null;
-								
-							}
-						}
-					};
-					SurespotApplication.THREAD_POOL_EXECUTOR.execute(unsubscribe);
+						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+						mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+						// // view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+						//
+						// // else {
+						// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+					}					
 				}
-
-			}
-		};
-		// // }
-
-		chatAdapter.registerDataSetObserver(mDataSetObserver);
+			});
+		}
 
 		mListView.setAdapter(chatAdapter);
 		mListView.setDividerHeight(1);
