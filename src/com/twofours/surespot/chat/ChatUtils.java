@@ -43,6 +43,7 @@ public class ChatUtils {
 
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
+		chatMessage.setType("message");
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
@@ -59,6 +60,7 @@ public class ChatUtils {
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
+		chatMessage.setType("message");
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);

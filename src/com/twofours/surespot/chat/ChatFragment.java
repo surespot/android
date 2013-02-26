@@ -13,6 +13,9 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -22,6 +25,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.ImageViewActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -73,9 +77,39 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		//
 
-		mListView = (ListView) view.findViewById(R.id.message_list);
 		final ChatAdapter chatAdapter = mChatController.getChatAdapter(this.getSherlockActivity().getBaseContext(), mUsername);
 
+		mListView = (ListView) view.findViewById(R.id.message_list);
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+			
+				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
+
+				// pull the message out
+				if (message != null) {
+					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+						Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
+						newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+						ChatFragment.this.getActivity().startActivity(newIntent);
+					}
+				}
+
+				// TODO Auto-generated method stub
+
+			}
+		});
+		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
+				mChatController.deleteMessage(mUsername, message.getId());
+				return true;
+			}
+		});
 		// listen for first change then set empty list view
 
 		if (!mDataLoaded) {
@@ -91,7 +125,7 @@ public class ChatFragment extends SherlockFragment {
 						//
 						// // else {
 						// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-					}					
+					}
 				}
 			});
 		}

@@ -6,10 +6,8 @@ import java.util.Collections;
 import java.util.ListIterator;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -18,7 +16,6 @@ import android.widget.TextView;
 import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.ImageViewActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 
@@ -30,26 +27,10 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
-	private OnClickListener mOnImageClickListener;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
-		mContext = context;
-		mOnImageClickListener = new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// tag should be set to the download task
-				SurespotMessage message = (SurespotMessage) v.getTag();
-
-				// pull the message out
-				if (message != null) {
-					Intent newIntent = new Intent(mContext, ImageViewActivity.class);
-					newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
-					mContext.startActivity(newIntent);
-				}
-			}
-		};
+		mContext = context;		
 
 	}
 
@@ -81,10 +62,6 @@ public class ChatAdapter extends BaseAdapter {
 		}
 		return null;
 	}
-
-	// public void setMessages(ArrayList<ChatMessage> messages) {
-	// mMessages = messages;
-	// }
 
 	// update the id and sent status of the message once we received
 	private void addOrUpdateMessage(SurespotMessage message) {
@@ -125,14 +102,6 @@ public class ChatAdapter extends BaseAdapter {
 			// notifyDataSetChanged();
 		}
 	}
-
-	//
-	// public void clearMessages(boolean notify) {
-	// mMessages.clear();
-	// if (notify) {
-	// notifyDataSetChanged();
-	// }
-	// }
 
 	@Override
 	public int getCount() {
@@ -186,12 +155,11 @@ public class ChatAdapter extends BaseAdapter {
 				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
 				break;
 			}
-
-			// chatMessageViewHolder.tvUser = (TextView) convertView.findViewById(R.id.messageUser);
+		
 			chatMessageViewHolder.tvTime = (TextView) convertView.findViewById(R.id.messageTime);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
-			chatMessageViewHolder.imageView.setOnClickListener(mOnImageClickListener);
+
 
 			convertView.setTag(chatMessageViewHolder);
 		}
@@ -275,4 +243,16 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
+	public void deleteMessage(Integer id) {
+		SurespotMessage message = null;		
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+			message = iterator.previous();
+		
+			if (message.getId() == id) {
+				iterator.remove();
+				notifyDataSetChanged();
+				break;	
+			}
+		}					
+	}
 }

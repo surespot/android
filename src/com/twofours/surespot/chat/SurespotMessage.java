@@ -11,7 +11,7 @@ import com.twofours.surespot.common.SurespotLog;
  * @author adam
  * 
  */
-public class SurespotMessage implements Comparable {
+public class SurespotMessage implements Comparable<SurespotMessage> {
 	private static final String TAG = "SurespotMessage";
 	private String mType;
 	private String mSubtype;
@@ -149,8 +149,8 @@ public class SurespotMessage implements Comparable {
 		chatMessage.setType(jsonMessage.getString("type"));
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
+		
 		chatMessage.setCipherData(jsonMessage.optString("data", null));
-
 		chatMessage.setSubType(jsonMessage.optString("subtype"));
 		chatMessage.setMimeType(jsonMessage.optString("mimeType"));
 		chatMessage.setIv(jsonMessage.optString("iv"));
@@ -174,27 +174,44 @@ public class SurespotMessage implements Comparable {
 		JSONObject message = new JSONObject();
 
 		try {
+			message.put("type", this.getType());
+			message.put("to", this.getTo());
+			message.put("from", this.getFrom());
+
 			if (this.getId() != null) {
 				message.put("id", this.getId());
 			}
 
-			message.put("type", this.getType());
-			message.put("subtype", this.getSubType());
-			message.put("to", this.getTo());
-			message.put("from", this.getFrom());
+			if (this.getSubType() != null) {
+				message.put("subtype", this.getSubType());
+			}
+			if (this.getCipherData() != null) {
+				message.put("data", this.getCipherData());
+			}
 
-			message.put("data", this.getCipherData());
+			if (this.getResendId() != null) {
+				message.put("resendId", this.getResendId());
+			}
+			if (this.getMimeType() != null) {
+				message.put("mimeType", this.getMimeType());
+			}
+			if (this.getIv() != null) {
+				message.put("iv", this.getIv());
+			}
 
-			message.put("resendId", this.getResendId());
-			message.put("mimeType", this.getMimeType());
-			message.put("iv", this.getIv());
-			message.put("toVersion", this.getToVersion());
-			message.put("fromVersion", this.getFromVersion());
+			if (this.getToVersion() != null) {
+				message.put("toVersion", this.getToVersion());
+			}
+			if (this.getFromVersion() != null) {
+				message.put("fromVersion", this.getFromVersion());
+			}
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
+			if (this.getHeight() > 0) {
 
-			message.put("height", this.getHeight());
+				message.put("height", this.getHeight());
+			}
 
 			return message;
 		}
@@ -286,10 +303,10 @@ public class SurespotMessage implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object arg0) {
+	public int compareTo(SurespotMessage another) {
 
 		Integer thisId = this.getId();
-		Integer rhsId = ((SurespotMessage) arg0).getId();
+		Integer rhsId = another.getId();
 
 		if (thisId == rhsId)
 			return 0;

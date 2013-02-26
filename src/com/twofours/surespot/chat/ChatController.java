@@ -207,29 +207,36 @@ public class ChatController {
 
 					// TODO check who from
 					try {
-						SurespotMessage cm = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
+						SurespotMessage message = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
 
 						// check the type
-						if (cm.getType().equals("system")) {
+						if (message.getType().equals("system")) {
 							// revoke the cert
-							if (cm.getSubType().equals("revoke")) {
-								String username = cm.getFrom();
-								String version = cm.getFromVersion();
+							if (message.getSubType().equals("revoke")) {
+								String username = message.getFrom();
+								String version = message.getFromVersion();
 
 								// this will force download of key
 								IdentityController.updateLatestVersion(SurespotApplication.getContext(), username, version);
 							}
+							
+							else {
+								if (message.getSubType().equals("delete")) {
+									String otherUser = message.getOtherUser();
+									mChatAdapters.get(otherUser).deleteMessage(Integer.parseInt(message.getIv()));									
+								}
+							}
 						}
 						else {
 							sendMessageReceived((String) args[0]);
-							ChatAdapter chatAdapter = mChatAdapters.get(cm.getOtherUser());
+							ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
 							if (chatAdapter != null) {
-								chatAdapter.addOrUpdateMessage(cm, true);
+								chatAdapter.addOrUpdateMessage(message, true);
 
 							}
 
-							updateLastViewedMessageId(cm.getOtherUser(), cm.getId());
-							checkAndSendNextMessage(cm);
+							updateLastViewedMessageId(message.getOtherUser(), message.getId());
+							checkAndSendNextMessage(message);
 						}
 					}
 					catch (JSONException e) {
@@ -525,6 +532,11 @@ public class ChatController {
 							if (message.getSubType().equals("revoke")) {
 								IdentityController.updateLatestVersion(mContext, message.getFrom(), message.getFromVersion());
 							}
+							else {
+								if (message.getSubType().equals("delete")) {
+									chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));								
+								}
+							}
 						}
 						else {
 							chatAdapter.addOrUpdateMessage(message, false);
@@ -803,7 +815,7 @@ public class ChatController {
 								message = SurespotMessage.toSurespotMessage(jsonMessage);
 
 								// if it's a system message ignore it
-								if (message.getType().equals("user")) {
+								if (message.getType().equals("message")) {
 									chatAdapter.insertMessage(message, false);
 								}
 
@@ -861,6 +873,18 @@ public class ChatController {
 		mCurrentChat = null;
 		saveState();
 		Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.LAST_CHAT, null);
+	}
+
+	public void deleteMessage(String username, Integer id) {
+		// TODO Auto-generated method stub
+		SurespotMessage message = new SurespotMessage();
+		message.setType("system");
+		message.setSubType("delete");
+		message.setTo(username);
+		message.setFrom(IdentityController.getLoggedInUser());
+		message.setIv(id.toString());
+		
+		sendMessage(message);
 	}
 
 }
