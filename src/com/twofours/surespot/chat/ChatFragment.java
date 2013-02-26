@@ -218,33 +218,25 @@ public class ChatFragment extends SherlockFragment {
 				final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
 				Utils.makeToast(getActivity(), getString(R.string.uploading_image));
-				Runnable runnable = new Runnable() {
+
+				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
+				final FragmentActivity activity = getActivity();
+				ChatUtils.uploadPictureMessageAsync(activity, imageUri, mUsername, true, null, new IAsyncCallback<Boolean>() {
 
 					@Override
-					public void run() {
-						SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
-						final FragmentActivity activity = getActivity();
-						ChatUtils.uploadPictureMessageAsync(activity, imageUri, mUsername, true, null, new IAsyncCallback<Boolean>() {
+					public void handleResponse(final Boolean result) {
+						SurespotLog.v(TAG, "upload picture response: " + result);
+						activity.runOnUiThread(new Runnable() {
 
 							@Override
-							public void handleResponse(final Boolean result) {
-								SurespotLog.v(TAG, "upload picture response: " + result);
-								activity.runOnUiThread(new Runnable() {
-
-									@Override
-									public void run() {
-										Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
-												: R.string.could_not_upload_image));
-
-									}
-								});
+							public void run() {
+								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
+										: R.string.could_not_upload_image));
 
 							}
 						});
 					}
-				};
-
-				SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+				});
 			}
 		}
 		else {
