@@ -243,7 +243,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public void deleteMessage(Integer id) {
+	public SurespotMessage deleteMessage(Integer id) {
 		SurespotMessage message = null;		
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
@@ -253,6 +253,8 @@ public class ChatAdapter extends BaseAdapter {
 				notifyDataSetChanged();
 				break;	
 			}
-		}					
+		}
+		return message;
 	}
+	
 }

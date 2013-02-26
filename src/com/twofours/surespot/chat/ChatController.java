@@ -223,7 +223,13 @@ public class ChatController {
 							else {
 								if (message.getSubType().equals("delete")) {
 									String otherUser = message.getOtherUser();
-									mChatAdapters.get(otherUser).deleteMessage(Integer.parseInt(message.getIv()));
+									
+									SurespotMessage dMessage = mChatAdapters.get(otherUser).deleteMessage(Integer.parseInt(message.getIv()));
+									
+									//if it's an image blow the http cache entry away
+									if (dMessage != null && dMessage.getMimeType() != null && dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {									
+										SurespotApplication.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
+									}
 									checkAndSendNextMessage(message);
 								}
 							}
@@ -535,7 +541,12 @@ public class ChatController {
 							}
 							else {
 								if (message.getSubType().equals("delete")) {
-									chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));								
+									SurespotMessage dMessage = chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));
+									
+									//if it's an image blow the http cache entry away
+									if (dMessage != null && dMessage.getMimeType() != null && dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {																
+										SurespotApplication.getNetworkController().purgeCacheUrl(message.getCipherData());
+									}
 								}
 							}
 						}

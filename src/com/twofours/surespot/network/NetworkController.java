@@ -498,4 +498,7 @@ public class NetworkController {
 		mClient.clearCache();
 	}
 
+	public void purgeCacheUrl(String url) {
+		mCachingHttpClient.removeEntry(mBaseUrl + url);
+	}
 }
