@@ -616,7 +616,7 @@ public class ChatController {
 		}
 
 		// TODO save per user?
-		if (mCurrentChat != null) {
+		if (mTrackChat && mCurrentChat != null) {
 			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 		}
