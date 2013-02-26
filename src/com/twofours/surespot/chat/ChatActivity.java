@@ -176,10 +176,12 @@ public class ChatActivity extends SherlockFragmentActivity {
 			showMain();
 			return true;
 		case R.id.menu_close_bar:
+		case R.id.menu_close:
 			closeTab(mViewPager.getCurrentItem());
 			return true;
 
 		case R.id.menu_send_image_bar:
+		case R.id.menu_send_image:
 			intent = new Intent();
 			// TODO paid version allows any file
 			intent.setType("image/*");
@@ -189,6 +191,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
+		case R.id.menu_capture_image:
 			// case R.id.menu_capture_image_menu:
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("source", ImageSelectActivity.SOURCE_CAPTURE_IMAGE);
@@ -196,11 +199,13 @@ public class ChatActivity extends SherlockFragmentActivity {
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 
 			return true;
+		case R.id.menu_settings_bar:
 		case R.id.menu_settings:
 			intent = new Intent(this, SettingsActivity.class);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
 			return true;
 		case R.id.menu_logout:
+		case R.id.menu_logout_bar:			
 			IdentityController.logout();
 			intent = new Intent(ChatActivity.this, StartupActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

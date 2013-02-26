@@ -30,10 +30,6 @@
             <intent android:action="com.twofours.surespot.activities.ExportIdentityActivity" >
             </intent>
         </Preference>
-        <Preference
-            android:key="@string/pref_create_identity"
-            android:title="@string/create_identity_label" >
-        </Preference>
         <Preference android:title="@string/key_management" >
             <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
             </intent>

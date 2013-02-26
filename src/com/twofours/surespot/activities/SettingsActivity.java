@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -76,31 +75,8 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					return true;
 
 				}
-			});
-
-			Preference createIdentityPref = findPreference(getString(R.string.pref_create_identity));
-			createIdentityPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					SurespotLog.v(TAG, "create identity click..logging out");
-					// logout and start signup activity
-					IdentityController.logout();
-
-					// work around back stack insanity:
-					// http://stackoverflow.com/questions/3007998/on-logout-clear-activity-history-stack-preventing-back-button-from-opening-l
-					// by launching the startup activity with a create extra
-					Intent intent = new Intent(SettingsActivity.this, StartupActivity.class);
-					intent.putExtra("create", true);
-					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					startActivity(intent);
-					finish();
-					return true;
-
-				}
-			});
+			});		
 		}
-
 	}
 
 	@Override

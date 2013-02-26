@@ -41,7 +41,7 @@
     <string name="uploading_image">uploading image</string>
     <string name="could_not_upload_image">could not upload image</string>
     <string name="image_successfully_uploaded">image successfully uploaded</string>
-    <string name="select_image">select Image</string>
+    <string name="select_image">select image</string>
     <string name="capture_image">capture image</string>
     <string name="logout">logout</string>
     <string name="settings">settings</string>
@@ -56,5 +56,6 @@
     <string name="regenerate_keys">regenerate keys</string>
     <string name="could_not_create_new_keys">could not create new keys</string>
     <string name="keys_created">keys created and successfully uploaded to the server</string>
+    <string name="close_tab">close tab</string>
 
 </resources>

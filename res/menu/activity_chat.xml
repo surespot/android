@@ -1,49 +1,56 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/menu_send_image_bar"
-        android:icon="@drawable/ic_menu_gallery"
+        android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="100"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/select_image"/>
-    <!-- <item -->
-    <!-- android:id="@+id/menu_send_image_menu" -->
-    <!-- android:orderInCategory="100" -->
-    <!-- android:showAsAction="never" -->
-    <!-- android:title="select image"/> -->
-    <!-- <item -->
-    <!-- android:id="@+id/menu_capture_image_menu" -->
-    <!-- android:orderInCategory="100" -->
-    <!-- android:showAsAction="never" -->
-    <!-- android:title="capture image"/> -->
+        android:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/menu_send_image_bar"
+                android:icon="@drawable/ic_menu_gallery"
+                android:title="@string/select_image"/>
+            <item
+                android:id="@+id/menu_capture_image_bar"
+                android:icon="@drawable/ic_menu_camera"
+                android:title="@string/capture_image"/>
+            <item
+                android:id="@+id/menu_close_bar"
+                android:icon="@drawable/ic_menu_end_conversation"
+                android:title="@string/close_tab"/>
+            <item
+                android:id="@+id/menu_logout_bar"
+                android:icon="@drawable/ic_lock_power_off"
+                android:title="@string/logout"/>
+            <item
+                android:id="@+id/menu_settings_bar"
+                android:icon="@drawable/ic_menu_preferences"
+                android:title="@string/settings"/>
+        </menu>
+    </item>
     <item
-        android:id="@+id/menu_capture_image_bar"
+        android:id="@+id/menu_send_image"
+        android:icon="@drawable/ic_menu_gallery"
+        android:showAsAction="never"
+        android:title="@string/select_image"/>
+    <item
+        android:id="@+id/menu_capture_image"
         android:icon="@drawable/ic_menu_camera"
-        android:orderInCategory="200"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="never"
         android:title="@string/capture_image"/>
-    <!-- <item -->
-    <!-- android:id="@+id/menu_close_menu" -->
-    <!-- android:orderInCategory="200" -->
-    <!-- android:showAsAction="never" -->
-    <!-- android:title="close tab"/> -->
-
+    <item
+        android:id="@+id/menu_close"
+        android:icon="@drawable/ic_menu_end_conversation"
+        android:showAsAction="never"
+        android:title="@string/close_tab"/>
+    <item
+        android:id="@+id/menu_logout"
+        android:icon="@drawable/ic_lock_power_off"
+        android:showAsAction="never"
+        android:title="@string/logout"/>
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_menu_preferences"
-        android:orderInCategory="300"
-        android:showAsAction="ifRoom|withText"
-        android:title="settings"/>
-    <item
-        android:id="@+id/menu_logout"
-        android:orderInCategory="400"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/logout"/>
-    <item
-        android:id="@+id/menu_close_bar"
-        android:icon="@drawable/ic_menu_end_conversation"
-        android:orderInCategory="500"
-        android:showAsAction="ifRoom|withText"
-        android:title="close tab"/>
+        android:showAsAction="never"
+        android:title="@string/settings"/>
 
 </menu>

@@ -90,7 +90,7 @@ public class StartupActivity extends Activity {
 
 			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 			String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
-			
+
 			SurespotLog.v(TAG, "user: " + user);
 			SurespotLog.v(TAG, "type: " + notificationType);
 			SurespotLog.v(TAG, "messageTo: " + messageTo);
@@ -98,9 +98,9 @@ public class StartupActivity extends Activity {
 			// if we have a message to the currently logged in user, set the from and start the chat activity
 			if ((user == null)
 					|| (intent.getBooleanExtra("401", false))
-					|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_REQUEST
-							.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType))
-							&& (!messageTo.equals(user)))) {
+					|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+							|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
+								.equals(notificationType)) && (!messageTo.equals(user)))) {
 
 				SurespotLog.v(TAG, "need a (different) user, showing login");
 				Intent newIntent = new Intent(this, LoginActivity.class);
@@ -120,23 +120,28 @@ public class StartupActivity extends Activity {
 
 			startActivity(newIntent);
 			finish();
-		}
-
+		}		
 	}
-	
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		// TODO Auto-generated method stub
 		super.onNewIntent(intent);
-		SurespotLog.v(TAG,"onNewIntent");
+		SurespotLog.v(TAG, "onNewIntent");
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
-		if (requestCode == SurespotConstants.IntentRequestCodes.LOGIN && resultCode == RESULT_OK) {
-			launch(SurespotApplication.getStartupIntent());
+		if (requestCode == SurespotConstants.IntentRequestCodes.LOGIN) {
+			if (resultCode == RESULT_OK) {
+				launch(SurespotApplication.getStartupIntent());
+			}
+			else {
+				finish();
+			}
 		}
+
 	}
 
 	private void launch(Intent intent) {
@@ -204,13 +209,11 @@ public class StartupActivity extends Activity {
 
 			newIntent = new Intent(this, ChatActivity.class);
 			newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, messageFrom);
-		
+
 			// newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 			stackBuilder.addNextIntent(newIntent);
 			stackBuilder.startActivities();
-			// finish();
-
 		}
 
 		// fall through
@@ -227,7 +230,7 @@ public class StartupActivity extends Activity {
 
 		}
 
-		// finish();
+		finish();
 	}
 
 	@Override

@@ -199,9 +199,15 @@ public class LoginActivity extends SherlockActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent intent;
 		switch (item.getItemId()) {
+		
 		case R.id.menu_import_identities:
-			Intent intent = new Intent(this, SignupActivity.class);
+			intent = new Intent(this, ImportIdentityActivity.class);
+			startActivity(intent);
+			return true;
+		case R.id.menu_create_identity:
+			intent = new Intent(this, SignupActivity.class);
 			startActivity(intent);
 			return true;
 		default:

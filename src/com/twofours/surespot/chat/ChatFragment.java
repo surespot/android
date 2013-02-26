@@ -35,7 +35,7 @@ public class ChatFragment extends SherlockFragment {
 	private EditText mEditText;
 	private boolean mLoading;
 	private int mPreviousTotal;
-	private boolean mNoEarlierMessages = false;
+	private DataSetObserver mDataSetObserver;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -77,20 +77,38 @@ public class ChatFragment extends SherlockFragment {
 		final ChatAdapter chatAdapter = mChatController.getChatAdapter(this.getSherlockActivity().getBaseContext(), mUsername);
 
 		// listen for first change then set empty list view
-		chatAdapter.registerDataSetObserver(new DataSetObserver() {
+
+		mDataSetObserver = new DataSetObserver() {
 			@Override
 			public void onChanged() {
-				view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+				if (mDataSetObserver != null) {
+					view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 
-				mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-				// view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+					mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+					// // view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+					//
+					// // else {
+					// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 
-				// else {
-				// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-				chatAdapter.unregisterDataSetObserver(this);
-				// }
+					// if i do this without starting a new thread in gingerbread i get concurrentmodificationexception
+					Runnable unsubscribe = new Runnable() {
+
+						@Override
+						public void run() {
+							chatAdapter.unregisterDataSetObserver(mDataSetObserver);
+							mDataSetObserver = null;
+						}
+					};
+					SurespotApplication.THREAD_POOL_EXECUTOR.execute(unsubscribe);
+				}
+
+				
 			}
-		});
+		};
+		// // }
+
+		chatAdapter.registerDataSetObserver(mDataSetObserver);
+
 		mListView.setAdapter(chatAdapter);
 		mListView.setDividerHeight(1);
 		// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));

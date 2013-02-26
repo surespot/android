@@ -359,7 +359,7 @@ public class ChatController {
 			sendMessage(message);
 
 		}
-
+		
 		// reset read since reconnect flags
 		for (String chat : mReadSinceReconnect.keySet()) {
 			mReadSinceReconnect.put(chat, false);
