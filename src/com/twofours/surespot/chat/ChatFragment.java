@@ -95,14 +95,17 @@ public class ChatFragment extends SherlockFragment {
 
 						@Override
 						public void run() {
-							chatAdapter.unregisterDataSetObserver(mDataSetObserver);
-							mDataSetObserver = null;
+							if (mDataSetObserver != null) {
+								
+								chatAdapter.unregisterDataSetObserver(mDataSetObserver);
+								mDataSetObserver = null;
+								
+							}
 						}
 					};
 					SurespotApplication.THREAD_POOL_EXECUTOR.execute(unsubscribe);
 				}
 
-				
 			}
 		};
 		// // }
