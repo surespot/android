@@ -36,6 +36,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 public class IdentityController {
 	private static final String TAG = "IdentityController";
 	public static final String IDENTITY_EXTENSION = ".ssi";
+	public static final String IDENTITY_BACKUP_EXTENSION = ".sib";
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
 	private static final Map<String, SurespotIdentity> mIdentities = new HashMap<String, SurespotIdentity>();
@@ -55,12 +56,12 @@ public class IdentityController {
 
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
 		byte[] identityBytes = createIdentityBytes(identity, password);
-		return saveIdentity(identityDir, identity.getUsername(), identityBytes);
+		return saveIdentity(identityDir, identity.getUsername() + IDENTITY_EXTENSION, identityBytes);
 	}
 
 	private static synchronized String saveIdentity(String identityDir, String filename, byte[] identityBytes) {
 		try {
-			String identityFile = identityDir + File.separator + filename + IDENTITY_EXTENSION;
+			String identityFile = identityDir + File.separator + filename;
 			SurespotLog.v(TAG, "saving identity: " + identityFile);
 
 			if (!FileUtils.ensureDir(identityDir)) {
@@ -444,8 +445,8 @@ public class IdentityController {
 
 		byte[] identityBytes = createIdentityBytes(identity, password + CACHE_IDENTITY_ID);
 
-		String idFile = saveIdentity(identityDir, identity.getUsername(), identityBytes);
-		String idFileBackup = saveIdentity(identityDir, identity.getUsername() + "_backup", identityBytes);
+		String idFile = saveIdentity(identityDir, identity.getUsername() + IDENTITY_EXTENSION, identityBytes);
+		String idFileBackup = saveIdentity(identityDir, identity.getUsername() + IDENTITY_BACKUP_EXTENSION, identityBytes);
 		// big problems if we can't save it
 		if (idFile == null) {
 			
