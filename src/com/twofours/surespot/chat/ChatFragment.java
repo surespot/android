@@ -222,7 +222,7 @@ public class ChatFragment extends SherlockFragment {
 
 					@Override
 					public void run() {
-						SurespotLog.v(TAG, "received image data, upload image");
+						SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 						final FragmentActivity activity = getActivity();
 						ChatUtils.uploadPictureMessageAsync(activity, imageUri, mUsername, true, null, new IAsyncCallback<Boolean>() {
 

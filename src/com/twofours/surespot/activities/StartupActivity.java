@@ -188,6 +188,7 @@ public class StartupActivity extends Activity {
 			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
 				newIntent.setAction(action);
 				newIntent.setType(type);
+				newIntent.putExtras(intent);
 			}
 
 			startActivity(newIntent);

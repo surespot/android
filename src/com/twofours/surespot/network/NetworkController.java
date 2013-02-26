@@ -77,6 +77,7 @@ public class NetworkController {
 	}
 
 	public NetworkController(Context context) {
+		SurespotLog.v(TAG, "constructor");
 		mContext = context;
 
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
@@ -261,12 +262,14 @@ public class NetworkController {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
+				
 				Cookie cookie = extractConnectCookie(mCookieStore);
 				if (cookie == null) {
 					SurespotLog.w(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
 				}
 				else {
+					setUnauthorized(false);
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -483,9 +486,7 @@ public class NetworkController {
 	}
 
 	public void logout() {
-		post("/logout", null, new AsyncHttpResponseHandler() {
-		});
-		setUnauthorized(true);
+		post("/logout", null, new AsyncHttpResponseHandler() {});		
 	}
 
 	public void clearCache() {
