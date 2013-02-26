@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.ImageViewActivity;
@@ -84,7 +85,6 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-			
 				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
 
 				// pull the message out
@@ -97,7 +97,7 @@ public class ChatFragment extends SherlockFragment {
 					}
 				}
 
-				// TODO Auto-generated method stub
+			
 
 			}
 		});
@@ -106,7 +106,10 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
-				mChatController.deleteMessage(mUsername, message.getId());
+				// make sure it's our message
+				if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
+					mChatController.deleteMessage(mUsername, message.getId());				
+				}
 				return true;
 			}
 		});
