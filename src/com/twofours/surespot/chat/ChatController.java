@@ -102,6 +102,19 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
+				//socket.io returns 403 for can't login
+				if (socketIOException.getHttpStatus() == 403) {
+					SurespotApplication.getNetworkController().setUnauthorized(true);
+				
+					SurespotLog.v(TAG, "Got 403 from socket.io, launching login intent.");
+					Intent intent = new Intent(mContext, StartupActivity.class);
+					intent.putExtra("401", true);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					mContext.startActivity(intent);
+					
+					return;
+				}
+				
 				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
 						socketIOException);
 
@@ -285,7 +298,7 @@ public class ChatController {
 		try {
 			HashMap<String, String> headers = new HashMap<String, String>();
 			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
-			socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
+			socket = new SocketIO( SurespotConfiguration.getBaseUrl(),  headers);
 			socket.connect(mSocketCallback);
 		}
 		catch (Exception e) {
