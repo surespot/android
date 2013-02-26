@@ -54,9 +54,37 @@ public class IdentityController {
 	}
 
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
-		String identityFile = identityDir + File.separator + identity.getUsername() + IDENTITY_EXTENSION;
-		SurespotLog.v(TAG, "saving identity: " + identityFile);
+		byte[] identityBytes = createIdentityBytes(identity, password);
+		return saveIdentity(identityDir, identity.getUsername(), identityBytes);
+	}
 
+	private static synchronized String saveIdentity(String identityDir, String filename, byte[] identityBytes) {
+		try {
+			String identityFile = identityDir + File.separator + filename + IDENTITY_EXTENSION;
+			SurespotLog.v(TAG, "saving identity: " + identityFile);
+
+			if (!FileUtils.ensureDir(identityDir)) {
+				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
+						+ identityDir));
+				return null;
+			}
+
+			FileOutputStream fos = new FileOutputStream(identityFile);
+			fos.write(identityBytes);
+			fos.close();
+
+			return identityFile;
+		}
+		catch (FileNotFoundException e) {
+			SurespotLog.w(TAG, "saveIdentity", e);
+		}
+		catch (IOException e) {
+			SurespotLog.w(TAG, "saveIdentity", e);
+		}
+		return null;
+	}
+
+	private static byte[] createIdentityBytes(SurespotIdentity identity, String password) {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("username", identity.getUsername());
@@ -77,29 +105,14 @@ public class IdentityController {
 
 			json.put("keys", keys);
 
-			if (!FileUtils.ensureDir(identityDir)) {
-				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
-						+ identityDir));
-				return null;
-			}
-
 			byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
-			FileOutputStream fos = new FileOutputStream(identityFile);
-			fos.write(identityBytes);
-			fos.close();
-
-			return identityFile;
+			return identityBytes;
 
 		}
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "saveIdentity", e);
 		}
-		catch (FileNotFoundException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
-		}
-		catch (IOException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
-		}
+
 		return null;
 	}
 
@@ -428,7 +441,20 @@ public class IdentityController {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
-		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+
+		byte[] identityBytes = createIdentityBytes(identity, password);
+
+		String idFile = saveIdentity(identityDir, identity.getUsername(), identityBytes);
+		String idFileBackup = saveIdentity(identityDir, identity.getUsername() + "_backup", identityBytes);
+		// big problems if we can't save it
+		if (idFile == null) {
+			
+			if (idFile == null) {
+				// TODO give user other options to save it
+				SurespotLog.e(TAG, "could not save identity after rolling keys",
+						new Exception("could not save identity after rolling keys"));
+			}
+		}
 
 	}
 
