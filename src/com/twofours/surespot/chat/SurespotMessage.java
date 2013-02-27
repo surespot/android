@@ -160,7 +160,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			chatMessage.setId(id);
 		}
 		
-		Integer height = jsonMessage.optInt("resendId");
+		Integer height = jsonMessage.optInt("height");
 		if (height > 0) {
 			chatMessage.setHeight(jsonMessage.optInt("height"));
 		}

@@ -219,15 +219,17 @@ public class ChatController {
 								// this will force download of key
 								IdentityController.updateLatestVersion(SurespotApplication.getContext(), username, version);
 							}
-							
+
 							else {
 								if (message.getSubType().equals("delete")) {
 									String otherUser = message.getOtherUser();
-									
-									SurespotMessage dMessage = mChatAdapters.get(otherUser).deleteMessage(Integer.parseInt(message.getIv()));
-									
-									//if it's an image blow the http cache entry away
-									if (dMessage != null && dMessage.getMimeType() != null && dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {									
+
+									SurespotMessage dMessage = mChatAdapters.get(otherUser)
+											.deleteMessage(Integer.parseInt(message.getIv()));
+
+									// if it's an image blow the http cache entry away
+									if (dMessage != null && dMessage.getMimeType() != null
+											&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 										SurespotApplication.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
 									}
 									updateLastViewedMessageId(otherUser, message.getId());
@@ -379,6 +381,38 @@ public class ChatController {
 		for (String chat : mReadSinceReconnect.keySet()) {
 			mReadSinceReconnect.put(chat, false);
 		}
+
+		// JSONObject messageIdHolder = new JSONObject();
+		JSONArray messageIds = new JSONArray();
+		for (Entry<String, ChatAdapter> eChatAdapter : mChatAdapters.entrySet()) {
+			try {
+				String user = eChatAdapter.getKey();
+				JSONObject idPair = new JSONObject();
+
+				idPair.put("spot", ChatUtils.getSpot(IdentityController.getLoggedInUser(), user));
+				idPair.put("id", eChatAdapter.getValue().getLastMessageWithId().getId());
+				messageIds.put(idPair);
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, "connected", e);
+			}
+
+		}
+
+		// messageIdHolder.put("messageIds", messageIds);
+
+		//
+		SurespotApplication.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, JSONArray response) {
+				Utils.makeToast(mContext, "received latest messages: " + response.toString());
+			}
+			
+			@Override
+			public void onFailure(Throwable error, String content) {
+				Utils.makeToast(mContext, "received latest messages faild: " + content);
+			}
+		});
 
 		if (mTrackChat) {
 			loadLatestMessages(mCurrentChat);
@@ -543,9 +577,10 @@ public class ChatController {
 							else {
 								if (message.getSubType().equals("delete")) {
 									SurespotMessage dMessage = chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));
-									
-									//if it's an image blow the http cache entry away
-									if (dMessage != null && dMessage.getMimeType() != null && dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {																
+
+									// if it's an image blow the http cache entry away
+									if (dMessage != null && dMessage.getMimeType() != null
+											&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 										SurespotApplication.getNetworkController().purgeCacheUrl(message.getCipherData());
 									}
 								}
@@ -600,7 +635,7 @@ public class ChatController {
 	}
 
 	private Integer getLatestMessageId(String username) {
-		Integer lastMessageId = 0;
+		Integer lastMessageId = null;
 		SurespotMessage lastMessage = getChatAdapter(mContext, username).getLastMessageWithId();
 		if (lastMessage != null) {
 			lastMessageId = lastMessage.getId();
@@ -878,7 +913,6 @@ public class ChatController {
 	}
 
 	public synchronized void logout() {
-		
 
 		mTrackChat = false;
 		// mLastViewedMessageIds.clear();
@@ -896,7 +930,7 @@ public class ChatController {
 		message.setTo(username);
 		message.setFrom(IdentityController.getLoggedInUser());
 		message.setIv(id.toString());
-		
+
 		sendMessage(message);
 	}
 

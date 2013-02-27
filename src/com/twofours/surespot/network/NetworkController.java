@@ -2,10 +2,12 @@ package com.twofours.surespot.network;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.acra.ACRA;
+import org.json.JSONArray;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +21,7 @@ import ch.boye.httpclientandroidlib.HttpStatus;
 import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
+import ch.boye.httpclientandroidlib.client.utils.URIBuilder;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
@@ -266,7 +269,7 @@ public class NetworkController {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
-				
+
 				Cookie cookie = extractConnectCookie(mCookieStore);
 				if (cookie == null) {
 					SurespotLog.w(TAG, "Did not get cookie from login.");
@@ -310,6 +313,20 @@ public class NetworkController {
 		else {
 			get("/messages/" + room + "/after/" + id, null, responseHandler);
 		}
+	}
+
+	public void getLatestMessages(JSONArray messageIds, JsonHttpResponseHandler responseHandler) {
+		URIBuilder builder;
+		try {
+			builder = new URIBuilder(mBaseUrl);
+			builder.setPath("/messages").setParameter("messageIds", messageIds.toString());
+			get(builder.build().toString(), null, responseHandler);
+		}
+		catch (URISyntaxException e) {
+			SurespotLog.w(TAG, "getLatestMessages",e);
+			responseHandler.onFailure(e, "could not build uri");
+		}
+		
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
@@ -490,7 +507,8 @@ public class NetworkController {
 	}
 
 	public void logout() {
-		post("/logout", null, new AsyncHttpResponseHandler() {});		
+		post("/logout", null, new AsyncHttpResponseHandler() {
+		});
 	}
 
 	public void clearCache() {
