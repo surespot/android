@@ -353,25 +353,23 @@ public class ChatController {
 		SurespotMessage[] resendMessages = getResendMessages();
 		for (SurespotMessage message : resendMessages) {
 			// set the last received id so the server knows which messages to check
-			String room = message.getOtherUser();
+			String otherUser = message.getOtherUser();
 
-			String username = message.getFrom();
+			//String username = message.getFrom();
 
 			// ideally get the last id from the fragment's chat adapter
-			Integer lastMessageID = getLatestMessageId(username);
+			Integer lastMessageID = getLatestMessageId(otherUser);
 
 			// failing that use the last viewed id
-			if (lastMessageID == null) {
-
-				lastMessageID = mLastViewedMessageIds.get(room);
-
-			}
+//			if (lastMessageID == null) {
+//				lastMessageID = mLastViewedMessageIds.get(otherUser);
+//			}
 
 			// last option, check last x messages for dupes
 			if (lastMessageID == null) {
 				lastMessageID = -1;
 			}
-			SurespotLog.v(TAG, "setting resendId, room: " + room + ", id: " + lastMessageID);
+			SurespotLog.v(TAG, "setting resendId, room: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
 			sendMessage(message);
 
@@ -383,36 +381,36 @@ public class ChatController {
 		}
 
 		// JSONObject messageIdHolder = new JSONObject();
-		JSONArray messageIds = new JSONArray();
-		for (Entry<String, ChatAdapter> eChatAdapter : mChatAdapters.entrySet()) {
-			try {
-				String user = eChatAdapter.getKey();
-				JSONObject idPair = new JSONObject();
-
-				idPair.put("spot", ChatUtils.getSpot(IdentityController.getLoggedInUser(), user));
-				idPair.put("id", eChatAdapter.getValue().getLastMessageWithId().getId());
-				messageIds.put(idPair);
-			}
-			catch (JSONException e) {
-				SurespotLog.w(TAG, "connected", e);
-			}
-
-		}
+//		JSONArray messageIds = new JSONArray();
+//		for (Entry<String, ChatAdapter> eChatAdapter : mChatAdapters.entrySet()) {
+//			try {
+//				String user = eChatAdapter.getKey();
+//				JSONObject idPair = new JSONObject();
+//
+//				idPair.put("spot", ChatUtils.getSpot(IdentityController.getLoggedInUser(), user));
+//				idPair.put("id", eChatAdapter.getValue().getLastMessageWithId().getId());
+//				messageIds.put(idPair);
+//			}
+//			catch (JSONException e) {
+//				SurespotLog.w(TAG, "connected", e);
+//			}
+//
+//		}
 
 		// messageIdHolder.put("messageIds", messageIds);
 
 		//
-		SurespotApplication.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, JSONArray response) {
-				Utils.makeToast(mContext, "received latest messages: " + response.toString());
-			}
-			
-			@Override
-			public void onFailure(Throwable error, String content) {
-				Utils.makeToast(mContext, "received latest messages faild: " + content);
-			}
-		});
+//		SurespotApplication.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
+//			@Override
+//			public void onSuccess(int statusCode, JSONArray response) {
+//				Utils.makeToast(mContext, "received latest messages: " + response.toString());
+//			}
+//			
+//			@Override
+//			public void onFailure(Throwable error, String content) {
+//				Utils.makeToast(mContext, "received latest messages faild: " + content);
+//			}
+//		});
 
 		if (mTrackChat) {
 			loadLatestMessages(mCurrentChat);
@@ -635,7 +633,7 @@ public class ChatController {
 	}
 
 	private Integer getLatestMessageId(String username) {
-		Integer lastMessageId = null;
+		Integer lastMessageId = 0;
 		SurespotMessage lastMessage = getChatAdapter(mContext, username).getLastMessageWithId();
 		if (lastMessage != null) {
 			lastMessageId = lastMessage.getId();
@@ -923,7 +921,6 @@ public class ChatController {
 	}
 
 	public void deleteMessage(String username, Integer id) {
-		// TODO Auto-generated method stub
 		SurespotMessage message = new SurespotMessage();
 		message.setType("system");
 		message.setSubType("delete");
