@@ -62,7 +62,7 @@ public class FriendAdapter extends BaseAdapter {
 		SurespotLog.v(TAG, "message received");
 		Friend friend = getFriend(name);
 		if (friend != null) {
-			friend.incMessageCount(1);
+
 			if (!mActiveChats.contains(name)) {
 				mActiveChats.add(name);
 			}
@@ -71,12 +71,12 @@ public class FriendAdapter extends BaseAdapter {
 		}
 	}
 
-	public void messageDeltaReceived(String name, int delta) {
+	public void setHasNewMessages(String name, boolean hasNewMessages) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
-			friend.setMessageCount(delta);
+			friend.setHasNewMessages(hasNewMessages);
 			Collections.sort(mFriends);
-			if (delta > 0 && !mActiveChats.contains(name)) {
+			if (hasNewMessages && !mActiveChats.contains(name)) {
 				mActiveChats.add(name);
 			}
 			notifyDataSetChanged();
@@ -148,7 +148,8 @@ public class FriendAdapter extends BaseAdapter {
 			SurespotLog.e(TAG, e.toString(), e);
 		}
 
-		// notifyDataSetChanged();
+		sort();
+		notifyDataSetChanged();
 	}
 
 	public void clearFriends(boolean notify) {
@@ -206,10 +207,8 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
-		int messageCount = friend.getMessageCount();
-
 		// TODO cleanup this logic
-		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || messageCount > 0) {
+		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.hasNewMessages()) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
@@ -242,23 +241,23 @@ public class FriendAdapter extends BaseAdapter {
 				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
 
-			if (messageCount > 0) {
+			if (friend.hasNewMessages()) {
 
 				String currentStatus = friendViewHolder.tvStatus.getText().toString();
-				String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
+				// String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
 
 				if (!currentStatus.isEmpty()) {
-					if (currentStatus.contains("unread message")) {
-						currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
+					// if (currentStatus.contains("unread message")) {
+					// currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
 
-					}
-					else {
-						currentStatus += "\n" + messageCountString;
-					}
+					// }
+					// else {
+					currentStatus += "\n" + "new activity";
+					// }
 
 				}
 				else {
-					currentStatus = messageCountString;
+					currentStatus = "new activity";
 				}
 				friendViewHolder.tvStatus.setText(currentStatus);
 			}

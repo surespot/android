@@ -20,8 +20,7 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
-import com.twofours.surespot.activities.StartupActivity;
-import com.twofours.surespot.chat.ChatActivity;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -113,7 +112,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (type.equals("message")) {
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
-			if (IdentityController.hasLoggedInUser() && ChatController.getTrackChat() && !ChatController.isPaused()
+			if (IdentityController.hasLoggedInUser() && !ChatController.isPaused()
 					&& from.equals(ChatController.getCurrentChat())) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
@@ -153,11 +152,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Intent mainIntent = null;
 		if (to.equals(IdentityController.getLoggedInUser()) && id == IntentRequestCodes.NEW_MESSAGE_NOTIFICATION) {
 			SurespotLog.v(TAG, "user already logged in, going directly to chat activity");
-			mainIntent = new Intent(context, ChatActivity.class);
+			mainIntent = new Intent(context, MainActivity.class);
 			mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		}
 		else {
-			mainIntent = new Intent(context, StartupActivity.class);
+			mainIntent = new Intent(context, MainActivity.class);
 		}
 
 		// mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);

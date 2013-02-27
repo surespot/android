@@ -24,7 +24,7 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.activities.StartupActivity;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -477,7 +477,7 @@ public class IdentityController {
 			SurespotApplication.getNetworkController().setUnauthorized(true);
 
 			// boot them out
-			Intent intent = new Intent(context, StartupActivity.class);
+			Intent intent = new Intent(context, MainActivity.class);
 			intent.putExtra("401", true);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			context.startActivity(intent);

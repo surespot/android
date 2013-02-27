@@ -17,7 +17,6 @@ public class Friend implements Comparable<Friend> {
 
 	private String mName;
 	private int mFlags;
-	private int mMessageCount;
 
 	public String getName() {
 		return mName;
@@ -84,24 +83,11 @@ public class Friend implements Comparable<Friend> {
 	public int getFlags() {
 		return mFlags;
 	}
-
-	public Integer getMessageCount() {
-		return mMessageCount;
-	}
-
-	public synchronized void incMessageCount(int messageCount) {
-		mMessageCount += messageCount;
-		setMessageCountFlag();
-		SurespotLog.v(TAG, "newCount: " + mMessageCount);
-	}
-
-	public synchronized void setMessageCount(int messageCount) {
-		mMessageCount = messageCount;
-		setMessageCountFlag();
-	}
-
-	private void setMessageCountFlag() {
-		if (mMessageCount > 0) {
+	
+	public void setHasNewMessages(boolean hasNewMessages) {
+		
+		
+		if (hasNewMessages) {
 			mFlags |= HAS_NEW_MESSAGES;
 
 			// pretend the chat is active
@@ -111,6 +97,11 @@ public class Friend implements Comparable<Friend> {
 			mFlags &= ~HAS_NEW_MESSAGES;
 		}
 	}
+	
+	public boolean hasNewMessages() {
+		return (mFlags & HAS_NEW_MESSAGES) == HAS_NEW_MESSAGES;
+	}
+	
 
 	public boolean isChatActive() {
 		return (mFlags & CHAT_ACTIVE) == CHAT_ACTIVE;

@@ -57,11 +57,7 @@
             android:name="com.twofours.surespot.activities.StartupActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoDisplay" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+           
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
 
@@ -90,14 +86,14 @@
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login" >
         </activity>
-        <activity
+      <!--   <activity
             android:name="com.twofours.surespot.friends.FriendActivity"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.chat.ChatActivity"
             android:windowSoftInputMode="stateHidden" >
-        </activity>
+        </activity> -->
         <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>
         <activity
@@ -131,6 +127,15 @@
                 <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.MainActivity"
+            android:label="@string/title_activity_main" >
+             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>

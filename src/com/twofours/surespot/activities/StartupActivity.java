@@ -14,7 +14,6 @@ import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatActivity;
-import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -48,8 +47,7 @@ public class StartupActivity extends Activity {
 
 			// make sure these are there so startup code can execute
 			SurespotApplication.setCachingService(mCredentialCachingService);
-			SurespotApplication.setNetworkController(new NetworkController(getApplicationContext()));
-			SurespotApplication.setChatController(new ChatController(getApplicationContext()));
+			SurespotApplication.setNetworkController(new NetworkController(getApplicationContext()));		
 			startup();
 		}
 

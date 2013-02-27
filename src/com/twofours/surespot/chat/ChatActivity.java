@@ -150,7 +150,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageBroadcastReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
-		mChatController.onResume(true);
+	//	mChatController.onResume(true);
 	}
 
 	@Override

@@ -57,5 +57,6 @@
     <string name="could_not_create_new_keys">could not create new keys</string>
     <string name="keys_created">keys created and successfully uploaded to the server</string>
     <string name="close_tab">close tab</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

@@ -10,7 +10,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="com/twofours/surespot/activities/StartupActivity.java|com/twofours/surespot/chat/ChatActivity.java|com/twofours/surespot/friends/FriendActivity.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SSLWebSocket"/>
 	<classpathentry kind="lib" path="libs/sc-light-jdk15on-1.47.0.3-SNAPSHOT.jar" sourcepath="/home/adam/dev/surespot/libs/android/github/forks/spongycastle"/>

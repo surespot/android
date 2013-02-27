@@ -32,7 +32,6 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.friends.FriendActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class SignupActivity extends SherlockActivity {
@@ -155,7 +154,7 @@ public class SignupActivity extends SherlockActivity {
 
 																protected void onPostExecute(Void result) {
 																	// SurespotApplication.getUserData().setUsername(username);
-																	Intent intent = new Intent(SignupActivity.this, FriendActivity.class);
+																	Intent intent = new Intent(SignupActivity.this, MainActivity.class);
 																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 																			| Intent.FLAG_ACTIVITY_NEW_TASK);
 																	startActivity(intent);

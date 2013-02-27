@@ -1,9 +1,5 @@
 package com.twofours.surespot.friends;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,8 +40,6 @@ import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.chat.ChatActivity;
 import com.twofours.surespot.chat.ChatController;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -57,9 +51,7 @@ public class FriendActivity extends SherlockActivity {
 	private MultiProgressDialog mMpdInviteFriend;
 	private BroadcastReceiver mInvitationReceiver;
 	private BroadcastReceiver InviteResponseReceiver;
-	private BroadcastReceiver mMessageReceiver;
-	private HashMap<String, Integer> mLastViewedMessageIds;
-	private HashMap<String, Integer> mUnsentCount;
+
 	private ChatController mChatController;
 	private ListView mListView;
 	private NotificationManager mNotificationManager;
@@ -74,14 +66,13 @@ public class FriendActivity extends SherlockActivity {
 
 		mChatController = SurespotApplication.getChatController();
 		setContentView(R.layout.activity_friend);
-		mLastViewedMessageIds = new HashMap<String, Integer>();
+
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 
 		mListView = (ListView) findViewById(R.id.main_list);
 		mListView.setEmptyView(findViewById(R.id.progressBar));
 		// findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		mMainAdapter = new FriendAdapter(this);
-
+	
 		// click on friend to join chat
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -151,43 +142,6 @@ public class FriendActivity extends SherlockActivity {
 			}
 		};
 
-		mMessageReceiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				String message = intent.getExtras().getString(SurespotConstants.ExtraNames.MESSAGE);
-
-				JSONObject messageJson;
-				try {
-					messageJson = new JSONObject(message);
-					String name = ChatUtils.getOtherUser(messageJson.getString("from"), messageJson.getString("to"));
-					Integer id = messageJson.getInt("id");
-
-					int serverId = 0;
-					if (id != null) {
-						serverId = id;
-					}
-
-					Integer localId = mLastViewedMessageIds.get(name);
-					if (localId == null) {
-						localId = 0;
-					}
-					// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
-					// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
-
-					// compute delta
-					int messageDelta = serverId - localId;
-					Integer unsent1 = mUnsentCount.get(name);
-					messageDelta = messageDelta - (unsent1 == null ? 0 : unsent1);
-					mMainAdapter.messageDeltaReceived(name, messageDelta > 0 ? messageDelta : 0);
-
-				}
-				catch (JSONException e) {
-					SurespotLog.w(TAG, "onReceive (message)", e);
-				}
-			}
-		};
-
 		EditText editText = (EditText) findViewById(R.id.etFriend);
 		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
@@ -217,8 +171,6 @@ public class FriendActivity extends SherlockActivity {
 				new IntentFilter(SurespotConstants.IntentFilters.INVITE_RESPONSE));
 		LocalBroadcastManager.getInstance(this).registerReceiver(mInvitationReceiver,
 				new IntentFilter(SurespotConstants.IntentFilters.INVITE_REQUEST));
-		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-				new IntentFilter(SurespotConstants.IntentFilters.MESSAGE_RECEIVED));
 
 		Intent intent = getIntent();
 		String action = intent.getAction();
@@ -232,28 +184,7 @@ public class FriendActivity extends SherlockActivity {
 			Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser());
 		}
 
-		mLastViewedMessageIds = SurespotApplication.getStateController().loadLastViewMessageIds();
-		// get unsent messages out of shared prefs
-
-		List<SurespotMessage> unsentMessages = SurespotApplication.getStateController().loadUnsentMessages();
-		mUnsentCount = new HashMap<String, Integer>();
-		Iterator<SurespotMessage> iterator = unsentMessages.iterator();
-		while (iterator.hasNext()) {
-			SurespotMessage message = iterator.next();
-			String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
-			Integer count = mUnsentCount.get(otherUser);
-			if (count == null) {
-				count = 1;
-			}
-			else {
-				count++;
-			}
-
-			mUnsentCount.put(otherUser, count);
-
-		}
-
-		mChatController.onResume(false);
+	//	mChatController.onResume(false);
 
 		// get the list of friends
 		SurespotApplication.getNetworkController().getFriends(new JsonHttpResponseHandler() {
@@ -266,80 +197,13 @@ public class FriendActivity extends SherlockActivity {
 					mMainAdapter.refreshActiveChats();
 					mMainAdapter.clearFriends(false);
 					mMainAdapter.addFriends(jsonArray);
-
-					// compute new message deltas
-					SurespotApplication.getNetworkController().getLastMessageIds(new JsonHttpResponseHandler() {
-
-						public void onSuccess(int arg0, JSONObject arg1) {
-							SurespotLog.v(TAG, "getLastmessageids success status jsonobject");
-
-							HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
-
-							if (serverMessageIds != null && serverMessageIds.size() > 0) {
-								// if we have counts
-								if (mLastViewedMessageIds != null) {
-
-									// set the deltas
-									for (String user : serverMessageIds.keySet()) {
-
-										// figure out new message counts
-										int serverId = serverMessageIds.get(user);
-										Integer localId = mLastViewedMessageIds.get(user);
-										// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
-										// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
-
-										// new chat, all messages are new
-										if (localId == null) {
-											mLastViewedMessageIds.put(user, serverId);
-											mMainAdapter.messageDeltaReceived(user, serverId);
-										}
-										else {
-
-											// compute delta
-											int messageDelta = serverId - localId;
-											Integer unsent1 = mUnsentCount.get(user);
-											messageDelta = messageDelta - (unsent1 == null ? 0 : unsent1);
-											mMainAdapter.messageDeltaReceived(user, messageDelta > 0 ? messageDelta : 0);
-										}
-									}
-
-								}
-
-								// if this is first time through store the last message ids
-								else {
-									mLastViewedMessageIds = serverMessageIds;
-
-								}
-							}
-							else {
-								SurespotLog.v(TAG, "No conversations.");
-							}
-							mMainAdapter.sort();
-
-							((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-							mListView.setAdapter(mMainAdapter);
-							findViewById(R.id.progressBar).setVisibility(View.GONE);
-						};
-
-						public void onFailure(Throwable arg0, String arg1) {
-							// if we didn't get a 401
-							if (!SurespotApplication.getNetworkController().isUnauthorized()) {
-
-								SurespotLog.w(TAG, "getLastMessageIds: " + arg0.toString(), arg0);
-
-								((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-								findViewById(R.id.progressBar).setVisibility(View.GONE);
-								mListView.setAdapter(mMainAdapter);
-
-							}
-						};
-					});
+					mMainAdapter.sort();
 				}
-				else {
-					mListView.setAdapter(mMainAdapter);
-					((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-					findViewById(R.id.progressBar).setVisibility(View.GONE);
-				}
+
+				((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
+				mListView.setAdapter(mMainAdapter);
+				findViewById(R.id.progressBar).setVisibility(View.GONE);
+
 			}
 
 			@Override
@@ -371,7 +235,6 @@ public class FriendActivity extends SherlockActivity {
 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(InviteResponseReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mInvitationReceiver);
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 
 		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, null);
 
