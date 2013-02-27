@@ -230,6 +230,7 @@ public class ChatController {
 									if (dMessage != null && dMessage.getMimeType() != null && dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {									
 										SurespotApplication.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
 									}
+									updateLastViewedMessageId(otherUser, message.getId());
 									checkAndSendNextMessage(message);
 								}
 							}

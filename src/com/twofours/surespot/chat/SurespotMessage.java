@@ -146,8 +146,8 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		chatMessage.setType(jsonMessage.getString("type"));
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
-		chatMessage.setIv(jsonMessage.getString("iv"));
 		
+		chatMessage.setIv(jsonMessage.optString("iv", null));		
 		chatMessage.setCipherData(jsonMessage.optString("data", null));
 		chatMessage.setSubType(jsonMessage.optString("subtype", null));
 		chatMessage.setMimeType(jsonMessage.optString("mimeType", null));
@@ -186,8 +186,10 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			message.put("type", this.getType());
 			message.put("to", this.getTo());
 			message.put("from", this.getFrom());			
-			message.put("iv", this.getIv());
 			
+			if (this.getIv() != null) {
+				message.put("iv", this.getIv());
+			}			
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
