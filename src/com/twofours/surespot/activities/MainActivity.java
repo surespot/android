@@ -371,5 +371,10 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 	}
 
+	@Override
+	protected void onDestroy() {
 
+		super.onDestroy();
+		unbindService(mConnection);
+	}
 }

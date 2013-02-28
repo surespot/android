@@ -107,33 +107,41 @@ public class ChatController {
 			}
 		});
 		mViewPager.setOffscreenPageLimit(2);
-		
-		
-		
 
 		// get the tabs
 
 		boolean foundChat = false;
 		ArrayList<String> chatNames = SurespotApplication.getStateController().loadActiveChats();
 
-		if (currentChatName != null) {
-			for (String chatName : chatNames) {
+		for (String chatName : chatNames) {
 
-				if (chatName.equals(currentChatName)) {
-					foundChat = true;
-				}
-			}
-
-			if (!foundChat) {
-				chatNames.add(currentChatName);
+			if (currentChatName != null && chatName.equals(currentChatName)) {
 				foundChat = true;
 			}
+
+			ChatAdapter chatAdapter = new ChatAdapter(context);
+			mChatAdapters.put(chatName, chatAdapter);
+
+			// load savedmessages
+			loadMessages(chatName);
+
+		}
+
+		if (!foundChat && currentChatName != null) {
+			chatNames.add(currentChatName);
+			foundChat = true;
+			ChatAdapter chatAdapter = new ChatAdapter(context);
+			mChatAdapters.put(currentChatName, chatAdapter);
+
+			// load savedmessages
+			loadMessages(currentChatName);
+
 		}
 
 		mChatPagerAdapter.addChatNames(chatNames);
 
 		setCurrentChat(currentChatName);
-		
+
 		setOnWifi();
 
 		mSocketCallback = new IOCallback() {
@@ -419,6 +427,56 @@ public class ChatController {
 
 	private void connected() {
 
+		// // compute new message deltas
+		// SurespotApplication.getNetworkController().getLastMessageIds(new JsonHttpResponseHandler() {
+		//
+		// public void onSuccess(int arg0, JSONObject arg1) {
+		// SurespotLog.v(TAG, "getLastmessageids success status jsonobject");
+		//
+		// HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
+		//
+		// if (serverMessageIds != null && serverMessageIds.size() > 0) {
+		// // if we have counts
+		// if (mLastViewedMessageIds != null) {
+		// // set the deltas
+		// for (String user : serverMessageIds.keySet()) {
+		//
+		// // figure out new message counts
+		// int serverId = serverMessageIds.get(user);
+		// Integer localId = mLastViewedMessageIds.get(user);
+		// // SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
+		// // SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
+		//
+		// // new chat, all messages are new
+		// if (localId == null) {
+		// mLastViewedMessageIds.put(user, serverId);
+		// mHasNewMessages.put(user, true);
+		//
+		// }
+		// else {
+		//
+		// // compute delta
+		// int messageDelta = serverId - localId;
+		// // Integer unsent1 = g .get(user);
+		// // messageDelta = messageDelta - (unsent1 == null ? 0 : unsent1);
+		// mHasNewMessages.put(user, messageDelta > 0);
+		//
+		// }
+		// }
+		//
+		// }
+		// }
+		// }
+		// });
+
+		// reset read since reconnect flags
+		for (String chat : mReadSinceReconnect.keySet()) {
+			mReadSinceReconnect.put(chat, false);
+		}
+
+		loadFriends();
+		loadAllLatestMessages();
+
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
 		for (SurespotMessage message : resendMessages) {
@@ -443,59 +501,6 @@ public class ChatController {
 			message.setResendId(lastMessageID);
 			sendMessage(message);
 
-		}
-
-		// compute new message deltas
-		SurespotApplication.getNetworkController().getLastMessageIds(new JsonHttpResponseHandler() {
-
-			public void onSuccess(int arg0, JSONObject arg1) {
-				SurespotLog.v(TAG, "getLastmessageids success status jsonobject");
-
-				HashMap<String, Integer> serverMessageIds = Utils.jsonToMap(arg1);
-
-				if (serverMessageIds != null && serverMessageIds.size() > 0) {
-					// if we have counts
-					if (mLastViewedMessageIds != null) {
-						// set the deltas
-						for (String user : serverMessageIds.keySet()) {
-
-							// figure out new message counts
-							int serverId = serverMessageIds.get(user);
-							Integer localId = mLastViewedMessageIds.get(user);
-							// SurespotLog.v(TAG, "last localId for " + user + ": " + localId);
-							// SurespotLog.v(TAG, "last serverId for " + user + ": " + serverId);
-
-							// new chat, all messages are new
-							if (localId == null) {
-								mLastViewedMessageIds.put(user, serverId);
-								mHasNewMessages.put(user, true);
-
-							}
-							else {
-
-								// compute delta
-								int messageDelta = serverId - localId;
-								// Integer unsent1 = g .get(user);
-								// messageDelta = messageDelta - (unsent1 == null ? 0 : unsent1);
-								mHasNewMessages.put(user, messageDelta > 0);
-
-							}
-						}
-
-					}
-				}
-			}
-		});
-
-		// reset read since reconnect flags
-		for (String chat : mReadSinceReconnect.keySet()) {
-			mReadSinceReconnect.put(chat, false);
-		}
-
-		loadFriends();
-
-		if (mCurrentChat != null) {
-			loadLatestMessages(mCurrentChat);
 		}
 
 	}
@@ -687,7 +692,6 @@ public class ChatController {
 
 	private void loadLatestMessages(final String username) {
 		SurespotLog.v(TAG, "loadlatestMessages: " + username);
-		final ChatAdapter chatAdapter = getChatAdapter(mContext, username);
 
 		// get the list of messages
 		Integer lastMessageId = getLatestMessageId(username);
@@ -696,56 +700,8 @@ public class ChatController {
 		SurespotApplication.getNetworkController().getMessages(username, lastMessageId, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
+				handleMessages(username, jsonArray);
 
-				SurespotMessage message = null;
-
-				for (int i = 0; i < jsonArray.length(); i++) {
-					try {
-						JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-						message = SurespotMessage.toSurespotMessage(jsonMessage);
-
-						// if it's a system message from another user then check version
-						if (message.getType().equals("system")) {
-							if (message.getSubType().equals("revoke")) {
-								IdentityController.updateLatestVersion(mContext, message.getFrom(), message.getFromVersion());
-							}
-							else {
-								if (message.getSubType().equals("delete")) {
-									SurespotMessage dMessage = chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));
-
-									// if it's an image blow the http cache entry away
-									if (dMessage != null && dMessage.getMimeType() != null
-											&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-										SurespotApplication.getNetworkController().purgeCacheUrl(message.getCipherData());
-									}
-								}
-							}
-						}
-						else {
-							chatAdapter.addOrUpdateMessage(message, false);
-						}
-					}
-					catch (JSONException e) {
-						SurespotLog.w(TAG, username + ": error creating chat message: " + e.toString(), e);
-					}
-
-				}
-
-				if (message != null) {
-					SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
-
-					updateLastViewedMessageId(username, message.getId());
-
-				}
-				else {
-					// update to the last id if we didn't load any messages because they could have been added to the adapter when
-					// the tab wasn't showing
-					updateLastViewedMessageId(username, null);
-				}
-
-				// we've read the messages now, yay
-				mReadSinceReconnect.put(username, true);
-				chatAdapter.notifyDataSetChanged();
 			}
 
 			@Override
@@ -756,6 +712,116 @@ public class ChatController {
 			}
 		});
 
+	}
+
+	private void loadAllLatestMessages() {
+		SurespotLog.v(TAG, "loadAllLatestMessages ");
+
+		// gather up all the latest message IDs
+
+		// JSONObject messageIdHolder = new JSONObject();
+		JSONObject messageIds = new JSONObject();
+		for (Entry<String, ChatAdapter> eChatAdapter : mChatAdapters.entrySet()) {
+			try {
+				String user = eChatAdapter.getKey();				
+				
+				Integer lastMessageId = eChatAdapter.getValue().getLastMessageWithId().getId();
+				
+				if (lastMessageId == null || lastMessageId == 0) {
+					lastMessageId = mLastViewedMessageIds.get(user);
+				}
+				
+				if (lastMessageId != null && lastMessageId > 0) {
+					messageIds.put(ChatUtils.getSpot(IdentityController.getLoggedInUser(), user), lastMessageId);
+				}
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, "loadAllLatestMessages", e);
+			}
+		}
+
+		// messageIdHolder.put("messageIds", messageIds);
+
+		//
+		SurespotApplication.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, JSONArray jsonArray) {
+				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
+				for (int i = 0; i < jsonArray.length(); i++) {
+					try {
+						JSONObject jsonObject = jsonArray.getJSONObject(i);
+						String spot = jsonObject.getString("spot");
+						String otherUser = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
+						JSONArray messages = jsonObject.getJSONArray("messages");
+						handleMessages(otherUser, messages);
+					}
+					catch (JSONException e) {
+						SurespotLog.w(TAG, "loadLatestAllMessages", e);
+					}
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable error, String content) {
+				Utils.makeToast(mContext, "received latest messages faild: " + content);
+			}
+		});
+
+	}
+
+	private void handleMessages(String username, JSONArray jsonArray) {
+		SurespotLog.v(TAG,username + ": handleMessages");
+		final ChatAdapter chatAdapter = getChatAdapter(mContext, username);
+
+		SurespotMessage message = null;
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			try {
+				JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+				message = SurespotMessage.toSurespotMessage(jsonMessage);
+
+				// if it's a system message from another user then check version
+				if (message.getType().equals("system")) {
+					if (message.getSubType().equals("revoke")) {
+						IdentityController.updateLatestVersion(mContext, message.getFrom(), message.getFromVersion());
+					}
+					else {
+						if (message.getSubType().equals("delete")) {
+							SurespotMessage dMessage = chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));
+
+							// if it's an image blow the http cache entry away
+							if (dMessage != null && dMessage.getMimeType() != null
+									&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+								SurespotApplication.getNetworkController().purgeCacheUrl(message.getCipherData());
+							}
+						}
+					}
+				}
+				else {
+					chatAdapter.addOrUpdateMessage(message, false);
+				}
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, username + ": error creating chat message: " + e.toString(), e);
+			}
+
+		}
+
+		if (message != null) {
+			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
+
+			updateLastViewedMessageId(username, message.getId());
+
+		}
+		else {
+			// update to the last id if we didn't load any messages because they could have been added to the adapter when
+			// the tab wasn't showing
+			updateLastViewedMessageId(username, null);
+		}
+
+		// we've read the messages now, yay
+		mReadSinceReconnect.put(username, true);
+		chatAdapter.notifyDataSetChanged();
 	}
 
 	private Integer getEarliestMessageId(String username) {
@@ -877,7 +943,7 @@ public class ChatController {
 			loadMessages(username);
 
 			// load any new messages
-			loadLatestMessages(username);
+		//	loadLatestMessages(username);
 		}
 		return chatAdapter;
 	}

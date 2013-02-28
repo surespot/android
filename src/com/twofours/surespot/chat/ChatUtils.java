@@ -40,6 +40,12 @@ public class ChatUtils {
 	public static String getSpot(String from, String to) {
 		return (to.compareTo(from) < 0 ? to + ":" + from : from + ":" + to);
 	}
+	
+	public static String getOtherSpotUser(String spot, String user) {
+		String [] split = spot.split(":");
+		
+		return split[0].equals(user) ? split[1] : split[0]; 
+	}
 
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
