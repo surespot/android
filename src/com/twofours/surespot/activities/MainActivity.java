@@ -11,7 +11,6 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuInflater;
@@ -23,12 +22,10 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatController;
-import com.twofours.surespot.chat.ChatPagerAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
@@ -38,15 +35,11 @@ import com.viewpagerindicator.TitlePageIndicator;
 public class MainActivity extends SherlockFragmentActivity {
 	public static final String TAG = "MainActivity";
 
-	private ChatPagerAdapter mPagerAdapter;
-	private ViewPager mViewPager;
 	private ChatController mChatController;
 	private CredentialCachingService mCredentialCachingService;
-	private TitlePageIndicator mIndicator;
-	private FriendAdapter mMainAdapter;
-	private ListView mListView;
+
 	private NotificationManager mNotificationManager;
-	private boolean mChatsShowing;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -262,12 +255,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 		}
 
-		mChatsShowing = true;
 		SurespotApplication.setChatController(new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
 				(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager(), name));
 		mChatController = SurespotApplication.getChatController();
 		mChatController.onResume();
-
 	}
 
 	@Override
@@ -324,7 +315,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			// TODO paid version allows any file
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			Utils.configureActionBar(this, getString(R.string.select_image), mChatController.getCurrentChat(), true);
+		//	Utils.configureActionBar(this, getString(R.string.select_image), mChatController.getCurrentChat(), false);
 			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
 					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 			return true;

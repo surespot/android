@@ -61,7 +61,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	@Override
 	public CharSequence getPageTitle(int position) {
 		if (position == 0) {
-			return "friends";
+			return "home";
 		}
 		else {
 			if (mChatNames.size() > position - 1) {
@@ -133,7 +133,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 
 	public long getItemId(int position) {
 		if (position == 0) {
-			return "friends".hashCode();
+			return "home".hashCode();
 		}
 		else {
 			return mChatNames.get(position - 1).hashCode();

@@ -6,10 +6,13 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
@@ -42,6 +45,7 @@ public class ChatFragment extends SherlockFragment {
 	private boolean mLoading;
 	private int mPreviousTotal;
 	private boolean mDataLoaded;
+	private Button mSendButton;
 
 	public ChatFragment(ChatController chatController) {
 		mChatController = chatController;
@@ -76,8 +80,8 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
-	//mChatController = SurespotApplication.getChatController();
-		
+		// mChatController = SurespotApplication.getChatController();
+
 		SurespotLog.v(TAG, "onCreateView, username: " + mUsername);
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
@@ -143,11 +147,30 @@ public class ChatFragment extends SherlockFragment {
 		// view.findViewById(R.id.message_list_empty).setVisibility(View.GONE);
 		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 
-		Button sendButton = (Button) view.findViewById(R.id.bSend);
-		sendButton.setOnClickListener(new View.OnClickListener() {
+		mSendButton = (Button) view.findViewById(R.id.bSend);
+		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendMessage();
+				if (mEditText.getText().toString().length() > 0) {
+					sendMessage();
+				}
+				else {
+					// go to friends
+					// InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+					// ChatFragment.this.getActivity().INPUT_METHOD_SERVICE);
+					// imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
+					mChatController.setCurrentChat(null);
+				}
+			}
+		});
+
+		mSendButton.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				if (mEditText.getText().toString().length() == 0) {
+					mChatController.closeTab();
+				}
+				return true;
 			}
 		});
 		mEditText = (EditText) view.findViewById(R.id.etMessage);
@@ -155,12 +178,39 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
+
 				if (actionId == EditorInfo.IME_ACTION_SEND) {
-					//
+
 					sendMessage();
 					handled = true;
 				}
 				return handled;
+			}
+		});
+
+		mEditText.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				// TODO Auto-generated method stub
+				if (count > 0) {
+					mSendButton.setText("send");
+				}
+				else {
+					mSendButton.setText("home");
+				}
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				// TODO Auto-generated method stub
+
 			}
 		});
 
