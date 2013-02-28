@@ -87,7 +87,7 @@ public class SignupActivity extends SherlockActivity {
 		mMpd.incrProgress();
 
 		// see if the user exists
-		SurespotApplication.getNetworkController().userExists(username, new AsyncHttpResponseHandler() {
+		MainActivity.getNetworkController().userExists(username, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
@@ -122,7 +122,7 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
-										SurespotApplication.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA,
+										MainActivity.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA,
 												signature, new CookieResponseHandler() {
 
 													@Override

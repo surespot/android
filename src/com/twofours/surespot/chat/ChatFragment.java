@@ -1,7 +1,9 @@
 package com.twofours.surespot.chat;
 
-import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,15 +32,16 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ImageViewActivity;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.services.CredentialCachingService;
 
-@SuppressLint("ValidFragment")
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
-	private ChatController mChatController;
+	// private ChatController mChatController;
 	private String mUsername;
 	private ListView mListView;
 	private EditText mEditText;
@@ -46,9 +49,11 @@ public class ChatFragment extends SherlockFragment {
 	private int mPreviousTotal;
 	private boolean mDataLoaded;
 	private Button mSendButton;
+	private ChatAdapter mChatAdapter;
 
-	public ChatFragment(ChatController chatController) {
-		mChatController = chatController;
+	public ChatFragment() {
+		SurespotLog.v(TAG, "constructor");
+		// mChatController = MainActivity.getChatController();
 	}
 
 	public String getUsername() {
@@ -63,7 +68,8 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	public static ChatFragment newInstance(ChatController chatController, String username) {
-		ChatFragment cf = new ChatFragment(chatController);
+		ChatFragment cf = new ChatFragment();
+		// cf.setChatController(chatController);
 		Bundle bundle = new Bundle();
 		bundle.putString("username", username);
 		cf.setArguments(bundle);
@@ -75,26 +81,39 @@ public class ChatFragment extends SherlockFragment {
 		super.onCreate(savedInstanceState);
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
+
+		Intent intent = new Intent(this.getActivity(), CredentialCachingService.class);
+		getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
 	}
+
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+			SurespotLog.v(TAG, "caching service bound");
+			startup();
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+
+		}
+	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
-		// mChatController = SurespotApplication.getChatController();
+		// mChatController = MainActivity.getChatController();
 
 		SurespotLog.v(TAG, "onCreateView, username: " + mUsername);
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		//
-
-		final ChatAdapter chatAdapter = mChatController.getChatAdapter(this.getSherlockActivity().getBaseContext(), mUsername);
-
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
+				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 
 				// pull the message out
 				if (message != null) {
@@ -112,40 +131,14 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
+				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 				// make sure it's our message
 				if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
-					mChatController.deleteMessage(mUsername, message.getId());
+					MainActivity.getChatController().deleteMessage(mUsername, message.getId());
 				}
 				return true;
 			}
 		});
-		// listen for first change then set empty list view
-
-		if (!mDataLoaded) {
-			chatAdapter.registerDataSetObserver(new DataSetObserver() {
-				@Override
-				public void onChanged() {
-					if (!mDataLoaded) {
-						mDataLoaded = true;
-
-						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-						mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-						// // view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-						//
-						// // else {
-						// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-					}
-				}
-			});
-		}
-
-		mListView.setAdapter(chatAdapter);
-		mListView.setDividerHeight(1);
-		// mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-		view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		// view.findViewById(R.id.message_list_empty).setVisibility(View.GONE);
-		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 
 		mSendButton = (Button) view.findViewById(R.id.bSend);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
@@ -159,7 +152,7 @@ public class ChatFragment extends SherlockFragment {
 					// InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
 					// ChatFragment.this.getActivity().INPUT_METHOD_SERVICE);
 					// imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
-					mChatController.setCurrentChat(null);
+					MainActivity.getChatController().setCurrentChat(null);
 				}
 			}
 		});
@@ -168,7 +161,7 @@ public class ChatFragment extends SherlockFragment {
 			@Override
 			public boolean onLongClick(View v) {
 				if (mEditText.getText().toString().length() == 0) {
-					mChatController.closeTab();
+					MainActivity.getChatController().closeTab();
 				}
 				return true;
 			}
@@ -214,6 +207,43 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
+	
+
+		return view;
+	}
+
+	private void startup() {
+		SurespotLog.v(TAG, "startup");
+
+		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
+
+		// listen for first change then set empty list view
+
+		if (!mDataLoaded) {
+			mChatAdapter.registerDataSetObserver(new DataSetObserver() {
+				@Override
+				public void onChanged() {
+					if (!mDataLoaded) {
+						mDataLoaded = true;
+
+						getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
+						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+						// // viewfindViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+						//
+						// // else {
+						// // mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
+					}
+				}
+			});
+		}
+
+		mListView.setAdapter(mChatAdapter);
+		mListView.setDividerHeight(1);
+		// mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
+		getView().findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+		// viewfindViewById(R.id.message_list_empty).setVisibility(View.GONE);
+		// mListView.setEmptyView(viewfindViewById(R.id.progressBar));
+
 		Intent intent = getActivity().getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
@@ -248,13 +278,13 @@ public class ChatFragment extends SherlockFragment {
 					}
 				}
 
-				if (!mLoading && mChatController.hasEarlierMessages(mUsername) && firstVisibleItem <= 10) {
+				if (!mLoading && MainActivity.getChatController().hasEarlierMessages(mUsername) && firstVisibleItem <= 10) {
 					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
 					// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
 					// firstVisibleItem
 					// + ", visibleItemCount: " + visibleItemCount);
 					mLoading = true;
-					mChatController.loadEarlierMessages(mUsername);
+					MainActivity.getChatController().loadEarlierMessages(mUsername);
 
 				}
 			}
@@ -264,13 +294,20 @@ public class ChatFragment extends SherlockFragment {
 
 			}
 		});
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+		SurespotLog.v(TAG, "onActivityCreated");
 
-		return view;
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+		SurespotLog.v(TAG, "onResume");
 
 		Utils.logIntent(TAG, getActivity().getIntent());
 
@@ -287,13 +324,13 @@ public class ChatFragment extends SherlockFragment {
 	public void onDestroy() {
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
-
+		getActivity().unbindService(mConnection);
 	}
 
 	private void sendMessage() {
 		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
 		final String message = etMessage.getText().toString();
-		mChatController.sendMessage(mUsername, message, SurespotConstants.MimeTypes.TEXT);
+		MainActivity.getChatController().sendMessage(mUsername, message, SurespotConstants.MimeTypes.TEXT);
 
 		// TODO only clear on success
 		TextKeyListener.clear(etMessage.getText());

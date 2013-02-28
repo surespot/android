@@ -196,21 +196,21 @@ public class IdentityController {
 
 	private synchronized static void setLoggedInUser(Context context, String username, String password, Cookie cookie) {
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, username);
-		SurespotApplication.getCachingService().login(username, password, cookie);
+		MainActivity.getCachingService().login(username, password, cookie);
 	}
 
 	public static void logout() {
-		SurespotApplication.getChatController().logout();
-		SurespotApplication.getCachingService().logout();
-		SurespotApplication.getNetworkController().logout();
+		MainActivity.getChatController().logout();
+		MainActivity.getCachingService().logout();
+		MainActivity.getNetworkController().logout();
 	}
 
 	public static SurespotIdentity getIdentity(String username) {
-		return getIdentity(SurespotApplication.getContext(), username);
+		return getIdentity(MainActivity.getContext(), username);
 	}
 
 	public static SurespotIdentity getIdentity(Context context) {
-		return getIdentity(context, SurespotApplication.getCachingService().getLoggedInUser());
+		return getIdentity(context, MainActivity.getCachingService().getLoggedInUser());
 	}
 
 	private static SurespotIdentity getIdentity(Context context, String username) {
@@ -222,7 +222,7 @@ public class IdentityController {
 		if (identity == null) {
 			// get the password from the caching service
 			if (password == null) {
-				password = SurespotApplication.getCachingService().getPassword(username);
+				password = MainActivity.getCachingService().getPassword(username);
 			}
 
 			if (password != null) {
@@ -292,7 +292,7 @@ public class IdentityController {
 
 	public static boolean hasIdentity() {
 		if (!mHasIdentity) {
-			mHasIdentity = getIdentityNames(SurespotApplication.getContext()).size() > 0;
+			mHasIdentity = getIdentityNames(MainActivity.getContext()).size() > 0;
 		}
 		return mHasIdentity;
 	}
@@ -303,7 +303,7 @@ public class IdentityController {
 	}
 
 	public static String getLoggedInUser() {
-		CredentialCachingService service = SurespotApplication.getCachingService();
+		CredentialCachingService service = MainActivity.getCachingService();
 		if (service != null) {
 			return service.getLoggedInUser();
 
@@ -315,11 +315,11 @@ public class IdentityController {
 
 	public static Cookie getCookie() {
 		Cookie cookie = null;
-		CredentialCachingService service = SurespotApplication.getCachingService();
+		CredentialCachingService service = MainActivity.getCachingService();
 		if (service != null) {
 			String user = service.getLoggedInUser();
 			if (user != null) {
-				cookie = SurespotApplication.getCachingService().getCookie(user);
+				cookie = MainActivity.getCachingService().getCookie(user);
 			}
 		}
 		return cookie;
@@ -335,7 +335,7 @@ public class IdentityController {
 		if (FileUtils.ensureDir(exportDir.getPath())) {
 
 			// do OOB verification
-			SurespotApplication.getNetworkController().validate(username, password,
+			MainActivity.getNetworkController().validate(username, password,
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
 							String path = saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
@@ -376,7 +376,7 @@ public class IdentityController {
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
-			SurespotApplication.getNetworkController().validate(username, password,
+			MainActivity.getNetworkController().validate(username, password,
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, password), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
@@ -427,15 +427,15 @@ public class IdentityController {
 	 * @return
 	 */
 	public static String getTheirLatestVersion(String username) {
-		return SurespotApplication.getCachingService().getLatestVersion(username);
+		return MainActivity.getCachingService().getLatestVersion(username);
 	}
 
 	public static String getOurLatestVersion() {
-		return getIdentity(SurespotApplication.getContext()).getLatestVersion();
+		return getIdentity(MainActivity.getContext()).getLatestVersion();
 	}
 
 	public static String getOurLatestVersion(String username) {
-		return getIdentity(SurespotApplication.getContext(), username).getLatestVersion();
+		return getIdentity(MainActivity.getContext(), username).getLatestVersion();
 	}
 
 	public static void rollKeys(Context context, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {
@@ -468,13 +468,13 @@ public class IdentityController {
 
 			// bad news
 			// first log them out
-			SurespotApplication.getCachingService().logout();
+			MainActivity.getCachingService().logout();
 
 			// clear the data
 			StateController.wipeState(context, username);
 
 			// delete identities locally?
-			SurespotApplication.getNetworkController().setUnauthorized(true);
+			MainActivity.getNetworkController().setUnauthorized(true);
 
 			// boot them out
 			Intent intent = new Intent(context, MainActivity.class);
@@ -485,7 +485,7 @@ public class IdentityController {
 			// TODO notify user?
 		}
 		else {
-			SurespotApplication.getCachingService().updateLatestVersion(username, version);
+			MainActivity.getCachingService().updateLatestVersion(username, version);
 		}
 
 	}

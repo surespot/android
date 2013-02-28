@@ -1,6 +1,5 @@
 package com.twofours.surespot.friends;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
@@ -24,12 +23,11 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
-@SuppressLint("ValidFragment")
 public class FriendFragment extends SherlockFragment {
 	private FriendAdapter mMainAdapter;
 
@@ -38,10 +36,11 @@ public class FriendFragment extends SherlockFragment {
 	private ChatController mChatController;
 	private ListView mListView;
 	
+	public FriendFragment() {
+		mChatController = MainActivity.getChatController();
+	}
 	
-	
-	
-	public FriendFragment(ChatController chatController) {
+	public void setChatController(ChatController chatController) {
 		SurespotLog.v(TAG, "constructor");
 		mChatController = chatController;
 	}
@@ -116,7 +115,7 @@ public class FriendFragment extends SherlockFragment {
 			}
 
 			mMpdInviteFriend.incrProgress();
-			SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) { // TODO
 																		// indicate

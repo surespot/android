@@ -31,7 +31,6 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -80,7 +79,7 @@ public class ChatController {
 	// private
 
 	//
-	public ChatController(Context context, ViewPager viewPager, TitlePageIndicator pageIndicator, FragmentManager fm, String currentChatName) {
+	public ChatController(Context context, ViewPager viewPager, TitlePageIndicator pageIndicator, FragmentManager fm) {
 		SurespotLog.v(TAG, "constructor.");
 
 		mContext = context;
@@ -107,41 +106,6 @@ public class ChatController {
 		});
 		mViewPager.setOffscreenPageLimit(2);
 
-		// get the tabs
-
-		boolean foundChat = false;
-		ArrayList<String> chatNames = SurespotApplication.getStateController().loadActiveChats();
-
-		for (String chatName : chatNames) {
-
-			if (currentChatName != null && chatName.equals(currentChatName)) {
-				foundChat = true;
-			}
-
-			ChatAdapter chatAdapter = new ChatAdapter(context);
-			mChatAdapters.put(chatName, chatAdapter);
-			mFriendAdapter.addActiveFriend(chatName);
-
-			// load savedmessages
-			loadMessages(chatName);
-
-		}
-
-		if (!foundChat && currentChatName != null) {
-			chatNames.add(currentChatName);
-			foundChat = true;
-			ChatAdapter chatAdapter = new ChatAdapter(context);
-			mChatAdapters.put(currentChatName, chatAdapter);
-			mFriendAdapter.addActiveFriend(currentChatName);
-			// load savedmessages
-			loadMessages(currentChatName);
-
-		}
-
-		mChatPagerAdapter.addChatNames(chatNames);
-
-		setCurrentChat(currentChatName);
-
 		setOnWifi();
 
 		mSocketCallback = new IOCallback() {
@@ -166,7 +130,7 @@ public class ChatController {
 			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
-					SurespotApplication.getNetworkController().setUnauthorized(true);
+					MainActivity.getNetworkController().setUnauthorized(true);
 
 					SurespotLog.v(TAG, "Got 403 from socket.io, launching login intent.");
 					Intent intent = new Intent(mContext, MainActivity.class);
@@ -206,12 +170,12 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					// Utils.makeToast(this,SurespotApplication.getContext(),
+					// Utils.makeToast(this,mContext,
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-					Intent intent = new Intent(SurespotApplication.getContext(), MainActivity.class);
+					Intent intent = new Intent(mContext, MainActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					SurespotApplication.getContext().startActivity(intent);
+					mContext.startActivity(intent);
 
 				}
 			}
@@ -241,7 +205,7 @@ public class ChatController {
 				connected();
 
 				sendMessages();
-				SurespotApplication.getContext().registerReceiver(mConnectivityReceiver,
+				mContext.registerReceiver(mConnectivityReceiver,
 						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			}
@@ -295,7 +259,7 @@ public class ChatController {
 								String version = message.getFromVersion();
 
 								// this will force download of key
-								IdentityController.updateLatestVersion(SurespotApplication.getContext(), username, version);
+								IdentityController.updateLatestVersion(mContext, username, version);
 							}
 
 							else {
@@ -306,7 +270,7 @@ public class ChatController {
 									// if it's an image blow the http cache entry away
 									if (dMessage != null && dMessage.getMimeType() != null
 											&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-										SurespotApplication.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
+										MainActivity.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
 									}
 									updateLastViewedMessageId(otherUser, message.getId(), 0);
 									checkAndSendNextMessage(message);
@@ -369,6 +333,46 @@ public class ChatController {
 		};
 
 	}
+	
+	//Can't do this until after instantiation as it creates fragments which require a ChatController
+	public void init( String currentChatName) {
+
+		// get the tabs
+
+		boolean foundChat = false;
+		ArrayList<String> chatNames = MainActivity.getStateController().loadActiveChats();
+
+		for (String chatName : chatNames) {
+
+			if (currentChatName != null && chatName.equals(currentChatName)) {
+				foundChat = true;
+			}
+
+			ChatAdapter chatAdapter = new ChatAdapter(mContext);
+			mChatAdapters.put(chatName, chatAdapter);
+			mFriendAdapter.addActiveFriend(chatName);
+
+			// load savedmessages
+			loadMessages(chatName);
+
+		}
+
+		if (!foundChat && currentChatName != null) {
+			chatNames.add(currentChatName);
+			foundChat = true;
+			ChatAdapter chatAdapter = new ChatAdapter(mContext);
+			mChatAdapters.put(currentChatName, chatAdapter);
+			mFriendAdapter.addActiveFriend(currentChatName);
+			// load savedmessages
+			loadMessages(currentChatName);
+
+		}
+
+		mChatPagerAdapter.addChatNames(chatNames);
+
+		setCurrentChat(currentChatName);
+
+	}
 
 	private void connect() {
 
@@ -381,9 +385,9 @@ public class ChatController {
 		if (cookie == null) {
 			// need to login
 			// SurespotLog.v(TAG, "No session cookie, starting Login activity.");
-			// Intent startupIntent = new Intent(SurespotApplication.getContext(), StartupActivity.class);
+			// Intent startupIntent = new Intent(mContext, StartupActivity.class);
 			// startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			// SurespotApplication.getContext().startActivity(startupIntent);
+			// mContext.startActivity(startupIntent);
 			return;
 		}
 
@@ -410,7 +414,7 @@ public class ChatController {
 
 		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
 		try {
-			SurespotApplication.getContext().unregisterReceiver(mConnectivityReceiver);
+			mContext.unregisterReceiver(mConnectivityReceiver);
 		}
 		catch (IllegalArgumentException e) {
 			if (e.getMessage().contains("Receiver not registered")) {
@@ -426,7 +430,7 @@ public class ChatController {
 	private void connected() {
 
 		// // compute new message deltas
-		// SurespotApplication.getNetworkController().getLastMessageIds(new JsonHttpResponseHandler() {
+		// MainActivity.getNetworkController().getLastMessageIds(new JsonHttpResponseHandler() {
 		//
 		// public void onSuccess(int arg0, JSONObject arg1) {
 		// SurespotLog.v(TAG, "getLastmessageids success status jsonobject");
@@ -510,7 +514,7 @@ public class ChatController {
 
 	private void setOnWifi() {
 		// get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
-		ConnectivityManager connectivityManager = (ConnectivityManager) SurespotApplication.getContext().getSystemService(
+		ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(
 				Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null) {
@@ -634,7 +638,7 @@ public class ChatController {
 		if (firstMessageId != null) {
 			if (firstMessageId > 1) {
 				SurespotLog.v(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
-				SurespotApplication.getNetworkController().getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
+				MainActivity.getNetworkController().getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray jsonArray) {
 						// on async http request, response seems to come back
@@ -686,7 +690,7 @@ public class ChatController {
 		Integer lastMessageId = getLatestMessageId(username);
 
 		SurespotLog.v(TAG, username + ": asking server for messages after messageId: " + lastMessageId);
-		SurespotApplication.getNetworkController().getMessages(username, lastMessageId, new JsonHttpResponseHandler() {
+		MainActivity.getNetworkController().getMessages(username, lastMessageId, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				handleMessages(username, jsonArray);
@@ -695,7 +699,7 @@ public class ChatController {
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				// if (!SurespotApplication.getNetworkController().isUnauthorized()) {
+				// if (!MainActivity.getNetworkController().isUnauthorized()) {
 				SurespotLog.w(TAG, username + ": getMessages", error);
 
 			}
@@ -736,7 +740,7 @@ public class ChatController {
 		// messageIdHolder.put("messageIds", messageIds);
 
 		//
-		SurespotApplication.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
+		MainActivity.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, JSONArray jsonArray) {
 				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
@@ -785,7 +789,7 @@ public class ChatController {
 							// if it's an image blow the http cache entry away
 							if (dMessage != null && dMessage.getMimeType() != null
 									&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-								SurespotApplication.getNetworkController().purgeCacheUrl(message.getCipherData());
+								MainActivity.getNetworkController().purgeCacheUrl(message.getCipherData());
 							}
 						}
 					}
@@ -844,7 +848,7 @@ public class ChatController {
 	private void loadMessages(String username) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
-		getChatAdapter(mContext, username).addMessages(SurespotApplication.getStateController().loadMessages(spot));
+		getChatAdapter(mContext, username).addMessages(MainActivity.getStateController().loadMessages(spot));
 	}
 
 	private void saveMessages() {
@@ -853,7 +857,7 @@ public class ChatController {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 			String us = entry.getKey();
 			String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), us);
-			SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages());
+			MainActivity.getStateController().saveMessages(spot, entry.getValue().getMessages());
 		}
 
 	}
@@ -861,11 +865,11 @@ public class ChatController {
 	private void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		// SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		SurespotApplication.getStateController().saveUnsentMessages(mResendBuffer);
+		MainActivity.getStateController().saveUnsentMessages(mResendBuffer);
 	}
 
 	private void loadUnsentMessages() {
-		Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages().iterator();
+		Iterator<SurespotMessage> iterator = MainActivity.getStateController().loadUnsentMessages().iterator();
 		while (iterator.hasNext()) {
 			mSendBuffer.add(iterator.next());
 		}
@@ -883,7 +887,7 @@ public class ChatController {
 
 		if (!mLastViewedMessageIds.isEmpty()) {
 			SurespotLog.v(TAG, "saving last viewed message ids");
-			SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
+			MainActivity.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 		}
 
 		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
@@ -891,14 +895,14 @@ public class ChatController {
 
 		// save active chats
 
-		SurespotApplication.getStateController().saveActiveChats(mChatAdapters.keySet());
+		MainActivity.getStateController().saveActiveChats(mChatAdapters.keySet());
 
 		// }
 	}
 
 	private void loadState() {
 		SurespotLog.v(TAG, "loadState");
-		mLastViewedMessageIds = SurespotApplication.getStateController().loadLastViewMessageIds();
+		mLastViewedMessageIds = MainActivity.getStateController().loadLastViewMessageIds();
 		loadUnsentMessages();
 	}
 
@@ -995,7 +999,7 @@ public class ChatController {
 			// final String ourVersion = IdentityController.getOurLatestVersion();
 			// final String theirVersion = IdentityController.getTheirLatestVersion(username);
 			//
-			// // SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
+			// // MainActivity.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
 			// return null;
 			// }
 			// }.execute();
@@ -1069,7 +1073,7 @@ public class ChatController {
 		mChatAdapters.clear();
 		mCurrentChat = null;
 		saveState();
-		Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.LAST_CHAT, null);
+		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, null);
 	}
 
 	public void deleteMessage(String username, Integer id) {
@@ -1093,7 +1097,7 @@ public class ChatController {
 
 	private void loadFriends() {
 		// get the list of friends
-		SurespotApplication.getNetworkController().getFriends(new JsonHttpResponseHandler() {
+		MainActivity.getNetworkController().getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				SurespotLog.v(TAG, "getFriends success.");
@@ -1112,7 +1116,7 @@ public class ChatController {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				// if we didn't get a 401
-				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
+				if (!MainActivity.getNetworkController().isUnauthorized()) {
 
 					SurespotLog.w(TAG, "getFriends: " + content, arg0);
 

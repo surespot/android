@@ -1,6 +1,16 @@
 package com.twofours.surespot.activities;
 
 import java.io.File;
+import java.security.Security;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.acra.annotation.ReportsCrashes;
 
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -20,9 +30,11 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -32,14 +44,41 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.viewpagerindicator.TitlePageIndicator;
 
+@ReportsCrashes(formKey = "dHBRcnQzWFR5c0JwZW9tNEdOLW9oNHc6MQ")
 public class MainActivity extends SherlockFragmentActivity {
 	public static final String TAG = "MainActivity";
 
-	private ChatController mChatController;
-	private CredentialCachingService mCredentialCachingService;
-
+	
 	private NotificationManager mNotificationManager;
+	private static CredentialCachingService mCredentialCachingService;
+	private static NetworkController mNetworkController;
+	private static StateController mStateController;
+	private static Context mContext;
+	
+	private static ChatController mChatController;
 
+	private static final int CORE_POOL_SIZE = 5;
+	private static final int MAXIMUM_POOL_SIZE = 10;
+	private static final int KEEP_ALIVE = 1;
+
+	//create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
+	//we need a tall queue and a slim pipe
+	private static final ThreadFactory sThreadFactory = new ThreadFactory() {
+		private final AtomicInteger mCount = new AtomicInteger(1);
+
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "surespot #" + mCount.getAndIncrement());
+		}
+	};
+
+	
+	private static final BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>();
+
+	/**
+	 * An {@link Executor} that can be used to execute tasks in parallel.
+	 */
+	public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
+			TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +91,27 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		SurespotApplication.setStartupIntent(getIntent());
 		Utils.logIntent(TAG, getIntent());
+		
+	
+		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
+		mContext = getApplicationContext();
+
+		SurespotConfiguration.LoadConfigProperties(mContext);
+
+		intent = new Intent(this, CredentialCachingService.class);
+		SurespotLog.v(TAG, "starting cache service");
+		startService(intent);
+
+		mStateController = new StateController();
+		
+
+		mChatController = new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
+				(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
+	//	SurespotApplication.setChatController(mChatController);
+
+	
+		mChatController.init(null);
+		mChatController.onResume();
 
 	}
 
@@ -62,8 +122,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			mCredentialCachingService = binder.getService();
 
 			// make sure these are there so startup code can execute
-			SurespotApplication.setCachingService(mCredentialCachingService);
-			SurespotApplication.setNetworkController(new NetworkController(MainActivity.this));
+			//SurespotApplication.setCachingService(mCredentialCachingService);
+			mNetworkController = new NetworkController(MainActivity.this);
 			startup();
 		}
 
@@ -193,8 +253,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch");
 
-		NetworkController networkController = SurespotApplication.getNetworkController();
-		if (networkController != null) {
+	
 			// make sure the gcm is set
 
 			// use case:
@@ -204,7 +263,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			// so we need to upload the gcm here if we haven't already
 
-			networkController.registerGcmId(new AsyncHttpResponseHandler() {
+			mNetworkController.registerGcmId(new AsyncHttpResponseHandler() {
 
 				@Override
 				public void onSuccess(int arg0, String arg1) {
@@ -216,7 +275,7 @@ public class MainActivity extends SherlockFragmentActivity {
 					SurespotLog.e(TAG, arg0.toString(), arg0);
 				}
 			});
-		}
+		
 
 		String action = intent.getAction();
 		String type = intent.getType();
@@ -255,10 +314,13 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 		}
 
-		SurespotApplication.setChatController(new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
-				(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager(), name));
-		mChatController = SurespotApplication.getChatController();
-		mChatController.onResume();
+//		mChatController = MainActivity.getChatController();
+
+	//	mChatController = new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
+		//		(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
+	//	SurespotApplication.setChatController(mChatController);
+
+	
 	}
 
 	@Override
@@ -315,7 +377,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			// TODO paid version allows any file
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-		//	Utils.configureActionBar(this, getString(R.string.select_image), mChatController.getCurrentChat(), false);
+			// Utils.configureActionBar(this, getString(R.string.select_image), mChatController.getCurrentChat(), false);
 			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
 					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 			return true;
@@ -351,6 +413,43 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onDestroy() {
 
 		super.onDestroy();
+		SurespotLog.v(TAG, "onDestroy");
 		unbindService(mConnection);
 	}
+	
+
+	public static CredentialCachingService getCachingService() {
+
+		return mCredentialCachingService;
+	}
+
+	public static void setCachingService(CredentialCachingService cachingService) {
+		mCredentialCachingService = cachingService;
+	}
+
+	public static NetworkController getNetworkController() {
+		return mNetworkController;
+	}
+
+	public static void setNetworkController(NetworkController networkController) {
+		mNetworkController = networkController;
+	}
+
+	public static StateController getStateController() {
+		return mStateController;
+	}
+
+	public static Context getContext() {
+		return mContext;
+	}
+
+
+	public static void setChatController(ChatController chatController) {
+		mChatController = chatController;
+	}
+
+	public static ChatController getChatController() {
+		return mChatController;
+	}
+
 }

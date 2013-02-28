@@ -114,7 +114,7 @@ public class ManageKeysActivity extends SherlockActivity {
 
 		
 		// get a key update token from the server
-		SurespotApplication.getNetworkController().getKeyToken(username, password, authSignature, new JsonHttpResponseHandler() {
+		MainActivity.getNetworkController().getKeyToken(username, password, authSignature, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, final JSONObject response) {
 
@@ -150,7 +150,7 @@ public class ManageKeysActivity extends SherlockActivity {
 					protected void onPostExecute(final RollKeysWrapper result) {
 						if (result != null) {
 							// upload all this crap to the server
-							SurespotApplication.getNetworkController().updateKeys(username, password,
+							MainActivity.getNetworkController().updateKeys(username, password,
 									EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 									EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
 									result.keyVersion, new AsyncHttpResponseHandler() {

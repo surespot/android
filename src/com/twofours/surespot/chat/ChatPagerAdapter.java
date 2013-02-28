@@ -11,7 +11,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendFragment;
 
-public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
+public class ChatPagerAdapter extends android.support.v4.app.FragmentStatePagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
@@ -28,7 +28,9 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	public Fragment getItem(int i) {
 		SurespotLog.v(TAG, "getItem, I: " + i);
 		if (i == 0) {
-			return new FriendFragment(mChatController);
+			FriendFragment ff = new FriendFragment();
+			ff.setChatController(mChatController);
+			return ff;
 		}
 		else {
 			return ChatFragment.newInstance(mChatController, mChatNames.get(i - 1));

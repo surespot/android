@@ -49,7 +49,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 	protected void onRegistered(final Context context, final String id) {
 		// shoved it in shared prefs
 		SurespotLog.v(TAG, "Received gcm id, saving it in shared prefs.");
-		Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
 
 		// TODO use password instead of session?
 		// TODO retries?
@@ -74,7 +74,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				return;
 			}
 
-			client.setCookieStore(SurespotApplication.getNetworkController().getCookieStore());
+			client.setCookieStore(MainActivity.getNetworkController().getCookieStore());
 
 			Map<String, String> params = new HashMap<String, String>();
 			params.put("gcmId", id);

@@ -48,17 +48,17 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 							}
 
 							// wipe last viewed message ids
-							SurespotApplication.getStateController().saveLastViewedMessageIds(null);
+							MainActivity.getStateController().saveLastViewedMessageIds(null);
 
 							// wipe active chats
-							SurespotApplication.getStateController().saveActiveChats(null);
+							MainActivity.getStateController().saveActiveChats(null);
 
 							// last chat and user we had open
 							Utils.putSharedPrefsString(SettingsActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 							Utils.putSharedPrefsString(SettingsActivity.this, SurespotConstants.PrefNames.LAST_USER, null);
 
 							// network caches
-							SurespotApplication.getNetworkController().clearCache();
+							MainActivity.getNetworkController().clearCache();
 
 							// captured image dir
 							FileUtils.wipeImageCaptureDir(SettingsActivity.this);

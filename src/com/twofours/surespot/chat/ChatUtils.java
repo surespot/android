@@ -24,7 +24,7 @@ import android.net.Uri;
 import android.provider.MediaStore.Images;
 
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -113,7 +113,7 @@ public class ChatUtils {
 								}
 							}
 						};
-						SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+						MainActivity.THREAD_POOL_EXECUTOR.execute(runnable);
 					}
 					else {
 						dataStream = context.getContentResolver().openInputStream(imageUri);
@@ -125,7 +125,7 @@ public class ChatUtils {
 					String theirVersion = IdentityController.getTheirLatestVersion(to);
 					String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
 							fileOutputStream);
-					SurespotApplication.getNetworkController().postFileStream(context, ourVersion, to, theirVersion, iv, fileInputStream,
+					MainActivity.getNetworkController().postFileStream(context, ourVersion, to, theirVersion, iv, fileInputStream,
 							SurespotConstants.MimeTypes.IMAGE, callback);
 
 				}
@@ -137,7 +137,7 @@ public class ChatUtils {
 			}
 		};
 		
-		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+		MainActivity.THREAD_POOL_EXECUTOR.execute(runnable);
 
 	}
 

@@ -144,7 +144,7 @@ public class StartupActivity extends Activity {
 
 	private void launch(Intent intent) {
 
-		NetworkController networkController = SurespotApplication.getNetworkController();
+		NetworkController networkController = MainActivity.getNetworkController();
 		if (networkController != null) {
 			// make sure the gcm is set
 

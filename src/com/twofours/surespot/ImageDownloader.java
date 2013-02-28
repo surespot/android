@@ -35,6 +35,7 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -162,7 +163,7 @@ public class ImageDownloader {
 
 		@Override
 		protected Bitmap doInBackground(Void... params) {
-			InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(SurespotApplication.getContext(),
+			InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
 					mMessage.getCipherData());
 
 			Bitmap bitmap = null;

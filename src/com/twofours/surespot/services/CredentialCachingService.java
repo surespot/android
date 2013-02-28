@@ -19,7 +19,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.PublicKeys;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -55,7 +55,7 @@ public class CredentialCachingService extends Service {
 			public PublicKeys load(PublicKeyPairKey key) throws Exception {
 
 				// if key.getVersion() is null this will return the latest keypair
-				String result = SurespotApplication.getNetworkController().getPublicKeysSync(key.getUsername(), key.getVersion());
+				String result = MainActivity.getNetworkController().getPublicKeysSync(key.getUsername(), key.getVersion());
 				if (result != null) {
 
 					JSONObject json = new JSONObject(result);
@@ -173,7 +173,7 @@ public class CredentialCachingService extends Service {
 		if (latestVersion == null) {
 			// get the latest key pair from the server
 
-			String result = SurespotApplication.getNetworkController().getPublicKeysSync(username, null);
+			String result = MainActivity.getNetworkController().getPublicKeysSync(username, null);
 			if (result != null) {
 				PublicKeys publicKeys = IdentityController.recreatePublicKeyPair(result);
 

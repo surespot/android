@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -205,7 +206,7 @@ public class StateController {
 	private String getFilename(String filename) {
 		String user = IdentityController.getLoggedInUser();
 		if (user != null) {
-			String dir = FileUtils.getStateDir(SurespotApplication.getContext()) + File.separator + user;
+			String dir = FileUtils.getStateDir(MainActivity.getContext()) + File.separator + user;
 			if (FileUtils.ensureDir(dir)) {
 				return dir + File.separator + filename + STATE_EXTENSION;
 			}

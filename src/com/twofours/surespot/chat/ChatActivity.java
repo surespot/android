@@ -57,7 +57,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 
 		Utils.logIntent(TAG, getIntent());
 
-		mChatController = SurespotApplication.getChatController();
+		mChatController = MainActivity.getChatController();
 
 		setContentView(R.layout.activity_chat);
 
@@ -74,7 +74,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		// get the tabs
 
 		boolean foundChat = false;
-		ArrayList<String> chatNames = SurespotApplication.getStateController().loadActiveChats();
+		ArrayList<String> chatNames = MainActivity.getStateController().loadActiveChats();
 
 		if (name != null) {
 			for (String chatName : chatNames) {
@@ -162,7 +162,7 @@ public class ChatActivity extends SherlockFragmentActivity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageBroadcastReceiver);
 
 		// save open tabs
-		SurespotApplication.getStateController().saveActiveChats(mPagerAdapter.getChatNames());
+		MainActivity.getStateController().saveActiveChats(mPagerAdapter.getChatNames());
 
 	}
 

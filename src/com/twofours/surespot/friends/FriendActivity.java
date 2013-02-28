@@ -64,7 +64,7 @@ public class FriendActivity extends SherlockActivity {
 		Utils.logIntent(TAG, getIntent());
 		Utils.configureActionBar(this, null, null, false);
 
-		mChatController = SurespotApplication.getChatController();
+		mChatController = MainActivity.getChatController();
 		setContentView(R.layout.activity_friend);
 
 		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
@@ -187,7 +187,7 @@ public class FriendActivity extends SherlockActivity {
 	//	mChatController.onResume(false);
 
 		// get the list of friends
-		SurespotApplication.getNetworkController().getFriends(new JsonHttpResponseHandler() {
+		MainActivity.getNetworkController().getFriends(new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				SurespotLog.v(TAG, "getFriends success.");
@@ -209,7 +209,7 @@ public class FriendActivity extends SherlockActivity {
 			@Override
 			public void onFailure(Throwable arg0, String content) {
 				// if we didn't get a 401
-				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
+				if (!MainActivity.getNetworkController().isUnauthorized()) {
 
 					SurespotLog.w(TAG, "getFriends: " + content, arg0);
 
@@ -239,7 +239,7 @@ public class FriendActivity extends SherlockActivity {
 		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, null);
 
 		// put the active chats in if we've fucked with them
-		SurespotApplication.getStateController().saveActiveChats(mMainAdapter.getActiveChats());
+		MainActivity.getStateController().saveActiveChats(mMainAdapter.getActiveChats());
 		// Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
 
 		mChatController.onPause();
@@ -257,7 +257,7 @@ public class FriendActivity extends SherlockActivity {
 			}
 
 			mMpdInviteFriend.incrProgress();
-			SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) { // TODO
 																		// indicate

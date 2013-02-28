@@ -43,7 +43,7 @@ public class ImageViewActivity extends SherlockActivity {
 					@Override
 					protected Bitmap doInBackground(Void... params) {
 
-						InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(ImageViewActivity.this,
+						InputStream imageStream = MainActivity.getNetworkController().getFileStream(ImageViewActivity.this,
 								message.getCipherData());
 
 						Bitmap bitmap = null;

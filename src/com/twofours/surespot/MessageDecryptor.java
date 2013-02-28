@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.widget.TextView;
 
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 
@@ -52,7 +53,7 @@ public class MessageDecryptor {
 		DecryptionTask task = new DecryptionTask(textView, message);
 		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 		textView.setTag(decryptionTaskWrapper);
-		task.execute();
+		task.executeOnExecutor(MainActivity.THREAD_POOL_EXECUTOR);
 
 	}
 
