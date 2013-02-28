@@ -1,0 +1,168 @@
+package com.twofours.surespot.friends;
+
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.method.TextKeyListener;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
+
+import com.actionbarsherlock.app.SherlockFragment;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.LetterOrDigitInputFilter;
+import com.twofours.surespot.MultiProgressDialog;
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+
+@SuppressLint("ValidFragment")
+public class FriendFragment extends SherlockFragment {
+	private FriendAdapter mMainAdapter;
+
+	protected static final String TAG = "FriendFragment";
+	private MultiProgressDialog mMpdInviteFriend;
+	private ChatController mChatController;
+	private ListView mListView;
+	
+	
+	
+	
+	public FriendFragment(ChatController chatController) {
+		SurespotLog.v(TAG, "constructor");
+		mChatController = chatController;
+	}
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		super.onCreateView(inflater, container, savedInstanceState);
+		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
+				
+		mMainAdapter = mChatController.getFriendAdapter();
+
+		mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
+
+		mListView = (ListView) view.findViewById(R.id.main_list);
+		mListView.setEmptyView(view.findViewById(R.id.progressBar));
+		// findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+
+		// click on friend to join chat
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Friend friend = (Friend) mMainAdapter.getItem(position);
+				if (friend.isFriend()) {
+					mChatController.setCurrentChat(friend.getName());
+					
+					
+				}
+			}
+		});
+
+		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
+		addFriendButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				inviteFriend();
+			}
+		});
+
+		EditText editText = (EditText) view.findViewById(R.id.etFriend);
+		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					//
+					inviteFriend();
+					handled = true;
+				}
+				return handled;
+			}
+		});
+
+		// TODO adapter observer
+		((ListView) view.findViewById(R.id.main_list)).setEmptyView(view.findViewById(R.id.main_list_empty));
+		mListView.setAdapter(mMainAdapter);
+		view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+
+		
+		return view;
+	};
+	
+
+	private void inviteFriend() {
+		final EditText etFriend = ((EditText) getView().findViewById(R.id.etFriend));
+		final String friend = etFriend.getText().toString();
+
+		if (friend.length() > 0) {
+			if (friend.equals(IdentityController.getLoggedInUser())) {
+				// TODO let them be friends with themselves?
+				Utils.makeToast(this.getActivity(), "You can't be friends with yourself, bro.");
+				return;
+			}
+
+			mMpdInviteFriend.incrProgress();
+			SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String arg0) { // TODO
+																		// indicate
+																		// in
+																		// the
+																		// UI
+					// that the request is
+					// pending somehow
+					TextKeyListener.clear(etFriend.getText());
+					mMainAdapter.addFriendInvited(friend);
+					Utils.makeToast(FriendFragment.this.getActivity(), friend + " has been invited to be your friend.");
+				}
+
+				@Override
+				public void onFailure(Throwable arg0, String content) {
+					if (arg0 instanceof HttpResponseException) {
+						HttpResponseException error = (HttpResponseException) arg0;
+						int statusCode = error.getStatusCode();
+						switch (statusCode) {
+						case 404:
+							Utils.makeToast(FriendFragment.this.getActivity(), "User does not exist.");
+							break;
+						case 409:
+							Utils.makeToast(FriendFragment.this.getActivity(), "You are already friends.");
+							break;
+						case 403:
+							Utils.makeToast(FriendFragment.this.getActivity(), "You have already invited this user.");
+							break;
+						default:
+							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+							Utils.makeToast(FriendFragment.this.getActivity(), "Could not invite friend, please try again later.");
+						}
+					}
+					else {
+						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+						Utils.makeToast(FriendFragment.this.getActivity(), "Could not invite friend, please try again later.");
+					}
+				}
+
+				@Override
+				public void onFinish() {
+					mMpdInviteFriend.decrProgress();
+				}
+			});
+		}
+	}
+
+
+}

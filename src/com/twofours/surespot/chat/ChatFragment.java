@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.net.Uri;
@@ -25,13 +26,13 @@ import android.widget.TextView.OnEditorActionListener;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.ImageViewActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 
+@SuppressLint("ValidFragment")
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
 	private ChatController mChatController;
@@ -41,6 +42,10 @@ public class ChatFragment extends SherlockFragment {
 	private boolean mLoading;
 	private int mPreviousTotal;
 	private boolean mDataLoaded;
+
+	public ChatFragment(ChatController chatController) {
+		mChatController = chatController;
+	}
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -53,8 +58,8 @@ public class ChatFragment extends SherlockFragment {
 		this.mUsername = mUsername;
 	}
 
-	public static ChatFragment newInstance(String username) {
-		ChatFragment cf = new ChatFragment();
+	public static ChatFragment newInstance(ChatController chatController, String username) {
+		ChatFragment cf = new ChatFragment(chatController);
 		Bundle bundle = new Bundle();
 		bundle.putString("username", username);
 		cf.setArguments(bundle);
@@ -64,13 +69,13 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mChatController = SurespotApplication.getChatController();
+
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
-
+	//mChatController = SurespotApplication.getChatController();
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
 		SurespotLog.v(TAG, "onCreateView, username: " + mUsername);
@@ -97,8 +102,6 @@ public class ChatFragment extends SherlockFragment {
 					}
 				}
 
-			
-
 			}
 		});
 		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -108,7 +111,7 @@ public class ChatFragment extends SherlockFragment {
 				SurespotMessage message = (SurespotMessage) chatAdapter.getItem(position);
 				// make sure it's our message
 				if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
-					mChatController.deleteMessage(mUsername, message.getId());				
+					mChatController.deleteMessage(mUsername, message.getId());
 				}
 				return true;
 			}

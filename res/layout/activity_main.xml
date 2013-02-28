@@ -1,118 +1,30 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+    android:id="@+id/chatLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context=".ChatActivity" >
 
-    <LinearLayout
-        android:id="@+id/chatLayout"
+    <com.viewpagerindicator.TitlePageIndicator
+        android:id="@+id/indicator"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:visibility="gone"
-        tools:context=".ChatActivity" >
+        android:layout_height="wrap_content"
+        android:background="@color/abs__background_holo_dark"
+        android:textColor="#7733b5e5"
+        android:textSize="20sp"
+        app:footerIndicatorStyle="none"
+        app:footerLineHeight="0dp"
+        app:footerPadding="8dp"
+        app:selectedBold="true"
+        app:selectedColor="@color/abs__holo_blue_light"
+        app:topPadding="0dp" />
 
-        <com.viewpagerindicator.TitlePageIndicator
-            android:id="@+id/indicator"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/abs__background_holo_dark"
-            android:textColor="#7733b5e5"
-            android:textSize="20sp"
-            app:footerIndicatorStyle="none"
-            app:footerLineHeight="0dp"
-            app:footerPadding="8dp"
-            app:selectedBold="true"
-            app:selectedColor="@color/abs__holo_blue_light"
-            app:topPadding="0dp" />
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/pager"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/friendLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone" >
-
-        <ListView
-            android:id="@+id/main_list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <FrameLayout
-            android:id="@+id/progressBar"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:visibility="gone" >
-
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-        </FrameLayout>
-
-        <LinearLayout
-            android:id="@+id/main_list_empty"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:visibility="gone" >
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="@string/welcome_to_surespot" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="@string/no_friends" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="@string/navigate_between_chat_tabs" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="@string/early_pre_beta" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
-            <EditText
-                android:id="@+id/etFriend"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:imeOptions="actionDone"
-                android:inputType="text"
-                android:singleLine="true" />
-
-            <Button
-                android:id="@+id/bAddFriend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="invite friend" />
-        </LinearLayout>
-    </LinearLayout>
-
-</FrameLayout>
+</LinearLayout>

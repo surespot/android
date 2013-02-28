@@ -27,6 +27,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -39,6 +40,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.FriendAdapter;
+import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatController {
 
@@ -68,6 +70,8 @@ public class ChatController {
 	private HashMap<String, Boolean> mHasNewMessages;
 	private FriendAdapter mFriendAdapter;
 	private ChatPagerAdapter mChatPagerAdapter;
+	private ViewPager mViewPager;
+	private TitlePageIndicator mIndicator;
 
 	private static String mCurrentChat;
 	private static boolean mPaused;
@@ -77,7 +81,7 @@ public class ChatController {
 	// private
 
 	//
-	public ChatController(Context context, FragmentManager fm, String currentChatName) {
+	public ChatController(Context context, ViewPager viewPager, TitlePageIndicator pageIndicator, FragmentManager fm, String currentChatName) {
 		SurespotLog.v(TAG, "constructor.");
 
 		mContext = context;
@@ -86,7 +90,23 @@ public class ChatController {
 		mFriendAdapter = new FriendAdapter(mContext);
 		mHasNewMessages = new HashMap<String, Boolean>();
 		mReadSinceReconnect = new HashMap<String, Boolean>();
-		mChatPagerAdapter = new ChatPagerAdapter(fm);
+
+		mChatPagerAdapter = new ChatPagerAdapter(this, fm);
+		mViewPager = viewPager;
+		mViewPager.setAdapter(mChatPagerAdapter);
+		mIndicator = pageIndicator;
+		mIndicator.setViewPager(mViewPager);
+
+		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+			@Override
+			public void onPageSelected(int position) {
+				SurespotLog.v(TAG, "onPageSelected, position: " + position);
+				String name = mChatPagerAdapter.getChatName(position);
+				setCurrentChat(name);
+
+			}
+		});
+		mViewPager.setOffscreenPageLimit(2);
 
 		// get the tabs
 
@@ -799,9 +819,9 @@ public class ChatController {
 				SurespotApplication.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 			}
 
-					SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
-				Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-			
+			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+
 		}
 	}
 
@@ -867,8 +887,16 @@ public class ChatController {
 
 		SurespotLog.v(TAG, username + ": setCurrentChat");
 		mCurrentChat = username;
-		
-		mChatPagerAdapter.addChatName(username);
+
+		int wantedPosition = 0;
+		if (username != null) {
+			mChatPagerAdapter.addChatName(username);
+			wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
+		}
+
+		if (wantedPosition != mViewPager.getCurrentItem()) {
+			mViewPager.setCurrentItem(wantedPosition, true);
+		}
 
 		// if we've read since we connected, don't read again
 		Boolean read = mReadSinceReconnect.get(username);
@@ -882,7 +910,7 @@ public class ChatController {
 					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 		}
 		else {
-			
+
 			// else {
 			// new AsyncTask<Void, Void, Void>() {
 			// protected Void doInBackground(Void... params) {
@@ -945,8 +973,6 @@ public class ChatController {
 		return mCurrentChat;
 	}
 
-	
-
 	public static boolean isPaused() {
 		return mPaused;
 	}
@@ -1000,7 +1026,7 @@ public class ChatController {
 					mFriendAdapter.refreshActiveChats();
 					mFriendAdapter.clearFriends(false);
 					mFriendAdapter.addFriends(jsonArray);
-					
+
 				}
 
 			}
@@ -1019,5 +1045,26 @@ public class ChatController {
 
 	public ChatPagerAdapter getChatPagerAdapter() {
 		return mChatPagerAdapter;
+	}
+	
+
+	public void closeTab() {
+		// TODO remove saved messages
+
+		
+		if (mChatPagerAdapter.getCount() > 0) {			
+			
+			int position = mViewPager.getCurrentItem();
+			String name = mChatPagerAdapter.getChatName(position);
+			
+			mChatPagerAdapter.removeChat(position, true);
+			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
+			
+			// mChatController.setCurrentChat(name);
+
+			// if they explicitly close the tab, remove the adapter
+			destroyChatAdapter(name);
+			mIndicator.notifyDataSetChanged();
+		}
 	}
 }

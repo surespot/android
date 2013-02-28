@@ -9,27 +9,39 @@ import android.support.v4.app.FragmentManager;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.friends.FriendFragment;
 
 public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
+	private ChatController mChatController;
 
-	public ChatPagerAdapter(FragmentManager fm) {
+	public ChatPagerAdapter(ChatController chatController, FragmentManager fm) {
 		super(fm);
 		mChatNames = new ArrayList<String>();
+		mChatController = chatController;
 
 	}
 
 	@Override
 	public Fragment getItem(int i) {
 		SurespotLog.v(TAG, "getItem, I: " + i);
-		return ChatFragment.newInstance(mChatNames.get(i));
+		if (i == 0) {
+			return new FriendFragment(mChatController);
+		}
+		else {
+			return ChatFragment.newInstance(mChatController, mChatNames.get(i - 1));
+		}
 
 	}
 
 	@Override
 	public int getItemPosition(Object object) {
+		if (object instanceof FriendFragment) {
+			return 0;
+		}
+
 		ChatFragment chatFragment = (ChatFragment) object;
 		// SurespotLog.v(TAG, "getItemPosition, object: " + object.getClass().getName());
 		int index = mChatNames.indexOf(chatFragment.getUsername());
@@ -37,20 +49,24 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 			return POSITION_NONE;
 		}
 		else {
-			return index;
+			return index + 1;
 		}
 	}
 
 	@Override
 	public int getCount() {
-		return mChatNames.size();
+		return mChatNames.size() + 1;
 	}
 
 	@Override
 	public CharSequence getPageTitle(int position) {
-
-		if (mChatNames.size() > position) {
-			return mChatNames.get(position);
+		if (position == 0) {
+			return "friends";
+		}
+		else {
+			if (mChatNames.size() > position - 1) {
+				return mChatNames.get(position - 1);
+			}
 		}
 		return null;
 
@@ -77,7 +93,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 
 	public int getChatFragmentPosition(String username) {
 
-		return mChatNames.indexOf(username);
+		return mChatNames.indexOf(username) + 1;
 
 	}
 
@@ -92,7 +108,7 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 		int pos = position;
 		if (pos == -1)
 			return null;
-		return Utils.makePagerFragmentName(R.id.pager, getItemId(position));
+		return Utils.makePagerFragmentName(R.id.pager, getItemId(position + 1));
 	}
 
 	public ArrayList<String> getChatNames() {
@@ -100,17 +116,27 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentPagerAdapte
 	}
 
 	public String getChatName(int position) {
-		return mChatNames.get(position);
+		if (position == 0) {
+			return null;
+		}
+		else {
+			return mChatNames.get(position - 1);
+		}
 	}
 
 	public void removeChat(int index, boolean notify) {
-		mChatNames.remove(index);
+		mChatNames.remove(index - 1);
 		if (notify) {
 			notifyDataSetChanged();
 		}
 	}
 
 	public long getItemId(int position) {
-		return mChatNames.get(position).hashCode();
+		if (position == 0) {
+			return "friends".hashCode();
+		}
+		else {
+			return mChatNames.get(position - 1).hashCode();
+		}
 	}
 }

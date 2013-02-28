@@ -1,7 +1,6 @@
 package com.twofours.surespot.activities;
 
 import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,19 +8,7 @@ import android.content.ServiceConnection;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.text.InputFilter;
-import android.text.method.TextKeyListener;
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuInflater;
@@ -30,8 +17,6 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.GCMIntentService;
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.LetterOrDigitInputFilter;
-import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatController;
@@ -39,7 +24,6 @@ import com.twofours.surespot.chat.ChatPagerAdapter;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
@@ -50,18 +34,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static final String TAG = "MainActivity";
 
 	private ChatPagerAdapter mPagerAdapter;
-	private ViewPager mViewPager;
-	private BroadcastReceiver mMessageBroadcastReceiver;
+	private ViewPager mViewPager;	
 	private ChatController mChatController;
 	private CredentialCachingService mCredentialCachingService;
 	private TitlePageIndicator mIndicator;
-	private FriendAdapter mMainAdapter;
-
-	private static final int REQUEST_SETTINGS = 1;
-	private MultiProgressDialog mMpdInviteFriend;
-	private BroadcastReceiver mInvitationReceiver;
-	private BroadcastReceiver InviteResponseReceiver;
-
+	private FriendAdapter mMainAdapter;	
 	private ListView mListView;
 	private NotificationManager mNotificationManager;
 	private boolean mChatsShowing;
@@ -221,9 +198,9 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
 				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)
 				|| (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			mChatsShowing = false;
+		//	mChatsShowing = false;
 
-			Utils.configureActionBar(this, "send", "select recipient", true);
+			Utils.configureActionBar(this, "send", "select recipient", false);
 			mSet = true;
 		}
 
@@ -232,199 +209,51 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-			mChatsShowing = true;
-			Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), true);
+		//	mChatsShowing = true;
+			Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), false);
 			mSet = true;
 		}
 
 		if (!mSet) {
 			if (lastName == null) {
 
-				mChatsShowing = false;
-				Utils.configureActionBar(this, "home", IdentityController.getLoggedInUser(), true);
+				//mChatsShowing = false;
+				Utils.configureActionBar(this, "home", IdentityController.getLoggedInUser(), false);
 				name = lastName;
 			}
 			else {
-				mChatsShowing = true;
-				Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), true);
+				//mChatsShowing = true;
+				Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), false);
 			}
 		}
 
-		SurespotApplication.setChatController(new ChatController(MainActivity.this, getSupportFragmentManager(), name));
+		mChatsShowing = true;
+		SurespotApplication.setChatController(new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),  (TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager(),  name));
 		mChatController = SurespotApplication.getChatController();
-		buildChatUi();
-		buildFriendUi();
 		mChatController.onResume();
 
 	}
 
-	private void showUi(boolean chats) {
-		if (mChatsShowing && !chats) {
-			mChatsShowing = false;
-			findViewById(R.id.chatLayout).setVisibility(View.GONE);
-			findViewById(R.id.friendLayout).setVisibility(View.VISIBLE);
-			// clear invite response notifications
-			mNotificationManager.cancel(IdentityController.getLoggedInUser(),
-					SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
-			Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser());
-		}
-		else {
-			if (!mChatsShowing && chats) {
-				mChatsShowing = true;
-				findViewById(R.id.chatLayout).setVisibility(View.VISIBLE);
-				findViewById(R.id.friendLayout).setVisibility(View.GONE);
-				Utils.setActionBarTitles(this, "spots", IdentityController.getLoggedInUser());
-			}
-		}
-	}
+//	private void showUi(boolean chats) {
+//		if (mChatsShowing && !chats) {
+//			mChatsShowing = false;
+//			findViewById(R.id.chatLayout).setVisibility(View.GONE);
+//			findViewById(R.id.friendLayout).setVisibility(View.VISIBLE);
+//			// clear invite response notifications
+//			mNotificationManager.cancel(IdentityController.getLoggedInUser(),
+//					SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+//			Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser());
+//		}
+//		else {
+//			if (!mChatsShowing && chats) {
+//				mChatsShowing = true;
+//				findViewById(R.id.chatLayout).setVisibility(View.VISIBLE);
+//				findViewById(R.id.friendLayout).setVisibility(View.GONE);
+//				Utils.setActionBarTitles(this, "spots", IdentityController.getLoggedInUser());
+//			}
+//		}
+//	}
 
-	private void buildFriendUi() {			
-		mMainAdapter = mChatController.getFriendAdapter();
-
-		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
-
-		mListView = (ListView) findViewById(R.id.main_list);
-		mListView.setEmptyView(findViewById(R.id.progressBar));
-		// findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-
-		// click on friend to join chat
-		mListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Friend friend = (Friend) mMainAdapter.getItem(position);
-				if (friend.isFriend()) {
-					mChatController.setCurrentChat(friend.getName());
-					showUi(true);
-					int wantedPosition = mPagerAdapter.getChatFragmentPosition(friend.getName());
-					if (wantedPosition != mViewPager.getCurrentItem()) {
-						mViewPager.setCurrentItem(wantedPosition, true);
-					}
-				}
-			}
-		});
-
-		Button addFriendButton = (Button) findViewById(R.id.bAddFriend);
-		addFriendButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				inviteFriend();
-			}
-		});
-
-		EditText editText = (EditText) findViewById(R.id.etFriend);
-		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
-		editText.setOnEditorActionListener(new OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				boolean handled = false;
-				if (actionId == EditorInfo.IME_ACTION_DONE) {
-					//
-					inviteFriend();
-					handled = true;
-				}
-				return handled;
-			}
-		});
-
-		// TODO adapter observer
-		((ListView) findViewById(R.id.main_list)).setEmptyView(findViewById(R.id.main_list_empty));
-		mListView.setAdapter(mMainAdapter);
-		findViewById(R.id.progressBar).setVisibility(View.GONE);
-
-	}
-
-	private void inviteFriend() {
-		final EditText etFriend = ((EditText) findViewById(R.id.etFriend));
-		final String friend = etFriend.getText().toString();
-
-		if (friend.length() > 0) {
-			if (friend.equals(IdentityController.getLoggedInUser())) {
-				// TODO let them be friends with themselves?
-				Utils.makeToast(this, "You can't be friends with yourself, bro.");
-				return;
-			}
-
-			mMpdInviteFriend.incrProgress();
-			SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
-				@Override
-				public void onSuccess(int statusCode, String arg0) { // TODO
-																		// indicate
-																		// in
-																		// the
-																		// UI
-					// that the request is
-					// pending somehow
-					TextKeyListener.clear(etFriend.getText());
-					mMainAdapter.addFriendInvited(friend);
-					Utils.makeToast(MainActivity.this, friend + " has been invited to be your friend.");
-				}
-
-				@Override
-				public void onFailure(Throwable arg0, String content) {
-					if (arg0 instanceof HttpResponseException) {
-						HttpResponseException error = (HttpResponseException) arg0;
-						int statusCode = error.getStatusCode();
-						switch (statusCode) {
-						case 404:
-							Utils.makeToast(MainActivity.this, "User does not exist.");
-							break;
-						case 409:
-							Utils.makeToast(MainActivity.this, "You are already friends.");
-							break;
-						case 403:
-							Utils.makeToast(MainActivity.this, "You have already invited this user.");
-							break;
-						default:
-							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-							Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
-						}
-					}
-					else {
-						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-						Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
-					}
-				}
-
-				@Override
-				public void onFinish() {
-					mMpdInviteFriend.decrProgress();
-				}
-			});
-		}
-	}
-
-	private void buildChatUi() {
-
-		SurespotLog.v(TAG, "buildChatUi");
-
-		String name = getIntent().getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-		SurespotLog.v(TAG, "Intent contained name: " + name);
-
-		// if we don't have an intent, see if we have saved chat
-		if (name == null) {
-			name = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
-		}
-
-		mPagerAdapter = mChatController.getChatPagerAdapter();
-
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mPagerAdapter);
-		mIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
-		mIndicator.setViewPager(mViewPager);
-
-		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(int position) {
-				SurespotLog.v(TAG, "onPageSelected, position: " + position);
-				String name = mPagerAdapter.getChatName(position);
-				mChatController.setCurrentChat(name);
-
-			}
-		});
-		mViewPager.setOffscreenPageLimit(2);
-
-		findViewById(R.id.chatLayout).setVisibility(View.VISIBLE);
-	}
 
 	@Override
 	protected void onResume() {
@@ -454,11 +283,11 @@ public class MainActivity extends SherlockFragmentActivity {
 		case android.R.id.home:
 			// This is called when the Home (Up) button is pressed
 			// in the Action Bar.
-			showUi(!mChatsShowing);
+		//	showUi(!mChatsShowing);
 			return true;
 		case R.id.menu_close_bar:
 		case R.id.menu_close:
-			closeTab(mViewPager.getCurrentItem());
+			mChatController.closeTab();
 			return true;
 
 		case R.id.menu_send_image_bar:
@@ -499,24 +328,5 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 	}
 
-	private void closeTab(int position) {
-		// TODO remove saved messages
-
-		if (mPagerAdapter.getCount() == 1) {
-			mPagerAdapter.removeChat(0, false);
-			showUi(false);
-		}
-		else {
-
-			mPagerAdapter.removeChat(position, true);
-			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
-			String name = mPagerAdapter.getChatName(mViewPager.getCurrentItem());
-			// mChatController.setCurrentChat(name);
-
-			// if they explicitly close the tab, remove the adapter
-			mChatController.destroyChatAdapter(name);
-			mIndicator.notifyDataSetChanged();
-		}
-	}
 
 }
