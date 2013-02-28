@@ -879,7 +879,7 @@ public class ChatController {
 	private void saveState() {
 
 		SurespotLog.v(TAG, "saveState");
-		if (IdentityController.hasLoggedInUser()) {
+		//if (IdentityController.hasLoggedInUser()) {
 			saveUnsentMessages();
 
 			saveMessages();
@@ -893,7 +893,11 @@ public class ChatController {
 			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 
-		}
+			//save active chats
+			
+			SurespotApplication.getStateController().saveActiveChats(mChatAdapters.keySet());
+			
+		//}
 	}
 
 	private void loadState() {

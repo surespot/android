@@ -39,11 +39,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static final String TAG = "MainActivity";
 
 	private ChatPagerAdapter mPagerAdapter;
-	private ViewPager mViewPager;	
+	private ViewPager mViewPager;
 	private ChatController mChatController;
 	private CredentialCachingService mCredentialCachingService;
 	private TitlePageIndicator mIndicator;
-	private FriendAdapter mMainAdapter;	
+	private FriendAdapter mMainAdapter;
 	private ListView mListView;
 	private NotificationManager mNotificationManager;
 	private boolean mChatsShowing;
@@ -148,7 +148,6 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 
-		
 		Uri selectedImageUri = null;
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
@@ -243,7 +242,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
 				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)
 				|| (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-		//	mChatsShowing = false;
+			// mChatsShowing = false;
 
 			Utils.configureActionBar(this, "send", "select recipient", false);
 			mSet = true;
@@ -254,7 +253,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-		//	mChatsShowing = true;
+			// mChatsShowing = true;
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			mSet = true;
 		}
@@ -263,45 +262,57 @@ public class MainActivity extends SherlockFragmentActivity {
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			if (lastName == null) {
 
-				//mChatsShowing = false;
-				
+				// mChatsShowing = false;
+
 				name = lastName;
 			}
 		}
 
 		mChatsShowing = true;
-		SurespotApplication.setChatController(new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),  (TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager(),  name));
+		SurespotApplication.setChatController(new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
+				(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager(), name));
 		mChatController = SurespotApplication.getChatController();
 		mChatController.onResume();
 
 	}
 
-//	private void showUi(boolean chats) {
-//		if (mChatsShowing && !chats) {
-//			mChatsShowing = false;
-//			findViewById(R.id.chatLayout).setVisibility(View.GONE);
-//			findViewById(R.id.friendLayout).setVisibility(View.VISIBLE);
-//			// clear invite response notifications
-//			mNotificationManager.cancel(IdentityController.getLoggedInUser(),
-//					SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
-//			Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser());
-//		}
-//		else {
-//			if (!mChatsShowing && chats) {
-//				mChatsShowing = true;
-//				findViewById(R.id.chatLayout).setVisibility(View.VISIBLE);
-//				findViewById(R.id.friendLayout).setVisibility(View.GONE);
-//				Utils.setActionBarTitles(this, "spots", IdentityController.getLoggedInUser());
-//			}
-//		}
-//	}
-
+	// private void showUi(boolean chats) {
+	// if (mChatsShowing && !chats) {
+	// mChatsShowing = false;
+	// findViewById(R.id.chatLayout).setVisibility(View.GONE);
+	// findViewById(R.id.friendLayout).setVisibility(View.VISIBLE);
+	// // clear invite response notifications
+	// mNotificationManager.cancel(IdentityController.getLoggedInUser(),
+	// SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+	// Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser());
+	// }
+	// else {
+	// if (!mChatsShowing && chats) {
+	// mChatsShowing = true;
+	// findViewById(R.id.chatLayout).setVisibility(View.VISIBLE);
+	// findViewById(R.id.friendLayout).setVisibility(View.GONE);
+	// Utils.setActionBarTitles(this, "spots", IdentityController.getLoggedInUser());
+	// }
+	// }
+	// }
 
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
+		if (mChatController != null) {
+			mChatController.onResume();
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		if (mChatController != null) {
+			mChatController.onPause();
+		}
 	}
 
 	@Override
@@ -325,7 +336,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		case android.R.id.home:
 			// This is called when the Home (Up) button is pressed
 			// in the Action Bar.
-		//	showUi(!mChatsShowing);
+			// showUi(!mChatsShowing);
 			mChatController.setCurrentChat(null);
 			return true;
 		case R.id.menu_close_bar:

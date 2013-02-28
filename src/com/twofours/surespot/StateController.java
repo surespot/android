@@ -56,7 +56,7 @@ public class StateController {
 		return activeChats;
 	}
 
-	public void saveActiveChats(List<String> chats) {
+	public void saveActiveChats(Collection<String> chats) {
 		String filename = getFilename(ACTIVE_CHATS);
 		if (filename != null) {
 			if (chats != null && chats.size() > 0) {
