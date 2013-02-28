@@ -107,6 +107,9 @@ public class ChatController {
 			}
 		});
 		mViewPager.setOffscreenPageLimit(2);
+		
+		
+		
 
 		// get the tabs
 
@@ -129,6 +132,8 @@ public class ChatController {
 
 		mChatPagerAdapter.addChatNames(chatNames);
 
+		setCurrentChat(currentChatName);
+		
 		setOnWifi();
 
 		mSocketCallback = new IOCallback() {
@@ -1046,25 +1051,25 @@ public class ChatController {
 	public ChatPagerAdapter getChatPagerAdapter() {
 		return mChatPagerAdapter;
 	}
-	
 
 	public void closeTab() {
 		// TODO remove saved messages
 
-		
-		if (mChatPagerAdapter.getCount() > 0) {			
-			
-			int position = mViewPager.getCurrentItem();
-			String name = mChatPagerAdapter.getChatName(position);
-			
-			mChatPagerAdapter.removeChat(position, true);
-			// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
-			
-			// mChatController.setCurrentChat(name);
+		if (mChatPagerAdapter.getCount() > 0) {
 
-			// if they explicitly close the tab, remove the adapter
-			destroyChatAdapter(name);
-			mIndicator.notifyDataSetChanged();
+			int position = mViewPager.getCurrentItem();
+			if (position > 0) {
+				String name = mChatPagerAdapter.getChatName(position);
+
+				mChatPagerAdapter.removeChat(position, true);
+				// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
+
+				// mChatController.setCurrentChat(name);
+
+				// if they explicitly close the tab, remove the adapter
+				destroyChatAdapter(name);
+				mIndicator.notifyDataSetChanged();
+			}
 		}
 	}
 }

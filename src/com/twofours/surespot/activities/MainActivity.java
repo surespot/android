@@ -1,11 +1,14 @@
 package com.twofours.surespot.activities;
 
+import java.io.File;
+
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.widget.ListView;
@@ -21,10 +24,12 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatPagerAdapter;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendAdapter;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -142,12 +147,52 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
-		if (requestCode == SurespotConstants.IntentRequestCodes.LOGIN) {
-			if (resultCode == RESULT_OK) {
-				launch(SurespotApplication.getStartupIntent());
-			}
-			else {
-				finish();
+
+		
+		Uri selectedImageUri = null;
+		if (resultCode == RESULT_OK) {
+			switch (requestCode) {
+			case SurespotConstants.IntentRequestCodes.LOGIN:
+				if (resultCode == RESULT_OK) {
+					launch(SurespotApplication.getStartupIntent());
+				}
+				else {
+					finish();
+				}
+				break;
+
+			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
+				Intent intent = new Intent(this, ImageSelectActivity.class);
+				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
+				intent.putExtra("to", mChatController.getCurrentChat());
+				intent.setData(data.getData());
+				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+
+				break;
+
+			case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
+				selectedImageUri = data.getData();
+				String to = data.getStringExtra("to");
+				final String filename = data.getStringExtra("filename");
+				if (selectedImageUri != null) {
+
+					Utils.makeToast(this, getString(R.string.uploading_image));
+					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, filename, new IAsyncCallback<Boolean>() {
+						@Override
+						public void handleResponse(Boolean result) {
+							if (result) {
+								Utils.makeToast(MainActivity.this, getString(R.string.image_successfully_uploaded));
+
+							}
+							else {
+								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+							}
+
+							new File(filename).delete();
+						}
+					});
+					break;
+				}
 			}
 		}
 
@@ -210,20 +255,17 @@ public class MainActivity extends SherlockFragmentActivity {
 			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
 		//	mChatsShowing = true;
-			Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			mSet = true;
 		}
 
 		if (!mSet) {
+			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			if (lastName == null) {
 
 				//mChatsShowing = false;
-				Utils.configureActionBar(this, "home", IdentityController.getLoggedInUser(), false);
+				
 				name = lastName;
-			}
-			else {
-				//mChatsShowing = true;
-				Utils.configureActionBar(this, "spots", IdentityController.getLoggedInUser(), false);
 			}
 		}
 
@@ -284,6 +326,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			// This is called when the Home (Up) button is pressed
 			// in the Action Bar.
 		//	showUi(!mChatsShowing);
+			mChatController.setCurrentChat(null);
 			return true;
 		case R.id.menu_close_bar:
 		case R.id.menu_close:

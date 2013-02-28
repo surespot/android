@@ -69,15 +69,15 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setUsername(getArguments().getString("username"));
+		TAG = TAG + ":" + getUsername();
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 	//mChatController = SurespotApplication.getChatController();
-		setUsername(getArguments().getString("username"));
-		TAG = TAG + ":" + getUsername();
+		
 		SurespotLog.v(TAG, "onCreateView, username: " + mUsername);
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
