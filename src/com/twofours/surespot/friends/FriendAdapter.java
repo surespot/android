@@ -31,7 +31,7 @@ public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
 
 	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
-	private ArrayList<String> mActiveChats = new ArrayList<String>();
+//	private ArrayList<String> mActiveChats = new ArrayList<String>();
 	private NotificationManager mNotificationManager;
 
 	private Context mContext;
@@ -44,13 +44,13 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public void refreshActiveChats() {
-		mActiveChats = SurespotApplication.getStateController().loadActiveChats();
-	}
-
-	public ArrayList<String> getActiveChats() {
-		return mActiveChats;
-	}
+//	public void refreshActiveChats() {
+//		mActiveChats = SurespotApplication.getStateController().loadActiveChats();
+//	}
+//
+//	public ArrayList<String> getActiveChats() {
+//		return mActiveChats;
+//	}
 
 	/*
 	 * public void refreshFlags() { for (Friend friend : mFriends) { if (mActiveChats.contains(friend.getName())) {
@@ -62,23 +62,23 @@ public class FriendAdapter extends BaseAdapter {
 		SurespotLog.v(TAG, "message received");
 		Friend friend = getFriend(name);
 		if (friend != null) {
-
-			if (!mActiveChats.contains(name)) {
-				mActiveChats.add(name);
-			}
+			friend.incMessageCount(1);
+//			if (!mActiveChats.contains(name)) {
+//				mActiveChats.add(name);
+//			}
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
 	}
 
-	public void setHasNewMessages(String name, boolean hasNewMessages) {
+	public void messageDeltaReceived(String name, int delta) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
-			friend.setHasNewMessages(hasNewMessages);
+			friend.setMessageCount(delta);
 			Collections.sort(mFriends);
-			if (hasNewMessages && !mActiveChats.contains(name)) {
-				mActiveChats.add(name);
-			}
+//			if (delta > 0 && !mActiveChats.contains(name)) {
+//				mActiveChats.add(name);
+//			}
 			notifyDataSetChanged();
 		}
 	}
@@ -90,6 +90,21 @@ public class FriendAdapter extends BaseAdapter {
 			}
 		}
 		return null;
+	}
+	
+	public void addActiveFriend(String name) {
+
+		Friend friend = getFriend(name);
+		if (friend == null) {
+			friend = new Friend();
+			mFriends.add(friend);
+			friend.setName(name);
+		}
+
+		friend.setChatActive(true);
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
+		
 	}
 
 	public void addNewFriend(String name) {
@@ -124,20 +139,29 @@ public class FriendAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 
 	}
+	
+	public void setChatActive(String name, boolean b) {
+		Friend friend = getFriend(name);
+		if (friend != null) {
+			friend.setChatActive(b);
+		}
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
+	}
 
 	public void addFriends(JSONArray friends) {
 		try {
 			for (int i = 0; i < friends.length(); i++) {
 				JSONObject jsonFriend = friends.getJSONObject(i);
 				Friend friend = Friend.toFriend(jsonFriend);
-				friend.setChatActive(mActiveChats.contains(friend.getName()));
+			//	friend.setChatActive(mActiveChats.contains(friend.getName()));
 				int index = mFriends.indexOf(friend);
 				if (index == -1) {
 					mFriends.add(friend);
 				}
 				else {
 					friend = mFriends.get(index);
-					friend.setChatActive(mActiveChats.contains(friend.getName()));
+					//friend.setChatActive(mActiveChats.contains(friend.getName()));
 					friend.update(jsonFriend);
 
 				}
@@ -207,8 +231,10 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
+		int messageCount = friend.getMessageCount();
+
 		// TODO cleanup this logic
-		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.hasNewMessages()) {
+		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || messageCount > 0) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
@@ -241,23 +267,23 @@ public class FriendAdapter extends BaseAdapter {
 				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
 
-			if (friend.hasNewMessages()) {
+			if (messageCount > 0) {
 
 				String currentStatus = friendViewHolder.tvStatus.getText().toString();
-				// String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
+				String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
 
 				if (!currentStatus.isEmpty()) {
-					// if (currentStatus.contains("unread message")) {
-					// currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
+					if (currentStatus.contains("unread message")) {
+						currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
 
-					// }
-					// else {
-					currentStatus += "\n" + "new activity";
-					// }
+					}
+					else {
+						currentStatus += "\n" + messageCountString;
+					}
 
 				}
 				else {
-					currentStatus = "new activity";
+					currentStatus = messageCountString;
 				}
 				friendViewHolder.tvStatus.setText(currentStatus);
 			}
@@ -309,15 +335,19 @@ public class FriendAdapter extends BaseAdapter {
 		public TextView tvStatus;
 		public View vgInvite;
 	}
-
-	public ArrayList<String> getFriends() {
-		return mActiveChats;
-	}
+//
+//	public ArrayList<String> getFriends() {
+//		return mActiveChats;
+//	}
 
 	public void sort() {
 		if (mFriends != null) {
 			Collections.sort(mFriends);
 		}
 	}
+
+	
+
+	
 
 }

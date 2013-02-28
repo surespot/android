@@ -242,8 +242,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
 				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)
 				|| (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			// mChatsShowing = false;
-
 			Utils.configureActionBar(this, "send", "select recipient", false);
 			mSet = true;
 		}
@@ -253,7 +251,6 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-			// mChatsShowing = true;
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			mSet = true;
 		}
@@ -261,9 +258,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (!mSet) {
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			if (lastName == null) {
-
-				// mChatsShowing = false;
-
 				name = lastName;
 			}
 		}
@@ -275,26 +269,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		mChatController.onResume();
 
 	}
-
-	// private void showUi(boolean chats) {
-	// if (mChatsShowing && !chats) {
-	// mChatsShowing = false;
-	// findViewById(R.id.chatLayout).setVisibility(View.GONE);
-	// findViewById(R.id.friendLayout).setVisibility(View.VISIBLE);
-	// // clear invite response notifications
-	// mNotificationManager.cancel(IdentityController.getLoggedInUser(),
-	// SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
-	// Utils.setActionBarTitles(this, "home", IdentityController.getLoggedInUser());
-	// }
-	// else {
-	// if (!mChatsShowing && chats) {
-	// mChatsShowing = true;
-	// findViewById(R.id.chatLayout).setVisibility(View.VISIBLE);
-	// findViewById(R.id.friendLayout).setVisibility(View.GONE);
-	// Utils.setActionBarTitles(this, "spots", IdentityController.getLoggedInUser());
-	// }
-	// }
-	// }
 
 	@Override
 	protected void onResume() {

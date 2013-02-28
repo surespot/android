@@ -64,13 +64,15 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	// update the id and sent status of the message once we received
-	private void addOrUpdateMessage(SurespotMessage message) {
+	private boolean addOrUpdateMessage(SurespotMessage message) {
 		int index = mMessages.indexOf(message);
+		boolean added = false;
 		if (index == -1) {
 			// SurespotLog.v(TAG, "addMessage, could not find message");
 
 			//
 			mMessages.add(message);
+			added = true;
 
 		}
 		else {
@@ -85,9 +87,11 @@ public class ChatAdapter extends BaseAdapter {
 			if (message.getCipherData() != null) {
 				updateMessage.setCipherData(message.getCipherData());
 			}
+			
 		}
 
 		Collections.sort(mMessages);
+		return added;
 	}
 
 	private void insertMessage(SurespotMessage message) {
@@ -227,11 +231,13 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvTime;
 	}
 
-	public void addOrUpdateMessage(SurespotMessage message, boolean notify) {
-		addOrUpdateMessage(message);
+	public boolean addOrUpdateMessage(SurespotMessage message, boolean notify) {
+		boolean added = false;
+		added = addOrUpdateMessage(message);
 		if (notify) {
 			notifyDataSetChanged();
 		}
+		return added;
 
 	}
 

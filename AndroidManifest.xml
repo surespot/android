@@ -52,12 +52,14 @@
             android:name="com.twofours.surespot.services.CredentialCachingService"
             android:exported="false" >
         </service>
+          <activity
+            android:name="com.twofours.surespot.activities.MainActivity"
+            android:label="@string/title_activity_main" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <activity
-            android:name="com.twofours.surespot.activities.StartupActivity"
-            android:label="@string/title_activity_main"
-            android:theme="@android:style/Theme.NoDisplay" >
-           
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
 
@@ -72,12 +74,20 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.SEND_MULTIPLE" /> -->
-            <!-- <category android:name="android.intent.category.DEFAULT" /> -->
-            <!-- <data android:mimeType="image/*" /> -->
-            <!-- </intent-filter> -->
+            
         </activity>
+
+       <!--  <activity
+            android:name="com.twofours.surespot.activities.StartupActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@android:style/Theme.NoDisplay" >
+            
+            <intent-filter>
+            <action android:name="android.intent.action.SEND_MULTIPLE" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity> -->
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup" >
@@ -86,14 +96,16 @@
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login" >
         </activity>
-      <!--   <activity
+        <!--
+        <activity
             android:name="com.twofours.surespot.friends.FriendActivity"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.chat.ChatActivity"
             android:windowSoftInputMode="stateHidden" >
-        </activity> -->
+        </activity>
+        -->
         <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>
         <activity
@@ -129,15 +141,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.twofours.surespot.activities.MainActivity"
-            android:label="@string/title_activity_main" >
-             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+      
     </application>
 
 </manifest>
