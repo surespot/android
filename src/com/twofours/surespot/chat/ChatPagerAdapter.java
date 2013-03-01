@@ -1,20 +1,17 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 
-import com.twofours.surespot.NewFragmentStatePagerAdapter;
-import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendFragment;
 
-
-//workaround for bug: https://code.google.com/p/android/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Type%20Status%20Owner%20Summary%20Stars&groupby=&sort=&id=37990
-public class ChatPagerAdapter extends NewFragmentStatePagerAdapter {
+public class ChatPagerAdapter extends FragmentPagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
@@ -46,16 +43,16 @@ public class ChatPagerAdapter extends NewFragmentStatePagerAdapter {
 		}
 
 		ChatFragment chatFragment = (ChatFragment) object;
-		
+
 		String user = chatFragment.getUsername();
 		int index = mChatNames.indexOf(user);
-		
+
 		if (index == -1) {
 			SurespotLog.v(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
 			return POSITION_NONE;
 		}
 		else {
-			SurespotLog.v(TAG, "getItemPosition, returning " + (index +1 ) + " for: " + user);
+			SurespotLog.v(TAG, "getItemPosition, returning " + (index + 1) + " for: " + user);
 			return index + 1;
 		}
 	}
@@ -85,6 +82,7 @@ public class ChatPagerAdapter extends NewFragmentStatePagerAdapter {
 	public void addChatName(String username) {
 		if (!mChatNames.contains(username)) {
 			mChatNames.add(username);
+			sort();
 			this.notifyDataSetChanged();
 		}
 	}
@@ -93,8 +91,13 @@ public class ChatPagerAdapter extends NewFragmentStatePagerAdapter {
 		for (String name : names) {
 			mChatNames.add(name);
 		}
+		sort();
 		this.notifyDataSetChanged();
 
+	}
+
+	private void sort() {
+		Collections.sort(mChatNames);
 	}
 
 	public boolean containsChat(String username) {
@@ -107,19 +110,19 @@ public class ChatPagerAdapter extends NewFragmentStatePagerAdapter {
 
 	}
 
-	public String getFragmentTag(String username) {
-		int pos = getChatFragmentPosition(username);
-		if (pos == -1)
-			return null;
-		return Utils.makePagerFragmentName(R.id.pager, getItemId(pos));
-	}
-
-	public String getFragmentTag(int position) {
-		int pos = position;
-		if (pos == -1)
-			return null;
-		return Utils.makePagerFragmentName(R.id.pager, getItemId(position + 1));
-	}
+//	public String getFragmentTag(String username) {
+//		int pos = getChatFragmentPosition(username);
+//		if (pos == -1)
+//			return null;
+//		return Utils.makePagerFragmentName(R.id.pager, getItemId(pos));
+//	}
+//
+//	public String getFragmentTag(int position) {
+//		int pos = position;
+//		if (pos == -1)
+//			return null;
+//		return Utils.makePagerFragmentName(R.id.pager, getItemId(position + 1));
+//	}
 
 	public ArrayList<String> getChatNames() {
 		return mChatNames;
