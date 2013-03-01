@@ -99,7 +99,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		intent = new Intent(this, CredentialCachingService.class);
 		SurespotLog.v(TAG, "starting cache service");
 		startService(intent);
-	
+
 		mStateController = new StateController();
 		mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
 		mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
@@ -246,14 +246,14 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
-	//	if (mChatController == null) {
-			
-	//	}
-	//	else {
-			
-			//mChatController.init();
-		//	mChatController.onResume();
-	//	}
+		// if (mChatController == null) {
+
+		// }
+		// else {
+
+		// mChatController.init();
+		// mChatController.onResume();
+		// }
 
 		// make sure the gcm is set
 
@@ -284,8 +284,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-		String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
-
 		boolean mSet = false;
 		String name = null;
 
@@ -309,7 +307,8 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		if (!mSet) {
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
-			if (lastName == null) {
+			String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
+			if (lastName != null) {
 				name = lastName;
 			}
 		}
