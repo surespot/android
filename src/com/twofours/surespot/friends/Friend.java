@@ -7,8 +7,8 @@ import com.twofours.surespot.common.SurespotLog;
 
 public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;
-	public static final int HAS_NEW_MESSAGES = 16;
-	public static final int CHAT_ACTIVE = 8;
+	public static final int CHAT_ACTIVE = 16;
+	public static final int HAS_NEW_MESSAGES = 8;	
 	public static final int NEW_FRIEND = 4;
 	public static final int INVITED = 2;
 	

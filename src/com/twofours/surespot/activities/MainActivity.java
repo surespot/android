@@ -101,10 +101,13 @@ public class MainActivity extends SherlockFragmentActivity {
 		startService(intent);
 
 		mStateController = new StateController();
-		mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-		mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
-		mChatController.init();
-		mChatController.onResume();
+
+		if (IdentityController.hasIdentity()) {
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+			mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController.init();
+			mChatController.onResume();
+		}
 
 	}
 
@@ -199,12 +202,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 			case SurespotConstants.IntentRequestCodes.LOGIN:
-				if (resultCode == RESULT_OK) {
-					launch(SurespotApplication.getStartupIntent());
-				}
-				else {
-					finish();
-				}
+				launch(SurespotApplication.getStartupIntent());
 				break;
 
 			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
@@ -213,7 +211,6 @@ public class MainActivity extends SherlockFragmentActivity {
 				intent.putExtra("to", mChatController.getCurrentChat());
 				intent.setData(data.getData());
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
-
 				break;
 
 			case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
@@ -241,12 +238,20 @@ public class MainActivity extends SherlockFragmentActivity {
 				}
 			}
 		}
+		else {
+			finish();
+		}
 
 	}
 
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
-		// if (mChatController == null) {
+		if (mChatController == null) {
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+			mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController.init();
+			mChatController.onResume();
+		}
 
 		// }
 		// else {
