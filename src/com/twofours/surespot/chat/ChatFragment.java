@@ -1,10 +1,6 @@
 package com.twofours.surespot.chat;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -37,7 +33,6 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.services.CredentialCachingService;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
@@ -82,22 +77,22 @@ public class ChatFragment extends SherlockFragment {
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
 
-		Intent intent = new Intent(this.getActivity(), CredentialCachingService.class);
-		getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+	//	Intent intent = new Intent(this.getActivity(), CredentialCachingService.class);
+	//	getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
 	}
 
-	private ServiceConnection mConnection = new ServiceConnection() {
-		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-			SurespotLog.v(TAG, "caching service bound");
-			startup();
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-
-		}
-	};
+//	private ServiceConnection mConnection = new ServiceConnection() {
+//		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+//			SurespotLog.v(TAG, "caching service bound");
+//			startup();
+//		}
+//
+//		@Override
+//		public void onServiceDisconnected(ComponentName name) {
+//
+//		}
+//	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -109,6 +104,8 @@ public class ChatFragment extends SherlockFragment {
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		//
 		mListView = (ListView) view.findViewById(R.id.message_list);
+		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+		
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -207,40 +204,41 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-	
+		
 
 		return view;
 	}
 
-	private void startup() {
-		SurespotLog.v(TAG, "startup");
+	public void onResume() {
+		super.onResume();
+		SurespotLog.v(TAG, "onResume");
 
 		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
 
 		// listen for first change then set empty list view
 
-		if (!mDataLoaded) {
-			mChatAdapter.registerDataSetObserver(new DataSetObserver() {
-				@Override
-				public void onChanged() {
-					if (!mDataLoaded) {
-						mDataLoaded = true;
-
-						getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
-						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-						// // viewfindViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-						//
-						// // else {
-						// // mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
-					}
-				}
-			});
-		}
+//		if (!mDataLoaded) {
+//			mChatAdapter.registerDataSetObserver(new DataSetObserver() {
+//				@Override
+//				public void onChanged() {
+//					if (!mDataLoaded) {
+//						mDataLoaded = true;
+//
+//						getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
+//						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+//						// // viewfindViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+//						//
+//						// // else {
+//						// // mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
+//					}
+//				}
+//			});
+//		}
 
 		mListView.setAdapter(mChatAdapter);
 		mListView.setDividerHeight(1);
-		// mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
-		getView().findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+		
+	//	getView().findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 		// viewfindViewById(R.id.message_list_empty).setVisibility(View.GONE);
 		// mListView.setEmptyView(viewfindViewById(R.id.progressBar));
 
@@ -304,14 +302,14 @@ public class ChatFragment extends SherlockFragment {
 
 	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		SurespotLog.v(TAG, "onResume");
-
-		Utils.logIntent(TAG, getActivity().getIntent());
-
-	}
+//	@Override
+//	public void onResume() {
+//		super.onResume();
+//		SurespotLog.v(TAG, "onResume");
+//
+//		Utils.logIntent(TAG, getActivity().getIntent());
+//
+//	}
 
 	@Override
 	public void onPause() {
@@ -324,7 +322,7 @@ public class ChatFragment extends SherlockFragment {
 	public void onDestroy() {
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
-		getActivity().unbindService(mConnection);
+	//	getActivity().unbindService(mConnection);
 	}
 
 	private void sendMessage() {

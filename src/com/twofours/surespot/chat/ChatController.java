@@ -962,7 +962,7 @@ public class ChatController {
 
 	}
 
-	public void setCurrentChat(final String username) {
+	public synchronized void setCurrentChat(final String username) {
 
 		SurespotLog.v(TAG, username + ": setCurrentChat");
 		mCurrentChat = username;
@@ -1136,8 +1136,10 @@ public class ChatController {
 
 			int position = mViewPager.getCurrentItem();
 			if (position > 0) {
+				
+				
 				String name = mChatPagerAdapter.getChatName(position);
-
+				SurespotLog.v(TAG, "closeTab, name: " + name + ", position: " + position);
 				mChatPagerAdapter.removeChat(position, true);
 				// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
 

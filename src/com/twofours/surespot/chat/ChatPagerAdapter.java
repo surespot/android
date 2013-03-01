@@ -6,12 +6,15 @@ import java.util.List;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
+import com.twofours.surespot.NewFragmentStatePagerAdapter;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.FriendFragment;
 
-public class ChatPagerAdapter extends android.support.v4.app.FragmentStatePagerAdapter {
+
+//workaround for bug: https://code.google.com/p/android/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Type%20Status%20Owner%20Summary%20Stars&groupby=&sort=&id=37990
+public class ChatPagerAdapter extends NewFragmentStatePagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
@@ -40,23 +43,32 @@ public class ChatPagerAdapter extends android.support.v4.app.FragmentStatePagerA
 
 	@Override
 	public int getItemPosition(Object object) {
+		SurespotLog.v(TAG, "getItemPosition, object: " + object.getClass().getName());
 		if (object instanceof FriendFragment) {
+			SurespotLog.v(TAG, "getItemPosition, returning 0");
 			return 0;
 		}
 
 		ChatFragment chatFragment = (ChatFragment) object;
-		// SurespotLog.v(TAG, "getItemPosition, object: " + object.getClass().getName());
-		int index = mChatNames.indexOf(chatFragment.getUsername());
+		
+		String user = chatFragment.getUsername();
+		int index = mChatNames.indexOf(user);
+		
 		if (index == -1) {
+			SurespotLog.v(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
 			return POSITION_NONE;
 		}
 		else {
+			SurespotLog.v(TAG, "getItemPosition, returning " + (index +1 ) + " for: " + user);
 			return index + 1;
 		}
 	}
 
 	@Override
 	public int getCount() {
+		if (mChatNames == null) {
+			return 0;
+		}
 		return mChatNames.size() + 1;
 	}
 
