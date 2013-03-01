@@ -109,6 +109,8 @@ public class ChatPagerAdapter extends FragmentPagerAdapter {
 		return mChatNames.indexOf(username) + 1;
 
 	}
+	
+	
 
 //	public String getFragmentTag(String username) {
 //		int pos = getChatFragmentPosition(username);

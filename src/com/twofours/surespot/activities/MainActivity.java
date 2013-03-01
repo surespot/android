@@ -59,6 +59,9 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static final int CORE_POOL_SIZE = 5;
 	private static final int MAXIMUM_POOL_SIZE = 10;
 	private static final int KEEP_ALIVE = 1;
+	
+	
+	
 
 	// create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
 	// we need a tall queue and a slim pipe
@@ -103,8 +106,8 @@ public class MainActivity extends SherlockFragmentActivity {
 		mStateController = new StateController();
 
 		if (IdentityController.hasIdentity()) {
-			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-			mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController = new ChatController(MainActivity.this);
+			mChatController.setPagers(getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
 			mChatController.init();
 			mChatController.onResume();
 		}
@@ -247,8 +250,8 @@ public class MainActivity extends SherlockFragmentActivity {
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
 		if (mChatController == null) {
-			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-			mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController = new ChatController(MainActivity.this);
+			mChatController.setPagers(getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
 			mChatController.init();
 			mChatController.onResume();
 		}
@@ -295,9 +298,18 @@ public class MainActivity extends SherlockFragmentActivity {
 		// if we're coming from an invite notification, or we need to send to someone
 		// then display friends
 		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
-				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)
-				|| (Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			Utils.configureActionBar(this, "send", "select recipient", false);
+				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
+
+			mSet = true;
+			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+
+		}
+		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
+			
+			
+			//need to select a user so put the chat controller in select mode
+			mChatController.setCurrentChat(null);
+			mChatController.setMode(ChatController.MODE_SELECT);
 			mSet = true;
 		}
 
@@ -308,6 +320,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			name = messageFrom;
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			mSet = true;
+			mChatController.setCurrentChat(name);
 		}
 
 		if (!mSet) {
@@ -316,6 +329,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (lastName != null) {
 				name = lastName;
 			}
+			mChatController.setCurrentChat(name);
 		}
 
 		// mChatController = MainActivity.getChatController();
@@ -324,7 +338,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		// (TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
 		// SurespotApplication.setChatController(mChatController);
 
-		mChatController.setCurrentChat(name);
+		
 	}
 
 	@Override

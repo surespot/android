@@ -240,25 +240,22 @@ public class ChatFragment extends SherlockFragment {
 		// viewfindViewById(R.id.message_list_empty).setVisibility(View.GONE);
 		// mListView.setEmptyView(viewfindViewById(R.id.progressBar));
 
-		Intent intent = getActivity().getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();
-
-		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-
-		// if the intent is meant for this chat
-		if (intentName != null && intentName.equals(mUsername)) {
-
-			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-				// we have a send action so populate the edit box with the data
-				handleSendIntent(action, type, intent.getExtras());
-
-				// remove intent data so we don't upload an image on restart
-				intent.setAction(null);
-				intent.setType(null);
-				intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-			}
-		}
+		
+//		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+//
+//		// if the intent is meant for this chat
+//		if (intentName != null && intentName.equals(mUsername)) {
+//
+//			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+//				// we have a send action so populate the edit box with the data
+//				handleSendIntent(action, type, intent.getExtras());
+//
+//				// remove intent data so we don't upload an image on restart
+//				intent.setAction(null);
+//				intent.setType(null);
+//				intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+//			}
+//		}
 
 		// listen to scroll changes
 		mListView.setOnScrollListener(mOnScrollListener);
@@ -340,7 +337,12 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	// populate the edit box
-	private void handleSendIntent(String action, final String type, Bundle extras) {
+	public void handleSendIntent() {
+		Intent intent = getActivity().getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+		Bundle extras = intent.getExtras();
+
 		if (action.equals(Intent.ACTION_SEND)) {
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = extras.getString(Intent.EXTRA_TEXT);
@@ -367,9 +369,15 @@ public class ChatFragment extends SherlockFragment {
 							public void run() {
 								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
 										: R.string.could_not_upload_image));
+								
+								
 
 							}
 						});
+						
+						getActivity().getIntent().setAction(null);
+						getActivity().getIntent().setType(null);
+//						intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 					}
 				});
 			}

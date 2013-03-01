@@ -36,9 +36,8 @@ public class FriendFragment extends SherlockFragment {
 	private ChatController mChatController;
 	private ListView mListView;
 
-	
 	public FriendFragment() {
-		SurespotLog.v(TAG,"constructor: " + this);
+		SurespotLog.v(TAG, "constructor: " + this);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -96,12 +95,18 @@ public class FriendFragment extends SherlockFragment {
 	public void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-
+		SurespotLog.v(TAG, "onResume");
 		mChatController = MainActivity.getChatController();
-		mMainAdapter = mChatController.getFriendAdapter();
-		mListView.setAdapter(mMainAdapter);
-		// view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-		SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
+		if (mChatController != null) {
+			mMainAdapter = mChatController.getFriendAdapter();
+			mListView.setAdapter(mMainAdapter);
+
+			// view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+			SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
+		}
+		else {
+			SurespotLog.v(TAG, "friend adapter not set");
+		}
 
 	}
 
