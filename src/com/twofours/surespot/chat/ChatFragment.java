@@ -36,7 +36,6 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
-	// private ChatController mChatController;
 	private String mUsername;
 	private ListView mListView;
 	private EditText mEditText;
@@ -47,8 +46,7 @@ public class ChatFragment extends SherlockFragment {
 	private ChatAdapter mChatAdapter;
 
 	public ChatFragment() {
-		SurespotLog.v(TAG, "constructor");
-		// mChatController = MainActivity.getChatController();
+		SurespotLog.v(TAG, "constructor: " + this);
 	}
 
 	public String getUsername() {
@@ -62,7 +60,7 @@ public class ChatFragment extends SherlockFragment {
 		this.mUsername = mUsername;
 	}
 
-	public static ChatFragment newInstance(ChatController chatController, String username) {
+	public static ChatFragment newInstance(String username) {
 		ChatFragment cf = new ChatFragment();
 		// cf.setChatController(chatController);
 		Bundle bundle = new Bundle();
@@ -263,36 +261,42 @@ public class ChatFragment extends SherlockFragment {
 		}
 
 		// listen to scroll changes
-		mListView.setOnScrollListener(new OnScrollListener() {
-
-			@Override
-			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-				if (mLoading) {
-					// will have more items if we loaded them
-					if (totalItemCount > mPreviousTotal) {
-						mPreviousTotal = totalItemCount;
-						mLoading = false;
-					}
-				}
-
-				if (!mLoading && MainActivity.getChatController().hasEarlierMessages(mUsername) && firstVisibleItem <= 10) {
-					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
-					// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
-					// firstVisibleItem
-					// + ", visibleItemCount: " + visibleItemCount);
-					mLoading = true;
-					MainActivity.getChatController().loadEarlierMessages(mUsername);
-
-				}
-			}
-
-			@Override
-			public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-			}
-		});
+		mListView.setOnScrollListener(mOnScrollListener);
 	}
+	
+
+	//on
+	
+	private OnScrollListener mOnScrollListener =
+			new OnScrollListener() {
+
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+			if (mLoading) {
+				// will have more items if we loaded them
+				if (totalItemCount > mPreviousTotal) {
+					mPreviousTotal = totalItemCount;
+					mLoading = false;
+				}
+			}
+
+			if (!mLoading && MainActivity.getChatController().hasEarlierMessages(mUsername) && firstVisibleItem <= 10) {
+				// SurespotLog.v(TAG, "onScroll: Loading more messages.");
+				// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
+				// firstVisibleItem
+				// + ", visibleItemCount: " + visibleItemCount);
+				mLoading = true;
+				MainActivity.getChatController().loadEarlierMessages(mUsername);
+
+			}
+		}
+
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+		}
+	};
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -315,6 +319,7 @@ public class ChatFragment extends SherlockFragment {
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
+		//mListView.removeOnScrollListener()):
 		// mChatController.saveMessages(mUsername);
 		// mChatAdapter.evictCache();
 	}

@@ -7,9 +7,11 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,14 +30,15 @@ public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
 	private static final String UNSENT_MESSAGES = "unsentMessages";
 	private static final String ACTIVE_CHATS = "activeChats";
-	private static final String MESSAGE_IDS = "messageIds";
+	private static final String LAST_VIEWED_MESSAGE_IDS = "lastViewedMessageIds";
+	private static final String LAST_RECEIVED_MESSAGE_IDS = "lastReceivedMessageIds";
 	private static final String STATE_EXTENSION = ".sss";
 
 	private static final String TAG = "StateController";
 
-	public ArrayList<String> loadActiveChats() {
+	public Set<String> loadActiveChats() {
 		String filename = getFilename(ACTIVE_CHATS);
-		ArrayList<String> activeChats = new ArrayList<String>();
+		HashSet<String> activeChats = new HashSet<String>();
 		if (filename != null) {
 			String sActiveChatsJson = readFile(filename);
 			if (sActiveChatsJson != null) {
@@ -61,8 +64,11 @@ public class StateController {
 		String filename = getFilename(ACTIVE_CHATS);
 		if (filename != null) {
 			if (chats != null && chats.size() > 0) {
+				
 				JSONArray jsonArray = new JSONArray(chats);
-				writeFile(filename, jsonArray.toString());
+				String sActivechats = jsonArray.toString();				
+				writeFile(filename, sActivechats);
+				SurespotLog.v(TAG, "Saved active chats: " + sActivechats);
 			}
 			else {
 				new File(filename).delete();
@@ -71,7 +77,7 @@ public class StateController {
 	}
 
 	public HashMap<String, Integer> loadLastViewMessageIds() {
-		String filename = getFilename(MESSAGE_IDS);
+		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
 		if (filename != null) {
 
 			String lastMessageIdJson = readFile(filename);
@@ -88,7 +94,7 @@ public class StateController {
 
 	public void saveLastViewedMessageIds(Map<String, Integer> messageIds) {
 
-		String filename = getFilename(MESSAGE_IDS);
+		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
 		if (filename != null) {
 			if (messageIds != null && messageIds.size() > 0) {
 				String smessageIds = mapToJsonString(messageIds);
@@ -101,6 +107,39 @@ public class StateController {
 			}
 		}
 	}
+	
+	public HashMap<String, Integer> loadLastReceivedMessageIds() {
+		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
+		if (filename != null) {
+
+			String lastMessageIdJson = readFile(filename);
+			if (lastMessageIdJson != null) {
+
+				SurespotLog.v(TAG, "Loaded last received ids: " + lastMessageIdJson);
+				return Utils.jsonStringToMap(lastMessageIdJson);
+			}
+
+		}
+		return new HashMap<String, Integer>();
+
+	}
+
+	public void saveLastReceivedMessageIds(Map<String, Integer> messageIds) {
+
+		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
+		if (filename != null) {
+			if (messageIds != null && messageIds.size() > 0) {
+				String smessageIds = mapToJsonString(messageIds);
+				writeFile(filename, smessageIds);
+				SurespotLog.v(TAG, "saved last received messageIds: " + smessageIds);
+
+			}
+			else {
+				new File(filename).delete();
+			}
+		}
+	}
+
 
 	public void saveUnsentMessages(Collection<SurespotMessage> messages) {
 		String filename = getFilename(UNSENT_MESSAGES);

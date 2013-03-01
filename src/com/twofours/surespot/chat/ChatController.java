@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,6 +38,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -64,8 +66,10 @@ public class ChatController {
 	private BroadcastReceiver mConnectivityReceiver;
 	private HashMap<String, ChatAdapter> mChatAdapters;
 	private HashMap<String, Integer> mLastViewedMessageIds;
-	private HashMap<String, Boolean> mReadSinceReconnect;
-	private HashMap<String, Boolean> mHasNewMessages;
+	private HashMap<String, Integer> mLastReceivedMessageIds;
+	private Set<String> mActiveChats;
+	// private HashMap<String, Boolean> mReadSinceReconnect;
+
 	private FriendAdapter mFriendAdapter;
 	private ChatPagerAdapter mChatPagerAdapter;
 	private ViewPager mViewPager;
@@ -79,32 +83,20 @@ public class ChatController {
 	// private
 
 	//
-	public ChatController(Context context, ViewPager viewPager, TitlePageIndicator pageIndicator, FragmentManager fm) {
-		SurespotLog.v(TAG, "constructor.");
+	public ChatController(Context context,  FragmentManager fm) {
+		SurespotLog.v(TAG, "constructor: " + this);
 
 		mContext = context;
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		mChatAdapters = new HashMap<String, ChatAdapter>();
-		mFriendAdapter = new FriendAdapter(mContext);
-		mHasNewMessages = new HashMap<String, Boolean>();
-		mReadSinceReconnect = new HashMap<String, Boolean>();
-
-		mChatPagerAdapter = new ChatPagerAdapter(this, fm);
-		mViewPager = viewPager;
-		mViewPager.setAdapter(mChatPagerAdapter);
-		mIndicator = pageIndicator;
-		mIndicator.setViewPager(mViewPager);
-
-		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(int position) {
-				SurespotLog.v(TAG, "onPageSelected, position: " + position);
-				String name = mChatPagerAdapter.getChatName(position);
-				setCurrentChat(name);
-
-			}
-		});
-		mViewPager.setOffscreenPageLimit(2);
+		mFriendAdapter = new FriendAdapter(mContext);			
+		SurespotLog.v(TAG, "created Friend adapter: " + mFriendAdapter);
+		mChatPagerAdapter = new ChatPagerAdapter(fm);
+		loadState();
+		
+	
+		
+		//mViewPager.setOffscreenPageLimit(2);
 
 		setOnWifi();
 
@@ -205,8 +197,7 @@ public class ChatController {
 				connected();
 
 				sendMessages();
-				mContext.registerReceiver(mConnectivityReceiver,
-						new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+				mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			}
 
@@ -272,7 +263,8 @@ public class ChatController {
 											&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 										MainActivity.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
 									}
-									updateLastViewedMessageId(otherUser, message.getId(), 0);
+									mLastReceivedMessageIds.put(otherUser, message.getId());
+									updateLastViewedMessageId(otherUser);
 									checkAndSendNextMessage(message);
 								}
 							}
@@ -283,8 +275,8 @@ public class ChatController {
 							boolean added = getChatAdapter(mContext, otherUser).addOrUpdateMessage(message, true);
 
 							mChatPagerAdapter.addChatName(otherUser);
-
-							updateLastViewedMessageId(otherUser, message.getId(), added ? 1 : 0);
+							mLastReceivedMessageIds.put(otherUser, message.getId());
+							updateLastViewedMessageId(otherUser);
 							checkAndSendNextMessage(message);
 						}
 					}
@@ -333,45 +325,46 @@ public class ChatController {
 		};
 
 	}
+
 	
-	//Can't do this until after instantiation as it creates fragments which require a ChatController
-	public void init( String currentChatName) {
+	public void setPagers(ViewPager viewPager, TitlePageIndicator pageIndicator) {
+		mViewPager = viewPager;
+		mViewPager.setAdapter(mChatPagerAdapter);
+		mIndicator = pageIndicator;
+		mIndicator.setViewPager(mViewPager);
+		
+		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+			@Override
+			public void onPageSelected(int position) {
+				SurespotLog.v(TAG, "onPageSelected, position: " + position);
+				String name = mChatPagerAdapter.getChatName(position);
+				setCurrentChat(name);
+
+			}
+		});
+
+	}
+	// Can't do this until after instantiation as it creates fragments which require a ChatController
+	public void init() {
 
 		// get the tabs
 
-		boolean foundChat = false;
-		ArrayList<String> chatNames = MainActivity.getStateController().loadActiveChats();
+	
+		Set<String> chatNames = mActiveChats;
 
 		for (String chatName : chatNames) {
 
-			if (currentChatName != null && chatName.equals(currentChatName)) {
-				foundChat = true;
-			}
-
 			ChatAdapter chatAdapter = new ChatAdapter(mContext);
 			mChatAdapters.put(chatName, chatAdapter);
-			mFriendAdapter.addActiveFriend(chatName);
+			
 
 			// load savedmessages
 			loadMessages(chatName);
 
 		}
 
-		if (!foundChat && currentChatName != null) {
-			chatNames.add(currentChatName);
-			foundChat = true;
-			ChatAdapter chatAdapter = new ChatAdapter(mContext);
-			mChatAdapters.put(currentChatName, chatAdapter);
-			mFriendAdapter.addActiveFriend(currentChatName);
-			// load savedmessages
-			loadMessages(currentChatName);
-
-		}
-
-		mChatPagerAdapter.addChatNames(chatNames);
-
-		setCurrentChat(currentChatName);
-
+	//	mFriendAdapter.addFriends(chatNames);
+		mChatPagerAdapter.addChatNames(chatNames);		
 	}
 
 	private void connect() {
@@ -472,9 +465,7 @@ public class ChatController {
 		// });
 
 		// reset read since reconnect flags
-		for (String chat : mReadSinceReconnect.keySet()) {
-			mReadSinceReconnect.put(chat, false);
-		}
+		// mReadSinceReconnect.clear();
 
 		loadFriends();
 		// loadAllLatestMessages();
@@ -488,7 +479,7 @@ public class ChatController {
 			// String username = message.getFrom();
 
 			// ideally get the last id from the fragment's chat adapter
-			Integer lastMessageID = getLatestMessageId(otherUser);
+			Integer lastMessageID = mLastReceivedMessageIds.get(otherUser);
 
 			// failing that use the last viewed id
 			// if (lastMessageID == null) {
@@ -514,8 +505,7 @@ public class ChatController {
 
 	private void setOnWifi() {
 		// get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
-		ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(
-				Context.CONNECTIVITY_SERVICE);
+		ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null) {
 			mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
@@ -601,30 +591,39 @@ public class ChatController {
 		return (getState() == STATE_CONNECTED);
 	}
 
-	private void updateLastViewedMessageId(String username, Integer id, int newMessageCount) {
+	private void updateLastViewedMessageId(String username) {
 
 		if (username.equals(mCurrentChat)) {
-
-			if (id != null) {
-				SurespotLog.v(TAG, username + ": setting last viewed message id to: " + id);
-				mLastViewedMessageIds.put(username, id);
-			}
-			else {
-				Integer latestMessageId = getLatestMessageId(username);
-				SurespotLog.v(TAG, username + ": setting last viewed message id to: " + latestMessageId);
-				mLastViewedMessageIds.put(username, latestMessageId);
-			}
+			//
+			// if (id != null) {
+			// SurespotLog.v(TAG, username + ": setting last viewed message id to: " + id);
+			// mLastViewedMessageIds.put(username, id);
+			// }
+			// else {
+			Integer latestMessageId = mLastReceivedMessageIds.get(username);
+			SurespotLog.v(TAG, username + ": setting last viewed message id to: " + latestMessageId);
+			mLastViewedMessageIds.put(username, latestMessageId);
+			// }
 
 			mFriendAdapter.messageDeltaReceived(username, 0);
 		}
 		else {
-			if (newMessageCount == 1) {
-				mFriendAdapter.messageReceived(username);
-			}
-			else {
-				mFriendAdapter.messageDeltaReceived(username, newMessageCount);
-			}
+			mFriendAdapter.messageDeltaReceived(username, getDelta(username));
+
 		}
+	}
+	
+	private int getDelta(String username) {
+		Integer latestMessageId = mLastReceivedMessageIds.get(username);
+		Integer lastViewedId = mLastViewedMessageIds.get(username);
+		if (lastViewedId == null) {
+			lastViewedId = 0;
+		}
+		if (latestMessageId == null) {
+			latestMessageId = 0;
+		}
+		return latestMessageId - lastViewedId;
+
 	}
 
 	// message handling shiznit
@@ -714,32 +713,16 @@ public class ChatController {
 
 		// JSONObject messageIdHolder = new JSONObject();
 		JSONObject messageIds = new JSONObject();
-		for (Entry<String, ChatAdapter> eChatAdapter : mChatAdapters.entrySet()) {
+		for (Entry<String, Integer> eLastReceivedId : mLastReceivedMessageIds.entrySet()) {
 			try {
-				String user = eChatAdapter.getKey();
-
-				SurespotMessage lastMessage = eChatAdapter.getValue().getLastMessageWithId();
-				Integer lastMessageId = null;
-				if (lastMessage != null) {
-					lastMessageId = lastMessage.getId();
-				}
-
-				if (lastMessageId == null || lastMessageId == 0) {
-					lastMessageId = mLastViewedMessageIds.get(user);
-				}
-
-				if (lastMessageId != null && lastMessageId > 0) {
-					messageIds.put(ChatUtils.getSpot(IdentityController.getLoggedInUser(), user), lastMessageId);
-				}
+				messageIds.put(ChatUtils.getSpot(IdentityController.getLoggedInUser(), eLastReceivedId.getKey()),
+						eLastReceivedId.getValue());
 			}
 			catch (JSONException e) {
 				SurespotLog.w(TAG, "loadAllLatestMessages", e);
 			}
 		}
 
-		// messageIdHolder.put("messageIds", messageIds);
-
-		//
 		MainActivity.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, JSONArray jsonArray) {
@@ -771,7 +754,7 @@ public class ChatController {
 		final ChatAdapter chatAdapter = getChatAdapter(mContext, username);
 
 		SurespotMessage message = null;
-		int newMessageCount = 0;
+		// int newMessageCount = 0;
 		for (int i = 0; i < jsonArray.length(); i++) {
 			try {
 				JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
@@ -796,9 +779,9 @@ public class ChatController {
 				}
 				else {
 					boolean added = chatAdapter.addOrUpdateMessage(message, false);
-					if (added) {
-						newMessageCount++;
-					}
+					// if (added) {
+					// newMessageCount++;
+					// }
 				}
 			}
 			catch (JSONException e) {
@@ -809,19 +792,11 @@ public class ChatController {
 
 		if (message != null) {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
-
-			updateLastViewedMessageId(username, message.getId(), newMessageCount);
-
-		}
-		else {
-			// update to the last id if we didn't load any messages because they could have been added to the adapter when
-			// the tab wasn't showing
-			updateLastViewedMessageId(username, null, newMessageCount);
+			mLastReceivedMessageIds.put(username, message.getId());
+			updateLastViewedMessageId(username);
+			chatAdapter.notifyDataSetChanged();
 		}
 
-		// we've read the messages now, yay
-		mReadSinceReconnect.put(username, true);
-		chatAdapter.notifyDataSetChanged();
 	}
 
 	private Integer getEarliestMessageId(String username) {
@@ -885,24 +860,27 @@ public class ChatController {
 		saveMessages();
 		// store chats the user went into
 
-		if (!mLastViewedMessageIds.isEmpty()) {
-			SurespotLog.v(TAG, "saving last viewed message ids");
-			MainActivity.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
-		}
+		// if (!mLastViewedMessageIds.isEmpty()) {
+
+		// }
 
 		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 
 		// save active chats
 
-		MainActivity.getStateController().saveActiveChats(mChatAdapters.keySet());
-
+		MainActivity.getStateController().saveActiveChats(mActiveChats);
+		MainActivity.getStateController().saveLastReceivedMessageIds(mLastReceivedMessageIds);
+		MainActivity.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
 		// }
 	}
 
 	private void loadState() {
 		SurespotLog.v(TAG, "loadState");
 		mLastViewedMessageIds = MainActivity.getStateController().loadLastViewMessageIds();
+		mLastReceivedMessageIds = MainActivity.getStateController().loadLastReceivedMessageIds();
+		mActiveChats = MainActivity.getStateController().loadActiveChats();
+
 		loadUnsentMessages();
 	}
 
@@ -911,7 +889,7 @@ public class ChatController {
 		if (mPaused) {
 			mPaused = false;
 
-			loadState();
+			// loadState();
 
 			connect();
 		}
@@ -950,8 +928,6 @@ public class ChatController {
 			// load savedmessages
 			loadMessages(username);
 
-			// load any new messages
-			// loadLatestMessages(username);
 		}
 		return chatAdapter;
 	}
@@ -969,43 +945,21 @@ public class ChatController {
 
 		int wantedPosition = 0;
 		if (username != null) {
-			mChatPagerAdapter.addChatName(username);
+			// mActiveChats.add(username);
+			mChatPagerAdapter.addChatName(username);			
+			mFriendAdapter.setChatActive(username, true);
+			mActiveChats.add(username);
+			updateLastViewedMessageId(username);
+			// cancel associated notifications
+			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 			wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
+			
 		}
 
 		if (wantedPosition != mViewPager.getCurrentItem()) {
 			mViewPager.setCurrentItem(wantedPosition, true);
-		}
-
-		mFriendAdapter.setChatActive(username, true);
-
-		// if we've read since we connected, don't read again
-		Boolean read = mReadSinceReconnect.get(username);
-		if (read != null && read.booleanValue()) {
-			SurespotLog.v(TAG, username + ": not asking the server for more messages as we've read since connecting");
-
-			updateLastViewedMessageId(username, null, 0);
-
-			// cancel associated notifications
-			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
-					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-		}
-		else {
-
-			// else {
-			// new AsyncTask<Void, Void, Void>() {
-			// protected Void doInBackground(Void... params) {
-			// // get the key going
-			// final String ourVersion = IdentityController.getOurLatestVersion();
-			// final String theirVersion = IdentityController.getTheirLatestVersion(username);
-			//
-			// // MainActivity.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
-			// return null;
-			// }
-			// }.execute();
-			// }
-		}
-
+		}		
 	}
 
 	void sendMessage(final String username, final String plainText, final String mimeType) {
@@ -1087,10 +1041,6 @@ public class ChatController {
 		sendMessage(message);
 	}
 
-	public HashMap<String, Boolean> getHasNewMessages() {
-		return mHasNewMessages;
-	}
-
 	public FriendAdapter getFriendAdapter() {
 		return mFriendAdapter;
 	}
@@ -1101,15 +1051,28 @@ public class ChatController {
 			@Override
 			public void onSuccess(JSONArray jsonArray) {
 				SurespotLog.v(TAG, "getFriends success.");
+				ArrayList<Friend> friends = new ArrayList<Friend>();
+				try {
+					for (int i = 0; i < jsonArray.length(); i++) {
+						JSONObject jsonFriend = jsonArray.getJSONObject(i);
+						Friend friend = Friend.toFriend(jsonFriend);
+						friend.setChatActive(mActiveChats.contains(friend.getName()));
+						friends.add(friend);	
+						friend.setMessageCount(getDelta(friend.getName()));
+					}
+				}
+				catch (JSONException e) {
+					SurespotLog.e(TAG, e.toString(), e);
+				}
 
-				if (jsonArray.length() > 0) {
+				
 
+				
 					// mFriendAdapter.refreshActiveChats();
 					// mFriendAdapter.clearFriends(false);
-					mFriendAdapter.addFriends(jsonArray);
-
-					loadAllLatestMessages();
-				}
+				mFriendAdapter.setFriends(friends);
+				loadAllLatestMessages();
+				
 
 			}
 
@@ -1129,26 +1092,20 @@ public class ChatController {
 		return mChatPagerAdapter;
 	}
 
-	public void closeTab() {
-		// TODO remove saved messages
-
+	public void closeTab() {	
 		if (mChatPagerAdapter.getCount() > 0) {
 
 			int position = mViewPager.getCurrentItem();
 			if (position > 0) {
-				
-				
+
 				String name = mChatPagerAdapter.getChatName(position);
 				SurespotLog.v(TAG, "closeTab, name: " + name + ", position: " + position);
+				
 				mChatPagerAdapter.removeChat(position, true);
-				// when removing the 0 tab, onPageSelected is not fired for some reason so we need to set this stuff
-
-				// mChatController.setCurrentChat(name);
-
-				// if they explicitly close the tab, remove the adapter
 				destroyChatAdapter(name);
 				mIndicator.notifyDataSetChanged();
 				mFriendAdapter.setChatActive(name, false);
+				mActiveChats.remove(name);
 			}
 		}
 	}

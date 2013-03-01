@@ -35,26 +35,20 @@ public class FriendFragment extends SherlockFragment {
 	private MultiProgressDialog mMpdInviteFriend;
 	private ChatController mChatController;
 	private ListView mListView;
+
 	
 	public FriendFragment() {
-		mChatController = MainActivity.getChatController();
-	}
-	
-	public void setChatController(ChatController chatController) {
-		SurespotLog.v(TAG, "constructor");
-		mChatController = chatController;
+		SurespotLog.v(TAG,"constructor: " + this);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
-				
-		mMainAdapter = mChatController.getFriendAdapter();
 
 		mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
-		mListView.setEmptyView(view.findViewById(R.id.progressBar));
+		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 		// findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 
 		// click on friend to join chat
@@ -64,8 +58,7 @@ public class FriendFragment extends SherlockFragment {
 				Friend friend = (Friend) mMainAdapter.getItem(position);
 				if (friend.isFriend()) {
 					mChatController.setCurrentChat(friend.getName());
-					
-					
+
 				}
 			}
 		});
@@ -94,14 +87,23 @@ public class FriendFragment extends SherlockFragment {
 		});
 
 		// TODO adapter observer
-		((ListView) view.findViewById(R.id.main_list)).setEmptyView(view.findViewById(R.id.main_list_empty));
-		mListView.setAdapter(mMainAdapter);
-		view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 
-		
 		return view;
 	};
-	
+
+	@Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+
+		mChatController = MainActivity.getChatController();
+		mMainAdapter = mChatController.getFriendAdapter();
+		mListView.setAdapter(mMainAdapter);
+		// view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+		SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
+
+	}
 
 	private void inviteFriend() {
 		final EditText etFriend = ((EditText) getView().findViewById(R.id.etFriend));
@@ -162,6 +164,5 @@ public class FriendFragment extends SherlockFragment {
 			});
 		}
 	}
-
 
 }

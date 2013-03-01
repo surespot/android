@@ -105,7 +105,7 @@ public class Friend implements Comparable<Friend> {
 			mFlags |= HAS_NEW_MESSAGES;
 
 			// pretend the chat is active
-			mFlags |= CHAT_ACTIVE;
+			//mFlags |= CHAT_ACTIVE;
 		}
 		else {
 			mFlags &= ~HAS_NEW_MESSAGES;

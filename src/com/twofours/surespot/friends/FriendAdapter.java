@@ -3,10 +3,6 @@ package com.twofours.surespot.friends;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
@@ -30,27 +26,29 @@ import com.twofours.surespot.common.Utils;
 public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
 
-	private final ArrayList<Friend> mFriends = new ArrayList<Friend>();
-//	private ArrayList<String> mActiveChats = new ArrayList<String>();
+	ArrayList<Friend> mFriends = new ArrayList<Friend>();
+	// private ArrayList<String> mActiveChats = new ArrayList<String>();
 	private NotificationManager mNotificationManager;
+
 
 	private Context mContext;
 
 	public FriendAdapter(Context context) {
 		mContext = context;
+
 		// refreshActiveChats();
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 	}
 
-//	public void refreshActiveChats() {
-//		mActiveChats = MainActivity.getStateController().loadActiveChats();
-//	}
-//
-//	public ArrayList<String> getActiveChats() {
-//		return mActiveChats;
-//	}
+	// public void refreshActiveChats() {
+	// mActiveChats = MainActivity.getStateController().loadActiveChats();
+	// }
+	//
+	// public ArrayList<String> getActiveChats() {
+	// return mActiveChats;
+	// }
 
 	/*
 	 * public void refreshFlags() { for (Friend friend : mFriends) { if (mActiveChats.contains(friend.getName())) {
@@ -63,9 +61,9 @@ public class FriendAdapter extends BaseAdapter {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.incMessageCount(1);
-//			if (!mActiveChats.contains(name)) {
-//				mActiveChats.add(name);
-//			}
+			// if (!mActiveChats.contains(name)) {
+			// mActiveChats.add(name);
+			// }
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
@@ -76,9 +74,9 @@ public class FriendAdapter extends BaseAdapter {
 		if (friend != null) {
 			friend.setMessageCount(delta);
 			Collections.sort(mFriends);
-//			if (delta > 0 && !mActiveChats.contains(name)) {
-//				mActiveChats.add(name);
-//			}
+			// if (delta > 0 && !mActiveChats.contains(name)) {
+			// mActiveChats.add(name);
+			// }
 			notifyDataSetChanged();
 		}
 	}
@@ -91,21 +89,21 @@ public class FriendAdapter extends BaseAdapter {
 		}
 		return null;
 	}
-	
-	public void addActiveFriend(String name) {
 
-		Friend friend = getFriend(name);
-		if (friend == null) {
-			friend = new Friend();
-			mFriends.add(friend);
-			friend.setName(name);
-		}
-
-		friend.setChatActive(true);
-		Collections.sort(mFriends);
-		notifyDataSetChanged();
-		
-	}
+	// public void addFriend(String name) {
+	//
+	// Friend friend = getFriend(name);
+	// if (friend == null) {
+	// friend = new Friend();
+	// mFriends.add(friend);
+	// friend.setName(name);
+	// }
+	//
+	// friend.setChatActive(true);
+	// Collections.sort(mFriends);
+	// //notifyDataSetChanged();
+	//
+	// }
 
 	public void addNewFriend(String name) {
 		Friend friend = getFriend(name);
@@ -139,7 +137,7 @@ public class FriendAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 
 	}
-	
+
 	public void setChatActive(String name, boolean b) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
@@ -149,32 +147,67 @@ public class FriendAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 
-	public void addFriends(JSONArray friends) {
-		try {
-			for (int i = 0; i < friends.length(); i++) {
-				JSONObject jsonFriend = friends.getJSONObject(i);
-				Friend friend = Friend.toFriend(jsonFriend);
-			//	friend.setChatActive(mActiveChats.contains(friend.getName()));
-				int index = mFriends.indexOf(friend);
-				if (index == -1) {
-					mFriends.add(friend);
-				}
-				else {
-					friend = mFriends.get(index);
-					//friend.setChatActive(mActiveChats.contains(friend.getName()));
-					friend.update(jsonFriend);
+//	public void addFriends(JSONArray friends) {
+//		try {
+//			for (int i = 0; i < friends.length(); i++) {
+//				JSONObject jsonFriend = friends.getJSONObject(i);
+//				Friend friend = Friend.toFriend(jsonFriend);
+//				//friend.setChatActive(mActiveChats.contains(friend.getName()));
+//				int index = mFriends.indexOf(friend);
+//				if (index == -1) {
+//					mFriends.add(friend);
+//				}
+//				else {
+//					friend = mFriends.get(index);
+//				//	friend.setChatActive(mActiveChats.contains(friend.getName()));
+//					friend.update(jsonFriend);
+//
+//				}
+//
+//			}
+//		}
+//		catch (JSONException e) {
+//			SurespotLog.e(TAG, e.toString(), e);
+//		}
+//
+//		sort();
+//		notifyDataSetChanged();
+//	}
 
-				}
-
-			}
-		}
-		catch (JSONException e) {
-			SurespotLog.e(TAG, e.toString(), e);
-		}
-
+	public void setFriends(ArrayList<Friend> friends) {
+		SurespotLog.v(TAG, "setFriends, adding messages to adapter: " + this + ", count: " + friends.size());
+		mFriends.clear();
+		mFriends.addAll(friends);
 		sort();
 		notifyDataSetChanged();
+
 	}
+
+	// public void addFriends(Set<String> friends) {
+	// try {
+	// for (String friendName : friends) {
+	// Friend friend = Friend.toFriend(jsonFriend);
+	// // friend.setChatActive(mActiveChats.contains(friend.getName()));
+	// int index = mFriends.indexOf(friend);
+	// if (index == -1) {
+	// mFriends.add(friend);
+	// }
+	// else {
+	// friend = mFriends.get(index);
+	// //friend.setChatActive(mActiveChats.contains(friend.getName()));
+	// friend.update(jsonFriend);
+	//
+	// }
+	//
+	// }
+	// }
+	// catch (JSONException e) {
+	// SurespotLog.e(TAG, e.toString(), e);
+	// }
+	//
+	// sort();
+	// notifyDataSetChanged();
+	// }
 
 	public void clearFriends(boolean notify) {
 		mFriends.clear();
@@ -335,19 +368,16 @@ public class FriendAdapter extends BaseAdapter {
 		public TextView tvStatus;
 		public View vgInvite;
 	}
-//
-//	public ArrayList<String> getFriends() {
-//		return mActiveChats;
-//	}
+
+	//
+	// public ArrayList<String> getFriends() {
+	// return mActiveChats;
+	// }
 
 	public void sort() {
 		if (mFriends != null) {
 			Collections.sort(mFriends);
 		}
 	}
-
-	
-
-	
 
 }

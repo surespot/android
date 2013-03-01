@@ -48,21 +48,20 @@ import com.viewpagerindicator.TitlePageIndicator;
 public class MainActivity extends SherlockFragmentActivity {
 	public static final String TAG = "MainActivity";
 
-	
 	private NotificationManager mNotificationManager;
 	private static CredentialCachingService mCredentialCachingService;
 	private static NetworkController mNetworkController;
 	private static StateController mStateController;
 	private static Context mContext;
-	
+
 	private static ChatController mChatController;
 
 	private static final int CORE_POOL_SIZE = 5;
 	private static final int MAXIMUM_POOL_SIZE = 10;
 	private static final int KEEP_ALIVE = 1;
 
-	//create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
-	//we need a tall queue and a slim pipe
+	// create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
+	// we need a tall queue and a slim pipe
 	private static final ThreadFactory sThreadFactory = new ThreadFactory() {
 		private final AtomicInteger mCount = new AtomicInteger(1);
 
@@ -71,7 +70,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 	};
 
-	
 	private static final BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>();
 
 	/**
@@ -83,6 +81,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
 
@@ -91,8 +90,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		SurespotApplication.setStartupIntent(getIntent());
 		Utils.logIntent(TAG, getIntent());
-		
-	
+
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 		mContext = getApplicationContext();
 
@@ -101,16 +99,11 @@ public class MainActivity extends SherlockFragmentActivity {
 		intent = new Intent(this, CredentialCachingService.class);
 		SurespotLog.v(TAG, "starting cache service");
 		startService(intent);
-
-		mStateController = new StateController();
-		
-
-		mChatController = new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
-				(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
-	//	SurespotApplication.setChatController(mChatController);
-
 	
-		mChatController.init(null);
+		mStateController = new StateController();
+		mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+		mChatController.setPagers((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+		mChatController.init();
 		mChatController.onResume();
 
 	}
@@ -122,7 +115,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			mCredentialCachingService = binder.getService();
 
 			// make sure these are there so startup code can execute
-			//SurespotApplication.setCachingService(mCredentialCachingService);
+			// SurespotApplication.setCachingService(mCredentialCachingService);
 			mNetworkController = new NetworkController(MainActivity.this);
 			startup();
 		}
@@ -134,6 +127,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	};
 
 	private void startup() {
+		SurespotLog.v(TAG, "startup, chatController: " + mChatController);
 		try {
 			// device without GCM throws exception
 			GCMRegistrar.checkDevice(this);
@@ -251,31 +245,37 @@ public class MainActivity extends SherlockFragmentActivity {
 	}
 
 	private void launch(Intent intent) {
-		SurespotLog.v(TAG, "launch");
+		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
+	//	if (mChatController == null) {
+			
+	//	}
+	//	else {
+			
+			//mChatController.init();
+		//	mChatController.onResume();
+	//	}
 
-	
-			// make sure the gcm is set
+		// make sure the gcm is set
 
-			// use case:
-			// user signs-up without google account (unlikely)
-			// user creates google account
-			// user opens app again, we have session so neither login or add user is called (which would set the gcm)
+		// use case:
+		// user signs-up without google account (unlikely)
+		// user creates google account
+		// user opens app again, we have session so neither login or add user is called (which would set the gcm)
 
-			// so we need to upload the gcm here if we haven't already
+		// so we need to upload the gcm here if we haven't already
 
-			mNetworkController.registerGcmId(new AsyncHttpResponseHandler() {
+		mNetworkController.registerGcmId(new AsyncHttpResponseHandler() {
 
-				@Override
-				public void onSuccess(int arg0, String arg1) {
-					SurespotLog.v(TAG, "GCM registered in surespot server");
-				}
+			@Override
+			public void onSuccess(int arg0, String arg1) {
+				SurespotLog.v(TAG, "GCM registered in surespot server");
+			}
 
-				@Override
-				public void onFailure(Throwable arg0, String arg1) {
-					SurespotLog.e(TAG, arg0.toString(), arg0);
-				}
-			});
-		
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				SurespotLog.e(TAG, arg0.toString(), arg0);
+			}
+		});
 
 		String action = intent.getAction();
 		String type = intent.getType();
@@ -314,13 +314,13 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 		}
 
-//		mChatController = MainActivity.getChatController();
+		// mChatController = MainActivity.getChatController();
 
-	//	mChatController = new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
-		//		(TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
-	//	SurespotApplication.setChatController(mChatController);
+		// mChatController = new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
+		// (TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
+		// SurespotApplication.setChatController(mChatController);
 
-	
+		mChatController.setCurrentChat(name);
 	}
 
 	@Override
@@ -414,9 +414,9 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
+		mChatController = null;
 		unbindService(mConnection);
 	}
-	
 
 	public static CredentialCachingService getCachingService() {
 
@@ -442,7 +442,6 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static Context getContext() {
 		return mContext;
 	}
-
 
 	public static void setChatController(ChatController chatController) {
 		mChatController = chatController;
