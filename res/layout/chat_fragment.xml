@@ -11,13 +11,13 @@
         android:layout_above="@+id/etMessage"
         android:drawSelectorOnTop="false"
         android:stackFromBottom="true"
-        android:transcriptMode="normal" />
+        android:transcriptMode="alwaysScroll" /> 
 
     <FrameLayout
         android:id="@+id/progressBar"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/etMessage"
         android:visibility="gone" >
 
         <ProgressBar
@@ -32,7 +32,7 @@
         android:layout_height="fill_parent"
         android:layout_above="@+id/etMessage"
         android:gravity="center"
-        android:text="no messages"
+        android:text="@string/no_messages"
         android:visibility="gone" />
 
     <EditText
@@ -57,6 +57,6 @@
         android:layout_marginRight="-10sp"
         android:background="@drawable/send_button"
         android:textColor="@android:color/black"
-        android:text="home" />
+        android:text="@string/home" />
 
 </RelativeLayout>

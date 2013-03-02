@@ -243,7 +243,7 @@ public class ImageDownloader {
 	 * that only the last started download process can bind its result, independently of the download finish order.
 	 * </p>
 	 */
-	static class DownloadedDrawable extends ColorDrawable {
+	public static class DownloadedDrawable extends ColorDrawable {
 		private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
 		private int mHeight;
 

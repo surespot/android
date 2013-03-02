@@ -101,18 +101,17 @@ public class MainActivity extends SherlockFragmentActivity {
 		startService(intent);
 
 		mStateController = new StateController();
-	
+
 		// create the chat controller here if we know we're not going to need to login
 		// so that if we come back from a restart (for example a rotation), the automatically
 		// created fragments have a chat controller instance
-		
+
 		if (!needsLogin()) {
-			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
-					(TitlePageIndicator) findViewById(R.id.indicator));		
-			mChatController.init();
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
 		}
 	}
-	
+
 	private boolean needsLogin() {
 		String user = IdentityController.getLoggedInUser();
 
@@ -123,7 +122,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		SurespotLog.v(TAG, "user: " + user);
 		SurespotLog.v(TAG, "type: " + notificationType);
 		SurespotLog.v(TAG, "messageTo: " + messageTo);
-
 
 		if ((user == null)
 				|| (intent.getBooleanExtra("401", false))
@@ -216,8 +214,8 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
 				Intent intent = new Intent(this, ImageSelectActivity.class);
-				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);				
-				intent.putExtra("to", mChatController.getCurrentChat());				
+				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
+				intent.putExtra("to", mChatController.getCurrentChat());
 				intent.setData(data.getData());
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 				break;
@@ -255,13 +253,12 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
-		
-		//if we haven't created a chat controller before, create it now
+
+		// if we haven't created a chat controller before, create it now
 		if (mChatController == null) {
 			SurespotLog.v(TAG, "chat controller null, creating new chat controller");
-			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
-					(TitlePageIndicator) findViewById(R.id.indicator));		
-			mChatController.init();
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
 		}
 
 		// make sure the gcm is set

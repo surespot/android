@@ -18,6 +18,7 @@ import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -27,11 +28,28 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
+	private boolean mLoaded;
+	private IAsyncCallback<Void> mLoadedCallback;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;		
 
+	}
+	
+	public boolean isLoaded() {
+		return mLoaded;
+	}
+	
+	public void setLoaded(boolean loaded) {
+		mLoaded = loaded ;
+		if (mLoadedCallback != null) {
+			mLoadedCallback.handleResponse(null);
+		}
+	}
+	
+	public void setLoadedCallback(IAsyncCallback<Void> callback) {
+		mLoadedCallback = callback;
 	}
 
 	public void evictCache() {

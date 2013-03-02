@@ -10,7 +10,8 @@
         android:id="@+id/main_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+         />
 
     <FrameLayout
         android:id="@+id/progressBar"
@@ -50,6 +51,30 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="@string/navigate_between_chat_tabs" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/help_shortPress" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/help_longPress" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/help_delete" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/help_imageZoom" />
 
         <TextView
             android:layout_width="match_parent"

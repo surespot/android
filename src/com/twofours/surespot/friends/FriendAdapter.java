@@ -22,6 +22,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
@@ -29,8 +30,8 @@ public class FriendAdapter extends BaseAdapter {
 	ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	// private ArrayList<String> mActiveChats = new ArrayList<String>();
 	private NotificationManager mNotificationManager;
-
-
+	private boolean mLoaded;
+	private IAsyncCallback<Void> mLoadedCallback;
 	private Context mContext;
 
 	public FriendAdapter(Context context) {
@@ -40,6 +41,22 @@ public class FriendAdapter extends BaseAdapter {
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+	}
+	
+	
+	public boolean isLoaded() {
+		return mLoaded;
+	}
+	
+	public void setLoaded(boolean loaded) {
+		mLoaded = loaded ;
+		if (mLoadedCallback != null) {
+			mLoadedCallback.handleResponse(null);
+		}
+	}
+	
+	public void setLoadedCallback(IAsyncCallback<Void> callback) {
+		mLoadedCallback = callback;
 	}
 
 	// public void refreshActiveChats() {
@@ -399,6 +416,7 @@ public class FriendAdapter extends BaseAdapter {
 			Collections.sort(mFriends);
 		}
 	}
+
 
 	
 
