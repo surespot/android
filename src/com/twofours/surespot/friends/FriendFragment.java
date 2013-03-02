@@ -170,4 +170,8 @@ public class FriendFragment extends SherlockFragment {
 		}
 	}
 
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+	
+	}
 }

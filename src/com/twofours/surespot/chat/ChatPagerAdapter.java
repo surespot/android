@@ -6,30 +6,45 @@ import java.util.Set;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 
+import com.twofours.surespot.SurespotFragmentPagerAdapter;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.friends.FriendFragment;
 
-public class ChatPagerAdapter extends FragmentPagerAdapter {
+public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
+	private FragmentManager mFragmentManager;
+	private int mId;
 
-	public ChatPagerAdapter(FragmentManager fm) {
+	public ChatPagerAdapter(FragmentManager fm, int id) {
 		super(fm);
 		mChatNames = new ArrayList<String>();
+		mFragmentManager = fm;
+		mId = id;
 	}
 
 	@Override
 	public Fragment getItem(int i) {
 		SurespotLog.v(TAG, "getItem, I: " + i);
 		if (i == 0) {
+
 			FriendFragment ff = new FriendFragment();
+			SurespotLog.v(TAG, "created new friend fragment: " + ff);
+
+			ff.setRetainInstance(false);
+
 			return ff;
 		}
 		else {
-			return ChatFragment.newInstance(mChatNames.get(i - 1));
+			String name = mChatNames.get(i - 1);
+			ChatFragment cf = ChatFragment.newInstance(name);
+			SurespotLog.v(TAG, "created new chat fragment: " + cf);
+
+			cf.setRetainInstance(false);
+
+			return cf;
 		}
 
 	}
@@ -109,22 +124,20 @@ public class ChatPagerAdapter extends FragmentPagerAdapter {
 		return mChatNames.indexOf(username) + 1;
 
 	}
-	
-	
 
-//	public String getFragmentTag(String username) {
-//		int pos = getChatFragmentPosition(username);
-//		if (pos == -1)
-//			return null;
-//		return Utils.makePagerFragmentName(R.id.pager, getItemId(pos));
-//	}
-//
-//	public String getFragmentTag(int position) {
-//		int pos = position;
-//		if (pos == -1)
-//			return null;
-//		return Utils.makePagerFragmentName(R.id.pager, getItemId(position + 1));
-//	}
+	// public String getFragmentTag(String username) {
+	// int pos = getChatFragmentPosition(username);
+	// if (pos == -1)
+	// return null;
+	// return Utils.makePagerFragmentName(R.id.pager, getItemId(pos));
+	// }
+	//
+	// public String getFragmentTag(int position) {
+	// int pos = position;
+	// if (pos == -1)
+	// return null;
+	// return Utils.makePagerFragmentName(R.id.pager, getItemId(position + 1));
+	// }
 
 	public ArrayList<String> getChatNames() {
 		return mChatNames;

@@ -59,9 +59,6 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static final int CORE_POOL_SIZE = 5;
 	private static final int MAXIMUM_POOL_SIZE = 10;
 	private static final int KEEP_ALIVE = 1;
-	
-	
-	
 
 	// create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
 	// we need a tall queue and a slim pipe
@@ -105,11 +102,27 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		mStateController = new StateController();
 
-		if (IdentityController.hasIdentity()) {
-			mChatController = new ChatController(MainActivity.this);
-			mChatController.setPagers(getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+		String user = IdentityController.getLoggedInUser();
+
+		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+
+		SurespotLog.v(TAG, "user: " + user);
+		SurespotLog.v(TAG, "type: " + notificationType);
+		SurespotLog.v(TAG, "messageTo: " + messageTo);
+
+		// if we have a message to the currently logged in user, set the from and start the chat activity
+		if ((user != null)
+				&& !intent.getBooleanExtra("401", false)
+				&& !((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+						|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
+							.equals(notificationType)) && (!messageTo.equals(user)))) {
+			mChatController = new ChatController();
+			mChatController.setPagers(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
+					(TitlePageIndicator) findViewById(R.id.indicator));
 			mChatController.init();
 			mChatController.onResume();
+
 		}
 
 	}
@@ -182,6 +195,7 @@ public class MainActivity extends SherlockFragmentActivity {
 				startActivityForResult(newIntent, SurespotConstants.IntentRequestCodes.LOGIN);
 			}
 			else {
+
 				launch(getIntent());
 			}
 
@@ -250,8 +264,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
 		if (mChatController == null) {
-			mChatController = new ChatController(MainActivity.this);
-			mChatController.setPagers(getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			SurespotLog.v(TAG, "chat controller null, creating new chat controller");
+			mChatController = new ChatController();
+
+			mChatController.setPagers(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
+					(TitlePageIndicator) findViewById(R.id.indicator));
 			mChatController.init();
 			mChatController.onResume();
 		}
@@ -299,15 +316,15 @@ public class MainActivity extends SherlockFragmentActivity {
 		// then display friends
 		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
 				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
-
+			SurespotLog.v(TAG, "started from invite");
 			mSet = true;
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 
 		}
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			
-			
-			//need to select a user so put the chat controller in select mode
+			Utils.configureActionBar(this, "send", "select recipient", false);
+			SurespotLog.v(TAG, "started from SEND");
+			// need to select a user so put the chat controller in select mode
 			mChatController.setCurrentChat(null);
 			mChatController.setMode(ChatController.MODE_SELECT);
 			mSet = true;
@@ -316,7 +333,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		// message received show chat activity for user
 		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
 
-			SurespotLog.v(TAG, "found chat name, starting chat activity, to: " + messageTo + ", from: " + messageFrom);
+			SurespotLog.v(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			mSet = true;
@@ -327,18 +344,11 @@ public class MainActivity extends SherlockFragmentActivity {
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 			String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 			if (lastName != null) {
+				SurespotLog.v(TAG, "using LAST_CHAT");
 				name = lastName;
 			}
 			mChatController.setCurrentChat(name);
 		}
-
-		// mChatController = MainActivity.getChatController();
-
-		// mChatController = new ChatController(MainActivity.this, (ViewPager) findViewById(R.id.pager),
-		// (TitlePageIndicator) findViewById(R.id.indicator), getSupportFragmentManager());
-		// SurespotApplication.setChatController(mChatController);
-
-		
 	}
 
 	@Override
@@ -346,9 +356,13 @@ public class MainActivity extends SherlockFragmentActivity {
 		// TODO Auto-generated method stub
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
-		if (mChatController != null) {
-			mChatController.onResume();
-		}
+		// if (mChatController != null) {
+		// SurespotLog.v(TAG, "resetting chat controller");
+		// mChatController.setPagers(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
+		// (TitlePageIndicator) findViewById(R.id.indicator));
+		// mChatController.init();
+		// mChatController.onResume();
+		// }
 	}
 
 	@Override

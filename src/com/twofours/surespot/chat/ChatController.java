@@ -88,20 +88,16 @@ public class ChatController {
 	// private
 
 	//
-	public ChatController(Context context) {
+	public ChatController() {
 		SurespotLog.v(TAG, "constructor: " + this);
 
-		mContext = context;
-		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		// mContext = context;
+
 		mChatAdapters = new HashMap<String, ChatAdapter>();
-		mFriendAdapter = new FriendAdapter(mContext);
-		SurespotLog.v(TAG, "created Friend adapter: " + mFriendAdapter);
 
 		loadState();
 
 		// mViewPager.setOffscreenPageLimit(2);
-
-		setOnWifi();
 
 		mSocketCallback = new IOCallback() {
 
@@ -329,14 +325,29 @@ public class ChatController {
 
 	}
 
-	public void setPagers(FragmentManager fm, ViewPager viewPager, TitlePageIndicator pageIndicator) {
+	public void setPagers(Context context, FragmentManager fm, ViewPager viewPager, TitlePageIndicator pageIndicator) {
+		mContext = context;
+
+		SurespotLog.v(TAG, "old fragment manager: " + mFragmentManager);
+		SurespotLog.v(TAG, "new fragment manager: " + fm);
+		// if (mChatPagerAdapter == null) {
 		mFragmentManager = fm;
-		mChatPagerAdapter = new ChatPagerAdapter(fm);
+
+		mFriendAdapter = new FriendAdapter(mContext);
+		SurespotLog.v(TAG, "created Friend adapter: " + mFriendAdapter);
+
+		// if (mChatPagerAdapter == null) {
+		SurespotLog.v(TAG, "creating pager adapter");
+		mChatPagerAdapter = new ChatPagerAdapter(fm, viewPager.getId());
+		// }
+
+		SurespotLog.v(TAG, "viewpagerid: " + viewPager.getId());
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
+
 		mIndicator = pageIndicator;
 		mIndicator.setViewPager(mViewPager);
-
+		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
@@ -346,6 +357,8 @@ public class ChatController {
 
 			}
 		});
+		// }
+		setOnWifi();
 
 	}
 
@@ -355,16 +368,10 @@ public class ChatController {
 		// get the tabs
 
 		Set<String> chatNames = mActiveChats;
-
-		for (String chatName : chatNames) {
-
-			ChatAdapter chatAdapter = new ChatAdapter(mContext);
-			mChatAdapters.put(chatName, chatAdapter);
-
-			// load savedmessages
-			loadMessages(chatName);
-
-		}
+//
+//		for (String chatName : chatNames) {
+//			getChatAdapter(mContext, chatName);
+//		}
 
 		// mFriendAdapter.addFriends(chatNames);
 		mChatPagerAdapter.addChatNames(chatNames);
@@ -888,7 +895,7 @@ public class ChatController {
 	}
 
 	public void onResume() {
-		SurespotLog.v(TAG, "onResume");
+		SurespotLog.v(TAG, "onResume: " + this);
 		if (mPaused) {
 			mPaused = false;
 
@@ -924,8 +931,9 @@ public class ChatController {
 
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
 		if (chatAdapter == null) {
-			SurespotLog.v(TAG, "getChatAdapter creating chat adapter for: " + username);
+
 			chatAdapter = new ChatAdapter(context);
+			SurespotLog.v(TAG, "getChatAdapter created chat adapter for: " + username + ", id:  " + chatAdapter);
 			mChatAdapters.put(username, chatAdapter);
 
 			// load savedmessages
@@ -946,7 +954,6 @@ public class ChatController {
 		SurespotLog.v(TAG, username + ": setCurrentChat");
 		mCurrentChat = username;
 
-		int wantedPosition = 0;
 		if (username != null) {
 			mChatPagerAdapter.addChatName(username);
 			mFriendAdapter.setChatActive(username, true);
@@ -955,7 +962,7 @@ public class ChatController {
 			// cancel associated notifications
 			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
 					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-			wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
+			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
 			if (wantedPosition != mViewPager.getCurrentItem()) {
 				mViewPager.setCurrentItem(wantedPosition, true);
@@ -1126,10 +1133,9 @@ public class ChatController {
 	}
 
 	public synchronized void setMode(int mode) {
-		
+
 		mMode = mode;
-		
-		
+
 	}
 
 }

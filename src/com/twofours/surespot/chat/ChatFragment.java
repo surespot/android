@@ -73,24 +73,24 @@ public class ChatFragment extends SherlockFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setUsername(getArguments().getString("username"));
-		TAG = TAG + ":" + getUsername();
+		TAG = TAG + ":" + getUsername() + " : " + this;
 
-	//	Intent intent = new Intent(this.getActivity(), CredentialCachingService.class);
-	//	getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+		// Intent intent = new Intent(this.getActivity(), CredentialCachingService.class);
+		// getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
 	}
 
-//	private ServiceConnection mConnection = new ServiceConnection() {
-//		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-//			SurespotLog.v(TAG, "caching service bound");
-//			startup();
-//		}
-//
-//		@Override
-//		public void onServiceDisconnected(ComponentName name) {
-//
-//		}
-//	};
+	// private ServiceConnection mConnection = new ServiceConnection() {
+	// public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+	// SurespotLog.v(TAG, "caching service bound");
+	// startup();
+	// }
+	//
+	// @Override
+	// public void onServiceDisconnected(ComponentName name) {
+	//
+	// }
+	// };
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -103,7 +103,7 @@ public class ChatFragment extends SherlockFragment {
 		//
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-		
+
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -202,70 +202,75 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-		
+		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
+		SurespotLog.v(TAG, "settingChatAdapter for: " + mUsername);
+		mListView.setAdapter(mChatAdapter);
+		mListView.setDividerHeight(1);
+		mListView.setOnScrollListener(mOnScrollListener);
 
 		return view;
 	}
 
 	public void onResume() {
 		super.onResume();
-		SurespotLog.v(TAG, "onResume");
+		SurespotLog.v(TAG, "onResume:  " + mUsername);
 
-		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
+		if (mChatAdapter == null) {
+			mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
 
-		// listen for first change then set empty list view
+			// listen for first change then set empty list view
 
-//		if (!mDataLoaded) {
-//			mChatAdapter.registerDataSetObserver(new DataSetObserver() {
-//				@Override
-//				public void onChanged() {
-//					if (!mDataLoaded) {
-//						mDataLoaded = true;
-//
-//						getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
-//						mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
-//						// // viewfindViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-//						//
-//						// // else {
-//						// // mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
-//					}
-//				}
-//			});
-//		}
+			// if (!mDataLoaded) {
+			// mChatAdapter.registerDataSetObserver(new DataSetObserver() {
+			// @Override
+			// public void onChanged() {
+			// if (!mDataLoaded) {
+			// mDataLoaded = true;
+			//
+			// getView().findViewById(R.id.progressBar).setVisibility(View.GONE);
+			// mListView.setEmptyView(getView().findViewById(R.id.message_list_empty));
+			// // // viewfindViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+			// //
+			// // // else {
+			// // // mListView.setEmptyView(viewfindViewById(R.id.message_list_empty));
+			// }
+			// }
+			// });
+			// }
 
-		mListView.setAdapter(mChatAdapter);
-		mListView.setDividerHeight(1);
-		
-	//	getView().findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		// viewfindViewById(R.id.message_list_empty).setVisibility(View.GONE);
-		// mListView.setEmptyView(viewfindViewById(R.id.progressBar));
+			SurespotLog.v(TAG, "onResume settingChatAdapter for: " + mUsername);
+			mListView.setAdapter(mChatAdapter);
+			mListView.setDividerHeight(1);
 
-		
-//		String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-//
-//		// if the intent is meant for this chat
-//		if (intentName != null && intentName.equals(mUsername)) {
-//
-//			if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
-//				// we have a send action so populate the edit box with the data
-//				handleSendIntent(action, type, intent.getExtras());
-//
-//				// remove intent data so we don't upload an image on restart
-//				intent.setAction(null);
-//				intent.setType(null);
-//				intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-//			}
-//		}
+			// getView().findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+			// viewfindViewById(R.id.message_list_empty).setVisibility(View.GONE);
+			// mListView.setEmptyView(viewfindViewById(R.id.progressBar));
 
-		// listen to scroll changes
-		mListView.setOnScrollListener(mOnScrollListener);
+			// String intentName = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+			//
+			// // if the intent is meant for this chat
+			// if (intentName != null && intentName.equals(mUsername)) {
+			//
+			// if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action)) && type != null) {
+			// // we have a send action so populate the edit box with the data
+			// handleSendIntent(action, type, intent.getExtras());
+			//
+			// // remove intent data so we don't upload an image on restart
+			// intent.setAction(null);
+			// intent.setType(null);
+			// intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+			// }
+			// }
+
+			// listen to scroll changes
+			mListView.setOnScrollListener(mOnScrollListener);
+			// mChatAdapter.notifyDataSetChanged();
+		}
 	}
-	
 
-	//on
-	
-	private OnScrollListener mOnScrollListener =
-			new OnScrollListener() {
+	// on
+
+	private OnScrollListener mOnScrollListener = new OnScrollListener() {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -294,7 +299,7 @@ public class ChatFragment extends SherlockFragment {
 
 		}
 	};
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -303,20 +308,11 @@ public class ChatFragment extends SherlockFragment {
 
 	}
 
-//	@Override
-//	public void onResume() {
-//		super.onResume();
-//		SurespotLog.v(TAG, "onResume");
-//
-//		Utils.logIntent(TAG, getActivity().getIntent());
-//
-//	}
-
 	@Override
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
-		//mListView.removeOnScrollListener()):
+		// mListView.removeOnScrollListener()):
 		// mChatController.saveMessages(mUsername);
 		// mChatAdapter.evictCache();
 	}
@@ -324,7 +320,7 @@ public class ChatFragment extends SherlockFragment {
 	public void onDestroy() {
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
-	//	getActivity().unbindService(mConnection);
+		// getActivity().unbindService(mConnection);
 	}
 
 	private void sendMessage() {
@@ -369,15 +365,13 @@ public class ChatFragment extends SherlockFragment {
 							public void run() {
 								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
 										: R.string.could_not_upload_image));
-								
-								
 
 							}
 						});
-						
+
 						getActivity().getIntent().setAction(null);
 						getActivity().getIntent().setType(null);
-//						intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+						// intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 					}
 				});
 			}
@@ -394,4 +388,9 @@ public class ChatFragment extends SherlockFragment {
 
 	}
 
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		// super.onSaveInstanceState(outState);
+	}
 }
