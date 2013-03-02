@@ -404,7 +404,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.menu_settings_bar:
 		case R.id.menu_settings:
 			intent = new Intent(this, SettingsActivity.class);
-			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
+			startActivity(intent);
 			return true;
 		case R.id.menu_logout:
 		case R.id.menu_logout_bar:

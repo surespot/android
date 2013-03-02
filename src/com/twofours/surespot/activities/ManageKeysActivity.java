@@ -23,7 +23,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.UIUtils;
 import com.twofours.surespot.common.SurespotLog;

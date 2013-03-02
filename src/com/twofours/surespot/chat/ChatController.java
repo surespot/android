@@ -96,9 +96,9 @@ public class ChatController {
 		mContext = context;
 
 		mFragmentManager = fm;
-		mFriendAdapter = new FriendAdapter(mContext);	
+		mFriendAdapter = new FriendAdapter(mContext);
 		mChatPagerAdapter = new ChatPagerAdapter(fm);
-		
+
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
 		mIndicator = pageIndicator;
@@ -116,7 +116,6 @@ public class ChatController {
 
 		setOnWifi();
 
-	
 		// mViewPager.setOffscreenPageLimit(2);
 
 		mSocketCallback = new IOCallback() {
@@ -216,7 +215,6 @@ public class ChatController {
 				connected();
 
 				sendMessages();
-				mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			}
 
@@ -343,16 +341,13 @@ public class ChatController {
 			}
 		};
 
-
-		
 	}
-	
-	//this has to be done outside of the contructor as it creates fragments, which need chat controller instance
+
+	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
 	public void init() {
 		mChatPagerAdapter.addChatNames(mActiveChats);
 		onResume();
 	}
-
 
 	private void connect() {
 
@@ -392,19 +387,6 @@ public class ChatController {
 			socket.disconnect();
 		}
 
-		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-		try {
-			mContext.unregisterReceiver(mConnectivityReceiver);
-		}
-		catch (IllegalArgumentException e) {
-			if (e.getMessage().contains("Receiver not registered")) {
-				// Ignore this exception. This is exactly what is desired
-			}
-			else {
-				// unexpected, re-throw
-				throw e;
-			}
-		}
 	}
 
 	private void connected() {
@@ -866,7 +848,9 @@ public class ChatController {
 		SurespotLog.v(TAG, "onResume: " + this);
 		if (mPaused) {
 			mPaused = false;
+
 			connect();
+			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
 	}
 
@@ -874,6 +858,19 @@ public class ChatController {
 		SurespotLog.v(TAG, "onPause");
 		if (!mPaused) {
 			mPaused = true;
+			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+			try {
+				mContext.unregisterReceiver(mConnectivityReceiver);
+			}
+			catch (IllegalArgumentException e) {
+				if (e.getMessage().contains("Receiver not registered")) {
+					// Ignore this exception. This is exactly what is desired
+				}
+				else {
+					// unexpected, re-throw
+					throw e;
+				}
+			}
 			disconnect();
 			saveState();
 
@@ -888,7 +885,9 @@ public class ChatController {
 			}
 
 			socket = null;
+
 		}
+
 	}
 
 	ChatAdapter getChatAdapter(Context context, String username) {
@@ -1063,7 +1062,7 @@ public class ChatController {
 				}
 			}
 		});
-	}	
+	}
 
 	public void closeTab() {
 		if (mChatPagerAdapter.getCount() > 0) {
