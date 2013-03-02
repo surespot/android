@@ -350,7 +350,7 @@ public class ChatController {
 	//this has to be done outside of the contructor as it creates fragments, which need chat controller instance
 	public void init() {
 		mChatPagerAdapter.addChatNames(mActiveChats);
-		connect();
+		onResume();
 	}
 
 

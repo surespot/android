@@ -254,10 +254,13 @@ public class NetworkController {
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it differs
-		if (gcmIdReceived != null && !gcmIdReceived.equals(gcmIdSent)) {
+		if (gcmIdReceived != null) {
 
 			params.put("gcmId", gcmIdReceived);
-			gcmUpdatedTemp = true;
+
+			if (!gcmIdReceived.equals(gcmIdSent)) {
+				gcmUpdatedTemp = true;
+			}
 		}
 
 		// just be javascript already
@@ -314,35 +317,43 @@ public class NetworkController {
 	}
 
 	public void getLatestMessages(JSONObject messageIds, JsonHttpResponseHandler responseHandler) {
-		//using a post because async http client sends the params url encoded which leaks too much data imo
-		
-		String smessageIds = messageIds.toString();
-		SurespotLog.v(TAG, "asking server for messages after message ids: " + smessageIds);
-		
-		RequestParams params = new RequestParams();
-		params.put("messageIds", smessageIds);
-		post ("/messages",params, responseHandler);
-		
-	}
-//	public void getLatestMessages(JSONArray messageIds, JsonHttpResponseHandler responseHandler) {
-//		//TODO
-//		//could use a post here and not send the message id's in the url but 
-//		//using a POST when nothing is changing server side doesn't feel right
-//		//but neither does exposing the chat names in the url hm
-//		URIBuilder builder;
-//		try {
-//			builder = new URIBuilder(mBaseUrl);
-//			builder.setPath("/messages").setParameter("messageIds", messageIds.toString());
-//			mClient.get(builder.build().toString(), null, responseHandler);
-//		}
-//		catch (URISyntaxException e) {
-//			SurespotLog.w(TAG, "getLatestMessages",e);
-//			responseHandler.onFailure(e, "could not build uri");
-//		}
-//		
-//	}
+		// using a post because async http client sends the params url encoded which leaks too much data imo
 
-	
+		String smessageIds = null;
+
+		if (messageIds.length() > 0) {
+			smessageIds = messageIds.toString();
+
+			SurespotLog.v(TAG, "asking server for messages after message ids: " + smessageIds);
+
+			RequestParams params = new RequestParams();
+			params.put("messageIds", smessageIds);
+			post("/messages", params, responseHandler);
+		}
+		else {
+			post("/messages", null, responseHandler);
+		}
+
+	}
+
+	// public void getLatestMessages(JSONArray messageIds, JsonHttpResponseHandler responseHandler) {
+	// //TODO
+	// //could use a post here and not send the message id's in the url but
+	// //using a POST when nothing is changing server side doesn't feel right
+	// //but neither does exposing the chat names in the url hm
+	// URIBuilder builder;
+	// try {
+	// builder = new URIBuilder(mBaseUrl);
+	// builder.setPath("/messages").setParameter("messageIds", messageIds.toString());
+	// mClient.get(builder.build().toString(), null, responseHandler);
+	// }
+	// catch (URISyntaxException e) {
+	// SurespotLog.w(TAG, "getLatestMessages",e);
+	// responseHandler.onFailure(e, "could not build uri");
+	// }
+	//
+	// }
+
 	// if we have an id get the messages since the id, otherwise get the last x
 	public void getEarlierMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
 		get("/messages/" + room + "/before/" + id, null, responseHandler);

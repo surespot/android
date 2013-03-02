@@ -183,6 +183,8 @@ public class LoginActivity extends SherlockActivity {
 					}
 					else {
 						mMpd.decrProgress();
+						Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
+						
 					}
 
 				};

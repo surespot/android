@@ -253,6 +253,10 @@ public class IdentityController {
 
 			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
 
+			if (identity == null) {
+				SurespotLog.w(TAG, "could not decrypt identity: " + username);
+				return null;
+			}
 			JSONObject jsonIdentity = new JSONObject(identity);
 			String name = (String) jsonIdentity.get("username");
 
