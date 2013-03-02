@@ -30,6 +30,7 @@ public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
 	private static final String UNSENT_MESSAGES = "unsentMessages";
 	private static final String ACTIVE_CHATS = "activeChats";
+	private static final String MESSAGE_ACTIVITY = "messageActivity";
 	private static final String LAST_VIEWED_MESSAGE_IDS = "lastViewedMessageIds";
 	private static final String LAST_RECEIVED_MESSAGE_IDS = "lastReceivedMessageIds";
 	private static final String STATE_EXTENSION = ".sss";
@@ -75,6 +76,42 @@ public class StateController {
 			}
 		}
 	}
+	
+	public HashMap<String, Boolean> loadMessageActivity() {
+		String filename = getFilename(MESSAGE_ACTIVITY);
+		if (filename != null) {
+
+			String lastMessageIdJson = readFile(filename);
+			if (lastMessageIdJson != null) {
+
+				SurespotLog.v(TAG, "Loaded messageActivity: " + lastMessageIdJson);
+				return Utils.jsonStringToBooleanMap(lastMessageIdJson);
+			}
+
+		}
+		return new HashMap<String, Boolean>();
+
+	}
+
+	public void saveMessageActivity(Map<String, Boolean> messageActivity) {
+
+		String filename = getFilename(MESSAGE_ACTIVITY);
+		if (filename != null) {
+			if (messageActivity != null && messageActivity.size() > 0) {
+				String smessageIds = booleanMapToJsonString(messageActivity);
+				writeFile(filename, smessageIds);
+				SurespotLog.v(TAG, "saved message activity: " + smessageIds);
+
+			}
+			else {
+				new File(filename).delete();
+			}
+		}
+	}
+	
+
+	
+
 
 	public HashMap<String, Integer> loadLastViewMessageIds() {
 		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
@@ -238,6 +275,12 @@ public class StateController {
 	}
 
 	private static String mapToJsonString(Map<String, Integer> map) {
+		JSONObject jsonObject = new JSONObject(map);
+		return jsonObject.toString();
+	}
+	
+
+	private static String booleanMapToJsonString(Map<String, Boolean> map) {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject.toString();
 	}

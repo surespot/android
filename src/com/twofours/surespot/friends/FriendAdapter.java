@@ -56,30 +56,30 @@ public class FriendAdapter extends BaseAdapter {
 	 * notifyDataSetChanged(); }
 	 */
 
-	public void messageReceived(String name) {
-		SurespotLog.v(TAG, "message received");
-		Friend friend = getFriend(name);
-		if (friend != null) {
-			friend.incMessageCount(1);
-			// if (!mActiveChats.contains(name)) {
-			// mActiveChats.add(name);
-			// }
-			Collections.sort(mFriends);
-			notifyDataSetChanged();
-		}
-	}
-
-	public void messageDeltaReceived(String name, int delta) {
-		Friend friend = getFriend(name);
-		if (friend != null) {
-			friend.setMessageCount(delta);
-			Collections.sort(mFriends);
-			// if (delta > 0 && !mActiveChats.contains(name)) {
-			// mActiveChats.add(name);
-			// }
-			notifyDataSetChanged();
-		}
-	}
+//	public void messageReceived(String name) {
+//		SurespotLog.v(TAG, "message received");
+//		Friend friend = getFriend(name);
+//		if (friend != null) {
+//			friend.incMessageCount(1);
+//			// if (!mActiveChats.contains(name)) {
+//			// mActiveChats.add(name);
+//			// }
+//			Collections.sort(mFriends);
+//			notifyDataSetChanged();
+//		}
+//	}
+//
+//	public void messageDeltaReceived(String name, int delta) {
+//		Friend friend = getFriend(name);
+//		if (friend != null) {
+//			friend.setMessageCount(delta);
+//			Collections.sort(mFriends);
+//			// if (delta > 0 && !mActiveChats.contains(name)) {
+//			// mActiveChats.add(name);
+//			// }
+//			notifyDataSetChanged();
+//		}
+//	}
 
 	private Friend getFriend(String friendName) {
 		for (Friend friend : mFriends) {
@@ -145,6 +145,18 @@ public class FriendAdapter extends BaseAdapter {
 		}
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
+		
+	}
+	
+	public void setMessageActivity(String username, boolean activity) {
+		Friend friend = getFriend(username);
+		if (friend != null) {
+			friend.setMessageActivity(activity);
+		}
+		Collections.sort(mFriends);
+		notifyDataSetChanged();
+		
+		
 	}
 
 //	public void addFriends(JSONArray friends) {
@@ -255,6 +267,7 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
+			friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
 			convertView.setTag(friendViewHolder);
 
 		}
@@ -264,13 +277,15 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
-		int messageCount = friend.getMessageCount();
+	//	int messageCount = friend.getMessageCount();
 
 		// TODO cleanup this logic
-		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || messageCount > 0) {
+		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter()) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
+			
+		
 			if (friend.isInvited()) {
 				friendViewHolder.tvStatus.setText("invited");
 			}
@@ -299,27 +314,31 @@ public class FriendAdapter extends BaseAdapter {
 			else {
 				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
+			
+			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);
+			
+			
 
-			if (messageCount > 0) {
-
-				String currentStatus = friendViewHolder.tvStatus.getText().toString();
-				String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
-
-				if (!currentStatus.isEmpty()) {
-					if (currentStatus.contains("unread message")) {
-						currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
-
-					}
-					else {
-						currentStatus += "\n" + messageCountString;
-					}
-
-				}
-				else {
-					currentStatus = messageCountString;
-				}
-				friendViewHolder.tvStatus.setText(currentStatus);
-			}
+//			if (messageCount > 0) {
+//
+//				String currentStatus = friendViewHolder.tvStatus.getText().toString();
+//				String messageCountString = messageCount + " unread message" + (messageCount > 1 ? "s" : "");
+//
+//				if (!currentStatus.isEmpty()) {
+//					if (currentStatus.contains("unread message")) {
+//						currentStatus = currentStatus.replaceAll("\\d* unread messages?", messageCountString);
+//
+//					}
+//					else {
+//						currentStatus += "\n" + messageCountString;
+//					}
+//
+//				}
+//				else {
+//					currentStatus = messageCountString;
+//				}
+//				friendViewHolder.tvStatus.setText(currentStatus);
+//			}
 
 		}
 
@@ -367,6 +386,7 @@ public class FriendAdapter extends BaseAdapter {
 		public TextView tvName;
 		public TextView tvStatus;
 		public View vgInvite;
+		public View vgActivity;
 	}
 
 	//
@@ -379,5 +399,7 @@ public class FriendAdapter extends BaseAdapter {
 			Collections.sort(mFriends);
 		}
 	}
+
+	
 
 }

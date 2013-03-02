@@ -37,7 +37,7 @@ public class FriendFragment extends SherlockFragment {
 	private ListView mListView;
 
 	public FriendFragment() {
-		SurespotLog.v(TAG, "constructor: " + this);
+		SurespotLog.v(TAG, "constructor");
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

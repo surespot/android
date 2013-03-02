@@ -65,8 +65,9 @@ public class ChatController {
 	private NotificationManager mNotificationManager;
 	private BroadcastReceiver mConnectivityReceiver;
 	private HashMap<String, ChatAdapter> mChatAdapters;
-	private HashMap<String, Integer> mLastViewedMessageIds;
+	// private HashMap<String, Integer> mLastViewedMessageIds;
 	private HashMap<String, Integer> mLastReceivedMessageIds;
+	private HashMap<String, Boolean> mMessageActivity;
 	private Set<String> mActiveChats;
 
 	private FriendAdapter mFriendAdapter;
@@ -281,7 +282,7 @@ public class ChatController {
 										MainActivity.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
 									}
 									mLastReceivedMessageIds.put(otherUser, message.getId());
-									updateLastViewedMessageId(otherUser);
+									updateLastViewedMessageId(otherUser, otherUser.equals(message.getFrom()));
 									checkAndSendNextMessage(message);
 								}
 							}
@@ -293,7 +294,7 @@ public class ChatController {
 
 							mChatPagerAdapter.addChatName(otherUser);
 							mLastReceivedMessageIds.put(otherUser, message.getId());
-							updateLastViewedMessageId(otherUser);
+							updateLastViewedMessageId(otherUser, otherUser.equals(message.getFrom()) && added);
 							checkAndSendNextMessage(message);
 						}
 					}
@@ -560,40 +561,36 @@ public class ChatController {
 		return (getState() == STATE_CONNECTED);
 	}
 
-	private void updateLastViewedMessageId(String username) {
+	private void updateLastViewedMessageId(String username, boolean activity) {
 
-		if (username.equals(mCurrentChat)) {
-			//
-			// if (id != null) {
-			// SurespotLog.v(TAG, username + ": setting last viewed message id to: " + id);
-			// mLastViewedMessageIds.put(username, id);
-			// }
-			// else {
-			Integer latestMessageId = mLastReceivedMessageIds.get(username);
-			SurespotLog.v(TAG, username + ": setting last viewed message id to: " + latestMessageId);
-			mLastViewedMessageIds.put(username, latestMessageId);
-			// }
+		if (!username.equals(mCurrentChat)) {
+			mFriendAdapter.setMessageActivity(username, activity);
+			mMessageActivity.put(username, activity);
 
-			mFriendAdapter.messageDeltaReceived(username, 0);
 		}
 		else {
-			mFriendAdapter.messageDeltaReceived(username, getDelta(username));
-
+			mFriendAdapter.setMessageActivity(username, false);
+			mMessageActivity.put(username, false);
 		}
 	}
 
-	private int getDelta(String username) {
-		Integer latestMessageId = mLastReceivedMessageIds.get(username);
-		Integer lastViewedId = mLastViewedMessageIds.get(username);
-		if (lastViewedId == null) {
-			lastViewedId = 0;
-		}
-		if (latestMessageId == null) {
-			latestMessageId = 0;
-		}
-		return latestMessageId - lastViewedId;
-
+	private boolean getActivity(String username) {
+		Boolean activity = mMessageActivity.get(username);
+		return activity == null ? false : activity;
 	}
+
+	// private int getDelta(String username) {
+	// Integer latestMessageId = mLastReceivedMessageIds.get(username);
+	// Integer lastViewedId = mLastViewedMessageIds.get(username);
+	// if (lastViewedId == null) {
+	// lastViewedId = 0;
+	// }
+	// if (latestMessageId == null) {
+	// latestMessageId = 0;
+	// }
+	// return latestMessageId - lastViewedId;
+	//
+	// }
 
 	// message handling shiznit
 
@@ -651,29 +648,29 @@ public class ChatController {
 		}
 	}
 
-	private void loadLatestMessages(final String username) {
-		SurespotLog.v(TAG, "loadlatestMessages: " + username);
-
-		// get the list of messages
-		Integer lastMessageId = getLatestMessageId(username);
-
-		SurespotLog.v(TAG, username + ": asking server for messages after messageId: " + lastMessageId);
-		MainActivity.getNetworkController().getMessages(username, lastMessageId, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONArray jsonArray) {
-				handleMessages(username, jsonArray);
-
-			}
-
-			@Override
-			public void onFailure(Throwable error, String content) {
-				// if (!MainActivity.getNetworkController().isUnauthorized()) {
-				SurespotLog.w(TAG, username + ": getMessages", error);
-
-			}
-		});
-
-	}
+	// private void loadLatestMessages(final String username) {
+	// SurespotLog.v(TAG, "loadlatestMessages: " + username);
+	//
+	// // get the list of messages
+	// Integer lastMessageId = getLatestMessageId(username);
+	//
+	// SurespotLog.v(TAG, username + ": asking server for messages after messageId: " + lastMessageId);
+	// MainActivity.getNetworkController().getMessages(username, lastMessageId, new JsonHttpResponseHandler() {
+	// @Override
+	// public void onSuccess(JSONArray jsonArray) {
+	// handleMessages(username, jsonArray);
+	//
+	// }
+	//
+	// @Override
+	// public void onFailure(Throwable error, String content) {
+	// // if (!MainActivity.getNetworkController().isUnauthorized()) {
+	// SurespotLog.w(TAG, username + ": getMessages", error);
+	//
+	// }
+	// });
+	//
+	// }
 
 	private void loadAllLatestMessages() {
 		SurespotLog.v(TAG, "loadAllLatestMessages ");
@@ -723,6 +720,7 @@ public class ChatController {
 		final ChatAdapter chatAdapter = getChatAdapter(mContext, username);
 
 		SurespotMessage message = null;
+		boolean messageActivity = false;
 		// int newMessageCount = 0;
 		for (int i = 0; i < jsonArray.length(); i++) {
 			try {
@@ -742,15 +740,23 @@ public class ChatController {
 							if (dMessage != null && dMessage.getMimeType() != null
 									&& dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 								MainActivity.getNetworkController().purgeCacheUrl(message.getCipherData());
+								
+							}
+							
+							
+							if (!messageActivity && (message.getOtherUser() == message.getFrom())) {
+								messageActivity = true;
 							}
 						}
 					}
 				}
 				else {
 					boolean added = chatAdapter.addOrUpdateMessage(message, false);
-					// if (added) {
-					// newMessageCount++;
-					// }
+					
+					//if we didn't send the message and it's new 
+					if (!messageActivity &&  message.getFrom().equals(message.getOtherUser()) &&  added) {
+						messageActivity = true;
+					}
 				}
 			}
 			catch (JSONException e) {
@@ -762,7 +768,7 @@ public class ChatController {
 		if (message != null) {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
 			mLastReceivedMessageIds.put(username, message.getId());
-			updateLastViewedMessageId(username);
+			updateLastViewedMessageId(username, messageActivity);
 			chatAdapter.notifyDataSetChanged();
 		}
 
@@ -831,13 +837,15 @@ public class ChatController {
 
 		MainActivity.getStateController().saveActiveChats(mActiveChats);
 		MainActivity.getStateController().saveLastReceivedMessageIds(mLastReceivedMessageIds);
-		MainActivity.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
+		// MainActivity.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
+		MainActivity.getStateController().saveMessageActivity(mMessageActivity);
 
 	}
 
 	private void loadState() {
 		SurespotLog.v(TAG, "loadState");
-		mLastViewedMessageIds = MainActivity.getStateController().loadLastViewMessageIds();
+		mMessageActivity = MainActivity.getStateController().loadMessageActivity();
+		// mLastViewedMessageIds = MainActivity.getStateController().loadLastViewMessageIds();
 		mLastReceivedMessageIds = MainActivity.getStateController().loadLastReceivedMessageIds();
 		mActiveChats = MainActivity.getStateController().loadActiveChats();
 
@@ -921,7 +929,7 @@ public class ChatController {
 			mChatPagerAdapter.addChatName(username);
 			mFriendAdapter.setChatActive(username, true);
 			mActiveChats.add(username);
-			updateLastViewedMessageId(username);
+			updateLastViewedMessageId(username, false);
 			// cancel associated notifications
 			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
 					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
@@ -1041,8 +1049,9 @@ public class ChatController {
 						JSONObject jsonFriend = jsonArray.getJSONObject(i);
 						Friend friend = Friend.toFriend(jsonFriend);
 						friend.setChatActive(mActiveChats.contains(friend.getName()));
+						friend.setMessageActivity(getActivity(friend.getName()));
 						friends.add(friend);
-						friend.setMessageCount(getDelta(friend.getName()));
+
 					}
 				}
 				catch (JSONException e) {

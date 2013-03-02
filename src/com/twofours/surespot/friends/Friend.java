@@ -8,8 +8,11 @@ import com.twofours.surespot.common.SurespotLog;
 public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;
 	public static final int CHAT_ACTIVE = 16;
-	public static final int HAS_NEW_MESSAGES = 8;	
+	public static final int MESSAGE_ACTIVITY = 8;
+	//public static final int HAS_NEW_MESSAGES = 16;	
+	
 	public static final int NEW_FRIEND = 4;
+	
 	public static final int INVITED = 2;
 	
 
@@ -18,6 +21,7 @@ public class Friend implements Comparable<Friend> {
 	private String mName;
 	private int mFlags;
 	private int mMessageCount;
+	
 
 	public String getName() {
 		return mName;
@@ -35,6 +39,16 @@ public class Friend implements Comparable<Friend> {
 			mFlags &= ~CHAT_ACTIVE;
 		}
 	}
+	
+	public void setMessageActivity(boolean set) {
+		if (set) {
+			mFlags |= MESSAGE_ACTIVITY;
+		}
+		else {
+			mFlags &= ~MESSAGE_ACTIVITY;
+		}
+	}
+	
 
 	public void setInviter(boolean set) {
 		if (set) {
@@ -76,6 +90,10 @@ public class Friend implements Comparable<Friend> {
 	public boolean isNewFriend() {
 		return (mFlags & NEW_FRIEND) == NEW_FRIEND;
 	}
+	
+	public boolean isMessageActivity() {
+		return (mFlags & MESSAGE_ACTIVITY) == MESSAGE_ACTIVITY;
+	}
 
 	public boolean isFriend() {
 		return (!isInvited() && !isInviter());
@@ -89,28 +107,28 @@ public class Friend implements Comparable<Friend> {
 		return mMessageCount;
 	}
 		
-	public synchronized void incMessageCount(int messageCount) {
-		mMessageCount += messageCount;
-		setMessageCountFlag();
-		SurespotLog.v(TAG, "newCount: " + mMessageCount);
-	}
-		
-	public synchronized void setMessageCount(int messageCount) {
-		mMessageCount = messageCount;
-		setMessageCountFlag();
-	}
+//	public synchronized void incMessageCount(int messageCount) {
+//		mMessageCount += messageCount;
+//		setMessageCountFlag();
+//		SurespotLog.v(TAG, "newCount: " + mMessageCount);
+//	}
+//		
+//	public synchronized void setMessageCount(int messageCount) {
+//		mMessageCount = messageCount;
+//		setMessageCountFlag();
+//	}
 
-	private void setMessageCountFlag() {
-		if (mMessageCount > 0) {
-			mFlags |= HAS_NEW_MESSAGES;
-
-			// pretend the chat is active
-			//mFlags |= CHAT_ACTIVE;
-		}
-		else {
-			mFlags &= ~HAS_NEW_MESSAGES;
-		}
-	}
+//	private void setMessageCountFlag() {
+//		if (mMessageCount > 0) {
+//			mFlags |= HAS_NEW_MESSAGES;
+//
+//			// pretend the chat is active
+//			//mFlags |= CHAT_ACTIVE;
+//		}
+//		else {
+//			mFlags &= ~HAS_NEW_MESSAGES;
+//		}
+//	}
 	
 	public boolean isChatActive() {
 		return (mFlags & CHAT_ACTIVE) == CHAT_ACTIVE;
@@ -131,8 +149,10 @@ public class Friend implements Comparable<Friend> {
 
 	@Override
 	public int compareTo(Friend another) {
-		// if the flags are the same sort by name
-		if (another.getFlags() == this.getFlags()) {
+		// if they both have the open chat flag set,
+		//or the flags are the same
+		if ((another.isChatActive() && this.isChatActive()) ||
+			(another.getFlags() == this.getFlags())) {
 			return this.getName().compareTo(another.getName());
 		}
 		else {
@@ -193,4 +213,7 @@ public class Friend implements Comparable<Friend> {
 
 		return friend;
 	}
+
+
+	
 };
