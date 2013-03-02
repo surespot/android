@@ -15,14 +15,10 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
-	private FragmentManager mFragmentManager;
-	private int mId;
-
-	public ChatPagerAdapter(FragmentManager fm, int id) {
+	
+	public ChatPagerAdapter(FragmentManager fm) {
 		super(fm);
-		mChatNames = new ArrayList<String>();
-		mFragmentManager = fm;
-		mId = id;
+		mChatNames = new ArrayList<String>();		
 	}
 
 	@Override

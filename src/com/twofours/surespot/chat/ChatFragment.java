@@ -203,7 +203,7 @@ public class ChatFragment extends SherlockFragment {
 		});
 
 		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
-		SurespotLog.v(TAG, "settingChatAdapter for: " + mUsername);
+		SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 		mListView.setAdapter(mChatAdapter);
 		mListView.setDividerHeight(1);
 		mListView.setOnScrollListener(mOnScrollListener);
@@ -216,6 +216,7 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onResume:  " + mUsername);
 
 		if (mChatAdapter == null) {
+			SurespotLog.v(TAG, "onResume settingChatAdapter for: " + mUsername);
 			mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
 
 			// listen for first change then set empty list view
@@ -238,7 +239,7 @@ public class ChatFragment extends SherlockFragment {
 			// });
 			// }
 
-			SurespotLog.v(TAG, "onResume settingChatAdapter for: " + mUsername);
+			
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 

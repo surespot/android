@@ -328,23 +328,12 @@ public class ChatController {
 	public void setPagers(Context context, FragmentManager fm, ViewPager viewPager, TitlePageIndicator pageIndicator) {
 		mContext = context;
 
-		SurespotLog.v(TAG, "old fragment manager: " + mFragmentManager);
-		SurespotLog.v(TAG, "new fragment manager: " + fm);
-		// if (mChatPagerAdapter == null) {
 		mFragmentManager = fm;
-
-		mFriendAdapter = new FriendAdapter(mContext);
-		SurespotLog.v(TAG, "created Friend adapter: " + mFriendAdapter);
-
-		// if (mChatPagerAdapter == null) {
-		SurespotLog.v(TAG, "creating pager adapter");
-		mChatPagerAdapter = new ChatPagerAdapter(fm, viewPager.getId());
-		// }
-
-		SurespotLog.v(TAG, "viewpagerid: " + viewPager.getId());
+		mFriendAdapter = new FriendAdapter(mContext);	
+		mChatPagerAdapter = new ChatPagerAdapter(fm);
+	
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
-
 		mIndicator = pageIndicator;
 		mIndicator.setViewPager(mViewPager);
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -362,19 +351,9 @@ public class ChatController {
 
 	}
 
-	// Can't do this until after instantiation as it creates fragments which require a ChatController
+	
 	public void init() {
-
-		// get the tabs
-
-		Set<String> chatNames = mActiveChats;
-//
-//		for (String chatName : chatNames) {
-//			getChatAdapter(mContext, chatName);
-//		}
-
-		// mFriendAdapter.addFriends(chatNames);
-		mChatPagerAdapter.addChatNames(chatNames);
+		mChatPagerAdapter.addChatNames(mActiveChats);
 	}
 
 	private void connect() {
