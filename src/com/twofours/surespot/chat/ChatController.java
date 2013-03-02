@@ -644,9 +644,11 @@ public class ChatController {
 		}
 
 		MainActivity.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
+					
 			@Override
 			public void onSuccess(int statusCode, JSONArray jsonArray) {
-				SurespotLog.v(TAG, "loadAllLatestMessages success");
+				SurespotLog.v(TAG, "loadAllLatestMessages success (jsonArray), statusCode: " + statusCode);
+				//TODO thread
 				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
 				for (int i = 0; i < jsonArray.length(); i++) {
 					try {
@@ -660,14 +662,24 @@ public class ChatController {
 						SurespotLog.w(TAG, "loadLatestAllMessages", e);
 					}
 				}
+				
+				setMessagesLoaded();
 			}
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				Utils.makeToast(mContext, "loading latest messages failed: " + content);
+				setMessagesLoaded();
+				Utils.makeToast(mContext, "loading latest messages failed: " + content);				
 			}
 		});
 
+	}
+	
+	//tell teh chat adapters we've loaded their data (even if they didn't have any)
+	private void setMessagesLoaded() {
+		for (ChatAdapter ca : mChatAdapters.values()) {
+			ca.setLoaded(true);
+		}
 	}
 
 	private void handleMessages(String username, JSONArray jsonArray) {
@@ -724,10 +736,7 @@ public class ChatController {
 			mLastReceivedMessageIds.put(username, message.getId());
 			updateLastViewedMessageId(username, messageActivity);
 			chatAdapter.notifyDataSetChanged();			
-		}
-		
-		chatAdapter.setLoaded(true);
-
+		}		
 	}
 
 	private Integer getEarliestMessageId(String username) {
