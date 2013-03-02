@@ -68,7 +68,6 @@ public class ChatController {
 	private HashMap<String, Integer> mLastViewedMessageIds;
 	private HashMap<String, Integer> mLastReceivedMessageIds;
 	private Set<String> mActiveChats;
-	// private HashMap<String, Boolean> mReadSinceReconnect;
 
 	private FriendAdapter mFriendAdapter;
 	private ChatPagerAdapter mChatPagerAdapter;
@@ -88,15 +87,36 @@ public class ChatController {
 	// private
 
 	//
-	public ChatController() {
+	public ChatController(Context context, FragmentManager fm, ViewPager viewPager, TitlePageIndicator pageIndicator) {
 		SurespotLog.v(TAG, "constructor: " + this);
 
-		// mContext = context;
-
 		mChatAdapters = new HashMap<String, ChatAdapter>();
-
 		loadState();
 
+		mContext = context;
+
+		mFragmentManager = fm;
+		mFriendAdapter = new FriendAdapter(mContext);	
+		mChatPagerAdapter = new ChatPagerAdapter(fm);
+		
+		mViewPager = viewPager;
+		mViewPager.setAdapter(mChatPagerAdapter);
+		mIndicator = pageIndicator;
+		mIndicator.setViewPager(mViewPager);
+		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+			@Override
+			public void onPageSelected(int position) {
+				SurespotLog.v(TAG, "onPageSelected, position: " + position);
+				String name = mChatPagerAdapter.getChatName(position);
+				setCurrentChat(name);
+
+			}
+		});
+
+		setOnWifi();
+
+	
 		// mViewPager.setOffscreenPageLimit(2);
 
 		mSocketCallback = new IOCallback() {
@@ -323,38 +343,16 @@ public class ChatController {
 			}
 		};
 
+
+		
 	}
-
-	public void setPagers(Context context, FragmentManager fm, ViewPager viewPager, TitlePageIndicator pageIndicator) {
-		mContext = context;
-
-		mFragmentManager = fm;
-		mFriendAdapter = new FriendAdapter(mContext);	
-		mChatPagerAdapter = new ChatPagerAdapter(fm);
 	
-		mViewPager = viewPager;
-		mViewPager.setAdapter(mChatPagerAdapter);
-		mIndicator = pageIndicator;
-		mIndicator.setViewPager(mViewPager);
-		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(int position) {
-				SurespotLog.v(TAG, "onPageSelected, position: " + position);
-				String name = mChatPagerAdapter.getChatName(position);
-				setCurrentChat(name);
-
-			}
-		});
-		// }
-		setOnWifi();
-
-	}
-
-	
+	//this has to be done outside of the contructor as it creates fragments, which need chat controller instance
 	public void init() {
 		mChatPagerAdapter.addChatNames(mActiveChats);
+		connect();
 	}
+
 
 	private void connect() {
 
@@ -843,25 +841,16 @@ public class ChatController {
 	private void saveState() {
 
 		SurespotLog.v(TAG, "saveState");
-		// if (IdentityController.hasLoggedInUser()) {
 		saveUnsentMessages();
-
 		saveMessages();
-		// store chats the user went into
-
-		// if (!mLastViewedMessageIds.isEmpty()) {
-
-		// }
 
 		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 
-		// save active chats
-
 		MainActivity.getStateController().saveActiveChats(mActiveChats);
 		MainActivity.getStateController().saveLastReceivedMessageIds(mLastReceivedMessageIds);
 		MainActivity.getStateController().saveLastViewedMessageIds(mLastViewedMessageIds);
-		// }
+
 	}
 
 	private void loadState() {
@@ -877,12 +866,8 @@ public class ChatController {
 		SurespotLog.v(TAG, "onResume: " + this);
 		if (mPaused) {
 			mPaused = false;
-
-			// loadState();
-
 			connect();
 		}
-
 	}
 
 	public void onPause() {
@@ -949,9 +934,6 @@ public class ChatController {
 
 			if (mMode == MODE_SELECT) {
 
-				// /mChatPagerAdapter.
-
-				// Utils.makePagerFragmentName(mViewPager.getId(), pos);
 				String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
 				SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
 				ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
@@ -1027,8 +1009,6 @@ public class ChatController {
 	}
 
 	public synchronized void logout() {
-
-		// mLastViewedMessageIds.clear();
 		mChatAdapters.clear();
 		mCurrentChat = null;
 		saveState();
@@ -1070,11 +1050,8 @@ public class ChatController {
 					SurespotLog.e(TAG, e.toString(), e);
 				}
 
-				// mFriendAdapter.refreshActiveChats();
-				// mFriendAdapter.clearFriends(false);
 				mFriendAdapter.setFriends(friends);
 				loadAllLatestMessages();
-
 			}
 
 			@Override
@@ -1083,15 +1060,10 @@ public class ChatController {
 				if (!MainActivity.getNetworkController().isUnauthorized()) {
 
 					SurespotLog.w(TAG, "getFriends: " + content, arg0);
-
 				}
 			}
 		});
-	}
-
-	public ChatPagerAdapter getChatPagerAdapter() {
-		return mChatPagerAdapter;
-	}
+	}	
 
 	public void closeTab() {
 		if (mChatPagerAdapter.getCount() > 0) {

@@ -215,9 +215,9 @@ public class ChatFragment extends SherlockFragment {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume:  " + mUsername);
 
-		if (mChatAdapter == null) {
-			SurespotLog.v(TAG, "onResume settingChatAdapter for: " + mUsername);
-			mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
+//		if (mChatAdapter == null) {
+//			SurespotLog.v(TAG, "onResume settingChatAdapter for: " + mUsername);
+//			mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
 
 			// listen for first change then set empty list view
 
@@ -240,8 +240,8 @@ public class ChatFragment extends SherlockFragment {
 			// }
 
 			
-			mListView.setAdapter(mChatAdapter);
-			mListView.setDividerHeight(1);
+		//	mListView.setAdapter(mChatAdapter);
+		//	mListView.setDividerHeight(1);
 
 			// getView().findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 			// viewfindViewById(R.id.message_list_empty).setVisibility(View.GONE);
@@ -264,9 +264,9 @@ public class ChatFragment extends SherlockFragment {
 			// }
 
 			// listen to scroll changes
-			mListView.setOnScrollListener(mOnScrollListener);
+		//	mListView.setOnScrollListener(mOnScrollListener);
 			// mChatAdapter.notifyDataSetChanged();
-		}
+	//	}
 	}
 
 	// on
@@ -284,7 +284,8 @@ public class ChatFragment extends SherlockFragment {
 				}
 			}
 
-			if (!mLoading && MainActivity.getChatController().hasEarlierMessages(mUsername) && firstVisibleItem <= 10) {
+			ChatController chatController = MainActivity.getChatController(); 
+			if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) &&  firstVisibleItem <= 5) {
 				// SurespotLog.v(TAG, "onScroll: Loading more messages.");
 				// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
 				// firstVisibleItem

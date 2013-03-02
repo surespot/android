@@ -101,9 +101,22 @@ public class MainActivity extends SherlockFragmentActivity {
 		startService(intent);
 
 		mStateController = new StateController();
-
+	
+		// create the chat controller here if we know we're not going to need to login
+		// so that if we come back from a restart (for example a rotation), the automatically
+		// created fragments have a chat controller instance
+		
+		if (!needsLogin()) {
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
+					(TitlePageIndicator) findViewById(R.id.indicator));		
+			mChatController.init();
+		}
+	}
+	
+	private boolean needsLogin() {
 		String user = IdentityController.getLoggedInUser();
 
+		Intent intent = getIntent();
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
@@ -111,20 +124,15 @@ public class MainActivity extends SherlockFragmentActivity {
 		SurespotLog.v(TAG, "type: " + notificationType);
 		SurespotLog.v(TAG, "messageTo: " + messageTo);
 
-		// if we have a message to the currently logged in user, set the from and start the chat activity
-		if ((user != null)
-				&& !intent.getBooleanExtra("401", false)
-				&& !((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+
+		if ((user == null)
+				|| (intent.getBooleanExtra("401", false))
+				|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
 						|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
 							.equals(notificationType)) && (!messageTo.equals(user)))) {
-			mChatController = new ChatController();
-			mChatController.setPagers(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
-					(TitlePageIndicator) findViewById(R.id.indicator));
-			mChatController.init();
-			mChatController.onResume();
-
+			return true;
 		}
-
+		return false;
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -134,7 +142,6 @@ public class MainActivity extends SherlockFragmentActivity {
 			mCredentialCachingService = binder.getService();
 
 			// make sure these are there so startup code can execute
-			// SurespotApplication.setCachingService(mCredentialCachingService);
 			mNetworkController = new NetworkController(MainActivity.this);
 			startup();
 		}
@@ -171,24 +178,9 @@ public class MainActivity extends SherlockFragmentActivity {
 		Intent intent = getIntent();
 		// if we have any users or we don't need to create a user, figure out if we need to login
 		if (IdentityController.hasIdentity() && !intent.getBooleanExtra("create", false)) {
-
-			// if we have a current user we're logged in
-			String user = IdentityController.getLoggedInUser();
-
-			String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
-			String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
-
-			SurespotLog.v(TAG, "user: " + user);
-			SurespotLog.v(TAG, "type: " + notificationType);
-			SurespotLog.v(TAG, "messageTo: " + messageTo);
-
 			// if we have a message to the currently logged in user, set the from and start the chat activity
-			if ((user == null)
-					|| (intent.getBooleanExtra("401", false))
-					|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
-							|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
-								.equals(notificationType)) && (!messageTo.equals(user)))) {
-
+			if (needsLogin()) {
+				String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 				SurespotLog.v(TAG, "need a (different) user, showing login");
 				Intent newIntent = new Intent(this, LoginActivity.class);
 				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
@@ -224,8 +216,8 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
 				Intent intent = new Intent(this, ImageSelectActivity.class);
-				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
-				intent.putExtra("to", mChatController.getCurrentChat());
+				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);				
+				intent.putExtra("to", mChatController.getCurrentChat());				
 				intent.setData(data.getData());
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 				break;
@@ -263,22 +255,14 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	private void launch(Intent intent) {
 		SurespotLog.v(TAG, "launch, chatController: " + mChatController);
+		
+		//if we haven't created a chat controller before, create it now
 		if (mChatController == null) {
 			SurespotLog.v(TAG, "chat controller null, creating new chat controller");
-			mChatController = new ChatController();
-
-			mChatController.setPagers(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
-					(TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
+					(TitlePageIndicator) findViewById(R.id.indicator));		
 			mChatController.init();
-			mChatController.onResume();
 		}
-
-		// }
-		// else {
-
-		// mChatController.init();
-		// mChatController.onResume();
-		// }
 
 		// make sure the gcm is set
 
@@ -353,16 +337,11 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
-		// if (mChatController != null) {
-		// SurespotLog.v(TAG, "resetting chat controller");
-		// mChatController.setPagers(MainActivity.this, getSupportFragmentManager(), (ViewPager) findViewById(R.id.pager),
-		// (TitlePageIndicator) findViewById(R.id.indicator));
-		// mChatController.init();
-		// mChatController.onResume();
-		// }
+		if (mChatController != null) {
+			mChatController.onResume();
+		}
 	}
 
 	@Override
