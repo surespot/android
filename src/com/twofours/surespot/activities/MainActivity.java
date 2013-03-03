@@ -2,6 +2,7 @@ package com.twofours.surespot.activities;
 
 import java.io.File;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -55,6 +56,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static StateController mStateController;
 	private static Context mContext;
 	private static Handler mMainHandler;
+	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
 
 	private static ChatController mChatController;
 
@@ -112,7 +114,8 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (!needsLogin()) {
 			mMainHandler = new Handler(getMainLooper());
 			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
+			
 		}
 	}
 
@@ -262,7 +265,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (mChatController == null) {
 			SurespotLog.v(TAG, "chat controller null, creating new chat controller");
 			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
+			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 		}
 
 		if (mMainHandler == null) {
@@ -363,7 +366,14 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_main, menu);
-
+		
+		mMenuItems.add(menu.findItem(R.id.menu_close_bar));
+		mMenuItems.add(menu.findItem(R.id.menu_close));
+		mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
+		mMenuItems.add(menu.findItem(R.id.menu_send_image));
+		mMenuItems.add(menu.findItem(R.id.menu_capture_image_bar));
+		mMenuItems.add(menu.findItem(R.id.menu_capture_image));
+		
 		if (Camera.getNumberOfCameras() == 0) {
 			SurespotLog.v(TAG, "hiding capture image menu option");
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
@@ -384,9 +394,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		case R.id.menu_close_bar:
 		case R.id.menu_close:
-			mChatController.closeTab();
+			mChatController.closeTab();			
 			return true;
-
 		case R.id.menu_send_image_bar:
 		case R.id.menu_send_image:
 			intent = new Intent();
@@ -404,7 +413,6 @@ public class MainActivity extends SherlockFragmentActivity {
 			intent.putExtra("source", ImageSelectActivity.SOURCE_CAPTURE_IMAGE);
 			intent.putExtra("to", mChatController.getCurrentChat());
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
-
 			return true;
 		case R.id.menu_settings_bar:
 		case R.id.menu_settings:
@@ -418,7 +426,6 @@ public class MainActivity extends SherlockFragmentActivity {
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			MainActivity.this.startActivity(intent);
 			finish();
-
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

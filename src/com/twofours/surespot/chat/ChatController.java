@@ -30,6 +30,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
+import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.activities.MainActivity;
@@ -74,6 +75,7 @@ public class ChatController {
 	private ViewPager mViewPager;
 	private TitlePageIndicator mIndicator;
 	private FragmentManager mFragmentManager;
+	private ArrayList<MenuItem> mMenuItems;
 
 	private static String mCurrentChat;
 	private static boolean mPaused = true;
@@ -326,8 +328,10 @@ public class ChatController {
 	}
 
 	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
-	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator) {
+	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems) {
 		mChatPagerAdapter = new ChatPagerAdapter(mFragmentManager);
+		mMenuItems = menuItems;
+		
 
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
@@ -868,11 +872,16 @@ public class ChatController {
 				setMode(MODE_NORMAL);
 
 			}
+			enableMenuItems(true);
 		}
 		else {
 			mViewPager.setCurrentItem(0, true);
-			mNotificationManager.cancel(null, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-			mNotificationManager.cancel(null, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+			
+			//disable menu items
+			enableMenuItems(false);
+			
 		}
 	}
 
@@ -1023,4 +1032,12 @@ public class ChatController {
 		return mMode;
 	}
 
+	public void enableMenuItems(boolean enabled) {
+		SurespotLog.v(TAG, "enableMenuItems, mMenuItems: " + mMenuItems);
+		if (mMenuItems != null) {
+			for (MenuItem menuItem : mMenuItems) {
+				menuItem.setVisible(enabled);				
+			}
+		}
+	}
 }
