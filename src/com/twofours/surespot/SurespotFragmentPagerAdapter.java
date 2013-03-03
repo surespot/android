@@ -67,8 +67,8 @@ public abstract class SurespotFragmentPagerAdapter extends PagerAdapter {
     private static final String TAG = "FragmentPagerAdapter";
     private static final boolean DEBUG = false;
 
-    private final FragmentManager mFragmentManager;
-    private FragmentTransaction mCurTransaction = null;
+    protected final FragmentManager mFragmentManager;
+    protected FragmentTransaction mCurTransaction = null;
     private Fragment mCurrentPrimaryItem = null;
 
     public SurespotFragmentPagerAdapter(FragmentManager fm) {
@@ -175,7 +175,7 @@ public abstract class SurespotFragmentPagerAdapter extends PagerAdapter {
         return position;
     }
 
-    private static String makeFragmentName(int viewId, long id) {
+    protected static String makeFragmentName(int viewId, long id) {
         return "android:switcher:" + viewId + ":" + id;
     }
 }

@@ -832,6 +832,8 @@ public class ChatController {
 
 			// load savedmessages
 			loadMessages(username);
+			
+			
 
 		}
 		return chatAdapter;
@@ -1009,7 +1011,7 @@ public class ChatController {
 				String name = mChatPagerAdapter.getChatName(position);
 				SurespotLog.v(TAG, "closeTab, name: " + name + ", position: " + position);
 
-				mChatPagerAdapter.removeChat(position, true);
+				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
 				destroyChatAdapter(name);
 				mIndicator.notifyDataSetChanged();
 				mFriendAdapter.setChatActive(name, false);

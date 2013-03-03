@@ -15,10 +15,10 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
-	
+
 	public ChatPagerAdapter(FragmentManager fm) {
 		super(fm);
-		mChatNames = new ArrayList<String>();		
+		mChatNames = new ArrayList<String>();
 	}
 
 	@Override
@@ -148,11 +148,25 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		}
 	}
 
-	public void removeChat(int index, boolean notify) {
-		mChatNames.remove(index - 1);
-		if (notify) {
-			notifyDataSetChanged();
+	public void removeChat(int viewId, int index) {
+		String name = mChatNames.remove(index - 1);
+
+		// blow the fragment away
+		if (mCurTransaction == null) {
+			mCurTransaction = mFragmentManager.beginTransaction();
 		}
+		String fragname = makeFragmentName(viewId, name.hashCode());
+
+		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
+		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
+		// + " v=" + ((Fragment)object).getView());
+		mCurTransaction.remove(fragment);
+
+		// mCurTransaction.commit();
+		
+
+		notifyDataSetChanged();
+
 	}
 
 	public long getItemId(int position) {

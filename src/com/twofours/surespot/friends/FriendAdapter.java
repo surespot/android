@@ -28,7 +28,6 @@ public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
 
 	ArrayList<Friend> mFriends = new ArrayList<Friend>();
-	// private ArrayList<String> mActiveChats = new ArrayList<String>();
 	private NotificationManager mNotificationManager;
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
@@ -38,7 +37,7 @@ public class FriendAdapter extends BaseAdapter {
 	public FriendAdapter(Context context) {
 		mContext = context;
 
-		// refreshActiveChats();
+
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -58,14 +57,6 @@ public class FriendAdapter extends BaseAdapter {
 	public void setLoadingCallback(IAsyncCallback<Boolean> callback) {
 		mLoadingCallback = callback;
 	}
-
-	// public void refreshActiveChats() {
-	// mActiveChats = MainActivity.getStateController().loadActiveChats();
-	// }
-	//
-	// public ArrayList<String> getActiveChats() {
-	// return mActiveChats;
-	// }
 
 	/*
 	 * public void refreshFlags() { for (Friend friend : mFriends) { if (mActiveChats.contains(friend.getName())) {

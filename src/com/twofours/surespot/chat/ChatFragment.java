@@ -86,6 +86,7 @@ public class ChatFragment extends SherlockFragment {
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
+		
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -200,6 +201,7 @@ public class ChatFragment extends SherlockFragment {
 
 				SurespotLog.v(TAG, "chatAdapter loaded");
 				if (loading) {
+					//view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 					// only show the dialog if we haven't loaded within 500 ms
 					mTimer = new Timer();
 					mTimer.schedule(new TimerTask() {
@@ -216,7 +218,7 @@ public class ChatFragment extends SherlockFragment {
 							});
 
 						}
-					}, 500);
+					}, 10);
 					
 				}
 				else {
