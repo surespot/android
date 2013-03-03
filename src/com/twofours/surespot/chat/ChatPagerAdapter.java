@@ -160,10 +160,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
 		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());
-		mCurTransaction.remove(fragment);
-
-		// mCurTransaction.commit();
-		
+		mCurTransaction.remove(fragment);	
 
 		notifyDataSetChanged();
 

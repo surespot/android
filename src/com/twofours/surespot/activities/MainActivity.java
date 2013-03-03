@@ -20,6 +20,7 @@ import android.content.ServiceConnection;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -53,6 +54,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static NetworkController mNetworkController;
 	private static StateController mStateController;
 	private static Context mContext;
+	private static Handler mMainHandler;
 
 	private static ChatController mChatController;
 
@@ -81,6 +83,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
@@ -107,6 +110,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		// created fragments have a chat controller instance
 
 		if (!needsLogin()) {
+			mMainHandler = new Handler(getMainLooper());
 			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
 			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
 		}
@@ -261,6 +265,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator));
 		}
 
+		if (mMainHandler == null) {
+			mMainHandler = new Handler(getMainLooper());
+		}
+		
 		// make sure the gcm is set
 
 		// use case:
@@ -457,6 +465,10 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	public static ChatController getChatController() {
 		return mChatController;
+	}
+	
+	public static Handler getMainHandler() {
+		return mMainHandler;
 	}
 
 }

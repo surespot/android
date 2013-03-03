@@ -86,7 +86,7 @@ public class ChatFragment extends SherlockFragment {
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
-		
+
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -193,6 +193,7 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 		mListView.setAdapter(mChatAdapter);
+		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 
 		mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
@@ -201,34 +202,40 @@ public class ChatFragment extends SherlockFragment {
 
 				SurespotLog.v(TAG, "chatAdapter loaded");
 				if (loading) {
-					//view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+					// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 					// only show the dialog if we haven't loaded within 500 ms
+					if (mTimer != null) {
+						mTimer.cancel();					
+					}
+					
 					mTimer = new Timer();
 					mTimer.schedule(new TimerTask() {
 
 						@Override
 						public void run() {
+							Handler handler = MainActivity.getMainHandler();
+							if (handler != null) {
+								handler.post(new Runnable() {
 
-							new Handler(getActivity().getMainLooper()).post(new Runnable() {
-
-								@Override
-								public void run() {
-									view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-								}
-							});
+									@Override
+									public void run() {
+										view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+									}
+								});
+							}
 
 						}
-					}, 10);
-					
+					}, 250);
+
 				}
 				else {
 					if (mTimer != null) {
 						mTimer.cancel();
 						mTimer = null;
 					}
-					
+
 					view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-					mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+
 				}
 			}
 
