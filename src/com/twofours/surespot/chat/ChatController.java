@@ -256,7 +256,7 @@ public class ChatController {
 
 							else {
 								if (message.getSubType().equals("delete")) {
-									SurespotMessage dMessage = getChatAdapter(mContext, otherUser).deleteMessage(
+									SurespotMessage dMessage = getChatAdapter(mContext, otherUser).deleteMessageById(
 											Integer.parseInt(message.getIv()));
 
 									// if it's an image blow the http cache entry away
@@ -331,7 +331,6 @@ public class ChatController {
 	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems) {
 		mChatPagerAdapter = new ChatPagerAdapter(mFragmentManager);
 		mMenuItems = menuItems;
-		
 
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
@@ -414,7 +413,7 @@ public class ChatController {
 			if (lastMessageID == null) {
 				lastMessageID = -1;
 			}
-			SurespotLog.v(TAG, "setting resendId, room: " + otherUser + ", id: " + lastMessageID);
+			SurespotLog.v(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
 			sendMessage(message);
 
@@ -651,7 +650,7 @@ public class ChatController {
 					}
 					else {
 						if (message.getSubType().equals("delete")) {
-							SurespotMessage dMessage = chatAdapter.deleteMessage(Integer.parseInt(message.getIv()));
+							SurespotMessage dMessage = chatAdapter.deleteMessageById(Integer.parseInt(message.getIv()));
 
 							// if it's an image blow the http cache entry away
 							if (dMessage != null && dMessage.getMimeType() != null
@@ -878,10 +877,10 @@ public class ChatController {
 			mViewPager.setCurrentItem(0, true);
 			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
-			
-			//disable menu items
+
+			// disable menu items
 			enableMenuItems(false);
-			
+
 		}
 	}
 
@@ -950,16 +949,28 @@ public class ChatController {
 		saveState();
 		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, null);
 	}
+	
+	
+	
 
-	public void deleteMessage(String username, Integer id) {
-		SurespotMessage message = new SurespotMessage();
-		message.setType("system");
-		message.setSubType("delete");
-		message.setTo(username);
-		message.setFrom(IdentityController.getLoggedInUser());
-		message.setIv(id.toString());
+	public void deleteMessage(SurespotMessage message) {
+		//if it's on the server, send delete message otherwise just delete it locally
+		if (message.getId() != null) {
+			SurespotMessage dmessage = new SurespotMessage();
+			
+			dmessage.setType("system");
+			dmessage.setSubType("delete");
+			dmessage.setTo(message.getTo());
+			dmessage.setFrom(message.getFrom());
+			dmessage.setIv(message.getId().toString());
 
-		sendMessage(message);
+			sendMessage(dmessage);
+		}
+		else {
+			mResendBuffer.remove(message);
+			mSendBuffer.remove(message);
+			getChatAdapter(mContext, message.getTo()).deleteMessageByIv(message.getIv());
+		}
 	}
 
 	public FriendAdapter getFriendAdapter() {
@@ -1036,7 +1047,7 @@ public class ChatController {
 		SurespotLog.v(TAG, "enableMenuItems, mMenuItems: " + mMenuItems);
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
-				menuItem.setVisible(enabled);				
+				menuItem.setVisible(enabled);
 			}
 		}
 	}

@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.MessageDialogMenuFragment;
 import com.twofours.surespot.R;
@@ -95,6 +96,7 @@ public class ChatFragment extends SherlockFragment {
 
 				// pull the message out
 				if (message != null) {
+
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 						ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
 						if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
@@ -105,23 +107,27 @@ public class ChatFragment extends SherlockFragment {
 							ChatFragment.this.getActivity().startActivity(newIntent);
 						}
 					}
+
 				}
 
 			}
 		});
-		
+
 		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
-				dialog.setMessage(message);
-				dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
-				return true;
+				if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
+					MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
+					dialog.setMessage(message);
+					dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
+					return true;
+				}
+				return false;
 			}
 		});
-
 
 		mSendButton = (Button) view.findViewById(R.id.bSend);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
@@ -168,13 +174,10 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				// TODO Auto-generated method stub
 				if (count > 0) {
 					mSendButton.setText("send");
 				}
@@ -185,16 +188,14 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void afterTextChanged(Editable s) {
-				// TODO Auto-generated method stub
-
 			}
 		});
 
 		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
 		SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
-		
+
 		mListView.setAdapter(mChatAdapter);
-		
+
 		mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
 			@Override

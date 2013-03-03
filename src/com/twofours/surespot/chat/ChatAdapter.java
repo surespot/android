@@ -266,12 +266,26 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public SurespotMessage deleteMessage(Integer id) {
+	public SurespotMessage deleteMessageByIv(String iv) {
 		SurespotMessage message = null;		
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
 		
-			if (message.getId() == id) {
+			if (message.getIv().equals(iv)) {
+				iterator.remove();
+				notifyDataSetChanged();
+				break;	
+			}
+		}
+		return message;
+	}
+	
+	public SurespotMessage deleteMessageById(Integer id) {
+		SurespotMessage message = null;		
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+			message = iterator.previous();
+		
+			if (message.getId().equals(id)) {
 				iterator.remove();
 				notifyDataSetChanged();
 				break;	
