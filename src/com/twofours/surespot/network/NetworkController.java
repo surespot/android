@@ -369,12 +369,15 @@ public class NetworkController {
 	// }
 
 	public String getPublicKeysSync(String username, String version) {
-		if (version != null) {
-			return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
-		}
-		else {
-			return mSyncClient.get(mBaseUrl + "/publickeys/" + username);
-		}
+	
+		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
+	
+	}
+
+	public String getKeyVersionSync(String username) {
+
+		return mSyncClient.get(mBaseUrl + "/keyversion/" + username);
+
 	}
 
 	public void invite(String friendname, AsyncHttpResponseHandler responseHandler) {

@@ -250,7 +250,7 @@ public class ChatController {
 								String username = message.getFrom();
 								String version = message.getFromVersion();
 
-								// this will force download of key
+								// this will force download of key at some point
 								IdentityController.updateLatestVersion(mContext, username, version);
 							}
 

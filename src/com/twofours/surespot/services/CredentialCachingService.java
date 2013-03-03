@@ -34,7 +34,7 @@ public class CredentialCachingService extends Service {
 	private static String mLoggedInUser;
 	private LoadingCache<PublicKeyPairKey, PublicKeys> mPublicIdentities;
 	private LoadingCache<SharedSecretKey, byte[]> mSharedSecrets;
-	private HashMap<String, String> mLatestVersions;
+	private LoadingCache<String, String> mLatestVersions;
 
 	@Override
 	public void onCreate() {
@@ -54,17 +54,20 @@ public class CredentialCachingService extends Service {
 			@Override
 			public PublicKeys load(PublicKeyPairKey key) throws Exception {
 
-				// if key.getVersion() is null this will return the latest keypair
 				String result = MainActivity.getNetworkController().getPublicKeysSync(key.getUsername(), key.getVersion());
 				if (result != null) {
 
 					JSONObject json = new JSONObject(result);
 					String version = json.getString("version");
 
-					String latestVersion = mLatestVersions.get(key.getUsername());
+					SurespotLog.v(TAG,"keyPairCacheLoader getting latest version");					
+					String latestVersion = mLatestVersions.getIfPresent(key.getUsername());
 
 					if (latestVersion == null || version.compareTo(latestVersion) > 0) {
-						mLatestVersions.put(key.getUsername(), version);
+						SurespotLog.v(TAG, "keyPairCacheLoader setting latestVersion, username: " + key.getUsername() + ", version: " + version);
+						synchronized(this) {
+							mLatestVersions.put(key.getUsername(), version);
+						}
 					}
 
 					return IdentityController.recreatePublicKeyPair(result);
@@ -74,7 +77,6 @@ public class CredentialCachingService extends Service {
 		};
 
 		CacheLoader<SharedSecretKey, byte[]> secretCacheLoader = new CacheLoader<SharedSecretKey, byte[]>() {
-
 			@Override
 			public byte[] load(SharedSecretKey key) throws Exception {
 				SurespotLog.v(TAG, "loadSharedSecret, ourVersion: " + key.getOurVersion() + ", theirUsername: " + key.getTheirUsername()
@@ -85,13 +87,22 @@ public class CredentialCachingService extends Service {
 
 				return EncryptionController.generateSharedSecretSync(
 						IdentityController.getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion()).getPrivate(), publicKey);
+			}
+		};
 
+		CacheLoader<String, String> versionCacheLoader = new CacheLoader<String, String>() {
+			@Override
+			public String load(String key) throws Exception {
+
+				String version = MainActivity.getNetworkController().getKeyVersionSync(key);
+				SurespotLog.v(TAG, "versionCacheLoader: retrieved keyversion from server for username: " + key + ", version: " + version);
+				return version;
 			}
 		};
 
 		mPublicIdentities = CacheBuilder.newBuilder().build(keyPairCacheLoader);
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
-		mLatestVersions = new HashMap<String, String>();
+		mLatestVersions = CacheBuilder.newBuilder().build(versionCacheLoader);
 	}
 
 	public synchronized void login(String username, String password, Cookie cookie) {
@@ -131,7 +142,6 @@ public class CredentialCachingService extends Service {
 			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
 			mPasswords.remove(mLoggedInUser);
 			mCookies.remove(mLoggedInUser);
-			mLatestVersions.remove(mLoggedInUser);
 			mLoggedInUser = null;
 		}
 	}
@@ -166,40 +176,24 @@ public class CredentialCachingService extends Service {
 	 * @return
 	 */
 
-	public String getLatestVersion(String username) {
-
-		String latestVersion = mLatestVersions.get(username);
-		SurespotLog.v(TAG, "latestVersion, username: " + username + ", version:  " + latestVersion);
-		if (latestVersion == null) {
-			// get the latest key pair from the server
-
-			String result = MainActivity.getNetworkController().getPublicKeysSync(username, null);
-			if (result != null) {
-				PublicKeys publicKeys = IdentityController.recreatePublicKeyPair(result);
-
-				if (publicKeys != null) {
-					latestVersion = publicKeys.getVersion();
-					mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(username, latestVersion)), publicKeys);
-					synchronized (this) {
-						mLatestVersions.put(username, latestVersion);
-					}
-				}
-			}
+	public synchronized String getLatestVersion(String username) {
+		try {
+			String version = mLatestVersions.get(username);
+			SurespotLog.v(TAG, "getLatestVersion, username: " + username + ", version: " + version);
+			return version;
 		}
-
-		return latestVersion;
+		catch (ExecutionException e) {
+			SurespotLog.w(TAG, "getLatestVersion", e);
+		}
+		return null;
 	}
 
 	public synchronized void updateLatestVersion(String username, String version) {
 		if (username != null && version != null) {
-			String latestVersion = mLatestVersions.get(username);
-
-			if (latestVersion != null) {
-				// force download of new key
-				if (version.compareTo(latestVersion) > 0) {
-					mLatestVersions.remove(username);
-				}
-			}
+			String latestVersion = getLatestVersion(username);
+			if (version.compareTo(latestVersion) > 0) {			
+				mLatestVersions.put(username, version);
+			}			
 		}
 	}
 
