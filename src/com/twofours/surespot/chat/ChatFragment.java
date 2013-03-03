@@ -11,8 +11,11 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
@@ -20,8 +23,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -109,18 +112,9 @@ public class ChatFragment extends SherlockFragment {
 
 			}
 		});
-		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				// make sure it's our message
-				if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
-					MainActivity.getChatController().deleteMessage(mUsername, message.getId());
-				}
-				return true;
-			}
-		});
+		
+		
 
 		mSendButton = (Button) view.findViewById(R.id.bSend);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
@@ -193,8 +187,7 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 		mListView.setAdapter(mChatAdapter);
-		
-
+		registerForContextMenu(mListView);
 		mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
 			@Override
@@ -205,9 +198,9 @@ public class ChatFragment extends SherlockFragment {
 					// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 					// only show the dialog if we haven't loaded within 500 ms
 					if (mTimer != null) {
-						mTimer.cancel();					
+						mTimer.cancel();
 					}
-					
+
 					mTimer = new Timer();
 					mTimer.schedule(new TimerTask() {
 
@@ -357,6 +350,30 @@ public class ChatFragment extends SherlockFragment {
 			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
 				// TODO implement
 			}
+		}
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+
+		super.onCreateContextMenu(menu, v, menuInfo);
+		getActivity().getMenuInflater().inflate(R.menu.message_popup, menu);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(info.position);
+		switch (item.getItemId()) {
+		case R.id.messageDelete:
+			// make sure it's our message			
+			if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
+				MainActivity.getChatController().deleteMessage(mUsername, message.getId());
+			}
+
+			return true;
+		default:
+			return super.onContextItemSelected(item);
 		}
 	}
 

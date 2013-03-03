@@ -64,5 +64,6 @@
     <string name="action_settings">Settings</string>
     <string name="no_messages">no messages</string>
     <string name="home">home</string>
+    <string name="delete_message">delete message</string>
 
 </resources>
