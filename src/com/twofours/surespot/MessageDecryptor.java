@@ -19,7 +19,7 @@ package com.twofours.surespot;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 
-import android.os.AsyncTask;
+import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 
@@ -38,6 +38,8 @@ import com.twofours.surespot.encryption.EncryptionController;
  */
 public class MessageDecryptor {
 	private static final String TAG = "TextDecryptor";
+	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+
 
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
@@ -48,12 +50,12 @@ public class MessageDecryptor {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public void decrypt(TextView textView, SurespotMessage message) {
+	public static void decrypt(TextView textView, SurespotMessage message) {
 
 		DecryptionTask task = new DecryptionTask(textView, message);
 		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 		textView.setTag(decryptionTaskWrapper);
-		task.executeOnExecutor(MainActivity.THREAD_POOL_EXECUTOR);
+		MainActivity.THREAD_POOL_EXECUTOR.execute(task);
 
 	}
 
@@ -76,8 +78,9 @@ public class MessageDecryptor {
 	/**
 	 * The actual AsyncTask that will asynchronously download the image.
 	 */
-	class DecryptionTask extends AsyncTask<Void, Void, String> {
+	static class DecryptionTask implements Runnable {
 		private SurespotMessage mMessage;
+		private boolean mCancelled;
 
 		private final WeakReference<TextView> textViewReference;
 
@@ -86,29 +89,18 @@ public class MessageDecryptor {
 			mMessage = message;
 		}
 
-		/**
-		 * Actual download method.
-		 */
 		@Override
-		protected String doInBackground(Void... params) {
-			return EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
-					mMessage.getIv(), mMessage.getCipherData());
-		}
-
-		/**
-		 * Once the image is downloaded, associates it to the imageView
-		 */
-		@Override
-		protected void onPostExecute(String plainText) {
-			if (isCancelled()) {
-				plainText = "";
-			}
+		public void run() {
+			final String plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
+					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getCipherData());
 
 			// set plaintext in message so we don't have to decrypt again
 			mMessage.setPlainData(plainText);
 
 			if (textViewReference != null) {
-				TextView textView = textViewReference.get();
+
+				final TextView textView = textViewReference.get();
+
 				DecryptionTask decryptionTask = getDecryptionTask(textView);
 				// Change text only if this process is still associated with it
 				if ((this == decryptionTask)) {
@@ -122,18 +114,28 @@ public class MessageDecryptor {
 					// textView.startAnimation(fadeOut);
 					// }
 
-					textView.setText(plainText);
+					mHandler.post(new Runnable() {
 
-					// TODO put the row in the tag
-					TextView tvTime = (TextView) ((View) textView.getParent()).findViewById(R.id.messageTime);
-					if (mMessage.getDateTime() == null) {
-						tvTime.setText("");
-					}
-					else {
-						tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(mMessage.getDateTime()));
-					}
+						@Override
+						public void run() {
+							textView.setText(plainText);
+
+							// TODO put the row in the tag
+							TextView tvTime = (TextView) ((View) textView.getParent()).findViewById(R.id.messageTime);
+							if (mMessage.getDateTime() == null) {
+								tvTime.setText("");
+							}
+							else {
+								tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+										mMessage.getDateTime()));
+							}
+
+						}
+					});
+
 				}
 			}
+
 		}
 	}
 

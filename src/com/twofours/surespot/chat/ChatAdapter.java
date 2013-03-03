@@ -26,8 +26,7 @@ public class ChatAdapter extends BaseAdapter {
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
-	private final ImageDownloader mImageDownloader = new ImageDownloader();
-	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
+	private final ImageDownloader mImageDownloader = new ImageDownloader();	
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
 
@@ -221,7 +220,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 			else {
 				chatMessageViewHolder.tvText.setText("");
-				mTextDecryptor.decrypt(chatMessageViewHolder.tvText, item);
+				MessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
 		}
 		else {
