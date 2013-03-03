@@ -17,6 +17,12 @@
                 android:orderInCategory="200"
                 android:title="@string/import_identities"
                 android:titleCondensed="import"/>
+            <item
+                android:id="@+id/clear_local_cache_bar"
+                android:icon="@drawable/ic_menu_delete"
+                android:orderInCategory="400"
+                android:showAsAction="never"
+                android:title="clear local cache"/>
         </menu>
     </item>
     <item
@@ -35,7 +41,7 @@
         android:titleCondensed="import"/>
     <item
         android:id="@+id/clear_local_cache"
-        android:icon="@drawable/ic_menu_archive"
+        android:icon="@drawable/ic_menu_delete"
         android:orderInCategory="400"
         android:showAsAction="never"
         android:title="clear local cache"/>

@@ -217,6 +217,7 @@ public class LoginActivity extends SherlockActivity {
 			startActivity(intent);
 			return true;
 		case R.id.clear_local_cache:
+		case R.id.clear_local_cache_bar:
 			StateController.clearCache(LoginActivity.this, new IAsyncCallback<Void>() {
 				
 				@Override
