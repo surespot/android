@@ -27,12 +27,14 @@ import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class LoginActivity extends SherlockActivity {
 
@@ -184,7 +186,7 @@ public class LoginActivity extends SherlockActivity {
 					else {
 						mMpd.decrProgress();
 						Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
-						
+
 					}
 
 				};
@@ -203,19 +205,32 @@ public class LoginActivity extends SherlockActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
 		switch (item.getItemId()) {
-		
+
 		case R.id.menu_import_identities:
+		case R.id.menu_import_identities_bar:
 			intent = new Intent(this, ImportIdentityActivity.class);
 			startActivity(intent);
 			return true;
 		case R.id.menu_create_identity:
+		case R.id.menu_create_identity_bar:
 			intent = new Intent(this, SignupActivity.class);
 			startActivity(intent);
+			return true;
+		case R.id.clear_local_cache:
+			StateController.clearCache(LoginActivity.this, new IAsyncCallback<Void>() {
+				
+				@Override
+				public void handleResponse(Void result) {
+					Utils.makeToast(LoginActivity.this, "local cache cleared");					
+				}
+			});
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 
 	}
+
+	
 
 }

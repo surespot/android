@@ -18,13 +18,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
@@ -297,9 +300,14 @@ public class StateController {
 		return null;
 
 	}
+	
+	public static synchronized void wipeAllState(Context context) {
+		deleteRecursive(new File(FileUtils.getStateDir(context)));
+	}
 
 	public static synchronized void wipeState(Context context, String identityName) {
 
+		
 		deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 
 	}
@@ -311,8 +319,36 @@ public class StateController {
 				for (File child : files)
 					deleteRecursive(child);
 			}
-			fileOrDirectory.delete();
 		}
+		fileOrDirectory.delete();
+	}
+	
+	public static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
+		new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... params) {
+				// clear out some shiznit
+				SurespotLog.v(TAG, "clearing local cache");
 
+				// state
+				wipeAllState(context);
+
+				// last chat and user we had open
+				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_CHAT, null);
+				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
+
+				// network caches
+				MainActivity.getNetworkController().clearCache();
+
+				// captured image dir
+				FileUtils.wipeImageCaptureDir(context);
+
+				return null;
+			}
+
+			protected void onPostExecute(Void result) {
+				callback.handleResponse(null);
+			};
+
+		}.execute();
 	}
 }
