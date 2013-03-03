@@ -85,7 +85,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
@@ -115,7 +115,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			mMainHandler = new Handler(getMainLooper());
 			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
 			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
-			
+
 		}
 	}
 
@@ -213,21 +213,29 @@ public class MainActivity extends SherlockFragmentActivity {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 
 		Uri selectedImageUri = null;
-		if (resultCode == RESULT_OK) {
-			switch (requestCode) {
-			case SurespotConstants.IntentRequestCodes.LOGIN:
-				launch(SurespotApplication.getStartupIntent());
-				break;
 
-			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
+		switch (requestCode) {
+		case SurespotConstants.IntentRequestCodes.LOGIN:
+			if (resultCode == RESULT_OK) {
+				launch(SurespotApplication.getStartupIntent());
+			}
+			else {
+				finish();
+			}
+			break;
+
+		case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
+			if (resultCode == RESULT_OK) {
 				Intent intent = new Intent(this, ImageSelectActivity.class);
 				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
 				intent.putExtra("to", mChatController.getCurrentChat());
 				intent.setData(data.getData());
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
-				break;
+			}
+			break;
 
-			case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
+		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
+			if (resultCode == RESULT_OK) {
 				selectedImageUri = data.getData();
 				String to = data.getStringExtra("to");
 				final String filename = data.getStringExtra("filename");
@@ -248,12 +256,10 @@ public class MainActivity extends SherlockFragmentActivity {
 							new File(filename).delete();
 						}
 					});
-					break;
 				}
 			}
-		}
-		else {
-			finish();
+			break;
+
 		}
 
 	}
@@ -271,7 +277,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (mMainHandler == null) {
 			mMainHandler = new Handler(getMainLooper());
 		}
-		
+
 		// make sure the gcm is set
 
 		// use case:
@@ -366,14 +372,14 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_main, menu);
-		
+
 		mMenuItems.add(menu.findItem(R.id.menu_close_bar));
 		mMenuItems.add(menu.findItem(R.id.menu_close));
 		mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
 		mMenuItems.add(menu.findItem(R.id.menu_send_image));
 		mMenuItems.add(menu.findItem(R.id.menu_capture_image_bar));
 		mMenuItems.add(menu.findItem(R.id.menu_capture_image));
-		
+
 		if (Camera.getNumberOfCameras() == 0) {
 			SurespotLog.v(TAG, "hiding capture image menu option");
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
@@ -394,7 +400,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		case R.id.menu_close_bar:
 		case R.id.menu_close:
-			mChatController.closeTab();			
+			mChatController.closeTab();
 			return true;
 		case R.id.menu_send_image_bar:
 		case R.id.menu_send_image:
@@ -473,7 +479,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static ChatController getChatController() {
 		return mChatController;
 	}
-	
+
 	public static Handler getMainHandler() {
 		return mMainHandler;
 	}
