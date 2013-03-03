@@ -28,8 +28,8 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private final MessageDecryptor mTextDecryptor = new MessageDecryptor();
-	private boolean mLoaded;
-	private IAsyncCallback<Void> mLoadedCallback;
+	private boolean mLoading;
+	private IAsyncCallback<Boolean> mLoadingCallback;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -37,19 +37,19 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 	
-	public boolean isLoaded() {
-		return mLoaded;
+	public boolean isLoading() {
+		return mLoading;
 	}
 	
-	public void setLoaded(boolean loaded) {
-		mLoaded = loaded ;
-		if (mLoadedCallback != null) {
-			mLoadedCallback.handleResponse(null);
+	public void setLoading(boolean loading) {
+		mLoading = loading ;
+		if (mLoadingCallback != null) {
+			mLoadingCallback.handleResponse(loading);
 		}
 	}
 	
-	public void setLoadedCallback(IAsyncCallback<Void> callback) {
-		mLoadedCallback = callback;
+	public void setLoadingCallback(IAsyncCallback<Boolean> callback) {
+		mLoadingCallback = callback;
 	}
 
 	public void evictCache() {

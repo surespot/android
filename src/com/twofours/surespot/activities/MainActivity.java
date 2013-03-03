@@ -57,7 +57,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static ChatController mChatController;
 
 	private static final int CORE_POOL_SIZE = 5;
-	private static final int MAXIMUM_POOL_SIZE = 10;
+	private static final int MAXIMUM_POOL_SIZE = 5;
 	private static final int KEEP_ALIVE = 1;
 
 	// create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
