@@ -267,7 +267,7 @@ public class ChatController {
 									mLastReceivedMessageIds.put(otherUser, message.getId());
 									updateLastViewedMessageId(otherUser, otherUser.equals(message.getFrom()));
 									checkAndSendNextMessage(message);
-								//	saveMessages();
+									// saveState(otherUser);
 								}
 							}
 						}
@@ -620,7 +620,9 @@ public class ChatController {
 						SurespotLog.w(TAG, "loadLatestAllMessages", e);
 					}
 				}
-				saveMessages();
+				// if (jsonArray.length() > 0) {
+				// saveMessages();
+				// }
 				setMessagesLoading(false);
 
 			}
@@ -761,7 +763,7 @@ public class ChatController {
 	public synchronized void logout() {
 		mChatAdapters.clear();
 		mCurrentChat = null;
-		saveState();
+		saveState(null);
 		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, null);
 		mActiveChats.clear();
 		mLastReceivedMessageIds.clear();
@@ -770,11 +772,17 @@ public class ChatController {
 		mSendBuffer.clear();
 	}
 
-	private void saveState() {
+	private void saveState(String username) {
 
 		SurespotLog.v(TAG, "saveState");
 		saveUnsentMessages();
-		saveMessages();
+
+		if (username == null) {
+			saveMessages();
+		}
+		else {
+			saveMessages(username);
+		}
 
 		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
@@ -810,7 +818,7 @@ public class ChatController {
 			mPaused = true;
 
 			disconnect();
-			saveState();
+			saveState(null);
 
 			if (mBackgroundTimer != null) {
 				mBackgroundTimer.cancel();
@@ -860,9 +868,8 @@ public class ChatController {
 
 	public void destroyChatAdapter(String username) {
 		SurespotLog.v(TAG, "destroying chat adapter for: " + username);
-		saveMessages(username);
+		saveState(username);
 		mChatAdapters.remove(username);
-
 	}
 
 	public synchronized void setCurrentChat(final String username) {
@@ -985,7 +992,7 @@ public class ChatController {
 			mResendBuffer.remove(message);
 			mSendBuffer.remove(message);
 			getChatAdapter(mContext, otherUser).deleteMessageByIv(message.getIv());
-			saveMessages(otherUser);
+			saveState(otherUser);
 		}
 	}
 
