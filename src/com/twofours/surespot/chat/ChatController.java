@@ -267,6 +267,7 @@ public class ChatController {
 									mLastReceivedMessageIds.put(otherUser, message.getId());
 									updateLastViewedMessageId(otherUser, otherUser.equals(message.getFrom()));
 									checkAndSendNextMessage(message);
+								//	saveMessages();
 								}
 							}
 						}
@@ -621,7 +622,6 @@ public class ChatController {
 				}
 				saveMessages();
 				setMessagesLoading(false);
-				
 
 			}
 
@@ -718,20 +718,29 @@ public class ChatController {
 
 	}
 
-	private void loadMessages(String username) {
+	private synchronized void loadMessages(String username) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		getChatAdapter(mContext, username).addMessages(MainActivity.getStateController().loadMessages(spot));
 	}
 
-	private void saveMessages() {
+	private synchronized void saveMessages() {
 		// save last 30? messages
 		SurespotLog.v(TAG, "saveMessages");
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			String us = entry.getKey();
-			String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), us);
+			String them = entry.getKey();
+			String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), them);
 			MainActivity.getStateController().saveMessages(spot, entry.getValue().getMessages());
 		}
+
+	}
+
+	private synchronized void saveMessages(String username) {
+		// save last 30? messages
+		SurespotLog.v(TAG, "saveMessages, username:" + username);
+		ChatAdapter chatAdapter = getChatAdapter(mContext, username);
+		MainActivity.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
+				chatAdapter.getMessages());
 
 	}
 
@@ -760,7 +769,7 @@ public class ChatController {
 		mResendBuffer.clear();
 		mSendBuffer.clear();
 	}
-	
+
 	private void saveState() {
 
 		SurespotLog.v(TAG, "saveState");
@@ -851,6 +860,7 @@ public class ChatController {
 
 	public void destroyChatAdapter(String username) {
 		SurespotLog.v(TAG, "destroying chat adapter for: " + username);
+		saveMessages(username);
 		mChatAdapters.remove(username);
 
 	}
@@ -957,16 +967,11 @@ public class ChatController {
 		return false;
 	}
 
-
-	
-	
-	
-
 	public void deleteMessage(SurespotMessage message) {
-		//if it's on the server, send delete message otherwise just delete it locally
+		// if it's on the server, send delete message otherwise just delete it locally
 		if (message.getId() != null) {
 			SurespotMessage dmessage = new SurespotMessage();
-			
+
 			dmessage.setType("system");
 			dmessage.setSubType("delete");
 			dmessage.setTo(message.getTo());
@@ -976,9 +981,11 @@ public class ChatController {
 			sendMessage(dmessage);
 		}
 		else {
+			String otherUser = message.getOtherUser();
 			mResendBuffer.remove(message);
 			mSendBuffer.remove(message);
-			getChatAdapter(mContext, message.getTo()).deleteMessageByIv(message.getIv());
+			getChatAdapter(mContext, otherUser).deleteMessageByIv(message.getIv());
+			saveMessages(otherUser);
 		}
 	}
 

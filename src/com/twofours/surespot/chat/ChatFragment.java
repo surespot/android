@@ -191,60 +191,63 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-		mChatAdapter = MainActivity.getChatController().getChatAdapter(MainActivity.getContext(), mUsername);
-		SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
+		ChatController chatController = MainActivity.getChatController();
+		if (chatController != null) {
+			mChatAdapter = chatController.getChatAdapter(MainActivity.getContext(), mUsername);
+			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
-		mListView.setAdapter(mChatAdapter);
+			mListView.setAdapter(mChatAdapter);
 
-		mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
+			mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
-			@Override
-			public void handleResponse(Boolean loading) {
+				@Override
+				public void handleResponse(Boolean loading) {
 
-				SurespotLog.v(TAG, "chatAdapter loaded");
-				if (loading) {
-					// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-					// only show the dialog if we haven't loaded within 500 ms
-					if (mTimer != null) {
-						mTimer.cancel();
-					}
-
-					mTimer = new Timer();
-					mTimer.schedule(new TimerTask() {
-
-						@Override
-						public void run() {
-							Handler handler = MainActivity.getMainHandler();
-							if (handler != null) {
-								handler.post(new Runnable() {
-
-									@Override
-									public void run() {
-										view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-									}
-								});
-							}
-
+					SurespotLog.v(TAG, "chatAdapter loaded");
+					if (loading) {
+						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+						// only show the dialog if we haven't loaded within 500 ms
+						if (mTimer != null) {
+							mTimer.cancel();
 						}
-					}, 250);
 
-				}
-				else {
-					if (mTimer != null) {
-						mTimer.cancel();
-						mTimer = null;
+						mTimer = new Timer();
+						mTimer.schedule(new TimerTask() {
+
+							@Override
+							public void run() {
+								Handler handler = MainActivity.getMainHandler();
+								if (handler != null) {
+									handler.post(new Runnable() {
+
+										@Override
+										public void run() {
+											view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+										}
+									});
+								}
+
+							}
+						}, 250);
+
 					}
+					else {
+						if (mTimer != null) {
+							mTimer.cancel();
+							mTimer = null;
+						}
 
-					view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-					mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+						mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 
+					}
 				}
-			}
 
-		});
+			});
+		}
 
 		mListView.setDividerHeight(1);
-		//mListView.setOnScrollListener(mOnScrollListener);
+		// mListView.setOnScrollListener(mOnScrollListener);
 
 		return view;
 	}
