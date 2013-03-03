@@ -193,7 +193,7 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 		mListView.setAdapter(mChatAdapter);
-		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+		
 
 		mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
@@ -235,6 +235,7 @@ public class ChatFragment extends SherlockFragment {
 					}
 
 					view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+					mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 
 				}
 			}

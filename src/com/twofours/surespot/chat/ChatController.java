@@ -418,11 +418,6 @@ public class ChatController {
 
 	}
 
-	private int getUnsentCount(String username) {
-		// for (SurespotMessage message : m)
-		return 0;
-	}
-
 	private void setOnWifi() {
 		// get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
 		ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);

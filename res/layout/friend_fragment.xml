@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/friendLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_height="match_parent" >
 
     <ListView
         android:id="@+id/main_list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-         />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/etFriend" />
 
     <FrameLayout
         android:id="@+id/progressBar"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/etFriend"
         android:visibility="gone" >
 
         <ProgressBar
@@ -29,8 +27,8 @@
     <LinearLayout
         android:id="@+id/main_list_empty"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/etFriend"
         android:orientation="vertical"
         android:visibility="gone" >
 
@@ -43,37 +41,37 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/no_friends" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/navigate_between_chat_tabs" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/help_shortPress" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/help_longPress" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/help_delete" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/help_imageZoom" />
 
         <TextView
@@ -83,30 +81,27 @@
             android:text="@string/early_pre_beta" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <EditText
+        android:id="@+id/etFriend"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/bAddFriend"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:singleLine="true" />
 
-        <EditText
-            android:id="@+id/etFriend"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:imeOptions="actionDone"
-            android:inputType="text"
-            android:singleLine="true" />
+    <Button
+        android:id="@+id/bAddFriend"
+        android:layout_width="70sp"
+        android:layout_height="70sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="-10sp"
+        android:layout_marginRight="-10sp"
+        android:background="@drawable/send_button"
+        android:text="invite"
+        android:textColor="@android:color/black" />
 
-        <Button
-            android:id="@+id/bAddFriend"
-            android:layout_width="70sp"
-            android:layout_height="70sp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginBottom="-10sp"
-            android:layout_marginRight="-10sp"
-            android:background="@drawable/send_button"
-            android:text="invite" />
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>
