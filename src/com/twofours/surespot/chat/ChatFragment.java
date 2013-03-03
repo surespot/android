@@ -216,7 +216,7 @@ public class ChatFragment extends SherlockFragment {
 							});
 
 						}
-					}, 750);
+					}, 500);
 					
 				}
 				else {

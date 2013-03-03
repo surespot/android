@@ -30,8 +30,9 @@ public class FriendAdapter extends BaseAdapter {
 	ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	// private ArrayList<String> mActiveChats = new ArrayList<String>();
 	private NotificationManager mNotificationManager;
-	private boolean mLoaded;
-	private IAsyncCallback<Void> mLoadedCallback;
+	private boolean mLoading;
+	private IAsyncCallback<Boolean> mLoadingCallback;
+
 	private Context mContext;
 
 	public FriendAdapter(Context context) {
@@ -43,20 +44,19 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 	
-	
-	public boolean isLoaded() {
-		return mLoaded;
+	public boolean isLoading() {
+		return mLoading;
 	}
 	
-	public void setLoaded(boolean loaded) {
-		mLoaded = loaded ;
-		if (mLoadedCallback != null) {
-			mLoadedCallback.handleResponse(null);
+	public void setLoading(boolean loading) {
+		mLoading = loading ;
+		if (mLoadingCallback != null) {
+			mLoadingCallback.handleResponse(loading);
 		}
 	}
 	
-	public void setLoadedCallback(IAsyncCallback<Void> callback) {
-		mLoadedCallback = callback;
+	public void setLoadingCallback(IAsyncCallback<Boolean> callback) {
+		mLoadingCallback = callback;
 	}
 
 	// public void refreshActiveChats() {

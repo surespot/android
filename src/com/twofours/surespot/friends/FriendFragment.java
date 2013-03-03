@@ -1,6 +1,10 @@
 package com.twofours.surespot.friends;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
@@ -36,6 +40,7 @@ public class FriendFragment extends SherlockFragment {
 	private MultiProgressDialog mMpdInviteFriend;
 	private ChatController mChatController;
 	private ListView mListView;
+	private Timer mTimer;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
@@ -91,35 +96,51 @@ public class FriendFragment extends SherlockFragment {
 			mMainAdapter = mChatController.getFriendAdapter();
 			mListView.setAdapter(mMainAdapter);
 			SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
-			if (!mMainAdapter.isLoaded()) {
-				SurespotLog.v(TAG, "setting friend observer");
+			SurespotLog.v(TAG, "setting loading callback");
+			mMainAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
-				mMainAdapter.setLoadedCallback(new IAsyncCallback<Void>() {
+				@Override
+				public void handleResponse(Boolean loading) {
 
-					@Override
-					public void handleResponse(Void result) {
+					if (loading) {
+						// only show the dialog if we haven't loaded within 500 ms
+						mTimer = new Timer();
+						mTimer.schedule(new TimerTask() {
 
-						SurespotLog.v(TAG, "homeAdapter loaded");
+							@Override
+							public void run() {
+
+								new Handler(getActivity().getMainLooper()).post(new Runnable() {
+
+									@Override
+									public void run() {
+										view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+									}
+								});
+
+							}
+						}, 500);
+						
+
+					}
+					else {
+						if (mTimer != null) {
+							mTimer.cancel();
+							mTimer = null;
+						}
 
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 						mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 					}
-				});
-
-				view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-
-			}
-
-		}
-		else {
-			SurespotLog.v(TAG, "friend adapter not set");
+				}
+			});
 		}
 
 		// TODO adapter observer
 		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 
 		return view;
-	};
+	}
 
 	@Override
 	public void onResume() {

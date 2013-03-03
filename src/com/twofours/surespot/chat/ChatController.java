@@ -963,6 +963,7 @@ public class ChatController {
 	}
 
 	private void loadFriends() {
+		mFriendAdapter.setLoading(true);
 		// get the list of friends
 		MainActivity.getNetworkController().getFriends(new JsonHttpResponseHandler() {
 			@Override
@@ -984,7 +985,7 @@ public class ChatController {
 				}
 
 				mFriendAdapter.setFriends(friends);
-				mFriendAdapter.setLoaded(true);
+				mFriendAdapter.setLoading(false);
 				loadAllLatestMessages();
 			}
 
@@ -992,7 +993,7 @@ public class ChatController {
 			public void onFailure(Throwable arg0, String content) {
 				// if we didn't get a 401
 				if (!MainActivity.getNetworkController().isUnauthorized()) {
-					mFriendAdapter.setLoaded(true);
+					mFriendAdapter.setLoading(false);
 					SurespotLog.w(TAG, "getFriends: " + content, arg0);
 				}
 			}
