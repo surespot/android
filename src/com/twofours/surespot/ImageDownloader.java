@@ -184,6 +184,11 @@ public class ImageDownloader {
 					EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
 							mMessage.getIv(), new BufferedInputStream(imageStream), out);
 
+					if (mCancelled) {
+						inputStream.close();
+						return;
+					}
+					
 					byte[] bytes = Utils.inputStreamToBytes(inputStream);
 					if (mCancelled) {
 						return;
@@ -201,7 +206,7 @@ public class ImageDownloader {
 				}
 			}
 
-			if (bitmap != null && !mCancelled) {
+			if (bitmap != null) {
 				final Bitmap finalBitmap = bitmap;
 				ImageDownloader.addBitmapToCache(mMessage.getCipherData(), bitmap);
 
