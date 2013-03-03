@@ -11,7 +11,7 @@
         android:layout_above="@+id/etMessage"
         android:drawSelectorOnTop="false"
         android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll" /> 
+        android:transcriptMode="normal" /> 
 
     <FrameLayout
         android:id="@+id/progressBar"
