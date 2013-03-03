@@ -619,7 +619,9 @@ public class ChatController {
 						SurespotLog.w(TAG, "loadLatestAllMessages", e);
 					}
 				}
+				saveMessages();
 				setMessagesLoading(false);
+				
 
 			}
 
@@ -747,6 +749,18 @@ public class ChatController {
 		// SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 	}
 
+	public synchronized void logout() {
+		mChatAdapters.clear();
+		mCurrentChat = null;
+		saveState();
+		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, null);
+		mActiveChats.clear();
+		mLastReceivedMessageIds.clear();
+		mMessageActivity.clear();
+		mResendBuffer.clear();
+		mSendBuffer.clear();
+	}
+	
 	private void saveState() {
 
 		SurespotLog.v(TAG, "saveState");
@@ -943,12 +957,7 @@ public class ChatController {
 		return false;
 	}
 
-	public synchronized void logout() {
-		mChatAdapters.clear();
-		mCurrentChat = null;
-		saveState();
-		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, null);
-	}
+
 	
 	
 	

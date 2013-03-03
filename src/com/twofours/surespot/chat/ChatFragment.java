@@ -244,7 +244,7 @@ public class ChatFragment extends SherlockFragment {
 		});
 
 		mListView.setDividerHeight(1);
-		mListView.setOnScrollListener(mOnScrollListener);
+		//mListView.setOnScrollListener(mOnScrollListener);
 
 		return view;
 	}
