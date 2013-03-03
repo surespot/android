@@ -254,8 +254,8 @@ public class ChatController {
 
 							else {
 								if (message.getSubType().equals("delete")) {
-									SurespotMessage dMessage = getChatAdapter(mContext, otherUser)
-											.deleteMessage(Integer.parseInt(message.getIv()));
+									SurespotMessage dMessage = getChatAdapter(mContext, otherUser).deleteMessage(
+											Integer.parseInt(message.getIv()));
 
 									// if it's an image blow the http cache entry away
 									if (dMessage != null && dMessage.getMimeType() != null
@@ -388,7 +388,7 @@ public class ChatController {
 	}
 
 	private void connected() {
-		loadFriends();	
+		loadFriends();
 
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
@@ -603,11 +603,11 @@ public class ChatController {
 		}
 
 		MainActivity.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
-					
+
 			@Override
 			public void onSuccess(int statusCode, JSONArray jsonArray) {
 				SurespotLog.v(TAG, "loadAllLatestMessages success (jsonArray), statusCode: " + statusCode);
-				//TODO thread
+				// TODO thread
 				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
 				for (int i = 0; i < jsonArray.length(); i++) {
 					try {
@@ -622,13 +622,13 @@ public class ChatController {
 					}
 				}
 				setMessagesLoading(false);
-				
+
 			}
 
 			@Override
 			public void onFailure(Throwable error, String content) {
 				setMessagesLoading(false);
-				Utils.makeToast(mContext, "loading latest messages failed: " + content);				
+				Utils.makeToast(mContext, "loading latest messages failed: " + content);
 			}
 		});
 
@@ -686,13 +686,11 @@ public class ChatController {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
 			mLastReceivedMessageIds.put(username, message.getId());
 			updateLastViewedMessageId(username, messageActivity);
-			chatAdapter.notifyDataSetChanged();			
-		}		
+			chatAdapter.notifyDataSetChanged();
+		}
 	}
-	
 
-	
-	//tell the chat adapters we've loaded their data (even if they didn't have any)
+	// tell the chat adapters we've loaded their data (even if they didn't have any)
 	public void setMessagesLoading(boolean loading) {
 		for (ChatAdapter ca : mChatAdapters.values()) {
 			ca.setLoading(loading);
@@ -789,19 +787,7 @@ public class ChatController {
 		SurespotLog.v(TAG, "onPause");
 		if (!mPaused) {
 			mPaused = true;
-			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-			try {
-				mContext.unregisterReceiver(mConnectivityReceiver);
-			}
-			catch (IllegalArgumentException e) {
-				if (e.getMessage().contains("Receiver not registered")) {
-					// Ignore this exception. This is exactly what is desired
-				}
-				else {
-					// unexpected, re-throw
-					throw e;
-				}
-			}
+
 			disconnect();
 			saveState();
 
@@ -819,6 +805,20 @@ public class ChatController {
 
 		}
 
+		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+		try {
+			mContext.unregisterReceiver(mConnectivityReceiver);
+		}
+		catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Receiver not registered")) {
+				// Ignore this exception. This is exactly what is desired
+			}
+			else {
+				// unexpected, re-throw
+				throw e;
+			}
+		}
+
 	}
 
 	ChatAdapter getChatAdapter(Context context, String username) {
@@ -832,8 +832,6 @@ public class ChatController {
 
 			// load savedmessages
 			loadMessages(username);
-			
-			
 
 		}
 		return chatAdapter;
@@ -1025,10 +1023,9 @@ public class ChatController {
 		mMode = mode;
 
 	}
-	
+
 	public int getMode() {
 		return mMode;
 	}
-	
 
 }
