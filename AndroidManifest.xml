@@ -93,11 +93,13 @@
         -->
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
-            android:label="@string/title_activity_signup" >
+            android:label="@string/title_activity_signup" 
+            android:noHistory="true">
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.LoginActivity"
-            android:label="login" >
+            android:label="login"
+            android:noHistory="true" >
         </activity>
         <!--
         <activity
