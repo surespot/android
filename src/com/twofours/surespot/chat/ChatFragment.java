@@ -257,18 +257,18 @@ public class ChatFragment extends SherlockFragment {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		//	SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
-		//			+ firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
+			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
 
 			// will have more items if we loaded them
 			if (mLoading && mPreviousTotal > 0 && totalItemCount > mPreviousTotal) {
 				// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
 
 				int loaded = totalItemCount - mPreviousTotal;
-				SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
+				//SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
 				mListView.setSelectionFromTop(mSelection + loaded, mTop);
 
-				//mPreviousTotal = totalItemCount;
+				// mPreviousTotal = totalItemCount;
 				mJustLoaded = true;
 				mLoading = false;
 				return;
@@ -276,17 +276,17 @@ public class ChatFragment extends SherlockFragment {
 
 			if (!mLoading) {
 				boolean hint = getUserVisibleHint();
-				SurespotLog.v(TAG, "hint: " + hint);
+				// SurespotLog.v(TAG, "hint: " + hint);
 				if (hint) {
 					ChatController chatController = MainActivity.getChatController();
 					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
-					SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
+					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
 					if (chatController != null && hasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 12)) {
 
 						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
 						// + ", visibleItemCount: " + visibleItemCount);
 
-						// immediately after setting the position above mLoading is false with "firstVisibleItem" set to the pre loading
+						// immediately after setting the position above, mLoading is false with "firstVisibleItem" set to the pre loading
 						// value for what seems like one call
 						// so handle that here
 						if (mJustLoaded) {
@@ -296,7 +296,7 @@ public class ChatFragment extends SherlockFragment {
 
 						else {
 
-									mLoading = true;
+							mLoading = true;
 							mPreviousTotal = mChatAdapter.getCount();
 							mSelection = firstVisibleItem;
 							View v = mListView.getChildAt(0);
@@ -336,7 +336,7 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onDestroy");
 		// mTop = 0;
 		// mPreviousTotal = 1;
-		//mLoading = false;
+		// mLoading = false;
 
 	}
 
