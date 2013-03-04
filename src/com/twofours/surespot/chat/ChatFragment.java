@@ -203,7 +203,7 @@ public class ChatFragment extends SherlockFragment {
 
 				@Override
 				public void handleResponse(Boolean loading) {
-
+					// mLoading = loading;
 					SurespotLog.v(TAG, "chatAdapter loading: " + loading);
 					if (loading) {
 						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
@@ -242,7 +242,6 @@ public class ChatFragment extends SherlockFragment {
 
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 						mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-						mLoading = false;
 					}
 				}
 			});
@@ -251,33 +250,63 @@ public class ChatFragment extends SherlockFragment {
 		return view;
 	}
 
+	private int mSelection;
+	private int mTop;
+	private boolean mJustLoaded;
 	private OnScrollListener mOnScrollListener = new OnScrollListener() {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-			// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
-			// + ", visibleItemCount: " + visibleItemCount);
-			if (mLoading) {
-				// will have more items if we loaded them
-				if (totalItemCount > mPreviousTotal) {
-					mPreviousTotal = totalItemCount;
-					// mLoading = false;
-				}
+		//	SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
+		//			+ firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+
+			// will have more items if we loaded them
+			if (mLoading && mPreviousTotal > 0 && totalItemCount > mPreviousTotal) {
+				// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
+
+				int loaded = totalItemCount - mPreviousTotal;
+				SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
+				mListView.setSelectionFromTop(mSelection + loaded, mTop);
+
+				//mPreviousTotal = totalItemCount;
+				mJustLoaded = true;
+				mLoading = false;
+				return;
 			}
 
-			ChatController chatController = MainActivity.getChatController();
-			if (getUserVisibleHint()) {
-				if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && visibleItemCount > 0
-						&& firstVisibleItem <= 7) {
-					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
+			if (!mLoading) {
+				boolean hint = getUserVisibleHint();
+				SurespotLog.v(TAG, "hint: " + hint);
+				if (hint) {
+					ChatController chatController = MainActivity.getChatController();
+					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
+					SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
+					if (chatController != null && hasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 12)) {
 
-					mLoading = true;
+						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+						// + ", visibleItemCount: " + visibleItemCount);
 
-					MainActivity.getChatController().loadEarlierMessages(mUsername);
+						// immediately after setting the position above mLoading is false with "firstVisibleItem" set to the pre loading
+						// value for what seems like one call
+						// so handle that here
+						if (mJustLoaded) {
+							mJustLoaded = false;
+							return;
+						}
 
+						else {
+
+									mLoading = true;
+							mPreviousTotal = mChatAdapter.getCount();
+							mSelection = firstVisibleItem;
+							View v = mListView.getChildAt(0);
+							mTop = (v == null) ? 0 : v.getTop();
+
+							MainActivity.getChatController().loadEarlierMessages(mUsername);
+						}
+					}
 				}
 			}
-
 		}
 
 		@Override
@@ -298,12 +327,17 @@ public class ChatFragment extends SherlockFragment {
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
+
 		// mListView.removeOnScrollListener()):
 	}
 
 	public void onDestroy() {
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
+		// mTop = 0;
+		// mPreviousTotal = 1;
+		//mLoading = false;
+
 	}
 
 	private void sendMessage() {

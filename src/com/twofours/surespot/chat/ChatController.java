@@ -68,6 +68,7 @@ public class ChatController {
 	private HashMap<String, ChatAdapter> mChatAdapters;
 	private HashMap<String, Integer> mLastReceivedMessageIds;
 	private HashMap<String, Boolean> mMessageActivity;
+	private HashMap<String, Integer> mEarliestMessage;
 	private Set<String> mActiveChats;
 
 	private FriendAdapter mFriendAdapter;
@@ -89,6 +90,7 @@ public class ChatController {
 	public ChatController(Context context, FragmentManager fm) {
 		SurespotLog.v(TAG, "constructor: " + this);
 
+		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		loadState();
 
@@ -272,7 +274,7 @@ public class ChatController {
 							}
 						}
 						else {
-							boolean added = getChatAdapter(mContext, otherUser).addOrUpdateMessage(message, true);
+							boolean added = getChatAdapter(mContext, otherUser).addOrUpdateMessage(message, true, true);
 
 							mChatPagerAdapter.addChatName(otherUser);
 							mLastReceivedMessageIds.put(otherUser, message.getId());
@@ -532,11 +534,25 @@ public class ChatController {
 
 		// mLoading = true;
 		// get the list of messages
-		Integer firstMessageId = getEarliestMessageId(username);
+
+		Integer firstMessageId = mEarliestMessage.get(username);
+		if (firstMessageId == null) {
+			firstMessageId = getEarliestMessageId(username);
+			mEarliestMessage.put(username, firstMessageId);
+		}
+		else {
+			firstMessageId -= 30;
+			if (firstMessageId < 1) {
+				firstMessageId = 1;
+			}
+		}
 
 		if (firstMessageId != null) {
 			if (firstMessageId > 1) {
+
 				SurespotLog.v(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
+				final int fMessageId = firstMessageId;
+				final ChatAdapter chatAdapter = getChatAdapter(mContext, username);
 				MainActivity.getNetworkController().getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray jsonArray) {
@@ -547,7 +563,7 @@ public class ChatController {
 
 						// if (getActivity() != null) {
 						SurespotMessage message = null;
-						ChatAdapter chatAdapter = getChatAdapter(mContext, username);
+
 						try {
 							for (int i = jsonArray.length() - 1; i >= 0; i--) {
 								JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
@@ -566,12 +582,15 @@ public class ChatController {
 
 						SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " earlier messages from the server.");
 
+						mEarliestMessage.put(username, fMessageId);
 						chatAdapter.notifyDataSetChanged();
+						chatAdapter.setLoading(false);
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
 						SurespotLog.w(TAG, username + ": getEarlierMessages", error);
+						chatAdapter.setLoading(false);
 					}
 				});
 			}
@@ -678,7 +697,7 @@ public class ChatController {
 					}
 				}
 				else {
-					boolean added = chatAdapter.addOrUpdateMessage(message, false);
+					boolean added = chatAdapter.addOrUpdateMessage(message, false, false);
 
 					// if we didn't send the message and it's new
 					if (!messageActivity && message.getFrom().equals(message.getOtherUser()) && added) {
@@ -696,17 +715,18 @@ public class ChatController {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
 			mLastReceivedMessageIds.put(username, message.getId());
 			updateLastViewedMessageId(username, messageActivity);
-//
-//			Runnable runnable = new Runnable() {
-//
-//				@Override
-//				public void run() {
-					chatAdapter.notifyDataSetChanged();
-//
-//				}
-//			};
-//
-//			MainActivity.getMainHandler().post(runnable);
+			//
+			// Runnable runnable = new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			chatAdapter.sort();
+			chatAdapter.notifyDataSetChanged();
+			//
+			// }
+			// };
+			//
+			// MainActivity.getMainHandler().post(runnable);
 
 		}
 	}
@@ -719,6 +739,7 @@ public class ChatController {
 	}
 
 	private Integer getEarliestMessageId(String username) {
+
 		SurespotMessage firstMessage = getChatAdapter(mContext, username).getFirstMessageWithId();
 
 		Integer firstMessageId = null;
@@ -943,7 +964,7 @@ public class ChatController {
 			// build a message without the encryption values set as they could take a while
 			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, plainText,
 					new String(Utils.base64Encode(iv)));
-			getChatAdapter(mContext, username).addOrUpdateMessage(chatMessage, true);
+			getChatAdapter(mContext, username).addOrUpdateMessage(chatMessage, true, true);
 
 			// do encryption in background
 			new AsyncTask<Void, Void, SurespotMessage>() {
@@ -985,7 +1006,11 @@ public class ChatController {
 	}
 
 	public boolean hasEarlierMessages(String username) {
-		Integer id = getEarliestMessageId(username);
+		Integer id = mEarliestMessage.get(username);
+		if (id == null) {
+			id = getEarliestMessageId(username);
+		}
+
 		if (id != null && id > 1) {
 			return true;
 		}
@@ -1071,6 +1096,7 @@ public class ChatController {
 				mIndicator.notifyDataSetChanged();
 				mFriendAdapter.setChatActive(name, false);
 				mActiveChats.remove(name);
+				mEarliestMessage.remove(name);
 			}
 		}
 	}
