@@ -803,7 +803,7 @@ public class ChatController {
 	}
 
 	public void onResume() {
-		SurespotLog.v(TAG, "onResume: " + this);
+		SurespotLog.v(TAG, "onResume, mPaused: " + mPaused + ": " + this);
 		if (mPaused) {
 			mPaused = false;
 
@@ -813,8 +813,9 @@ public class ChatController {
 	}
 
 	public void onPause() {
-		SurespotLog.v(TAG, "onPause");
+		SurespotLog.v(TAG, "onPause, mPaused: " + mPaused + ": " + this);
 		if (!mPaused) {
+
 			mPaused = true;
 
 			disconnect();
@@ -832,19 +833,18 @@ public class ChatController {
 
 			socket = null;
 
-		}
-
-		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-		try {
-			mContext.unregisterReceiver(mConnectivityReceiver);
-		}
-		catch (IllegalArgumentException e) {
-			if (e.getMessage().contains("Receiver not registered")) {
-				// Ignore this exception. This is exactly what is desired
+			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+			try {
+				mContext.unregisterReceiver(mConnectivityReceiver);
 			}
-			else {
-				// unexpected, re-throw
-				throw e;
+			catch (IllegalArgumentException e) {
+				if (e.getMessage().contains("Receiver not registered")) {
+					// Ignore this exception. This is exactly what is desired
+				}
+				else {
+					// unexpected, re-throw
+					throw e;
+				}
 			}
 		}
 

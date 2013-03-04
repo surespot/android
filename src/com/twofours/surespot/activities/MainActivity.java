@@ -113,9 +113,8 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		if (!needsLogin()) {
 			mMainHandler = new Handler(getMainLooper());
-			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
-
+				mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+				mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 		}
 	}
 
@@ -357,6 +356,12 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.onResume();
 		}
 	}
+	@Override
+	protected void onNewIntent(Intent intent) {
+		// TODO Auto-generated method stub
+		super.onNewIntent(intent);
+		SurespotLog.v(TAG, "onNewIntent");
+	}
 
 	@Override
 	protected void onPause() {
@@ -364,6 +369,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onPause();
 		if (mChatController != null) {
 			mChatController.onPause();
+			mChatController = null;
 		}
 	}
 
@@ -443,7 +449,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
-		mChatController = null;
+		//mChatController = null;
 		unbindService(mConnection);
 	}
 

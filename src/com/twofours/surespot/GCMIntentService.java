@@ -152,8 +152,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Intent mainIntent = null;
 		if (to.equals(IdentityController.getLoggedInUser()) && id == IntentRequestCodes.NEW_MESSAGE_NOTIFICATION) {
 			SurespotLog.v(TAG, "user already logged in, going directly to chat activity");
-			mainIntent = new Intent(context, MainActivity.class);
-			mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			mainIntent = new Intent(context, MainActivity.class);			
 		}
 		else {
 			mainIntent = new Intent(context, MainActivity.class);

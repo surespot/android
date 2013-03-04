@@ -53,6 +53,7 @@ public class CredentialCachingService extends Service {
 
 			@Override
 			public PublicKeys load(PublicKeyPairKey key) throws Exception {
+				//TODO file persistence
 
 				String result = MainActivity.getNetworkController().getPublicKeysSync(key.getUsername(), key.getVersion());
 				if (result != null) {
