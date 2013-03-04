@@ -272,8 +272,6 @@ public class ChatController {
 							}
 						}
 						else {
-							// sendMessageReceived((String) args[0]);
-							// ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 							boolean added = getChatAdapter(mContext, otherUser).addOrUpdateMessage(message, true);
 
 							mChatPagerAdapter.addChatName(otherUser);
@@ -604,9 +602,14 @@ public class ChatController {
 		MainActivity.getNetworkController().getLatestMessages(messageIds, new JsonHttpResponseHandler() {
 
 			@Override
-			public void onSuccess(int statusCode, JSONArray jsonArray) {
+			public void onSuccess(int statusCode, final JSONArray jsonArray) {
 				SurespotLog.v(TAG, "loadAllLatestMessages success (jsonArray), statusCode: " + statusCode);
-				// TODO thread
+
+				// new AsyncTask<Void, Void, Void>() {
+				// @Override
+				// protected Void doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+
 				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
 				for (int i = 0; i < jsonArray.length(); i++) {
 					try {
@@ -620,11 +623,16 @@ public class ChatController {
 						SurespotLog.w(TAG, "loadLatestAllMessages", e);
 					}
 				}
+				// return null;
 				// if (jsonArray.length() > 0) {
 				// saveMessages();
 				// }
-				setMessagesLoading(false);
+				// }
 
+				// protected void onPostExecute(Void result) {
+				setMessagesLoading(false);
+				// };
+				// }.execute();
 			}
 
 			@Override
@@ -688,7 +696,18 @@ public class ChatController {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest messages from the server.");
 			mLastReceivedMessageIds.put(username, message.getId());
 			updateLastViewedMessageId(username, messageActivity);
-			chatAdapter.notifyDataSetChanged();
+//
+//			Runnable runnable = new Runnable() {
+//
+//				@Override
+//				public void run() {
+					chatAdapter.notifyDataSetChanged();
+//
+//				}
+//			};
+//
+//			MainActivity.getMainHandler().post(runnable);
+
 		}
 	}
 

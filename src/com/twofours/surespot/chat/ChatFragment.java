@@ -223,6 +223,7 @@ public class ChatFragment extends SherlockFragment {
 
 										@Override
 										public void run() {
+											SurespotLog.v(TAG, "chat fragment showing progress");
 											view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 										}
 									});
@@ -233,6 +234,7 @@ public class ChatFragment extends SherlockFragment {
 
 					}
 					else {
+						SurespotLog.v(TAG, "chat fragment tearing progress down");
 						if (mTimer != null) {
 							mTimer.cancel();
 							mTimer = null;
@@ -243,7 +245,7 @@ public class ChatFragment extends SherlockFragment {
 						mLoading = false;
 					}
 				}
-			});		
+			});
 		}
 
 		return view;
@@ -264,14 +266,16 @@ public class ChatFragment extends SherlockFragment {
 			}
 
 			ChatController chatController = MainActivity.getChatController();
-			if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && visibleItemCount > 0
-					&& firstVisibleItem <= 7) {
-				// SurespotLog.v(TAG, "onScroll: Loading more messages.");
+			if (getUserVisibleHint()) {
+				if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && visibleItemCount > 0
+						&& firstVisibleItem <= 7) {
+					// SurespotLog.v(TAG, "onScroll: Loading more messages.");
 
-				mLoading = true;
+					mLoading = true;
 
-				MainActivity.getChatController().loadEarlierMessages(mUsername);
+					MainActivity.getChatController().loadEarlierMessages(mUsername);
 
+				}
 			}
 
 		}

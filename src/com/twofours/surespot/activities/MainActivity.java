@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.acra.annotation.ReportsCrashes;
 
-import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -50,15 +49,14 @@ import com.viewpagerindicator.TitlePageIndicator;
 public class MainActivity extends SherlockFragmentActivity {
 	public static final String TAG = "MainActivity";
 
-	private NotificationManager mNotificationManager;
-	private static CredentialCachingService mCredentialCachingService;
-	private static NetworkController mNetworkController;
-	private static StateController mStateController;
-	private static Context mContext;
-	private static Handler mMainHandler;
+	private static CredentialCachingService mCredentialCachingService = null;
+	private static NetworkController mNetworkController = null;
+	private static StateController mStateController = null; 
+	private static Context mContext = null;
+	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
 
-	private static ChatController mChatController;
+	private static ChatController mChatController = null;
 
 	private static final int CORE_POOL_SIZE = 20;
 	private static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -87,7 +85,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		//mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
 
 		Intent intent = new Intent(this, CredentialCachingService.class);
@@ -113,8 +111,8 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		if (!needsLogin()) {
 			mMainHandler = new Handler(getMainLooper());
-				mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
-				mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
+			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
+			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 		}
 	}
 
@@ -356,20 +354,12 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.onResume();
 		}
 	}
-	@Override
-	protected void onNewIntent(Intent intent) {
-		// TODO Auto-generated method stub
-		super.onNewIntent(intent);
-		SurespotLog.v(TAG, "onNewIntent");
-	}
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 		if (mChatController != null) {
 			mChatController.onPause();
-			mChatController = null;
 		}
 	}
 
@@ -437,6 +427,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			intent = new Intent(MainActivity.this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			MainActivity.this.startActivity(intent);
+			mChatController.onPause();
+			mChatController = null;
 			finish();
 			return true;
 		default:
@@ -446,10 +438,8 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected void onDestroy() {
-
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
-		//mChatController = null;
 		unbindService(mConnection);
 	}
 
