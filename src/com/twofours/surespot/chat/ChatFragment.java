@@ -50,6 +50,7 @@ public class ChatFragment extends SherlockFragment {
 	private int mPreviousTotal;
 	private Button mSendButton;
 	private Timer mTimer;
+	private boolean mNoEarlierMessages = false;
 
 	private ChatAdapter mChatAdapter;
 
@@ -197,13 +198,14 @@ public class ChatFragment extends SherlockFragment {
 			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 			mListView.setAdapter(mChatAdapter);
-
+			mListView.setDividerHeight(1);
+			mListView.setOnScrollListener(mOnScrollListener);
 			mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
 				@Override
 				public void handleResponse(Boolean loading) {
 
-					SurespotLog.v(TAG, "chatAdapter loaded");
+					SurespotLog.v(TAG, "chatAdapter loading: " + loading);
 					if (loading) {
 						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 						// only show the dialog if we haven't loaded within 500 ms
@@ -239,15 +241,11 @@ public class ChatFragment extends SherlockFragment {
 
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 						mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-
+						mLoading = false;
 					}
 				}
-
 			});
 		}
-
-		mListView.setDividerHeight(1);
-		// mListView.setOnScrollListener(mOnScrollListener);
 
 		return view;
 	}
@@ -256,25 +254,26 @@ public class ChatFragment extends SherlockFragment {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
+//			SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+//					+ ", visibleItemCount: " + visibleItemCount);
 			if (mLoading) {
 				// will have more items if we loaded them
 				if (totalItemCount > mPreviousTotal) {
 					mPreviousTotal = totalItemCount;
-					mLoading = false;
+					// mLoading = false;
 				}
 			}
 
 			ChatController chatController = MainActivity.getChatController();
-			if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && firstVisibleItem <= 5) {
+			if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && visibleItemCount > 0 && firstVisibleItem <= 7) {
 				// SurespotLog.v(TAG, "onScroll: Loading more messages.");
-				// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " +
-				// firstVisibleItem
-				// + ", visibleItemCount: " + visibleItemCount);
+
 				mLoading = true;
+
 				MainActivity.getChatController().loadEarlierMessages(mUsername);
 
 			}
+
 		}
 
 		@Override
