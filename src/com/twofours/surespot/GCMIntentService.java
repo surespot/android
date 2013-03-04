@@ -150,13 +150,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
 		Intent mainIntent = null;
-		if (to.equals(IdentityController.getLoggedInUser()) && id == IntentRequestCodes.NEW_MESSAGE_NOTIFICATION) {
-			SurespotLog.v(TAG, "user already logged in, going directly to chat activity");
-			mainIntent = new Intent(context, MainActivity.class);			
-		}
-		else {
-			mainIntent = new Intent(context, MainActivity.class);
-		}
+		mainIntent = new Intent(context, MainActivity.class);
+		
 
 		// mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
