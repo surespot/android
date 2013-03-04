@@ -36,6 +36,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 public class IdentityController {
 	private static final String TAG = "IdentityController";
 	public static final String IDENTITY_EXTENSION = ".ssi";
+	public static final String PUBLICKEYPAIR_EXTENSION = ".spk";
 	public static final String IDENTITY_BACKUP_EXTENSION = ".sib";
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
@@ -85,6 +86,33 @@ public class IdentityController {
 		return null;
 	}
 
+	private static synchronized String savePublicKeyPair(String username , String version, String keyPair) {
+		try {						
+			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext());
+			if (!FileUtils.ensureDir(dir)) {
+				SurespotLog.e(TAG, "Could not create public key pair dir: " + dir, new RuntimeException(
+						"Could not create public key pair dir: " + dir));
+				return null;
+			}
+			
+			String pkFile = dir + File.separator + username + "_" + version + PUBLICKEYPAIR_EXTENSION;
+			SurespotLog.v(TAG, "saving public key pair: " + pkFile);
+
+			FileOutputStream fos = new FileOutputStream(pkFile);
+			fos.write(keyPair.getBytes());
+			fos.close();
+
+			return pkFile;
+		}
+		catch (FileNotFoundException e) {
+			SurespotLog.w(TAG, "saveIdentity", e);
+		}
+		catch (IOException e) {
+			SurespotLog.w(TAG, "saveIdentity", e);
+		}
+		return null;
+	}
+
 	private static byte[] createIdentityBytes(SurespotIdentity identity, String password) {
 		JSONObject json = new JSONObject();
 		try {
@@ -116,12 +144,50 @@ public class IdentityController {
 
 		return null;
 	}
+	
 
-	public static PublicKeys recreatePublicKeyPair(String jsonIdentity) {
+	public static PublicKeys getPublicKeyPair(String username, String version) {
 
+		PublicKeys keys = loadPublicKeyPair(username, version);
+		if (keys != null) {
+			SurespotLog.v(TAG, "loaded public keys from disk");
+			return keys;
+		}
+
+		String result = MainActivity.getNetworkController().getPublicKeysSync(username, version);
+		if (result != null) {
+
+			JSONObject json = verifyPublicKeyPair(result);
+			if (json == null) {
+				return null;
+			}
+
+			try {
+				String readVersion = json.getString("version");
+				if (!readVersion.equals(version)) {
+					return null;
+				}
+				String spubDH = json.getString("dhPub");
+				String spubECDSA = json.getString("dsaPub");
+
+				PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
+				PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
+
+				savePublicKeyPair(username, version, json.toString());
+				SurespotLog.v(TAG, "loaded public keys from server");
+				return new PublicKeys(version, dhPub, dsaPub);
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, "recreatePublicKeyPair", e);
+			}
+		}
+		return null;
+	}
+
+	private static JSONObject verifyPublicKeyPair(String jsonKeypair) {
 		try {
-			JSONObject json = new JSONObject(jsonIdentity);
-			String version = json.getString("version");
+			JSONObject json = new JSONObject(jsonKeypair);
+		//	String version = json.getString("version");
 			String spubDH = json.getString("dhPub");
 			String sSigDH = json.getString("dhPubSig");
 
@@ -152,11 +218,7 @@ public class IdentityController {
 				SurespotLog.i(TAG, "DSA key successfully verified");
 			}
 
-			PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
-			PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
-
-			return new PublicKeys(version, dhPub, dsaPub);
-
+			return json;
 		}
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "recreatePublicIdentity", e);
@@ -232,6 +294,36 @@ public class IdentityController {
 
 		}
 		return identity;
+	}
+
+	private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
+
+		// try to load identity
+		String pkFilename = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username + "_" + version + PUBLICKEYPAIR_EXTENSION;
+		File pkFile = new File(pkFilename);
+
+		if (!pkFile.canRead()) {
+			SurespotLog.v(TAG, "Could not load public key pair file: " + pkFilename);
+			return null;
+		}
+
+		try {
+			FileInputStream pkStream = new FileInputStream(pkFile);
+			byte[] pkBytes = new byte[(int) pkFile.length()];
+			pkStream.read(pkBytes);
+			pkStream.close();
+
+			JSONObject pkpJSON = new JSONObject(new String(pkBytes));
+
+			return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
+					EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")));
+
+		}
+		catch (Exception e) {
+			SurespotLog.w(TAG, "loadPublicKeyPair", e);
+		}
+		return null;
+
 	}
 
 	private synchronized static SurespotIdentity loadIdentity(Context context, String dir, String username, String password) {
@@ -453,7 +545,7 @@ public class IdentityController {
 		String idFileBackup = saveIdentity(identityDir, identity.getUsername() + IDENTITY_BACKUP_EXTENSION, identityBytes);
 		// big problems if we can't save it
 		if (idFile == null) {
-			
+
 			if (idFile == null) {
 				// TODO give user other options to save it
 				SurespotLog.e(TAG, "could not save identity after rolling keys",

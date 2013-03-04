@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import org.json.JSONObject;
-
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
@@ -53,27 +51,21 @@ public class CredentialCachingService extends Service {
 
 			@Override
 			public PublicKeys load(PublicKeyPairKey key) throws Exception {
-				//TODO file persistence
+				PublicKeys keys = IdentityController.getPublicKeyPair(key.getUsername(), key.getVersion());
+				String version = keys.getVersion();
 
-				String result = MainActivity.getNetworkController().getPublicKeysSync(key.getUsername(), key.getVersion());
-				if (result != null) {
+				SurespotLog.v(TAG, "keyPairCacheLoader getting latest version");
+				String latestVersion = getLatestVersionIfPresent(key.getUsername());
 
-					JSONObject json = new JSONObject(result);
-					String version = json.getString("version");
-
-					SurespotLog.v(TAG,"keyPairCacheLoader getting latest version");					
-					String latestVersion = getLatestVersionIfPresent(key.getUsername());
-
-					if (latestVersion == null || version.compareTo(latestVersion) > 0) {
-						SurespotLog.v(TAG, "keyPairCacheLoader setting latestVersion, username: " + key.getUsername() + ", version: " + version);
-						synchronized(this) {
-							mLatestVersions.put(key.getUsername(), version);
-						}
+				if (latestVersion == null || version.compareTo(latestVersion) > 0) {
+					SurespotLog
+							.v(TAG, "keyPairCacheLoader setting latestVersion, username: " + key.getUsername() + ", version: " + version);
+					synchronized (this) {
+						mLatestVersions.put(key.getUsername(), version);
 					}
-
-					return IdentityController.recreatePublicKeyPair(result);
 				}
-				return null;
+
+				return keys;
 			}
 		};
 
@@ -175,10 +167,9 @@ public class CredentialCachingService extends Service {
 	 * 
 	 * @param username
 	 * @return
-	
 	 */
-	
-	private synchronized String getLatestVersionIfPresent(String username) { 
+
+	private synchronized String getLatestVersionIfPresent(String username) {
 		return mLatestVersions.getIfPresent(username);
 	}
 
@@ -197,9 +188,9 @@ public class CredentialCachingService extends Service {
 	public synchronized void updateLatestVersion(String username, String version) {
 		if (username != null && version != null) {
 			String latestVersion = getLatestVersionIfPresent(username);
-			if (latestVersion == null || version.compareTo(latestVersion) > 0) {			
+			if (latestVersion == null || version.compareTo(latestVersion) > 0) {
 				mLatestVersions.put(username, version);
-			}			
+			}
 		}
 	}
 
