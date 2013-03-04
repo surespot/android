@@ -50,7 +50,6 @@ public class ChatFragment extends SherlockFragment {
 	private int mPreviousTotal;
 	private Button mSendButton;
 	private Timer mTimer;
-	private boolean mNoEarlierMessages = false;
 
 	private ChatAdapter mChatAdapter;
 
@@ -244,7 +243,7 @@ public class ChatFragment extends SherlockFragment {
 						mLoading = false;
 					}
 				}
-			});
+			});		
 		}
 
 		return view;
@@ -254,8 +253,8 @@ public class ChatFragment extends SherlockFragment {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//			SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
-//					+ ", visibleItemCount: " + visibleItemCount);
+			// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+			// + ", visibleItemCount: " + visibleItemCount);
 			if (mLoading) {
 				// will have more items if we loaded them
 				if (totalItemCount > mPreviousTotal) {
@@ -265,7 +264,8 @@ public class ChatFragment extends SherlockFragment {
 			}
 
 			ChatController chatController = MainActivity.getChatController();
-			if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && visibleItemCount > 0 && firstVisibleItem <= 7) {
+			if (!mLoading && chatController != null && chatController.hasEarlierMessages(mUsername) && visibleItemCount > 0
+					&& firstVisibleItem <= 7) {
 				// SurespotLog.v(TAG, "onScroll: Loading more messages.");
 
 				mLoading = true;
@@ -307,8 +307,11 @@ public class ChatFragment extends SherlockFragment {
 		final String message = etMessage.getText().toString();
 		MainActivity.getChatController().sendMessage(mUsername, message, SurespotConstants.MimeTypes.TEXT);
 
-		// TODO only clear on success
+		//
 		TextKeyListener.clear(etMessage.getText());
+
+		// scroll to end
+		scrollToEnd();
 	}
 
 	// populate the edit box
@@ -351,7 +354,7 @@ public class ChatFragment extends SherlockFragment {
 						getActivity().getIntent().setAction(null);
 						getActivity().getIntent().setType(null);
 
-						// intent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+						scrollToEnd();
 					}
 				});
 			}
@@ -366,5 +369,11 @@ public class ChatFragment extends SherlockFragment {
 	public void requestFocus() {
 		mEditText.requestFocus();
 
+	}
+
+	private void scrollToEnd() {
+		if (mChatAdapter != null && mListView != null) {
+			mListView.setSelection(mChatAdapter.getCount());
+		}
 	}
 }
