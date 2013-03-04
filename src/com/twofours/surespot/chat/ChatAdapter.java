@@ -26,27 +26,27 @@ public class ChatAdapter extends BaseAdapter {
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
-	private final ImageDownloader mImageDownloader = new ImageDownloader();	
+	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
-		mContext = context;		
+		mContext = context;
 
 	}
-	
+
 	public boolean isLoading() {
 		return mLoading;
 	}
-	
+
 	public void setLoading(boolean loading) {
-		mLoading = loading ;
+		mLoading = loading;
 		if (mLoadingCallback != null) {
 			mLoadingCallback.handleResponse(loading);
 		}
 	}
-	
+
 	public void setLoadingCallback(IAsyncCallback<Boolean> callback) {
 		mLoadingCallback = callback;
 	}
@@ -81,7 +81,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	// update the id and sent status of the message once we received
-	private boolean addOrUpdateMessage(SurespotMessage message) {
+	private boolean addOrUpdateMessage(SurespotMessage message, boolean sort) {
 		int index = mMessages.indexOf(message);
 		boolean added = false;
 		if (index == -1) {
@@ -104,10 +104,12 @@ public class ChatAdapter extends BaseAdapter {
 			if (message.getCipherData() != null) {
 				updateMessage.setCipherData(message.getCipherData());
 			}
-			
+
 		}
 
-		Collections.sort(mMessages);
+		if (sort) {
+		sort();
+		}
 		return added;
 	}
 
@@ -176,11 +178,10 @@ public class ChatAdapter extends BaseAdapter {
 				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
 				break;
 			}
-		
+
 			chatMessageViewHolder.tvTime = (TextView) convertView.findViewById(R.id.messageTime);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
-
 
 			convertView.setTag(chatMessageViewHolder);
 		}
@@ -248,9 +249,9 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvTime;
 	}
 
-	public boolean addOrUpdateMessage(SurespotMessage message, boolean notify) {
+	public boolean addOrUpdateMessage(SurespotMessage message, boolean sort, boolean notify) {
 		boolean added = false;
-		added = addOrUpdateMessage(message);
+		added = addOrUpdateMessage(message, sort);
 		if (notify) {
 			notifyDataSetChanged();
 		}
@@ -267,31 +268,36 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public SurespotMessage deleteMessageByIv(String iv) {
-		SurespotMessage message = null;		
+		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
-		
+
 			if (message.getIv().equals(iv)) {
 				iterator.remove();
 				notifyDataSetChanged();
-				break;	
+				break;
 			}
 		}
 		return message;
 	}
-	
+
 	public SurespotMessage deleteMessageById(Integer id) {
-		SurespotMessage message = null;		
+		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
-		
+
 			if (message.getId().equals(id)) {
 				iterator.remove();
 				notifyDataSetChanged();
-				break;	
+				break;
 			}
 		}
 		return message;
 	}
-	
+
+	public void sort() {
+		Collections.sort(mMessages);
+		
+	}
+
 }
