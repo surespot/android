@@ -95,7 +95,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		Utils.logIntent(TAG, getIntent());
 
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
-		mContext = getApplicationContext();
+		mContext = this;
 
 		SurespotConfiguration.LoadConfigProperties(mContext);
 
