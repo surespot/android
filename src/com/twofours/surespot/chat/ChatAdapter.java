@@ -286,7 +286,8 @@ public class ChatAdapter extends BaseAdapter {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
 
-			if (message.getId().equals(id)) {
+			Integer localId = message.getId();
+			if (localId != null && localId.equals(id)) {
 				iterator.remove();
 				notifyDataSetChanged();
 				break;
