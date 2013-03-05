@@ -25,6 +25,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -86,15 +87,15 @@ public class IdentityController {
 		return null;
 	}
 
-	private static synchronized String savePublicKeyPair(String username , String version, String keyPair) {
-		try {						
+	private static synchronized String savePublicKeyPair(String username, String version, String keyPair) {
+		try {
 			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext());
 			if (!FileUtils.ensureDir(dir)) {
 				SurespotLog.e(TAG, "Could not create public key pair dir: " + dir, new RuntimeException(
 						"Could not create public key pair dir: " + dir));
 				return null;
 			}
-			
+
 			String pkFile = dir + File.separator + username + "_" + version + PUBLICKEYPAIR_EXTENSION;
 			SurespotLog.v(TAG, "saving public key pair: " + pkFile);
 
@@ -144,7 +145,6 @@ public class IdentityController {
 
 		return null;
 	}
-	
 
 	public static PublicKeys getPublicKeyPair(String username, String version) {
 
@@ -187,7 +187,7 @@ public class IdentityController {
 	private static JSONObject verifyPublicKeyPair(String jsonKeypair) {
 		try {
 			JSONObject json = new JSONObject(jsonKeypair);
-		//	String version = json.getString("version");
+			// String version = json.getString("version");
 			String spubDH = json.getString("dhPub");
 			String sSigDH = json.getString("dhPubSig");
 
@@ -262,7 +262,10 @@ public class IdentityController {
 	}
 
 	public static void logout() {
-		MainActivity.getChatController().logout();
+		ChatController chatController = MainActivity.getChatController();
+		if (chatController != null) {
+			chatController.logout();
+		}
 		MainActivity.getCachingService().logout();
 		MainActivity.getNetworkController().logout();
 	}
@@ -299,7 +302,8 @@ public class IdentityController {
 	private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
 
 		// try to load identity
-		String pkFilename = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username + "_" + version + PUBLICKEYPAIR_EXTENSION;
+		String pkFilename = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username + "_" + version
+				+ PUBLICKEYPAIR_EXTENSION;
 		File pkFile = new File(pkFilename);
 
 		if (!pkFile.canRead()) {

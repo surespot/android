@@ -127,6 +127,8 @@ public class MainActivity extends SherlockFragmentActivity {
 		SurespotLog.v(TAG, "type: " + notificationType);
 		SurespotLog.v(TAG, "messageTo: " + messageTo);
 
+		//make sure we're logged out		
+		
 		if ((user == null)
 				|| (intent.getBooleanExtra("401", false))
 				|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
@@ -182,11 +184,23 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (IdentityController.hasIdentity() && !intent.getBooleanExtra("create", false)) {
 			// if we have a message to the currently logged in user, set the from and start the chat activity
 			if (needsLogin()) {
-				String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+//				if (mChatController != null) {
+//					mChatController.logout();
+//					
+//				}
+				//String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 				SurespotLog.v(TAG, "need a (different) user, showing login");
 				Intent newIntent = new Intent(this, LoginActivity.class);
-				newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, messageTo);
-				startActivityForResult(newIntent, SurespotConstants.IntentRequestCodes.LOGIN);
+				newIntent.setAction(intent.getAction());							
+				newIntent.setType(intent.getType());
+				Bundle extras = intent.getExtras();
+				if (extras != null) {
+					newIntent.putExtras(extras);
+				}
+				
+				
+				startActivity(newIntent);
+				finish();
 			}
 			else {
 
@@ -212,15 +226,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		Uri selectedImageUri = null;
 
 		switch (requestCode) {
-		case SurespotConstants.IntentRequestCodes.LOGIN:
-			if (resultCode == RESULT_OK) {
-				launch(SurespotApplication.getStartupIntent());
-			}
-			else {
-				finish();
-			}
-			break;
-
 		case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
 			if (resultCode == RESULT_OK) {
 				Intent intent = new Intent(this, ImageSelectActivity.class);
@@ -390,7 +395,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 
 		if (mChatController != null) {
-			mChatController.enableMenuItems();
+			//mChatController.enableMenuItems();
 		}
 		return true;
 	}

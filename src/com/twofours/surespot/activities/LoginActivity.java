@@ -154,8 +154,18 @@ public class LoginActivity extends SherlockActivity {
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
 
-								setResult(RESULT_OK, getIntent());
+								Intent intent = getIntent();
+								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
+								newIntent.setAction(intent.getAction());							
+								newIntent.setType(intent.getType());
+								Bundle extras = intent.getExtras();
+								if (extras != null) {
+									newIntent.putExtras(extras);
+								}
+							
+								startActivity(newIntent);
 								finish();
+
 							}
 
 							@Override
