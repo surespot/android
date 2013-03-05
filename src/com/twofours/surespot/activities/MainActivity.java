@@ -51,7 +51,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	private static CredentialCachingService mCredentialCachingService = null;
 	private static NetworkController mNetworkController = null;
-	private static StateController mStateController = null; 
+	private static StateController mStateController = null;
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
@@ -85,7 +85,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
-		//mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		// mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
 
 		Intent intent = new Intent(this, CredentialCachingService.class);
@@ -225,7 +225,11 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (resultCode == RESULT_OK) {
 				Intent intent = new Intent(this, ImageSelectActivity.class);
 				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
-				intent.putExtra("to", mChatController.getCurrentChat());
+				String to = mChatController.getCurrentChat();
+				if (to == null) {
+					return;
+				}
+				intent.putExtra("to", to);
 				intent.setData(data.getData());
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			}
@@ -234,7 +238,9 @@ public class MainActivity extends SherlockFragmentActivity {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 			if (resultCode == RESULT_OK) {
 				selectedImageUri = data.getData();
+
 				String to = data.getStringExtra("to");
+				SurespotLog.v(TAG, "to: " + to);
 				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
 
@@ -366,6 +372,8 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		super.onCreateOptionsMenu(menu);
+		SurespotLog.v(TAG, "onCreateOptionsMenu");
+
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_main, menu);
 
@@ -381,6 +389,9 @@ public class MainActivity extends SherlockFragmentActivity {
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
 		}
 
+		if (mChatController != null) {
+			mChatController.enableMenuItems();
+		}
 		return true;
 	}
 
@@ -410,10 +421,14 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		case R.id.menu_capture_image_bar:
 		case R.id.menu_capture_image:
+			String to = mChatController.getCurrentChat();
+			if (to == null) {
+				return true;
+			}
 			// case R.id.menu_capture_image_menu:
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("source", ImageSelectActivity.SOURCE_CAPTURE_IMAGE);
-			intent.putExtra("to", mChatController.getCurrentChat());
+			intent.putExtra("to", to);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_settings_bar:

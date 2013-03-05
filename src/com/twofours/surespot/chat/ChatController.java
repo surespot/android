@@ -941,7 +941,7 @@ public class ChatController {
 				setMode(MODE_NORMAL);
 
 			}
-			enableMenuItems(true);
+			enableMenuItems();
 		}
 		else {
 			mViewPager.setCurrentItem(0, true);
@@ -949,7 +949,7 @@ public class ChatController {
 			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 
 			// disable menu items
-			enableMenuItems(false);
+			enableMenuItems();
 
 		}
 	}
@@ -1101,17 +1101,16 @@ public class ChatController {
 	}
 
 	public synchronized void setMode(int mode) {
-
-		mMode = mode;
-
+		mMode = mode;		
 	}
 
 	public int getMode() {
 		return mMode;
 	}
 
-	public void enableMenuItems(boolean enabled) {
-		SurespotLog.v(TAG, "enableMenuItems, mMenuItems: " + mMenuItems);
+	public void enableMenuItems() {
+		boolean enabled = mMode != MODE_SELECT && mCurrentChat != null;
+		SurespotLog.v(TAG, "enableMenuItems, mMenuItems: " + mMenuItems + ", enabled: " + enabled);
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
 				menuItem.setVisible(enabled);
