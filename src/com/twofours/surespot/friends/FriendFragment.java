@@ -3,8 +3,11 @@ package com.twofours.surespot.friends;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
@@ -29,6 +32,8 @@ import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -60,6 +65,9 @@ public class FriendFragment extends SherlockFragment {
 						// reset action bar header
 						Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
 								IdentityController.getLoggedInUser(), false);
+
+						// handle send intent
+						sendFromIntent(friend.getName());
 					}
 					mChatController.setCurrentChat(friend.getName());
 
@@ -116,7 +124,7 @@ public class FriendFragment extends SherlockFragment {
 									handler.post(new Runnable() {
 
 										@Override
-										public void run() {											
+										public void run() {
 											view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 										}
 									});
@@ -141,6 +149,60 @@ public class FriendFragment extends SherlockFragment {
 		}
 
 		return view;
+	}
+
+	// populate the edit box
+	private void sendFromIntent(String username) {
+		Intent intent = getActivity().getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+		Bundle extras = intent.getExtras();
+
+		if (action.equals(Intent.ACTION_SEND)) {
+			// if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
+			// String sharedText = extras.getString(Intent.EXTRA_TEXT);
+			// SurespotLog.v(TAG, "received action send, data: " + sharedText);
+			// mEditText.append(sharedText);
+			// requestFocus();
+			// }
+			// else
+			if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+
+				final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
+
+				Utils.makeToast(getActivity(), getString(R.string.uploading_image));
+
+				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
+				final FragmentActivity activity = getActivity();
+				ChatUtils.uploadPictureMessageAsync(activity, imageUri, username, true, null, new IAsyncCallback<Boolean>() {
+
+					@Override
+					public void handleResponse(final Boolean result) {
+						SurespotLog.v(TAG, "upload picture response: " + result);
+						activity.runOnUiThread(new Runnable() {
+
+							@Override
+							public void run() {
+								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
+										: R.string.could_not_upload_image));
+
+							}
+						});
+
+						getActivity().getIntent().setAction(null);
+						getActivity().getIntent().setType(null);
+
+						// scrollToEnd();
+					}
+				});
+				// }
+			}
+		}
+		else {
+			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
+				// TODO implement
+			}
+		}
 	}
 
 	private void inviteFriend() {
