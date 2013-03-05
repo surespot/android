@@ -801,10 +801,9 @@ public class ChatController {
 	}
 
 	public synchronized void logout() {
-		mChatAdapters.clear();
-		mCurrentChat = null;
-		saveState(null);
-		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, null);
+		mCurrentChat = null;	
+		onPause();
+		mChatAdapters.clear();			
 		mActiveChats.clear();
 		mLastReceivedMessageIds.clear();
 		mMessageActivity.clear();
