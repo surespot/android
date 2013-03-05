@@ -35,7 +35,7 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotCachingHttpClient;
-import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -126,7 +126,7 @@ public class NetworkController {
 								mSyncClient.cancelRequests(mContext, true);
 
 								SurespotLog.v(TAG, "Got 401, launching login intent.");
-								Intent intent = new Intent(mContext, MainActivity.class);
+								Intent intent = new Intent(mContext, LoginActivity.class);
 								intent.putExtra("401", true);
 								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 								mContext.startActivity(intent);

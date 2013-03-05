@@ -33,6 +33,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -54,7 +55,7 @@ public class ChatController {
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;
-	//private TimerTask mResendTask;
+	// private TimerTask mResendTask;
 
 	private IOCallback mSocketCallback;
 
@@ -126,23 +127,24 @@ public class ChatController {
 			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
-					MainActivity.getNetworkController().setUnauthorized(true);
+					if (!MainActivity.getNetworkController().isUnauthorized()) {
+						MainActivity.getNetworkController().setUnauthorized(true);
 
-					SurespotLog.v(TAG, "Got 403 from socket.io, launching login intent.");
-					Intent intent = new Intent(mContext, MainActivity.class);
-					intent.putExtra("401", true);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					mContext.startActivity(intent);
-
+						SurespotLog.v(TAG, "Got 403 from socket.io, launching login intent.");
+						Intent intent = new Intent(mContext, LoginActivity.class);
+						intent.putExtra("401", true);
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						mContext.startActivity(intent);
+					}
 					return;
 				}
 
 				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
 						socketIOException);
 
-//				if (mResendTask != null) {
-//					mResendTask.cancel();
-//				}
+				// if (mResendTask != null) {
+				// mResendTask.cancel();
+				// }
 
 				setOnWifi();
 				// kick off another task
@@ -458,9 +460,9 @@ public class ChatController {
 			mBackgroundTimer = new Timer("backgroundTimer");
 		}
 
-//		if (mResendTask != null) {
-//			mResendTask.cancel();
-//		}
+		// if (mResendTask != null) {
+		// mResendTask.cancel();
+		// }
 
 		SurespotLog.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
