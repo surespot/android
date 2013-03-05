@@ -269,32 +269,51 @@ public class ChatAdapter extends BaseAdapter {
 
 	public SurespotMessage deleteMessageByIv(String iv) {
 		SurespotMessage message = null;
-		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
-			message = iterator.previous();
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+			message = iterator.next();
 
 			if (message.getIv().equals(iv)) {
-				iterator.remove();
-				notifyDataSetChanged();
+				iterator.remove();				
 				break;
 			}
 		}
+		notifyDataSetChanged();
 		return message;
 	}
 
+//	public SurespotMessage deleteMessageById(Integer id) {
+//		SurespotMessage message = null;
+//		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+//			message = iterator.previous();
+//
+//			Integer localId = message.getId();
+//			if (localId != null && localId.equals(id)) {
+//				SurespotLog.v(TAG,"deleting message");
+//				iterator.remove();
+//				
+//				break;
+//			}
+//		}
+//		notifyDataSetChanged();
+//		return message;
+//	}
+	
 	public SurespotMessage deleteMessageById(Integer id) {
-		SurespotMessage message = null;
-		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
-			message = iterator.previous();
+	SurespotMessage message = null;
+	for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+		message = iterator.next();
 
-			Integer localId = message.getId();
-			if (localId != null && localId.equals(id)) {
-				iterator.remove();
-				notifyDataSetChanged();
-				break;
-			}
+		Integer localId = message.getId();
+		if (localId != null && localId.equals(id)) {
+			SurespotLog.v(TAG,"deleting message");
+			iterator.remove();
+			
+			break;
 		}
-		return message;
 	}
+	notifyDataSetChanged();
+	return message;
+}
 
 	public void sort() {
 		Collections.sort(mMessages);
