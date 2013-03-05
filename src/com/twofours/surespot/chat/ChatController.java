@@ -54,7 +54,7 @@ public class ChatController {
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;
-	private TimerTask mResendTask;
+	//private TimerTask mResendTask;
 
 	private IOCallback mSocketCallback;
 
@@ -140,9 +140,9 @@ public class ChatController {
 				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
 						socketIOException);
 
-				if (mResendTask != null) {
-					mResendTask.cancel();
-				}
+//				if (mResendTask != null) {
+//					mResendTask.cancel();
+//				}
 
 				setOnWifi();
 				// kick off another task
@@ -179,6 +179,7 @@ public class ChatController {
 			@Override
 			public void onDisconnect() {
 				SurespotLog.v(TAG, "Connection terminated.");
+				// socket = null;
 			}
 
 			@Override
@@ -200,7 +201,7 @@ public class ChatController {
 
 				connected();
 
-				sendMessages();
+				// sendMessages();
 
 			}
 
@@ -394,6 +395,9 @@ public class ChatController {
 	private void connected() {
 		loadFriends();
 
+	}
+
+	private void resendMessages() {
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
 		for (SurespotMessage message : resendMessages) {
@@ -419,7 +423,6 @@ public class ChatController {
 			sendMessage(message);
 
 		}
-
 	}
 
 	private void setOnWifi() {
@@ -455,9 +458,9 @@ public class ChatController {
 			mBackgroundTimer = new Timer("backgroundTimer");
 		}
 
-		if (mResendTask != null) {
-			mResendTask.cancel();
-		}
+//		if (mResendTask != null) {
+//			mResendTask.cancel();
+//		}
 
 		SurespotLog.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
@@ -474,7 +477,13 @@ public class ChatController {
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
 			// TODO handle different mime types
-			socket.send(message.toJSONObject().toString());
+			SurespotLog.v(TAG, "sendmessage, socket: " + socket);
+			JSONObject json = message.toJSONObject();
+			SurespotLog.v(TAG, "sendmessage, json: " + json);
+			String s = json.toString();
+			SurespotLog.v(TAG, "sendmessage, message string: " + s);
+
+			socket.send(s);
 		}
 	}
 
@@ -497,18 +506,18 @@ public class ChatController {
 		}
 	}
 
-	private class ResendTask extends TimerTask {
-
-		@Override
-		public void run() {
-			// resend message
-			sendMessages();
-		}
-	}
-
-	private boolean isConnected() {
-		return (getState() == STATE_CONNECTED);
-	}
+	// private class ResendTask extends TimerTask {
+	//
+	// @Override
+	// public void run() {
+	// // resend message
+	// sendMessages();
+	// }
+	// }
+	//
+	// private boolean isConnected() {
+	// return (getState() == STATE_CONNECTED);
+	// }
 
 	private void updateLastViewedMessageId(String username, boolean activity) {
 
@@ -642,6 +651,9 @@ public class ChatController {
 						SurespotLog.w(TAG, "loadLatestAllMessages", e);
 					}
 				}
+
+				// send resend
+				resendMessages();
 				// return null;
 				// if (jsonArray.length() > 0) {
 				// saveMessages();
@@ -795,15 +807,15 @@ public class ChatController {
 	private void loadUnsentMessages() {
 		Iterator<SurespotMessage> iterator = MainActivity.getStateController().loadUnsentMessages().iterator();
 		while (iterator.hasNext()) {
-			mSendBuffer.add(iterator.next());
+			mResendBuffer.add(iterator.next());
 		}
 		// SurespotLog.v(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
 	}
 
 	public synchronized void logout() {
-		mCurrentChat = null;	
+		mCurrentChat = null;
 		onPause();
-		mChatAdapters.clear();			
+		mChatAdapters.clear();
 		mActiveChats.clear();
 		mLastReceivedMessageIds.clear();
 		mMessageActivity.clear();
@@ -870,7 +882,7 @@ public class ChatController {
 				SurespotLog.v(TAG, "Cancelled reconnect task: " + cancel);
 			}
 
-			socket = null;
+			// socket = null;
 
 			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
 			try {
@@ -1101,7 +1113,7 @@ public class ChatController {
 	}
 
 	public synchronized void setMode(int mode) {
-		mMode = mode;		
+		mMode = mode;
 	}
 
 	public int getMode() {
