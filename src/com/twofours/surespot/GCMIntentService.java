@@ -104,11 +104,16 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	protected void onMessage(Context context, Intent intent) {
 		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
-
-		String type = intent.getStringExtra("type");
 		String to = intent.getStringExtra("to");
-		String from = intent.getStringExtra("sentfrom");
 
+		//make sure to is someone on this phone otherwise do not do a damn thing
+		if (!IdentityController.getIdentityNames(context).contains(to)) {
+			return;
+		}
+		
+		String type = intent.getStringExtra("type");		
+		String from = intent.getStringExtra("sentfrom");
+		
 		if (type.equals("message")) {
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
