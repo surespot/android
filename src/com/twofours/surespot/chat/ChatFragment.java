@@ -277,6 +277,9 @@ public class ChatFragment extends SherlockFragment {
 				// SurespotLog.v(TAG, "hint: " + hint);
 				if (hint) {
 					ChatController chatController = MainActivity.getChatController();
+					if (chatController == null) {
+						return;
+					}
 					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
 					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
 					if (chatController != null && hasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
