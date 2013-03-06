@@ -403,7 +403,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 
 		if (mChatController != null) {
-			//mChatController.enableMenuItems();
+			mChatController.enableMenuItems();
 		}
 		return true;
 	}
