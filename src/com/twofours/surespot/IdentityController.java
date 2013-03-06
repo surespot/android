@@ -26,7 +26,6 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -263,10 +262,10 @@ public class IdentityController {
 	}
 
 	public static void logout() {
-		ChatController chatController = MainActivity.getChatController();
-		if (chatController != null) {
-			chatController.logout();
-		}
+//		ChatController chatController = MainActivity.getChatController();
+//		if (chatController != null) {
+//			chatController.logout();
+//		}
 		MainActivity.getCachingService().logout();
 		MainActivity.getNetworkController().logout();
 	}

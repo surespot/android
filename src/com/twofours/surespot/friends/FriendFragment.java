@@ -43,7 +43,7 @@ public class FriendFragment extends SherlockFragment {
 
 	protected static final String TAG = "FriendFragment";
 	private MultiProgressDialog mMpdInviteFriend;
-	private ChatController mChatController;
+	// private ChatController mChatController;
 	private ListView mListView;
 	private Timer mTimer;
 
@@ -54,6 +54,8 @@ public class FriendFragment extends SherlockFragment {
 		mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
+		mListView.setEmptyView(view.findViewById(R.id.progressBar));
+		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 		// click on friend to join chat
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -61,15 +63,18 @@ public class FriendFragment extends SherlockFragment {
 				Friend friend = (Friend) mMainAdapter.getItem(position);
 				if (friend.isFriend()) {
 
-					if (mChatController.getMode() == ChatController.MODE_SELECT) {
-						// reset action bar header
-						Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-								IdentityController.getLoggedInUser(), false);
+					ChatController chatController = getMainActivity().getChatController();
+					if (chatController != null) {
+						if (chatController.getMode() == ChatController.MODE_SELECT) {
+							// reset action bar header
+							Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+									IdentityController.getLoggedInUser(), false);
 
-						// handle send intent
-						sendFromIntent(friend.getName());
+							// handle send intent
+							sendFromIntent(friend.getName());
+						}
+						chatController.setCurrentChat(friend.getName());
 					}
-					mChatController.setCurrentChat(friend.getName());
 
 				}
 			}
@@ -98,9 +103,9 @@ public class FriendFragment extends SherlockFragment {
 			}
 		});
 
-		mChatController = MainActivity.getChatController();
-		if (mChatController != null) {
-			mMainAdapter = mChatController.getFriendAdapter();
+		ChatController chatController = getMainActivity().getChatController();
+		if (chatController != null) {
+			mMainAdapter = chatController.getFriendAdapter();
 			mListView.setAdapter(mMainAdapter);
 
 			SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
@@ -108,10 +113,11 @@ public class FriendFragment extends SherlockFragment {
 			mMainAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
 
 				@Override
-				public void handleResponse(Boolean loading) {
+				public void handleResponse(final Boolean loading) {
 
 					if (loading) {
 						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+						// view.findViewById(R.id.main_list_empty).setVisibility(View.GONE);
 						// only show the dialog if we haven't loaded within 500 ms
 						mTimer = new Timer();
 						mTimer.schedule(new TimerTask() {
@@ -125,13 +131,15 @@ public class FriendFragment extends SherlockFragment {
 
 										@Override
 										public void run() {
-											view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+											if (loading) {
+												view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+											}
 										}
 									});
 								}
 
 							}
-						}, 100);
+						}, 200);
 
 					}
 					else {
@@ -140,9 +148,8 @@ public class FriendFragment extends SherlockFragment {
 							mTimer = null;
 						}
 
-						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 						mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
-
+						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 					}
 				}
 			});
@@ -264,4 +271,10 @@ public class FriendFragment extends SherlockFragment {
 			});
 		}
 	}
+	
+
+	private MainActivity getMainActivity() {
+		 return (MainActivity) getActivity();
+	}
+
 }

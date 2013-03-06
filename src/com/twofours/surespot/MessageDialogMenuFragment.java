@@ -28,7 +28,7 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 				case 0:
 					// make sure it's our message
 					if (mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
-						MainActivity.getChatController().deleteMessage(mMessage);
+						getMainActivity().getChatController().deleteMessage(mMessage);
 					}
 					break;
 
@@ -38,4 +38,10 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 
 		return builder.create();
 	}
+	
+
+	private MainActivity getMainActivity() {
+		 return (MainActivity) getActivity();
+	}
+
 }

@@ -172,7 +172,7 @@ public class ChatController {
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
 					Intent intent = new Intent(mContext, MainActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					mContext.startActivity(intent);
 
 				}
@@ -355,10 +355,12 @@ public class ChatController {
 	}
 
 	private void connect() {
+		SurespotLog.v(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: "
+				+ mConnectionState);
 
-		/*
-		 * if (socket != null && socket.isConnected()) { if (mConnectCallback != null) { mConnectCallback.connectStatus(true); } return; }
-		 */
+		// if (socket != null && socket.isConnected()) {
+		// return;
+		// }
 
 		Cookie cookie = IdentityController.getCookie();
 
@@ -388,8 +390,9 @@ public class ChatController {
 		SurespotLog.v(TAG, "disconnect.");
 		setState(STATE_DISCONNECTED);
 
-		if (socket != null && socket.isConnected()) {
+		if (socket != null) {
 			socket.disconnect();
+			socket = null;
 		}
 
 	}
@@ -817,6 +820,13 @@ public class ChatController {
 	public synchronized void logout() {
 		mCurrentChat = null;
 		onPause();
+		mViewPager = null;
+		mChatPagerAdapter = null;
+		mIndicator = null;
+		mFragmentManager = null;
+		mFriendAdapter = null;
+		mMenuItems = null;
+		mSocketCallback = null;
 		mChatAdapters.clear();
 		mActiveChats.clear();
 		mLastReceivedMessageIds.clear();
@@ -855,7 +865,7 @@ public class ChatController {
 		loadUnsentMessages();
 	}
 
-	public void onResume() {
+	public synchronized void onResume() {
 		SurespotLog.v(TAG, "onResume, mPaused: " + mPaused + ": " + this);
 		if (mPaused) {
 			mPaused = false;
@@ -865,41 +875,42 @@ public class ChatController {
 		}
 	}
 
-	public void onPause() {
+	public synchronized void onPause() {
 		SurespotLog.v(TAG, "onPause, mPaused: " + mPaused + ": " + this);
 		if (!mPaused) {
 
 			mPaused = true;
-
-			disconnect();
 			saveState(null);
+		}
+		
+		disconnect();
 
-			if (mBackgroundTimer != null) {
-				mBackgroundTimer.cancel();
-				mBackgroundTimer = null;
-			}
-			if (mReconnectTask != null) {
-				boolean cancel = mReconnectTask.cancel();
-				mReconnectTask = null;
-				SurespotLog.v(TAG, "Cancelled reconnect task: " + cancel);
-			}
+		if (mBackgroundTimer != null) {
+			mBackgroundTimer.cancel();
+			mBackgroundTimer = null;
+		}
+		if (mReconnectTask != null) {
+			boolean cancel = mReconnectTask.cancel();
+			mReconnectTask = null;
+			SurespotLog.v(TAG, "Cancelled reconnect task: " + cancel);
+		}
 
-			// socket = null;
+		// socket = null;
 
-			// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-			try {
-				mContext.unregisterReceiver(mConnectivityReceiver);
+		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+		try {
+			mContext.unregisterReceiver(mConnectivityReceiver);
+		}
+		catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Receiver not registered")) {
+				// Ignore this exception. This is exactly what is desired
 			}
-			catch (IllegalArgumentException e) {
-				if (e.getMessage().contains("Receiver not registered")) {
-					// Ignore this exception. This is exactly what is desired
-				}
-				else {
-					// unexpected, re-throw
-					throw e;
-				}
+			else {
+				// unexpected, re-throw
+				throw e;
 			}
 		}
+		// }
 
 	}
 
@@ -1077,6 +1088,8 @@ public class ChatController {
 				}
 				catch (JSONException e) {
 					SurespotLog.e(TAG, e.toString(), e);
+					mFriendAdapter.setLoading(false);
+					return;
 				}
 
 				mFriendAdapter.setFriends(friends);

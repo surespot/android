@@ -56,7 +56,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
 
-	private static ChatController mChatController = null;
+	private ChatController mChatController = null;
 
 	private static final int CORE_POOL_SIZE = 20;
 	private static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -85,6 +85,9 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
+		if (mChatController != null) {
+			//mChatController = null;
+		}
 		// mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
 
@@ -114,6 +117,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController = new ChatController(MainActivity.this, getSupportFragmentManager());
 			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 		}
+		else {
+			mChatController = null;
+		}
+	
 	}
 
 	private boolean needsLogin() {
@@ -193,6 +200,7 @@ public class MainActivity extends SherlockFragmentActivity {
 				Intent newIntent = new Intent(this, LoginActivity.class);
 				newIntent.setAction(intent.getAction());							
 				newIntent.setType(intent.getType());
+				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				Bundle extras = intent.getExtras();
 				if (extras != null) {
 					newIntent.putExtras(extras);
@@ -443,12 +451,14 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		case R.id.menu_logout:
 		case R.id.menu_logout_bar:
+			mChatController.logout();
 			IdentityController.logout();
 			intent = new Intent(MainActivity.this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			MainActivity.this.startActivity(intent);
-			mChatController.onPause();
 			mChatController = null;
+			MainActivity.this.startActivity(intent);
+			//mChatController.onPause();
+			
 			finish();
 			return true;
 		default:
@@ -461,6 +471,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
 		unbindService(mConnection);
+		mChatController = null;
 	}
 
 	public static CredentialCachingService getCachingService() {
@@ -488,11 +499,11 @@ public class MainActivity extends SherlockFragmentActivity {
 		return mContext;
 	}
 
-	public static void setChatController(ChatController chatController) {
-		mChatController = chatController;
-	}
+//	public void setChatController(ChatController chatController) {
+//		mChatController = chatController;
+//	}
 
-	public static ChatController getChatController() {
+	public ChatController getChatController() {
 		return mChatController;
 	}
 
