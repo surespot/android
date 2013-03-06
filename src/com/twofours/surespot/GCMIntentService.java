@@ -117,7 +117,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (type.equals("message")) {
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
-			if (IdentityController.hasLoggedInUser() && !ChatController.isPaused()
+			if (IdentityController.hasLoggedInUser() && !ChatController.isPaused() && to.equals(IdentityController.getLoggedInUser())
 					&& from.equals(ChatController.getCurrentChat())) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
@@ -156,6 +156,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// if we're logged in, go to the chat, otherwise go to login
 		Intent mainIntent = null;
 		mainIntent = new Intent(context, MainActivity.class);
+		mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		
 
 		// mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
