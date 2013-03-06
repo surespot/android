@@ -28,6 +28,7 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -45,7 +46,7 @@ public class SignupActivity extends SherlockActivity {
 		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 750);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
-		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
 
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
@@ -57,6 +58,7 @@ public class SignupActivity extends SherlockActivity {
 		});
 
 		editText = (EditText) findViewById(R.id.etSignupPassword);
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

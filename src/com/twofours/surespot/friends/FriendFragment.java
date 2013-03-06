@@ -89,7 +89,7 @@ public class FriendFragment extends SherlockFragment {
 		});
 
 		EditText editText = (EditText) view.findViewById(R.id.etFriend);
-		editText.setFilters(new InputFilter[] { new LetterOrDigitInputFilter() });
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
