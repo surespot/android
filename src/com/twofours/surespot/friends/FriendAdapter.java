@@ -209,6 +209,7 @@ public class FriendAdapter extends BaseAdapter {
 
 		if (friend.isInviter()) {
 			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
+			friendViewHolder.vgActivity.setVisibility(View.GONE);			
 		}
 		else {
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
@@ -249,6 +250,7 @@ public class FriendAdapter extends BaseAdapter {
 						mFriends.remove(position);
 					}
 					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+					Collections.sort(mFriends);
 					notifyDataSetChanged();
 				}
 
