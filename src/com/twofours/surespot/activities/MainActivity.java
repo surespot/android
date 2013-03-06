@@ -58,7 +58,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	private ChatController mChatController = null;
 
-	private static final int CORE_POOL_SIZE = 5;
+	private static final int CORE_POOL_SIZE = 10;
 	private static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	private static final int KEEP_ALIVE = 1;
 
