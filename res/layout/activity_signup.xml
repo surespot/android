@@ -19,7 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dip"
         android:layout_marginTop="5dip"
-        android:imeOptions="actionNext"
+        android:imeOptions="flagNoExtractUi|actionNext"
+        android:inputType="textNoSuggestions"
         android:singleLine="true" />
 
     <TextView
@@ -33,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
-        android:imeOptions="actionDone"
+        android:imeOptions="flagNoExtractUi|actionDone"
         android:inputType="textPassword"
         android:singleLine="true" /> 
 

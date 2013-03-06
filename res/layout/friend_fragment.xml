@@ -105,8 +105,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/bAddFriend"
-        android:imeOptions="actionDone"
-        android:inputType="text"
+        android:imeOptions="flagNoExtractUi|actionDone"
+		android:inputType="textNoSuggestions"
         android:singleLine="true" />
 
     <Button
