@@ -157,13 +157,28 @@ public class LoginActivity extends SherlockActivity {
 
 								Intent intent = getIntent();
 								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
-								newIntent.setAction(intent.getAction());							
+								newIntent.setAction(intent.getAction());
 								newIntent.setType(intent.getType());
 								Bundle extras = intent.getExtras();
 								if (extras != null) {
 									newIntent.putExtras(extras);
 								}
-							
+
+								// if we logged in as someone else, remove the notification intent extras as we are no longer special
+								// we are just an ordinary login now with no magical powers
+								String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+								if (notificationType != null) {
+									String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+									if (!messageTo.equals(username)) {
+										SurespotLog.v(TAG,"user has elected to login as a different user than the notification, removing relevant intent extras");
+										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+										newIntent.removeExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+									}
+								}
+								
+								Utils.logIntent(TAG, newIntent);
+
 								startActivity(newIntent);
 								finish();
 
@@ -230,10 +245,10 @@ public class LoginActivity extends SherlockActivity {
 		case R.id.clear_local_cache:
 		case R.id.clear_local_cache_bar:
 			StateController.clearCache(LoginActivity.this, new IAsyncCallback<Void>() {
-				
+
 				@Override
 				public void handleResponse(Void result) {
-					Utils.makeToast(LoginActivity.this, "local cache cleared");					
+					Utils.makeToast(LoginActivity.this, "local cache cleared");
 				}
 			});
 			return true;
@@ -242,7 +257,5 @@ public class LoginActivity extends SherlockActivity {
 		}
 
 	}
-
-	
 
 }
