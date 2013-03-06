@@ -28,6 +28,7 @@ public class Friend implements Comparable<Friend> {
 	public void setChatActive(boolean set) {
 		if (set) {
 			mFlags |= CHAT_ACTIVE;
+			setNewFriend(false);
 		}
 		else {
 			mFlags &= ~CHAT_ACTIVE;
