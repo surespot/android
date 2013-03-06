@@ -35,10 +35,8 @@
             </intent>
         </Preference>
     </PreferenceCategory>
-  <!--   <PreferenceCategory android:title="cache management" >
-        <Preference
-            android:key="pref_clear_local_cache"
-            android:title="clear local cache" />
+   <!--  <PreferenceCategory android:title="debug">
+        <CheckBoxPreference android:title="debug mode" android:defaultValue="false" android:key="pref_debug_mode"/>
     </PreferenceCategory> -->
-
+    
 </PreferenceScreen>
