@@ -108,13 +108,18 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		if (sort) {
-		sort();
+			sort();
 		}
 		return added;
 	}
 
 	private void insertMessage(SurespotMessage message) {
-		mMessages.add(0, message);
+		//if (mMessages.indexOf(message) == -1) {
+			mMessages.add(0, message);
+//		}
+//		else {
+//			SurespotLog.v(TAG, "insertMessage, message already present");
+//		}
 	}
 
 	public void addMessages(ArrayList<SurespotMessage> messages) {
@@ -260,6 +265,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public void insertMessage(SurespotMessage message, boolean notify) {
+
 		insertMessage(message);
 		if (notify) {
 			notifyDataSetChanged();
@@ -273,7 +279,7 @@ public class ChatAdapter extends BaseAdapter {
 			message = iterator.next();
 
 			if (message.getIv().equals(iv)) {
-				iterator.remove();				
+				iterator.remove();
 				break;
 			}
 		}
@@ -281,43 +287,43 @@ public class ChatAdapter extends BaseAdapter {
 		return message;
 	}
 
-//	public SurespotMessage deleteMessageById(Integer id) {
-//		SurespotMessage message = null;
-//		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
-//			message = iterator.previous();
-//
-//			Integer localId = message.getId();
-//			if (localId != null && localId.equals(id)) {
-//				SurespotLog.v(TAG,"deleting message");
-//				iterator.remove();
-//				
-//				break;
-//			}
-//		}
-//		notifyDataSetChanged();
-//		return message;
-//	}
-	
-	public SurespotMessage deleteMessageById(Integer id) {
-	SurespotMessage message = null;
-	for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-		message = iterator.next();
+	// public SurespotMessage deleteMessageById(Integer id) {
+	// SurespotMessage message = null;
+	// for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+	// message = iterator.previous();
+	//
+	// Integer localId = message.getId();
+	// if (localId != null && localId.equals(id)) {
+	// SurespotLog.v(TAG,"deleting message");
+	// iterator.remove();
+	//
+	// break;
+	// }
+	// }
+	// notifyDataSetChanged();
+	// return message;
+	// }
 
-		Integer localId = message.getId();
-		if (localId != null && localId.equals(id)) {
-			SurespotLog.v(TAG,"deleting message");
-			iterator.remove();
-			
-			break;
+	public SurespotMessage deleteMessageById(Integer id) {
+		SurespotMessage message = null;
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+			message = iterator.next();
+
+			Integer localId = message.getId();
+			if (localId != null && localId.equals(id)) {
+				SurespotLog.v(TAG, "deleting message");
+				iterator.remove();
+
+				break;
+			}
 		}
+		notifyDataSetChanged();
+		return message;
 	}
-	notifyDataSetChanged();
-	return message;
-}
 
 	public void sort() {
 		Collections.sort(mMessages);
-		
+
 	}
 
 }

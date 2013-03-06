@@ -554,18 +554,18 @@ public class ChatController {
 			firstMessageId = getEarliestMessageId(username);
 			mEarliestMessage.put(username, firstMessageId);
 		}
-		else {
-			firstMessageId -= 30;
-			if (firstMessageId < 1) {
-				firstMessageId = 1;
-			}
-		}
+		// else {
+		// firstMessageId -= 60;
+		// if (firstMessageId < 1) {
+		// firstMessageId = 1;
+		// }
+		// }
 
 		if (firstMessageId != null) {
 			if (firstMessageId > 1) {
 
 				SurespotLog.v(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
-				final int fMessageId = firstMessageId;
+				// final int fMessageId = firstMessageId;
 				final ChatAdapter chatAdapter = getChatAdapter(mContext, username);
 				MainActivity.getNetworkController().getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
@@ -596,8 +596,10 @@ public class ChatController {
 
 						SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " earlier messages from the server.");
 
-						mEarliestMessage.put(username, fMessageId);
-						chatAdapter.notifyDataSetChanged();
+						if (message != null) {
+							mEarliestMessage.put(username, message.getId());
+							chatAdapter.notifyDataSetChanged();
+						}
 						chatAdapter.setLoading(false);
 					}
 
@@ -882,7 +884,7 @@ public class ChatController {
 			mPaused = true;
 			saveState(null);
 		}
-		
+
 		disconnect();
 
 		if (mBackgroundTimer != null) {
