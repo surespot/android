@@ -1139,7 +1139,7 @@ public class ChatController {
 
 	public void enableMenuItems() {
 		boolean enabled = mMode != MODE_SELECT && mCurrentChat != null;
-		SurespotLog.v(TAG, "enableMenuItems, mMenuItems: " + mMenuItems + ", enabled: " + enabled);
+		SurespotLog.v(TAG, "enableMenuItems, enabled: " + enabled);
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
 				menuItem.setVisible(enabled);
