@@ -85,9 +85,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
-		if (mChatController != null) {
-			// mChatController = null;
-		}
+		
 		// mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
 
@@ -118,9 +116,11 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 		}
 		else {
-			mChatController = null;
+			if (mChatController != null) {
+				mChatController.logout();
+				mChatController = null;				
+			}						
 		}
-
 	}
 
 	private boolean needsLogin() {
@@ -205,7 +205,7 @@ public class MainActivity extends SherlockFragmentActivity {
 				if (extras != null) {
 					newIntent.putExtras(extras);
 				}
-
+				
 				startActivity(newIntent);
 				finish();
 			}
