@@ -83,11 +83,12 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			@Override
 			public void handleResponse(Void result) {
+
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 					MainActivity.this.getNetworkController().setUnauthorized(true);
-
-					mChatController.logout();
 					IdentityController.logout();
+					mChatController.logout();
+
 					SurespotLog.v(TAG, "Got 401, launching login intent.");
 					Intent intent = new Intent(MainActivity.this, LoginActivity.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -110,11 +111,15 @@ public class MainActivity extends SherlockFragmentActivity {
 		else {
 			if (needsLogin()) {
 				SurespotLog.v(TAG, "need a (different) user, logging out");
+
 				if (mCredentialCachingService != null) {
-					mCredentialCachingService.logout();
-				}
-				if (mNetworkController != null) {
-					mNetworkController.logout();
+					if (mCredentialCachingService.getLoggedInUser() != null) {
+						if (mNetworkController != null) {
+							mNetworkController.logout();
+						}
+
+						mCredentialCachingService.logout();
+					}
 				}
 
 				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
@@ -258,8 +263,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 
-	
-		switch (requestCode) {		
+		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 			if (resultCode == RESULT_OK) {
 				Uri selectedImageUri = data.getData();
