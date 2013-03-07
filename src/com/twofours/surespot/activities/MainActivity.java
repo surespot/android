@@ -362,6 +362,13 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 			mChatController.setCurrentChat(name);
 		}
+
+		// clear the intent
+		getIntent().setAction(null);
+		getIntent().setType(null);
+		if (getIntent().getExtras() != null) {
+			getIntent().getExtras().clear();
+		}
 	}
 
 	@Override
@@ -453,7 +460,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.logout();
 			IdentityController.logout();
 			Intent finalIntent = new Intent(MainActivity.this, MainActivity.class);
-			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			mChatController = null;
 			MainActivity.this.startActivity(finalIntent);
 			finish();
