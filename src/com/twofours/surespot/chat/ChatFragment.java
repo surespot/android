@@ -369,7 +369,12 @@ public class ChatFragment extends SherlockFragment {
 				SurespotLog.v(TAG, "received action send, data: " + sharedText);
 				mEditText.append(sharedText);
 				requestFocus();
-				
+				// clear the intent
+				getActivity().getIntent().setAction(null);
+				getActivity().getIntent().setType(null);
+				if (getActivity().getIntent().getExtras() != null) {
+					getActivity().getIntent().getExtras().clear();
+				}
 			}
 			
 			Utils.configureActionBar(ChatFragment.this.getSherlockActivity(), "surespot",

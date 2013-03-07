@@ -362,13 +362,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 			mChatController.setCurrentChat(name);
 		}
-
-		// clear the intent
-		getIntent().setAction(null);
-		getIntent().setType(null);
-		if (getIntent().getExtras() != null) {
-			getIntent().getExtras().clear();
-		}
+		
 	}
 
 	@Override

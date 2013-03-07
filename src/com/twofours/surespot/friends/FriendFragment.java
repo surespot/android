@@ -71,6 +71,7 @@ public class FriendFragment extends SherlockFragment {
 
 							// handle send intent
 							sendFromIntent(friend.getName());
+							
 						}
 						chatController.setCurrentChat(friend.getName());
 					}
@@ -198,6 +199,12 @@ public class FriendFragment extends SherlockFragment {
 							public void run() {
 								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
 										: R.string.could_not_upload_image));
+								// clear the intent
+								activity.getIntent().setAction(null);
+								activity.getIntent().setType(null);
+								if (activity.getIntent().getExtras() != null) {
+									activity.getIntent().getExtras().clear();
+								}
 
 							}
 						});
