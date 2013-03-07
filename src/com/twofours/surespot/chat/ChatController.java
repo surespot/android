@@ -33,7 +33,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -42,6 +42,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatController {
@@ -88,9 +89,12 @@ public class ChatController {
 
 	private int mMode = MODE_NORMAL;
 
-	public ChatController(Context context, FragmentManager fm) {
+	private IAsyncCallback<Void> mCallback401;
+
+	public ChatController(Context context, FragmentManager fm, IAsyncCallback<Void> callback401) {
 		SurespotLog.v(TAG, "constructor: " + this);
 
+		mCallback401 = callback401;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		loadState();
@@ -127,15 +131,7 @@ public class ChatController {
 			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
-					if (!MainActivity.getNetworkController().isUnauthorized()) {
-						MainActivity.getNetworkController().setUnauthorized(true);
-
-						SurespotLog.v(TAG, "Got 403 from socket.io, launching login intent.");
-						Intent intent = new Intent(mContext, LoginActivity.class);
-						intent.putExtra("401", true);
-						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						mContext.startActivity(intent);
-					}
+					mCallback401.handleResponse(null);
 					return;
 				}
 
@@ -167,13 +163,16 @@ public class ChatController {
 					// TODO tell user
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
+					
+					Utils.makeLongToast(mContext, "could not connect to the server");
 
+					mCallback401.handleResponse(null);
 					// Utils.makeToast(this,mContext,
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-					Intent intent = new Intent(mContext, MainActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					mContext.startActivity(intent);
+//					Intent intent = new Intent(mContext, MainActivity.class);
+//					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//					mContext.startActivity(intent);
 
 				}
 			}
@@ -784,7 +783,7 @@ public class ChatController {
 	private synchronized void loadMessages(String username) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
-		getChatAdapter(mContext, username).addMessages(MainActivity.getStateController().loadMessages(spot));
+		getChatAdapter(mContext, username).addMessages(SurespotApplication.getStateController().loadMessages(spot));
 	}
 
 	private synchronized void saveMessages() {
@@ -793,7 +792,7 @@ public class ChatController {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 			String them = entry.getKey();
 			String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), them);
-			MainActivity.getStateController().saveMessages(spot, entry.getValue().getMessages());
+			SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages());
 		}
 
 	}
@@ -802,7 +801,7 @@ public class ChatController {
 		// save last 30? messages
 		SurespotLog.v(TAG, "saveMessages, username:" + username);
 		ChatAdapter chatAdapter = getChatAdapter(mContext, username);
-		MainActivity.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
+		SurespotApplication.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
 				chatAdapter.getMessages());
 
 	}
@@ -810,11 +809,11 @@ public class ChatController {
 	private void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		// SurespotLog.v(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		MainActivity.getStateController().saveUnsentMessages(mResendBuffer);
+		SurespotApplication.getStateController().saveUnsentMessages(mResendBuffer);
 	}
 
 	private void loadUnsentMessages() {
-		Iterator<SurespotMessage> iterator = MainActivity.getStateController().loadUnsentMessages().iterator();
+		Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages().iterator();
 		while (iterator.hasNext()) {
 			mResendBuffer.add(iterator.next());
 		}
@@ -825,6 +824,7 @@ public class ChatController {
 		mCurrentChat = null;
 		onPause();
 		mViewPager = null;
+		mCallback401 = null;
 		mChatPagerAdapter = null;
 		mIndicator = null;
 		mFragmentManager = null;
@@ -854,17 +854,17 @@ public class ChatController {
 		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 
-		MainActivity.getStateController().saveActiveChats(mActiveChats);
-		MainActivity.getStateController().saveLastReceivedMessageIds(mLastReceivedMessageIds);
-		MainActivity.getStateController().saveMessageActivity(mMessageActivity);
+		SurespotApplication.getStateController().saveActiveChats(mActiveChats);
+		SurespotApplication.getStateController().saveLastReceivedMessageIds(mLastReceivedMessageIds);
+		SurespotApplication.getStateController().saveMessageActivity(mMessageActivity);
 
 	}
 
 	private void loadState() {
 		SurespotLog.v(TAG, "loadState");
-		mMessageActivity = MainActivity.getStateController().loadMessageActivity();
-		mLastReceivedMessageIds = MainActivity.getStateController().loadLastReceivedMessageIds();
-		mActiveChats = MainActivity.getStateController().loadActiveChats();
+		mMessageActivity = SurespotApplication.getStateController().loadMessageActivity();
+		mLastReceivedMessageIds = SurespotApplication.getStateController().loadLastReceivedMessageIds();
+		mActiveChats = SurespotApplication.getStateController().loadActiveChats();
 
 		loadUnsentMessages();
 	}
@@ -1121,7 +1121,7 @@ public class ChatController {
 				String name = mChatPagerAdapter.getChatName(position);
 				SurespotLog.v(TAG, "closeTab, name: " + name + ", position: " + position);
 
-				mChatPagerAdapter.removeChat(mViewPager.getId(), position);				
+				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
 				mFriendAdapter.setChatActive(name, false);
 				mActiveChats.remove(name);
 				mEarliestMessage.remove(name);

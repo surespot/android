@@ -2,7 +2,10 @@ package com.twofours.surespot.activities;
 
 import java.util.List;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -36,6 +39,9 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 
 public class LoginActivity extends SherlockActivity {
 
@@ -43,20 +49,16 @@ public class LoginActivity extends SherlockActivity {
 	private static final String TAG = "LoginActivity";
 	MultiProgressDialog mMpd;
 	private List<String> mIdentityNames;
-
+	private boolean mLoginAttempted;
+	private boolean mCacheServiceBound;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-
-		// if we're starting up from network controller because of 401 pull the intent out
-		Intent intent = getIntent();
-		Boolean is401 = intent.getBooleanExtra("401", false);
-
-		if (is401) {
-			SurespotLog.v(TAG, "using startup intent due to 401");
-			setIntent(SurespotApplication.getStartupIntent());
-		}
+		
+		SurespotLog.v(TAG, "binding cache service");
+		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
 		Utils.logIntent(TAG, getIntent());
 
@@ -127,8 +129,37 @@ public class LoginActivity extends SherlockActivity {
 			}
 		});
 	}
+	
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+			SurespotLog.v(TAG, "caching service bound");
+			CredentialCachingBinder binder = (CredentialCachingBinder) service;
 
-	private void login() {
+			CredentialCachingService credentialCachingService = binder.getService();
+			mCacheServiceBound = true;
+			
+			SurespotApplication.setCachingService(credentialCachingService);
+		
+			//if they've already clicked login, login
+			if (mLoginAttempted) {
+				mLoginAttempted = false;
+				login();
+				mMpd.decrProgress();
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+
+		}
+	};
+	
+	private void login() {	
+		if (SurespotApplication.getCachingService() == null) {
+			mLoginAttempted = true;
+			mMpd.incrProgress();
+			return;
+		}
 
 		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername))
 				.getSelectedItemPosition());
@@ -149,8 +180,10 @@ public class LoginActivity extends SherlockActivity {
 				}
 
 				protected void onPostExecute(String signature) {
-					if (signature != null) {
-						MainActivity.getNetworkController().login(username, password, signature, new CookieResponseHandler() {
+					if (signature != null) {						
+						
+						NetworkController networkController = new NetworkController(LoginActivity.this, null);
+						networkController.login(username, password, signature, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
@@ -256,6 +289,14 @@ public class LoginActivity extends SherlockActivity {
 			return super.onOptionsItemSelected(item);
 		}
 
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mCacheServiceBound && mConnection != null) {
+			unbindService(mConnection);
+		}
 	}
 
 }

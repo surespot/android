@@ -258,7 +258,7 @@ public class IdentityController {
 
 	private synchronized static void setLoggedInUser(Context context, String username, String password, Cookie cookie) {
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, username);
-		MainActivity.getCachingService().login(username, password, cookie);
+		SurespotApplication.getCachingService().login(username, password, cookie);
 	}
 
 	public static void logout() {
@@ -266,7 +266,7 @@ public class IdentityController {
 //		if (chatController != null) {
 //			chatController.logout();
 //		}
-		MainActivity.getCachingService().logout();
+		SurespotApplication.getCachingService().logout();
 		MainActivity.getNetworkController().logout();
 	}
 
@@ -275,7 +275,7 @@ public class IdentityController {
 	}
 
 	public static SurespotIdentity getIdentity(Context context) {
-		return getIdentity(context, MainActivity.getCachingService().getLoggedInUser());
+		return getIdentity(context, SurespotApplication.getCachingService().getLoggedInUser());
 	}
 
 	private static SurespotIdentity getIdentity(Context context, String username) {
@@ -287,7 +287,7 @@ public class IdentityController {
 		if (identity == null) {
 			// get the password from the caching service
 			if (password == null) {
-				password = MainActivity.getCachingService().getPassword(username);
+				password = SurespotApplication.getCachingService().getPassword(username);
 			}
 
 			if (password != null) {
@@ -403,7 +403,7 @@ public class IdentityController {
 	}
 
 	public static String getLoggedInUser() {
-		CredentialCachingService service = MainActivity.getCachingService();
+		CredentialCachingService service = SurespotApplication.getCachingService();
 		if (service != null) {
 			return service.getLoggedInUser();
 
@@ -415,11 +415,11 @@ public class IdentityController {
 
 	public static Cookie getCookie() {
 		Cookie cookie = null;
-		CredentialCachingService service = MainActivity.getCachingService();
+		CredentialCachingService service = SurespotApplication.getCachingService();
 		if (service != null) {
 			String user = service.getLoggedInUser();
 			if (user != null) {
-				cookie = MainActivity.getCachingService().getCookie(user);
+				cookie = SurespotApplication.getCachingService().getCookie(user);
 			}
 		}
 		return cookie;
@@ -527,7 +527,7 @@ public class IdentityController {
 	 * @return
 	 */
 	public static String getTheirLatestVersion(String username) {
-		return MainActivity.getCachingService().getLatestVersion(username);
+		return SurespotApplication.getCachingService().getLatestVersion(username);
 	}
 
 	public static String getOurLatestVersion() {
@@ -568,7 +568,7 @@ public class IdentityController {
 
 			// bad news
 			// first log them out
-			MainActivity.getCachingService().logout();
+			SurespotApplication.getCachingService().logout();
 
 			// clear the data
 			StateController.wipeState(context, username);
@@ -585,7 +585,7 @@ public class IdentityController {
 			// TODO notify user?
 		}
 		else {
-			MainActivity.getCachingService().updateLatestVersion(username, version);
+			SurespotApplication.getCachingService().updateLatestVersion(username, version);
 		}
 
 	}

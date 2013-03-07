@@ -44,6 +44,7 @@ import android.os.AsyncTask;
 import android.util.Base64;
 
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -274,7 +275,7 @@ public class EncryptionController {
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
-					SecretKey key = new SecretKeySpec(MainActivity.getCachingService().getSharedSecret(ourVersion, theirUsername,
+					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourVersion, theirUsername,
 							theirVersion), 0, AES_KEY_LENGTH, "AES");
 					ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 
@@ -334,7 +335,7 @@ public class EncryptionController {
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
 					Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
-					SecretKey key = new SecretKeySpec(MainActivity.getCachingService().getSharedSecret(ourVersion, username,
+					SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourVersion, username,
 							theirVersion), 0, AES_KEY_LENGTH, "AES");
 					ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
 
@@ -389,7 +390,7 @@ public class EncryptionController {
 
 			cipherBytes = Utils.base64Decode(cipherData);
 			iv = Utils.base64Decode(ivs);
-			byte[] secret = MainActivity.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
+			byte[] secret = SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
 			if (secret == null) {
 				return null;
 			}
@@ -426,7 +427,7 @@ public class EncryptionController {
 		// mSecureRandom.nextBytes(iv);
 		ParametersWithIV ivParams;
 		try {
-			ivParams = new ParametersWithIV(new KeyParameter(MainActivity.getCachingService().getSharedSecret(ourVersion, username,
+			ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(ourVersion, username,
 					theirVersion), 0, AES_KEY_LENGTH), iv);
 
 			ccm.reset();

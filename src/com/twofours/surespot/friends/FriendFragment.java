@@ -200,17 +200,16 @@ public class FriendFragment extends SherlockFragment {
 								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
 										: R.string.could_not_upload_image));
 								// clear the intent
-								activity.getIntent().setAction(null);
-								activity.getIntent().setType(null);
-								if (activity.getIntent().getExtras() != null) {
-									activity.getIntent().getExtras().clear();
-								}
-
+							
 							}
 						});
 
-						getActivity().getIntent().setAction(null);
-						getActivity().getIntent().setType(null);
+						activity.getIntent().setAction(null);
+						activity.getIntent().setType(null);
+						if (activity.getIntent().getExtras() != null) {
+							activity.getIntent().getExtras().clear();
+						}
+
 
 						// scrollToEnd();
 					}

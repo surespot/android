@@ -239,7 +239,7 @@ public class FriendActivity extends SherlockActivity {
 		Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, null);
 
 		// put the active chats in if we've fucked with them
-		MainActivity.getStateController().saveActiveChats(mMainAdapter.getActiveChats());
+		SurespotApplication.getStateController().saveActiveChats(mMainAdapter.getActiveChats());
 		// Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.PREFS_ACTIVE_CHATS, jsonArray.toString());
 
 		mChatController.onPause();

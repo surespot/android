@@ -118,15 +118,18 @@ public class CredentialCachingService extends Service {
 	}
 
 	public byte[] getSharedSecret(String ourVersion, String theirUsername, String theirVersion) {
-		// get the cache for this user
-		try {
-			return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername,
-					theirVersion)));
+		if (getLoggedInUser() != null) {
+			// get the cache for this user
+			try {
+				return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername,
+						theirVersion)));
+			}
+			catch (ExecutionException e) {
+				SurespotLog.w(TAG, "getSharedSecret: " + e.getMessage());
+				return null;
+			}
 		}
-		catch (ExecutionException e) {
-			SurespotLog.w(TAG, "getSharedSecret: " + e.getMessage());
-			return null;
-		}
+		return null;
 
 	}
 
@@ -175,9 +178,11 @@ public class CredentialCachingService extends Service {
 
 	public synchronized String getLatestVersion(String username) {
 		try {
-			String version = mLatestVersions.get(username);
-			SurespotLog.v(TAG, "getLatestVersion, username: " + username + ", version: " + version);
-			return version;
+			if (getLoggedInUser() != null) {
+				String version = mLatestVersions.get(username);
+				SurespotLog.v(TAG, "getLatestVersion, username: " + username + ", version: " + version);
+				return version;
+			}
 		}
 		catch (ExecutionException e) {
 			SurespotLog.w(TAG, "getLatestVersion", e);

@@ -4,7 +4,9 @@ import java.security.KeyPair;
 
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -28,16 +30,22 @@ import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.LetterOrDigitInputFilter;
 import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 
 public class SignupActivity extends SherlockActivity {
 	private static final String TAG = "SignupActivity";
 	private Button signupButton;
 	private MultiProgressDialog mMpd;
+	private boolean mSignupAttempted;
+	private boolean mCacheServiceBound;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +82,38 @@ public class SignupActivity extends SherlockActivity {
 		});
 
 	}
+	
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+			SurespotLog.v(TAG, "caching service bound");
+			CredentialCachingBinder binder = (CredentialCachingBinder) service;
+
+			CredentialCachingService credentialCachingService = binder.getService();
+			mCacheServiceBound = true;
+			
+			SurespotApplication.setCachingService(credentialCachingService);
+		
+			//if they've already clicked login, login
+			if (mSignupAttempted) {
+				mSignupAttempted = false;
+				signup();
+				mMpd.decrProgress();				
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+
+		}
+	};
 
 	private void signup() {
+		if (SurespotApplication.getCachingService() == null) {
+			mSignupAttempted = true;
+			mMpd.incrProgress();
+			return;
+		}
+
 		final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername)).getText().toString();
 
 		// TODO use char array
@@ -88,7 +126,8 @@ public class SignupActivity extends SherlockActivity {
 		mMpd.incrProgress();
 
 		// see if the user exists
-		MainActivity.getNetworkController().userExists(username, new AsyncHttpResponseHandler() {
+		NetworkController networkController = new NetworkController(SignupActivity.this, null);
+		networkController.userExists(username, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
@@ -235,5 +274,14 @@ public class SignupActivity extends SherlockActivity {
 		}
 
 	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mCacheServiceBound && mConnection != null) {
+			unbindService(mConnection);
+		}
+	}
+
 
 }

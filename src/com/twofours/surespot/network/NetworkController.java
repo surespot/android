@@ -9,7 +9,6 @@ import org.acra.ACRA;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.HttpEntity;
@@ -35,7 +34,6 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotCachingHttpClient;
-import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -77,7 +75,7 @@ public class NetworkController {
 		}
 	}
 
-	public NetworkController(Context context) {
+	public NetworkController(Context context, final IAsyncCallback<Void> callback401) {
 		SurespotLog.v(TAG, "constructor");
 		mContext = context;
 
@@ -125,11 +123,9 @@ public class NetworkController {
 								mClient.cancelRequests(mContext, true);
 								mSyncClient.cancelRequests(mContext, true);
 
-								SurespotLog.v(TAG, "Got 401, launching login intent.");
-								Intent intent = new Intent(mContext, LoginActivity.class);
-								intent.putExtra("401", true);
-								intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-								mContext.startActivity(intent);
+								if (callback401 != null) {
+									callback401.handleResponse(null);
+								}
 
 							}
 						}
@@ -369,9 +365,9 @@ public class NetworkController {
 	// }
 
 	public String getPublicKeysSync(String username, String version) {
-	
+
 		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
-	
+
 	}
 
 	public String getKeyVersionSync(String username) {
@@ -535,8 +531,10 @@ public class NetworkController {
 	}
 
 	public void logout() {
-		post("/logout", null, new AsyncHttpResponseHandler() {
-		});
+		if (!isUnauthorized()) {
+			post("/logout", null, new AsyncHttpResponseHandler() {
+			});
+		}
 	}
 
 	public void clearCache() {
