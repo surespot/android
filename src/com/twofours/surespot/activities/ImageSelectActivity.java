@@ -24,7 +24,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.CameraPreview;
 import com.twofours.surespot.R;
@@ -304,13 +303,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			throw new IOException("Could not create image temp file dir: " + dir.getPath());
 		}
 
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getSupportMenuInflater().inflate(R.menu.activity_image_select, menu);
-		return true;
 	}
 
 	private void deleteCompressedImage() {

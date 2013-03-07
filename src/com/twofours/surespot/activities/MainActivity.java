@@ -22,6 +22,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuInflater;
@@ -86,7 +88,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		SurespotLog.v(TAG, "onCreate, chatController: " + mChatController);
 		if (mChatController != null) {
-			//mChatController = null;
+			// mChatController = null;
 		}
 		// mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		setContentView(R.layout.activity_main);
@@ -120,7 +122,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		else {
 			mChatController = null;
 		}
-	
+
 	}
 
 	private boolean needsLogin() {
@@ -134,8 +136,8 @@ public class MainActivity extends SherlockFragmentActivity {
 		SurespotLog.v(TAG, "type: " + notificationType);
 		SurespotLog.v(TAG, "messageTo: " + messageTo);
 
-		//make sure we're logged out		
-		
+		// make sure we're logged out
+
 		if ((user == null)
 				|| (intent.getBooleanExtra("401", false))
 				|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
@@ -191,22 +193,21 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (IdentityController.hasIdentity() && !intent.getBooleanExtra("create", false)) {
 			// if we have a message to the currently logged in user, set the from and start the chat activity
 			if (needsLogin()) {
-//				if (mChatController != null) {
-//					mChatController.logout();
-//					
-//				}
-				//String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+				// if (mChatController != null) {
+				// mChatController.logout();
+				//
+				// }
+				// String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 				SurespotLog.v(TAG, "need a (different) user, showing login");
 				Intent newIntent = new Intent(this, LoginActivity.class);
-				newIntent.setAction(intent.getAction());							
+				newIntent.setAction(intent.getAction());
 				newIntent.setType(intent.getType());
 				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				Bundle extras = intent.getExtras();
 				if (extras != null) {
 					newIntent.putExtras(extras);
 				}
-				
-				
+
 				startActivity(newIntent);
 				finish();
 			}
@@ -451,15 +452,21 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		case R.id.menu_logout:
 		case R.id.menu_logout_bar:
+			Animation animation = AnimationUtils.loadAnimation(this, R.anim.hyperspace_jump);
+
 			mChatController.logout();
 			IdentityController.logout();
-			intent = new Intent(MainActivity.this, MainActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+			Intent finalIntent = new Intent(MainActivity.this, MainActivity.class);
+			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
 			mChatController = null;
-			MainActivity.this.startActivity(intent);
-			//mChatController.onPause();
-			
+			MainActivity.this.startActivity(finalIntent);
+			// mChatController.onPause();
+
 			finish();
+
+			findViewById(android.R.id.content).startAnimation(animation);
+
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -499,9 +506,9 @@ public class MainActivity extends SherlockFragmentActivity {
 		return mContext;
 	}
 
-//	public void setChatController(ChatController chatController) {
-//		mChatController = chatController;
-//	}
+	// public void setChatController(ChatController chatController) {
+	// mChatController = chatController;
+	// }
 
 	public ChatController getChatController() {
 		return mChatController;
