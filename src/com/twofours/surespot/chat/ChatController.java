@@ -488,7 +488,9 @@ public class ChatController {
 			String s = json.toString();
 			SurespotLog.v(TAG, "sendmessage, message string: " + s);
 
-			socket.send(s);
+			if (socket != null) {
+				socket.send(s);
+			}
 		}
 	}
 
