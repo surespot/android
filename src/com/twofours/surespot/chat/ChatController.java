@@ -943,6 +943,7 @@ public class ChatController {
 	public synchronized void setCurrentChat(final String username) {
 
 		SurespotLog.v(TAG, username + ": setCurrentChat");
+		String loggedInUser = IdentityController.getLoggedInUser();
 		mCurrentChat = username;
 
 		if (username != null) {
@@ -951,7 +952,7 @@ public class ChatController {
 			mActiveChats.add(username);
 			updateLastViewedMessageId(username, false);
 			// cancel associated notifications
-			mNotificationManager.cancel(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
+			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
 					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
@@ -974,8 +975,8 @@ public class ChatController {
 		}
 		else {
 			mViewPager.setCurrentItem(0, true);
-			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-			mNotificationManager.cancel(SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 
 			// disable menu items
 			enableMenuItems();
