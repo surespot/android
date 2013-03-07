@@ -86,13 +86,19 @@ public class FriendAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 
-	public void addFriendInvited(String name) {
-		Friend friend = new Friend();
+	public boolean addFriendInvited(String name) {
+		//if it's there already the other party must have invited at the same time in which 
+		//case the invitation is automatically accepted so it will appear in the friends list through those means
+		Friend friend = getFriend(name);
+		if (friend != null) { return false; }
+				
+		friend = new Friend();
 		friend.setName(name);
 		friend.setInvited(true);
 		mFriends.add(friend);
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
+		return true;
 
 	}
 

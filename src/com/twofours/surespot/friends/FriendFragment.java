@@ -1,12 +1,10 @@
 package com.twofours.surespot.friends;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.text.InputFilter;
 import android.text.method.TextKeyListener;
@@ -110,6 +108,7 @@ public class FriendFragment extends SherlockFragment {
 			mListView.setAdapter(mMainAdapter);
 
 			if (!mMainAdapter.isLoaded()) {
+				SurespotLog.v(TAG, "setting progressbarvisible");
 				view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 			}
 			
@@ -120,39 +119,41 @@ public class FriendFragment extends SherlockFragment {
 				@Override
 				public void handleResponse(final Boolean loading) {
 
-					if (loading) {
+					if (!loading) {
 						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 						// view.findViewById(R.id.main_list_empty).setVisibility(View.GONE);
 						// only show the dialog if we haven't loaded within 500 ms
-						mTimer = new Timer();
-						mTimer.schedule(new TimerTask() {
+//						mTimer = new Timer();
+//						mTimer.schedule(new TimerTask() {
+//
+//							@Override
+//							public void run() {
+//
+//								Handler handler = MainActivity.getMainHandler();
+//								if (handler != null) {
+//									handler.post(new Runnable() {
+//
+//										@Override
+//										public void run() {
+//											if (loading) {
+//												SurespotLog.v(TAG, "showing progress");
+//												view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+//											}
+//										}
+//									});
+//								}
+//
+//							}
+//						}, 200);
 
-							@Override
-							public void run() {
-
-								Handler handler = MainActivity.getMainHandler();
-								if (handler != null) {
-									handler.post(new Runnable() {
-
-										@Override
-										public void run() {
-											if (loading) {
-												view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-											}
-										}
-									});
-								}
-
-							}
-						}, 200);
-
-					}
-					else {
+//					}
+	//				else {
 						if (mTimer != null) {
 							mTimer.cancel();
 							mTimer = null;
 						}
 
+						SurespotLog.v(TAG, "tearing progress down");
 						mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 					}
@@ -238,13 +239,20 @@ public class FriendFragment extends SherlockFragment {
 																		// UI
 					// that the request is
 					// pending somehow
+					mMpdInviteFriend.decrProgress();
 					TextKeyListener.clear(etFriend.getText());
-					mMainAdapter.addFriendInvited(friend);
-					Utils.makeToast(FriendFragment.this.getActivity(), friend + " has been invited to be your friend.");
+					if (mMainAdapter.addFriendInvited(friend)) {
+						Utils.makeToast(FriendFragment.this.getActivity(), friend + " has been invited to be your friend.");
+					}
+					else {
+						Utils.makeToast(FriendFragment.this.getActivity(), friend + " has accepted your friend request.");
+					}
+					
 				}
 
 				@Override
 				public void onFailure(Throwable arg0, String content) {
+					mMpdInviteFriend.decrProgress();
 					if (arg0 instanceof HttpResponseException) {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
@@ -267,11 +275,6 @@ public class FriendFragment extends SherlockFragment {
 						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
 						Utils.makeToast(FriendFragment.this.getActivity(), "Could not invite friend, please try again later.");
 					}
-				}
-
-				@Override
-				public void onFinish() {
-					mMpdInviteFriend.decrProgress();
 				}
 			});
 		}
