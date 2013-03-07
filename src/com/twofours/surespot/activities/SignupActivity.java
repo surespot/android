@@ -5,6 +5,7 @@ import java.security.KeyPair;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
@@ -51,7 +52,12 @@ public class SignupActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
-		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 750);
+
+		SurespotLog.v(TAG, "binding cache service");
+		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+		
+		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 0);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
@@ -126,7 +132,7 @@ public class SignupActivity extends SherlockActivity {
 		mMpd.incrProgress();
 
 		// see if the user exists
-		NetworkController networkController = new NetworkController(SignupActivity.this, null);
+		final NetworkController networkController = new NetworkController(SignupActivity.this, null);
 		networkController.userExists(username, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String arg1) {
@@ -162,7 +168,7 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
-										MainActivity.getNetworkController().addUser(username, password, sPublicDH, sPublicECDSA,
+										networkController.addUser(username, password, sPublicDH, sPublicECDSA,
 												signature, new CookieResponseHandler() {
 
 													@Override
@@ -278,6 +284,8 @@ public class SignupActivity extends SherlockActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+	
+		
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
