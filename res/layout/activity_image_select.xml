@@ -1,31 +1,28 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/abs__background_holo_dark"
     tools:context=".ImageSelectActivity" >
 
     <FrameLayout
         android:id="@+id/camera_preview"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/buttonFrame"
         android:visibility="gone" />
 
     <ImageView
         android:id="@+id/image"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/abs__background_holo_dark"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/buttonFrame"
         android:visibility="gone" />
 
     <FrameLayout
         android:id="@+id/progressBar"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@android:color/black"
+        android:layout_height="match_parent"
         android:visibility="gone" >
 
         <LinearLayout
@@ -50,8 +47,11 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/buttonFrame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/abs__background_holo_light" >
 
         <Button
             android:id="@+id/cancel"
@@ -80,4 +80,4 @@
         </Button>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

@@ -19,6 +19,8 @@ import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -29,6 +31,7 @@ import com.twofours.surespot.CameraPreview;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -45,7 +48,6 @@ public class ImageSelectActivity extends SherlockActivity {
 	private Button mCaptureButton;
 	private File mCapturedImagePath;
 	private File mCompressedImagePath;
-	private int mSource;
 	private Camera mCamera;
 	private OrientationEventListener mOrientationEventListener;
 	private int mOrientation;
@@ -57,8 +59,15 @@ public class ImageSelectActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
-		mOrientationEventListener = new OrientationEventListener(this) {
 
+		mSendButton = (Button) this.findViewById(R.id.send);
+		mCancelButton = (Button) this.findViewById(R.id.cancel);
+		mCaptureButton = (Button) this.findViewById(R.id.capture);
+
+		final String to = getIntent().getStringExtra("to");
+		final int source = getIntent().getIntExtra("source", SOURCE_EXISTING_IMAGE);
+
+		mOrientationEventListener = new OrientationEventListener(this) {
 			@Override
 			public void onOrientationChanged(int orientation) {
 				// SurespotLog.v(TAG, "orientation: " + orientation);
@@ -66,17 +75,13 @@ public class ImageSelectActivity extends SherlockActivity {
 			}
 		};
 
-		final String to = getIntent().getStringExtra("to");
-
-		mSendButton = (Button) this.findViewById(R.id.send);
 		mSendButton.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				new AsyncTask<Void, Void, Void>() {
 					protected Void doInBackground(Void... params) {
 						// rotate and compress the image if we have a capture
-						if (mSource == SOURCE_CAPTURE_IMAGE) {
+						if (source == SOURCE_CAPTURE_IMAGE) {
 							int rotation = (mCaptureOrientation + 45) / 90 * 90;
 
 							// leave it upside down
@@ -98,8 +103,6 @@ public class ImageSelectActivity extends SherlockActivity {
 				}.execute();
 			}
 		});
-
-		mCaptureButton = (Button) this.findViewById(R.id.capture);
 		mCaptureButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -165,7 +168,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			}
 		});
 
-		mCancelButton = (Button) this.findViewById(R.id.cancel);
 		mCancelButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -175,33 +177,17 @@ public class ImageSelectActivity extends SherlockActivity {
 				finish();
 			}
 		});
-
-		mSource = getIntent().getIntExtra("source", SOURCE_EXISTING_IMAGE);
-
-		switch (mSource) {
+		
+		switch (source) {
 		case SOURCE_EXISTING_IMAGE:
-			mImageView = (ImageView) this.findViewById(R.id.image);
-			mImageView.setVisibility(View.VISIBLE);
-
-			new AsyncTask<Void, Void, Bitmap>() {
-				@Override
-				protected Bitmap doInBackground(Void... params) {
-					Uri uri = getIntent().getData();
-					// scale, compress and save the image
-					return compressImage(uri, -1);
-				}
-
-				protected void onPostExecute(Bitmap result) {
-					if (result != null) {
-						mImageView.setImageBitmap(result);
-						mSendButton.setEnabled(true);
-					}
-					else {
-						mSendButton.setEnabled(false);
-					}
-				}
-			}.execute();
-			break;
+			Utils.configureActionBar(this, getString(R.string.select_image), to, false);
+			// TODO paid version allows any file
+			Intent intent = new Intent();
+			intent.setType("image/*");
+			intent.setAction(Intent.ACTION_GET_CONTENT);
+			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
+					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
+			return;
 
 		case SOURCE_CAPTURE_IMAGE:
 			findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
@@ -213,7 +199,46 @@ public class ImageSelectActivity extends SherlockActivity {
 		default:
 			finish();
 		}
+	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
+
+		switch (requestCode) {
+		case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
+			if (resultCode == RESULT_OK) {
+				mImageView = (ImageView) this.findViewById(R.id.image);
+				mImageView.setVisibility(View.VISIBLE);
+
+				new AsyncTask<Void, Void, Bitmap>() {
+					@Override
+					protected Bitmap doInBackground(Void... params) {
+						Uri uri = data.getData();
+						// scale, compress and save the image
+						return compressImage(uri, -1);
+					}
+
+					protected void onPostExecute(Bitmap result) {
+						if (result != null) {
+							mImageView.setImageBitmap(result);
+							Animation fadeIn = new AlphaAnimation(0, 1);
+							fadeIn.setDuration(1000);
+							mImageView.startAnimation(fadeIn);
+					
+							mSendButton.setEnabled(true);
+						}
+						else {
+							mSendButton.setEnabled(false);
+						}
+					}
+				}.execute();
+			}
+			else {
+				finish();
+			}
+			break;
+		}
 	}
 
 	private void initCamera() {
@@ -232,7 +257,6 @@ public class ImageSelectActivity extends SherlockActivity {
 					findViewById(R.id.progressBar).setVisibility(View.GONE);
 				}
 			};
-
 		}.execute();
 	}
 
@@ -282,7 +306,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			mCameraOrientation = info.orientation;
 			result = (info.orientation - degrees + 360) % 360;
 		}
-
 		camera.setDisplayOrientation(result);
 	}
 
@@ -338,7 +361,6 @@ public class ImageSelectActivity extends SherlockActivity {
 				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
 			}
 			return bitmap;
-
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, "onActivityResult", e);

@@ -183,7 +183,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	};
 
 	private void launch() {
-		SurespotLog.v(TAG, "launch");
+		SurespotLog.v(TAG, "launch, mChatController: " + mChatController);
 
 		Intent intent = getIntent();
 		String action = intent.getAction();
@@ -258,26 +258,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 
-		Uri selectedImageUri = null;
-
-		switch (requestCode) {
-		case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
-			if (resultCode == RESULT_OK) {
-				Intent intent = new Intent(this, ImageSelectActivity.class);
-				intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
-				String to = mChatController.getCurrentChat();
-				if (to == null) {
-					return;
-				}
-				intent.putExtra("to", to);
-				intent.setData(data.getData());
-				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
-			}
-			break;
-
+	
+		switch (requestCode) {		
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 			if (resultCode == RESULT_OK) {
-				selectedImageUri = data.getData();
+				Uri selectedImageUri = data.getData();
 
 				String to = data.getStringExtra("to");
 				SurespotLog.v(TAG, "to: " + to);
@@ -333,6 +318,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent = null;
+		String to = mChatController.getCurrentChat();
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			// This is called when the Home (Up) button is pressed
@@ -346,21 +332,19 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		case R.id.menu_send_image_bar:
 		case R.id.menu_send_image:
-			intent = new Intent();
-			// TODO paid version allows any file
-			intent.setType("image/*");
-			intent.setAction(Intent.ACTION_GET_CONTENT);
-			// Utils.configureActionBar(this, getString(R.string.select_image), mChatController.getCurrentChat(), false);
-			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
-					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
-			return true;
-		case R.id.menu_capture_image_bar:
-		case R.id.menu_capture_image:
-			String to = mChatController.getCurrentChat();
 			if (to == null) {
 				return true;
 			}
-			// case R.id.menu_capture_image_menu:
+			intent = new Intent(this, ImageSelectActivity.class);
+			intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
+			intent.putExtra("to", to);
+			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+			return true;
+		case R.id.menu_capture_image_bar:
+		case R.id.menu_capture_image:
+			if (to == null) {
+				return true;
+			}
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("source", ImageSelectActivity.SOURCE_CAPTURE_IMAGE);
 			intent.putExtra("to", to);
