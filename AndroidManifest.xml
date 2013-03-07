@@ -55,8 +55,7 @@
 
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
-            android:label="@string/title_activity_main"
-            android:windowSoftInputMode="stateHidden" >
+            android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -64,16 +63,12 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
@@ -93,13 +88,15 @@
         -->
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
-            android:label="@string/title_activity_signup" 
-            android:noHistory="true">
+            android:label="@string/title_activity_signup"
+            android:noHistory="true"
+            android:windowSoftInputMode="stateVisible" >
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login"
-            android:noHistory="true" >
+            android:noHistory="true"
+            android:windowSoftInputMode="stateVisible" >
         </activity>
         <!--
         <activity
@@ -116,7 +113,8 @@
         <activity
             android:name="com.twofours.surespot.activities.ImageSelectActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.SettingsActivity"
