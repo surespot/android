@@ -219,8 +219,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		else {
 			SurespotLog.v(TAG, "starting signup activity");
 			Intent newIntent = new Intent(this, SignupActivity.class);
-			// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(newIntent);
 			finish();
 		}
