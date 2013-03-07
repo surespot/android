@@ -46,7 +46,7 @@ public class FriendFragment extends SherlockFragment {
 	// private ChatController mChatController;
 	private ListView mListView;
 	private Timer mTimer;
-
+	
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
@@ -54,7 +54,8 @@ public class FriendFragment extends SherlockFragment {
 		mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
-		mListView.setEmptyView(view.findViewById(R.id.progressBar));
+		
+		//mListView.setEmptyView(view.findViewById(R.id.progressBar));
 		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 		// click on friend to join chat
 		mListView.setOnItemClickListener(new OnItemClickListener() {
@@ -108,6 +109,10 @@ public class FriendFragment extends SherlockFragment {
 			mMainAdapter = chatController.getFriendAdapter();
 			mListView.setAdapter(mMainAdapter);
 
+			if (!mMainAdapter.isLoaded()) {
+				view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+			}
+			
 			SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
 			SurespotLog.v(TAG, "setting loading callback");
 			mMainAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {

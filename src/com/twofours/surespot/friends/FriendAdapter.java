@@ -30,6 +30,11 @@ public class FriendAdapter extends BaseAdapter {
 	ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	private NotificationManager mNotificationManager;
 	private boolean mLoading;
+	private boolean mLoaded;
+	public boolean isLoaded() {
+		return mLoaded;
+	}
+
 	private IAsyncCallback<Boolean> mLoadingCallback;
 
 	private Context mContext;
@@ -49,7 +54,8 @@ public class FriendAdapter extends BaseAdapter {
 	
 	public void setLoading(boolean loading) {
 		mLoading = loading ;
-		if (mLoadingCallback != null) {
+		mLoaded = true;
+		if (mLoadingCallback != null) {			
 			mLoadingCallback.handleResponse(loading);
 		}
 	}
