@@ -1127,6 +1127,12 @@ public class ChatController {
 				mEarliestMessage.remove(name);
 				destroyChatAdapter(name);
 				mIndicator.notifyDataSetChanged();
+				
+				position = mViewPager.getCurrentItem();
+				mCurrentChat = mChatPagerAdapter.getChatName(position);
+				
+				
+				SurespotLog.v(TAG, "closeTab, new tab name: " + mCurrentChat + ", position: " + position);
 			}
 		}
 	}
