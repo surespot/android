@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -60,6 +62,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
 
+		mImageView = (ImageView) this.findViewById(R.id.image);
 		mSendButton = (Button) this.findViewById(R.id.send);
 		mCancelButton = (Button) this.findViewById(R.id.cancel);
 		mCaptureButton = (Button) this.findViewById(R.id.capture);
@@ -80,17 +83,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			public void onClick(View v) {
 				new AsyncTask<Void, Void, Void>() {
 					protected Void doInBackground(Void... params) {
-						// rotate and compress the image if we have a capture
-						if (source == SOURCE_CAPTURE_IMAGE) {
-							int rotation = (mCaptureOrientation + 45) / 90 * 90;
-
-							// leave it upside down
-							if (rotation == 360 || rotation == 180) {
-								rotation = 0;
-							}
-							compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
-							deleteCapturedImage();
-						}
 						Intent dataIntent = new Intent();
 						dataIntent.setData(Uri.fromFile(mCompressedImagePath));
 						dataIntent.putExtra("to", to);
@@ -108,20 +100,23 @@ public class ImageSelectActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				// if we have an image captured already, they are clicking reject
-				if (mCapturedImagePath != null) {
-					deleteCapturedImage();
+				if (mCompressedImagePath != null) {
+					deleteCompressedImage();
 					mCaptureButton.setText("capture");
+					mImageView.setVisibility(View.GONE);
+					mImageView.setImageBitmap(null);
 					mSendButton.setEnabled(false);
 					mCamera.startPreview();
 				}
 				else {
 					mCaptureOrientation = mOrientation;
 					mCaptureButton.setEnabled(false);
-					mSendButton.setEnabled(false);
-					mCamera.takePicture(null, null, new PictureCallback() {
+					mSendButton.setEnabled(false);					
+					mCamera.takePicture(null, null, null, new PictureCallback() {
 
 						@Override
 						public void onPictureTaken(final byte[] data, Camera camera) {
+
 							// SurespotLog.v(TAG, "onPictureTaken");
 							new AsyncTask<Void, Void, Boolean>() {
 
@@ -134,9 +129,24 @@ public class ImageSelectActivity extends SherlockActivity {
 										try {
 											deleteCapturedImage();
 											mCapturedImagePath = createImageFile(CAPTURE_SUFFIX);
+											
 											FileOutputStream fos = new FileOutputStream(mCapturedImagePath);
 											fos.write(data);
 											fos.close();
+											
+											
+											
+											int rotation = (mCaptureOrientation + 45) / 90 * 90;
+
+											// leave it upside down
+											if (rotation == 360 || rotation == 180) {
+												rotation = 0;
+											}
+											deleteCompressedImage();
+											mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
+											compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
+											deleteCapturedImage();
+
 											return true;
 										}
 										catch (FileNotFoundException e) {
@@ -152,7 +162,11 @@ public class ImageSelectActivity extends SherlockActivity {
 								@Override
 								protected void onPostExecute(Boolean result) {
 									if (result) {
+										
 										mCaptureButton.setText("reject");
+										Uri uri = Uri.fromFile(mCompressedImagePath);										
+										mImageView.setImageURI(uri);
+										mImageView.setVisibility(View.VISIBLE);																	
 										mSendButton.setEnabled(true);
 									}
 									else {
@@ -177,7 +191,7 @@ public class ImageSelectActivity extends SherlockActivity {
 				finish();
 			}
 		});
-		
+
 		switch (source) {
 		case SOURCE_EXISTING_IMAGE:
 			Utils.configureActionBar(this, getString(R.string.select_image), to, false);
@@ -208,7 +222,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
 			if (resultCode == RESULT_OK) {
-				mImageView = (ImageView) this.findViewById(R.id.image);
+
 				mImageView.setVisibility(View.VISIBLE);
 
 				new AsyncTask<Void, Void, Bitmap>() {
@@ -225,7 +239,7 @@ public class ImageSelectActivity extends SherlockActivity {
 							Animation fadeIn = new AlphaAnimation(0, 1);
 							fadeIn.setDuration(1000);
 							mImageView.startAnimation(fadeIn);
-					
+
 							mSendButton.setEnabled(true);
 						}
 						else {
@@ -330,7 +344,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	private void deleteCompressedImage() {
 		if (mCompressedImagePath != null) {
-			// SurespotLog.v(TAG, "deleteCompressedImage: " + mCompressedImagePath.getPath());
+			//SurespotLog.v(TAG, "deleteCompressedImage: " + mCompressedImagePath.getPath());
 			mCompressedImagePath.delete();
 			mCompressedImagePath = null;
 		}
@@ -346,19 +360,51 @@ public class ImageSelectActivity extends SherlockActivity {
 	}
 
 	private Bitmap compressImage(final Uri uri, final int rotate) {
-		// scale, compress and save the image
-		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, uri, rotate);
-		try {
-			deleteCompressedImage();
-			if (bitmap != null) {
+		final Uri finalUri;
+		try {	
+			if (mCompressedImagePath == null) {
 				mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
+			}
+			
+			// if it's an external image save it first
+			if (uri.getScheme().startsWith("http")) {								
+				FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
+				InputStream is = new URL(uri.toString()).openStream();
+				byte[] buffer = new byte[1024];
+				int len;
+				while ((len = is.read(buffer)) != -1) {
+					fos.write(buffer, 0, len);
+				}
+
+				fos.close();
+				finalUri = Uri.fromFile(mCompressedImagePath);
+			}
+			else {								
+				finalUri = uri;
+			}
+		}
+		catch (IOException e1) {
+			SurespotLog.w(TAG, "compressImage", e1);
+			Utils.makeLongToast(this, "could not load image");
+			finish();
+			return null;
+		}
+
+		// scale, compress and save the image
+		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, finalUri, rotate);
+		try {
+
+			if (bitmap != null) {				
 				// SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
 				FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
 
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-
 				fos.close();
 				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
+			}
+			else {
+				Utils.makeLongToast(this, "could not load image");
+				finish();
 			}
 			return bitmap;
 		}

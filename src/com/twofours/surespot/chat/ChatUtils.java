@@ -142,14 +142,15 @@ public class ChatUtils {
 	}
 
 	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate) {
-
+		//
+		
 		try {// First decode with inJustDecodeBounds=true to check dimensions
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			InputStream is;
-			options.inJustDecodeBounds = true;
-
+			options.inJustDecodeBounds = true;					
+			
 			is = context.getContentResolver().openInputStream(imageUri);
-			BitmapFactory.decodeStream(is, null, options);
+			BitmapFactory.decodeStream(is, null, options);			
 			is.close();
 
 			// rotate as necessary
