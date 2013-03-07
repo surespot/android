@@ -207,6 +207,8 @@ public class LoginActivity extends SherlockActivity {
 										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 										newIntent.removeExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+
+										Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 									}
 								}
 								
