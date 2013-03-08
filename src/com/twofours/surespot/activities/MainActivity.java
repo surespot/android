@@ -339,9 +339,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (to == null) {
 				return true;
 			}
-			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("source", ImageSelectActivity.SOURCE_EXISTING_IMAGE);
+			intent = new Intent(this, ImageSelectActivity.class);			
 			intent.putExtra("to", to);
+			//set start intent to avoid restarting every rotation
+			intent.putExtra("start", true);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
@@ -349,8 +350,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (to == null) {
 				return true;
 			}
-			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("source", ImageSelectActivity.SOURCE_CAPTURE_IMAGE);
+			intent = new Intent(this, ImageCaptureActivity.class);
 			intent.putExtra("to", to);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;

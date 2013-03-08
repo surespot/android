@@ -110,10 +110,14 @@
         -->
         <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
         </activity>
-        <activity
-            android:name="com.twofours.surespot.activities.ImageSelectActivity"
+          <activity
+            android:name="com.twofours.surespot.activities.ImageCaptureActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.ImageSelectActivity"
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
