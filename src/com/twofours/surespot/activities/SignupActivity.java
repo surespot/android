@@ -120,10 +120,12 @@ public class SignupActivity extends SherlockActivity {
 			return;
 		}
 
-		final String username = ((EditText) SignupActivity.this.findViewById(R.id.etSignupUsername)).getText().toString();
+		final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername); 
+		final String username = userText.getText().toString();
 
 		// TODO use char array
-		final String password = ((EditText) SignupActivity.this.findViewById(R.id.etSignupPassword)).getText().toString();
+		final EditText pwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPassword);
+		final String password = pwText.getText().toString();
 
 		if (!(username.length() > 0 && password.length() > 0)) {
 			return;
@@ -212,6 +214,7 @@ public class SignupActivity extends SherlockActivity {
 														}
 														else {
 															SurespotLog.w(TAG, "201 not returned on user create.");
+															pwText.setText("");
 														}
 
 													}
@@ -236,6 +239,7 @@ public class SignupActivity extends SherlockActivity {
 															Utils.makeToast(SignupActivity.this,
 																	"could not create user, please try again later");
 														}
+														pwText.setText("");
 
 													}
 

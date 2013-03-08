@@ -163,7 +163,8 @@ public class LoginActivity extends SherlockActivity {
 
 		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername))
 				.getSelectedItemPosition());
-		final String password = ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).getText().toString();
+		final EditText pwText = (EditText) LoginActivity.this.findViewById(R.id.etPassword);
+		final String password = pwText.getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
@@ -236,6 +237,7 @@ public class LoginActivity extends SherlockActivity {
 								else {
 									Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
 								}
+								pwText.setText("");
 							}
 
 							@Override
@@ -247,7 +249,7 @@ public class LoginActivity extends SherlockActivity {
 					else {
 						mMpd.decrProgress();
 						Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
-
+						pwText.setText("");
 					}
 
 				};
