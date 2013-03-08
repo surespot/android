@@ -37,6 +37,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 		}
 
 		spinner.setAdapter(adapter);
+		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
 
 		Button exportToSdCardButton = (Button) findViewById(R.id.bExportSd);
 		exportToSdCardButton.setOnClickListener(new OnClickListener() {
