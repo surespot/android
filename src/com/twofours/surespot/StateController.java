@@ -33,6 +33,7 @@ public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
 	private static final String UNSENT_MESSAGES = "unsentMessages";
 	private static final String ACTIVE_CHATS = "activeChats";
+	private static final String FRIENDS  = "friends";
 	private static final String MESSAGE_ACTIVITY = "messageActivity";
 	private static final String LAST_VIEWED_MESSAGE_IDS = "lastViewedMessageIds";
 	private static final String LAST_RECEIVED_MESSAGE_IDS = "lastReceivedMessageIds";
@@ -40,6 +41,49 @@ public class StateController {
 
 	private static final String TAG = "StateController";
 
+	
+
+	public Set<String> loadFriends() {
+		String filename = getFilename(FRIENDS);
+		HashSet<String> friends = new HashSet<String>();
+		if (filename != null) {
+			String sFriendsJson = readFile(filename);
+			if (sFriendsJson != null) {
+				SurespotLog.v(TAG, "Loaded friends: " + sFriendsJson);
+				JSONArray friendsJson;
+				try {
+					friendsJson = new JSONArray(sFriendsJson);
+					for (int i = 0; i < friendsJson.length(); i++) {
+						String chatName = friendsJson.getString(i);
+						friends.add(chatName);
+					}
+
+				}
+				catch (JSONException e) {
+					SurespotLog.w(TAG, "loadFriends", e);
+				}
+			}
+		}
+		return friends;
+	}
+
+	public void saveFriends(Collection<String> friends) {
+		String filename = getFilename(FRIENDS);
+		if (filename != null) {
+			if (friends != null && friends.size() > 0) {
+				
+				JSONArray jsonArray = new JSONArray(friends);
+				String sFriends = jsonArray.toString();				
+				writeFile(filename, sFriends);
+				SurespotLog.v(TAG, "Saved friends: " + sFriends);
+			}
+			else {
+				new File(filename).delete();
+			}
+		}
+	}
+	
+	
 	public Set<String> loadActiveChats() {
 		String filename = getFilename(ACTIVE_CHATS);
 		HashSet<String> activeChats = new HashSet<String>();

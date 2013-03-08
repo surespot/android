@@ -6,16 +6,20 @@ import org.json.JSONObject;
 import com.twofours.surespot.common.SurespotLog;
 
 public class Friend implements Comparable<Friend> {
-	public static final int INVITER = 32;	
+	public static final int INVITER = 32;
 	public static final int MESSAGE_ACTIVITY = 16;
 	public static final int CHAT_ACTIVE = 8;
-	public static final int NEW_FRIEND = 4;	
+	public static final int NEW_FRIEND = 4;
 	public static final int INVITED = 2;
-	
+
 	private static final String TAG = "Friend";
 
 	private String mName;
 	private int mFlags;
+
+	public Friend(String name) {
+		mName = name;
+	}
 
 	public String getName() {
 		return mName;
@@ -34,7 +38,7 @@ public class Friend implements Comparable<Friend> {
 			mFlags &= ~CHAT_ACTIVE;
 		}
 	}
-	
+
 	public void setMessageActivity(boolean set) {
 		if (set) {
 			mFlags |= MESSAGE_ACTIVITY;
@@ -43,7 +47,6 @@ public class Friend implements Comparable<Friend> {
 			mFlags &= ~MESSAGE_ACTIVITY;
 		}
 	}
-	
 
 	public void setInviter(boolean set) {
 		if (set) {
@@ -85,7 +88,7 @@ public class Friend implements Comparable<Friend> {
 	public boolean isNewFriend() {
 		return (mFlags & NEW_FRIEND) == NEW_FRIEND;
 	}
-	
+
 	public boolean isMessageActivity() {
 		return (mFlags & MESSAGE_ACTIVITY) == MESSAGE_ACTIVITY;
 	}
@@ -97,7 +100,7 @@ public class Friend implements Comparable<Friend> {
 	public int getFlags() {
 		return mFlags;
 	}
-	
+
 	public boolean isChatActive() {
 		return (mFlags & CHAT_ACTIVE) == CHAT_ACTIVE;
 	}
@@ -119,11 +122,11 @@ public class Friend implements Comparable<Friend> {
 	public int compareTo(Friend another) {
 		// if the flags are the same sort by name
 		// not active or invite, sort by name
-		if ((another.getFlags() == this.getFlags())
-				|| (another.getFlags() < MESSAGE_ACTIVITY && this.getFlags() < MESSAGE_ACTIVITY)) {
+		if ((another.getFlags() == this.getFlags()) || (another.getFlags() < MESSAGE_ACTIVITY && this.getFlags() < MESSAGE_ACTIVITY)) {
 			return this.getName().compareTo(another.getName());
-		} else {
-			//sort by flag value
+		}
+		else {
+			// sort by flag value
 			return Integer.valueOf(another.getFlags()).compareTo(this.getFlags());
 		}
 
@@ -162,7 +165,7 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public static Friend toFriend(JSONObject jsonFriend) throws JSONException {
-		Friend friend = new Friend();
+		Friend friend = new Friend(jsonFriend.getString("name"));
 
 		String status = jsonFriend.getString("status");
 		if (status.equals("invited")) {
@@ -176,11 +179,15 @@ public class Friend implements Comparable<Friend> {
 		}
 		// }
 
-		friend.setName(jsonFriend.getString("name"));
-
 		return friend;
 	}
 
+	public void update(Friend friend) {
+		this.setNewFriend(false);
+		this.setInvited(friend.isInvited());
+		this.setInviter(friend.isInviter());
+		this.setChatActive(friend.isChatActive());
+		this.setMessageActivity(friend.isMessageActivity());
+	}
 
-	
 };

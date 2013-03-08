@@ -93,16 +93,14 @@ public class ChatController {
 
 	public ChatController(Context context, FragmentManager fm, IAsyncCallback<Void> callback401) {
 		SurespotLog.v(TAG, "constructor: " + this);
-
+		mContext = context;
 		mCallback401 = callback401;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
+		mFriendAdapter = new FriendAdapter(mContext);
 		loadState();
 
-		mContext = context;
-
 		mFragmentManager = fm;
-		mFriendAdapter = new FriendAdapter(mContext);
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 		setOnWifi();
@@ -163,16 +161,16 @@ public class ChatController {
 					// TODO tell user
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
-					
+
 					Utils.makeLongToast(mContext, "could not connect to the server");
 
 					mCallback401.handleResponse(null);
 					// Utils.makeToast(this,mContext,
 					// "Can not connect to chat server. Please check your network and try again.",
 					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-//					Intent intent = new Intent(mContext, MainActivity.class);
-//					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//					mContext.startActivity(intent);
+					// Intent intent = new Intent(mContext, MainActivity.class);
+					// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					// mContext.startActivity(intent);
 
 				}
 			}
@@ -398,6 +396,7 @@ public class ChatController {
 
 	private void connected() {
 		loadFriends();
+		loadAllLatestMessages();
 
 	}
 
@@ -857,14 +856,35 @@ public class ChatController {
 		SurespotApplication.getStateController().saveActiveChats(mActiveChats);
 		SurespotApplication.getStateController().saveLastReceivedMessageIds(mLastReceivedMessageIds);
 		SurespotApplication.getStateController().saveMessageActivity(mMessageActivity);
+		SurespotApplication.getStateController().saveFriends(mFriendAdapter.getFriendNames());
 
 	}
 
 	private void loadState() {
 		SurespotLog.v(TAG, "loadState");
-		mMessageActivity = SurespotApplication.getStateController().loadMessageActivity();
-		mLastReceivedMessageIds = SurespotApplication.getStateController().loadLastReceivedMessageIds();
+
 		mActiveChats = SurespotApplication.getStateController().loadActiveChats();
+		mMessageActivity = SurespotApplication.getStateController().loadMessageActivity();
+		Set<String> names = SurespotApplication.getStateController().loadFriends();
+		if (names != null && names.size() > 0) {
+			ArrayList<Friend> friends = new ArrayList<Friend>();
+			for (String name : names) {
+				Friend friend = new Friend(name);
+				if (mActiveChats != null) {
+					friend.setChatActive(mActiveChats.contains(name));
+				}
+				if (mMessageActivity != null) {
+					Boolean activity = mMessageActivity.get(name);
+					friend.setMessageActivity(activity == null ? false : activity);
+				}
+				friends.add(friend);
+			}
+
+			mFriendAdapter.setFriends(friends);
+			mFriendAdapter.setLoading(false);
+		}
+
+		mLastReceivedMessageIds = SurespotApplication.getStateController().loadLastReceivedMessageIds();
 
 		loadUnsentMessages();
 	}
@@ -874,6 +894,12 @@ public class ChatController {
 		if (mPaused) {
 			mPaused = false;
 
+			// Set<String> names = SurespotApplication.getStateController().loadFriends();
+			// if (names != null && names.size() > 0) {
+			// mFriendAdapter.setFriendNames(names);
+			// mFriendAdapter.setLoading(false);
+			// }
+
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
@@ -882,7 +908,6 @@ public class ChatController {
 	public synchronized void onPause() {
 		SurespotLog.v(TAG, "onPause, mPaused: " + mPaused + ": " + this);
 		if (!mPaused) {
-
 			mPaused = true;
 			saveState(null);
 		}
@@ -1097,9 +1122,8 @@ public class ChatController {
 					return;
 				}
 
-				mFriendAdapter.setFriends(friends);
+				mFriendAdapter.addFriends(friends);
 				mFriendAdapter.setLoading(false);
-				loadAllLatestMessages();
 			}
 
 			@Override
@@ -1128,11 +1152,10 @@ public class ChatController {
 				mEarliestMessage.remove(name);
 				destroyChatAdapter(name);
 				mIndicator.notifyDataSetChanged();
-				
+
 				position = mViewPager.getCurrentItem();
 				mCurrentChat = mChatPagerAdapter.getChatName(position);
-				
-				
+
 				SurespotLog.v(TAG, "closeTab, new tab name: " + mCurrentChat + ", position: " + position);
 			}
 		}

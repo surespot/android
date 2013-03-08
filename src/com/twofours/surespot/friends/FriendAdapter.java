@@ -1,6 +1,7 @@
 package com.twofours.surespot.friends;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import android.app.NotificationManager;
@@ -31,6 +32,7 @@ public class FriendAdapter extends BaseAdapter {
 	private NotificationManager mNotificationManager;
 	private boolean mLoading;
 	private boolean mLoaded;
+
 	public boolean isLoaded() {
 		return mLoaded;
 	}
@@ -42,24 +44,23 @@ public class FriendAdapter extends BaseAdapter {
 	public FriendAdapter(Context context) {
 		mContext = context;
 
-
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 	}
-	
+
 	public boolean isLoading() {
 		return mLoading;
 	}
-	
+
 	public void setLoading(boolean loading) {
-		mLoading = loading ;
+		mLoading = loading;
 		mLoaded = true;
-		if (mLoadingCallback != null) {			
+		if (mLoadingCallback != null) {
 			mLoadingCallback.handleResponse(loading);
 		}
 	}
-	
+
 	public void setLoadingCallback(IAsyncCallback<Boolean> callback) {
 		mLoadingCallback = callback;
 	}
@@ -76,7 +77,7 @@ public class FriendAdapter extends BaseAdapter {
 	public void addNewFriend(String name) {
 		Friend friend = getFriend(name);
 		if (friend == null) {
-			friend = new Friend();
+			friend = new Friend(name);
 			mFriends.add(friend);
 			friend.setName(name);
 		}
@@ -87,13 +88,14 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public boolean addFriendInvited(String name) {
-		//if it's there already the other party must have invited at the same time in which 
-		//case the invitation is automatically accepted so it will appear in the friends list through those means
+		// if it's there already the other party must have invited at the same time in which
+		// case the invitation is automatically accepted so it will appear in the friends list through those means
 		Friend friend = getFriend(name);
-		if (friend != null) { return false; }
-				
-		friend = new Friend();
-		friend.setName(name);
+		if (friend != null) {
+			return false;
+		}
+
+		friend = new Friend(name);
 		friend.setInvited(true);
 		mFriends.add(friend);
 		Collections.sort(mFriends);
@@ -103,8 +105,7 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public void addFriendInviter(String name) {
-		Friend friend = new Friend();
-		friend.setName(name);
+		Friend friend = new Friend(name);
 		friend.setInviter(true);
 		mFriends.add(friend);
 		Collections.sort(mFriends);
@@ -119,34 +120,53 @@ public class FriendAdapter extends BaseAdapter {
 		}
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
-		
+
 	}
-	
+
 	public void setMessageActivity(String username, boolean activity) {
 		Friend friend = getFriend(username);
 		if (friend != null) {
 			friend.setMessageActivity(activity);
 		}
 		Collections.sort(mFriends);
-		notifyDataSetChanged();	
-		
-	}
-
-	public void setFriends(ArrayList<Friend> friends) {
-		SurespotLog.v(TAG, "setFriends, adding messages to adapter: " + this + ", count: " + friends.size());
-		mFriends.clear();
-		mFriends.addAll(friends);
-		sort();
 		notifyDataSetChanged();
 
 	}
 
-	public void clearFriends(boolean notify) {
+	public void setFriends(ArrayList<Friend> friends) {
+		SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
+
 		mFriends.clear();
-		if (notify) {
-			notifyDataSetChanged();
-		}
+		mFriends.addAll(friends);
+		sort();
+		notifyDataSetChanged();
 	}
+
+	public void addFriends(Collection<Friend> friends) {
+		SurespotLog.v(TAG, "addFriends, adding friends to adapter: " + this + ", count: " + friends.size());
+
+		for (Friend friend : friends) {
+
+			int index = mFriends.indexOf(friend);
+			if (index == -1) {
+				mFriends.add(friend);
+			}
+			else {
+				Friend incumbent = mFriends.get(index);
+				incumbent.update(friend);
+			}
+		}
+		
+		sort();
+		notifyDataSetChanged();
+	}
+
+	// public void clearFriends(boolean notify) {
+	// mFriends.clear();
+	// if (notify) {
+	// notifyDataSetChanged();
+	// }
+	// }
 
 	@Override
 	public int getCount() {
@@ -197,13 +217,11 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
-
 		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter()) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
-			
-		
+
 			if (friend.isInvited()) {
 				friendViewHolder.tvStatus.setText("invited");
 			}
@@ -221,7 +239,7 @@ public class FriendAdapter extends BaseAdapter {
 
 		if (friend.isInviter()) {
 			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
-			friendViewHolder.vgActivity.setVisibility(View.GONE);			
+			friendViewHolder.vgActivity.setVisibility(View.GONE);
 		}
 		else {
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
@@ -232,8 +250,8 @@ public class FriendAdapter extends BaseAdapter {
 			else {
 				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
-			
-			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);				
+
+			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);
 
 		}
 
@@ -291,7 +309,14 @@ public class FriendAdapter extends BaseAdapter {
 		}
 	}
 
-
-	
+	public Collection<String> getFriendNames() {
+		if (mFriends == null)
+			return null;
+		ArrayList<String> names = new ArrayList<String>();
+		for (Friend friend : mFriends) {
+			names.add(friend.getName());
+		}
+		return names;
+	}
 
 }
