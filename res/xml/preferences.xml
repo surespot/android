@@ -35,8 +35,16 @@
             </intent>
         </Preference>
     </PreferenceCategory>
-   <!--  <PreferenceCategory android:title="debug">
+    <!--
+    <PreferenceCategory android:title="debug">
         <CheckBoxPreference android:title="debug mode" android:defaultValue="false" android:key="pref_debug_mode"/>
-    </PreferenceCategory> -->
-    
+    </PreferenceCategory>
+    -->
+    <PreferenceCategory android:title="about" >
+        <Preference
+            android:key="pref_version"
+            android:title="version" >
+        </Preference>
+    </PreferenceCategory>
+
 </PreferenceScreen>
