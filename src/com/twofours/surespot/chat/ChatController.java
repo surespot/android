@@ -969,6 +969,9 @@ public class ChatController {
 
 		SurespotLog.v(TAG, username + ": setCurrentChat");
 		String loggedInUser = IdentityController.getLoggedInUser();
+		if (loggedInUser == null) {
+			return;
+		}
 		mCurrentChat = username;
 
 		if (username != null) {
