@@ -209,6 +209,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 					mCameraPreview = new CameraPreview(ImageCaptureActivity.this, mCamera);
 					FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 					preview.setVisibility(View.VISIBLE);
+					preview.removeAllViews();
 					preview.addView(mCameraPreview);
 					findViewById(R.id.progressBar).setVisibility(View.GONE);
 				}
@@ -336,7 +337,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageCaptureActivity.this, finalUri, rotate);
 		try {
 
-			if (bitmap != null) {
+			if (bitmap != null && mCompressedImagePath != null) {
 				// SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
 				FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
 
@@ -375,6 +376,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		initCamera();
 		mOrientationEventListener.enable();
 	}
 
