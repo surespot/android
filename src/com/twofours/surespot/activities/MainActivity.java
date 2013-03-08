@@ -219,15 +219,21 @@ public class MainActivity extends SherlockFragmentActivity {
 			mSet = true;
 			Utils.clearIntent(intent);
 			Utils.logIntent(TAG, intent);
-			mChatController.setCurrentChat(name);
+
+			if (mChatController != null) {
+				mChatController.setCurrentChat(name);
+			}
 		}
 
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
 			Utils.configureActionBar(this, "send", "select recipient", false);
 			SurespotLog.v(TAG, "started from SEND");
 			// need to select a user so put the chat controller in select mode
-			mChatController.setCurrentChat(null);
-			mChatController.setMode(ChatController.MODE_SELECT);
+
+			if (mChatController != null) {
+				mChatController.setCurrentChat(null);
+				mChatController.setMode(ChatController.MODE_SELECT);
+			}
 			mSet = true;
 		}
 
@@ -238,7 +244,9 @@ public class MainActivity extends SherlockFragmentActivity {
 				SurespotLog.v(TAG, "using LAST_CHAT");
 				name = lastName;
 			}
-			mChatController.setCurrentChat(name);
+			if (mChatController != null) {
+				mChatController.setCurrentChat(name);
+			}
 		}
 	}
 
@@ -339,9 +347,9 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (to == null) {
 				return true;
 			}
-			intent = new Intent(this, ImageSelectActivity.class);			
+			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("to", to);
-			//set start intent to avoid restarting every rotation
+			// set start intent to avoid restarting every rotation
 			intent.putExtra("start", true);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
