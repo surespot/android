@@ -533,7 +533,7 @@ public class ChatController {
 		}
 		else {
 			mFriendAdapter.setMessageActivity(username, false);
-			mMessageActivity.put(username, false);
+			mMessageActivity.remove(username);
 		}
 	}
 
@@ -827,7 +827,7 @@ public class ChatController {
 		mChatPagerAdapter = null;
 		mIndicator = null;
 		mFragmentManager = null;
-		mFriendAdapter = null;
+	//	mFriendAdapter = null;
 		mMenuItems = null;
 		mSocketCallback = null;
 		mChatAdapters.clear();
@@ -975,6 +975,7 @@ public class ChatController {
 			mChatPagerAdapter.addChatName(username);
 			mFriendAdapter.setChatActive(username, true);
 			mActiveChats.add(username);
+			//mMessageActivity.remove(username);
 			updateLastViewedMessageId(username, false);
 			// cancel associated notifications
 			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
@@ -1122,8 +1123,10 @@ public class ChatController {
 					return;
 				}
 
-				mFriendAdapter.addFriends(friends);
-				mFriendAdapter.setLoading(false);
+				if (mFriendAdapter != null) {
+					mFriendAdapter.addFriends(friends);
+					mFriendAdapter.setLoading(false);
+				}
 			}
 
 			@Override
