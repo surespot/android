@@ -826,14 +826,14 @@ public class ChatController {
 	public synchronized void logout() {
 		mCurrentChat = null;
 		onPause();
-		//mViewPager = null;
-	//	mCallback401 = null;
-		//mChatPagerAdapter = null;
-		//mIndicator = null;
-		//mFragmentManager = null;
+		// mViewPager = null;
+		// mCallback401 = null;
+		// mChatPagerAdapter = null;
+		// mIndicator = null;
+		// mFragmentManager = null;
 		// mFriendAdapter = null;
-		//mMenuItems = null;
-		//mSocketCallback = null;
+		// mMenuItems = null;
+		// mSocketCallback = null;
 		mChatAdapters.clear();
 		mActiveChats.clear();
 		mLastReceivedMessageIds.clear();
@@ -993,16 +993,18 @@ public class ChatController {
 				mViewPager.setCurrentItem(wantedPosition, true);
 			}
 
+			String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
+			SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
+			ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
+			SurespotLog.v(TAG, "fragment: " + chatFragment);
+			
+			if (chatFragment != null) {
+				chatFragment.requestFocus();
+			}
+			
 			if (mMode == MODE_SELECT) {
-
-				String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
-				SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
-				ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
-				SurespotLog.v(TAG, "fragment: " + chatFragment);
 				chatFragment.handleSendIntent();
-
 				setMode(MODE_NORMAL);
-
 			}
 			enableMenuItems();
 		}
