@@ -58,6 +58,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		SurespotLog.v(TAG, "onCreate");
 		setContentView(R.layout.activity_image_capture);
 
 		mCameraFrame = this.findViewById(R.id.camera_preview);
@@ -99,13 +100,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 			public void onClick(View v) {
 				// if we have an image captured already, they are clicking reject
 				if (mCompressedImagePath != null) {
-					deleteCompressedImage();
-					mCaptureButton.setText("capture");
-					mImageView.setVisibility(View.GONE);
-					mCameraFrame.setVisibility(View.VISIBLE);
-					mImageView.setImageBitmap(null);
-					mSendButton.setEnabled(false);
-					mCamera.startPreview();
+					initialize();
 				}
 				else {
 					mCaptureOrientation = mOrientation;
@@ -159,7 +154,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 								@Override
 								protected void onPostExecute(Bitmap bitmap) {
 									if (bitmap != null) {
-										
+
 										mCaptureButton.setText("reject");
 
 										mImageView.setImageBitmap(bitmap);
@@ -190,11 +185,30 @@ public class ImageCaptureActivity extends SherlockActivity {
 			}
 		});
 
-		findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		mCaptureButton.setVisibility(View.VISIBLE);
-		Utils.configureActionBar(this, getString(R.string.capture_image), "send to " +to, true);
-		initCamera();
+		mCameraPreview = new CameraPreview(ImageCaptureActivity.this);
+		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+		preview.addView(mCameraPreview);
+		Utils.configureActionBar(this, getString(R.string.capture_image), "send to " + to, true);
 
+	}
+
+	private void initialize() {
+		deleteCompressedImage();
+		mCaptureButton.setText("capture");
+		mImageView.setVisibility(View.GONE);
+		mCameraFrame.setVisibility(View.VISIBLE);
+		mImageView.setImageBitmap(null);
+		mSendButton.setEnabled(false);
+		mCamera.startPreview();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		SurespotLog.v(TAG, "onResume");
+		findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+		initCamera();
+		mOrientationEventListener.enable();
 	}
 
 	private void initCamera() {
@@ -206,12 +220,11 @@ public class ImageCaptureActivity extends SherlockActivity {
 			protected void onPostExecute(Camera result) {
 				if (result != null) {
 					mCamera = result;
-					mCameraPreview = new CameraPreview(ImageCaptureActivity.this, mCamera);
-					FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-					preview.setVisibility(View.VISIBLE);
-					preview.removeAllViews();
-					preview.addView(mCameraPreview);
+					mCameraPreview.setCamera(mCamera);
 					findViewById(R.id.progressBar).setVisibility(View.GONE);
+					if (!mSendButton.isEnabled()) {
+						initialize();
+					}
 				}
 			};
 		}.execute();
@@ -264,6 +277,28 @@ public class ImageCaptureActivity extends SherlockActivity {
 			result = (info.orientation - degrees + 360) % 360;
 		}
 		camera.setDisplayOrientation(result);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		mOrientationEventListener.disable();
+		new AsyncTask<Void, Void, Void>() {
+			protected Void doInBackground(Void... params) {
+				releaseCamera();
+				return null;
+			};
+		}.execute();
+	}
+
+	private void releaseCamera() {
+		if (mCamera != null) {
+
+			mCamera.stopPreview();
+			mCameraPreview.setCamera(null);
+			mCamera.release(); // release the camera for other applications
+			mCamera = null;
+		}
 	}
 
 	private synchronized File createImageFile(String suffix) throws IOException {
@@ -373,30 +408,4 @@ public class ImageCaptureActivity extends SherlockActivity {
 		}
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		initCamera();
-		mOrientationEventListener.enable();
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		mOrientationEventListener.disable();
-		new AsyncTask<Void, Void, Void>() {
-			protected Void doInBackground(Void... params) {
-				releaseCamera();
-				return null;
-			};
-		}.execute();
-	}
-
-	private void releaseCamera() {
-		if (mCamera != null) {
-			mCamera.stopPreview();
-			mCamera.release(); // release the camera for other applications
-			mCamera = null;
-		}
-	}
 }

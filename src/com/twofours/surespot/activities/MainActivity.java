@@ -348,7 +348,7 @@ public class MainActivity extends SherlockFragmentActivity {
 				return true;
 			}
 			intent = new Intent(this, ImageSelectActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+			//intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 			intent.putExtra("to", to);
 			// set start intent to avoid restarting every rotation
 			intent.putExtra("start", true);
@@ -360,7 +360,6 @@ public class MainActivity extends SherlockFragmentActivity {
 				return true;
 			}
 			intent = new Intent(this, ImageCaptureActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 			intent.putExtra("to", to);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
