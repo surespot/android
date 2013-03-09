@@ -83,11 +83,10 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			@Override
 			public void handleResponse(Void result) {
-
+				SurespotLog.v(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 					MainActivity.this.getNetworkController().setUnauthorized(true);
 					IdentityController.logout();
-					mChatController.logout();
 
 					SurespotLog.v(TAG, "Got 401, launching login intent.");
 					Intent intent = new Intent(MainActivity.this, LoginActivity.class);

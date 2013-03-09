@@ -118,7 +118,7 @@ public class NetworkController {
 
 							Uri uri = Uri.parse(mBaseUrl);
 							if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
-								setUnauthorized(true);
+								//setUnauthorized(true);
 
 								mClient.cancelRequests(mContext, true);
 								mSyncClient.cancelRequests(mContext, true);

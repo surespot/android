@@ -129,6 +129,8 @@ public class ChatController {
 			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
+					socket = null;
+					logout();
 					mCallback401.handleResponse(null);
 					return;
 				}
@@ -908,7 +910,7 @@ public class ChatController {
 	public synchronized void onPause() {
 		SurespotLog.v(TAG, "onPause, mPaused: " + mPaused + ": " + this);
 		if (!mPaused) {
-			mPaused = true;
+			mPaused = true;			
 			saveState(null);
 		}
 
