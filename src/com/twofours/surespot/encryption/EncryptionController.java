@@ -2,6 +2,7 @@ package com.twofours.surespot.encryption;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,6 +40,7 @@ import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 import org.spongycastle.jce.spec.ECParameterSpec;
+import org.spongycastle.util.encoders.HexEncoder;
 
 import android.os.AsyncTask;
 import android.util.Base64;
@@ -57,6 +59,7 @@ public class EncryptionController {
 	private static final int AES_KEY_LENGTH = 32;
 	private static final int SALT_LENGTH = 16;
 	private static final int IV_LENGTH = 16;
+	private static final String PASSWORD_SALT = "a540edbf8158bc534b39859927b2e927";
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private static SecureRandom mSecureRandom = new SecureRandom();
@@ -175,12 +178,12 @@ public class EncryptionController {
 		return Base64.decode(beforeHeader.getBytes(), Base64.DEFAULT);
 	}
 
-	public static String sign(PrivateKey privateKey, String sign1, String sign2) {
-		return sign(privateKey, sign1.getBytes(), sign2.getBytes());
+	public static String sign(PrivateKey privateKey, String data, String derivedPassword) {
+		return sign(privateKey, data.getBytes(), derivedPassword.getBytes());
 	}
 
-	public static String sign(PrivateKey privateKey, byte[] sign1, byte[] sign2) {
-		try {
+	public static String sign(PrivateKey privateKey, byte[] data, byte[] derivedPassword) {
+		try {			
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 
 			// throw some random data in there so the signature is different every time
@@ -188,8 +191,8 @@ public class EncryptionController {
 			mSecureRandom.nextBytes(random);
 
 			dsa.initSign(privateKey);
-			dsa.update(sign1);
-			dsa.update(sign2);
+			dsa.update(data);
+			dsa.update(derivedPassword);
 			dsa.update(random);
 
 			byte[] sig = dsa.sign();
@@ -545,7 +548,24 @@ public class EncryptionController {
 
 	}
 
-	private static byte[][] derive(String password) {
+	public static String derivePassword(String password) {
+		HexEncoder hexEncoder = new HexEncoder();
+		ByteArrayOutputStream out = new ByteArrayOutputStream(16);
+		try {
+			hexEncoder.decode(PASSWORD_SALT, out);
+			byte[] dpassword = derive(password, out.toByteArray());
+			out.close();
+
+			
+			return new String(Utils.base64Encode(dpassword));
+		}
+		catch (IOException e) {
+			SurespotLog.w(TAG, "derivePassword", e);
+		}
+		return null;
+	}
+
+	public static byte[][] derive(String password) {
 		int iterationCount = 1000;
 		int saltLength = SALT_LENGTH;
 		int keyLength = AES_KEY_LENGTH;

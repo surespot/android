@@ -123,14 +123,12 @@ public class SignupActivity extends SherlockActivity {
 		final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername); 
 		final String username = userText.getText().toString();
 
-		// TODO use char array
 		final EditText pwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPassword);
 		final String password = pwText.getText().toString();
-
 		if (!(username.length() > 0 && password.length() > 0)) {
 			return;
 		}
-
+				 
 		mMpd.incrProgress();
 
 		// see if the user exists
@@ -143,7 +141,7 @@ public class SignupActivity extends SherlockActivity {
 					mMpd.decrProgress();
 				}
 				else {
-
+					final String dPassword = EncryptionController.derivePassword(password);
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
 					// successful
@@ -158,11 +156,11 @@ public class SignupActivity extends SherlockActivity {
 
 								new AsyncTask<Void, Void, String[]>() {
 									protected String[] doInBackground(Void... params) {
-
+										
 										String[] data = new String[3];
 										data[0] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
 										data[1] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
-										data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, password);
+										data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, dPassword);
 										return data;
 									}
 
@@ -170,12 +168,13 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
-										networkController.addUser(username, password, sPublicDH, sPublicECDSA,
+										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA,
 												signature, new CookieResponseHandler() {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
-
+														pwText.setText("");
+														
 														if (statusCode == 201) {
 															// save key pair now
 															// that we've created
@@ -201,6 +200,7 @@ public class SignupActivity extends SherlockActivity {
 																}
 
 																protected void onPostExecute(Void result) {
+																	
 																	// SurespotApplication.getUserData().setUsername(username);
 																	Intent intent = new Intent(SignupActivity.this, MainActivity.class);
 																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -289,7 +289,6 @@ public class SignupActivity extends SherlockActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 	
-		
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}

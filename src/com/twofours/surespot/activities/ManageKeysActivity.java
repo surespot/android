@@ -40,7 +40,7 @@ public class ManageKeysActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage_keys);
 		Utils.configureActionBar(this, "settings", "keys", true);
-		mMpd =  new MultiProgressDialog(this, "generating and uploading new keys", 750);
+		mMpd = new MultiProgressDialog(this, "generating and uploading new keys", 750);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
@@ -95,7 +95,7 @@ public class ManageKeysActivity extends SherlockActivity {
 	}
 
 	private void rollKeys(final String username, final String password) {
-		
+
 		mMpd.incrProgress();
 		SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
 
@@ -106,14 +106,14 @@ public class ManageKeysActivity extends SherlockActivity {
 		}
 
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
-		
+
 		// create auth sig
-		final String authSignature = EncryptionController.sign(pk, username, password);
+		final String dPassword = EncryptionController.derivePassword(password);
+		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
-		
 		// get a key update token from the server
-		MainActivity.getNetworkController().getKeyToken(username, password, authSignature, new JsonHttpResponseHandler() {
+		MainActivity.getNetworkController().getKeyToken(username, dPassword, authSignature, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, final JSONObject response) {
 
@@ -128,13 +128,13 @@ public class ManageKeysActivity extends SherlockActivity {
 							SurespotLog.v(TAG, "received key token: " + keyToken);
 							keyVersion = response.getString("keyversion");
 						}
-						catch (JSONException e) {							
+						catch (JSONException e) {
 							return null;
-						}				
-					
+						}
+
 						// create token sig
 						final String tokenSignature = EncryptionController.sign(pk, Base64.decode(keyToken.getBytes(), Base64.DEFAULT),
-								password.getBytes());
+								dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 						// generate new key pairs
@@ -149,7 +149,7 @@ public class ManageKeysActivity extends SherlockActivity {
 					protected void onPostExecute(final RollKeysWrapper result) {
 						if (result != null) {
 							// upload all this crap to the server
-							MainActivity.getNetworkController().updateKeys(username, password,
+							MainActivity.getNetworkController().updateKeys(username, dPassword,
 									EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 									EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
 									result.keyVersion, new AsyncHttpResponseHandler() {

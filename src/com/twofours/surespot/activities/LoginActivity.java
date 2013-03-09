@@ -51,11 +51,12 @@ public class LoginActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
 	private boolean mLoginAttempted;
 	private boolean mCacheServiceBound;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		
+
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
@@ -129,7 +130,7 @@ public class LoginActivity extends SherlockActivity {
 			}
 		});
 	}
-	
+
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
 			SurespotLog.v(TAG, "caching service bound");
@@ -137,10 +138,10 @@ public class LoginActivity extends SherlockActivity {
 
 			CredentialCachingService credentialCachingService = binder.getService();
 			mCacheServiceBound = true;
-			
+
 			SurespotApplication.setCachingService(credentialCachingService);
-		
-			//if they've already clicked login, login
+
+			// if they've already clicked login, login
 			if (mLoginAttempted) {
 				mLoginAttempted = false;
 				login();
@@ -153,8 +154,14 @@ public class LoginActivity extends SherlockActivity {
 
 		}
 	};
-	
-	private void login() {	
+
+	private class IdSig {
+		public SurespotIdentity identity;
+		public String signature;
+		protected String derivedPassword;
+	}
+
+	private void login() {
 		if (SurespotApplication.getCachingService() == null) {
 			mLoginAttempted = true;
 			mMpd.incrProgress();
@@ -164,30 +171,38 @@ public class LoginActivity extends SherlockActivity {
 		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername))
 				.getSelectedItemPosition());
 		final EditText pwText = (EditText) LoginActivity.this.findViewById(R.id.etPassword);
+
 		final String password = pwText.getText().toString();
 
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
 
-			new AsyncTask<Void, Void, String>() {
+			
+			new AsyncTask<Void, Void, IdSig>() {
 
 				@Override
-				protected String doInBackground(Void... params) {
+				protected IdSig doInBackground(Void... params) {
+
 					SurespotIdentity identity = IdentityController.getIdentity(LoginActivity.this, username, password);
 					if (identity != null) {
-						return EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, password);
+						final String dPassword = EncryptionController.derivePassword(password);
+						IdSig idSig = new IdSig();
+						idSig.identity = identity;
+						idSig.signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);
+						idSig.derivedPassword = dPassword;
+						return idSig;
 					}
 					return null;
 				}
 
-				protected void onPostExecute(String signature) {
-					if (signature != null) {						
-						
+				protected void onPostExecute(final IdSig idSig) {
+					if (idSig != null) {
+
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);
-						networkController.login(username, password, signature, new CookieResponseHandler() {
+						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
-								IdentityController.userLoggedIn(LoginActivity.this, username, password, cookie);
+								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
 
 								Intent intent = getIntent();
 								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
@@ -204,7 +219,9 @@ public class LoginActivity extends SherlockActivity {
 								if (notificationType != null) {
 									String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 									if (!messageTo.equals(username)) {
-										SurespotLog.v(TAG,"user has elected to login as a different user than the notification, removing relevant intent extras");
+										SurespotLog
+												.v(TAG,
+														"user has elected to login as a different user than the notification, removing relevant intent extras");
 										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 										newIntent.removeExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
@@ -212,7 +229,7 @@ public class LoginActivity extends SherlockActivity {
 										Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 									}
 								}
-								
+
 								Utils.logIntent(TAG, newIntent);
 
 								startActivity(newIntent);
@@ -294,7 +311,7 @@ public class LoginActivity extends SherlockActivity {
 		}
 
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();

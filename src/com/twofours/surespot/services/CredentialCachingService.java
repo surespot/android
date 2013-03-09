@@ -17,6 +17,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.PublicKeys;
+import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -27,7 +28,8 @@ public class CredentialCachingService extends Service {
 
 	private final IBinder mBinder = new CredentialCachingBinder();
 
-	private Map<String, String> mPasswords = new HashMap<String, String>();
+
+	private Map<String, SurespotIdentity> mIdentities;
 	private Map<String, Cookie> mCookies = new HashMap<String, Cookie>();
 	private static String mLoggedInUser;
 	private LoadingCache<PublicKeyPairKey, PublicKeys> mPublicIdentities;
@@ -96,21 +98,18 @@ public class CredentialCachingService extends Service {
 		mPublicIdentities = CacheBuilder.newBuilder().build(keyPairCacheLoader);
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
 		mLatestVersions = CacheBuilder.newBuilder().build(versionCacheLoader);
+		mIdentities = new HashMap<String, SurespotIdentity>(5);
 	}
 
-	public synchronized void login(String username, String password, Cookie cookie) {
-		SurespotLog.v(TAG, "Logging in: " + username);
-		mLoggedInUser = username;
-		this.mPasswords.put(username, password);
-		this.mCookies.put(username, cookie);
+	public synchronized void login(SurespotIdentity identity, Cookie cookie) {
+		SurespotLog.v(TAG, "Logging in: " + identity.getUsername());
+		mLoggedInUser = identity.getUsername();	
+		this.mCookies.put(identity.getUsername(), cookie);
+		this.mIdentities.put(identity.getUsername(), identity);
 	}
 
 	public String getLoggedInUser() {
 		return mLoggedInUser;
-	}
-
-	public String getPassword(String username) {
-		return mPasswords.get(username);
 	}
 
 	public Cookie getCookie(String username) {
@@ -132,12 +131,24 @@ public class CredentialCachingService extends Service {
 		return null;
 
 	}
+	
+
+	public SurespotIdentity getIdentity() {
+		return getIdentity(mLoggedInUser);
+	}
+		
+	public SurespotIdentity getIdentity(String username) {
+		return mIdentities.get(username);
+	}
+	
+	
+	
 
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
 			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
-			mPasswords.remove(mLoggedInUser);
 			mCookies.remove(mLoggedInUser);
+			mIdentities.remove(mLoggedInUser);
 			mLoggedInUser = null;
 		}
 	}
@@ -374,5 +385,10 @@ public class CredentialCachingService extends Service {
 		}
 
 	}
+
+	
+	
+
+	
 
 }
