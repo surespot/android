@@ -52,7 +52,7 @@
     <string name="navigate_between_chat_tabs">Navigate between tabs by swiping.</string>
     <string name="help_delete">Delete messages by long pressing the message. This will remove the message from the server and remote devices.</string>
     <string name="help_imageZoom">Zoom images by clicking on the image.</string>
-    <string name="early_pre_beta">This is early pre-beta software, your logins and encrypted conversatations can and probably will be erased at any time. If this happens you will need to "Clear data" for the surespot application in your phone and create a new user.</string>
+    <string name="early_pre_beta">This is early pre-beta software, your logins and encrypted conversatations can and probably will be erased at any time.</string>
     <string name="incorrect_password_or_key">incorrect password or key</string>
     <string name="no_such_user">no such user</string>
     <string name="roll_keys">roll keys</string>
