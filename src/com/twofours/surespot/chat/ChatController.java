@@ -343,9 +343,11 @@ public class ChatController {
 		mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
-				SurespotLog.v(TAG, "onPageSelected, position: " + position);
-				String name = mChatPagerAdapter.getChatName(position);
-				setCurrentChat(name);
+				if (mChatPagerAdapter != null) {
+					SurespotLog.v(TAG, "onPageSelected, position: " + position);
+					String name = mChatPagerAdapter.getChatName(position);
+					setCurrentChat(name);
+				}
 
 			}
 		});
@@ -824,14 +826,14 @@ public class ChatController {
 	public synchronized void logout() {
 		mCurrentChat = null;
 		onPause();
-		mViewPager = null;
-		mCallback401 = null;
-		mChatPagerAdapter = null;
-		mIndicator = null;
-		mFragmentManager = null;
-	//	mFriendAdapter = null;
-		mMenuItems = null;
-		mSocketCallback = null;
+		//mViewPager = null;
+	//	mCallback401 = null;
+		//mChatPagerAdapter = null;
+		//mIndicator = null;
+		//mFragmentManager = null;
+		// mFriendAdapter = null;
+		//mMenuItems = null;
+		//mSocketCallback = null;
 		mChatAdapters.clear();
 		mActiveChats.clear();
 		mLastReceivedMessageIds.clear();
@@ -910,7 +912,7 @@ public class ChatController {
 	public synchronized void onPause() {
 		SurespotLog.v(TAG, "onPause, mPaused: " + mPaused + ": " + this);
 		if (!mPaused) {
-			mPaused = true;			
+			mPaused = true;
 			saveState(null);
 		}
 
@@ -980,7 +982,7 @@ public class ChatController {
 			mChatPagerAdapter.addChatName(username);
 			mFriendAdapter.setChatActive(username, true);
 			mActiveChats.add(username);
-			//mMessageActivity.remove(username);
+			// mMessageActivity.remove(username);
 			updateLastViewedMessageId(username, false);
 			// cancel associated notifications
 			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
