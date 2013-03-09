@@ -361,11 +361,11 @@ public class ChatFragment extends SherlockFragment {
 		Intent intent = getActivity().getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-		Bundle extras = intent.getExtras();
+	//	Bundle extras = intent.getExtras();
 
 		if (action.equals(Intent.ACTION_SEND)) {
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
-				String sharedText = extras.getString(Intent.EXTRA_TEXT);
+				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
 				SurespotLog.v(TAG, "received action send, data: " + sharedText);
 				mEditText.append(sharedText);
 				requestFocus();
