@@ -138,7 +138,8 @@ public class SignupActivity extends SherlockActivity {
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
 					Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
-					mMpd.decrProgress();
+					pwText.setText("");
+					mMpd.decrProgress();					
 				}
 				else {
 					final String dPassword = EncryptionController.derivePassword(password);
