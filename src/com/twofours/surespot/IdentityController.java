@@ -30,6 +30,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 
 public class IdentityController {
@@ -201,7 +202,11 @@ public class IdentityController {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 			String dpassword = EncryptionController.derivePassword(password);
-			MainActivity.getNetworkController().validate(username, dpassword,
+			NetworkController networkController = MainActivity.getNetworkController();
+			if (networkController == null) {
+				networkController = new NetworkController(context, null);
+			}
+			networkController.validate(username, dpassword,
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {

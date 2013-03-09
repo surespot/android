@@ -28,20 +28,19 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
 	private static final String UNSENT_MESSAGES = "unsentMessages";
 	private static final String ACTIVE_CHATS = "activeChats";
-	private static final String FRIENDS  = "friends";
+	private static final String FRIENDS = "friends";
 	private static final String MESSAGE_ACTIVITY = "messageActivity";
 	private static final String LAST_VIEWED_MESSAGE_IDS = "lastViewedMessageIds";
 	private static final String LAST_RECEIVED_MESSAGE_IDS = "lastReceivedMessageIds";
 	private static final String STATE_EXTENSION = ".sss";
 
 	private static final String TAG = "StateController";
-
-	
 
 	public Set<String> loadFriends() {
 		String filename = getFilename(FRIENDS);
@@ -71,9 +70,9 @@ public class StateController {
 		String filename = getFilename(FRIENDS);
 		if (filename != null) {
 			if (friends != null && friends.size() > 0) {
-				
+
 				JSONArray jsonArray = new JSONArray(friends);
-				String sFriends = jsonArray.toString();				
+				String sFriends = jsonArray.toString();
 				writeFile(filename, sFriends);
 				SurespotLog.v(TAG, "Saved friends: " + sFriends);
 			}
@@ -82,8 +81,7 @@ public class StateController {
 			}
 		}
 	}
-	
-	
+
 	public Set<String> loadActiveChats() {
 		String filename = getFilename(ACTIVE_CHATS);
 		HashSet<String> activeChats = new HashSet<String>();
@@ -112,9 +110,9 @@ public class StateController {
 		String filename = getFilename(ACTIVE_CHATS);
 		if (filename != null) {
 			if (chats != null && chats.size() > 0) {
-				
+
 				JSONArray jsonArray = new JSONArray(chats);
-				String sActivechats = jsonArray.toString();				
+				String sActivechats = jsonArray.toString();
 				writeFile(filename, sActivechats);
 				SurespotLog.v(TAG, "Saved active chats: " + sActivechats);
 			}
@@ -123,7 +121,7 @@ public class StateController {
 			}
 		}
 	}
-	
+
 	public HashMap<String, Boolean> loadMessageActivity() {
 		String filename = getFilename(MESSAGE_ACTIVITY);
 		if (filename != null) {
@@ -155,10 +153,6 @@ public class StateController {
 			}
 		}
 	}
-	
-
-	
-
 
 	public HashMap<String, Integer> loadLastViewMessageIds() {
 		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
@@ -191,7 +185,7 @@ public class StateController {
 			}
 		}
 	}
-	
+
 	public HashMap<String, Integer> loadLastReceivedMessageIds() {
 		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
 		if (filename != null) {
@@ -223,7 +217,6 @@ public class StateController {
 			}
 		}
 	}
-
 
 	public void saveUnsentMessages(Collection<SurespotMessage> messages) {
 		String filename = getFilename(UNSENT_MESSAGES);
@@ -325,7 +318,6 @@ public class StateController {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject.toString();
 	}
-	
 
 	private static String booleanMapToJsonString(Map<String, Boolean> map) {
 		JSONObject jsonObject = new JSONObject(map);
@@ -344,14 +336,13 @@ public class StateController {
 		return null;
 
 	}
-	
+
 	public static synchronized void wipeAllState(Context context) {
 		deleteRecursive(new File(FileUtils.getStateDir(context)));
 	}
 
 	public static synchronized void wipeState(Context context, String identityName) {
 
-		
 		deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 
 	}
@@ -366,7 +357,7 @@ public class StateController {
 		}
 		fileOrDirectory.delete();
 	}
-	
+
 	public static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
 		new AsyncTask<Void, Void, Void>() {
 			protected Void doInBackground(Void... params) {
@@ -381,7 +372,10 @@ public class StateController {
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 
 				// network caches
-				MainActivity.getNetworkController().clearCache();
+				NetworkController networkController = MainActivity.getNetworkController();
+				if (networkController != null) {
+					networkController.clearCache();
+				}
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);
