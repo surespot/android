@@ -792,12 +792,13 @@ public class ChatController {
 	private synchronized void saveMessages() {
 		// save last 30? messages
 		SurespotLog.v(TAG, "saveMessages");
-		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			String them = entry.getKey();
-			String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), them);
-			SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages());
+		if (IdentityController.getLoggedInUser() != null) {
+			for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
+				String them = entry.getKey();
+				String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), them);
+				SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages());
+			}
 		}
-
 	}
 
 	private synchronized void saveMessages(String username) {
@@ -997,11 +998,11 @@ public class ChatController {
 			SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
 			ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
 			SurespotLog.v(TAG, "fragment: " + chatFragment);
-			
+
 			if (chatFragment != null) {
 				chatFragment.requestFocus();
 			}
-			
+
 			if (mMode == MODE_SELECT) {
 				chatFragment.handleSendIntent();
 				setMode(MODE_NORMAL);
