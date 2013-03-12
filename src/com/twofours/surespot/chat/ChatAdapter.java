@@ -13,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
@@ -26,7 +27,6 @@ public class ChatAdapter extends BaseAdapter {
 	private Context mContext;
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
-	private final ImageDownloader mImageDownloader = new ImageDownloader();
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
 
@@ -52,7 +52,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public void evictCache() {
-		mImageDownloader.evictCache();
+		ImageDownloader.evictCache();
 	}
 
 	public ArrayList<SurespotMessage> getMessages() {
@@ -114,17 +114,17 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	private void insertMessage(SurespotMessage message) {
-		//if (mMessages.indexOf(message) == -1) {
-			mMessages.add(0, message);
-//		}
-//		else {
-//			SurespotLog.v(TAG, "insertMessage, message already present");
-//		}
+		// if (mMessages.indexOf(message) == -1) {
+		mMessages.add(0, message);
+		// }
+		// else {
+		// SurespotLog.v(TAG, "insertMessage, message already present");
+		// }
 	}
 
 	public void addMessages(ArrayList<SurespotMessage> messages) {
 		if (messages.size() > 0) {
-			mMessages.clear();
+			// mMessages.clear();
 			mMessages.addAll(messages);
 
 			// notifyDataSetChanged();
@@ -200,6 +200,11 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvTime.setText("sending...");
 		}
 		else {
+			// if the sender deleted it, or we deleted their message, don't show the data
+			if (item.getDeletedFrom() || (item.getDeletedTo() && !item.getFrom().equals(IdentityController.getLoggedInUser()))) {
+				item.setPlainData("deleted");
+			}
+
 			if (item.getPlainData() == null) {
 				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 			}
@@ -234,7 +239,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
-			mImageDownloader.download(chatMessageViewHolder.imageView, item);
+			ImageDownloader.download(chatMessageViewHolder.imageView, item);
 		}
 
 		if (type == TYPE_US) {
@@ -304,20 +309,23 @@ public class ChatAdapter extends BaseAdapter {
 	// return message;
 	// }
 
-	public SurespotMessage deleteMessageById(Integer id) {
+	public SurespotMessage getMessageById(Integer id) {
 		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
 			message = iterator.next();
 
 			Integer localId = message.getId();
 			if (localId != null && localId.equals(id)) {
-				SurespotLog.v(TAG, "deleting message");
-				iterator.remove();
+				// SurespotLog.v(TAG, "deleting message");
+				// message.setCipherData("deleted");
+				// if (message.getTo().equals(IdentityController.getLoggedInUser())) {
+				// message.setDeletedTo(true);
+				// }
 
 				break;
 			}
 		}
-		notifyDataSetChanged();
+		// notifyDataSetChanged();
 		return message;
 	}
 

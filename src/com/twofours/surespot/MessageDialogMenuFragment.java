@@ -10,12 +10,12 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 
 public class MessageDialogMenuFragment extends SherlockDialogFragment {
-	private SurespotMessage mMessage;	
-	
+	private SurespotMessage mMessage;
+
 	public void setMessage(SurespotMessage message) {
 		mMessage = message;
 	}
-	
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -23,11 +23,12 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 
 		builder.setItems(new String[] { "delete message" }, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				if (mMessage == null) return;
+				if (mMessage == null)
+					return;
 				switch (which) {
 				case 0:
-					// make sure it's our message
-					if (mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+					// if it hasn't been deleted, show popup
+					if (!mMessage.getDeletedTo() && !mMessage.getCipherData().equals("deleted")) {
 						getMainActivity().getChatController().deleteMessage(mMessage);
 					}
 					break;
@@ -38,10 +39,9 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 
 		return builder.create();
 	}
-	
 
 	private MainActivity getMainActivity() {
-		 return (MainActivity) getActivity();
+		return (MainActivity) getActivity();
 	}
 
 }

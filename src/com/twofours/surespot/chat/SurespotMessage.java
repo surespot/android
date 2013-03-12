@@ -13,8 +13,7 @@ import com.twofours.surespot.common.SurespotLog;
  */
 public class SurespotMessage implements Comparable<SurespotMessage> {
 	private static final String TAG = "SurespotMessage";
-	private String mType;
-	private String mSubtype;
+	
 	private String mFrom;
 	private String mTo;
 	private String mIv;
@@ -28,24 +27,12 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	private String mToVersion;
 
 	private String mFromVersion;
+	private boolean mDeletedTo;
+	private boolean mDeletedFrom;
 
 	private boolean mLoading;
 
-	public String getSubType() {
-		return mSubtype;
-	}
-
-	public void setSubType(String subtype) {
-		mSubtype = subtype;
-	}
-
-	public String getType() {
-		return mType;
-	}
-
-	public void setType(String type) {
-		mType = type;
-	}
+	
 
 	public String getFrom() {
 		return mFrom;
@@ -142,29 +129,24 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 
 		SurespotMessage chatMessage = new SurespotMessage();
 
-		
-		chatMessage.setType(jsonMessage.getString("type"));
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
-		
-		chatMessage.setIv(jsonMessage.optString("iv", null));		
-		chatMessage.setCipherData(jsonMessage.optString("data", null));
-		chatMessage.setSubType(jsonMessage.optString("subtype", null));
-		chatMessage.setMimeType(jsonMessage.optString("mimeType", null));
-		
-		chatMessage.setToVersion(jsonMessage.optString("toVersion",null));
-		chatMessage.setFromVersion(jsonMessage.optString("fromVersion",null));
-		
+		chatMessage.setIv(jsonMessage.getString("iv"));
+		chatMessage.setCipherData(jsonMessage.getString("data"));
+		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
+		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
+		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
+		chatMessage.setDeletedTo(jsonMessage.optBoolean("deletedTo", false));
+
 		Integer id = jsonMessage.optInt("id");
 		if (id > 0) {
 			chatMessage.setId(id);
 		}
-		
+
 		Integer height = jsonMessage.optInt("height");
 		if (height > 0) {
 			chatMessage.setHeight(jsonMessage.optInt("height"));
 		}
-	
 
 		Integer resendId = jsonMessage.optInt("resendId");
 		if (resendId > 0) {
@@ -183,44 +165,30 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		JSONObject message = new JSONObject();
 
 		try {
-			message.put("type", this.getType());
 			message.put("to", this.getTo());
-			message.put("from", this.getFrom());			
-			
-			if (this.getIv() != null) {
-				message.put("iv", this.getIv());
-			}			
+			message.put("from", this.getFrom());
+			message.put("toVersion", this.getToVersion());
+			message.put("fromVersion", this.getFromVersion());
+			message.put("iv", this.getIv());
+			message.put("data", this.getCipherData());
+			message.put("mimeType", this.getMimeType());
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
 			}
 
-			if (this.getSubType() != null) {
-				message.put("subtype", this.getSubType());
-			}
-			if (this.getCipherData() != null) {
-				message.put("data", this.getCipherData());
+			if (this.getDeletedTo() != null) {
+				message.put("deletedTo", this.getDeletedTo());
 			}
 
 			if (this.getResendId() != null) {
 				message.put("resendId", this.getResendId());
 			}
-			if (this.getMimeType() != null) {
-				message.put("mimeType", this.getMimeType());
-			}
-		
 
-			if (this.getToVersion() != null) {
-				message.put("toVersion", this.getToVersion());
-			}
-			if (this.getFromVersion() != null) {
-				message.put("fromVersion", this.getFromVersion());
-			}
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
 			if (this.getHeight() > 0) {
-
 				message.put("height", this.getHeight());
 			}
 
@@ -248,10 +216,10 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		result = prime * result + ((mMimeType == null) ? 0 : mMimeType.hashCode());
 		result = prime * result + ((mPlainData == null) ? 0 : mPlainData.hashCode());
 		result = prime * result + ((mResendId == null) ? 0 : mResendId.hashCode());
-		result = prime * result + ((mSubtype == null) ? 0 : mSubtype.hashCode());
+
 		result = prime * result + ((mTo == null) ? 0 : mTo.hashCode());
 		result = prime * result + ((mToVersion == null) ? 0 : mToVersion.hashCode());
-		result = prime * result + ((mType == null) ? 0 : mType.hashCode());
+
 		return result;
 	}
 
@@ -274,8 +242,6 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			return (this.getIv().equals(rhs.getIv()));
 		}
 	}
-
-
 
 	public String getMimeType() {
 		return mMimeType;
@@ -331,6 +297,22 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 
 	public void setFromVersion(String fromVersion) {
 		mFromVersion = fromVersion;
+	}
+
+	public Boolean getDeletedTo() {
+		return mDeletedTo;
+	}
+
+	public void setDeletedTo(Boolean deletedTo) {
+		mDeletedTo = deletedTo;
+	}
+
+	public boolean getDeletedFrom() {
+		return mDeletedFrom;
+	}
+
+	public void setDeletedFrom(boolean deletedFrom) {
+		mDeletedFrom = deletedFrom;
 	}
 
 	@Override

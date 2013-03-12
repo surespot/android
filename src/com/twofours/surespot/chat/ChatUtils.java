@@ -12,6 +12,7 @@ import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -41,6 +42,11 @@ public class ChatUtils {
 		return (to.compareTo(from) < 0 ? to + ":" + from : from + ":" + to);
 	}
 	
+	public static String getSpot(SurespotMessage message) {
+		return getSpot(message.getTo(), message.getFrom());
+	}
+	
+	
 	public static String getOtherSpotUser(String spot, String user) {
 		String [] split = spot.split(":");
 		
@@ -49,7 +55,6 @@ public class ChatUtils {
 
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
-		chatMessage.setType("message");
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
@@ -66,7 +71,6 @@ public class ChatUtils {
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
-		chatMessage.setType("message");
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
@@ -340,6 +344,22 @@ public class ChatUtils {
 		}
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "jsonStringToChatMessages", e);
+		}
+		return messages;
+
+	}
+	
+	public static ArrayList<SurespotMessage> jsonStringsToMessages(String jsonMessageString) {
+
+		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
+		try {
+			JSONArray jsonUM = new JSONArray(jsonMessageString);
+			for (int i = 0; i < jsonUM.length(); i++) {
+				messages.add(SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i))));
+			}
+		}
+		catch (JSONException e) {
+			SurespotLog.w(TAG, "jsonStringsToMessages", e);
 		}
 		return messages;
 

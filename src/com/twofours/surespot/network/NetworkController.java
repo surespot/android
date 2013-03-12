@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.acra.ACRA;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.net.Uri;
@@ -118,7 +117,7 @@ public class NetworkController {
 
 							Uri uri = Uri.parse(mBaseUrl);
 							if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
-								//setUnauthorized(true);
+								// setUnauthorized(true);
 
 								mClient.cancelRequests(mContext, true);
 								mSyncClient.cancelRequests(mContext, true);
@@ -302,34 +301,45 @@ public class NetworkController {
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public void getMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
+//	public void getMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
+//
+//		if (id == null) {
+//			get("/messages/" + room, null, responseHandler);
+//		}
+//		else {
+//			get("/messages/" + room + "/after/" + id, null, responseHandler);
+//		}
+//	}
 
-		if (id == null) {
-			get("/messages/" + room, null, responseHandler);
-		}
-		else {
-			get("/messages/" + room + "/after/" + id, null, responseHandler);
-		}
+	public void getMessageData(String user, Integer messageId, Integer controlId, AsyncHttpResponseHandler responseHandler) {
+		int mId = messageId;
+		int cId = controlId;
+
+		get("/messagedata/" + user + "/" + mId + "/" + cId, null, responseHandler);
 	}
 
-	public void getLatestMessages(JSONObject messageIds, JsonHttpResponseHandler responseHandler) {
-		// using a post because async http client sends the params url encoded which leaks too much data imo
+	// public void getLatestMessages(JSONObject messageIds, JsonHttpResponseHandler responseHandler) {
+	// // using a post because async http client sends the params url encoded which leaks too much data imo
+	//
+	// String smessageIds = null;
+	//
+	// if (messageIds.length() > 0) {
+	// smessageIds = messageIds.toString();
+	//
+	// SurespotLog.v(TAG, "asking server for messages after message ids: " + smessageIds);
+	//
+	// RequestParams params = new RequestParams();
+	// params.put("messageIds", smessageIds);
+	// post("/messages", params, responseHandler);
+	// }
+	// else {
+	// post("/messages", null, responseHandler);
+	// }
+	//
+	// }
 
-		String smessageIds = null;
-
-		if (messageIds.length() > 0) {
-			smessageIds = messageIds.toString();
-
-			SurespotLog.v(TAG, "asking server for messages after message ids: " + smessageIds);
-
-			RequestParams params = new RequestParams();
-			params.put("messageIds", smessageIds);
-			post("/messages", params, responseHandler);
-		}
-		else {
-			post("/messages", null, responseHandler);
-		}
-
+	public void getLatestIds(JsonHttpResponseHandler responseHandler) {
+		get("/latestids", null, responseHandler);
 	}
 
 	// public void getLatestMessages(JSONArray messageIds, JsonHttpResponseHandler responseHandler) {

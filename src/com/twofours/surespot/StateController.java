@@ -38,9 +38,11 @@ public class StateController {
 	private static final String MESSAGE_ACTIVITY = "messageActivity";
 	private static final String LAST_VIEWED_MESSAGE_IDS = "lastViewedMessageIds";
 	private static final String LAST_RECEIVED_MESSAGE_IDS = "lastReceivedMessageIds";
+	private static final String LAST_RECEIVED_MESSAGE_CONTROL_IDS = "lastReceivedMessageControlIds";
 	private static final String STATE_EXTENSION = ".sss";
 
 	private static final String TAG = "StateController";
+	
 
 	public Set<String> loadFriends() {
 		String filename = getFilename(FRIENDS);
@@ -217,6 +219,39 @@ public class StateController {
 			}
 		}
 	}
+	
+	public HashMap<String, Integer> loadLastReceivedControlIds() {
+		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
+		if (filename != null) {
+
+			String lastControlIdJson = readFile(filename);
+			if (lastControlIdJson != null) {
+
+				SurespotLog.v(TAG, "Loaded last received ids: " + lastControlIdJson);
+				return Utils.jsonStringToMap(lastControlIdJson);
+			}
+
+		}
+		return new HashMap<String, Integer>();
+
+	}
+
+	public void saveLastReceivedControlIds(Map<String, Integer> controlIds) {
+
+		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
+		if (filename != null) {
+			if (controlIds != null && controlIds.size() > 0) {
+				String scontrolIds = mapToJsonString(controlIds);
+				writeFile(filename, scontrolIds);
+				SurespotLog.v(TAG, "saved last received controlIds: " + scontrolIds);
+
+			}
+			else {
+				new File(filename).delete();
+			}
+		}
+	}
+
 
 	public void saveUnsentMessages(Collection<SurespotMessage> messages) {
 		String filename = getFilename(UNSENT_MESSAGES);

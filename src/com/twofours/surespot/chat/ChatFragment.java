@@ -92,15 +92,16 @@ public class ChatFragment extends SherlockFragment {
 
 				// pull the message out
 				if (message != null) {
+					if (!message.getDeletedTo() && !message.getCipherData().equals("deleted")) {
+						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
+							if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
 
-					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-						ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
-						if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
-
-							Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
-							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
-							ChatFragment.this.getActivity().startActivity(newIntent);
+								Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
+								newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+								newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+								ChatFragment.this.getActivity().startActivity(newIntent);
+							}
 						}
 					}
 
@@ -115,13 +116,14 @@ public class ChatFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
+				if (!message.getDeletedTo() && !message.getCipherData().equals("deleted")) {
 					MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
 					dialog.setMessage(message);
 					dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
 					return true;
 				}
 				return false;
+
 			}
 		});
 
@@ -195,60 +197,60 @@ public class ChatFragment extends SherlockFragment {
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
-//			mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
-//
-//				@Override
-//				public void handleResponse(Boolean loading) {
-//					// mLoading = loading;
-//					SurespotLog.v(TAG, "chatAdapter loading: " + loading);
-//					if (loading) {
-//						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-//						// only show the dialog if we haven't loaded within 500 ms
-//						if (mTimer != null) {
-//							mTimer.cancel();
-//						}
-//
-//						mTimer = new Timer();
-//						mTimer.schedule(new TimerTask() {
-//
-//							@Override
-//							public void run() {
-//								Handler handler = getMainActivity().getMainHandler();
-//								if (handler != null) {
-//									handler.post(new Runnable() {
-//
-//										@Override
-//										public void run() {
-//											SurespotLog.v(TAG, "chat fragment showing progress");
-//											//view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-//										}
-//									});
-//								}
-//
-//							}
-//						}, 250);
-//
-//					}
-//					else {
-//						SurespotLog.v(TAG, "chat fragment tearing progress down");
-//						if (mTimer != null) {
-//							mTimer.cancel();
-//							mTimer = null;
-//						}
-//
-//						//view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-//						//view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-//					//	mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-//					}
-//				}
-//			});
+			// mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
+			//
+			// @Override
+			// public void handleResponse(Boolean loading) {
+			// // mLoading = loading;
+			// SurespotLog.v(TAG, "chatAdapter loading: " + loading);
+			// if (loading) {
+			// // view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+			// // only show the dialog if we haven't loaded within 500 ms
+			// if (mTimer != null) {
+			// mTimer.cancel();
+			// }
+			//
+			// mTimer = new Timer();
+			// mTimer.schedule(new TimerTask() {
+			//
+			// @Override
+			// public void run() {
+			// Handler handler = getMainActivity().getMainHandler();
+			// if (handler != null) {
+			// handler.post(new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			// SurespotLog.v(TAG, "chat fragment showing progress");
+			// //view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+			// }
+			// });
+			// }
+			//
+			// }
+			// }, 250);
+			//
+			// }
+			// else {
+			// SurespotLog.v(TAG, "chat fragment tearing progress down");
+			// if (mTimer != null) {
+			// mTimer.cancel();
+			// mTimer = null;
+			// }
+			//
+			// //view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+			// //view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+			// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+			// }
+			// }
+			// });
 		}
 
 		return view;
 	}
-	
+
 	private MainActivity getMainActivity() {
-		 return (MainActivity) getActivity();
+		return (MainActivity) getActivity();
 	}
 
 	private int mSelection;
@@ -266,7 +268,7 @@ public class ChatFragment extends SherlockFragment {
 				// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
 
 				int loaded = totalItemCount - mPreviousTotal;
-				//SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
+				// SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
 				mListView.setSelectionFromTop(mSelection + loaded, mTop);
 
 				// mPreviousTotal = totalItemCount;
@@ -361,7 +363,7 @@ public class ChatFragment extends SherlockFragment {
 		Intent intent = getActivity().getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-	//	Bundle extras = intent.getExtras();
+		// Bundle extras = intent.getExtras();
 
 		if (action.equals(Intent.ACTION_SEND)) {
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
@@ -376,12 +378,10 @@ public class ChatFragment extends SherlockFragment {
 					getActivity().getIntent().getExtras().clear();
 				}
 			}
-			
-			Utils.configureActionBar(ChatFragment.this.getSherlockActivity(), "surespot",
-					IdentityController.getLoggedInUser(), false);
-		}	
-		
-		
+
+			Utils.configureActionBar(ChatFragment.this.getSherlockActivity(), "surespot", IdentityController.getLoggedInUser(), false);
+		}
+
 	}
 
 	public void requestFocus() {
