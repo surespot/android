@@ -780,12 +780,20 @@ public class ChatController {
 							if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 								MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 							}
-							SurespotLog.v(TAG, "marking message deleted");
-							dMessage.setData("");
-							dMessage.setPlainData("deleted");
-							if (dMessage.getTo().equals(IdentityController.getLoggedInUser())) {
+							
+							boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
+							boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
+
+							// if i sent the delete, or it's not my message then delete it
+							// (if someone else deleted my message we don't care)
+							if (controlFromMe || !myMessage) {
+								SurespotLog.v(TAG, "marking message deleted");
+								dMessage.setData("");
+								dMessage.setPlainData("deleted");
 								dMessage.setDeletedTo(true);
-							}
+								dMessage.setDeletedFrom(true);
+								chatAdapter.notifyDataSetChanged();
+							}													
 						}
 					}
 				}
