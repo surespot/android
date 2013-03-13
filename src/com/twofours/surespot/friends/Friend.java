@@ -16,6 +16,10 @@ public class Friend implements Comparable<Friend> {
 
 	private String mName;
 	private int mFlags;
+	private int mLastViewedMessageId;
+	private int mAvailableMessageId;
+	private int mLastReceivedMessageControlId;
+	private int mLastReceivedUserControlId;
 
 	public Friend(String name) {
 		mName = name;
@@ -29,6 +33,45 @@ public class Friend implements Comparable<Friend> {
 		this.mName = name;
 	}
 
+	public int getLastViewedMessageId() {
+		return mLastViewedMessageId;
+	}
+
+	public void setLastViewedMessageId(int lastViewedMessageId) {
+		if (lastViewedMessageId > 0) {
+			mLastViewedMessageId = lastViewedMessageId;
+		}
+		else {
+			mLastViewedMessageId = mAvailableMessageId;
+		}
+	}
+
+	// public int getAvailableMessageId() {
+	// return mAvailableMessageId;
+	// }
+
+	public void setAvailableMessageId(int availableMessageId) {
+		if (availableMessageId > 0) {
+			mAvailableMessageId = availableMessageId;
+		}
+	}
+
+	public int getLastReceivedMessageControlId() {
+		return mLastReceivedMessageControlId;
+	}
+
+	public void setLastReceivedMessageControlId(int lastReceivedMessageControlId) {
+		mLastReceivedMessageControlId = lastReceivedMessageControlId;
+	}
+
+	public int getLastReceivedUserControlId() {
+		return mLastReceivedUserControlId;
+	}
+
+	public void setLastReceivedUserControlId(int lastReceivedUserControlId) {
+		mLastReceivedUserControlId = lastReceivedUserControlId;
+	}
+
 	public void setChatActive(boolean set) {
 		if (set) {
 			mFlags |= CHAT_ACTIVE;
@@ -39,14 +82,14 @@ public class Friend implements Comparable<Friend> {
 		}
 	}
 
-	public void setMessageActivity(boolean set) {
-		if (set) {
-			mFlags |= MESSAGE_ACTIVITY;
-		}
-		else {
-			mFlags &= ~MESSAGE_ACTIVITY;
-		}
-	}
+	// public void setMessageActivity(boolean set) {
+	// if (set) {
+	// mFlags |= MESSAGE_ACTIVITY;
+	// }
+	// else {
+	// mFlags &= ~MESSAGE_ACTIVITY;
+	// }
+	// }
 
 	public void setInviter(boolean set) {
 		if (set) {
@@ -90,7 +133,9 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public boolean isMessageActivity() {
-		return (mFlags & MESSAGE_ACTIVITY) == MESSAGE_ACTIVITY;
+		// return (mFlags & MESSAGE_ACTIVITY) == MESSAGE_ACTIVITY;
+		SurespotLog.v(TAG, mName + ": isMessageActivity, lastviewed: " + mLastViewedMessageId + ", lastAvailable: " + mAvailableMessageId);
+		return mAvailableMessageId - mLastViewedMessageId > 0;
 	}
 
 	public boolean isFriend() {
@@ -99,6 +144,10 @@ public class Friend implements Comparable<Friend> {
 
 	public int getFlags() {
 		return mFlags;
+	}
+
+	public void setFlags(int flags) {
+		mFlags = flags;
 	}
 
 	public boolean isChatActive() {
@@ -167,17 +216,26 @@ public class Friend implements Comparable<Friend> {
 	public static Friend toFriend(JSONObject jsonFriend) throws JSONException {
 		Friend friend = new Friend(jsonFriend.getString("name"));
 
-		String status = jsonFriend.getString("status");
-		if (status.equals("invited")) {
-			friend.setInvited(true);
-		}
+		friend.setFlags(jsonFriend.optInt("flags"));
+		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
+		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
+		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
+		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
+		// }
 
-		else {
-			if (status.equals("invitee")) {
-				friend.setInviter(true);
+		String status = jsonFriend.optString("status");
+		if (!status.isEmpty()) {
+			if (status.equals("invited")) {
+				friend.setInvited(true);
+			}
+
+			else {
+				if (status.equals("invitee")) {
+					friend.setInviter(true);
+				}
 			}
 		}
-		// }
+		// friend.setLastReceivedMessageControlId(lastReceivedMessageControlId)
 
 		return friend;
 	}
@@ -186,8 +244,27 @@ public class Friend implements Comparable<Friend> {
 		this.setNewFriend(false);
 		this.setInvited(friend.isInvited());
 		this.setInviter(friend.isInviter());
-		this.setChatActive(friend.isChatActive());
-		this.setMessageActivity(friend.isMessageActivity());
+		// this.setChatActive(friend.isChatActive());
+		// this.setMessageActivity(friend.isMessageActivity());
 	}
 
+	public JSONObject toJSONObject() {
+		JSONObject jsonFriend = new JSONObject();
+
+		try {
+			jsonFriend.put("name", this.getName());
+			jsonFriend.put("flags", this.getFlags());
+			jsonFriend.put("lastReceivedMessageControlId", this.getLastReceivedMessageControlId());
+			jsonFriend.put("lastAvailableMessageId", this.mAvailableMessageId);
+			jsonFriend.put("lastReceivedUserControlId", this.getLastReceivedUserControlId());
+			jsonFriend.put("lastViewedMessageId", this.getLastViewedMessageId());
+
+			return jsonFriend;
+		}
+		catch (JSONException e) {
+			SurespotLog.w(TAG, "toJSONObject", e);
+		}
+		return null;
+
+	}
 };

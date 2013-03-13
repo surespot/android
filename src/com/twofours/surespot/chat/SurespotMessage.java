@@ -13,7 +13,7 @@ import com.twofours.surespot.common.SurespotLog;
  */
 public class SurespotMessage implements Comparable<SurespotMessage> {
 	private static final String TAG = "SurespotMessage";
-	
+
 	private String mFrom;
 	private String mTo;
 	private String mIv;
@@ -31,8 +31,6 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	private boolean mDeletedFrom;
 
 	private boolean mLoading;
-
-	
 
 	public String getFrom() {
 		return mFrom;
@@ -137,6 +135,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setDeletedTo(jsonMessage.optBoolean("deletedTo", false));
+		chatMessage.setDeletedFrom(jsonMessage.optBoolean("deletedFrom", false));
 
 		Integer id = jsonMessage.optInt("id");
 		if (id > 0) {
@@ -172,13 +171,11 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			message.put("iv", this.getIv());
 			message.put("data", this.getCipherData());
 			message.put("mimeType", this.getMimeType());
+			message.put("deletedTo", this.getDeletedTo());
+			message.put("deletedFrom", this.getDeletedFrom());
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
-			}
-
-			if (this.getDeletedTo() != null) {
-				message.put("deletedTo", this.getDeletedTo());
 			}
 
 			if (this.getResendId() != null) {
@@ -299,7 +296,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		mFromVersion = fromVersion;
 	}
 
-	public Boolean getDeletedTo() {
+	public boolean getDeletedTo() {
 		return mDeletedTo;
 	}
 
@@ -311,7 +308,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		return mDeletedFrom;
 	}
 
-	public void setDeletedFrom(boolean deletedFrom) {
+	public void setDeletedFrom(Boolean deletedFrom) {
 		mDeletedFrom = deletedFrom;
 	}
 

@@ -201,7 +201,7 @@ public class ChatAdapter extends BaseAdapter {
 		}
 		else {
 			// if the sender deleted it, or we deleted their message, don't show the data
-			if (item.getDeletedFrom() || (item.getDeletedTo() && !item.getFrom().equals(IdentityController.getLoggedInUser()))) {
+			if (item.getDeletedFrom() || (item.getDeletedTo() && item.getTo().equals(IdentityController.getLoggedInUser()))) {
 				item.setPlainData("deleted");
 			}
 

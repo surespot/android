@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
@@ -44,9 +46,9 @@ public class StateController {
 	private static final String TAG = "StateController";
 	
 
-	public Set<String> loadFriends() {
+	public List<Friend> loadFriends() {
 		String filename = getFilename(FRIENDS);
-		HashSet<String> friends = new HashSet<String>();
+		ArrayList<Friend> friends = new ArrayList<Friend>();
 		if (filename != null) {
 			String sFriendsJson = readFile(filename);
 			if (sFriendsJson != null) {
@@ -55,8 +57,8 @@ public class StateController {
 				try {
 					friendsJson = new JSONArray(sFriendsJson);
 					for (int i = 0; i < friendsJson.length(); i++) {
-						String chatName = friendsJson.getString(i);
-						friends.add(chatName);
+						Friend friend = Friend.toFriend(friendsJson.getJSONObject(i));
+						friends.add(friend);
 					}
 
 				}
@@ -68,12 +70,19 @@ public class StateController {
 		return friends;
 	}
 
-	public void saveFriends(Collection<String> friends) {
+	public void saveFriends(List<Friend> friends) {
 		String filename = getFilename(FRIENDS);
 		if (filename != null) {
 			if (friends != null && friends.size() > 0) {
 
-				JSONArray jsonArray = new JSONArray(friends);
+				JSONArray jsonArray = new JSONArray();
+				ListIterator<Friend> iterator = friends.listIterator();
+				
+				while (iterator.hasNext()) {
+					Friend friend = iterator.next();
+					jsonArray.put(friend.toJSONObject());
+				}
+				
 				String sFriends = jsonArray.toString();
 				writeFile(filename, sFriends);
 				SurespotLog.v(TAG, "Saved friends: " + sFriends);

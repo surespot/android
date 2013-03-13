@@ -92,7 +92,7 @@ public class ChatFragment extends SherlockFragment {
 
 				// pull the message out
 				if (message != null) {
-					if (!message.getDeletedTo() && !message.getCipherData().equals("deleted")) {
+					if (!message.getDeletedTo() && !message.getDeletedFrom()) {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
 							if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
@@ -116,7 +116,7 @@ public class ChatFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				if (!message.getDeletedTo() && !message.getCipherData().equals("deleted")) {
+				if (!message.getDeletedTo() && !message.getDeletedFrom()) {
 					MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
 					dialog.setMessage(message);
 					dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
@@ -319,6 +319,12 @@ public class ChatFragment extends SherlockFragment {
 		public void onScrollStateChanged(AbsListView view, int scrollState) {
 
 		}
+	};
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		SurespotLog.v(TAG, "onResume: " + mUsername);
 	};
 
 	@Override

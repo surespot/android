@@ -2,7 +2,6 @@ package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -17,8 +16,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 	private ArrayList<String> mChatNames;
 
 	public ChatPagerAdapter(FragmentManager fm) {
-		super(fm);
-		mChatNames = new ArrayList<String>();
+		super(fm);		
 	}
 
 	@Override
@@ -98,10 +96,10 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		}
 	}
 
-	public void addChatNames(Set<String> names) {
-		for (String name : names) {
-			mChatNames.add(name);
-		}
+	public void setChatNames(ArrayList<String> names) {
+
+		mChatNames = names;
+
 		sort();
 		this.notifyDataSetChanged();
 
@@ -160,7 +158,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
 		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());
-		mCurTransaction.remove(fragment);	
+		mCurTransaction.remove(fragment);
 
 		notifyDataSetChanged();
 

@@ -3,6 +3,7 @@ package com.twofours.surespot.friends;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -65,7 +66,7 @@ public class FriendAdapter extends BaseAdapter {
 		mLoadingCallback = callback;
 	}
 
-	private Friend getFriend(String friendName) {
+	public Friend getFriend(String friendName) {
 		for (Friend friend : mFriends) {
 			if (friend.getName().equals(friendName)) {
 				return friend;
@@ -123,17 +124,17 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public void setMessageActivity(String username, boolean activity) {
-		Friend friend = getFriend(username);
-		if (friend != null) {
-			friend.setMessageActivity(activity);
-		}
-		Collections.sort(mFriends);
-		notifyDataSetChanged();
+	// public void setMessageActivity(String username, boolean activity) {
+	// Friend friend = getFriend(username);
+	// if (friend != null) {
+	// friend.setMessageActivity(activity);
+	// }
+	// Collections.sort(mFriends);
+	// notifyDataSetChanged();
+	//
+	// }
 
-	}
-
-	public void setFriends(ArrayList<Friend> friends) {
+	public void setFriends(List<Friend> friends) {
 		SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
 
 		mFriends.clear();
@@ -156,7 +157,7 @@ public class FriendAdapter extends BaseAdapter {
 				incumbent.update(friend);
 			}
 		}
-		
+
 		sort();
 		notifyDataSetChanged();
 	}
@@ -315,6 +316,22 @@ public class FriendAdapter extends BaseAdapter {
 		ArrayList<String> names = new ArrayList<String>();
 		for (Friend friend : mFriends) {
 			names.add(friend.getName());
+		}
+		return names;
+	}
+
+	public ArrayList<Friend> getFriends() {
+		return mFriends;
+	}
+
+	public ArrayList<String> getActiveChats() {
+		if (mFriends == null)
+			return null;
+		ArrayList<String> names = new ArrayList<String>();
+		for (Friend friend : mFriends) {
+			if (friend.isChatActive()) {
+				names.add(friend.getName());
+			}
 		}
 		return names;
 	}
