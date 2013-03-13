@@ -67,7 +67,7 @@ public class ImageDownloader {
 	 *            The ImageView to bind the downloaded image to.
 	 */
 	public static void download(ImageView imageView, SurespotMessage message) {
-		Bitmap bitmap = getBitmapFromCache(message.getCipherData());
+		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
 			forceDownload(imageView, message);
@@ -171,7 +171,7 @@ public class ImageDownloader {
 		public void run() {
 
 			InputStream imageStream = MainActivity.getNetworkController()
-					.getFileStream(MainActivity.getContext(), mMessage.getCipherData());
+					.getFileStream(MainActivity.getContext(), mMessage.getData());
 
 			Bitmap bitmap = null;
 
@@ -208,7 +208,7 @@ public class ImageDownloader {
 
 			if (bitmap != null) {
 				final Bitmap finalBitmap = bitmap;
-				ImageDownloader.addBitmapToCache(mMessage.getCipherData(), bitmap);
+				ImageDownloader.addBitmapToCache(mMessage.getData(), bitmap);
 
 				if (imageViewReference != null) {
 					final ImageView imageView = imageViewReference.get();

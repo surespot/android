@@ -43,7 +43,7 @@ public class ImageViewActivity extends SherlockActivity {
 					protected Bitmap doInBackground(Void... params) {
 
 						InputStream imageStream = MainActivity.getNetworkController().getFileStream(ImageViewActivity.this,
-								message.getCipherData());
+								message.getData());
 
 						Bitmap bitmap = null;
 						PipedOutputStream out = new PipedOutputStream();

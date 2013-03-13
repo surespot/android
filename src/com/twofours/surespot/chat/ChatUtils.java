@@ -75,7 +75,7 @@ public class ChatUtils {
 		chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
 		chatMessage.setToVersion(IdentityController.getTheirLatestVersion(to));
-		chatMessage.setCipherData(cipherData);
+		chatMessage.setData(cipherData);
 		chatMessage.setPlainData(plainData);
 		chatMessage.setIv(iv);
 

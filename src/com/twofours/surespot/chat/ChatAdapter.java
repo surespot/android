@@ -6,10 +6,12 @@ import java.util.Collections;
 import java.util.ListIterator;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,10 +31,13 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
+	private boolean mDebugMode;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
+		SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+		mDebugMode = pm.getBoolean("pref_debug_mode", false);
 
 	}
 
@@ -101,8 +106,8 @@ public class ChatAdapter extends BaseAdapter {
 			if (message.getDateTime() != null) {
 				updateMessage.setDateTime(message.getDateTime());
 			}
-			if (message.getCipherData() != null) {
-				updateMessage.setCipherData(message.getCipherData());
+			if (message.getData() != null) {
+				updateMessage.setData(message.getData());
 			}
 
 		}
@@ -188,6 +193,17 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 
+			if (mDebugMode) {
+				chatMessageViewHolder.tvId = (TextView) convertView.findViewById(R.id.messageId);
+				chatMessageViewHolder.tvDeletedFrom = (CheckBox) convertView.findViewById(R.id.messageDeletedFrom);
+				chatMessageViewHolder.tvDeletedTo = (CheckBox) convertView.findViewById(R.id.messageDeletedTo);
+				chatMessageViewHolder.tvToVersion = (TextView) convertView.findViewById(R.id.messageToVersion);
+				chatMessageViewHolder.tvFromVersion = (TextView) convertView.findViewById(R.id.messageFromVersion);
+				chatMessageViewHolder.tvIv = (TextView) convertView.findViewById(R.id.messageIv);
+				chatMessageViewHolder.tvData = (TextView) convertView.findViewById(R.id.messageData);
+				chatMessageViewHolder.tvMimeType = (TextView) convertView.findViewById(R.id.messageMimeType);
+			}
+
 			convertView.setTag(chatMessageViewHolder);
 		}
 		else {
@@ -246,6 +262,26 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.vMessageSending.setVisibility(item.getId() == null ? View.VISIBLE : View.GONE);
 			chatMessageViewHolder.vMessageSent.setVisibility(item.getId() != null ? View.VISIBLE : View.GONE);
 		}
+		
+		if (mDebugMode) {
+			chatMessageViewHolder.tvId.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvDeletedFrom.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvDeletedTo.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvToVersion.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvFromVersion.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvIv.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvData.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.tvMimeType.setVisibility(View.VISIBLE);
+			
+			chatMessageViewHolder.tvId.setText("id: " + item.getId());			
+			chatMessageViewHolder.tvDeletedFrom.setChecked(item.getDeletedFrom());
+			chatMessageViewHolder.tvDeletedTo.setChecked(item.getDeletedTo());
+			chatMessageViewHolder.tvToVersion.setText("toVersion: " + item.getToVersion());
+			chatMessageViewHolder.tvFromVersion.setText("fromVersion: " +item.getFromVersion());
+			chatMessageViewHolder.tvIv.setText("iv: " + item.getIv());
+			chatMessageViewHolder.tvData.setText("data: " + item.getData());
+			chatMessageViewHolder.tvMimeType.setText("mimeType: " + item.getMimeType());
+		}
 
 		return convertView;
 	}
@@ -257,6 +293,15 @@ public class ChatAdapter extends BaseAdapter {
 		public View vMessageSent;
 		public ImageView imageView;
 		public TextView tvTime;
+		public TextView tvId;
+		public TextView tvToVersion;
+		public TextView tvFromVersion;
+		public TextView tvIv;
+		public TextView tvData;
+		public TextView tvMimeType;
+		public CheckBox tvDeletedFrom;
+		public CheckBox tvDeletedTo;
+
 	}
 
 	public boolean addOrUpdateMessage(SurespotMessage message, boolean sort, boolean notify) {

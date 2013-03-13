@@ -92,7 +92,7 @@ public class MessageDecryptor {
 		@Override
 		public void run() {
 			final String plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
-					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getCipherData());
+					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData());
 
 			// set plaintext in message so we don't have to decrypt again
 			mMessage.setPlainData(plainText);

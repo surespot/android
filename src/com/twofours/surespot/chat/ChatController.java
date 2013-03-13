@@ -262,7 +262,7 @@ public class ChatController {
 									// if it's an image blow the http cache entry away
 									if (dMessage != null && dMessage.getMimeType() != null) {
 										if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-											MainActivity.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
+											MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 										}
 
 										boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
@@ -272,7 +272,7 @@ public class ChatController {
 										// (if someone else deleted my message we don't care)
 										if (controlFromMe || !myMessage) {
 											SurespotLog.v(TAG, "marking message deleted");
-											dMessage.setCipherData("");
+											dMessage.setData("");
 											dMessage.setPlainData("deleted");
 											dMessage.setDeletedTo(true);
 											dMessage.setDeletedFrom(true);
@@ -298,7 +298,7 @@ public class ChatController {
 						ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 
 						if (chatAdapter != null) {
-							chatAdapter.addOrUpdateMessage(message, true, mCurrentChat == null ? false : mCurrentChat.equals(otherUser));
+							chatAdapter.addOrUpdateMessage(message, true, true);
 						}
 
 						// mChatPagerAdapter.addChatName(otherUser);
@@ -778,10 +778,10 @@ public class ChatController {
 						// if it's an image blow the http cache entry away
 						if (dMessage != null && dMessage.getMimeType() != null) {
 							if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-								MainActivity.getNetworkController().purgeCacheUrl(dMessage.getCipherData());
+								MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 							}
 							SurespotLog.v(TAG, "marking message deleted");
-							dMessage.setCipherData("");
+							dMessage.setData("");
 							dMessage.setPlainData("deleted");
 							if (dMessage.getTo().equals(IdentityController.getLoggedInUser())) {
 								dMessage.setDeletedTo(true);
@@ -1141,7 +1141,7 @@ public class ChatController {
 					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
 
 					if (result != null) {
-						chatMessage.setCipherData(result);
+						chatMessage.setData(result);
 						chatMessage.setFromVersion(ourLatestVersion);
 						chatMessage.setToVersion(theirLatestVersion);
 						ChatController.this.sendMessage(chatMessage);

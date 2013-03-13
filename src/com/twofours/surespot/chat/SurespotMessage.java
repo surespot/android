@@ -17,7 +17,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	private String mFrom;
 	private String mTo;
 	private String mIv;
-	private String mCipherData;
+	private String mData;
 	private String mPlainData;
 	private Integer mId;
 	private Integer mResendId;
@@ -48,12 +48,12 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		mTo = to;
 	}
 
-	public String getCipherData() {
-		return mCipherData;
+	public String getData() {
+		return mData;
 	}
 
-	public void setCipherData(String cipherText) {
-		mCipherData = cipherText;
+	public void setData(String data) {
+		mData = data;
 	}
 
 	public String getPlainData() {
@@ -130,7 +130,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
 		chatMessage.setIv(jsonMessage.getString("iv"));
-		chatMessage.setCipherData(jsonMessage.getString("data"));
+		chatMessage.setData(jsonMessage.getString("data"));
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
@@ -169,7 +169,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			message.put("toVersion", this.getToVersion());
 			message.put("fromVersion", this.getFromVersion());
 			message.put("iv", this.getIv());
-			message.put("data", this.getCipherData());
+			message.put("data", this.getData());
 			message.put("mimeType", this.getMimeType());
 			message.put("deletedTo", this.getDeletedTo());
 			message.put("deletedFrom", this.getDeletedFrom());
@@ -202,7 +202,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((mCipherData == null) ? 0 : mCipherData.hashCode());
+		result = prime * result + ((mData == null) ? 0 : mData.hashCode());
 		result = prime * result + ((mDateTime == null) ? 0 : mDateTime.hashCode());
 		result = prime * result + ((mFrom == null) ? 0 : mFrom.hashCode());
 		result = prime * result + ((mFromVersion == null) ? 0 : mFromVersion.hashCode());
