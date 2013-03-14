@@ -19,6 +19,7 @@ public class Friend implements Comparable<Friend> {
 	private int mLastViewedMessageId;
 	private int mAvailableMessageId;
 	private int mLastReceivedMessageControlId;
+	private int mAvailableMessageControlId;
 	private int mLastReceivedUserControlId;
 
 	public Friend(String name) {
@@ -46,13 +47,23 @@ public class Friend implements Comparable<Friend> {
 		}
 	}
 
-	// public int getAvailableMessageId() {
-	// return mAvailableMessageId;
-	// }
+	public int getAvailableMessageId() {
+		return mAvailableMessageId;
+	}
 
 	public void setAvailableMessageId(int availableMessageId) {
 		if (availableMessageId > 0) {
 			mAvailableMessageId = availableMessageId;
+		}
+	}
+	
+	public int getAvailableMessageControlId() {
+		return mAvailableMessageControlId;
+	}
+
+	public void setAvailableMessageControlId(int availableMessageControlId) {
+		if (availableMessageControlId > 0) {
+			mAvailableMessageControlId = availableMessageControlId;
 		}
 	}
 
@@ -267,4 +278,5 @@ public class Friend implements Comparable<Friend> {
 		return null;
 
 	}
+
 };

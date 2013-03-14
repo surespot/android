@@ -253,9 +253,10 @@ public class ChatController {
 
 						else if (message.getType().equals("message")) {
 							if (message.getAction().equals("delete")) {
+								String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
 
-								ChatAdapter chatAdapter = mChatAdapters.get(ChatUtils.getOtherSpotUser(message.getData(),
-										IdentityController.getLoggedInUser()));
+								ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
+								Friend friend = mFriendAdapter.getFriend(otherUser);
 								if (chatAdapter != null) {
 									SurespotMessage dMessage = chatAdapter.getMessageById(Integer.parseInt(message.getMoreData()));
 
@@ -278,11 +279,14 @@ public class ChatController {
 											dMessage.setDeletedFrom(true);
 											chatAdapter.notifyDataSetChanged();
 										}
+
+										friend.setLastReceivedMessageControlId(message.getId());
 									}
 								}
+
+								friend.setAvailableMessageControlId(message.getId());
 							}
 						}
-
 					}
 					catch (JSONException e) {
 						SurespotLog.w(TAG, "error creating control message: " + e.toString(), e);
@@ -293,16 +297,7 @@ public class ChatController {
 					// TODO check who from
 					try {
 						SurespotMessage message = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
-						String otherUser = message.getOtherUser();
-
-						ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
-
-						if (chatAdapter != null) {
-							chatAdapter.addOrUpdateMessage(message, true, true);
-						}
-
-						// mChatPagerAdapter.addChatName(otherUser);
-						updateUserMessageIds(otherUser, message.getId());
+						updateUserMessageIds(message);
 						checkAndSendNextMessage(message);
 
 					}
@@ -566,12 +561,26 @@ public class ChatController {
 	// return (getState() == STATE_CONNECTED);
 	// }
 
-	private void updateUserMessageIds(String username, Integer id) {
-		Friend friend = mFriendAdapter.getFriend(username);
+	private void updateUserMessageIds(SurespotMessage message) {
+		String otherUser = message.getOtherUser();
+
+		ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
+
+		// if the adapter is open add the message
+		if (chatAdapter != null) {
+			chatAdapter.addOrUpdateMessage(message, true, true);
+		}
+
+		Friend friend = mFriendAdapter.getFriend(otherUser);
 		if (friend != null) {
-			friend.setAvailableMessageId(id);
-			if (username.equals(mCurrentChat)) {
-				friend.setLastViewedMessageId(id);
+			int messageId = message.getId();
+
+			// always update the available id
+			friend.setAvailableMessageId(messageId);
+
+			// if the chat is showing update the last viewed id
+			if (otherUser.equals(mCurrentChat)) {
+				friend.setLastViewedMessageId(messageId);
 			}
 			mFriendAdapter.notifyDataSetChanged();
 		}
@@ -632,13 +641,13 @@ public class ChatController {
 							mEarliestMessage.put(username, message.getId());
 							chatAdapter.notifyDataSetChanged();
 						}
-						chatAdapter.setLoading(false);
+						// chatAdapter.setLoading(false);
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
 						SurespotLog.w(TAG, username + ": getEarlierMessages", error);
-						chatAdapter.setLoading(false);
+						// chatAdapter.setLoading(false);
 					}
 				});
 			}
@@ -652,7 +661,7 @@ public class ChatController {
 
 	private void getLatestIds() {
 		SurespotLog.v(TAG, "getLatestIds");
-		setMessagesLoading(true);
+		// setMessagesLoading(true);
 		// gather up all the latest message IDs
 
 		// JSONObject messageIdHolder = new JSONObject();
@@ -671,7 +680,7 @@ public class ChatController {
 
 			@Override
 			public void onSuccess(int statusCode, final JSONObject jsonResponse) {
-				SurespotLog.v(TAG, "loadLatestIds success (jsonArray), statusCode: " + statusCode);
+				SurespotLog.v(TAG, "getlatestIds success (jsonArray), statusCode: " + statusCode);
 
 				// new AsyncTask<Void, Void, Void>() {
 				// @Override
@@ -686,26 +695,44 @@ public class ChatController {
 						try {
 							JSONObject jsonObject = conversationIds.getJSONObject(i);
 							String spot = jsonObject.getString("conversation");
-							Integer id = jsonObject.getInt("id");
+							Integer availableId = jsonObject.getInt("id");
 							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
 							// update available ids
 							friend = mFriendAdapter.getFriend(user);
 							if (friend != null) {
-								friend.setAvailableMessageId(id);
+								friend.setAvailableMessageId(availableId);
 							}
 
 						}
 						catch (JSONException e) {
-							SurespotLog.w(TAG, "loadLatestAllMessages", e);
+							SurespotLog.w(TAG, "getlatestIds", e);
+						}
+					}
+
+					for (int i = 0; i < controlIds.length(); i++) {
+						try {
+							JSONObject jsonObject = conversationIds.getJSONObject(i);
+							String spot = jsonObject.getString("conversation");
+							Integer availableId = jsonObject.getInt("id");
+							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
+							// update available ids
+							friend = mFriendAdapter.getFriend(user);
+							if (friend != null) {
+								friend.setAvailableMessageControlId(availableId);
+							}
+						}
+						catch (JSONException e) {
+							SurespotLog.w(TAG, "getlatestIds", e);
 						}
 					}
 
 					if (friend != null) {
+
 						mFriendAdapter.notifyDataSetChanged();
 					}
 				}
 				catch (JSONException e) {
-					SurespotLog.v(TAG, "loadLatestIds", e);
+					SurespotLog.w(TAG, "getlatestIds", e);
 				}
 
 				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
@@ -717,40 +744,61 @@ public class ChatController {
 				// saveMessages();
 				// }
 				// }
+				getLatestMessagesAndControls();
 
 				// protected void onPostExecute(Void result) {
-				setMessagesLoading(false);
+
 				// };
 				// }.execute();
 			}
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				setMessagesLoading(false);
+				// setMessagesLoading(false);
 				Utils.makeToast(mContext, "loading latest messages failed: " + content);
 			}
 		});
 
 	}
 
+	private void getLatestMessagesAndControls() {
+		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
+
+			getLatestMessagesAndControls(entry.getKey());
+		}
+	}
+
 	private void getLatestMessagesAndControls(final String username) {
+
+		Friend friend = getFriendAdapter().getFriend(username);
 		int latestMessageId = getLatestMessageId(username);
-		int latestControlId = getLatestControlId(username);
-		MainActivity.getNetworkController().getMessageData(username, latestMessageId, latestControlId, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, JSONObject response) {
+		int latestAvailableId = friend.getAvailableMessageId();
 
-				try {
-					handleControlMessages(username, response.getJSONArray("controlMessages"));
-					handleMessages(username, response.getString("messages"));
-					// mReadSinceConnected.put(username, true);
-				}
-				catch (JSONException e) {
-					SurespotLog.w(TAG, "getLatestMessagesAndControls", e);
-				}
+		int latestControlId = getLatestMessageControlId(username);
+		int latestAvailableControlId = friend.getAvailableMessageControlId();
 
-			}
-		});
+		int fetchMessageId = latestAvailableId > latestMessageId ? latestMessageId : -1;
+		int fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
+
+		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
+			// mChatAdapters.get(username).setLoading(true);
+			MainActivity.getNetworkController().getMessageData(username, fetchMessageId, fetchControlMessageId,
+					new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, JSONObject response) {
+
+							JSONArray controlMessages = response.optJSONArray("controlMessages");
+							if (controlMessages != null) {
+								handleControlMessages(username, controlMessages);
+							}
+							String messages = response.optString("messages", null);
+							if (messages != null) {
+								handleMessages(username, messages);
+							}
+
+						}
+					});
+		}
 	}
 
 	private void handleControlMessages(String username, JSONArray jsonArray) {
@@ -780,7 +828,7 @@ public class ChatController {
 							if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 								MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 							}
-							
+
 							boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
 							boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
@@ -793,7 +841,8 @@ public class ChatController {
 								dMessage.setDeletedTo(true);
 								dMessage.setDeletedFrom(true);
 								chatAdapter.notifyDataSetChanged();
-							}													
+							}
+
 						}
 					}
 				}
@@ -824,6 +873,8 @@ public class ChatController {
 			// MainActivity.getMainHandler().post(runnable);
 
 		}
+
+		// chatAdapter.setLoading(false);
 	}
 
 	private void handleMessages(String username, String jsonMessageString) {
@@ -866,12 +917,14 @@ public class ChatController {
 	private Integer getEarliestMessageId(String username) {
 
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		SurespotMessage firstMessage = chatAdapter.getFirstMessageWithId();
-
 		Integer firstMessageId = null;
+		if (chatAdapter != null) {
+			SurespotMessage firstMessage = chatAdapter.getFirstMessageWithId();
 
-		if (firstMessage != null) {
-			firstMessageId = firstMessage.getId();
+			if (firstMessage != null) {
+				firstMessageId = firstMessage.getId();
+			}
+
 		}
 		return firstMessageId;
 	}
@@ -890,7 +943,7 @@ public class ChatController {
 
 	}
 
-	private Integer getLatestControlId(String username) {
+	private Integer getLatestMessageControlId(String username) {
 		Friend friend = mFriendAdapter.getFriend(username);
 		Integer lastControlId = null;
 		if (friend != null) {
@@ -923,8 +976,10 @@ public class ChatController {
 		SurespotLog.v(TAG, "saveMessages, username:" + username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
 
-		SurespotApplication.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
-				chatAdapter.getMessages());
+		if (chatAdapter != null) {
+			SurespotApplication.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
+					chatAdapter.getMessages());
+		}
 
 	}
 
@@ -963,22 +1018,21 @@ public class ChatController {
 	private void saveState(String username) {
 
 		SurespotLog.v(TAG, "saveState");
-		saveUnsentMessages();
 
 		if (username == null) {
-			saveMessages();
+			saveUnsentMessages();
+			// saveMessages();
+			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+			SurespotApplication.getStateController().saveFriends(mFriendAdapter.getFriends());
 		}
 		else {
 			saveMessages(username);
 		}
 
-		SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
-		Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-
 		// SurespotApplication.getStateController().saveActiveChats(mActiveChats);
 		// SurespotApplication.getStateController().saveLastReceivedMessageIds(mLastViewedMessageIds);
 		// SurespotApplication.getStateController().saveMessageActivity(mReadSinceConnected);
-		SurespotApplication.getStateController().saveFriends(mFriendAdapter.getFriends());
 
 	}
 
@@ -1088,9 +1142,12 @@ public class ChatController {
 
 		if (username != null) {
 			mChatPagerAdapter.addChatName(username);
-			mFriendAdapter.setChatActive(username, true);
+			Friend friend = mFriendAdapter.getFriend(username);
+			friend.setChatActive(true);
+			friend.setLastViewedMessageId(friend.getAvailableMessageId());
+			mFriendAdapter.sort();
+			mFriendAdapter.notifyDataSetChanged();
 
-			updateUserMessageIds(username, -1);
 			// cancel associated notifications
 			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
 					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
@@ -1201,7 +1258,7 @@ public class ChatController {
 			dmessage.setAction("delete");
 			dmessage.setData(ChatUtils.getSpot(message));
 			dmessage.setMoreData(message.getId().toString());
-			dmessage.setLocalId(Integer.toString(getLatestControlId(message.getOtherUser()) + 1));
+			dmessage.setLocalId(Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
 
 			sendControlMessage(dmessage);
 		}
@@ -1222,44 +1279,48 @@ public class ChatController {
 	}
 
 	private void loadFriends() {
-		mFriendAdapter.setLoading(true);
-		// get the list of friends
-		MainActivity.getNetworkController().getFriends(new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(JSONArray jsonArray) {
-				SurespotLog.v(TAG, "getFriends success.");
-				ArrayList<Friend> friends = new ArrayList<Friend>();
-				try {
-					for (int i = 0; i < jsonArray.length(); i++) {
-						JSONObject jsonFriend = jsonArray.getJSONObject(i);
-						Friend friend = Friend.toFriend(jsonFriend);
-						// friend.setChatActive(mActiveChats.contains(friend.getName()));
-						// friend.setMessageActivity(getActivity(friend.getName()));
-						friends.add(friend);
+		// TODO refresh on login
+		if (mFriendAdapter.getCount() == 0) {
 
+			mFriendAdapter.setLoading(true);
+			// get the list of friends
+			MainActivity.getNetworkController().getFriends(new JsonHttpResponseHandler() {
+				@Override
+				public void onSuccess(JSONArray jsonArray) {
+					SurespotLog.v(TAG, "getFriends success.");
+					ArrayList<Friend> friends = new ArrayList<Friend>();
+					try {
+						for (int i = 0; i < jsonArray.length(); i++) {
+							JSONObject jsonFriend = jsonArray.getJSONObject(i);
+							Friend friend = Friend.toFriend(jsonFriend);
+							// friend.setChatActive(mActiveChats.contains(friend.getName()));
+							// friend.setMessageActivity(getActivity(friend.getName()));
+							friends.add(friend);
+
+						}
+					}
+					catch (JSONException e) {
+						SurespotLog.e(TAG, e.toString(), e);
+						mFriendAdapter.setLoading(false);
+						return;
+					}
+
+					if (mFriendAdapter != null) {
+						mFriendAdapter.addFriends(friends);
+						mFriendAdapter.setLoading(false);
 					}
 				}
-				catch (JSONException e) {
-					SurespotLog.e(TAG, e.toString(), e);
-					mFriendAdapter.setLoading(false);
-					return;
-				}
 
-				if (mFriendAdapter != null) {
-					mFriendAdapter.addFriends(friends);
-					mFriendAdapter.setLoading(false);
+				@Override
+				public void onFailure(Throwable arg0, String content) {
+					// if we didn't get a 401
+					if (!MainActivity.getNetworkController().isUnauthorized()) {
+						mFriendAdapter.setLoading(false);
+						SurespotLog.w(TAG, "getFriends: " + content, arg0);
+					}
 				}
-			}
-
-			@Override
-			public void onFailure(Throwable arg0, String content) {
-				// if we didn't get a 401
-				if (!MainActivity.getNetworkController().isUnauthorized()) {
-					mFriendAdapter.setLoading(false);
-					SurespotLog.w(TAG, "getFriends: " + content, arg0);
-				}
-			}
-		});
+			});
+		}
 	}
 
 	public void closeTab() {

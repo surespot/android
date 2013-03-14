@@ -255,7 +255,9 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
-			ImageDownloader.download(chatMessageViewHolder.imageView, item);
+			if (item.getData() != null && !item.getData().isEmpty()) {
+				ImageDownloader.download(chatMessageViewHolder.imageView, item);
+			}
 		}
 
 		if (type == TYPE_US) {
