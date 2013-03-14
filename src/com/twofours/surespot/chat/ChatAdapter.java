@@ -126,6 +126,7 @@ public class ChatAdapter extends BaseAdapter {
 		// SurespotLog.v(TAG, "insertMessage, message already present");
 		// }
 	}
+
 	public void setMessages(ArrayList<SurespotMessage> messages) {
 		if (messages.size() > 0) {
 			mMessages.clear();
@@ -133,9 +134,8 @@ public class ChatAdapter extends BaseAdapter {
 
 			// notifyDataSetChanged();
 		}
-		
+
 	}
-	
 
 	public void addMessages(ArrayList<SurespotMessage> messages) {
 		if (messages.size() > 0) {
@@ -221,13 +221,21 @@ public class ChatAdapter extends BaseAdapter {
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 
+		boolean deleted = false;
 		if (item.getId() == null) {
 			chatMessageViewHolder.tvTime.setText("sending...");
 		}
 		else {
+			deleted = item.getDeletedFrom() || (item.getDeletedTo() && item.getTo().equals(IdentityController.getLoggedInUser()));
 			// if the sender deleted it, or we deleted their message, don't show the data
-			if (item.getDeletedFrom() || (item.getDeletedTo() && item.getTo().equals(IdentityController.getLoggedInUser()))) {
-				item.setPlainData("deleted");
+			if (deleted) {
+				
+				if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {				
+					item.setPlainData("image deleted");
+				}
+				else {
+					item.setPlainData("text deleted");
+				}
 			}
 
 			if (item.getPlainData() == null) {
@@ -245,7 +253,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 		}
 
-		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || deleted) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
@@ -273,7 +281,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.vMessageSending.setVisibility(item.getId() == null ? View.VISIBLE : View.GONE);
 			chatMessageViewHolder.vMessageSent.setVisibility(item.getId() != null ? View.VISIBLE : View.GONE);
 		}
-		
+
 		if (mDebugMode) {
 			chatMessageViewHolder.tvId.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvDeletedFrom.setVisibility(View.VISIBLE);
@@ -283,12 +291,12 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvIv.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvData.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvMimeType.setVisibility(View.VISIBLE);
-			
-			chatMessageViewHolder.tvId.setText("id: " + item.getId());			
+
+			chatMessageViewHolder.tvId.setText("id: " + item.getId());
 			chatMessageViewHolder.tvDeletedFrom.setChecked(item.getDeletedFrom());
 			chatMessageViewHolder.tvDeletedTo.setChecked(item.getDeletedTo());
 			chatMessageViewHolder.tvToVersion.setText("toVersion: " + item.getToVersion());
-			chatMessageViewHolder.tvFromVersion.setText("fromVersion: " +item.getFromVersion());
+			chatMessageViewHolder.tvFromVersion.setText("fromVersion: " + item.getFromVersion());
 			chatMessageViewHolder.tvIv.setText("iv: " + item.getIv());
 			chatMessageViewHolder.tvData.setText("data: " + item.getData());
 			chatMessageViewHolder.tvMimeType.setText("mimeType: " + item.getMimeType());
@@ -389,7 +397,5 @@ public class ChatAdapter extends BaseAdapter {
 		Collections.sort(mMessages);
 
 	}
-
-
 
 }

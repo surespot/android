@@ -1187,9 +1187,9 @@ public class ChatController {
 			ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
 			SurespotLog.v(TAG, "fragment: " + chatFragment);
 
-			// if (chatFragment != null) {
-			// chatFragment.requestFocus();
-			// }
+			if (chatFragment != null) {
+				chatFragment.requestFocus();
+			}
 
 			if (mMode == MODE_SELECT) {
 				chatFragment.handleSendIntent();
@@ -1277,13 +1277,13 @@ public class ChatController {
 		// if it's on the server, send delete control message otherwise just delete it locally
 		if (message.getId() != null) {
 			SurespotControlMessage dmessage = new SurespotControlMessage();
-
-			dmessage.setFrom(IdentityController.getLoggedInUser());
+			String me = IdentityController.getLoggedInUser();
+			dmessage.setFrom(me);
 			dmessage.setType("message");
 			dmessage.setAction("delete");
 			dmessage.setData(ChatUtils.getSpot(message));
 			dmessage.setMoreData(message.getId().toString());
-			dmessage.setLocalId(Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
+			dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
 
 			sendControlMessage(dmessage);
 		}
