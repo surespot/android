@@ -28,7 +28,7 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 				switch (which) {
 				case 0:
 					// if it hasn't been deleted, show popup
-					if (!mMessage.getDeletedTo() && !mMessage.getDeletedFrom()) {
+					if (!mMessage.getDeletedFrom() && !(mMessage.getDeletedTo() && mMessage.getTo().equals(IdentityController.getLoggedInUser()))) {
 						getMainActivity().getChatController().deleteMessage(mMessage);
 					}
 					break;

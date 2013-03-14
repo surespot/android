@@ -155,12 +155,14 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:text="deleted from"
+            android:enabled="false"
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:visibility="gone" />
 
         <CheckBox
             android:id="@+id/messageDeletedTo"
+            android:enabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"

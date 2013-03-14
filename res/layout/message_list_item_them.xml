@@ -148,6 +148,7 @@
             android:text="deleted from"
             android:textColor="@android:color/black"
             android:textSize="16sp"
+            android:enabled="false"
             android:visibility="gone" />
 
         <CheckBox
@@ -158,6 +159,7 @@
             android:layout_marginLeft="2dp"
             android:layout_marginRight="55dp"
             android:autoLink="all"
+            android:enabled="false"
             android:text="deleted to"
             android:textColor="@android:color/black"
             android:textSize="16sp"

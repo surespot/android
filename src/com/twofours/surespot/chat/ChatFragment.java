@@ -92,7 +92,7 @@ public class ChatFragment extends SherlockFragment {
 
 				// pull the message out
 				if (message != null) {
-					if (!message.getDeletedTo() && !message.getDeletedFrom()) {
+					if (!message.getDeletedFrom() && !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
 							if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
@@ -116,7 +116,8 @@ public class ChatFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				if (!message.getDeletedTo() && !message.getDeletedFrom()) {
+				//if it's our message or it's their message and we deleted it 
+				if (!message.getDeletedFrom() && !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
 					MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
 					dialog.setMessage(message);
 					dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");

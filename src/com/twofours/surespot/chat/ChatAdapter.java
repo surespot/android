@@ -229,13 +229,13 @@ public class ChatAdapter extends BaseAdapter {
 			deleted = item.getDeletedFrom() || (item.getDeletedTo() && item.getTo().equals(IdentityController.getLoggedInUser()));
 			// if the sender deleted it, or we deleted their message, don't show the data
 			if (deleted) {
-				
-//				if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {				
-//					item.setPlainData("deleted");
-//				}
-//				else {
-					item.setPlainData("deleted");
-				//}
+
+				// if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				// item.setPlainData("deleted");
+				// }
+				// else {
+				item.setPlainData("deleted");
+				// }
 			}
 
 			if (item.getPlainData() == null) {
