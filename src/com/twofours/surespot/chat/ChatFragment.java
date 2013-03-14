@@ -177,7 +177,8 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				if (count > 0) {
+				
+				if (mEditText.getText().length() > 0) {
 					mSendButton.setText("send");
 				}
 				else {
