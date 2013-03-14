@@ -52,6 +52,10 @@ public class ChatUtils {
 		
 		return split[0].equals(user) ? split[1] : split[0]; 
 	}
+	
+	public static boolean isDeleted(SurespotMessage message) {
+		return message.getDeletedFrom() || (message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()));
+	}
 
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();

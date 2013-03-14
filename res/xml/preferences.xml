@@ -1,5 +1,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <PreferenceCategory android:title="about" >
+        <Preference
+            android:key="pref_version"
+            android:title="version" >
+        </Preference>
+    </PreferenceCategory>
+<!--     <PreferenceCategory android:title="display" >
+        <CheckBoxPreference
+            android:key="pref_hide_deleted_messages"
+            android:title="hide deleted messages" >
+        </CheckBoxPreference>
+    </PreferenceCategory> -->
     <PreferenceCategory android:title="@string/notifications_title" >
         <CheckBoxPreference
             android:defaultValue="true"
@@ -35,16 +47,11 @@
             </intent>
         </Preference>
     </PreferenceCategory>
-    
-    <PreferenceCategory android:title="debug">
-        <CheckBoxPreference android:title="debug mode" android:defaultValue="false" android:key="pref_debug_mode"/>
-    </PreferenceCategory>
-   
-    <PreferenceCategory android:title="about" >
-        <Preference
-            android:key="pref_version"
-            android:title="version" >
-        </Preference>
+    <PreferenceCategory android:title="debug" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_debug_mode"
+            android:title="debug mode" />
     </PreferenceCategory>
 
 </PreferenceScreen>

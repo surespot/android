@@ -32,12 +32,15 @@ public class ChatAdapter extends BaseAdapter {
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
 	private boolean mDebugMode;
+	private boolean mHideDeleted;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
 		SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
+		mHideDeleted = false;
+		//pm.getBoolean("pref_hide_deleted_messages", false);
 
 	}
 
@@ -145,9 +148,56 @@ public class ChatAdapter extends BaseAdapter {
 		}
 	}
 
+	// thanks to http://www.sherif.mobi/2012/01/listview-with-ability-to-hide-rows.html
 	@Override
 	public int getCount() {
-		return mMessages.size();
+		if (mHideDeleted) {
+			return getDeletedCount();
+		}
+		else {
+			return mMessages.size();
+		}
+	}
+
+	private int getDeletedCount() {
+		int count = 0;
+		ListIterator<SurespotMessage> iterator = mMessages.listIterator();
+		while (iterator.hasNext()) {
+
+			SurespotMessage message = iterator.next();
+			if (ChatUtils.isDeleted(message)) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	private int getRealPosition(int position) {
+		if (!mHideDeleted) {
+			return position;
+		}
+		
+		int hElements = getHiddenCountUpTo(position);
+		int diff = 0;
+		for (int i = 0; i < hElements; i++) {
+			diff++;
+			if (ChatUtils.isDeleted(mMessages.get(position + diff - 1))) {
+				i--;
+			}
+		}
+		return (position + diff);
+	}
+
+	private int getHiddenCountUpTo(int location) {
+		int count = 0;
+		for (int i = 0; i <= location; i++) {
+
+			if (ChatUtils.isDeleted(mMessages.get(i))) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	@Override
@@ -178,9 +228,10 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getView(int index, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
 
+		int position = getRealPosition(index);
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		final ChatMessageViewHolder chatMessageViewHolder;
