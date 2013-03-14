@@ -40,7 +40,7 @@ public class ChatAdapter extends BaseAdapter {
 		SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
 		mHideDeleted = false;
-		//pm.getBoolean("pref_hide_deleted_messages", false);
+		// pm.getBoolean("pref_hide_deleted_messages", false);
 
 	}
 
@@ -177,7 +177,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (!mHideDeleted) {
 			return position;
 		}
-		
+
 		int hElements = getHiddenCountUpTo(position);
 		int diff = 0;
 		for (int i = 0; i < hElements; i++) {
@@ -276,9 +276,8 @@ public class ChatAdapter extends BaseAdapter {
 		if (item.getId() == null) {
 			chatMessageViewHolder.tvTime.setText("sending...");
 		}
-		else {
-			deleted = item.getDeletedFrom() || (item.getDeletedTo() && item.getTo().equals(IdentityController.getLoggedInUser()));
-			// if the sender deleted it, or we deleted their message, don't show the data
+		else {			
+			deleted = ChatUtils.isDeleted(item);
 			if (deleted) {
 
 				// if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
@@ -286,20 +285,23 @@ public class ChatAdapter extends BaseAdapter {
 				// }
 				// else {
 				item.setPlainData("deleted");
-				// }
+				chatMessageViewHolder.tvTime.setText("deleted");
+				
 			}
 
-			if (item.getPlainData() == null) {
-				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
-			}
 			else {
-				if (item.getDateTime() != null) {
-
-					chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-							item.getDateTime()));
+				if (item.getPlainData() == null) {
+					chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 				}
 				else {
-					chatMessageViewHolder.tvTime.setText("");
+					if (item.getDateTime() != null) {
+
+						chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+								item.getDateTime()));
+					}
+					else {
+						chatMessageViewHolder.tvTime.setText("");
+					}
 				}
 			}
 		}

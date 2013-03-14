@@ -260,6 +260,7 @@ public class ChatController {
 											SurespotLog.v(TAG, "marking message deleted");
 											dMessage.setData("");
 											dMessage.setPlainData("deleted");
+											dMessage.setDateTime(null);
 											dMessage.setDeletedTo(true);
 											dMessage.setDeletedFrom(true);
 											chatAdapter.notifyDataSetChanged();
@@ -851,6 +852,7 @@ public class ChatController {
 								SurespotLog.v(TAG, "marking message deleted");
 								dMessage.setData("");
 								dMessage.setPlainData("deleted");
+								dMessage.setDateTime(null);
 								dMessage.setDeletedTo(true);
 								dMessage.setDeletedFrom(true);
 							}
@@ -896,10 +898,11 @@ public class ChatController {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonUM.length() + " latest messages from the server.");
 			for (int i = 0; i < jsonUM.length(); i++) {
 				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
-				if (lastMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false);
+				if (added & lastMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
 					sentByMeCount++;
 				}
-				chatAdapter.addOrUpdateMessage(lastMessage, false, false);
+				
 
 			}
 		}
@@ -910,8 +913,12 @@ public class ChatController {
 
 		if (lastMessage != null) {
 			Friend friend = mFriendAdapter.getFriend(username);
-			friend.setAvailableMessageId(lastMessage.getId());
-			friend.setLastViewedMessageId(friend.getLastViewedMessageId() + sentByMeCount);
+			
+			int adjustedLastViewedId = friend.getLastViewedMessageId() + sentByMeCount;
+			int availableId = lastMessage.getId();
+								
+			friend.setAvailableMessageId(availableId);				
+			friend.setLastViewedMessageId(adjustedLastViewedId);
 			chatAdapter.notifyDataSetChanged();
 			mFriendAdapter.notifyDataSetChanged();
 		}
