@@ -189,14 +189,13 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-	
 		return view;
 	}
 
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
-	
+
 	@Override
 	public void onDetach() {
 		// TODO Auto-generated method stub
@@ -271,12 +270,12 @@ public class ChatFragment extends SherlockFragment {
 
 		}
 	};
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume: " + mUsername);
-		
+
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(getMainActivity().getContext(), mUsername);
@@ -348,7 +347,10 @@ public class ChatFragment extends SherlockFragment {
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
-		getMainActivity().getChatController().destroyChatAdapter(mUsername);
+		ChatController chatController = getMainActivity().getChatController();
+		if (chatController != null) {
+			chatController.destroyChatAdapter(mUsername);
+		}
 		// mListView.removeOnScrollListener()):
 	}
 

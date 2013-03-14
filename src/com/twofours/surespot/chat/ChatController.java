@@ -416,8 +416,7 @@ public class ChatController {
 	}
 
 	private void connected() {
-		loadFriends();
-		getLatestIds();
+		loadFriendsAndIds();		
 		resendMessages();
 
 	}
@@ -711,7 +710,7 @@ public class ChatController {
 
 					for (int i = 0; i < controlIds.length(); i++) {
 						try {
-							JSONObject jsonObject = conversationIds.getJSONObject(i);
+							JSONObject jsonObject = controlIds.getJSONObject(i);
 							String spot = jsonObject.getString("conversation");
 							Integer availableId = jsonObject.getInt("id");
 							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
@@ -780,7 +779,9 @@ public class ChatController {
 		int fetchMessageId = latestAvailableId > latestMessageId ? latestMessageId : -1;
 		int fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
 
+		SurespotLog.v(TAG, "getLatestMessagesAndControls: fetchMessageId: " + fetchMessageId  + ", fetchControlMessageId: "  + fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
+			
 			// mChatAdapters.get(username).setLoading(true);
 			MainActivity.getNetworkController().getMessageData(username, fetchMessageId, fetchControlMessageId,
 					new JsonHttpResponseHandler() {
@@ -956,7 +957,7 @@ public class ChatController {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		chatAdapter.addMessages(SurespotApplication.getStateController().loadMessages(spot));
+		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
 	}
 
 	private synchronized void saveMessages() {
@@ -1249,7 +1250,7 @@ public class ChatController {
 	}
 
 	public void deleteMessage(SurespotMessage message) {
-		// if it's on the server, send delete message otherwise just delete it locally
+		// if it's on the server, send delete control message otherwise just delete it locally
 		if (message.getId() != null) {
 			SurespotControlMessage dmessage = new SurespotControlMessage();
 
@@ -1278,7 +1279,7 @@ public class ChatController {
 		return mFriendAdapter;
 	}
 
-	private void loadFriends() {
+	private void loadFriendsAndIds() {
 		// TODO refresh on login
 		if (mFriendAdapter.getCount() == 0) {
 
@@ -1309,6 +1310,8 @@ public class ChatController {
 						mFriendAdapter.addFriends(friends);
 						mFriendAdapter.setLoading(false);
 					}
+					
+					getLatestIds();
 				}
 
 				@Override
@@ -1320,6 +1323,9 @@ public class ChatController {
 					}
 				}
 			});
+		}
+		else {
+			getLatestIds();
 		}
 	}
 

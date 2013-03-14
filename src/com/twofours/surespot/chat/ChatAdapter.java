@@ -126,10 +126,19 @@ public class ChatAdapter extends BaseAdapter {
 		// SurespotLog.v(TAG, "insertMessage, message already present");
 		// }
 	}
+	public void setMessages(ArrayList<SurespotMessage> messages) {
+		if (messages.size() > 0) {
+			mMessages.clear();
+			mMessages.addAll(messages);
+
+			// notifyDataSetChanged();
+		}
+		
+	}
+	
 
 	public void addMessages(ArrayList<SurespotMessage> messages) {
 		if (messages.size() > 0) {
-			// mMessages.clear();
 			mMessages.addAll(messages);
 
 			// notifyDataSetChanged();
@@ -380,5 +389,7 @@ public class ChatAdapter extends BaseAdapter {
 		Collections.sort(mMessages);
 
 	}
+
+
 
 }
