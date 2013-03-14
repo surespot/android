@@ -210,41 +210,10 @@ public class ChatController {
 			public void on(String event, IOAcknowledge ack, Object... args) {
 
 				SurespotLog.v(TAG, "Server triggered event '" + event + "'");
-
-				if (event.equals("notification")) {
-					JSONObject json = (JSONObject) args[0];
-					try {
-						mFriendAdapter.addFriendInviter(json.getString("data"));
-					}
-					catch (JSONException e) {
-						SurespotLog.w(TAG, "onReceive (inviteRequest)", e);
-					}
-					return;
-				}
-				if (event.equals("inviteResponse")) {
-
-					JSONObject jsonInviteResponse;
-					try {
-						jsonInviteResponse = new JSONObject((String) args[0]);
-						String name = jsonInviteResponse.getString("user");
-						if (jsonInviteResponse.getString("response").equals("accept")) {
-							mFriendAdapter.addNewFriend(name);
-						}
-						else {
-							mFriendAdapter.removeFriend(name);
-						}
-					}
-					catch (JSONException e) {
-						SurespotLog.w(TAG, "onReceive (inviteResponse)", e);
-					}
-
-					return;
-				}
 				if (event.equals("control")) {
 					try {
 						SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
 
-						// if it's a system message from another user then check version
 						if (message.getType().equals("user")) {
 							mLatestUserControlId = message.getId();
 							if (message.getAction().equals("revoke")) {
@@ -252,9 +221,17 @@ public class ChatController {
 										ChatUtils.getOtherUser(message.getData(), IdentityController.getLoggedInUser()),
 										message.getMoreData());
 							}
-
-							if (message.getAction().equals("added")) {
+							else if (message.getAction().equals("added")) {
 								mFriendAdapter.addNewFriend(message.getData());
+							}
+							else if (message.getAction().equals("invited")) {
+								mFriendAdapter.addFriendInvited(message.getData());
+							}
+							else if (message.getAction().equals("invite")) {
+								mFriendAdapter.addFriendInviter(message.getData());
+							}
+							else if (message.getAction().equals("decline")) {
+								mFriendAdapter.removeFriend(message.getData());
 							}
 
 						}
@@ -424,7 +401,7 @@ public class ChatController {
 	}
 
 	private void connected() {
-		loadFriendsAndIds();
+		getFriendsAndIds();
 		resendMessages();
 
 	}
@@ -441,7 +418,10 @@ public class ChatController {
 			// ideally get the last id from the fragment's chat adapter
 			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 			if (chatAdapter != null) {
-				lastMessageID = chatAdapter.getLastMessageWithId().getId();
+				SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
+				if (lastMessage != null) {
+					lastMessageID = lastMessage.getId();
+				}
 			}
 
 			// failing that use the last viewed id
@@ -835,8 +815,17 @@ public class ChatController {
 					if (message.getAction().equals("revoke")) {
 						IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
 					}
-					if (message.getAction().equals("added")) {
+					else if (message.getAction().equals("invited")) {
+						mFriendAdapter.addFriendInvited(message.getData());
+					}
+					else if (message.getAction().equals("added")) {
 						mFriendAdapter.addNewFriend(message.getData());
+					}
+					else if (message.getAction().equals("invite")) {
+						mFriendAdapter.addFriendInviter(message.getData());
+					}
+					else if (message.getAction().equals("decline")) {
+						mFriendAdapter.removeFriend(message.getData());
 					}
 
 				}
@@ -1164,36 +1153,37 @@ public class ChatController {
 			return;
 		}
 		mCurrentChat = username;
-
 		if (username != null) {
-			mChatPagerAdapter.addChatName(username);
 			Friend friend = mFriendAdapter.getFriend(username);
-			friend.setChatActive(true);
-			friend.setLastViewedMessageId(friend.getAvailableMessageId());
-			mFriendAdapter.sort();
-			mFriendAdapter.notifyDataSetChanged();
+			if (friend != null) {
+				mChatPagerAdapter.addChatName(username);
+				friend.setChatActive(true);
+				friend.setLastViewedMessageId(friend.getAvailableMessageId());
+				mFriendAdapter.sort();
+				mFriendAdapter.notifyDataSetChanged();
 
-			// cancel associated notifications
-			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
-					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
+				// cancel associated notifications
+				mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
+						SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+				int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
-			if (wantedPosition != mViewPager.getCurrentItem()) {
-				mViewPager.setCurrentItem(wantedPosition, true);
-			}
+				if (wantedPosition != mViewPager.getCurrentItem()) {
+					mViewPager.setCurrentItem(wantedPosition, true);
+				}
 
-			String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
-			SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
-			ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
-			SurespotLog.v(TAG, "fragment: " + chatFragment);
+				String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
+				SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
+				ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
+				SurespotLog.v(TAG, "fragment: " + chatFragment);
 
-			if (chatFragment != null) {
-				chatFragment.requestFocus();
-			}
+				if (chatFragment != null) {
+					chatFragment.requestFocus();
+				}
 
-			if (mMode == MODE_SELECT) {
-				chatFragment.handleSendIntent();
-				setMode(MODE_NORMAL);
+				if (mMode == MODE_SELECT) {
+					chatFragment.handleSendIntent();
+					setMode(MODE_NORMAL);
+				}
 			}
 		}
 		else {
@@ -1303,25 +1293,23 @@ public class ChatController {
 		return mFriendAdapter;
 	}
 
-	private void loadFriendsAndIds() {
-		// TODO refresh on login
-		if (mFriendAdapter.getCount() == 0) {
-
+	private void getFriendsAndIds() {
+		if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
 			mFriendAdapter.setLoading(true);
 			// get the list of friends
 			MainActivity.getNetworkController().getFriends(new JsonHttpResponseHandler() {
 				@Override
-				public void onSuccess(JSONArray jsonArray) {
+				public void onSuccess(JSONObject jsonObject) {
 					SurespotLog.v(TAG, "getFriends success.");
 					ArrayList<Friend> friends = new ArrayList<Friend>();
 					try {
+						mLatestUserControlId = jsonObject.getInt("userControlId");
+						JSONArray jsonArray = jsonObject.getJSONArray("friends");
+
 						for (int i = 0; i < jsonArray.length(); i++) {
 							JSONObject jsonFriend = jsonArray.getJSONObject(i);
 							Friend friend = Friend.toFriend(jsonFriend);
-							// friend.setChatActive(mActiveChats.contains(friend.getName()));
-							// friend.setMessageActivity(getActivity(friend.getName()));
 							friends.add(friend);
-
 						}
 					}
 					catch (JSONException e) {

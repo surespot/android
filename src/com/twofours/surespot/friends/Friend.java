@@ -232,21 +232,6 @@ public class Friend implements Comparable<Friend> {
 		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
 		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
-		// }
-
-		String status = jsonFriend.optString("status");
-		if (!status.isEmpty()) {
-			if (status.equals("invited")) {
-				friend.setInvited(true);
-			}
-
-			else {
-				if (status.equals("invitee")) {
-					friend.setInviter(true);
-				}
-			}
-		}
-		// friend.setLastReceivedMessageControlId(lastReceivedMessageControlId)
 
 		return friend;
 	}

@@ -130,7 +130,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		chatMessage.setFrom(jsonMessage.getString("from"));
 		chatMessage.setTo(jsonMessage.getString("to"));
 		chatMessage.setIv(jsonMessage.getString("iv"));
-		chatMessage.setData(jsonMessage.getString("data"));
+		chatMessage.setData(jsonMessage.optString("data"));
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));

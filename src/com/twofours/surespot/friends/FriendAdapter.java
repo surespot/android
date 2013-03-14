@@ -80,7 +80,6 @@ public class FriendAdapter extends BaseAdapter {
 		if (friend == null) {
 			friend = new Friend(name);
 			mFriends.add(friend);
-			friend.setName(name);
 		}
 
 		friend.setNewFriend(true);
@@ -89,16 +88,12 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public boolean addFriendInvited(String name) {
-		// if it's there already the other party must have invited at the same time in which
-		// case the invitation is automatically accepted so it will appear in the friends list through those means
 		Friend friend = getFriend(name);
-		if (friend != null) {
-			return false;
+		if (friend == null) {
+			friend = new Friend(name);
+			mFriends.add(friend);
 		}
-
-		friend = new Friend(name);
-		friend.setInvited(true);
-		mFriends.add(friend);
+		friend.setInvited(true);		
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 		return true;
@@ -106,9 +101,12 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public void addFriendInviter(String name) {
-		Friend friend = new Friend(name);
-		friend.setInviter(true);
-		mFriends.add(friend);
+		Friend friend = getFriend(name);
+		if (friend == null) {
+			friend = new Friend(name);
+			mFriends.add(friend);
+		}
+		friend.setInviter(true);		
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 
@@ -118,10 +116,10 @@ public class FriendAdapter extends BaseAdapter {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.setChatActive(b);
-		}
-		Collections.sort(mFriends);
-		notifyDataSetChanged();
 
+			Collections.sort(mFriends);
+			notifyDataSetChanged();
+		}
 	}
 
 	// public void setMessageActivity(String username, boolean activity) {
