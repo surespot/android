@@ -135,12 +135,13 @@ public class FriendAdapter extends BaseAdapter {
 	// }
 
 	public void setFriends(List<Friend> friends) {
-		SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
-
-		mFriends.clear();
-		mFriends.addAll(friends);
-		sort();
-		notifyDataSetChanged();
+		if (friends != null) {
+			SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
+			mFriends.clear();
+			mFriends.addAll(friends);
+			sort();
+			notifyDataSetChanged();
+		}
 	}
 
 	public void addFriends(Collection<Friend> friends) {

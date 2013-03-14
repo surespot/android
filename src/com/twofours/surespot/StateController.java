@@ -44,22 +44,34 @@ public class StateController {
 	private static final String STATE_EXTENSION = ".sss";
 
 	private static final String TAG = "StateController";
-	
 
-	public List<Friend> loadFriends() {
+	public class FriendState {
+		public int userControlId;
+		public List<Friend> friends;
+	}
+	
+	public FriendState loadFriends() {
 		String filename = getFilename(FRIENDS);
 		ArrayList<Friend> friends = new ArrayList<Friend>();
 		if (filename != null) {
 			String sFriendsJson = readFile(filename);
 			if (sFriendsJson != null) {
 				SurespotLog.v(TAG, "Loaded friends: " + sFriendsJson);
-				JSONArray friendsJson;
+				
 				try {
-					friendsJson = new JSONArray(sFriendsJson);
+					JSONObject jsonFriendState = new JSONObject(sFriendsJson);
+					
+					int userControlId = jsonFriendState.getInt("userControlId");					
+					JSONArray friendsJson = jsonFriendState.getJSONArray("friends");
 					for (int i = 0; i < friendsJson.length(); i++) {
 						Friend friend = Friend.toFriend(friendsJson.getJSONObject(i));
 						friends.add(friend);
 					}
+					
+					FriendState friendState = new FriendState();
+					friendState.userControlId = userControlId;
+					friendState.friends = friends;
+					return friendState;
 
 				}
 				catch (JSONException e) {
@@ -67,25 +79,33 @@ public class StateController {
 				}
 			}
 		}
-		return friends;
+		return null;
 	}
 
-	public void saveFriends(List<Friend> friends) {
+	public void saveFriends(int latestUserControlId, List<Friend> friends) {
 		String filename = getFilename(FRIENDS);
 		if (filename != null) {
 			if (friends != null && friends.size() > 0) {
 
 				JSONArray jsonArray = new JSONArray();
 				ListIterator<Friend> iterator = friends.listIterator();
-				
+
 				while (iterator.hasNext()) {
 					Friend friend = iterator.next();
 					jsonArray.put(friend.toJSONObject());
 				}
-				
-				String sFriends = jsonArray.toString();
-				writeFile(filename, sFriends);
-				SurespotLog.v(TAG, "Saved friends: " + sFriends);
+
+				JSONObject jsonFriendState = new JSONObject();
+				try {
+					jsonFriendState.put("userControlId", latestUserControlId);
+					jsonFriendState.put("friends", jsonArray);
+					String sFriends = jsonFriendState.toString();
+					writeFile(filename, sFriends);
+					SurespotLog.v(TAG, "Saved friends: " + sFriends);
+				}
+				catch (JSONException e) {
+					SurespotLog.w(TAG, "saveFriends", e);
+				}
 			}
 			else {
 				new File(filename).delete();
@@ -228,7 +248,7 @@ public class StateController {
 			}
 		}
 	}
-	
+
 	public HashMap<String, Integer> loadLastReceivedControlIds() {
 		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
 		if (filename != null) {
@@ -260,7 +280,6 @@ public class StateController {
 			}
 		}
 	}
-
 
 	public void saveUnsentMessages(Collection<SurespotMessage> messages) {
 		String filename = getFilename(UNSENT_MESSAGES);
@@ -383,6 +402,7 @@ public class StateController {
 
 	public static synchronized void wipeAllState(Context context) {
 		deleteRecursive(new File(FileUtils.getStateDir(context)));
+		deleteRecursive(new File(FileUtils.getPublicKeyDir(context)));
 	}
 
 	public static synchronized void wipeState(Context context, String identityName) {
@@ -420,6 +440,9 @@ public class StateController {
 				if (networkController != null) {
 					networkController.clearCache();
 				}
+				
+				 
+				
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);

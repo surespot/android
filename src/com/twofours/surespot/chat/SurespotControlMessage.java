@@ -71,14 +71,16 @@ public class SurespotControlMessage {
 		mFrom = from;
 	}
 
-	public static SurespotControlMessage toSurespotMessage(JSONObject jsonMessage) throws JSONException {
+	public static SurespotControlMessage toSurespotControlMessage(JSONObject jsonMessage) throws JSONException {
 		SurespotControlMessage controlMessage = new SurespotControlMessage();
 
-		controlMessage.setFrom(jsonMessage.getString("from"));
+		
 		controlMessage.setType(jsonMessage.getString("type"));
 		controlMessage.setId(jsonMessage.getInt("id"));
 		controlMessage.setAction(jsonMessage.getString("action"));
 		controlMessage.setData(jsonMessage.getString("data"));
+		
+		controlMessage.setFrom(jsonMessage.optString("from"));
 		controlMessage.setMoreData(jsonMessage.optString("moredata", null));
 		controlMessage.setLocalId(jsonMessage.optString("localid", null));
 		return controlMessage;

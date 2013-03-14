@@ -316,7 +316,14 @@ public class NetworkController {
 		int cId = controlId;
 
 		get("/messagedata/" + user + "/" + mId + "/" + cId, null, responseHandler);
+
 	}
+	
+//	public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {	
+//		int cId = controlId;
+//		get("/usercontrol/" + cId, null, responseHandler);
+//	}
+
 
 	// public void getLatestMessages(JSONObject messageIds, JsonHttpResponseHandler responseHandler) {
 	// // using a post because async http client sends the params url encoded which leaks too much data imo
@@ -338,8 +345,8 @@ public class NetworkController {
 	//
 	// }
 
-	public void getLatestIds(JsonHttpResponseHandler responseHandler) {
-		get("/latestids", null, responseHandler);
+	public void getLatestIds(int userControlId, JsonHttpResponseHandler responseHandler) {
+		get("/latestids/" + userControlId, null, responseHandler);
 	}
 
 	// public void getLatestMessages(JSONArray messageIds, JsonHttpResponseHandler responseHandler) {
