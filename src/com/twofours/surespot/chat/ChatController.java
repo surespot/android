@@ -888,31 +888,33 @@ public class ChatController {
 	private void handleMessages(String username, String jsonMessageString) {
 		SurespotLog.v(TAG, username + ": handleMessages");
 		final ChatAdapter chatAdapter = mChatAdapters.get(username);
+		int sentByMeCount = 0;
 
-		ArrayList<SurespotMessage> messages = ChatUtils.jsonStringsToMessages(jsonMessageString);
+		SurespotMessage lastMessage = null;
+		try {
+			JSONArray jsonUM = new JSONArray(jsonMessageString);
+			SurespotLog.v(TAG, username + ": loaded: " + jsonUM.length() + " latest messages from the server.");
+			for (int i = 0; i < jsonUM.length(); i++) {
+				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
+				if (lastMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+					sentByMeCount++;
+				}
+				chatAdapter.addOrUpdateMessage(lastMessage, false, false);
 
-		if (messages.size() > 0) {
-			SurespotMessage lastMessage = messages.get(messages.size() - 1);
-
-			SurespotLog.v(TAG, username + ": loaded: " + messages.size() + " latest messages from the server.");
-
-			mFriendAdapter.getFriend(username).setAvailableMessageId(lastMessage.getId());
-			//
-			// Runnable runnable = new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			chatAdapter.addMessages(messages);
-			// chatAdapter.sort();
-			chatAdapter.notifyDataSetChanged();
-			//
-			// }
-			// };
-			//
-			// MainActivity.getMainHandler().post(runnable);
+			}
+		}
+		catch (JSONException e) {
+			SurespotLog.w(TAG, "jsonStringsToMessages", e);
 
 		}
 
+		if (lastMessage != null) {
+			Friend friend = mFriendAdapter.getFriend(username);
+			friend.setAvailableMessageId(lastMessage.getId());
+			friend.setLastViewedMessageId(friend.getLastViewedMessageId() + sentByMeCount);
+			chatAdapter.notifyDataSetChanged();
+			mFriendAdapter.notifyDataSetChanged();
+		}
 	}
 
 	// tell the chat adapters we've loaded their data (even if they didn't have any)
