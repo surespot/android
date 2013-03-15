@@ -800,6 +800,11 @@ public class ChatController {
 						}
 					});
 		}
+		else {
+			if (username.equals(mCurrentChat)) {
+				getChatFragment(username).scrollToEnd();
+			}
+		}
 	}
 
 	private void handleControlMessages(String username, JSONArray jsonArray) {
@@ -926,12 +931,11 @@ public class ChatController {
 
 			chatAdapter.notifyDataSetChanged();
 			mFriendAdapter.notifyDataSetChanged();
-
-			ChatFragment chatFragment = getChatFragment(username);
-			if (chatFragment != null) {
-				chatFragment.scrollToEnd();
-			}
-
+		
+		}
+		
+		if (username.equals(mCurrentChat)) {
+			getChatFragment(username).scrollToEnd();
 		}
 	}
 
@@ -985,10 +989,7 @@ public class ChatController {
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
 		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));	
-		ChatFragment chatFragment = getChatFragment(username);
-		if (chatFragment != null) {
-			chatFragment.scrollToState();
-		}
+		ChatFragment chatFragment = getChatFragment(username);		
 	}
 
 	private synchronized void saveMessages() {
@@ -1054,7 +1055,7 @@ public class ChatController {
 		if (username == null) {
 			saveUnsentMessages();
 			saveMessages();
-			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
+			SurespotLog.v(TAG, "saving last chat: " + mCurrentChat);
 			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 			SurespotApplication.getStateController().saveFriends(mLatestUserControlId, mFriendAdapter.getFriends());
 		}
