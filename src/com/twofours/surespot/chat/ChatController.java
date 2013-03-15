@@ -984,7 +984,11 @@ public class ChatController {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));		
+		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));	
+		ChatFragment chatFragment = getChatFragment(username);
+		if (chatFragment != null) {
+			chatFragment.scrollToState();
+		}
 	}
 
 	private synchronized void saveMessages() {

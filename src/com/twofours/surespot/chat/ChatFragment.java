@@ -45,6 +45,10 @@ public class ChatFragment extends SherlockFragment {
 	private int mPreviousTotal;
 	private Button mSendButton;
 	private Timer mTimer;
+	private int mSelectedItem;
+	private int mSelection;
+	private int mTop;
+	private boolean mJustLoaded;
 
 	private ChatAdapter mChatAdapter;
 
@@ -92,7 +96,8 @@ public class ChatFragment extends SherlockFragment {
 
 				// pull the message out
 				if (message != null) {
-					if (!message.getDeletedFrom() && !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
+					if (!message.getDeletedFrom()
+							&& !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
 							if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
@@ -116,7 +121,7 @@ public class ChatFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				//if it's our message or it's their message and we deleted it 
+				// if it's our message or it's their message and we deleted it
 				if (!message.getDeletedFrom() && !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
 					MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
 					dialog.setMessage(message);
@@ -177,7 +182,7 @@ public class ChatFragment extends SherlockFragment {
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				
+
 				if (mEditText.getText().length() > 0) {
 					mSendButton.setText("send");
 				}
@@ -190,6 +195,22 @@ public class ChatFragment extends SherlockFragment {
 			public void afterTextChanged(Editable s) {
 			}
 		});
+
+		if (savedInstanceState != null) {
+			mSelectedItem = savedInstanceState.getInt("selectedItem");
+		}
+
+		ChatController chatController = getMainActivity().getChatController();
+		if (chatController != null) {
+			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
+			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
+
+			mListView.setAdapter(mChatAdapter);
+			mListView.setDividerHeight(1);
+			mListView.setOnScrollListener(mOnScrollListener);
+			
+			scrollToState();
+		}
 
 		return view;
 	}
@@ -205,9 +226,6 @@ public class ChatFragment extends SherlockFragment {
 		SurespotLog.v(TAG, "onDetach: " + mUsername);
 	}
 
-	private int mSelection;
-	private int mTop;
-	private boolean mJustLoaded;
 	private OnScrollListener mOnScrollListener = new OnScrollListener() {
 
 		@Override
@@ -278,62 +296,62 @@ public class ChatFragment extends SherlockFragment {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume: " + mUsername);
 
-		ChatController chatController = getMainActivity().getChatController();
-		if (chatController != null) {
-			mChatAdapter = chatController.getChatAdapter(getMainActivity().getContext(), mUsername);
-			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
-
-			mListView.setAdapter(mChatAdapter);
-			mListView.setDividerHeight(1);
-			mListView.setOnScrollListener(mOnScrollListener);
-			// mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
-			//
-			// @Override
-			// public void handleResponse(Boolean loading) {
-			// // mLoading = loading;
-			// SurespotLog.v(TAG, "chatAdapter loading: " + loading);
-			// if (loading) {
-			// // view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-			// // only show the dialog if we haven't loaded within 500 ms
-			// if (mTimer != null) {
-			// mTimer.cancel();
-			// }
-			//
-			// mTimer = new Timer();
-			// mTimer.schedule(new TimerTask() {
-			//
-			// @Override
-			// public void run() {
-			// Handler handler = getMainActivity().getMainHandler();
-			// if (handler != null) {
-			// handler.post(new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			// SurespotLog.v(TAG, "chat fragment showing progress");
-			// //view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-			// }
-			// });
-			// }
-			//
-			// }
-			// }, 250);
-			//
-			// }
-			// else {
-			// SurespotLog.v(TAG, "chat fragment tearing progress down");
-			// if (mTimer != null) {
-			// mTimer.cancel();
-			// mTimer = null;
-			// }
-			//
-			// //view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-			// //view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-			// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-			// }
-			// }
-			// });
-		}
+		// ChatController chatController = getMainActivity().getChatController();
+		// if (chatController != null) {
+		// mChatAdapter = chatController.getChatAdapter(getMainActivity().getContext(), mUsername);
+		// SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
+		//
+		// mListView.setAdapter(mChatAdapter);
+		// mListView.setDividerHeight(1);
+		// mListView.setOnScrollListener(mOnScrollListener);
+		// mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
+		//
+		// @Override
+		// public void handleResponse(Boolean loading) {
+		// // mLoading = loading;
+		// SurespotLog.v(TAG, "chatAdapter loading: " + loading);
+		// if (loading) {
+		// // view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+		// // only show the dialog if we haven't loaded within 500 ms
+		// if (mTimer != null) {
+		// mTimer.cancel();
+		// }
+		//
+		// mTimer = new Timer();
+		// mTimer.schedule(new TimerTask() {
+		//
+		// @Override
+		// public void run() {
+		// Handler handler = getMainActivity().getMainHandler();
+		// if (handler != null) {
+		// handler.post(new Runnable() {
+		//
+		// @Override
+		// public void run() {
+		// SurespotLog.v(TAG, "chat fragment showing progress");
+		// //view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+		// }
+		// });
+		// }
+		//
+		// }
+		// }, 250);
+		//
+		// }
+		// else {
+		// SurespotLog.v(TAG, "chat fragment tearing progress down");
+		// if (mTimer != null) {
+		// mTimer.cancel();
+		// mTimer = null;
+		// }
+		//
+		// //view.findViewById(R.id.progressBar).setVisibility(View.GONE);
+		// //view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
+		// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+		// }
+		// }
+		// });
+		// }
 
 	};
 
@@ -349,19 +367,17 @@ public class ChatFragment extends SherlockFragment {
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
-		ChatController chatController = getMainActivity().getChatController();
-		if (chatController != null) {
-			chatController.destroyChatAdapter(mUsername);
-		}
+
 		// mListView.removeOnScrollListener()):
 	}
 
 	public void onDestroy() {
 		super.onDestroy();
 		SurespotLog.v(TAG, "onDestroy");
-		// mTop = 0;
-		// mPreviousTotal = 1;
-		// mLoading = false;
+		// ChatController chatController = getMainActivity().getChatController();
+		// if (chatController != null) {
+		// chatController.destroyChatAdapter(mUsername);
+		// }
 
 	}
 
@@ -410,7 +426,32 @@ public class ChatFragment extends SherlockFragment {
 
 	public void scrollToEnd() {
 		if (mChatAdapter != null && mListView != null) {
+			SurespotLog.v(TAG, "scrollToEnd");
 			mListView.setSelection(mChatAdapter.getCount());
 		}
 	}
+
+	public void scrollToState() {
+
+		if (mChatAdapter != null && mListView != null) {
+			
+			if (mSelectedItem > 0) {
+				SurespotLog.v(TAG, "scrollToState");				mListView.setSelection(mSelectedItem);
+			}
+			else {
+				scrollToEnd();
+			}
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+
+		int selction = mListView.getLastVisiblePosition();
+		SurespotLog.v(TAG, "saving selected item: " + selction);
+		outState.putInt("selectedItem", selction);
+	}
+
 }
