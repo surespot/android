@@ -136,8 +136,12 @@ public class ImageCaptureActivity extends SherlockActivity {
 											}
 											deleteCompressedImage();
 											mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
-											Bitmap bitmap = compressImage(Uri.fromFile(mCapturedImagePath), rotation + mCameraOrientation);
-											deleteCapturedImage();
+											Bitmap bitmap = null;
+											if (mCapturedImagePath != null) {
+												bitmap = compressImage(Uri.fromFile(mCapturedImagePath), rotation
+														+ mCameraOrientation);
+												deleteCapturedImage();
+											}
 
 											return bitmap;
 										}
@@ -163,7 +167,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 										mSendButton.setEnabled(true);
 									}
 									else {
-										Utils.makeToast(ImageCaptureActivity.this, "could not capture image");
+										//Utils.makeToast(ImageCaptureActivity.this, "could not capture image");
 										mSendButton.setEnabled(false);
 									}
 									mCaptureButton.setEnabled(true);
@@ -363,7 +367,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 		}
 		catch (IOException e1) {
 			SurespotLog.w(TAG, "compressImage", e1);
-			Utils.makeLongToast(this, "could not load image");
+			// Utils.makeLongToast(this, "could not load image");
 			finish();
 			return null;
 		}
@@ -381,7 +385,7 @@ public class ImageCaptureActivity extends SherlockActivity {
 				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
 			}
 			else {
-				Utils.makeLongToast(this, "could not load image");
+				//Utils.makeLongToast(this, "could not load image");
 				finish();
 			}
 			return bitmap;
