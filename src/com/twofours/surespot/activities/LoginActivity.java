@@ -12,6 +12,7 @@ import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -177,7 +178,6 @@ public class LoginActivity extends SherlockActivity {
 		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
 			mMpd.incrProgress();
 
-			
 			new AsyncTask<Void, Void, IdSig>() {
 
 				@Override
@@ -233,6 +233,8 @@ public class LoginActivity extends SherlockActivity {
 								Utils.logIntent(TAG, newIntent);
 
 								startActivity(newIntent);
+								InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+								imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
 								finish();
 
 							}

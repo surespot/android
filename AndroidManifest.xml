@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
     android:versionCode="3"
-    android:versionName="38ea7fc" >
+    android:versionName="770d5ff" >
 
     <uses-sdk
         android:minSdkVersion="10"
@@ -55,10 +55,10 @@
 
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main" 
+            android:windowSoftInputMode="stateUnchanged">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
@@ -130,21 +130,18 @@
         <activity android:name="com.twofours.surespot.activities.ExportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ExportIdentityActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name="com.twofours.surespot.activities.ImportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ImportIdentityActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name="com.twofours.surespot.activities.ManageKeysActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
