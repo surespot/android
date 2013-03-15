@@ -408,7 +408,7 @@ public class ChatFragment extends SherlockFragment {
 
 	}
 
-	private void scrollToEnd() {
+	public void scrollToEnd() {
 		if (mChatAdapter != null && mListView != null) {
 			mListView.setSelection(mChatAdapter.getCount());
 		}

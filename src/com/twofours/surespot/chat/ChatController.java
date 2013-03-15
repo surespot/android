@@ -570,6 +570,11 @@ public class ChatController {
 			if (otherUser.equals(mCurrentChat)) {
 				friend.setLastViewedMessageId(messageId);
 			}
+			ChatFragment chatFragment = getChatFragment(otherUser);
+			if (chatFragment != null) {
+				chatFragment.scrollToEnd();
+			}
+
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
@@ -902,7 +907,6 @@ public class ChatController {
 				if (added & lastMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
 					sentByMeCount++;
 				}
-				
 
 			}
 		}
@@ -913,14 +917,21 @@ public class ChatController {
 
 		if (lastMessage != null) {
 			Friend friend = mFriendAdapter.getFriend(username);
-			
-			int adjustedLastViewedId = friend.getLastViewedMessageId() + sentByMeCount;
+
 			int availableId = lastMessage.getId();
-								
-			friend.setAvailableMessageId(availableId);				
+			friend.setAvailableMessageId(availableId);
+
+			int adjustedLastViewedId = friend.getLastViewedMessageId() + sentByMeCount;
 			friend.setLastViewedMessageId(adjustedLastViewedId);
+
 			chatAdapter.notifyDataSetChanged();
 			mFriendAdapter.notifyDataSetChanged();
+
+			ChatFragment chatFragment = getChatFragment(username);
+			if (chatFragment != null) {
+				chatFragment.scrollToEnd();
+			}
+
 		}
 	}
 
@@ -973,7 +984,7 @@ public class ChatController {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
+		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));		
 	}
 
 	private synchronized void saveMessages() {
@@ -1180,11 +1191,7 @@ public class ChatController {
 					mViewPager.setCurrentItem(wantedPosition, true);
 				}
 
-				String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
-				SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
-				ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
-				SurespotLog.v(TAG, "fragment: " + chatFragment);
-
+				ChatFragment chatFragment = getChatFragment(username);
 				if (chatFragment != null) {
 					chatFragment.requestFocus();
 				}
@@ -1204,6 +1211,14 @@ public class ChatController {
 		// disable menu items
 		enableMenuItems();
 
+	}
+
+	private ChatFragment getChatFragment(String username) {
+		String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
+		SurespotLog.v(TAG, "looking for fragment: " + fragmentTag);
+		ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
+		SurespotLog.v(TAG, "fragment: " + chatFragment);
+		return chatFragment;
 	}
 
 	void sendMessage(final String username, final String plainText, final String mimeType) {

@@ -106,6 +106,7 @@
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/bAddFriend"
         android:imeOptions="flagNoExtractUi|actionDone"
+        android:imeActionLabel="invite"
         android:inputType="textNoSuggestions"
         android:singleLine="true"
         android:textSize="20sp" />
