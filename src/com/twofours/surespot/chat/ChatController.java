@@ -801,8 +801,13 @@ public class ChatController {
 					});
 		}
 		else {
-			if (username.equals(mCurrentChat)) {
-				getChatFragment(username).scrollToEnd();
+			if (username.equals(mCurrentChat)) {				
+				ChatFragment chatFragment = getChatFragment(username);
+				if (chatFragment != null) {
+					chatFragment.scrollToEnd();
+					chatFragment.requestFocus();
+					
+				}
 			}
 		}
 	}
@@ -935,7 +940,12 @@ public class ChatController {
 		}
 		
 		if (username.equals(mCurrentChat)) {
-			getChatFragment(username).scrollToEnd();
+			ChatFragment chatFragment = getChatFragment(username);
+			if (chatFragment != null) {
+				chatFragment.scrollToEnd();
+				chatFragment.requestFocus();
+				
+			}
 		}
 	}
 
