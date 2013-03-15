@@ -50,7 +50,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// shoved it in shared prefs
 		SurespotLog.v(TAG, "Received gcm id, saving it in shared prefs.");
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
-
+		GCMRegistrar.setRegisteredOnServer(context, true);
 		// TODO use password instead of session?
 		// TODO retries?
 		if (IdentityController.hasLoggedInUser()) {
@@ -86,7 +86,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 				// the server and client match, we're golden
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
-				GCMRegistrar.setRegisteredOnServer(context, true);
+				
 
 			}
 		}
@@ -96,8 +96,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 	}
 
 	@Override
-	protected void onUnregistered(Context arg0, String arg1) {
-		// TODO Auto-generated method stub
+	protected void onUnregistered(Context context, String arg1) {
+		
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, null);
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_RECEIVED, null);
+
 
 	}
 
