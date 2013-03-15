@@ -1053,7 +1053,7 @@ public class ChatController {
 
 		if (username == null) {
 			saveUnsentMessages();
-			// saveMessages();
+			saveMessages();
 			SurespotLog.v(TAG, "setting last chat to: " + mCurrentChat);
 			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
 			SurespotApplication.getStateController().saveFriends(mLatestUserControlId, mFriendAdapter.getFriends());
