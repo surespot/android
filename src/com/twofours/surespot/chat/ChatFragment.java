@@ -260,7 +260,7 @@ public class ChatFragment extends SherlockFragment {
 					}
 					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
 					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
-					if (chatController != null && hasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
+					if (chatController != null && hasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20) && totalItemCount > 29) {
 
 						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
 						// + ", visibleItemCount: " + visibleItemCount);
