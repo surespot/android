@@ -433,6 +433,7 @@ public class ChatFragment extends SherlockFragment {
 
 	public void requestFocus() {
 		SurespotLog.v(TAG, "requestFocus");
+		mEditText.clearFocus();
 		mEditText.requestFocus();
 
 	}
