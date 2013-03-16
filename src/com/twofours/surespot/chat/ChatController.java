@@ -282,7 +282,9 @@ public class ChatController {
 
 					// TODO check who from
 					try {
-						SurespotMessage message = SurespotMessage.toSurespotMessage(new JSONObject((String) args[0]));
+						JSONObject jsonMessage = new JSONObject((String) args[0]);
+						SurespotLog.v(TAG, "received message: " + jsonMessage.toString());
+						SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
 						updateUserMessageIds(message);
 						checkAndSendNextMessage(message);
 
@@ -448,7 +450,6 @@ public class ChatController {
 	}
 
 	private void checkAndSendNextMessage(SurespotMessage message) {
-		SurespotLog.v(TAG, "received message: " + message);
 		sendMessages();
 
 		if (mResendBuffer.size() > 0) {
@@ -505,11 +506,11 @@ public class ChatController {
 		mControlResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
 
-			SurespotLog.v(TAG, "sendmessage, socket: " + socket);
+			SurespotLog.v(TAG, "sendcontrolmessage, socket: " + socket);
 			JSONObject json = message.toJSONObject();
-			SurespotLog.v(TAG, "sendmessage, json: " + json);
+			SurespotLog.v(TAG, "sendcontrolmessage, json: " + json);
 			String s = json.toString();
-			SurespotLog.v(TAG, "sendmessage, message string: " + s);
+			SurespotLog.v(TAG, "sendcontrolmessage, message string: " + s);
 
 			if (socket != null) {
 				socket.emit("control", s);
@@ -556,7 +557,13 @@ public class ChatController {
 
 		// if the adapter is open add the message
 		if (chatAdapter != null) {
-			chatAdapter.addOrUpdateMessage(message, true, true);
+			try {
+				chatAdapter.addOrUpdateMessage(message, true, true, true);
+			}
+			catch (SurespotMessageSequenceException e) {
+				SurespotLog.v(TAG, "updateUserMessageIds: " + e.getMessage());
+				getLatestMessagesAndControls(otherUser, e.getMessageId());
+			}
 		}
 
 		Friend friend = mFriendAdapter.getFriend(otherUser);
@@ -765,9 +772,16 @@ public class ChatController {
 			getLatestMessagesAndControls(entry.getKey());
 		}
 	}
+	
+
+	private void getLatestMessagesAndControls(String username, int messageId) {
+		getLatestMessagesAndControls(username, messageId, -1);
+		
+	}
+
 
 	private void getLatestMessagesAndControls(final String username) {
-
+	
 		Friend friend = getFriendAdapter().getFriend(username);
 		int latestMessageId = getLatestMessageId(username);
 		int latestAvailableId = friend.getAvailableMessageId();
@@ -778,7 +792,13 @@ public class ChatController {
 		int fetchMessageId = latestAvailableId > latestMessageId ? latestMessageId : -1;
 		int fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
 
-		SurespotLog.v(TAG, "getLatestMessagesAndControls: fetchMessageId: " + fetchMessageId + ", fetchControlMessageId: "
+		getLatestMessagesAndControls(username, fetchMessageId, fetchControlMessageId);
+	}
+		
+	private void getLatestMessagesAndControls(final String username, int fetchMessageId, int fetchControlMessageId) {
+
+	
+		SurespotLog.v(TAG, "getLatestMessagesAndControls: username: " + username + ", fetchMessageId: " + fetchMessageId + ", fetchControlMessageId: "
 				+ fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
 
@@ -801,6 +821,10 @@ public class ChatController {
 					});
 		}
 		else {
+			ChatAdapter chatAdapter = mChatAdapters.get(username);
+			if (chatAdapter != null) {
+				chatAdapter.doneCheckingSequence();
+			}
 			if (username.equals(mCurrentChat)) {				
 				ChatFragment chatFragment = getChatFragment(username);
 				if (chatFragment != null) {
@@ -808,7 +832,7 @@ public class ChatController {
 					chatFragment.requestFocus();
 					
 				}
-			}
+			}		
 		}
 	}
 
@@ -913,7 +937,7 @@ public class ChatController {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonUM.length() + " latest messages from the server.");
 			for (int i = 0; i < jsonUM.length(); i++) {
 				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
-				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false);
+				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);
 				if (added & lastMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
 					sentByMeCount++;
 				}
@@ -923,6 +947,12 @@ public class ChatController {
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "jsonStringsToMessages", e);
 
+		}
+		catch (SurespotMessageSequenceException e) {
+			//shouldn't happen
+			SurespotLog.w(TAG, "handleMessages", e);
+			//getLatestMessagesAndControls(username, e.getMessageId(), -1);
+			return;
 		}
 
 		if (lastMessage != null) {
@@ -934,7 +964,10 @@ public class ChatController {
 			int adjustedLastViewedId = friend.getLastViewedMessageId() + sentByMeCount;
 			friend.setLastViewedMessageId(adjustedLastViewedId);
 
+			
+			chatAdapter.sort();
 			chatAdapter.notifyDataSetChanged();
+			chatAdapter.doneCheckingSequence();
 			mFriendAdapter.notifyDataSetChanged();
 		
 		}
@@ -1247,7 +1280,13 @@ public class ChatController {
 					new String(Utils.base64Encode(iv)));
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
 
-			chatAdapter.addOrUpdateMessage(chatMessage, true, true);
+			try {
+				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
+			}
+			catch (SurespotMessageSequenceException e) {
+				//not gonna happen
+				SurespotLog.v(TAG,"sendMessage", e);
+			}
 
 			// do encryption in background
 			new AsyncTask<Void, Void, SurespotMessage>() {

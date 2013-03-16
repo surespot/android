@@ -33,6 +33,7 @@ public class ChatAdapter extends BaseAdapter {
 	private IAsyncCallback<Boolean> mLoadingCallback;
 	private boolean mDebugMode;
 	private boolean mHideDeleted;
+	private boolean mCheckingSequence;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -42,6 +43,10 @@ public class ChatAdapter extends BaseAdapter {
 		mHideDeleted = false;
 		// pm.getBoolean("pref_hide_deleted_messages", false);
 
+	}
+	
+	public void doneCheckingSequence() {
+		mCheckingSequence = false;
 	}
 
 	public boolean isLoading() {
@@ -71,7 +76,7 @@ public class ChatAdapter extends BaseAdapter {
 	public SurespotMessage getLastMessageWithId() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			SurespotMessage message = iterator.previous();
-			if (message.getId() != null) {
+			if (message.getId() != null && message.getId() > 0) {
 				return message;
 			}
 		}
@@ -81,7 +86,7 @@ public class ChatAdapter extends BaseAdapter {
 	public SurespotMessage getFirstMessageWithId() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext();) {
 			SurespotMessage message = iterator.next();
-			if (message.getId() != null) {
+			if (message.getId() != null && message.getId() > 0) {
 				return message;
 			}
 		}
@@ -89,17 +94,35 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	// update the id and sent status of the message once we received
-	private boolean addOrUpdateMessage(SurespotMessage message, boolean sort) {
+	private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort)
+			throws SurespotMessageSequenceException {
+
+		// SurespotLog.v(TAG, "addMessage, could not find message");
+
+		// make sure message is in sequence
+
+		if (!mCheckingSequence && checkSequence && (message.getId() != null)) {
+			SurespotMessage previousMessage = getLastMessageWithId();
+
+			int previousId = 0;
+			if (previousMessage != null) {
+				previousId = previousMessage.getId();
+			}
+
+			if (previousId != (message.getId() - 1)) {
+				throw new SurespotMessageSequenceException(previousId);
+			}
+
+		}
+
 		int index = mMessages.indexOf(message);
 		boolean added = false;
 		if (index == -1) {
-			// SurespotLog.v(TAG, "addMessage, could not find message");
 
-			//
 			mMessages.add(message);
 			added = true;
-
 		}
+
 		else {
 			// SurespotLog.v(TAG, "addMessage, updating message");
 			SurespotMessage updateMessage = mMessages.get(index);
@@ -140,13 +163,13 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public void addMessages(ArrayList<SurespotMessage> messages) {
-		if (messages.size() > 0) {
-			mMessages.addAll(messages);
-
-			// notifyDataSetChanged();
-		}
-	}
+	// public void addMessages(ArrayList<SurespotMessage> messages) {
+	// if (messages.size() > 0) {
+	// mMessages.addAll(messages);
+	//
+	// // notifyDataSetChanged();
+	// }
+	// }
 
 	// thanks to http://www.sherif.mobi/2012/01/listview-with-ability-to-hide-rows.html
 	@Override
@@ -276,7 +299,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (item.getId() == null) {
 			chatMessageViewHolder.tvTime.setText("sending...");
 		}
-		else {			
+		else {
 			deleted = ChatUtils.isDeleted(item);
 			if (deleted) {
 
@@ -286,7 +309,7 @@ public class ChatAdapter extends BaseAdapter {
 				// else {
 				item.setPlainData("deleted");
 				chatMessageViewHolder.tvTime.setText("deleted");
-				
+
 			}
 
 			else {
@@ -376,9 +399,10 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public boolean addOrUpdateMessage(SurespotMessage message, boolean sort, boolean notify) {
+	public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
+			throws SurespotMessageSequenceException {
 		boolean added = false;
-		added = addOrUpdateMessage(message, sort);
+		added = addOrUpdateMessage(message, checkSequence, sort);
 		if (notify) {
 			notifyDataSetChanged();
 		}
