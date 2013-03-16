@@ -6,13 +6,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -113,173 +110,173 @@ public class StateController {
 		}
 	}
 
-	public Set<String> loadActiveChats() {
-		String filename = getFilename(ACTIVE_CHATS);
-		HashSet<String> activeChats = new HashSet<String>();
-		if (filename != null) {
-			String sActiveChatsJson = readFile(filename);
-			if (sActiveChatsJson != null) {
-				SurespotLog.v(TAG, "Loaded active chats: " + sActiveChatsJson);
-				JSONArray activeChatsJson;
-				try {
-					activeChatsJson = new JSONArray(sActiveChatsJson);
-					for (int i = 0; i < activeChatsJson.length(); i++) {
-						String chatName = activeChatsJson.getString(i);
-						activeChats.add(chatName);
-					}
+//	public Set<String> loadActiveChats() {
+//		String filename = getFilename(ACTIVE_CHATS);
+//		HashSet<String> activeChats = new HashSet<String>();
+//		if (filename != null) {
+//			String sActiveChatsJson = readFile(filename);
+//			if (sActiveChatsJson != null) {
+//				SurespotLog.v(TAG, "Loaded active chats: " + sActiveChatsJson);
+//				JSONArray activeChatsJson;
+//				try {
+//					activeChatsJson = new JSONArray(sActiveChatsJson);
+//					for (int i = 0; i < activeChatsJson.length(); i++) {
+//						String chatName = activeChatsJson.getString(i);
+//						activeChats.add(chatName);
+//					}
+//
+//				}
+//				catch (JSONException e) {
+//					SurespotLog.w(TAG, "getACtiveChats", e);
+//				}
+//			}
+//		}
+//		return activeChats;
+//	}
+//
+//	public void saveActiveChats(Collection<String> chats) {
+//		String filename = getFilename(ACTIVE_CHATS);
+//		if (filename != null) {
+//			if (chats != null && chats.size() > 0) {
+//
+//				JSONArray jsonArray = new JSONArray(chats);
+//				String sActivechats = jsonArray.toString();
+//				writeFile(filename, sActivechats);
+//				SurespotLog.v(TAG, "Saved active chats: " + sActivechats);
+//			}
+//			else {
+//				new File(filename).delete();
+//			}
+//		}
+//	}
 
-				}
-				catch (JSONException e) {
-					SurespotLog.w(TAG, "getACtiveChats", e);
-				}
-			}
-		}
-		return activeChats;
-	}
-
-	public void saveActiveChats(Collection<String> chats) {
-		String filename = getFilename(ACTIVE_CHATS);
-		if (filename != null) {
-			if (chats != null && chats.size() > 0) {
-
-				JSONArray jsonArray = new JSONArray(chats);
-				String sActivechats = jsonArray.toString();
-				writeFile(filename, sActivechats);
-				SurespotLog.v(TAG, "Saved active chats: " + sActivechats);
-			}
-			else {
-				new File(filename).delete();
-			}
-		}
-	}
-
-	public HashMap<String, Boolean> loadMessageActivity() {
-		String filename = getFilename(MESSAGE_ACTIVITY);
-		if (filename != null) {
-
-			String lastMessageIdJson = readFile(filename);
-			if (lastMessageIdJson != null) {
-
-				SurespotLog.v(TAG, "Loaded messageActivity: " + lastMessageIdJson);
-				return Utils.jsonStringToBooleanMap(lastMessageIdJson);
-			}
-
-		}
-		return new HashMap<String, Boolean>();
-
-	}
-
-	public void saveMessageActivity(Map<String, Boolean> messageActivity) {
-
-		String filename = getFilename(MESSAGE_ACTIVITY);
-		if (filename != null) {
-			if (messageActivity != null && messageActivity.size() > 0) {
-				String smessageIds = booleanMapToJsonString(messageActivity);
-				writeFile(filename, smessageIds);
-				SurespotLog.v(TAG, "saved message activity: " + smessageIds);
-
-			}
-			else {
-				new File(filename).delete();
-			}
-		}
-	}
-
-	public HashMap<String, Integer> loadLastViewMessageIds() {
-		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
-		if (filename != null) {
-
-			String lastMessageIdJson = readFile(filename);
-			if (lastMessageIdJson != null) {
-
-				SurespotLog.v(TAG, "Loaded last viewed ids: " + lastMessageIdJson);
-				return Utils.jsonStringToMap(lastMessageIdJson);
-			}
-
-		}
-		return new HashMap<String, Integer>();
-
-	}
-
-	public void saveLastViewedMessageIds(Map<String, Integer> messageIds) {
-
-		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
-		if (filename != null) {
-			if (messageIds != null && messageIds.size() > 0) {
-				String smessageIds = mapToJsonString(messageIds);
-				writeFile(filename, smessageIds);
-				SurespotLog.v(TAG, "saved last viewed messageIds: " + smessageIds);
-
-			}
-			else {
-				new File(filename).delete();
-			}
-		}
-	}
-
-	public HashMap<String, Integer> loadLastReceivedMessageIds() {
-		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
-		if (filename != null) {
-
-			String lastMessageIdJson = readFile(filename);
-			if (lastMessageIdJson != null) {
-
-				SurespotLog.v(TAG, "Loaded last received ids: " + lastMessageIdJson);
-				return Utils.jsonStringToMap(lastMessageIdJson);
-			}
-
-		}
-		return new HashMap<String, Integer>();
-
-	}
-
-	public void saveLastReceivedMessageIds(Map<String, Integer> messageIds) {
-
-		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
-		if (filename != null) {
-			if (messageIds != null && messageIds.size() > 0) {
-				String smessageIds = mapToJsonString(messageIds);
-				writeFile(filename, smessageIds);
-				SurespotLog.v(TAG, "saved last received messageIds: " + smessageIds);
-
-			}
-			else {
-				new File(filename).delete();
-			}
-		}
-	}
-
-	public HashMap<String, Integer> loadLastReceivedControlIds() {
-		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
-		if (filename != null) {
-
-			String lastControlIdJson = readFile(filename);
-			if (lastControlIdJson != null) {
-
-				SurespotLog.v(TAG, "Loaded last received ids: " + lastControlIdJson);
-				return Utils.jsonStringToMap(lastControlIdJson);
-			}
-
-		}
-		return new HashMap<String, Integer>();
-
-	}
-
-	public void saveLastReceivedControlIds(Map<String, Integer> controlIds) {
-
-		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
-		if (filename != null) {
-			if (controlIds != null && controlIds.size() > 0) {
-				String scontrolIds = mapToJsonString(controlIds);
-				writeFile(filename, scontrolIds);
-				SurespotLog.v(TAG, "saved last received controlIds: " + scontrolIds);
-
-			}
-			else {
-				new File(filename).delete();
-			}
-		}
-	}
+//	public HashMap<String, Boolean> loadMessageActivity() {
+//		String filename = getFilename(MESSAGE_ACTIVITY);
+//		if (filename != null) {
+//
+//			String lastMessageIdJson = readFile(filename);
+//			if (lastMessageIdJson != null) {
+//
+//				SurespotLog.v(TAG, "Loaded messageActivity: " + lastMessageIdJson);
+//				return Utils.jsonStringToBooleanMap(lastMessageIdJson);
+//			}
+//
+//		}
+//		return new HashMap<String, Boolean>();
+//
+//	}
+//
+//	public void saveMessageActivity(Map<String, Boolean> messageActivity) {
+//
+//		String filename = getFilename(MESSAGE_ACTIVITY);
+//		if (filename != null) {
+//			if (messageActivity != null && messageActivity.size() > 0) {
+//				String smessageIds = booleanMapToJsonString(messageActivity);
+//				writeFile(filename, smessageIds);
+//				SurespotLog.v(TAG, "saved message activity: " + smessageIds);
+//
+//			}
+//			else {
+//				new File(filename).delete();
+//			}
+//		}
+//	}
+//
+//	public HashMap<String, Integer> loadLastViewMessageIds() {
+//		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
+//		if (filename != null) {
+//
+//			String lastMessageIdJson = readFile(filename);
+//			if (lastMessageIdJson != null) {
+//
+//				SurespotLog.v(TAG, "Loaded last viewed ids: " + lastMessageIdJson);
+//				return Utils.jsonStringToMap(lastMessageIdJson);
+//			}
+//
+//		}
+//		return new HashMap<String, Integer>();
+//
+//	}
+//
+//	public void saveLastViewedMessageIds(Map<String, Integer> messageIds) {
+//
+//		String filename = getFilename(LAST_VIEWED_MESSAGE_IDS);
+//		if (filename != null) {
+//			if (messageIds != null && messageIds.size() > 0) {
+//				String smessageIds = mapToJsonString(messageIds);
+//				writeFile(filename, smessageIds);
+//				SurespotLog.v(TAG, "saved last viewed messageIds: " + smessageIds);
+//
+//			}
+//			else {
+//				new File(filename).delete();
+//			}
+//		}
+//	}
+//
+//	public HashMap<String, Integer> loadLastReceivedMessageIds() {
+//		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
+//		if (filename != null) {
+//
+//			String lastMessageIdJson = readFile(filename);
+//			if (lastMessageIdJson != null) {
+//
+//				SurespotLog.v(TAG, "Loaded last received ids: " + lastMessageIdJson);
+//				return Utils.jsonStringToMap(lastMessageIdJson);
+//			}
+//
+//		}
+//		return new HashMap<String, Integer>();
+//
+//	}
+//
+//	public void saveLastReceivedMessageIds(Map<String, Integer> messageIds) {
+//
+//		String filename = getFilename(LAST_RECEIVED_MESSAGE_IDS);
+//		if (filename != null) {
+//			if (messageIds != null && messageIds.size() > 0) {
+//				String smessageIds = mapToJsonString(messageIds);
+//				writeFile(filename, smessageIds);
+//				SurespotLog.v(TAG, "saved last received messageIds: " + smessageIds);
+//
+//			}
+//			else {
+//				new File(filename).delete();
+//			}
+//		}
+//	}
+//
+//	public HashMap<String, Integer> loadLastReceivedControlIds() {
+//		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
+//		if (filename != null) {
+//
+//			String lastControlIdJson = readFile(filename);
+//			if (lastControlIdJson != null) {
+//
+//				SurespotLog.v(TAG, "Loaded last received ids: " + lastControlIdJson);
+//				return Utils.jsonStringToMap(lastControlIdJson);
+//			}
+//
+//		}
+//		return new HashMap<String, Integer>();
+//
+//	}
+//
+//	public void saveLastReceivedControlIds(Map<String, Integer> controlIds) {
+//
+//		String filename = getFilename(LAST_RECEIVED_MESSAGE_CONTROL_IDS);
+//		if (filename != null) {
+//			if (controlIds != null && controlIds.size() > 0) {
+//				String scontrolIds = mapToJsonString(controlIds);
+//				writeFile(filename, scontrolIds);
+//				SurespotLog.v(TAG, "saved last received controlIds: " + scontrolIds);
+//
+//			}
+//			else {
+//				new File(filename).delete();
+//			}
+//		}
+//	}
 
 	public void saveUnsentMessages(Collection<SurespotMessage> messages) {
 		String filename = getFilename(UNSENT_MESSAGES);
