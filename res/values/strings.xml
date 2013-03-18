@@ -21,7 +21,7 @@
     <string name="title_activity_export_identity">ExportIdentityActivity</string>
     <string name="import_identity_label">import identity...</string>
     <string name="export_identity_label">export identity...</string>
-    <string name="import_identities">import identities...</string>
+    <string name="import_identities">import identity...</string>
     <string name="create_identity_label">create new identity...</string>
     <string name="pref_create_identity">pref_create_identity</string>
     <string name="no_identity_exported">no identity exported</string>

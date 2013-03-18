@@ -19,8 +19,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.view.KeyEvent;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
@@ -48,6 +50,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private IAsyncCallback<Void> m401Handler;
 	private ChatController mChatController = null;
 	private boolean mCacheServiceBound;
+	private Menu mMenuOverflow;
 
 	private static final int CORE_POOL_SIZE = 10;
 	private static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -301,19 +304,24 @@ public class MainActivity extends SherlockFragmentActivity {
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		SurespotLog.v(TAG, "onCreateOptionsMenu");
 
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_main, menu);
+		mMenuOverflow = menu;
 
 		mMenuItems.add(menu.findItem(R.id.menu_close_bar));
-		mMenuItems.add(menu.findItem(R.id.menu_close));
 		mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
-		mMenuItems.add(menu.findItem(R.id.menu_send_image));
 		mMenuItems.add(menu.findItem(R.id.menu_capture_image_bar));
-		mMenuItems.add(menu.findItem(R.id.menu_capture_image));
+
 
 		if (Camera.getNumberOfCameras() == 0) {
 			SurespotLog.v(TAG, "hiding capture image menu option");
@@ -328,6 +336,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		super.onOptionsItemSelected(item);
 		Intent intent = null;
 		String to = mChatController.getCurrentChat();
 		switch (item.getItemId()) {
@@ -338,11 +347,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.setCurrentChat(null);
 			return true;
 		case R.id.menu_close_bar:
-		case R.id.menu_close:
+
 			mChatController.closeTab();
 			return true;
 		case R.id.menu_send_image_bar:
-		case R.id.menu_send_image:
 			if (to == null) {
 				return true;
 			}
@@ -353,7 +361,6 @@ public class MainActivity extends SherlockFragmentActivity {
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
-		case R.id.menu_capture_image:
 			if (to == null) {
 				return true;
 			}
@@ -362,11 +369,9 @@ public class MainActivity extends SherlockFragmentActivity {
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_settings_bar:
-		case R.id.menu_settings:
 			intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
 			return true;
-		case R.id.menu_logout:
 		case R.id.menu_logout_bar:
 			mChatController.logout();
 			IdentityController.logout();
@@ -376,8 +381,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			MainActivity.this.startActivity(finalIntent);
 			finish();
 			return true;
+
 		default:
-			return super.onOptionsItemSelected(item);
+			return false;
+
 		}
 	}
 
@@ -405,6 +412,17 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	public static Handler getMainHandler() {
 		return mMainHandler;
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_MENU) {
+			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);		
+			return true;
+		}
+		else {
+			return super.onKeyDown(keyCode, event);
+		}
 	}
 
 }

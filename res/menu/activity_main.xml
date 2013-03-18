@@ -1,6 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/item_overflow"
         android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="100"
         android:showAsAction="always">
@@ -27,30 +28,5 @@
                 android:title="@string/settings"/>
         </menu>
     </item>
-    <item
-        android:id="@+id/menu_send_image"
-        android:icon="@drawable/ic_menu_gallery"
-        android:showAsAction="never"
-        android:title="@string/select_image"/>
-    <item
-        android:id="@+id/menu_capture_image"
-        android:icon="@drawable/ic_menu_camera"
-        android:showAsAction="never"
-        android:title="@string/capture_image"/>
-    <item
-        android:id="@+id/menu_close"
-        android:icon="@drawable/ic_menu_end_conversation"
-        android:showAsAction="never"
-        android:title="@string/close_tab"/>
-    <item
-        android:id="@+id/menu_logout"
-        android:icon="@drawable/ic_lock_power_off"
-        android:showAsAction="never"
-        android:title="@string/logout"/>
-    <item
-        android:id="@+id/menu_settings"
-        android:icon="@drawable/ic_menu_preferences"
-        android:showAsAction="never"
-        android:title="@string/settings"/>
 
 </menu>

@@ -52,6 +52,7 @@ public class LoginActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
 	private boolean mLoginAttempted;
 	private boolean mCacheServiceBound;
+	private Menu mMenuOverflow;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +156,7 @@ public class LoginActivity extends SherlockActivity {
 
 		}
 	};
+	
 
 	private class IdSig {
 		public SurespotIdentity identity;
@@ -280,6 +282,7 @@ public class LoginActivity extends SherlockActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_login, menu);
+		mMenuOverflow = menu;
 		return true;
 	}
 
@@ -287,18 +290,14 @@ public class LoginActivity extends SherlockActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
 		switch (item.getItemId()) {
-
-		case R.id.menu_import_identities:
 		case R.id.menu_import_identities_bar:
 			intent = new Intent(this, ImportIdentityActivity.class);
 			startActivity(intent);
 			return true;
-		case R.id.menu_create_identity:
 		case R.id.menu_create_identity_bar:
 			intent = new Intent(this, SignupActivity.class);
 			startActivity(intent);
 			return true;
-		case R.id.clear_local_cache:
 		case R.id.clear_local_cache_bar:
 			StateController.clearCache(LoginActivity.this, new IAsyncCallback<Void>() {
 
@@ -320,6 +319,19 @@ public class LoginActivity extends SherlockActivity {
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
+
 	}
+	
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_MENU) {
+			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);		
+			return true;
+		}
+		else {
+			return super.onKeyDown(keyCode, event);
+		}
+	}
+
 
 }

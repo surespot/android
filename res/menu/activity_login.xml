@@ -1,6 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/item_overflow"
         android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="100"
         android:showAsAction="always">
@@ -25,25 +26,5 @@
                 android:title="clear local cache"/>
         </menu>
     </item>
-    <item
-        android:id="@+id/menu_create_identity"
-        android:icon="@drawable/ic_menu_add"
-        android:orderInCategory="200"
-        android:showAsAction="never"
-        android:title="@string/create_identity_label"
-        android:titleCondensed="create"/>
-    <item
-        android:id="@+id/menu_import_identities"
-        android:icon="@drawable/ic_menu_archive"
-        android:orderInCategory="300"
-        android:showAsAction="never"
-        android:title="@string/import_identities"
-        android:titleCondensed="import"/>
-    <item
-        android:id="@+id/clear_local_cache"
-        android:icon="@drawable/ic_menu_delete"
-        android:orderInCategory="400"
-        android:showAsAction="never"
-        android:title="clear local cache"/>
 
 </menu>

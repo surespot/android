@@ -23,9 +23,6 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
@@ -265,28 +262,6 @@ public class SignupActivity extends SherlockActivity {
 				mMpd.decrProgress();
 			}
 		});
-
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.activity_signup, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.menu_import_identities:
-			Intent intent = new Intent(this, ImportIdentityActivity.class);
-			intent.putExtra("signup", true);
-			startActivity(intent);
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-
 	}
 	
 	@Override
