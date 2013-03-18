@@ -95,7 +95,6 @@
         <activity
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login"
-            android:noHistory="true"
             android:windowSoftInputMode="stateVisible" >
         </activity>
         <!--

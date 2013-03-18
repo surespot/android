@@ -28,7 +28,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_import_identity);
-		Utils.configureActionBar(this, "identity", "import", false);
+		Utils.configureActionBar(this, "identity", "import", true);
 
 		mSignup = getIntent().getBooleanExtra("signup", false);
 

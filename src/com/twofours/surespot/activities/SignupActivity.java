@@ -23,6 +23,7 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
@@ -50,10 +51,12 @@ public class SignupActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
-
+		Utils.configureActionBar(this, "identity", "create", true);
+		
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+		
 		
 		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 0);
 
@@ -273,5 +276,17 @@ public class SignupActivity extends SherlockActivity {
 		}
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+
+	}
 
 }

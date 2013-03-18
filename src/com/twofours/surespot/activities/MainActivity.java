@@ -420,9 +420,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);		
 			return true;
 		}
-		else {
-			return super.onKeyDown(keyCode, event);
-		}
+
+			return super.onKeyUp(keyCode, event);
 	}
 
 }

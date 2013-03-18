@@ -58,6 +58,7 @@ public class LoginActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+		Utils.configureActionBar(this, "login", "", false);
 
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
@@ -156,7 +157,6 @@ public class LoginActivity extends SherlockActivity {
 
 		}
 	};
-	
 
 	private class IdSig {
 		public SurespotIdentity identity;
@@ -321,17 +321,14 @@ public class LoginActivity extends SherlockActivity {
 		}
 
 	}
-	
+
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);		
+			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
 			return true;
 		}
-		else {
-			return super.onKeyDown(keyCode, event);
-		}
+
+		return super.onKeyUp(keyCode, event);
 	}
-
-
 }
