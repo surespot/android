@@ -250,7 +250,7 @@ public class ChatController {
 										if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 											MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 										}
-										
+
 										boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
 										boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
@@ -258,11 +258,11 @@ public class ChatController {
 										// (if someone else deleted my message we don't care)
 										if (controlFromMe || !myMessage) {
 											SurespotLog.v(TAG, "deleting message");
-//											dMessage.setData("");
-//											dMessage.setPlainData("deleted");
-//											dMessage.setDateTime(null);
-//											dMessage.setDeletedTo(true);
-//											dMessage.setDeletedFrom(true);
+											// dMessage.setData("");
+											// dMessage.setPlainData("deleted");
+											// dMessage.setDateTime(null);
+											// dMessage.setDeletedTo(true);
+											// dMessage.setDeletedFrom(true);
 											chatAdapter.deleteMessageById(dMessage.getId());
 											chatAdapter.notifyDataSetChanged();
 										}
@@ -369,11 +369,17 @@ public class ChatController {
 		// connection completes (if they
 		// are received out of order for some reason)
 		//
-		// mPreConnectIds.clear();
-		// for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-		// String username = entry.getKey();
-		// mPreConnectIds.put(username, getLatestIds(username));
-		// }
+		mPreConnectIds.clear();
+		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
+			String username = entry.getKey();
+			LatestIdPair idPair = new LatestIdPair();
+			idPair.latestMessageId = getLatestMessageId(username);
+			idPair.latestControlMessageId = getLatestMessageControlId(username);
+			SurespotLog.v(TAG, "setting preconnectids for: " + username + ", latest message id:  " + idPair.latestMessageId
+					+ ", latestcontrolid: " + idPair.latestControlMessageId);
+			mPreConnectIds.put(username, idPair);
+
+		}
 
 		// if (socket != null && socket.isConnected()) {
 		// return;
@@ -804,13 +810,13 @@ public class ChatController {
 		Friend friend = getFriendAdapter().getFriend(username);
 
 		LatestIdPair idPair = mPreConnectIds.get(username);
-		Integer latestMessageId = idPair.latestMessageId > 0 ? idPair.latestMessageId : friend.getLastViewedMessageId();
+		Integer latestMessageId = idPair.latestMessageId > -1 ? idPair.latestMessageId : 0;
 		// if (mPreConnectIds.containsKey(username)) {
 
 		// getLatestMessageId(username);
 		int latestAvailableId = friend.getAvailableMessageId();
 
-		int latestControlId = idPair.latestControlMessageId > 0 ? idPair.latestControlMessageId : friend.getLastReceivedMessageControlId();
+		int latestControlId = idPair.latestControlMessageId > -1 ? idPair.latestControlMessageId : friend.getLastReceivedMessageControlId();
 		// getLatestMessageControlId(username);
 		int latestAvailableControlId = friend.getAvailableMessageControlId();
 
@@ -967,12 +973,12 @@ public class ChatController {
 							// (if someone else deleted my message we don't care)
 							if (controlFromMe || !myMessage) {
 								SurespotLog.v(TAG, "deleting message");
-//								dMessage.setData("");
-//								dMessage.setPlainData("deleted");
-//								dMessage.setDateTime(null);
-//								dMessage.setDeletedTo(true);
-//								dMessage.setDeletedFrom(true);
-								chatAdapter.deleteMessageById(dMessage.getId());								
+								// dMessage.setData("");
+								// dMessage.setPlainData("deleted");
+								// dMessage.setDateTime(null);
+								// dMessage.setDeletedTo(true);
+								// dMessage.setDeletedFrom(true);
+								chatAdapter.deleteMessageById(dMessage.getId());
 							}
 
 						}
