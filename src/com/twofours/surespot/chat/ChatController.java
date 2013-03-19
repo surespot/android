@@ -79,6 +79,7 @@ public class ChatController {
 	private FragmentManager mFragmentManager;
 	private int mLatestUserControlId;
 	private ArrayList<MenuItem> mMenuItems;
+	private HashMap<String, LatestIdPair> mPreConnectIds;
 
 	private static String mCurrentChat;
 	private static boolean mPaused = true;
@@ -98,6 +99,7 @@ public class ChatController {
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		mFriendAdapter = new FriendAdapter(mContext);
+		mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
 		loadState();
 
 		mFragmentManager = fm;
@@ -200,7 +202,7 @@ public class ChatController {
 					mReconnectTask = null;
 				}
 
-				resendMessages();
+				connected();
 
 			}
 
@@ -320,7 +322,7 @@ public class ChatController {
 
 								mOnWifi = true;
 								disconnect();
-								resume();
+								connect();
 							}
 						}
 					}
@@ -362,6 +364,16 @@ public class ChatController {
 		SurespotLog.v(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: "
 				+ mConnectionState);
 
+		// copy the latest ids so that we don't miss any if we receive new messages during the time we request messages and when the
+		// connection completes (if they
+		// are received out of order for some reason)
+		//
+		// mPreConnectIds.clear();
+		// for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
+		// String username = entry.getKey();
+		// mPreConnectIds.put(username, getLatestIds(username));
+		// }
+
 		// if (socket != null && socket.isConnected()) {
 		// return;
 		// }
@@ -401,10 +413,11 @@ public class ChatController {
 
 	}
 
-	private void resume() {
-		getFriendsAndIds();
+	private void connected() {
 
-		//MainActivity.THREAD_POOL_EXECUTOR.execute(new UpdateDataTask());
+		getFriendsAndIds();
+		resendMessages();
+		// MainActivity.THREAD_POOL_EXECUTOR.execute(new UpdateDataTask());
 
 	}
 
@@ -542,7 +555,7 @@ public class ChatController {
 		@Override
 		public void run() {
 			SurespotLog.v(TAG, "Reconnect task run.");
-			resume();
+			connect();
 		}
 	}
 
@@ -689,7 +702,7 @@ public class ChatController {
 
 			@Override
 			public void onSuccess(int statusCode, final JSONObject jsonResponse) {
-				SurespotLog.v(TAG, "getlatestIds success (jsonArray), statusCode: " + statusCode);
+				SurespotLog.v(TAG, "getlatestIds success, response: " + jsonResponse.toString() + ", statusCode: " + statusCode);
 
 				// new AsyncTask<Void, Void, Void>() {
 				// @Override
@@ -770,7 +783,6 @@ public class ChatController {
 			public void onFailure(Throwable error, String content) {
 				// setMessagesLoading(false);
 				Utils.makeToast(mContext, "loading latest messages failed: " + content);
-	//			connect();
 			}
 		});
 
@@ -782,29 +794,23 @@ public class ChatController {
 	}
 
 	private void getLatestMessagesAndControls() {
-		// copy the latest ids so that we don't miss any if we receive new messages during the time we request messages and when the
-		// connection completes (if they
-		// are received out of order for some reason)
-		HashMap<String, LatestIdPair> ids = new HashMap<String, LatestIdPair>(mChatAdapters.size());
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			String username = entry.getKey();
-			ids.put(username, getLatestIds(username));
+			getLatestMessagesAndControls(entry.getKey());
 		}
-		connect();
-
-		for (Entry<String, LatestIdPair> entry : ids.entrySet()) {
-			getLatestMessagesAndControls(entry.getKey(), entry.getValue().latestMessageId, entry.getValue().latestControlMessageId);
-		}
-
 	}
 
 	private LatestIdPair getLatestIds(String username) {
 		Friend friend = getFriendAdapter().getFriend(username);
 
-		int latestMessageId = getLatestMessageId(username);
+		LatestIdPair idPair = mPreConnectIds.get(username);
+		Integer latestMessageId = idPair.latestMessageId;
+		// if (mPreConnectIds.containsKey(username)) {
+
+		// getLatestMessageId(username);
 		int latestAvailableId = friend.getAvailableMessageId();
 
-		int latestControlId = getLatestMessageControlId(username);
+		int latestControlId = idPair.latestControlMessageId;
+		// getLatestMessageControlId(username);
 		int latestAvailableControlId = friend.getAvailableMessageControlId();
 
 		int fetchMessageId = latestAvailableId > latestMessageId ? latestMessageId : -1;
@@ -871,7 +877,7 @@ public class ChatController {
 		}
 
 	}
-	
+
 	private void getLatestMessagesAndControls(final String username, int fetchMessageId, int fetchControlMessageId) {
 		SurespotLog.v(TAG, "getLatestMessagesAndControls: fetchMessageId: " + fetchMessageId + ", fetchControlMessageId: "
 				+ fetchControlMessageId);
@@ -896,12 +902,12 @@ public class ChatController {
 					});
 		}
 		else {
-			if (username.equals(mCurrentChat)) {				
+			if (username.equals(mCurrentChat)) {
 				ChatFragment chatFragment = getChatFragment(username);
 				if (chatFragment != null) {
 					chatFragment.scrollToEnd();
 					chatFragment.requestFocus();
-					
+
 				}
 			}
 		}
@@ -1216,7 +1222,7 @@ public class ChatController {
 			// mFriendAdapter.setLoading(false);
 			// }
 
-			resume();
+			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
 	}
@@ -1270,6 +1276,13 @@ public class ChatController {
 
 			// load savedmessages
 			loadMessages(username);
+
+			LatestIdPair idPair = new LatestIdPair();
+			idPair.latestMessageId = getLatestMessageId(username);
+			idPair.latestControlMessageId = getLatestMessageControlId(username);
+			SurespotLog.v(TAG, "setting preconnectids for: " + username + ", latest message id:  " + idPair.latestMessageId
+					+ ", latestcontrolid: " + idPair.latestControlMessageId);
+			mPreConnectIds.put(username, idPair);
 
 			// get latest messages from server
 			getLatestMessagesAndControls(username);
