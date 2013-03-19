@@ -100,20 +100,20 @@ public class ChatAdapter extends BaseAdapter {
 		// SurespotLog.v(TAG, "addMessage, could not find message");
 
 		// make sure message is in sequence
-
-		if (!mCheckingSequence && checkSequence && (message.getId() != null)) {
-			SurespotMessage previousMessage = getLastMessageWithId();
-
-			int previousId = 0;
-			if (previousMessage != null) {
-				previousId = previousMessage.getId();
-			}
-
-			if (previousId != (message.getId() - 1)) {
-				throw new SurespotMessageSequenceException(previousId);
-			}
-
-		}
+//		
+//		if (!mCheckingSequence && checkSequence && (message.getId() != null)) {
+//			SurespotMessage previousMessage = getLastMessageWithId();
+//
+//			int previousId = 0;
+//			if (previousMessage != null) {
+//				previousId = previousMessage.getId();
+//			}
+//
+//			if (previousId != (message.getId() - 1)) {
+//				throw new SurespotMessageSequenceException(previousId);
+//			}
+//
+//		}
 
 		int index = mMessages.indexOf(message);
 		boolean added = false;

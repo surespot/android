@@ -319,6 +319,15 @@ public class NetworkController {
 
 	}
 	
+	public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
+		int mId = messageId;
+		int cId = controlId;
+
+		return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
+
+	}
+	
+	
 //	public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {	
 //		int cId = controlId;
 //		get("/usercontrol/" + cId, null, responseHandler);
