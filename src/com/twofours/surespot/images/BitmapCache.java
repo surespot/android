@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.images;
 
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;

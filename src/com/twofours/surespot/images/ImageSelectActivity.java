@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.images;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.twofours.surespot;
+package com.twofours.surespot.images;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -35,6 +35,8 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.twofours.surespot.R;
+import com.twofours.surespot.R.id;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;

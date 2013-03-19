@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.images;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 
+import com.twofours.surespot.R;
+import com.twofours.surespot.R.string;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;

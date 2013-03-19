@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.images;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;

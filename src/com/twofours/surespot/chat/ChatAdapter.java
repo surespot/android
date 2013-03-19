@@ -15,11 +15,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.ImageDownloader;
 import com.twofours.surespot.MessageDecryptor;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatAdapter extends BaseAdapter {

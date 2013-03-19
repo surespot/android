@@ -23,7 +23,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.ImageSelectActivity;
+import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.activities.SettingsActivity;
 import com.twofours.surespot.activities.StartupActivity;
 import com.twofours.surespot.common.SurespotConstants;

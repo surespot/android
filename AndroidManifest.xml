@@ -55,20 +55,25 @@
 
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
-            android:label="@string/title_activity_main" 
-            android:windowSoftInputMode="stateUnchanged">
+            android:label="@string/title_activity_main"
+            android:windowSoftInputMode="stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
@@ -107,16 +112,16 @@
             android:windowSoftInputMode="stateHidden" >
         </activity>
         -->
-        <activity android:name="com.twofours.surespot.activities.ImageViewActivity" >
+        <activity android:name="com.twofours.surespot.images.ImageViewActivity" >
         </activity>
-          <activity
-            android:name="com.twofours.surespot.activities.ImageCaptureActivity"
+        <activity
+            android:name="com.com.twofours.surespot.images.ImageCaptureActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
-            android:name="com.twofours.surespot.activities.ImageSelectActivity"
+            android:name="com.com.twofours.surespot.images.ImageSelectActivity"
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
@@ -129,18 +134,21 @@
         <activity android:name="com.twofours.surespot.activities.ExportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ExportIdentityActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name="com.twofours.surespot.activities.ImportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ImportIdentityActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name="com.twofours.surespot.activities.ManageKeysActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

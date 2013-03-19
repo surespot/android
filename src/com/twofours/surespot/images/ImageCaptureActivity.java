@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.images;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +27,6 @@ import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.twofours.surespot.CameraPreview;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
