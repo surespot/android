@@ -1,7 +1,6 @@
 package com.twofours.surespot.chat;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -41,18 +40,17 @@ public class ChatUtils {
 	public static String getSpot(String from, String to) {
 		return (to.compareTo(from) < 0 ? to + ":" + from : from + ":" + to);
 	}
-	
+
 	public static String getSpot(SurespotMessage message) {
 		return getSpot(message.getTo(), message.getFrom());
 	}
-	
-	
+
 	public static String getOtherSpotUser(String spot, String user) {
-		String [] split = spot.split(":");
-		
-		return split[0].equals(user) ? split[1] : split[0]; 
+		String[] split = spot.split(":");
+
+		return split[0].equals(user) ? split[1] : split[0];
 	}
-	
+
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
@@ -87,7 +85,7 @@ public class ChatUtils {
 
 	@SuppressWarnings("resource")
 	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
-			final String fileName, final IAsyncCallback<Boolean> callback) {
+			final IAsyncCallback<Boolean> callback) {
 
 		Runnable runnable = new Runnable() {
 
@@ -135,26 +133,25 @@ public class ChatUtils {
 				}
 
 				catch (IOException e) {
-					SurespotLog.e(TAG, "uploadPictureMessageAsync", e);
-					new File(fileName).delete();
+					SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
 				}
 			}
 		};
-		
+
 		MainActivity.THREAD_POOL_EXECUTOR.execute(runnable);
 
 	}
 
 	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate) {
 		//
-		
+
 		try {// First decode with inJustDecodeBounds=true to check dimensions
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			InputStream is;
-			options.inJustDecodeBounds = true;					
-			
+			options.inJustDecodeBounds = true;
+
 			is = context.getContentResolver().openInputStream(imageUri);
-			BitmapFactory.decodeStream(is, null, options);			
+			BitmapFactory.decodeStream(is, null, options);
 			is.close();
 
 			// rotate as necessary
@@ -348,7 +345,7 @@ public class ChatUtils {
 		return messages;
 
 	}
-	
+
 	public static ArrayList<SurespotMessage> jsonStringsToMessages(String jsonMessageString) {
 
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();

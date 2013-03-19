@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.R.string;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -44,7 +43,7 @@ public class ImageCaptureHandler {
 			mActivity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
 		}
 		catch (IOException e) {
-			SurespotLog.v(TAG, "capture", e);
+			SurespotLog.w(TAG, "capture", e);
 		}
 
 	}
@@ -53,14 +52,14 @@ public class ImageCaptureHandler {
 
 		// Create a unique image file name
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		String imageFileName = "image" + "_" + timeStamp + "_" + suffix;
+		String imageFileName = "image" + "_" + timeStamp + suffix;
 
 		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "surespot");
 		if (FileUtils.ensureDir(dir)) {
 			File file = new File(dir.getPath(), imageFileName);
 			file.createNewFile();
 			file.setWritable(true, false);
-			SurespotLog.v(TAG, "createdFile: " + file.getPath());
+			//SurespotLog.v(TAG, "createdFile: " + file.getPath());
 			return file;
 		}
 		else {
@@ -70,12 +69,13 @@ public class ImageCaptureHandler {
 	}
 
 	public void handleResult() {
-
-		ChatUtils.uploadPictureMessageAsync(mActivity, Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, mCurrentPhotoPath, new IAsyncCallback<Boolean>() {
+		Utils.makeToast(mActivity, mActivity.getString(R.string.uploading_image));
+		ChatUtils.uploadPictureMessageAsync(mActivity, Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
 			@Override
 			public void handleResponse(Boolean result) {
 				if (result) {
 					Utils.makeToast(mActivity, mActivity.getString(R.string.image_successfully_uploaded));
+					
 				}
 				else {
 					Utils.makeToast(mActivity, mActivity.getString(R.string.could_not_upload_image));
@@ -84,8 +84,8 @@ public class ImageCaptureHandler {
 				// new File(filename).delete();
 			}
 		});
-
 		galleryAddPic();
+		
 	}
 
 	private void galleryAddPic() {
