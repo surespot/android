@@ -26,6 +26,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.ImageCaptureHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -300,6 +301,11 @@ public class MainActivity extends SherlockFragmentActivity {
 				}
 			}
 			break;
+		case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
+			if (resultCode == RESULT_OK) {
+				mImageCaptureHandler.handleResult();
+			}
+			break;
 		}
 	}
 
@@ -333,6 +339,8 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 		return true;
 	}
+	
+	private ImageCaptureHandler mImageCaptureHandler;
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -364,9 +372,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (to == null) {
 				return true;
 			}
-			intent = new Intent(this, ImageCaptureActivity.class);
-			intent.putExtra("to", to);
-			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+			
+			mImageCaptureHandler = new ImageCaptureHandler(this, to);
+			mImageCaptureHandler.capture();
+		
 			return true;
 		case R.id.menu_settings_bar:
 			intent = new Intent(this, SettingsActivity.class);
