@@ -28,8 +28,6 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 
 	private String mFromVersion;
 	private boolean mDeletedTo;
-	private boolean mDeletedFrom;
-
 	private boolean mLoading;
 
 	public String getFrom() {
@@ -135,7 +133,6 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setDeletedTo(jsonMessage.optBoolean("deletedTo", false));
-		chatMessage.setDeletedFrom(jsonMessage.optBoolean("deletedFrom", false));
 
 		Integer id = jsonMessage.optInt("id");
 		if (id > 0) {
@@ -172,7 +169,6 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			message.put("data", this.getData());
 			message.put("mimeType", this.getMimeType());
 			message.put("deletedTo", this.getDeletedTo());
-			message.put("deletedFrom", this.getDeletedFrom());
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
@@ -304,13 +300,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		mDeletedTo = deletedTo;
 	}
 
-	public boolean getDeletedFrom() {
-		return mDeletedFrom;
-	}
-
-	public void setDeletedFrom(Boolean deletedFrom) {
-		mDeletedFrom = deletedFrom;
-	}
+	
 
 	@Override
 	public int compareTo(SurespotMessage another) {

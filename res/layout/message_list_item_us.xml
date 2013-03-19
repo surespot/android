@@ -71,7 +71,8 @@
             android:layout_marginRight="2sp"
             android:adjustViewBounds="true"
             android:visibility="gone" />
-             <TextView
+
+        <TextView
             android:id="@+id/messageMimeType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,7 +83,6 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:visibility="gone" />
-        
 
         <TextView
             android:id="@+id/messageId"
@@ -95,8 +95,6 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:visibility="gone" />
-
-      
 
         <TextView
             android:id="@+id/messageToVersion"
@@ -142,34 +140,6 @@
             android:layout_marginLeft="2dp"
             android:layout_marginRight="55dp"
             android:autoLink="all"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            android:visibility="gone" />
-
-        <CheckBox
-            android:id="@+id/messageDeletedFrom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="55dp"
-            android:autoLink="all"
-            android:text="deleted from"
-            android:enabled="false"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            android:visibility="gone" />
-
-        <CheckBox
-            android:id="@+id/messageDeletedTo"
-            android:enabled="false"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="55dp"
-            android:autoLink="all"
-            android:text="deleted to"
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:visibility="gone" />

@@ -250,19 +250,20 @@ public class ChatController {
 										if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 											MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 										}
-
+										
 										boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
 										boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
 										// if i sent the delete, or it's not my message then delete it
 										// (if someone else deleted my message we don't care)
 										if (controlFromMe || !myMessage) {
-											SurespotLog.v(TAG, "marking message deleted");
-											dMessage.setData("");
-											dMessage.setPlainData("deleted");
-											dMessage.setDateTime(null);
-											dMessage.setDeletedTo(true);
-											dMessage.setDeletedFrom(true);
+											SurespotLog.v(TAG, "deleting message");
+//											dMessage.setData("");
+//											dMessage.setPlainData("deleted");
+//											dMessage.setDateTime(null);
+//											dMessage.setDeletedTo(true);
+//											dMessage.setDeletedFrom(true);
+											chatAdapter.deleteMessageById(dMessage.getId());
 											chatAdapter.notifyDataSetChanged();
 										}
 
@@ -803,13 +804,13 @@ public class ChatController {
 		Friend friend = getFriendAdapter().getFriend(username);
 
 		LatestIdPair idPair = mPreConnectIds.get(username);
-		Integer latestMessageId = idPair.latestMessageId;
+		Integer latestMessageId = idPair.latestMessageId > 0 ? idPair.latestMessageId : friend.getLastViewedMessageId();
 		// if (mPreConnectIds.containsKey(username)) {
 
 		// getLatestMessageId(username);
 		int latestAvailableId = friend.getAvailableMessageId();
 
-		int latestControlId = idPair.latestControlMessageId;
+		int latestControlId = idPair.latestControlMessageId > 0 ? idPair.latestControlMessageId : friend.getLastReceivedMessageControlId();
 		// getLatestMessageControlId(username);
 		int latestAvailableControlId = friend.getAvailableMessageControlId();
 
@@ -965,12 +966,13 @@ public class ChatController {
 							// if i sent the delete, or it's not my message then delete it
 							// (if someone else deleted my message we don't care)
 							if (controlFromMe || !myMessage) {
-								SurespotLog.v(TAG, "marking message deleted");
-								dMessage.setData("");
-								dMessage.setPlainData("deleted");
-								dMessage.setDateTime(null);
-								dMessage.setDeletedTo(true);
-								dMessage.setDeletedFrom(true);
+								SurespotLog.v(TAG, "deleting message");
+//								dMessage.setData("");
+//								dMessage.setPlainData("deleted");
+//								dMessage.setDateTime(null);
+//								dMessage.setDeletedTo(true);
+//								dMessage.setDeletedFrom(true);
+								chatAdapter.deleteMessageById(dMessage.getId());								
 							}
 
 						}
@@ -1011,7 +1013,7 @@ public class ChatController {
 		SurespotMessage lastMessage = null;
 		try {
 			JSONArray jsonUM = new JSONArray(jsonMessageString);
-			SurespotLog.v(TAG, username + ": loaded: " + jsonUM.length() + " latest messages from the server.");
+			SurespotLog.v(TAG, username + ": loaded: " + jsonUM.length() + " messages from the server: " + jsonMessageString);
 			for (int i = 0; i < jsonUM.length(); i++) {
 				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
 				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);

@@ -103,17 +103,15 @@ public class ChatFragment extends SherlockFragment {
 
 				// pull the message out
 				if (message != null) {
-					if (!message.getDeletedFrom()
-							&& !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
-						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
-							if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
 
-								Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
-								newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-								newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
-								ChatFragment.this.getActivity().startActivity(newIntent);
-							}
+					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+						ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
+						if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
+
+							Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
+							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+							ChatFragment.this.getActivity().startActivity(newIntent);
 						}
 					}
 
@@ -128,14 +126,11 @@ public class ChatFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				// if it's our message or it's their message and we deleted it
-				if (!message.getDeletedFrom() && !(message.getDeletedTo() && message.getTo().equals(IdentityController.getLoggedInUser()))) {
-					MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
-					dialog.setMessage(message);
-					dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
-					return true;
-				}
-				return false;
+
+				MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
+				dialog.setMessage(message);
+				dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
+				return true;
 
 			}
 		});
@@ -179,8 +174,6 @@ public class ChatFragment extends SherlockFragment {
 				return handled;
 			}
 		});
-		
-		
 
 		mEditText.addTextChangedListener(new TextWatcher() {
 
@@ -469,6 +462,5 @@ public class ChatFragment extends SherlockFragment {
 		outState.putInt("selectedItem", selction);
 
 	}
-	
 
 }

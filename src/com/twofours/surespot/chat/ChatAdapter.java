@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,7 +31,6 @@ public class ChatAdapter extends BaseAdapter {
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mLoadingCallback;
 	private boolean mDebugMode;
-	private boolean mHideDeleted;
 	private boolean mCheckingSequence;
 
 	public ChatAdapter(Context context) {
@@ -40,7 +38,6 @@ public class ChatAdapter extends BaseAdapter {
 		mContext = context;
 		SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
-		mHideDeleted = false;
 		// pm.getBoolean("pref_hide_deleted_messages", false);
 
 	}
@@ -174,53 +171,9 @@ public class ChatAdapter extends BaseAdapter {
 	// thanks to http://www.sherif.mobi/2012/01/listview-with-ability-to-hide-rows.html
 	@Override
 	public int getCount() {
-		if (mHideDeleted) {
-			return getDeletedCount();
-		}
-		else {
-			return mMessages.size();
-		}
-	}
 
-	private int getDeletedCount() {
-		int count = 0;
-		ListIterator<SurespotMessage> iterator = mMessages.listIterator();
-		while (iterator.hasNext()) {
+		return mMessages.size();
 
-			SurespotMessage message = iterator.next();
-			if (ChatUtils.isDeleted(message)) {
-				count++;
-			}
-		}
-
-		return count;
-	}
-
-	private int getRealPosition(int position) {
-		if (!mHideDeleted) {
-			return position;
-		}
-
-		int hElements = getHiddenCountUpTo(position);
-		int diff = 0;
-		for (int i = 0; i < hElements; i++) {
-			diff++;
-			if (ChatUtils.isDeleted(mMessages.get(position + diff - 1))) {
-				i--;
-			}
-		}
-		return (position + diff);
-	}
-
-	private int getHiddenCountUpTo(int location) {
-		int count = 0;
-		for (int i = 0; i <= location; i++) {
-
-			if (ChatUtils.isDeleted(mMessages.get(i))) {
-				count++;
-			}
-		}
-		return count;
 	}
 
 	@Override
@@ -251,10 +204,8 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public View getView(int index, View convertView, ViewGroup parent) {
+	public View getView(int position, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
-
-		int position = getRealPosition(index);
 		final int type = getItemViewType(position);
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		final ChatMessageViewHolder chatMessageViewHolder;
@@ -278,8 +229,6 @@ public class ChatAdapter extends BaseAdapter {
 
 			if (mDebugMode) {
 				chatMessageViewHolder.tvId = (TextView) convertView.findViewById(R.id.messageId);
-				chatMessageViewHolder.tvDeletedFrom = (CheckBox) convertView.findViewById(R.id.messageDeletedFrom);
-				chatMessageViewHolder.tvDeletedTo = (CheckBox) convertView.findViewById(R.id.messageDeletedTo);
 				chatMessageViewHolder.tvToVersion = (TextView) convertView.findViewById(R.id.messageToVersion);
 				chatMessageViewHolder.tvFromVersion = (TextView) convertView.findViewById(R.id.messageFromVersion);
 				chatMessageViewHolder.tvIv = (TextView) convertView.findViewById(R.id.messageIv);
@@ -300,33 +249,21 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvTime.setText("sending...");
 		}
 		else {
-			deleted = ChatUtils.isDeleted(item);
-			if (deleted) {
 
-				// if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-				// item.setPlainData("deleted");
-				// }
-				// else {
-				item.setPlainData("deleted");
-				chatMessageViewHolder.tvTime.setText("deleted");
-
+			if (item.getPlainData() == null) {
+				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 			}
-
 			else {
-				if (item.getPlainData() == null) {
-					chatMessageViewHolder.tvTime.setText("loading and decrypting...");
+				if (item.getDateTime() != null) {
+
+					chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+							item.getDateTime()));
 				}
 				else {
-					if (item.getDateTime() != null) {
-
-						chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-								item.getDateTime()));
-					}
-					else {
-						chatMessageViewHolder.tvTime.setText("");
-					}
+					chatMessageViewHolder.tvTime.setText("");
 				}
 			}
+
 		}
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || deleted) {
@@ -360,8 +297,6 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (mDebugMode) {
 			chatMessageViewHolder.tvId.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.tvDeletedFrom.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.tvDeletedTo.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvToVersion.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvFromVersion.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvIv.setVisibility(View.VISIBLE);
@@ -369,8 +304,6 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvMimeType.setVisibility(View.VISIBLE);
 
 			chatMessageViewHolder.tvId.setText("id: " + item.getId());
-			chatMessageViewHolder.tvDeletedFrom.setChecked(item.getDeletedFrom());
-			chatMessageViewHolder.tvDeletedTo.setChecked(item.getDeletedTo());
 			chatMessageViewHolder.tvToVersion.setText("toVersion: " + item.getToVersion());
 			chatMessageViewHolder.tvFromVersion.setText("fromVersion: " + item.getFromVersion());
 			chatMessageViewHolder.tvIv.setText("iv: " + item.getIv());
@@ -394,8 +327,6 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvIv;
 		public TextView tvData;
 		public TextView tvMimeType;
-		public CheckBox tvDeletedFrom;
-		public CheckBox tvDeletedTo;
 
 	}
 
@@ -430,26 +361,26 @@ public class ChatAdapter extends BaseAdapter {
 				return message;
 			}
 		}
-		
+
 		return null;
 	}
 
-	// public SurespotMessage deleteMessageById(Integer id) {
-	// SurespotMessage message = null;
-	// for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
-	// message = iterator.previous();
-	//
-	// Integer localId = message.getId();
-	// if (localId != null && localId.equals(id)) {
-	// SurespotLog.v(TAG,"deleting message");
-	// iterator.remove();
-	//
-	// break;
-	// }
-	// }
-	// notifyDataSetChanged();
-	// return message;
-	// }
+	public SurespotMessage deleteMessageById(Integer id) {
+		SurespotMessage message = null;
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+			message = iterator.previous();
+
+			Integer localId = message.getId();
+			if (localId != null && localId.equals(id)) {
+				SurespotLog.v(TAG, "deleting message");
+				iterator.remove();
+				notifyDataSetChanged();
+				return message;
+			}
+		}
+
+		return null;
+	}
 
 	public SurespotMessage getMessageById(Integer id) {
 		SurespotMessage message = null;
