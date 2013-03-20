@@ -41,12 +41,15 @@
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical" >
 
             <ImageView
                 android:id="@+id/messageImageShareable"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="1dp"
+                android:layout_marginTop="1dp"
                 android:src="@android:drawable/ic_partial_secure"
                 android:visibility="gone" />
 
@@ -54,6 +57,8 @@
                 android:id="@+id/messageImageNotShareable"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="1dp"
+                android:layout_marginTop="1dp"
                 android:src="@android:drawable/ic_secure"
                 android:visibility="gone" />
 
@@ -63,7 +68,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="2dp"
                 android:layout_marginRight="2dp"
-                android:layout_marginTop="2dp"
                 android:textColor="@android:color/black"
                 android:textSize="12sp"
                 android:visibility="visible" />
