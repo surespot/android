@@ -36,16 +36,6 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 
 	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
 		mMessage = message;
-
-		// TODO listen to message control events and handle delete as well
-		mMessageObserver = new Observer() {
-
-			@Override
-			public void update(Observable observable, Object data) {
-				setButtonVisibility();
-
-			}
-		};
 		mActivity = activity;
 	}
 
@@ -55,10 +45,10 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 		}
 		AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
 		ListView listview = dialog.getListView();
-		
+
 		if (!mMyMessage) {
 			listview.getChildAt(0).setEnabled(mMessage.isShareable());
-		}				
+		}
 	}
 
 	@Override
@@ -94,14 +84,15 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 				if (mMessage == null)
 					return;
 
+				mMessage.deleteObservers();
+				
 				AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
 				ListView listview = dialog.getListView();
-				
-				if (!listview.getChildAt(which).isEnabled()) {					
+
+				if (!listview.getChildAt(which).isEnabled()) {
 					return;
 				}
-								
-				
+
 				if (mDeleteOnly || which == 1) {
 					getMainActivity().getChatController().deleteMessage(mMessage);
 				}
@@ -163,22 +154,20 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 
 			}
 		});
+
+		// TODO listen to message control events and handle delete as well
+		mMessageObserver = new Observer() {
+
+			@Override
+			public void update(Observable observable, Object data) {
+				setButtonVisibility();
+
+			}
+		};
+		mMessage.addObserver(mMessageObserver);
 		return dialog;
 	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		mMessage.addObserver(mMessageObserver);
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-		mMessage.deleteObservers();
-	}
-
+	
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
