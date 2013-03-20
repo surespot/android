@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.twofours.surespot;
+package com.twofours.surespot.encryption;
 
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
@@ -23,9 +23,11 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.R.id;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.encryption.EncryptionController;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.

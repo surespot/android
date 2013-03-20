@@ -16,12 +16,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.PublicKeys;
 import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.encryption.PublicKeys;
 
 public class CredentialCachingService extends Service {
 	private static final String TAG = "CredentialCachingService";

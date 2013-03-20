@@ -4,6 +4,8 @@ import java.security.KeyPair;
 import java.util.Collection;
 import java.util.HashMap;
 
+import com.twofours.surespot.encryption.PrivateKeyPairs;
+
 public class SurespotIdentity {
 
 	private String mUsername;

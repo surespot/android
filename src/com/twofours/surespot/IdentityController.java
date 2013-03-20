@@ -29,6 +29,8 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.encryption.PrivateKeyPairs;
+import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
