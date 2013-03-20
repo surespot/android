@@ -31,6 +31,8 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 	private MainActivity mActivity;
 	private String[] mMenuItemArray;
 	private Observer mMessageObserver;
+	private boolean mMyMessage;
+	private boolean mDeleteOnly;
 
 	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
 		mMessage = message;
@@ -48,30 +50,15 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 	}
 
 	private void setButtonVisibility() {
-		// TODO make custom adapter and hide items
-
+		if (mDeleteOnly) {
+			return;
+		}
 		AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
-
 		ListView listview = dialog.getListView();
-		// ListAdapter adapter = listview.getAdapter();
-
-		if (mMessage != null && mMessage.isShareable() && !mMessage.getFrom().equals(IdentityController.getLoggedInUser())
-				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+		
+		if (!mMyMessage) {
 			listview.getChildAt(0).setEnabled(mMessage.isShareable());
-		}
-		else {
-			listview.getChildAt(0).setEnabled(false);
-		}
-
-		if (mMessage != null && mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())
-				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-
-			listview.getChildAt(1).setEnabled(true);
-		}
-		else {
-			listview.getChildAt(1).setEnabled(false);
-		}
-		// listview.getChildAt(2).setVisibility(View.VISIBLE);
+		}				
 	}
 
 	@Override
@@ -79,18 +66,50 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
 
-		mMenuItemArray = new String[] { "save to gallery", mMessage.isShareable() ? "lock" : "unlock", "delete" };
+		mMenuItemArray = null;
+
+		if (mMessage != null && !mMessage.getFrom().equals(IdentityController.getLoggedInUser())
+				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+			mMenuItemArray = new String[2];
+			mMenuItemArray[0] = "save to gallery";
+			mMenuItemArray[1] = "delete";
+		}
+		else {
+			if (mMessage != null && mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())
+					&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				mMenuItemArray = new String[2];
+				mMenuItemArray[0] = mMessage.isShareable() ? "lock" : "unlock";
+				mMenuItemArray[1] = "delete";
+				mMyMessage = true;
+			}
+			else {
+				mMenuItemArray = new String[1];
+				mMenuItemArray[0] = "delete";
+				mDeleteOnly = true;
+			}
+		}
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialogi, int which) {
 				if (mMessage == null)
 					return;
+
 				AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
 				ListView listview = dialog.getListView();
-
-				if (listview.getChildAt(which).isEnabled()) {
-					switch (which) {
-					case 0:
+				
+				if (!listview.getChildAt(which).isEnabled()) {					
+					return;
+				}
+								
+				
+				if (mDeleteOnly || which == 1) {
+					getMainActivity().getChatController().deleteMessage(mMessage);
+				}
+				else {
+					if (mMyMessage) {
+						getMainActivity().getChatController().toggleMessageShareable(mMessage);
+					}
+					else {
 
 						// Utils.makeToast(mActivity, "saving image in gallery");
 						new AsyncTask<Void, Void, Boolean>() {
@@ -128,13 +147,7 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 								}
 							};
 						}.execute();
-						break;
-					case 1:
-						getMainActivity().getChatController().toggleMessageShareable(mMessage);
-						break;
-					case 2:
-						getMainActivity().getChatController().deleteMessage(mMessage);
-						break;
+
 					}
 				}
 
