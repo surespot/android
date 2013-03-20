@@ -16,10 +16,10 @@ import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.IdentityOperationResult;
 import com.twofours.surespot.R;
-import com.twofours.surespot.UIUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.UIUtils;
 
 public class ImportIdentityActivity extends SherlockActivity {
 	private boolean mSignup;

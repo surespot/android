@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.twofours.surespot;
+package com.twofours.surespot.ui;
 
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;

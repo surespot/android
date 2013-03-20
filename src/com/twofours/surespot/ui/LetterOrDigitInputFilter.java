@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.ui;
 
 import android.text.InputFilter;
 import android.text.Spanned;

@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.ui;
 
 import android.app.AlertDialog;
 import android.content.Context;

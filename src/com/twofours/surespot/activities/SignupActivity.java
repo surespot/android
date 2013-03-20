@@ -25,20 +25,20 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.CookieResponseHandler;
 import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.LetterOrDigitInputFilter;
-import com.twofours.surespot.MultiProgressDialog;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
+import com.twofours.surespot.ui.LetterOrDigitInputFilter;
+import com.twofours.surespot.ui.MultiProgressDialog;
 
 public class SignupActivity extends SherlockActivity {
 	private static final String TAG = "SignupActivity";

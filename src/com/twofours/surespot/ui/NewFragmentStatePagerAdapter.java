@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package com.twofours.surespot;
+package com.twofours.surespot.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
