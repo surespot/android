@@ -28,6 +28,8 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 
 	private String mFromVersion;
 	private boolean mDeletedTo;
+	private boolean mShareable;
+	
 	private boolean mLoading;
 
 	public String getFrom() {
@@ -133,6 +135,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setDeletedTo(jsonMessage.optBoolean("deletedTo", false));
+		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
 
 		Integer id = jsonMessage.optInt("id");
 		if (id > 0) {
@@ -169,6 +172,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 			message.put("data", this.getData());
 			message.put("mimeType", this.getMimeType());
 			message.put("deletedTo", this.getDeletedTo());
+			message.put("shareable", this.isShareable());
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
@@ -301,6 +305,14 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	}
 
 	
+
+	public boolean isShareable() {
+		return mShareable;
+	}
+
+	public void setShareable(boolean shareable) {
+		mShareable = shareable;
+	}
 
 	@Override
 	public int compareTo(SurespotMessage another) {

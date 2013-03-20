@@ -226,6 +226,8 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvTime = (TextView) convertView.findViewById(R.id.messageTime);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
+			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
+			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 
 			if (mDebugMode) {
 				chatMessageViewHolder.tvId = (TextView) convertView.findViewById(R.id.messageId);
@@ -254,6 +256,9 @@ public class ChatAdapter extends BaseAdapter {
 				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 			}
 			else {
+				
+			
+				
 				if (item.getDateTime() != null) {
 
 					chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
@@ -279,6 +284,8 @@ public class ChatAdapter extends BaseAdapter {
 				chatMessageViewHolder.tvText.setText("");
 				MessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
+			chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 		}
 		else {
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
@@ -287,6 +294,15 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setText("");
 			if (item.getData() != null && !item.getData().isEmpty()) {
 				ImageDownloader.download(chatMessageViewHolder.imageView, item);
+			}
+			
+			if (item.isShareable()) {
+				chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+				chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
+			}
+			else {
+				chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
+				chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 			}
 		}
 
@@ -327,6 +343,8 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvIv;
 		public TextView tvData;
 		public TextView tvMimeType;
+		public ImageView ivShareable;
+		public ImageView ivNotShareable;
 
 	}
 

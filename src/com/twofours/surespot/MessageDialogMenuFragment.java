@@ -38,72 +38,74 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
 
+		final boolean shareable = mMessage.isShareable();
+
 		ArrayList<String> menuItems = new ArrayList<String>();
-		boolean allowSave = false;
-		if (mMessage != null && !mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-			allowSave = true;
+		if (mMessage != null && shareable && !mMessage.getFrom().equals(IdentityController.getLoggedInUser())
+				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 			menuItems.add("save to gallery");
 		}
 
+		if (mMessage != null && mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())
+				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+			menuItems.add(shareable ? "lock" : "unlock");
+		}
 		menuItems.add("delete");
 
-		final boolean finalAllowSave = allowSave;
-
-		String[] itemArray = new String[menuItems.size()];
+		final String[] itemArray = new String[menuItems.size()];
 		menuItems.toArray(itemArray);
 		builder.setItems(itemArray, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				if (mMessage == null)
 					return;
-				switch (which) {
-				case 0:
-					if (finalAllowSave) {
-					//	Utils.makeToast(mActivity, "saving image in gallery");
-						new AsyncTask<Void, Void, Boolean>() {
 
-							@Override
-							protected Boolean doInBackground(Void... params) {
-								try {
-									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
-									FileOutputStream fos = new FileOutputStream(galleryFile);
-									InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity,
-											mMessage.getData());
+				String selectedItem = itemArray[which];
+				if (selectedItem.equals("save to gallery")) {
+					// Utils.makeToast(mActivity, "saving image in gallery");
+					new AsyncTask<Void, Void, Boolean>() {
 
-									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(),
-											mMessage.getTheirVersion(), mMessage.getIv(), new BufferedInputStream(imageStream), fos);
-									
+						@Override
+						protected Boolean doInBackground(Void... params) {
+							try {
+								File galleryFile = FileUtils.createGalleryImageFile(".jpg");
+								FileOutputStream fos = new FileOutputStream(galleryFile);
+								InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity, mMessage.getData());
 
-									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
-									return true;
-								}
+								EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(),
+										mMessage.getTheirVersion(), mMessage.getIv(), new BufferedInputStream(imageStream), fos);
 
-								catch (IOException e) {
-									SurespotLog.w(TAG, "onCreateDialog", e);
-
-								}
-								return false;
+								FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
+								return true;
 							}
 
-							protected void onPostExecute(Boolean result) {
-								if (result) {
-									Utils.makeToast(mActivity, "image saved to gallery");
-								}
-								else {
-									Utils.makeToast(mActivity, "error saving image to gallery");
-								}
-							};
-						}.execute();
+							catch (IOException e) {
+								SurespotLog.w(TAG, "onCreateDialog", e);
 
-					}
-					else {
-						// if it hasn't been deleted, show popup
-						getMainActivity().getChatController().deleteMessage(mMessage);
-					}
-					break;
-				case 1:
-					getMainActivity().getChatController().deleteMessage(mMessage);
-					break;
+							}
+							return false;
+						}
+
+						protected void onPostExecute(Boolean result) {
+							if (result) {
+								Utils.makeToast(mActivity, "image saved to gallery");
+							}
+							else {
+								Utils.makeToast(mActivity, "error saving image to gallery");
+							}
+						};
+					}.execute();
+					return;
 				}
+				if (selectedItem.equals("lock") || selectedItem.equals("unlock")) {
+					getMainActivity().getChatController().setMessageShareable(mActivity, mMessage.getOtherUser(), mMessage.getId(),
+							!shareable);
+					return;
+				}
+				if (selectedItem.equals("delete")) {
+					getMainActivity().getChatController().deleteMessage(mMessage);
+					return;
+				}
+
 			}
 		});
 

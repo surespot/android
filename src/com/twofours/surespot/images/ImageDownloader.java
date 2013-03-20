@@ -36,7 +36,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.R.id;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -239,6 +238,18 @@ public class ImageDownloader {
 
 								// TODO put the row in the tag
 								TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
+								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
+								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageNotShareable);
+								
+								if (mMessage.isShareable()) {
+									ivShareable.setVisibility(View.VISIBLE);
+									ivNotShareable.setVisibility(View.GONE);
+								}
+								else {
+									ivShareable.setVisibility(View.GONE);
+									ivNotShareable.setVisibility(View.VISIBLE);
+								}
+								
 								if (mMessage.getDateTime() == null) {
 									tvTime.setText("");
 								}
