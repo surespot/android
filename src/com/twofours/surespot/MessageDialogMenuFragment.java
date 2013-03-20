@@ -48,12 +48,12 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 	}
 
 	private void setButtonVisibility() {
-		//TODO make custom adapter and hide items
+		// TODO make custom adapter and hide items
 
 		AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
 
 		ListView listview = dialog.getListView();
-//		ListAdapter adapter = listview.getAdapter();
+		// ListAdapter adapter = listview.getAdapter();
 
 		if (mMessage != null && mMessage.isShareable() && !mMessage.getFrom().equals(IdentityController.getLoggedInUser())
 				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
@@ -71,7 +71,7 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 		else {
 			listview.getChildAt(1).setEnabled(false);
 		}
-		//listview.getChildAt(2).setVisibility(View.VISIBLE);
+		// listview.getChildAt(2).setVisibility(View.VISIBLE);
 	}
 
 	@Override
@@ -82,54 +82,60 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 		mMenuItemArray = new String[] { "save to gallery", mMessage.isShareable() ? "lock" : "unlock", "delete" };
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
+			public void onClick(DialogInterface dialogi, int which) {
 				if (mMessage == null)
 					return;
+				AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
+				ListView listview = dialog.getListView();
 
-				switch (which) {
-				case 0:
-					// Utils.makeToast(mActivity, "saving image in gallery");
-					new AsyncTask<Void, Void, Boolean>() {
+				if (listview.getChildAt(which).isEnabled()) {
+					switch (which) {
+					case 0:
 
-						@Override
-						protected Boolean doInBackground(Void... params) {
-							try {
+						// Utils.makeToast(mActivity, "saving image in gallery");
+						new AsyncTask<Void, Void, Boolean>() {
 
-								File galleryFile = FileUtils.createGalleryImageFile(".jpg");
-								FileOutputStream fos = new FileOutputStream(galleryFile);
-								InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity, mMessage.getData());
+							@Override
+							protected Boolean doInBackground(Void... params) {
+								try {
 
-								EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(),
-										mMessage.getTheirVersion(), mMessage.getIv(), new BufferedInputStream(imageStream), fos);
+									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
+									FileOutputStream fos = new FileOutputStream(galleryFile);
+									InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity,
+											mMessage.getData());
 
-								FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
-								return true;
+									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(),
+											mMessage.getTheirVersion(), mMessage.getIv(), new BufferedInputStream(imageStream), fos);
 
+									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
+									return true;
+
+								}
+
+								catch (IOException e) {
+									SurespotLog.w(TAG, "onCreateDialog", e);
+
+								}
+								return false;
 							}
 
-							catch (IOException e) {
-								SurespotLog.w(TAG, "onCreateDialog", e);
-
-							}
-							return false;
-						}
-
-						protected void onPostExecute(Boolean result) {
-							if (result) {
-								Utils.makeToast(mActivity, "image saved to gallery");
-							}
-							else {
-								Utils.makeToast(mActivity, "error saving image to gallery");
-							}
-						};
-					}.execute();
-					break;
-				case 1:
-					getMainActivity().getChatController().toggleMessageShareable(mMessage);
-					break;
-				case 2:
-					getMainActivity().getChatController().deleteMessage(mMessage);
-					break;
+							protected void onPostExecute(Boolean result) {
+								if (result) {
+									Utils.makeToast(mActivity, "image saved to gallery");
+								}
+								else {
+									Utils.makeToast(mActivity, "error saving image to gallery");
+								}
+							};
+						}.execute();
+						break;
+					case 1:
+						getMainActivity().getChatController().toggleMessageShareable(mMessage);
+						break;
+					case 2:
+						getMainActivity().getChatController().deleteMessage(mMessage);
+						break;
+					}
 				}
 
 			}
