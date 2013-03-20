@@ -128,7 +128,7 @@ public class ChatFragment extends SherlockFragment {
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 
 				MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
-				dialog.setActivityAndMessage(getActivity(), message);
+				dialog.setActivityAndMessage(getMainActivity(), message);
 				dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
 				return true;
 

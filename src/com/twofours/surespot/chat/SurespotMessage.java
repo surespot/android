@@ -1,6 +1,7 @@
 package com.twofours.surespot.chat;
 
 import java.util.Date;
+import java.util.Observable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,7 +12,7 @@ import com.twofours.surespot.common.SurespotLog;
  * @author adam
  * 
  */
-public class SurespotMessage implements Comparable<SurespotMessage> {
+public class SurespotMessage extends Observable implements Comparable<SurespotMessage> {
 	private static final String TAG = "SurespotMessage";
 
 	private String mFrom;
@@ -29,7 +30,7 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 	private String mFromVersion;
 	private boolean mDeletedTo;
 	private boolean mShareable;
-	
+
 	private boolean mLoading;
 
 	public String getFrom() {
@@ -304,14 +305,16 @@ public class SurespotMessage implements Comparable<SurespotMessage> {
 		mDeletedTo = deletedTo;
 	}
 
-	
-
 	public boolean isShareable() {
 		return mShareable;
 	}
 
 	public void setShareable(boolean shareable) {
-		mShareable = shareable;
+		if (shareable != mShareable) {
+			mShareable = shareable;
+			setChanged();
+			notifyObservers();
+		}
 	}
 
 	@Override

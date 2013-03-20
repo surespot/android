@@ -1463,18 +1463,16 @@ public class ChatController {
 		}
 	}
 
-	public void setMessageShareable(Context context, String username, int id, boolean shareable) {
-		SurespotMessage message = getChatAdapter(context, username).getMessageById(id);
-		if (message != null && message.isShareable() != shareable) {
+	public void toggleMessageShareable(SurespotMessage message) {		
+		if (message != null ) {
 			SurespotControlMessage dmessage = new SurespotControlMessage();
 			String me = IdentityController.getLoggedInUser();
 			dmessage.setFrom(me);
 			dmessage.setType("message");
-			dmessage.setAction(shareable ? "shareable" : "notshareable");
+			dmessage.setAction(!message.isShareable() ? "shareable" : "notshareable");
 			dmessage.setData(ChatUtils.getSpot(message));
 			dmessage.setMoreData(message.getId().toString());
 			dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
-
 			sendControlMessage(dmessage);
 		}
 	}
