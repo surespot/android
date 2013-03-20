@@ -9,10 +9,10 @@ import android.preference.PreferenceManager;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 
 public class SettingsActivity extends SherlockPreferenceActivity {
 	private static final String TAG = "SettingsActivity";

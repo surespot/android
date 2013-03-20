@@ -15,13 +15,13 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.twofours.surespot.IdentityController;
-import com.twofours.surespot.SurespotIdentity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PublicKeys;
+import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.identity.SurespotIdentity;
 
 public class CredentialCachingService extends Service {
 	private static final String TAG = "CredentialCachingService";

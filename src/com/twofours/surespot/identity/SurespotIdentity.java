@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.identity;
 
 import java.security.KeyPair;
 import java.util.Collection;

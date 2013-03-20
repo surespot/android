@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.identity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +22,10 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.R.string;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.FileUtils;

@@ -23,12 +23,12 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore.Images;
 
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatUtils {

@@ -14,11 +14,11 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 

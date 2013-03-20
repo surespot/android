@@ -24,7 +24,6 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
@@ -32,6 +31,7 @@ import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;

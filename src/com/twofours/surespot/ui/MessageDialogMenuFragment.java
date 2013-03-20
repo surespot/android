@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -25,6 +24,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.identity.IdentityController;
 
 public class MessageDialogMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "MessageDialogMenuFragment";

@@ -32,7 +32,6 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -43,6 +42,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.viewpagerindicator.TitlePageIndicator;
 

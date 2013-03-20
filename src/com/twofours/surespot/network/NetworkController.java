@@ -30,12 +30,12 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";

@@ -31,7 +31,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.R;

@@ -125,16 +125,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
         </activity>
-        <activity android:name="com.twofours.surespot.activities.ExportIdentityActivity" >
+        <activity android:name="com.twofours.surespot.identity.ExportIdentityActivity" >
             <intent-filter>
-                <action android:name="com.twofours.surespot.activities.ExportIdentityActivity" />
+                <action android:name="com.twofours.surespot.identity.ExportIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="com.twofours.surespot.activities.ImportIdentityActivity" >
+        <activity android:name="com.twofours.surespot.identity.ImportIdentityActivity">
             <intent-filter>
-                <action android:name="com.twofours.surespot.activities.ImportIdentityActivity" />
+                <action android:name="com.twofours.surespot.identity.ImportIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

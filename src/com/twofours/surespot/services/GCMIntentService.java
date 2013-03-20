@@ -20,7 +20,6 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
-import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.R;
 import com.twofours.surespot.R.drawable;
 import com.twofours.surespot.R.string;
@@ -33,6 +32,7 @@ import com.twofours.surespot.common.SurespotConstants.IntentFilters;
 import com.twofours.surespot.common.SurespotConstants.IntentRequestCodes;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 
 public class GCMIntentService extends GCMBaseIntentService {
 	private static final String TAG = "GCMIntentService";
