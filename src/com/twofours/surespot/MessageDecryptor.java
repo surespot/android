@@ -55,7 +55,7 @@ public class MessageDecryptor {
 		DecryptionTask task = new DecryptionTask(textView, message);
 		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 		textView.setTag(decryptionTaskWrapper);
-		MainActivity.THREAD_POOL_EXECUTOR.execute(task);
+		SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
 
 	}
 

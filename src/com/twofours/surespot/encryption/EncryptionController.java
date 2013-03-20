@@ -47,7 +47,6 @@ import android.util.Base64;
 
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -320,7 +319,7 @@ public class EncryptionController {
 			}
 		};
 
-		MainActivity.THREAD_POOL_EXECUTOR.execute(runnable);
+		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 		return new String(Utils.base64Encode(iv));
 	}
 
@@ -379,7 +378,7 @@ public class EncryptionController {
 			}
 		};
 
-		MainActivity.THREAD_POOL_EXECUTOR.execute(runnable);
+		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 	}
 
 	public static String symmetricDecrypt(final String ourVersion, final String username, final String theirVersion, final String ivs,
