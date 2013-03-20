@@ -2,13 +2,10 @@ package com.twofours.surespot.images;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 
 import com.twofours.surespot.R;
@@ -36,7 +33,7 @@ public class ImageCaptureHandler {
 
 		File f;
 		try {
-			f = createImageFile(".jpg");
+			f = FileUtils.createGalleryImageFile(".jpg");
 			mCurrentPhotoPath = f.getAbsolutePath();
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 
@@ -48,26 +45,7 @@ public class ImageCaptureHandler {
 
 	}
 
-	private File createImageFile(String suffix) throws IOException {
-
-		// Create a unique image file name
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		String imageFileName = "image" + "_" + timeStamp + suffix;
-
-		File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "surespot");
-		if (FileUtils.ensureDir(dir)) {
-			File file = new File(dir.getPath(), imageFileName);
-			file.createNewFile();
-			file.setWritable(true, false);
-			//SurespotLog.v(TAG, "createdFile: " + file.getPath());
-			return file;
-		}
-		else {
-			throw new IOException("Could not create image temp file dir: " + dir.getPath());
-		}
-
-	}
-
+	
 	public void handleResult() {
 		Utils.makeToast(mActivity, mActivity.getString(R.string.uploading_image));
 		ChatUtils.uploadPictureMessageAsync(mActivity, Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
@@ -84,15 +62,9 @@ public class ImageCaptureHandler {
 				// new File(filename).delete();
 			}
 		});
-		galleryAddPic();
+		FileUtils.galleryAddPic(mActivity, mCurrentPhotoPath);
 		
 	}
 
-	private void galleryAddPic() {
-		Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-		File f = new File(mCurrentPhotoPath);
-		Uri contentUri = Uri.fromFile(f);
-		mediaScanIntent.setData(contentUri);
-		mActivity.sendBroadcast(mediaScanIntent);
-	}
+	
 }
