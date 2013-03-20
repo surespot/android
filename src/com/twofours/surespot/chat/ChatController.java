@@ -57,7 +57,6 @@ public class ChatController {
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;
-	// private TimerTask mResendTask;
 
 	private IOCallback mSocketCallback;
 
@@ -140,10 +139,6 @@ public class ChatController {
 				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
 						socketIOException);
 
-				// if (mResendTask != null) {
-				// mResendTask.cancel();
-				// }
-
 				setOnWifi();
 				// kick off another task
 				if (mRetries < MAX_RETRIES) {
@@ -168,14 +163,7 @@ public class ChatController {
 
 					Utils.makeLongToast(mContext, "could not connect to the server");
 
-					mCallback401.handleResponse(null);
-					// Utils.makeToast(this,mContext,
-					// "Can not connect to chat server. Please check your network and try again.",
-					// Toast.LENGTH_LONG).show(); // TODO tie in with network controller 401 handling
-					// Intent intent = new Intent(mContext, MainActivity.class);
-					// intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					// mContext.startActivity(intent);
-
+					mCallback401.handleResponse(null);				
 				}
 			}
 
@@ -383,18 +371,9 @@ public class ChatController {
 
 		}
 
-		// if (socket != null && socket.isConnected()) {
-		// return;
-		// }
-
 		Cookie cookie = IdentityController.getCookie();
 
 		if (cookie == null) {
-			// need to login
-			// SurespotLog.v(TAG, "No session cookie, starting Login activity.");
-			// Intent startupIntent = new Intent(mContext, StartupActivity.class);
-			// startupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			// mContext.startActivity(startupIntent);
 			return;
 		}
 
@@ -502,10 +481,6 @@ public class ChatController {
 			mBackgroundTimer = new Timer("backgroundTimer");
 		}
 
-		// if (mResendTask != null) {
-		// mResendTask.cancel();
-		// }
-
 		SurespotLog.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
 		Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
@@ -567,19 +542,7 @@ public class ChatController {
 			connect();
 		}
 	}
-
-	// private class ResendTask extends TimerTask {
-	//
-	// @Override
-	// public void run() {
-	// // resend message
-	// sendMessages();
-	// }
-	// }
-	//
-	// private boolean isConnected() {
-	// return (getState() == STATE_CONNECTED);
-	// }
+	
 
 	private void updateUserMessageIds(SurespotMessage message) {
 		String otherUser = message.getOtherUser();
@@ -693,31 +656,12 @@ public class ChatController {
 	private void getLatestIds() {
 		SurespotLog.v(TAG, "getLatestIds");
 		// setMessagesLoading(true);
-		// gather up all the latest message IDs
-
-		// JSONObject messageIdHolder = new JSONObject();
-		// JSONObject messageIds = new JSONObject();
-		// for (Entry<String, Integer> eLastReceivedId : mLastViewedMessageIds.entrySet()) {
-		// try {
-		// messageIds.put(ChatUtils.getSpot(IdentityController.getLoggedInUser(), eLastReceivedId.getKey()),
-		// eLastReceivedId.getValue());
-		// }
-		// catch (JSONException e) {
-		// SurespotLog.w(TAG, "loadAllLatestMessages", e);
-		// }
-		// }
-
+	
 		MainActivity.getNetworkController().getLatestIds(mLatestUserControlId, new JsonHttpResponseHandler() {
 
 			@Override
 			public void onSuccess(int statusCode, final JSONObject jsonResponse) {
 				SurespotLog.v(TAG, "getlatestIds success, response: " + jsonResponse.toString() + ", statusCode: " + statusCode);
-
-				// new AsyncTask<Void, Void, Void>() {
-				// @Override
-				// protected Void doInBackground(Void... params) {
-				// TODO Auto-generated method stub
-
 				JSONArray conversationIds = jsonResponse.optJSONArray("conversationIds");
 
 				Friend friend = null;
@@ -771,21 +715,8 @@ public class ChatController {
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
-				// Utils.makeToast(mContext, "received latest messages: " + response.toString());
-
-				// send resend
-				// resendMessages();
-				// return null;
-				// if (jsonArray.length() > 0) {
-				// saveMessages();
-				// }
-				// }
 				getLatestMessagesAndControls();
 
-				// protected void onPostExecute(Void result) {
-
-				// };
-				// }.execute();
 			}
 
 			@Override
@@ -968,12 +899,12 @@ public class ChatController {
 									MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
 								}
 
-								boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
+								boolean myControl = message.getFrom().equals(IdentityController.getLoggedInUser());
 								boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
 								// if i sent the delete, or it's not my message then delete it
 								// (if someone else deleted my message we don't care)
-								if (controlFromMe || !myMessage) {
+								if (myControl || !myMessage) {
 									SurespotLog.v(TAG, "deleting message");
 									chatAdapter.deleteMessageById(dMessage.getId());
 								}
@@ -1194,18 +1125,10 @@ public class ChatController {
 		else {
 			saveMessages(username);
 		}
-
-		// SurespotApplication.getStateController().saveActiveChats(mActiveChats);
-		// SurespotApplication.getStateController().saveLastReceivedMessageIds(mLastViewedMessageIds);
-		// SurespotApplication.getStateController().saveMessageActivity(mReadSinceConnected);
-
 	}
 
 	private void loadState() {
 		SurespotLog.v(TAG, "loadState");
-
-		// mActiveChats = SurespotApplication.getStateController().loadActiveChats();
-		// mReadSinceConnected = SurespotApplication.getStateController().loadMessageActivity();
 		FriendState fs = SurespotApplication.getStateController().loadFriends();
 
 		List<Friend> friends = null;
@@ -1217,9 +1140,6 @@ public class ChatController {
 		mFriendAdapter.setFriends(friends);
 		mFriendAdapter.setLoading(false);
 
-		// mLastViewedMessageIds = SurespotApplication.getStateController().loadLastReceivedMessageIds();
-		// mLastReceivedControlIds = SurespotApplication.getStateController().loadLastReceivedControlIds();
-
 		loadUnsentMessages();
 	}
 
@@ -1227,12 +1147,6 @@ public class ChatController {
 		SurespotLog.v(TAG, "onResume, mPaused: " + mPaused + ": " + this);
 		if (mPaused) {
 			mPaused = false;
-
-			// Set<String> names = SurespotApplication.getStateController().loadFriends();
-			// if (names != null && names.size() > 0) {
-			// mFriendAdapter.setFriendNames(names);
-			// mFriendAdapter.setLoading(false);
-			// }
 
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -1404,13 +1318,6 @@ public class ChatController {
 					return null;
 				}
 
-				// protected void onPostExecute(SurespotMessage result) {
-				// if (result != null) {
-				//
-				//
-				// }
-				//
-				// };
 			}.execute();
 		}
 
