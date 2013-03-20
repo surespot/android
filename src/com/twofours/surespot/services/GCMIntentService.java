@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.services;
 
 import java.io.IOException;
 import java.util.Date;
@@ -20,6 +20,10 @@ import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
+import com.twofours.surespot.IdentityController;
+import com.twofours.surespot.R;
+import com.twofours.surespot.R.drawable;
+import com.twofours.surespot.R.string;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;

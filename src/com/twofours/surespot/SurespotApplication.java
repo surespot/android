@@ -19,6 +19,7 @@ import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.services.GCMIntentService;
 
 @ReportsCrashes(formKey = "dHBRcnQzWFR5c0JwZW9tNEdOLW9oNHc6MQ")
 public class SurespotApplication extends Application {

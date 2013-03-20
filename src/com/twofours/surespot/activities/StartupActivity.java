@@ -10,7 +10,7 @@ import android.support.v4.app.TaskStackBuilder;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.GCMIntentService;
+import com.twofours.surespot.services.GCMIntentService;
 import com.twofours.surespot.IdentityController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatActivity;
