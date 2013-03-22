@@ -130,7 +130,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 							if (email) {
 								intent.setData(Uri.parse("mailto:" + contactData));
 								intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
-								intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n\t" + autoinviteurl
+								intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n" + autoinviteurl
 										+ "\n\non your android device to install surespot.");
 
 							}

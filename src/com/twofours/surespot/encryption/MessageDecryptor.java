@@ -25,7 +25,6 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.R.id;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 

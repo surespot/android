@@ -21,8 +21,6 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
-import com.twofours.surespot.R.drawable;
-import com.twofours.surespot.R.string;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
