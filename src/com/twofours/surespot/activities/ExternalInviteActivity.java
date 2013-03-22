@@ -1,7 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.net.URLEncoder;
-
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,15 +7,12 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -34,8 +29,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 	public static final String TAG = "ExternalInviteActivity";
 
-	private ListView mContactList;
-	private boolean mShowInvisible;
 	private EditText mEtInviteeData;
 	private EditText mEtInviteMessage;
 
@@ -125,41 +118,27 @@ public class ExternalInviteActivity extends SherlockActivity {
 						public void onSuccess(int statusCode, String content) {
 							// TODO persist somewhere
 							String autoinviteurl = content;
-							Intent intent = new Intent(Intent.ACTION_SENDTO);
 
 							if (email) {
+								Intent intent = new Intent(Intent.ACTION_SENDTO);
 								intent.setData(Uri.parse("mailto:" + contactData));
 								intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
 								intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n" + autoinviteurl
 										+ "\n\non your android device to install surespot.");
-
+								startActivity(intent);
 							}
 							else {
-								intent.setData(Uri.parse("smsto:" + contactData));
+								Intent intent = new Intent(Intent.ACTION_VIEW);
+								intent.setType("vnd.android-dir/mms-sms");
+								intent.putExtra("address", contactData);
 								intent.putExtra("sms_body", message + " download surespot here: " + autoinviteurl);
+								startActivity(intent);
 							}
-							startActivity(intent);
-
 						};
 					});
-
 				}
-
 			}
 		});
-
-		// Populate the contact list
-		// populateContactList();
-	}
-
-	private String buildExternalInviteUrl(String autoAddToken, boolean isEmail) {
-		String url = "https://play.google.com/store/apps/details?id=com.twofours.surespot&referrer=";
-		String query = "utm_source=surespot_android&utm_medium=" + (isEmail ? "email" : "sms");
-		query += "&utm_content=" + autoAddToken;
-
-		String eUrl = url + URLEncoder.encode(query);
-		SurespotLog.v(TAG, "play store url length: " + eUrl.length() + ", url: " + eUrl);
-		return eUrl;
 
 	}
 
@@ -172,69 +151,22 @@ public class ExternalInviteActivity extends SherlockActivity {
 				Utils.logIntent(TAG, data);
 
 				Uri result = data.getData();
-				SurespotLog.v(TAG, "contact url: " + result.toString());
-				String id,
-				name,
-				phone = null,
-				hasPhone,
-				email = null;
-				int idx,
-				colIdx;
+				// SurespotLog.v(TAG, "contact url: " + result.toString());
+
 				Cursor cursor = getContentResolver().query(result, null, null, null, null);
-				cursor.moveToFirst();
-				String columns[] = cursor.getColumnNames();
-				for (String column : columns) {
-					int index = cursor.getColumnIndex(column);
-					SurespotLog.v(TAG, "Column: " + column + " == [" + cursor.getString(index) + "]");
+				if (cursor.moveToFirst()) {
 
+					int idx = cursor.getColumnIndex(ContactsContract.Contacts.Data.DATA1);
+					String data1 = cursor.getString(idx);
+
+					mEtInviteeData.setText(data1);
 				}
-
-				idx = cursor.getColumnIndex(ContactsContract.Contacts.Data.DATA1);
-				String data1 = cursor.getString(idx);
-
-				// idx = cursor.getColumnIndex(ContactsContract.Contacts._ID);
-				// id = cursor.getString(idx);
-				//
-				// idx = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-				// name = cursor.getString(idx);
-				//
-				// idx = cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER);
-				// hasPhone = cursor.getString(idx);
-
-				// SurespotLog.v(TAG, "id: " + id + ", name: " + name + ", phone: " + phone + " email: " + email);
-
-				mEtInviteeData.setText(data1);
+				else {
+					//TODO tell user
+					Utils.makeToast(this, "could not get contact data");
+				}
 			}
 		}
-	}
-
-	/**
-	 * Populate the contact list based on account currently selected in the account spinner.
-	 */
-	private void populateContactList() {
-		// Build adapter with contact entries
-		Cursor cursor = getContacts();
-		String[] fields = new String[] { ContactsContract.Data.DISPLAY_NAME };
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.contact_entry, cursor, fields,
-				new int[] { R.id.contactEntryText });
-		mContactList.setAdapter(adapter);
-	}
-
-	/**
-	 * Obtains the contact list for the currently selected account.
-	 * 
-	 * @return A cursor for for accessing the contact list.
-	 */
-	private Cursor getContacts() {
-		// Run query
-		Uri uri = ContactsContract.Contacts.CONTENT_URI;
-		String[] projection = new String[] { ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME };
-		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '" + (mShowInvisible ? "0" : "1") + "'";
-		String[] selectionArgs = null;
-		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
-
-		CursorLoader cl = new CursorLoader(this, uri, projection, selection, selectionArgs, sortOrder);
-		return cl.loadInBackground();
 	}
 
 	@Override
