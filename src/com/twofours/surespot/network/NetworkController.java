@@ -146,13 +146,16 @@ public class NetworkController {
 	}
 
 	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature,
-			final CookieResponseHandler responseHandler) {
+			String autoAddToken, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("dhPub", publicKeyDH);
 		params.put("dsaPub", publicKeyECDSA);
 		params.put("authSig", signature);
+		if (autoAddToken != null && !autoAddToken.isEmpty()) {
+			params.put("autoAddToken", autoAddToken);
+		}
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
@@ -210,6 +213,10 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
+	public void getAutoAddToken(final String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		get("/autoaddtoken", null, asyncHttpResponseHandler);
+	}
+
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature,
 			String tokenSignature, String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
@@ -236,11 +243,14 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, String autoAddToken, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
+		if (autoAddToken != null && !autoAddToken.isEmpty()) {
+			params.put("autoAddToken", autoAddToken);
+		}
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -300,15 +310,15 @@ public class NetworkController {
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-//	public void getMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
-//
-//		if (id == null) {
-//			get("/messages/" + room, null, responseHandler);
-//		}
-//		else {
-//			get("/messages/" + room + "/after/" + id, null, responseHandler);
-//		}
-//	}
+	// public void getMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
+	//
+	// if (id == null) {
+	// get("/messages/" + room, null, responseHandler);
+	// }
+	// else {
+	// get("/messages/" + room + "/after/" + id, null, responseHandler);
+	// }
+	// }
 
 	public void getMessageData(String user, Integer messageId, Integer controlId, AsyncHttpResponseHandler responseHandler) {
 		int mId = messageId;
@@ -317,7 +327,7 @@ public class NetworkController {
 		get("/messagedata/" + user + "/" + mId + "/" + cId, null, responseHandler);
 
 	}
-	
+
 	public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
 		int mId = messageId;
 		int cId = controlId;
@@ -325,13 +335,11 @@ public class NetworkController {
 		return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
 
 	}
-	
-	
-//	public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {	
-//		int cId = controlId;
-//		get("/usercontrol/" + cId, null, responseHandler);
-//	}
 
+	// public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {
+	// int cId = controlId;
+	// get("/usercontrol/" + cId, null, responseHandler);
+	// }
 
 	// public void getLatestMessages(JSONObject messageIds, JsonHttpResponseHandler responseHandler) {
 	// // using a post because async http client sends the params url encoded which leaks too much data imo

@@ -24,7 +24,7 @@
         android:singleLine="true" />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/tbInviteViaLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="password" />

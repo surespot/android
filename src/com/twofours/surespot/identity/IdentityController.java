@@ -25,7 +25,6 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.R.string;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.FileUtils;
@@ -51,6 +50,7 @@ public class IdentityController {
 		// load the identity
 		if (identity != null) {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
+			Utils.putSharedPrefsString(context, "referrer", null);
 			SurespotApplication.getCachingService().login(identity, cookie);
 		}
 		else {
@@ -63,10 +63,9 @@ public class IdentityController {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = new SurespotIdentity(username);
 		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
-
-		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);		
 		setLoggedInUser(context, identity, cookie);
-		// Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_CHAT, null);
+		
 	}
 
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {

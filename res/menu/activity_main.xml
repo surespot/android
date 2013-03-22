@@ -18,6 +18,11 @@
                 android:id="@+id/menu_close_bar"
                 android:icon="@drawable/ic_menu_end_conversation"
                 android:title="@string/close_tab"/>
+              <item
+                android:id="@+id/menu_invite_external"
+                android:icon="@drawable/ic_menu_friendslist"
+                android:title="external invite"/>
+                
             <item
                 android:id="@+id/menu_logout_bar"
                 android:icon="@drawable/ic_lock_power_off"

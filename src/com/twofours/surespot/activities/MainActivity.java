@@ -363,7 +363,9 @@ public class MainActivity extends SherlockFragmentActivity {
 			MainActivity.this.startActivity(finalIntent);
 			finish();
 			return true;
-
+		case R.id.menu_invite_external:
+			intent = new Intent(this, ExternalInviteActivity.class);
+			startActivity(intent);
 		default:
 			return false;
 

@@ -2,6 +2,9 @@ package com.twofours.surespot.activities;
 
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -202,7 +205,21 @@ public class LoginActivity extends SherlockActivity {
 					if (idSig != null) {
 
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);
-						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
+						String autoAddToken = null;
+						
+						String referrer = Utils.getSharedPrefsString(LoginActivity.this,"referrer");
+						if (referrer != null) {
+							try {
+								JSONObject jReferrer = new JSONObject(referrer);
+								autoAddToken =  jReferrer.getString("utm_content");
+							}
+							catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} 
+						}
+						
+						networkController.login(username, idSig.derivedPassword, idSig.signature, autoAddToken, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);

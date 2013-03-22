@@ -1,0 +1,101 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <RadioGroup
+            android:id="@+id/inviteRadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="20dp" >
+
+            <RadioButton
+                android:id="@+id/rbEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="invite via email" />
+
+            <RadioButton
+                android:id="@+id/rbInviteSMS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="invite via text message" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/inviteMessageLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/rbEmail"
+            android:layout_below="@+id/invitee"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="20dp"
+            android:text="personalized invitation message:" />
+
+        <EditText
+            android:id="@+id/inviteMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/inviteMessageLabel"
+            android:layout_below="@+id/inviteMessageLabel"
+            android:layout_marginRight="5dp"
+            android:layout_toLeftOf="@+id/bSendInvitation"
+            android:ems="10"
+            android:gravity="bottom"
+            android:inputType="textMultiLine"
+            android:maxHeight="150dp"
+            android:minHeight="150dp"
+            android:scrollbars="vertical" />
+
+        <TextView
+            android:id="@+id/tbInviteViaLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/inviteRadioGroup"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="20dp"
+            android:text="phone number" />
+
+        <Button
+            android:id="@+id/bSelectContact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/inviteMessageLabel"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/tbInviteViaLabel"
+            android:layout_marginRight="5dp"
+            android:drawableLeft="@drawable/ic_menu_friendslist"
+            android:minWidth="48dip" />
+
+        <EditText
+            android:id="@+id/invitee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/tbInviteViaLabel"
+            android:layout_below="@+id/tbInviteViaLabel"
+            android:layout_toLeftOf="@+id/bSelectContact"
+            android:ems="10"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/bSendInvitation"
+            android:layout_width="70sp"
+            android:layout_height="70sp"
+            android:layout_alignBottom="@+id/inviteMessage"
+            android:layout_alignParentRight="true"
+            android:layout_alignRight="@+id/bSelectContact"
+            android:background="@drawable/send_button"
+            android:text="send invite"
+            android:textColor="@android:color/black" />
+    </RelativeLayout>
+
+</ScrollView>

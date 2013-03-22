@@ -2,6 +2,8 @@ package com.twofours.surespot.activities;
 
 import java.security.KeyPair;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.ComponentName;
@@ -170,8 +172,23 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
+										String autoAddToken = null;
+										
+										String referrer = Utils.getSharedPrefsString(SignupActivity.this,"referrer");
+										if (referrer != null) {
+											try {
+												JSONObject jReferrer = new JSONObject(referrer);
+												autoAddToken =  jReferrer.getString("utm_content");
+											}
+											catch (JSONException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											} 
+										}
+										
+										
 										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA,
-												signature, new CookieResponseHandler() {
+												signature, autoAddToken, new CookieResponseHandler() {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
