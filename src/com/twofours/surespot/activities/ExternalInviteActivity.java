@@ -53,16 +53,15 @@ public class ExternalInviteActivity extends SherlockActivity {
 		RadioButton rbInviteSMS = (RadioButton) findViewById(R.id.rbInviteSMS);
 		final RadioButton rbEmail = (RadioButton) findViewById(R.id.rbEmail);
 		mEtInviteMessage = (EditText) findViewById(R.id.inviteMessage);
-		mEtInviteMessage.setText("Dude! Check out this sick app! It allows for encrypted end to end communication. Take your privacy back!");
-		
+		mEtInviteMessage
+				.setText("Dude! Check out this sick app! It allows for encrypted end to end communication. Take your privacy back!");
+
 		mEtInviteeData = (EditText) findViewById(R.id.invitee);
 		mEtInviteeData.setFilters(new InputFilter[] { new InputFilter.LengthFilter(80) });
 		Button bSelectContact = (Button) findViewById(R.id.bSelectContact);
 		Button bSendInvitation = (Button) findViewById(R.id.bSendInvitation);
 		final TextView tvInviteViaLabel = (TextView) findViewById(R.id.tbInviteViaLabel);
 
-		
-		
 		OnClickListener rbClickListener = new OnClickListener() {
 
 			@Override
@@ -82,7 +81,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 					if (checked) {
 						tvInviteViaLabel.setText("enter phone number:");
 						mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
-						
+
 					}
 					break;
 				}
@@ -122,32 +121,27 @@ public class ExternalInviteActivity extends SherlockActivity {
 					final boolean email = rbEmail.isChecked();
 
 					// create link
-					MainActivity.getNetworkController().getAutoAddToken(IdentityController.getLoggedInUser(),
-							new AsyncHttpResponseHandler() {
-								public void onSuccess(int statusCode, String content) {
-									// TODO persist somewhere
-									String autoaddtoken = content;
-									String url = buildExternalInviteUrl(autoaddtoken, email);
-									Intent intent = new Intent(Intent.ACTION_SENDTO);
+					MainActivity.getNetworkController().getAutoInviteUrl((email ? "email" : "sms"), new AsyncHttpResponseHandler() {
+						public void onSuccess(int statusCode, String content) {
+							// TODO persist somewhere
+							String autoinviteurl = content;
+							Intent intent = new Intent(Intent.ACTION_SENDTO);
 
-									if (email) {
-										intent.setData(Uri.parse("mailto:" + contactData));
-										intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
-										intent.putExtra(
-												Intent.EXTRA_TEXT,
-												message
-														+ "\n\nPlease click\n\n\t"+ url +
-														"\n\non your android device to install surespot.");
+							if (email) {
+								intent.setData(Uri.parse("mailto:" + contactData));
+								intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
+								intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n\t" + autoinviteurl
+										+ "\n\non your android device to install surespot.");
 
-									}
-									else {
-										intent.setData(Uri.parse("smsto:" + contactData));
-										intent.putExtra("sms_body", message + " download surespot here: " + url);
-									}
-									startActivity(intent);
+							}
+							else {
+								intent.setData(Uri.parse("smsto:" + contactData));
+								intent.putExtra("sms_body", message + " download surespot here: " + autoinviteurl);
+							}
+							startActivity(intent);
 
-								};
-							});
+						};
+					});
 
 				}
 
@@ -209,7 +203,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 				// SurespotLog.v(TAG, "id: " + id + ", name: " + name + ", phone: " + phone + " email: " + email);
 
-				mEtInviteeData.setText(data1);				
+				mEtInviteeData.setText(data1);
 			}
 		}
 	}

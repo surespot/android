@@ -200,9 +200,7 @@ public class NetworkController {
 			public void onFinish() {
 				responseHandler.onFinish();
 			}
-
 		});
-
 	}
 
 	public void getKeyToken(final String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
@@ -213,8 +211,10 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
-	public void getAutoAddToken(final String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-		get("/autoaddtoken", null, asyncHttpResponseHandler);
+	
+	
+	public void getAutoInviteUrl(String medium, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		get("/autoinviteurl/" + medium, null, asyncHttpResponseHandler);
 	}
 
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature,
