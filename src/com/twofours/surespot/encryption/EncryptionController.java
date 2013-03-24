@@ -61,7 +61,7 @@ public class EncryptionController {
 	private static final String PASSWORD_SALT = "a540edbf8158bc534b39859927b2e927";
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
-	private static SecureRandom mSecureRandom = new SecureRandom();
+	private static SecureRandom mSecureRandom = new SurespotSecureRandom();
 
 	public static final PublicKey ServerPublicKey = recreatePublicKey("ecdsa", SurespotConstants.SERVER_PUBLIC_KEY);
 
@@ -106,14 +106,14 @@ public class EncryptionController {
 				try {
 					// generate ECDH keys
 					KeyPairGenerator g = KeyPairGenerator.getInstance("ECDH", "SC");
-					g.initialize(curve, new SecureRandom());
+					g.initialize(curve, mSecureRandom);
 					KeyPair pair = g.generateKeyPair();
 					KeyPair[] pairs = new KeyPair[2];
 					pairs[0] = pair;
 
 					// generate ECDSA keys
 					KeyPairGenerator gECDSA = KeyPairGenerator.getInstance("ECDSA", "SC");
-					gECDSA.initialize(curve, new SecureRandom());
+					gECDSA.initialize(curve, mSecureRandom);
 					pair = gECDSA.generateKeyPair();
 
 					pairs[1] = pair;
@@ -139,14 +139,14 @@ public class EncryptionController {
 		KeyPairGenerator g;
 		try {
 			g = KeyPairGenerator.getInstance("ECDH", "SC");
-			g.initialize(curve, new SecureRandom());
+			g.initialize(curve, mSecureRandom);
 			KeyPair pair = g.generateKeyPair();
 
 			pairs[0] = pair;
 
 			// generate ECDSA keys
 			KeyPairGenerator gECDSA = KeyPairGenerator.getInstance("ECDSA", "SC");
-			gECDSA.initialize(curve, new SecureRandom());
+			gECDSA.initialize(curve, mSecureRandom);
 			pair = gECDSA.generateKeyPair();
 			pairs[1] = pair;
 		}
@@ -571,7 +571,7 @@ public class EncryptionController {
 
 		byte[][] derived = new byte[2][];
 		byte[] keyBytes = null;
-		SecureRandom random = new SecureRandom();
+		SecureRandom random = new SurespotSecureRandom();
 		byte[] salt = new byte[saltLength];
 		random.nextBytes(salt);
 		KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterationCount, keyLength);
