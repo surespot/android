@@ -7,6 +7,7 @@ import java.util.ListIterator;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -292,7 +293,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
-			if (item.getData() != null && !item.getData().isEmpty()) {
+			if (!TextUtils.isEmpty(item.getData())) {
 				ImageDownloader.download(chatMessageViewHolder.imageView, item);
 			}
 			

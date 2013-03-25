@@ -48,7 +48,7 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 		ListView listview = dialog.getListView();
 
 		if (!mMyMessage) {
-			listview.getChildAt(0).setEnabled(mMessage.isShareable());
+			listview.getChildAt(0).setEnabled(mMessage.isShareable() && FileUtils.isExternalStorageMounted());
 		}
 	}
 

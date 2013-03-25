@@ -22,6 +22,7 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore.Images;
+import ch.boye.httpclientandroidlib.androidextra.Base64;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -362,5 +363,22 @@ public class ChatUtils {
 		return messages;
 
 	}
+	
+	public static byte[] base64EncodeNowrap(byte[] buf) {
+		return Base64.encode(buf, Base64.NO_WRAP);
+	}
+
+	public static byte[] base64DecodeNowrap(String buf) {
+		return Base64.decode(buf, Base64.NO_WRAP);
+	}
+	
+	public static byte[] base64Encode(byte[] buf) {
+		return Base64.encode(buf, Base64.DEFAULT);
+	}
+
+	public static byte[] base64Decode(String buf) {
+		return Base64.decode(buf, Base64.DEFAULT);
+	}
+
 
 }

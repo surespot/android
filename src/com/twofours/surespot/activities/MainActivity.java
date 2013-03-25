@@ -3,13 +3,16 @@ package com.twofours.surespot.activities;
 import java.io.File;
 import java.util.ArrayList;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.hardware.Camera;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.view.KeyEvent;
@@ -21,6 +24,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -46,8 +50,10 @@ public class MainActivity extends SherlockFragmentActivity {
 	private ChatController mChatController = null;
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
+	private BroadcastReceiver mExternalStorageReceiver;
+	private boolean mExternalStorageAvailable = false;
+	private boolean mExternalStorageWriteable = false;
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -198,6 +204,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			if (mChatController != null) {
 				mChatController.setCurrentChat(name);
+
 			}
 		}
 
@@ -233,6 +240,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (mChatController != null) {
 			mChatController.onResume();
 		}
+		startWatchingExternalStorage();
 	}
 
 	@Override
@@ -241,6 +249,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (mChatController != null) {
 			mChatController.onPause();
 		}
+		stopWatchingExternalStorage();
 	}
 
 	@Override
@@ -299,20 +308,23 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		mMenuItems.add(menu.findItem(R.id.menu_close_bar));
 		mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
-		mMenuItems.add(menu.findItem(R.id.menu_capture_image_bar));
 
-
-		if (Camera.getNumberOfCameras() == 0) {
+		MenuItem captureItem = menu.findItem(R.id.menu_capture_image_bar);
+		PackageManager pm = this.getPackageManager();
+		if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
 			SurespotLog.v(TAG, "hiding capture image menu option");
+			mMenuItems.add(captureItem);
+			captureItem.setEnabled(FileUtils.isExternalStorageMounted());
+		}
+		else {
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
 		}
 
-		if (mChatController != null) {
-			mChatController.enableMenuItems();
-		}
+		enableMenuItems();
+
 		return true;
 	}
-	
+
 	private ImageCaptureHandler mImageCaptureHandler;
 
 	@Override
@@ -345,10 +357,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (to == null) {
 				return true;
 			}
-			
+
 			mImageCaptureHandler = new ImageCaptureHandler(this, to);
 			mImageCaptureHandler.capture();
-		
+
 			return true;
 		case R.id.menu_settings_bar:
 			intent = new Intent(this, SettingsActivity.class);
@@ -401,11 +413,65 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);		
+			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
 			return true;
 		}
 
-			return super.onKeyUp(keyCode, event);
+		return super.onKeyUp(keyCode, event);
 	}
 
+	private void startWatchingExternalStorage() {
+		mExternalStorageReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				SurespotLog.v(TAG, "Storage: " + intent.getData());
+				updateExternalStorageState();
+			}
+		};
+		IntentFilter filter = new IntentFilter();
+		filter.addDataScheme("file");
+		filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+		filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+		registerReceiver(mExternalStorageReceiver, filter);
+		updateExternalStorageState();
+	}
+
+	private void stopWatchingExternalStorage() {
+		unregisterReceiver(mExternalStorageReceiver);
+	}
+
+	private void updateExternalStorageState() {
+		String state = Environment.getExternalStorageState();
+		SurespotLog.v(TAG, "updateExternalStorageState:  " + state);
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			mExternalStorageAvailable = mExternalStorageWriteable = true;
+		}
+		else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+			mExternalStorageAvailable = true;
+			mExternalStorageWriteable = false;
+		}
+		else {
+			mExternalStorageAvailable = mExternalStorageWriteable = false;
+		}
+		handleExternalStorageState(mExternalStorageAvailable, mExternalStorageWriteable);
+	}
+
+	private void handleExternalStorageState(boolean externalStorageAvailable, boolean externalStorageWriteable) {
+
+		enableMenuItems();
+
+	}
+
+	public void enableMenuItems() {
+
+		if (mMenuItems != null) {
+			for (MenuItem menuItem : mMenuItems) {
+				if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+					menuItem.setEnabled(mExternalStorageWriteable);
+
+				}
+			}
+		}
+
+	}
 }

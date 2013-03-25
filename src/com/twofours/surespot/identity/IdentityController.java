@@ -27,6 +27,7 @@ import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -80,9 +81,9 @@ public class IdentityController {
 				JSONObject jsonKeyPair = new JSONObject();
 
 				jsonKeyPair.put("version", keyPair.getVersion());
-				jsonKeyPair.put("dhPriv", new String(Utils.base64Encode(keyPair.getKeyPairDH().getPrivate().getEncoded())));
+				jsonKeyPair.put("dhPriv", new String(ChatUtils.base64EncodeNowrap(keyPair.getKeyPairDH().getPrivate().getEncoded())));
 				jsonKeyPair.put("dhPub", EncryptionController.encodePublicKey(keyPair.getKeyPairDH().getPublic()));
-				jsonKeyPair.put("dsaPriv", new String(Utils.base64Encode(keyPair.getKeyPairDSA().getPrivate().getEncoded())));
+				jsonKeyPair.put("dsaPriv", new String(ChatUtils.base64EncodeNowrap(keyPair.getKeyPairDSA().getPrivate().getEncoded())));
 				jsonKeyPair.put("dsaPub", EncryptionController.encodePublicKey(keyPair.getKeyPairDSA().getPublic()));
 
 				keys.put(jsonKeyPair);

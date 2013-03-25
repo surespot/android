@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Base64;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -21,6 +21,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -64,7 +65,7 @@ public class ManageKeysActivity extends SherlockActivity {
 						new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
-								if (result != null && !result.isEmpty()) {
+								if (!TextUtils.isEmpty(result)) {
 									rollKeys(user, result);
 								}
 								else {
@@ -133,7 +134,7 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, Base64.decode(keyToken.getBytes(), Base64.DEFAULT),
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(keyToken),
 								dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);

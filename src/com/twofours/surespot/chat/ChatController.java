@@ -1287,7 +1287,7 @@ public class ChatController {
 
 			// build a message without the encryption values set as they could take a while
 			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, plainText,
-					new String(Utils.base64Encode(iv)));
+					new String(ChatUtils.base64EncodeNowrap(iv)));
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
 
 			try {

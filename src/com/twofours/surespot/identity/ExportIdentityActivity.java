@@ -3,6 +3,7 @@ package com.twofours.surespot.identity;
 import java.util.List;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -12,6 +13,7 @@ import android.widget.Spinner;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
@@ -39,6 +41,9 @@ public class ExportIdentityActivity extends SherlockActivity {
 		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
 
 		Button exportToSdCardButton = (Button) findViewById(R.id.bExportSd);
+		
+		exportToSdCardButton.setEnabled(FileUtils.isExternalStorageMounted());
+		
 		exportToSdCardButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -49,7 +54,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 						new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
-								if (result != null && !result.isEmpty()) {
+								if (!TextUtils.isEmpty(result)) {
 									exportIdentity(user, result);
 								}
 								else {

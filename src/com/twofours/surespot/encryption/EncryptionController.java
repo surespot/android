@@ -43,13 +43,12 @@ import org.spongycastle.jce.spec.ECParameterSpec;
 import org.spongycastle.util.encoders.HexEncoder;
 
 import android.os.AsyncTask;
-import android.util.Base64;
 
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class EncryptionController {
@@ -84,7 +83,7 @@ public class EncryptionController {
 	}
 
 	public static ECPrivateKey recreatePrivateKey(String algorithm, String encodedKey) {
-		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Utils.base64Decode(encodedKey));
+		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(ChatUtils.base64DecodeNowrap(encodedKey));
 		try {
 			KeyFactory fact = KeyFactory.getInstance(algorithm, "SC");
 			ECPrivateKey privKey = (ECPrivateKey) fact.generatePrivate(spec);
@@ -167,14 +166,14 @@ public class EncryptionController {
 		byte[] encoded = publicKey.getEncoded();
 
 		// SSL doesn't like any other encoding but DEFAULT
-		String unpem = new String(Base64.encode(encoded, Base64.DEFAULT));
+		String unpem = new String(ChatUtils.base64Encode(encoded));
 		return "-----BEGIN PUBLIC KEY-----\n" + unpem + "-----END PUBLIC KEY-----";
 	}
 
 	public static byte[] decodePublicKey(String publicKey) {
 		String afterHeader = publicKey.substring(publicKey.indexOf('\n') + 1);
 		String beforeHeader = afterHeader.substring(0, afterHeader.lastIndexOf('\n'));
-		return Base64.decode(beforeHeader.getBytes(), Base64.DEFAULT);
+		return ChatUtils.base64Decode(beforeHeader);
 	}
 
 	public static String sign(PrivateKey privateKey, String data, String derivedPassword) {
@@ -198,7 +197,7 @@ public class EncryptionController {
 			byte[] signature = new byte[random.length + sig.length];
 			System.arraycopy(random, 0, signature, 0, 16);
 			System.arraycopy(sig, 0, signature, 16, sig.length);
-			return new String(Base64.encode(signature, Base64.DEFAULT));
+			return new String(ChatUtils.base64Encode(signature));
 
 		}
 		catch (SignatureException e) {
@@ -222,7 +221,7 @@ public class EncryptionController {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 			dsa.initVerify(ServerPublicKey);
 			dsa.update(data.getBytes());
-			return dsa.verify(Base64.decode(signature.getBytes(), Base64.DEFAULT));
+			return dsa.verify(ChatUtils.base64Decode(signature));
 		}
 		catch (SignatureException e) {
 			SurespotLog.e(TAG, "sign", e);
@@ -250,7 +249,7 @@ public class EncryptionController {
 			ka.doPhase(publicKey, true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			// SurespotLog.d(TAG, username + " shared Key: " + new String(Utils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
+			// SurespotLog.d(TAG, username + " shared Key: " + new String(ChatUtils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
 			return sharedSecret;
 
 		}
@@ -320,7 +319,7 @@ public class EncryptionController {
 		};
 
 		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
-		return new String(Utils.base64Encode(iv));
+		return new String(ChatUtils.base64EncodeNowrap(iv));
 	}
 
 	public static void runDecryptTask(final String ourVersion, final String username, final String theirVersion, final String ivs,
@@ -331,7 +330,7 @@ public class EncryptionController {
 
 				byte[] buf = new byte[BUFFER_SIZE]; // input buffer
 				try {
-					final byte[] iv = Utils.base64Decode(ivs);
+					final byte[] iv = ChatUtils.base64DecodeNowrap(ivs);
 					BufferedInputStream bis = new BufferedInputStream(in);
 
 					final IvParameterSpec ivParams = new IvParameterSpec(iv);
@@ -390,8 +389,8 @@ public class EncryptionController {
 		ParametersWithIV ivParams = null;
 		try {
 
-			cipherBytes = Utils.base64Decode(cipherData);
-			iv = Utils.base64Decode(ivs);
+			cipherBytes = ChatUtils.base64DecodeNowrap(cipherData);
+			iv = ChatUtils.base64DecodeNowrap(ivs);
 			byte[] secret = SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion);
 			if (secret == null) {
 				return null;
@@ -443,10 +442,10 @@ public class EncryptionController {
 			len += ccm.doFinal(buf, len);
 			// String[] returns = new String[2];
 
-			// returns[0] = new String(Utils.base64Encode(iv));
-			// returns[1] = new String(Utils.base64Encode(buf));
+			// returns[0] = new String(ChatUtils.base64Encode(iv));
+			// returns[1] = new String(ChatUtils.base64Encode(buf));
 
-			return new String(Utils.base64Encode(buf));
+			return new String(ChatUtils.base64EncodeNowrap(buf));
 
 		}
 		catch (InvalidCacheLoadException icle) {
@@ -556,7 +555,7 @@ public class EncryptionController {
 			out.close();
 
 			
-			return new String(Utils.base64Encode(dpassword));
+			return new String(ChatUtils.base64EncodeNowrap(dpassword));
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, "derivePassword", e);

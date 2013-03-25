@@ -10,6 +10,7 @@ import org.acra.ACRA;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
@@ -153,7 +154,7 @@ public class NetworkController {
 		params.put("dhPub", publicKeyDH);
 		params.put("dsaPub", publicKeyECDSA);
 		params.put("authSig", signature);
-		if (autoAddToken != null && !autoAddToken.isEmpty()) {
+		if (!TextUtils.isEmpty(autoAddToken)) {
 			params.put("autoAddToken", autoAddToken);
 		}
 		// get the gcm id
@@ -248,7 +249,7 @@ public class NetworkController {
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
-		if (autoAddToken != null && !autoAddToken.isEmpty()) {
+		if (!TextUtils.isEmpty(autoAddToken)) {
 			params.put("autoAddToken", autoAddToken);
 		}
 

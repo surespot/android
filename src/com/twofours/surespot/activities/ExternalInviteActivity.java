@@ -1,5 +1,6 @@
 package com.twofours.surespot.activities;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -98,7 +100,12 @@ public class ExternalInviteActivity extends SherlockActivity {
 				else {
 					intent.setData(Phone.CONTENT_URI);
 				}
+				try {
 				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.PICK_CONTACT);
+				}
+				catch (ActivityNotFoundException e ) {
+					SurespotLog.w(TAG, "pick contact", e);
+				}
 
 			}
 		});
@@ -110,7 +117,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 				final String contactData = ExternalInviteActivity.this.mEtInviteeData.getText().toString();
 				final String message = mEtInviteMessage.getText().toString();
 
-				if (contactData != null && !contactData.isEmpty()) {
+				if (!TextUtils.isEmpty(contactData)) {
 					final boolean email = rbEmail.isChecked();
 
 					// create link

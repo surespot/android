@@ -25,6 +25,8 @@ import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
@@ -34,6 +36,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.identity.ImportIdentityActivity;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -53,17 +56,17 @@ public class SignupActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
-		Utils.configureActionBar(this, "identity", "create", true);
-		
+		Utils.configureActionBar(this, "identity", "create", false);
+
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-		
-		
+
 		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 0);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
+				new LetterOrDigitInputFilter() });
 
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
@@ -91,7 +94,7 @@ public class SignupActivity extends SherlockActivity {
 		});
 
 	}
-	
+
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
 			SurespotLog.v(TAG, "caching service bound");
@@ -99,14 +102,14 @@ public class SignupActivity extends SherlockActivity {
 
 			CredentialCachingService credentialCachingService = binder.getService();
 			mCacheServiceBound = true;
-			
+
 			SurespotApplication.setCachingService(credentialCachingService);
-		
-			//if they've already clicked login, login
+
+			// if they've already clicked login, login
 			if (mSignupAttempted) {
 				mSignupAttempted = false;
 				signup();
-				mMpd.decrProgress();				
+				mMpd.decrProgress();
 			}
 		}
 
@@ -123,7 +126,7 @@ public class SignupActivity extends SherlockActivity {
 			return;
 		}
 
-		final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername); 
+		final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		final String username = userText.getText().toString();
 
 		final EditText pwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPassword);
@@ -131,7 +134,7 @@ public class SignupActivity extends SherlockActivity {
 		if (!(username.length() > 0 && password.length() > 0)) {
 			return;
 		}
-				 
+
 		mMpd.incrProgress();
 
 		// see if the user exists
@@ -142,7 +145,7 @@ public class SignupActivity extends SherlockActivity {
 				if (arg1.equals("true")) {
 					Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
 					pwText.setText("");
-					mMpd.decrProgress();					
+					mMpd.decrProgress();
 				}
 				else {
 					final String dPassword = EncryptionController.derivePassword(password);
@@ -160,7 +163,7 @@ public class SignupActivity extends SherlockActivity {
 
 								new AsyncTask<Void, Void, String[]>() {
 									protected String[] doInBackground(Void... params) {
-										
+
 										String[] data = new String[3];
 										data[0] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
 										data[1] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
@@ -173,27 +176,26 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicECDSA = result[1];
 										String signature = result[2];
 										String autoAddToken = null;
-										
-										String referrer = Utils.getSharedPrefsString(SignupActivity.this,"referrer");
+
+										String referrer = Utils.getSharedPrefsString(SignupActivity.this, "referrer");
 										if (referrer != null) {
 											try {
 												JSONObject jReferrer = new JSONObject(referrer);
-												autoAddToken =  jReferrer.getString("utm_content");
+												autoAddToken = jReferrer.getString("utm_content");
 											}
 											catch (JSONException e) {
 												// TODO Auto-generated catch block
 												e.printStackTrace();
-											} 
+											}
 										}
-										
-										
-										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA,
-												signature, autoAddToken, new CookieResponseHandler() {
+
+										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, autoAddToken,
+												new CookieResponseHandler() {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
 														pwText.setText("");
-														
+
 														if (statusCode == 201) {
 															// save key pair now
 															// that we've created
@@ -219,7 +221,7 @@ public class SignupActivity extends SherlockActivity {
 																}
 
 																protected void onPostExecute(Void result) {
-																	
+
 																	// SurespotApplication.getUserData().setUsername(username);
 																	Intent intent = new Intent(SignupActivity.this, MainActivity.class);
 																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -283,14 +285,21 @@ public class SignupActivity extends SherlockActivity {
 			}
 		});
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-	
+
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.activity_signup, menu);
+		return true;
 	}
 
 	@Override
@@ -299,6 +308,11 @@ public class SignupActivity extends SherlockActivity {
 		case android.R.id.home:
 			finish();
 
+			return true;
+		case R.id.menu_import_identities:
+			Intent intent = new Intent(this, ImportIdentityActivity.class);
+			intent.putExtra("signup", true);
+			startActivity(intent);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

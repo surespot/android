@@ -5,8 +5,8 @@
     android:versionName="770d5ff" >
 
     <uses-sdk
-        android:minSdkVersion="10"
-        android:targetSdkVersion="10" />
+        android:minSdkVersion="8"
+        android:targetSdkVersion="17" />
 
     <permission
         android:name="com.twofours.surespot.permission.C2D_MESSAGE"

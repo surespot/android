@@ -4,6 +4,7 @@ import java.io.File;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -57,7 +58,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 						new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
-								if (result != null && !result.isEmpty()) {
+								if (!TextUtils.isEmpty(result)) {
 									IdentityController.importIdentity(ImportIdentityActivity.this, exportDir, user, result,
 											new IAsyncCallback<IdentityOperationResult>() {
 
