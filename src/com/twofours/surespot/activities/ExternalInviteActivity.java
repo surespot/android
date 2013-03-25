@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.Email;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -21,6 +19,7 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.ContactPickerActivity;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -93,17 +92,11 @@ public class ExternalInviteActivity extends SherlockActivity {
 		bSelectContact.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(Intent.ACTION_PICK);
-				if (rbEmail.isChecked()) {
-					intent.setData(Email.CONTENT_URI);
-				}
-				else {
-					intent.setData(Phone.CONTENT_URI);
-				}
+				Intent intent = new Intent(ExternalInviteActivity.this,ContactPickerActivity.class);		
 				try {
-				startActivityForResult(intent, SurespotConstants.IntentRequestCodes.PICK_CONTACT);
+					startActivityForResult(intent, SurespotConstants.IntentRequestCodes.PICK_CONTACT);
 				}
-				catch (ActivityNotFoundException e ) {
+				catch (ActivityNotFoundException e) {
 					SurespotLog.w(TAG, "pick contact", e);
 				}
 
@@ -169,7 +162,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 					mEtInviteeData.setText(data1);
 				}
 				else {
-					//TODO tell user
+					// TODO tell user
 					Utils.makeToast(this, "could not get contact data");
 				}
 			}

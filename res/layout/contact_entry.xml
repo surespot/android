@@ -1,8 +1,42 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content">
-    <TextView android:text="@+id/contactEntryText"
-              android:id="@+id/contactEntryText"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"/>
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/contactId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/contactName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/contactEmailLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="email addresses" />
+
+    <LinearLayout
+        android:id="@+id/contactEmails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/contactPhoneLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="phone numbers" />
+
+    <LinearLayout
+        android:id="@+id/contactPhoneNumbers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+    </LinearLayout>
+
 </LinearLayout>

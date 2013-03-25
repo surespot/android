@@ -25,6 +25,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -50,8 +51,7 @@
         <!-- Used for install referral measurement -->
         <service android:name="com.google.analytics.tracking.android.CampaignTrackingService" />
 
-        <receiver
-            android:name="com.twofours.surespot.SurespotBroadcastReceiver">
+        <receiver android:name="com.twofours.surespot.SurespotBroadcastReceiver" >
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER" />
             </intent-filter>
@@ -159,6 +159,10 @@
         <activity
             android:name="com.twofours.surespot.activities.ExternalInviteActivity"
             android:label="@string/title_activity_external_invite" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.ContactPickerActivity"
+            android:label="@string/title_activity_contact_picker" >
         </activity>
     </application>
 
