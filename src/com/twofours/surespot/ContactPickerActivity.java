@@ -46,10 +46,10 @@ public class ContactPickerActivity extends Activity {
 
 			while (cur.moveToNext()) {
 				String columns[] = cur.getColumnNames();
-				// for (String column : columns) {
-				// int index = cur.getColumnIndex(column);
-				// SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
-				// }
+				for (String column : columns) {
+					int index = cur.getColumnIndex(column);
+					SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+				}
 
 				String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
@@ -112,13 +112,13 @@ public class ContactPickerActivity extends Activity {
 
 					String contactTypeString = "email";
 					String typeString = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
-
+					
 					if (typeString != null) {
-						int type = Integer.parseInt(typeString);
+						int type = Integer.parseInt(	typeString);
 						String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL));
-						contactTypeString = ((String) Email.getTypeLabel(this.getResources(), type, label)).toLowerCase();
+						contactTypeString = ((String) Email.getTypeLabel(this.getResources(), type, label)).toLowerCase(); 
 					}
-					cd.setType(contactTypeString);
+					cd.setType(contactTypeString);									
 					foundContact.getEmails().add(cd);
 				}
 			}
@@ -126,9 +126,9 @@ public class ContactPickerActivity extends Activity {
 		cur.close();
 
 		ArrayList<SurespotContact> contactsList = new ArrayList<SurespotContact>(contacts.size());
-		// delete contacts with no email or phone
+		// don't show contacts with no email or phone
 		for (SurespotContact contact : contacts.values()) {
-			if (contact.getEmails().size() > 0 && contact.getPhoneNumbers().size() > 0) {
+			if (contact.getEmails().size() > 0 || contact.getPhoneNumbers().size() > 0) {
 				contactsList.add(contact);
 			}
 		}
