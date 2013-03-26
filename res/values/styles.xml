@@ -17,4 +17,8 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <style name="Divider">        
+        <item name="android:background">?android:attr/listDivider</item>
+    </style>
+
 </resources>

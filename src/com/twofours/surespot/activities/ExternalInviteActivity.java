@@ -2,10 +2,8 @@ package com.twofours.surespot.activities;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -32,6 +30,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 	private EditText mEtInviteeData;
 	private EditText mEtInviteMessage;
+	private TextView mTvInviteViaLabel;
+	private RadioButton mRbEmail;
+	private RadioButton mRbSms;
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -44,8 +45,8 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 		Utils.configureActionBar(this, "invite", IdentityController.getLoggedInUser(), true);
 
-		RadioButton rbInviteSMS = (RadioButton) findViewById(R.id.rbInviteSMS);
-		final RadioButton rbEmail = (RadioButton) findViewById(R.id.rbEmail);
+		mRbSms = (RadioButton) findViewById(R.id.rbInviteSMS);
+		mRbEmail = (RadioButton) findViewById(R.id.rbEmail);
 		mEtInviteMessage = (EditText) findViewById(R.id.inviteMessage);
 		mEtInviteMessage
 				.setText("Dude! Check out this sick app! It allows for encrypted end to end communication. Take your privacy back!");
@@ -54,7 +55,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		mEtInviteeData.setFilters(new InputFilter[] { new InputFilter.LengthFilter(80) });
 		Button bSelectContact = (Button) findViewById(R.id.bSelectContact);
 		Button bSendInvitation = (Button) findViewById(R.id.bSendInvitation);
-		final TextView tvInviteViaLabel = (TextView) findViewById(R.id.tbInviteViaLabel);
+		mTvInviteViaLabel = (TextView) findViewById(R.id.tbInviteViaLabel);
 
 		OnClickListener rbClickListener = new OnClickListener() {
 
@@ -63,36 +64,26 @@ public class ExternalInviteActivity extends SherlockActivity {
 				// Is the button now checked?
 				boolean checked = ((RadioButton) view).isChecked();
 
-				// Check which radio button was clicked
-				switch (view.getId()) {
-				case R.id.rbEmail:
-					if (checked) {
-						tvInviteViaLabel.setText("enter email address:");
-						mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-					}
-					break;
-				case R.id.rbInviteSMS:
-					if (checked) {
-						tvInviteViaLabel.setText("enter phone number:");
-						mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
-
-					}
-					break;
+				if (checked) {
+					setInviteType(view.getId() == R.id.rbEmail);
+					mEtInviteeData.setText("");
 				}
-
-				mEtInviteeData.setText("");
+				
+				
+				
 			}
 		};
-		rbEmail.setOnClickListener(rbClickListener);
-		rbInviteSMS.setOnClickListener(rbClickListener);
-		rbEmail.setChecked(true);
-		tvInviteViaLabel.setText("enter email address:");
+		mRbEmail.setOnClickListener(rbClickListener);
+		mRbSms.setOnClickListener(rbClickListener);
+		mRbEmail.setChecked(true);
+		setInviteType(true);
+		mTvInviteViaLabel.setText("enter email address:");
 		mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 
 		bSelectContact.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(ExternalInviteActivity.this,ContactPickerActivity.class);		
+				Intent intent = new Intent(ExternalInviteActivity.this, ContactPickerActivity.class);
 				try {
 					startActivityForResult(intent, SurespotConstants.IntentRequestCodes.PICK_CONTACT);
 				}
@@ -111,7 +102,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 				final String message = mEtInviteMessage.getText().toString();
 
 				if (!TextUtils.isEmpty(contactData)) {
-					final boolean email = rbEmail.isChecked();
+					final boolean email = mRbEmail.isChecked();
 
 					// create link
 					MainActivity.getNetworkController().getAutoInviteUrl((email ? "email" : "sms"), new AsyncHttpResponseHandler() {
@@ -142,24 +133,37 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 	}
 
+	private void setInviteType(boolean isEmail) {
+		if (isEmail) {
+			mTvInviteViaLabel.setText("enter email address:");
+			mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+		}
+		else {
+			mTvInviteViaLabel.setText("enter phone number:");
+			mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
+		}
+	}
+
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	protected void onActivityResult(int requestCode, int resultCode, Intent dataIntent) {
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 			case SurespotConstants.IntentRequestCodes.PICK_CONTACT:
 
-				Utils.logIntent(TAG, data);
+				Utils.logIntent(TAG, dataIntent);
 
-				Uri result = data.getData();
-				// SurespotLog.v(TAG, "contact url: " + result.toString());
-
-				Cursor cursor = getContentResolver().query(result, null, null, null, null);
-				if (cursor.moveToFirst()) {
-
-					int idx = cursor.getColumnIndex(ContactsContract.Contacts.Data.DATA1);
-					String data1 = cursor.getString(idx);
-
-					mEtInviteeData.setText(data1);
+				String type = dataIntent.getStringExtra("type");
+				String data = dataIntent.getStringExtra("data");
+				if (!TextUtils.isEmpty(type) && !TextUtils.isEmpty(data)) {
+					if (type.equals("email")) {
+						mRbEmail.setChecked(true);
+						setInviteType(true);
+					}
+					else {
+						mRbSms.setChecked(true);
+						setInviteType(false);
+					}
+					mEtInviteeData.setText(data);
 				}
 				else {
 					// TODO tell user

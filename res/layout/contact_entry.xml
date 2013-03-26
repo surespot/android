@@ -1,41 +1,37 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <TextView
+    <!--
+         <TextView
         android:id="@+id/contactId"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+    -->
 
     <TextView
         android:id="@+id/contactName"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/contactEmailLabel"
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="email addresses" />
+        android:background="#EEEEEE"
+        android:paddingLeft="5dp"
+        android:textColor="#2D9FC9"
+        android:textSize="20dp" />
 
-    <LinearLayout
-        android:id="@+id/contactEmails"
+    <View
+        style="@style/Divider"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/contactPhoneLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="phone numbers" />
+        android:layout_height="1px" >
+    </View>
 
     <LinearLayout
-        android:id="@+id/contactPhoneNumbers"
+        android:id="@+id/contactDataItems"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:orientation="vertical" >
     </LinearLayout>
 

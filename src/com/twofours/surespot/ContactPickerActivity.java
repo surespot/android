@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.widget.ListView;
 
 import com.twofours.surespot.SurespotContact.ContactData;
+import com.twofours.surespot.common.SurespotLog;
 
 public class ContactPickerActivity extends Activity {
 
@@ -28,7 +30,6 @@ public class ContactPickerActivity extends Activity {
 		setContentView(R.layout.activity_contact_picker);
 		mContactList = (ListView) findViewById(R.id.contactList);
 
-	
 		populateContactList();
 	}
 
@@ -39,77 +40,111 @@ public class ContactPickerActivity extends Activity {
 		// Build adapter with contact entries
 
 		Cursor cur = getContactNames();
+
 		HashMap<String, SurespotContact> contacts = new HashMap<String, SurespotContact>(cur.getCount());
 		if (cur.getCount() > 0) {
 
 			while (cur.moveToNext()) {
-				String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+				String columns[] = cur.getColumnNames();
+				// for (String column : columns) {
+				// int index = cur.getColumnIndex(column);
+				// SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+				// }
+
 				String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
-				SurespotContact contact = new SurespotContact();
-				contact.setId(id);
-				contact.setName(name.toLowerCase());
+				if (name != null) {
+					SurespotContact contact = new SurespotContact();
+					String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+					contact.setId(id);
 
-				contacts.put(id, contact);
+					contact.setName(name.toLowerCase());
+					contacts.put(id, contact);
+				}
+
 			}
 		}
 
 		cur.close();
-
 		cur = getContactPhones();
 		if (cur.getCount() > 0) {
 
 			while (cur.moveToNext()) {
 
-				// String columns[] = cur.getColumnNames();
-				// for (String column : columns) {
-				// int index = cur.getColumnIndex(column);
-				// SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
 				String id = cur.getString(cur.getColumnIndex("contact_id"));
-				String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-				int type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
-				String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
+
 				SurespotContact foundContact = contacts.get(id);
-				ContactData pNumber = new SurespotContact.ContactData();
-				pNumber.setData(number);
+				if (foundContact != null) {
+					String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+					int type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
+					String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
 
+					ContactData pNumber = new SurespotContact.ContactData();
+					pNumber.setData(number);
 
-				String s = (String) Phone.getTypeLabel(this.getResources(), type, label);
+					String s = (String) Phone.getTypeLabel(this.getResources(), type, label);
 
-				pNumber.setType(s.toLowerCase());
-				foundContact.getPhoneNumbers().add(pNumber);
-
+					pNumber.setType(s.toLowerCase());
+					foundContact.getPhoneNumbers().add(pNumber);
+				}
 
 			}
 		}
 
+		cur.close();
 		cur = getContactEmails();
 		if (cur.getCount() > 0) {
 
 			while (cur.moveToNext()) {
 
-				// String columns[] = cur.getColumnNames();
-				// for (String column : columns) {
-				// int index = cur.getColumnIndex(column);
-				// SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+				String columns[] = cur.getColumnNames();
+				for (String column : columns) {
+					int index = cur.getColumnIndex(column);
+					SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+				}
 				String id = cur.getString(cur.getColumnIndex("contact_id"));
-				String email = cur.getString(cur.getColumnIndex(ContactsContract.Data.DATA1));
-				int type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE)));
-				String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL));
-
 				SurespotContact foundContact = contacts.get(id);
 
-				ContactData cd = new ContactData();
-				cd.setData(email);
-				cd.setType(((String) Email.getTypeLabel(this.getResources(), type, label)).toLowerCase());
-				foundContact.getEmails().add(cd);
+				if (foundContact != null) {
+					String email = cur.getString(cur.getColumnIndex(ContactsContract.Data.DATA1));
+					ContactData cd = new ContactData();
+					cd.setData(email);
+
+					String contactTypeString = "email";
+					String typeString = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+
+					if (typeString != null) {
+						int type = Integer.parseInt(typeString);
+						String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL));
+						contactTypeString = ((String) Email.getTypeLabel(this.getResources(), type, label)).toLowerCase();
+					}
+					cd.setType(contactTypeString);
+					foundContact.getEmails().add(cd);
+				}
+			}
+		}
+		cur.close();
+
+		ArrayList<SurespotContact> contactsList = new ArrayList<SurespotContact>(contacts.size());
+		// delete contacts with no email or phone
+		for (SurespotContact contact : contacts.values()) {
+			if (contact.getEmails().size() > 0 && contact.getPhoneNumbers().size() > 0) {
+				contactsList.add(contact);
 			}
 		}
 
-		ArrayList<SurespotContact> contactsList = new ArrayList<SurespotContact>(contacts.values());
-
 		Collections.sort(contactsList);
-		ContactListAdapter adapter = new ContactListAdapter(this, contactsList);
+		ContactListAdapter adapter = new ContactListAdapter(this, contactsList, new IContactSelectedCallback() {
+
+			@Override
+			public void contactSelected(String dataType, String data) {
+				Intent dataIntent = new Intent();
+				dataIntent.putExtra("type", dataType);
+				dataIntent.putExtra("data", data);
+				setResult(Activity.RESULT_OK, dataIntent);
+				finish();
+			}
+		});
 		mContactList.setAdapter(adapter);
 	}
 
@@ -126,9 +161,9 @@ public class ContactPickerActivity extends Activity {
 				ContactsContract.Contacts.HAS_PHONE_NUMBER };
 		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ?";
 		String[] selectionArgs = new String[] { "1" };
-		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+		// String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
 		ContentResolver cr = getContentResolver();
-		return cr.query(uri, projection, selection, selectionArgs, sortOrder);
+		return cr.query(uri, projection, selection, selectionArgs, null);
 	}
 
 	private Cursor getContactPhones() {

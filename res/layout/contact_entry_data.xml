@@ -1,23 +1,40 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_marginLeft="5dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:background="@drawable/abs__list_selector_holo_light"
+        
     android:orientation="horizontal" >
-    
-    
+
+   
+    <!--
+         <TextView
+        android:layout_gravity="center_vertical"
+        android:id="@+id/contactType"
+        android:layout_width="100dp"
+        android:layout_height="30dp" />
+    -->
+
+    <TextView
+        android:id="@+id/contactData"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:singleLine="true" />
+
+    <View
+        style="@style/Divider"
+        android:layout_width="1dp"
+        android:layout_height="match_parent" >
+    </View>
+
     <TextView
         android:id="@+id/contactDataType"
-        android:layout_width="wrap_content"        
-        android:layout_height="wrap_content" />
-    
-    
-
-    <TextView
+        android:layout_width="50dp"
+        android:layout_height="30dp"
         android:layout_marginLeft="5dp"
-        android:id="@+id/contactData"
-        android:layout_width="wrap_content"        
-        android:layout_height="wrap_content" />
-   
+        android:gravity="center_vertical"
+        android:singleLine="true" />
 
-    
 </LinearLayout>

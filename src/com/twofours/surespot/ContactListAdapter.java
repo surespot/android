@@ -9,20 +9,36 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.SurespotContact.ContactData;
+import com.twofours.surespot.common.SurespotLog;
 
 public class ContactListAdapter extends BaseAdapter {
 	private final static String TAG = "ContactListAdapter";
 	private ArrayList<SurespotContact> mSurespotContacts;
+	private OnClickListener mClickListener;
+	private IContactSelectedCallback mCallback;
 
 	private Context mContext;
 
-	public ContactListAdapter(Context context, ArrayList<SurespotContact> contacts) {
+	public ContactListAdapter(Context context, ArrayList<SurespotContact> contacts, IContactSelectedCallback callback) {
 		mContext = context;
+		mCallback = callback;
 		mSurespotContacts = contacts;
+		mClickListener = new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				TextView tv = (TextView) v.findViewById(R.id.contactData);
+				if (mCallback != null) {
+					mCallback.contactSelected(v.getTag().toString(), tv.getText().toString());
+				}
+				SurespotLog.v(TAG, "onClick: " + tv.getText().toString() + ", type: " + v.getTag());
+
+			}
+
+		};
 
 	}
 
@@ -36,6 +52,11 @@ public class ContactListAdapter extends BaseAdapter {
 
 		return mSurespotContacts.get(position);
 
+	}
+
+	@Override
+	public boolean isEnabled(int position) {
+		return false;
 	}
 
 	@Override
@@ -69,75 +90,67 @@ public class ContactListAdapter extends BaseAdapter {
 		// friendViewHolder = (SurespotContactViewHolder) convertView.getTag();
 		// }
 
-		TextView tvId = (TextView) convertView.findViewById(R.id.contactId);
+		// TextView tvId = (TextView) convertView.findViewById(R.id.contactId);
 		TextView tvName = (TextView) convertView.findViewById(R.id.contactName);
-		TextView tvEmailLabel = (TextView) convertView.findViewById(R.id.contactEmailLabel);
-		TextView tvPhoneNumber = (TextView) convertView.findViewById(R.id.contactPhoneLabel);
-		LinearLayout emails = (LinearLayout) convertView.findViewById(R.id.contactEmails);
-		LinearLayout phoneNumbers = (LinearLayout) convertView.findViewById(R.id.contactPhoneNumbers);
 
-		tvId.setText(contact.getId());
+		LinearLayout contactDataItems = (LinearLayout) convertView.findViewById(R.id.contactDataItems);		
+
+		// tvId.setText(contact.getId());
 		tvName.setText(contact.getName());
 
-		boolean hasEmails = contact.getEmails().size() > 0;
-		emails.setVisibility(hasEmails ? View.VISIBLE : View.GONE);
-		tvEmailLabel.setVisibility(hasEmails ? View.VISIBLE : View.GONE);
-
-		boolean hasPhones = contact.getPhoneNumbers().size() > 0;
-		phoneNumbers.setVisibility(hasPhones ? View.VISIBLE : View.GONE);
-		tvPhoneNumber.setVisibility(hasPhones ? View.VISIBLE : View.GONE);
-
-		if (contact.getPhoneNumbers().size() > 0) {
-			for (ContactData number : contact.getPhoneNumbers()) {				
-				LinearLayout phoneContactLayout = (LinearLayout) inflater.inflate(R.layout.contact_entry_data, null, false);
-				TextView tvPhone = (TextView) phoneContactLayout.findViewById(R.id.contactData);
-				TextView tvType = (TextView) phoneContactLayout.findViewById(R.id.contactDataType);
-				tvPhone.setText(number.getData());
-				tvType.setText(number.getType());
-				phoneNumbers.addView(phoneContactLayout);
+		if (contact.getEmails().size() > 0) {
+			View vDivider = null;
+			for (ContactData email : contact.getEmails()) {
+				LinearLayout emailLayout = (LinearLayout) inflater.inflate(R.layout.contact_entry_data, null, false);
+				emailLayout.setOnClickListener(mClickListener);
+				emailLayout.setTag("email");
+				// TextView tvContactType = (TextView) emailLayout.findViewById(R.id.contactType);
+				TextView tvEmail = (TextView) emailLayout.findViewById(R.id.contactData);
+				TextView tvType = (TextView) emailLayout.findViewById(R.id.contactDataType);
+				vDivider = inflater.inflate(R.layout.contact_entry_divider, null, false);
+				// tvContactType.setText("email");
+				tvEmail.setText(email.getData());
+				tvType.setText(email.getType());
+				contactDataItems.addView(emailLayout);
+				contactDataItems.addView(vDivider);
+			}
+			if (vDivider != null && contact.getPhoneNumbers().size() == 0) {
+				contactDataItems.removeView(vDivider);
 			}
 		}
 		
-		if (contact.getEmails().size() > 0) {
-			for (ContactData email : contact.getEmails()) {				
-				LinearLayout emailLayout = (LinearLayout) inflater.inflate(R.layout.contact_entry_data, null, false);
-				TextView tvEmail = (TextView) emailLayout.findViewById(R.id.contactData);				
-				TextView tvType = (TextView) emailLayout.findViewById(R.id.contactDataType);
-				tvEmail.setText(email.getData());
-				tvType.setText(email.getType());
-				emails.addView(emailLayout);
+		if (contact.getPhoneNumbers().size() > 0) {
+			View vDivider = null;
+			for (ContactData number : contact.getPhoneNumbers()) {
+				LinearLayout phoneContactLayout = (LinearLayout) inflater.inflate(R.layout.contact_entry_data, null, false);
+				phoneContactLayout.setOnClickListener(mClickListener);
+				phoneContactLayout.setTag("phone");
+				// TextView tvContactType = (TextView) phoneContactLayout.findViewById(R.id.contactType);
+				TextView tvPhone = (TextView) phoneContactLayout.findViewById(R.id.contactData);
+				TextView tvType = (TextView) phoneContactLayout.findViewById(R.id.contactDataType);
+				vDivider = inflater.inflate(R.layout.contact_entry_divider, null, false);
+				// tvContactType.setText("phone");
+				tvPhone.setText(number.getData());
+				tvType.setText(number.getType());
+				contactDataItems.addView(phoneContactLayout);
+				contactDataItems.addView(vDivider);
+			}
+			if (vDivider != null) {
+				contactDataItems.removeView(vDivider);
 			}
 		}
 
+
+
 		return convertView;
 	}
-
-	private OnClickListener SurespotContactInviteResponseListener = new OnClickListener() {
-
-		@Override
-		public void onClick(View v) {
-
-			final String action = (String) v.getTag();
-			final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v.getParent());
-			final SurespotContact friend = (SurespotContact) getItem(position);
-			final String friendname = friend.getName();
-
-		}
-	};
-
-	public static class NotificationViewHolder {
-		public TextView tvName;
-	}
+	
 
 	public static class SurespotContactViewHolder {
 		public TextView tvName;
 		public TextView tvStatus;
 		public View vgInvite;
 		public View vgActivity;
-	}
-
-	public ArrayList<SurespotContact> getSurespotContacts() {
-		return mSurespotContacts;
 	}
 
 }
