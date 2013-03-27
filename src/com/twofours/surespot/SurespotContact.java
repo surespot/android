@@ -74,25 +74,4 @@ public class SurespotContact implements Comparable<SurespotContact> {
 	}
 	
 	
-	
-	public static class ContactData {
-		private String mType;
-		private String mNumber;
-		public String getType() {
-			return mType;
-		}
-		public void setType(String type) {
-			mType = type;
-		}
-		public String getData() {
-			return mNumber;
-		}
-		public void setData(String number) {
-			mNumber = number;
-		}
-		
-		
-	}
-	
-	
 }

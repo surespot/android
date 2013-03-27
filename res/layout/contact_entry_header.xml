@@ -12,7 +12,7 @@
     -->
 
     <TextView
-        android:id="@+id/contactName"
+        android:id="@+id/contactData"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#EEEEEE"
@@ -20,19 +20,8 @@
         android:textColor="#2D9FC9"
         android:textSize="20dp" />
 
-    <View
-        style="@style/Divider"
-        android:layout_width="match_parent"
-        android:layout_height="1px" >
-    </View>
+   
 
-    <LinearLayout
-        android:id="@+id/contactDataItems"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:orientation="vertical" >
-    </LinearLayout>
+  
 
 </LinearLayout>

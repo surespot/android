@@ -5,41 +5,33 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.twofours.surespot.SurespotContact.ContactData;
-import com.twofours.surespot.common.SurespotLog;
-
 public class ContactListAdapter extends BaseAdapter {
+	private static final int VIEW_TYPE_HEADER = 0;
+	private static final int VIEW_TYPE_ITEM = 1;
+	private static final int VIEW_TYPE_COUNT = 2;
+
 	private final static String TAG = "ContactListAdapter";
-	private ArrayList<SurespotContact> mSurespotContacts;
-	private OnClickListener mClickListener;
-	private IContactSelectedCallback mCallback;
+	private ArrayList<ContactData> mSurespotContacts;
 
 	private Context mContext;
 
-	public ContactListAdapter(Context context, ArrayList<SurespotContact> contacts, IContactSelectedCallback callback) {
+	public ContactListAdapter(Context context, ArrayList<ContactData> contacts) {
 		mContext = context;
-		mCallback = callback;
 		mSurespotContacts = contacts;
-		mClickListener = new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				TextView tv = (TextView) v.findViewById(R.id.contactData);
-				if (mCallback != null) {
-					mCallback.contactSelected(v.getTag().toString(), tv.getText().toString());
-				}
-				SurespotLog.v(TAG, "onClick: " + tv.getText().toString() + ", type: " + v.getTag());
+	}
 
-			}
-
-		};
-
+	public void toggleSelected(int position) {
+		
+ 		ContactData contactData = (ContactData) getItem(position);
+		boolean selected = contactData.isSelected();
+		contactData.setSelected(!selected);
+		notifyDataSetChanged();
 	}
 
 	@Override
@@ -56,7 +48,7 @@ public class ContactListAdapter extends BaseAdapter {
 
 	@Override
 	public boolean isEnabled(int position) {
-		return false;
+		return !isHeader(position);
 	}
 
 	@Override
@@ -65,92 +57,78 @@ public class ContactListAdapter extends BaseAdapter {
 	}
 
 	@Override
+	public int getViewTypeCount() {
+		return VIEW_TYPE_COUNT;
+	}
+
+	@Override
+	public int getItemViewType(int position) {
+		if (isHeader(position)) {
+			return VIEW_TYPE_HEADER;
+		}
+		else {
+			return VIEW_TYPE_ITEM;
+		}
+	}
+
+	private boolean isHeader(int position) {
+		return mSurespotContacts.get(position).getType().equals("header");
+	}
+
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-
-		SurespotContact contact = (SurespotContact) getItem(position);
-		// SurespotContactViewHolder friendViewHolder;
-
-		// if (convertView == null) {
+		final int type = getItemViewType(position);
+		final ContactDataViewHolder viewHolder;
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		convertView = inflater.inflate(R.layout.contact_entry, parent, false);
 
-		//
-		// ((Button) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(SurespotContactInviteResponseListener);
-		// ((Button) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(SurespotContactInviteResponseListener);
-		//
-		// friendViewHolder = new SurespotContactViewHolder();
-		// friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
-		// friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
-		// friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
-		// friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
-		// convertView.setTag(friendViewHolder);
+		ContactData contact = (ContactData) getItem(position);
+		if (convertView == null) {
+			viewHolder = new ContactDataViewHolder();
 
-		// }
-		// else {
-		// friendViewHolder = (SurespotContactViewHolder) convertView.getTag();
-		// }
-
-		// TextView tvId = (TextView) convertView.findViewById(R.id.contactId);
-		TextView tvName = (TextView) convertView.findViewById(R.id.contactName);
-
-		LinearLayout contactDataItems = (LinearLayout) convertView.findViewById(R.id.contactDataItems);		
-
-		// tvId.setText(contact.getId());
-		tvName.setText(contact.getName());
-
-		if (contact.getEmails().size() > 0) {
-			View vDivider = null;
-			for (ContactData email : contact.getEmails()) {
-				LinearLayout emailLayout = (LinearLayout) inflater.inflate(R.layout.contact_entry_data, null, false);
-				emailLayout.setOnClickListener(mClickListener);
-				emailLayout.setTag("email");
-				// TextView tvContactType = (TextView) emailLayout.findViewById(R.id.contactType);
-				TextView tvEmail = (TextView) emailLayout.findViewById(R.id.contactData);
-				TextView tvType = (TextView) emailLayout.findViewById(R.id.contactDataType);
-				vDivider = inflater.inflate(R.layout.contact_entry_divider, null, false);
-				// tvContactType.setText("email");
-				tvEmail.setText(email.getData());
-				tvType.setText(email.getType());
-				contactDataItems.addView(emailLayout);
-				contactDataItems.addView(vDivider);
+			switch (type) {
+			case VIEW_TYPE_HEADER:
+				convertView = inflater.inflate(R.layout.contact_entry_header, parent, false);
+				break;
+			case VIEW_TYPE_ITEM:
+				convertView = inflater.inflate(R.layout.contact_entry_data, parent, false);
+				viewHolder.tvType = (TextView) convertView.findViewById(R.id.contactDataType);
+				viewHolder.cbSelected = (CheckBox) convertView.findViewById(R.id.contactSelected);
+				break;
 			}
-			if (vDivider != null && contact.getPhoneNumbers().size() == 0) {
-				contactDataItems.removeView(vDivider);
-			}
+
+			viewHolder.tvData = (TextView) convertView.findViewById(R.id.contactData);
+
+			convertView.setTag(viewHolder);
 		}
-		
-		if (contact.getPhoneNumbers().size() > 0) {
-			View vDivider = null;
-			for (ContactData number : contact.getPhoneNumbers()) {
-				LinearLayout phoneContactLayout = (LinearLayout) inflater.inflate(R.layout.contact_entry_data, null, false);
-				phoneContactLayout.setOnClickListener(mClickListener);
-				phoneContactLayout.setTag("phone");
-				// TextView tvContactType = (TextView) phoneContactLayout.findViewById(R.id.contactType);
-				TextView tvPhone = (TextView) phoneContactLayout.findViewById(R.id.contactData);
-				TextView tvType = (TextView) phoneContactLayout.findViewById(R.id.contactDataType);
-				vDivider = inflater.inflate(R.layout.contact_entry_divider, null, false);
-				// tvContactType.setText("phone");
-				tvPhone.setText(number.getData());
-				tvType.setText(number.getType());
-				contactDataItems.addView(phoneContactLayout);
-				contactDataItems.addView(vDivider);
-			}
-			if (vDivider != null) {
-				contactDataItems.removeView(vDivider);
-			}
+		else {
+			viewHolder = (ContactDataViewHolder) convertView.getTag();
 		}
 
+		if (type == VIEW_TYPE_ITEM) {
+			viewHolder.tvType.setText(contact.getType());
+			viewHolder.cbSelected.setChecked(contact.isSelected());
 
+		}
 
+		viewHolder.tvData.setText(contact.getData());
 		return convertView;
 	}
-	
 
-	public static class SurespotContactViewHolder {
-		public TextView tvName;
-		public TextView tvStatus;
-		public View vgInvite;
-		public View vgActivity;
+	public static class ContactDataViewHolder {
+		public CheckBox cbSelected;
+		public TextView tvData;
+		public TextView tvType;
+	}
+
+	public ArrayList<ContactData> getContacts() {
+		return mSurespotContacts;
+	}
+
+	public void setAllSelected(boolean selected) {
+		for (ContactData contact : mSurespotContacts) {
+			contact.setSelected(selected);
+		}
+		notifyDataSetChanged();
 	}
 
 }

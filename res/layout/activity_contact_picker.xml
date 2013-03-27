@@ -7,6 +7,35 @@
     <ListView
         android:id="@+id/contactList"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bSelectAll" />
+
+    <Button
+        android:id="@+id/bSelectNone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:text="select none" />
+
+    <Button
+        android:id="@+id/bSelectAll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/bSelectNone"
+        android:text="select all" />
+
+    <Button
+        android:id="@+id/bSelectContacts"
+        android:layout_width="70sp"
+        android:layout_height="70sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="-10sp"
+        android:layout_marginRight="-10sp"
+        android:background="@drawable/send_button"
+        android:text="ok"
+        android:textColor="@android:color/black" />
 
 </RelativeLayout>

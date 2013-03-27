@@ -38,7 +38,7 @@
             android:layout_below="@+id/invitee"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="20dp"
-            android:text="personalized invitation message:" />
+            android:text="invitation message:" />
 
         <EditText
             android:id="@+id/inviteMessage"
@@ -69,22 +69,35 @@
             android:id="@+id/bSelectContact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/inviteMessageLabel"
             android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/tbInviteViaLabel"
+            android:layout_below="@+id/tbInviteViaLabel"
+            android:layout_centerHorizontal="true"
             android:layout_marginRight="5dp"
             android:drawableLeft="@drawable/ic_menu_friendslist"
-            android:minWidth="48dip" />
+            android:text="0" />
 
         <EditText
             android:id="@+id/invitee"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/plus"
+            android:layout_alignBottom="@+id/plus"
             android:layout_alignLeft="@+id/tbInviteViaLabel"
+            android:layout_alignTop="@+id/plus"
             android:layout_below="@+id/tbInviteViaLabel"
-            android:layout_toLeftOf="@+id/bSelectContact"
             android:ems="10"
+            android:scrollbars="vertical"
             android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/plus"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/bSelectContact"
+            android:layout_alignTop="@+id/bSelectContact"
+            android:layout_toLeftOf="@+id/bSelectContact"
+            android:gravity="center"
+            android:text="+" />
 
         <Button
             android:id="@+id/bSendInvitation"

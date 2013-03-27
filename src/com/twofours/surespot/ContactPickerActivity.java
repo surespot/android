@@ -3,6 +3,8 @@ package com.twofours.surespot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -13,139 +15,261 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 
-import com.twofours.surespot.SurespotContact.ContactData;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 
-public class ContactPickerActivity extends Activity {
+public class ContactPickerActivity extends SherlockActivity {
 
 	private static final String TAG = "ContactPickerActivity";
 	private ListView mContactList;
+	private boolean mSelectEmail;
+	private ContactListAdapter mAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_contact_picker);
 		mContactList = (ListView) findViewById(R.id.contactList);
+		mContactList.setOnItemClickListener(new OnItemClickListener() {
 
-		populateContactList();
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				mAdapter.toggleSelected(position);
+
+			}
+		});
+		ArrayList<String> savedPreviouslySelected = null;
+		if (savedInstanceState != null) {
+			savedPreviouslySelected = savedInstanceState.getStringArrayList("data");
+		}
+
+		String type = getIntent().getStringExtra("type");
+		mSelectEmail = type.equals("email");
+		Utils.configureActionBar(this, "select contacts", type, true);
+		populateContactList(savedPreviouslySelected);
 	}
 
 	/**
 	 * Populate the contact list based on account currently selected in the account spinner.
 	 */
-	private void populateContactList() {
+	private void populateContactList(ArrayList<String> savedPreviouslySelected) {
 		// Build adapter with contact entries
 
-		Cursor cur = getContactNames();
+		// Cursor cur = getContactNames();
 
-		HashMap<String, SurespotContact> contacts = new HashMap<String, SurespotContact>(cur.getCount());
-		if (cur.getCount() > 0) {
+		// if (cur.getCount() > 0) {
+		//
+		// while (cur.moveToNext()) {
+		// String columns[] = cur.getColumnNames();
+		// for (String column : columns) {
+		// int index = cur.getColumnIndex(column);
+		// SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+		// }
+		//
+		// String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+		//
+		// if (name != null) {
+		// SurespotContact contact = new SurespotContact();
+		// String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+		// contact.setId(id);
+		//
+		// contact.setName(name.toLowerCase());
+		// contacts.put(id, contact);
+		// }
+		//
+		// }
+		// }
 
-			while (cur.moveToNext()) {
-				String columns[] = cur.getColumnNames();
-				for (String column : columns) {
-					int index = cur.getColumnIndex(column);
-					SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
-				}
+		SortedSet<String> previouslySelected = new TreeSet<String>();
 
-				String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-
-				if (name != null) {
-					SurespotContact contact = new SurespotContact();
-					String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
-					contact.setId(id);
-
-					contact.setName(name.toLowerCase());
-					contacts.put(id, contact);
-				}
-
+		if (savedPreviouslySelected != null) {
+			previouslySelected.addAll(savedPreviouslySelected);
+		}
+		else {
+			ArrayList<String> intentPreviouslySelected = getIntent().getStringArrayListExtra("data");
+			if (intentPreviouslySelected != null) {
+				previouslySelected.addAll(intentPreviouslySelected);
 			}
 		}
 
-		cur.close();
-		cur = getContactPhones();
-		if (cur.getCount() > 0) {
+		// cur.close();
+		HashMap<String, SurespotContact> contacts = new HashMap<String, SurespotContact>();
 
-			while (cur.moveToNext()) {
+		Cursor cur = null;
 
-				String id = cur.getString(cur.getColumnIndex("contact_id"));
+		if (!mSelectEmail) {
+			cur = getContactPhones();
 
-				SurespotContact foundContact = contacts.get(id);
-				if (foundContact != null) {
-					String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-					int type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
-					String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
+			if (cur.getCount() > 0) {
 
-					ContactData pNumber = new SurespotContact.ContactData();
-					pNumber.setData(number);
+				while (cur.moveToNext()) {
 
-					String s = (String) Phone.getTypeLabel(this.getResources(), type, label);
+					String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
-					pNumber.setType(s.toLowerCase());
-					foundContact.getPhoneNumbers().add(pNumber);
-				}
+					if (name != null) {
+						String id = cur.getString(cur.getColumnIndex("contact_id"));
+						SurespotContact contact = contacts.get(id);
+						if (contact == null) {
+							contact = new SurespotContact();
+							contact.setId(id);
+							contact.setName(name);
+							contacts.put(id, contact);
+						}
 
-			}
-		}
+						String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+						int type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
+						String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
 
-		cur.close();
-		cur = getContactEmails();
-		if (cur.getCount() > 0) {
+						ContactData pNumber = new ContactData();
+						pNumber.setData(number);
 
-			while (cur.moveToNext()) {
+						String s = (String) Phone.getTypeLabel(this.getResources(), type, label);
 
-				String columns[] = cur.getColumnNames();
-				for (String column : columns) {
-					int index = cur.getColumnIndex(column);
-					SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
-				}
-				String id = cur.getString(cur.getColumnIndex("contact_id"));
-				SurespotContact foundContact = contacts.get(id);
-
-				if (foundContact != null) {
-					String email = cur.getString(cur.getColumnIndex(ContactsContract.Data.DATA1));
-					ContactData cd = new ContactData();
-					cd.setData(email);
-
-					String contactTypeString = "email";
-					String typeString = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
-					
-					if (typeString != null) {
-						int type = Integer.parseInt(	typeString);
-						String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL));
-						contactTypeString = ((String) Email.getTypeLabel(this.getResources(), type, label)).toLowerCase(); 
+						pNumber.setType(s.toLowerCase());
+						contact.getPhoneNumbers().add(pNumber);
 					}
-					cd.setType(contactTypeString);									
-					foundContact.getEmails().add(cd);
+
 				}
 			}
-		}
-		cur.close();
 
-		ArrayList<SurespotContact> contactsList = new ArrayList<SurespotContact>(contacts.size());
+			cur.close();
+		}
+		else {
+			cur = getContactEmails();
+			if (cur.getCount() > 0) {
+
+				while (cur.moveToNext()) {
+
+					String columns[] = cur.getColumnNames();
+					for (String column : columns) {
+						int index = cur.getColumnIndex(column);
+						SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+					}
+
+					String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+
+					if (name != null) {
+
+						String id = cur.getString(cur.getColumnIndex("contact_id"));
+						SurespotContact contact = contacts.get(id);
+
+						if (contact == null) {
+							contact = new SurespotContact();
+							contact.setId(id);
+							contact.setName(name);
+							contacts.put(id, contact);
+						}
+
+						String email = cur.getString(cur.getColumnIndex(ContactsContract.Data.DATA1));
+						ContactData cd = new ContactData();
+						cd.setData(email);
+
+						String contactTypeString = "email";
+						String typeString = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+
+						if (typeString != null) {
+							int type = Integer.parseInt(typeString);
+							String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL));
+							contactTypeString = ((String) Email.getTypeLabel(this.getResources(), type, label)).toLowerCase();
+						}
+						cd.setType(contactTypeString);
+						contact.getEmails().add(cd);
+
+					}
+				}
+			}
+			cur.close();
+		}
+
+		ArrayList<ContactData> contactsList = new ArrayList<ContactData>(contacts.size());
+		ArrayList<SurespotContact> sortedList = new ArrayList<SurespotContact>(contacts.values());
+
+		Collections.sort(sortedList);
 		// don't show contacts with no email or phone
-		for (SurespotContact contact : contacts.values()) {
+		for (SurespotContact contact : sortedList) {
 			if (contact.getEmails().size() > 0 || contact.getPhoneNumbers().size() > 0) {
-				contactsList.add(contact);
+				// add header
+				ContactData header = new ContactData();
+				header.setType("header");
+				header.setData(contact.getName().toLowerCase());
+
+				contactsList.add(header);
+
+				for (ContactData data : contact.getEmails()) {
+					if (previouslySelected != null && previouslySelected.contains(data.getData())) {
+						data.setSelected(true);
+					}
+
+					contactsList.add(data);
+				}
+
+				for (ContactData data : contact.getPhoneNumbers()) {
+					if (previouslySelected != null && previouslySelected.contains(data.getData())) {
+						data.setSelected(true);
+					}
+
+					contactsList.add(data);
+				}
+
 			}
 		}
 
-		Collections.sort(contactsList);
-		ContactListAdapter adapter = new ContactListAdapter(this, contactsList, new IContactSelectedCallback() {
+		mAdapter = new ContactListAdapter(this, contactsList);
+		mContactList.setAdapter(mAdapter);
+
+		Button bSelectAll = (Button) findViewById(R.id.bSelectAll);
+		bSelectAll.setOnClickListener(new OnClickListener() {
 
 			@Override
-			public void contactSelected(String dataType, String data) {
-				Intent dataIntent = new Intent();
-				dataIntent.putExtra("type", dataType);
-				dataIntent.putExtra("data", data);
-				setResult(Activity.RESULT_OK, dataIntent);
-				finish();
+			public void onClick(View v) {
+				mAdapter.setAllSelected(true);
+
 			}
 		});
-		mContactList.setAdapter(adapter);
+
+		Button bSelectNone = (Button) findViewById(R.id.bSelectNone);
+		bSelectNone.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				mAdapter.setAllSelected(false);
+
+			}
+		});
+
+		Button bSelect = (Button) findViewById(R.id.bSelectContacts);
+		bSelect.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent dataIntent = new Intent();
+
+				dataIntent.putStringArrayListExtra("data", getSelectedContactData());
+				setResult(Activity.RESULT_OK, dataIntent);
+				finish();
+
+			}
+		});
+	}
+
+	private ArrayList<String> getSelectedContactData() {
+		ArrayList<String> selectedEmails = new ArrayList<String>();
+		for (ContactData contact : mAdapter.getContacts()) {
+			if (contact.isSelected()) {
+				selectedEmails.add(contact.getData());
+			}
+		}
+
+		return selectedEmails;
 	}
 
 	/**
@@ -170,8 +294,9 @@ public class ContactPickerActivity extends Activity {
 
 		// Run query
 		Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-		String[] projection = new String[] { "contact_id", ContactsContract.CommonDataKinds.Phone.NUMBER,
-				ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.LABEL };
+		String[] projection = new String[] { "contact_id", ContactsContract.Contacts.DISPLAY_NAME,
+				ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE,
+				ContactsContract.CommonDataKinds.Phone.LABEL };
 		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ?";
 		String[] selectionArgs = new String[] { "1" };
 		// String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
@@ -184,7 +309,7 @@ public class ContactPickerActivity extends Activity {
 
 		// Run query
 		Uri uri = ContactsContract.CommonDataKinds.Email.CONTENT_URI;
-		String[] projection = new String[] { "contact_id", ContactsContract.CommonDataKinds.Email.ADDRESS,
+		String[] projection = new String[] { "contact_id", ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Data.DATA1,
 				ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.LABEL };
 		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ?";
 		String[] selectionArgs = new String[] { "1" };
@@ -197,8 +322,13 @@ public class ContactPickerActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.contact_picker, menu);
+		getSupportMenuInflater().inflate(R.menu.contact_picker, menu);
 		return true;
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putStringArrayList("data", getSelectedContactData());
+	}
 }
