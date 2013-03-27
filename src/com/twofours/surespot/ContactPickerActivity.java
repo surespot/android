@@ -47,11 +47,47 @@ public class ContactPickerActivity extends SherlockActivity {
 
 			}
 		});
+		
+		Button bSelectAll = (Button) findViewById(R.id.bSelectAll);
+		bSelectAll.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				mAdapter.setAllSelected(true);
+
+			}
+		});
+
+		Button bSelectNone = (Button) findViewById(R.id.bSelectNone);
+		bSelectNone.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				mAdapter.setAllSelected(false);
+
+			}
+		});
+
+		Button bSelect = (Button) findViewById(R.id.bSelectContacts);
+		bSelect.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent dataIntent = new Intent();
+
+				dataIntent.putStringArrayListExtra("data", getSelectedContactData());
+				setResult(Activity.RESULT_OK, dataIntent);
+				finish();
+
+			}
+		});
+		
 		ArrayList<String> savedPreviouslySelected = null;
 		if (savedInstanceState != null) {
 			savedPreviouslySelected = savedInstanceState.getStringArrayList("data");
 		}
 
+		
 		String type = getIntent().getStringExtra("type");
 		mSelectEmail = type.equals("email");
 		Utils.configureActionBar(this, "select contacts", type, true);
@@ -226,39 +262,7 @@ public class ContactPickerActivity extends SherlockActivity {
 		mAdapter = new ContactListAdapter(this, contactsList);
 		mContactList.setAdapter(mAdapter);
 
-		Button bSelectAll = (Button) findViewById(R.id.bSelectAll);
-		bSelectAll.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				mAdapter.setAllSelected(true);
-
-			}
-		});
-
-		Button bSelectNone = (Button) findViewById(R.id.bSelectNone);
-		bSelectNone.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				mAdapter.setAllSelected(false);
-
-			}
-		});
-
-		Button bSelect = (Button) findViewById(R.id.bSelectContacts);
-		bSelect.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Intent dataIntent = new Intent();
-
-				dataIntent.putStringArrayListExtra("data", getSelectedContactData());
-				setResult(Activity.RESULT_OK, dataIntent);
-				finish();
-
-			}
-		});
+		
 	}
 
 	private ArrayList<String> getSelectedContactData() {

@@ -27,8 +27,8 @@ public class ContactListAdapter extends BaseAdapter {
 	}
 
 	public void toggleSelected(int position) {
-		
- 		ContactData contactData = (ContactData) getItem(position);
+
+		ContactData contactData = (ContactData) getItem(position);
 		boolean selected = contactData.isSelected();
 		contactData.setSelected(!selected);
 		notifyDataSetChanged();
@@ -126,7 +126,9 @@ public class ContactListAdapter extends BaseAdapter {
 
 	public void setAllSelected(boolean selected) {
 		for (ContactData contact : mSurespotContacts) {
-			contact.setSelected(selected);
+			if (!contact.getType().equals("header")) {
+				contact.setSelected(selected);
+			}
 		}
 		notifyDataSetChanged();
 	}
