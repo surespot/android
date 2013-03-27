@@ -229,12 +229,12 @@ public class NetworkController {
 			mClient.post(null, "https://www.googleapis.com/urlshortener/v1/url", entity, "application/json", responseHandler);
 		}
 		catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.v(TAG, "getShortUrl", e);
+			responseHandler.onFailure(e, new JSONObject());
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.v(TAG, "getShortUrl", e);
+			responseHandler.onFailure(e, new JSONObject());
 		}
 		
 

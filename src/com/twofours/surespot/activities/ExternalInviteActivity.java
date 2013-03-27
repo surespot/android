@@ -76,9 +76,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 					mEtInviteeData.setText("");
 					clearSelectedContacts();
 				}
-
 			}
 		};
+		
 		mRbEmail.setOnClickListener(rbClickListener);
 		mRbSms.setOnClickListener(rbClickListener);
 		mRbEmail.setChecked(true);
@@ -87,7 +87,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 			setSelectedContacts(savedInstanceState.getStringArrayList("data"));
 			boolean isEmail = savedInstanceState.getBoolean("email");
 			setInviteType(isEmail);
-
 		}
 		else {
 			setInviteType(true);
@@ -107,7 +106,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 				catch (ActivityNotFoundException e) {
 					SurespotLog.w(TAG, "pick contact", e);
 				}
-
 			}
 		});
 
@@ -128,7 +126,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 						if (!mSelectedContacts.contains(trimmedData)) {
 							mSelectedContacts.add(0, trimmedData);
 						}
-
 					}
 				}
 
@@ -140,66 +137,22 @@ public class ExternalInviteActivity extends SherlockActivity {
 					final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), email);
 
 					MainActivity.getNetworkController().getShortUrl(longUrl, new JsonHttpResponseHandler() {
-						public void onSuccess(int statusCode, String content) {
-							
-						};
-						public void onSuccess(int statusCode, org.json.JSONArray response) {
-							
-						};
-						public void onFailure(Throwable e, JSONObject errorResponse) {
-							SurespotLog.v(TAG, "getShortUrl, error: " + errorResponse.toString(), e);
-						};
 						public void onSuccess(int statusCode, JSONObject response) {
 							String shortUrl = response.optString("id", null);
 							if (TextUtils.isEmpty(shortUrl)) {
 								shortUrl = longUrl;
 							}
-
 							sendInvitation(message, shortUrl, email);
-
 						};
-
-						public void onFailure(Throwable error, String content) {
+						
+						public void onFailure(Throwable e, JSONObject errorResponse) {
+							SurespotLog.v(TAG, "getShortUrl, error: " + errorResponse.toString(), e);
 							sendInvitation(message, longUrl, email);
 						};
 					});
-
-					// final boolean email = mRbEmail.isChecked();
-
-					// create link
-					// MainActivity.getNetworkController().getAutoInviteUrl((email ? "email" : "sms"), new AsyncHttpResponseHandler() {
-					// public void onSuccess(int statusCode, String content) {
-					// String autoinviteurl = content;
-					//
-					// if (email) {
-					// Intent intent = new Intent(Intent.ACTION_SENDTO);
-					// // intent.setType("text/plain");
-					// intent.setData(Uri.parse("mailto:" + mSelectedContacts.get(0)));
-					// // intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
-					// intent.putExtra(Intent.EXTRA_BCC, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
-					// intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
-					// intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n" + autoinviteurl
-					// + "\n\non your android device to install surespot.");
-					// startActivity(intent);
-					// }
-					// else {
-					// Intent intent = new Intent(Intent.ACTION_VIEW);
-					// intent.setType("vnd.android-dir/mms-sms");
-					//
-					// StringBuilder addressString = new StringBuilder();
-					// for (String address : mSelectedContacts) {
-					// addressString.append(address + ";");
-					// }
-					// intent.putExtra("address", addressString.toString());
-					// intent.putExtra("sms_body", message + " download surespot here: " + autoinviteurl);
-					// startActivity(intent);
-					// }
-					// };
-					// });
 				}
-			}
+			}			
 		});
-
 	}
 
 	private void sendInvitation(String message, String shortUrl, boolean email) {
@@ -236,7 +189,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 		String eUrl = url + URLEncoder.encode(query);
 		SurespotLog.v(TAG, "play store url length: " + eUrl.length() + ", url: " + eUrl);
 		return eUrl;
-
 	}
 
 	private void setInviteType(boolean isEmail) {
