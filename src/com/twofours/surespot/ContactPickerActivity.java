@@ -24,6 +24,7 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -334,5 +335,17 @@ public class ContactPickerActivity extends SherlockActivity {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putStringArrayList("data", getSelectedContactData());
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+
 	}
 }
