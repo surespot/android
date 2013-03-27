@@ -205,13 +205,13 @@ public class LoginActivity extends SherlockActivity {
 					if (idSig != null) {
 
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);
-						String autoAddToken = null;
+						String autoInviteUser = null;
 						
 						String referrer = Utils.getSharedPrefsString(LoginActivity.this,"referrer");
 						if (referrer != null) {
 							try {
 								JSONObject jReferrer = new JSONObject(referrer);
-								autoAddToken =  jReferrer.getString("utm_content");
+								autoInviteUser =  jReferrer.getString("utm_content");
 							}
 							catch (JSONException e) {
 								// TODO Auto-generated catch block
@@ -219,7 +219,7 @@ public class LoginActivity extends SherlockActivity {
 							} 
 						}
 						
-						networkController.login(username, idSig.derivedPassword, idSig.signature, autoAddToken, new CookieResponseHandler() {
+						networkController.login(username, idSig.derivedPassword, idSig.signature, autoInviteUser, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);

@@ -175,13 +175,13 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
-										String autoAddToken = null;
+										String autoInviteUser = null;
 
 										String referrer = Utils.getSharedPrefsString(SignupActivity.this, "referrer");
 										if (referrer != null) {
 											try {
 												JSONObject jReferrer = new JSONObject(referrer);
-												autoAddToken = jReferrer.getString("utm_content");
+												autoInviteUser = jReferrer.getString("utm_content");
 											}
 											catch (JSONException e) {
 												// TODO Auto-generated catch block
@@ -189,7 +189,7 @@ public class SignupActivity extends SherlockActivity {
 											}
 										}
 
-										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, autoAddToken,
+										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, autoInviteUser,
 												new CookieResponseHandler() {
 
 													@Override
