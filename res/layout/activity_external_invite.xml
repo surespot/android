@@ -37,7 +37,7 @@
                 android:text="share via social media" />
         </RadioGroup>
 
-        <CheckBox
+  <!--       <CheckBox
             android:checked="true"
             android:id="@+id/cbAutoInvite"
             android:layout_width="wrap_content"
@@ -45,7 +45,7 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/inviteRadioGroup"
             android:layout_marginTop="10dp"
-            android:text="auto invite me when app installed/opened from this link" />
+            android:text="auto invite me when app installed/opened from this link" /> -->
 
         <TextView
             android:id="@+id/inviteMessageLabel"
@@ -78,7 +78,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_below="@+id/cbAutoInvite"
+            android:layout_below="@+id/inviteRadioGroup"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="20dp"
             android:text="phone number" />
@@ -124,7 +124,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:background="@drawable/send_button"
-            android:text="send invite"
+            android:text="share"
             android:textColor="@android:color/black" />
 
     </RelativeLayout>
