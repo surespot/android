@@ -25,6 +25,7 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -48,7 +49,7 @@ public class ContactPickerActivity extends SherlockActivity {
 
 			}
 		});
-		
+
 		Button bSelectAll = (Button) findViewById(R.id.bSelectAll);
 		bSelectAll.setOnClickListener(new OnClickListener() {
 
@@ -82,16 +83,23 @@ public class ContactPickerActivity extends SherlockActivity {
 
 			}
 		});
-		
+
+		int type = 0;
 		ArrayList<String> savedPreviouslySelected = null;
 		if (savedInstanceState != null) {
 			savedPreviouslySelected = savedInstanceState.getStringArrayList("data");
+			type = savedInstanceState.getInt("type");
+		}
+		else {
+			type = getIntent().getIntExtra("type", 0);
+			if (type != ExternalInviteActivity.SHARE_EMAIL && type != ExternalInviteActivity.SHARE_SMS) {
+				finish();
+				return;
+			}
 		}
 
-		
-		String type = getIntent().getStringExtra("type");
-		mSelectEmail = type.equals("email");
-		Utils.configureActionBar(this, "select contacts", type, true);
+		mSelectEmail = type == ExternalInviteActivity.SHARE_EMAIL;
+		Utils.configureActionBar(this, "select contacts", ExternalInviteActivity.typeToString(type), true);
 		populateContactList(savedPreviouslySelected);
 	}
 
@@ -263,7 +271,6 @@ public class ContactPickerActivity extends SherlockActivity {
 		mAdapter = new ContactListAdapter(this, contactsList);
 		mContactList.setAdapter(mAdapter);
 
-		
 	}
 
 	private ArrayList<String> getSelectedContactData() {
@@ -336,7 +343,7 @@ public class ContactPickerActivity extends SherlockActivity {
 		super.onSaveInstanceState(outState);
 		outState.putStringArrayList("data", getSelectedContactData());
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

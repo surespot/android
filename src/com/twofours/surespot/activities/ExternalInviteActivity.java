@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -38,8 +39,14 @@ public class ExternalInviteActivity extends SherlockActivity {
 	private TextView mTvInviteViaLabel;
 	private RadioButton mRbEmail;
 	private RadioButton mRbSms;
+	private RadioButton mRbSocial;
+	private CheckBox mCbAutoInvite;
 	private Button mBSelectContacts;
 	private ArrayList<String> mSelectedContacts;
+	public static final int SHARE_EMAIL = 0;
+	public static final int SHARE_SMS = 1;
+	public static final int SHARE_SOCIAL = 2;
+	private int mSelectedType;
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -50,10 +57,15 @@ public class ExternalInviteActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_external_invite);
 
-		Utils.configureActionBar(this, "invite", IdentityController.getLoggedInUser(), true);
+		Utils.configureActionBar(this, "share", IdentityController.getLoggedInUser(), true);
 
 		mRbSms = (RadioButton) findViewById(R.id.rbInviteSMS);
+		mRbSms.setTag(SHARE_SMS);
 		mRbEmail = (RadioButton) findViewById(R.id.rbEmail);
+		mRbEmail.setTag(SHARE_EMAIL);
+		mRbSocial = (RadioButton) findViewById(R.id.rbSocial);
+		mRbSocial.setTag(SHARE_SOCIAL);
+		mCbAutoInvite = (CheckBox) findViewById(R.id.cbAutoInvite);
 		mEtInviteMessage = (EditText) findViewById(R.id.inviteMessage);
 		mEtInviteMessage
 				.setText("Dude! Check out this sick app! It allows for encrypted end to end communication. Take your privacy back!");
@@ -72,31 +84,32 @@ public class ExternalInviteActivity extends SherlockActivity {
 				boolean checked = ((RadioButton) view).isChecked();
 
 				if (checked) {
-					setInviteType(view.getId() == R.id.rbEmail);
+					setInviteType((Integer) view.getTag());
 					mEtInviteeData.setText("");
 					clearSelectedContacts();
 				}
 			}
 		};
-		
+
 		mRbEmail.setOnClickListener(rbClickListener);
 		mRbSms.setOnClickListener(rbClickListener);
+		mRbSocial.setOnClickListener(rbClickListener);
 		mRbEmail.setChecked(true);
 
 		if (savedInstanceState != null) {
 			setSelectedContacts(savedInstanceState.getStringArrayList("data"));
-			boolean isEmail = savedInstanceState.getBoolean("email");
-			setInviteType(isEmail);
+			int type = savedInstanceState.getInt("type");
+			setInviteType(type);
 		}
 		else {
-			setInviteType(true);
+			setInviteType(SHARE_EMAIL);
 		}
 
 		mBSelectContacts.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(ExternalInviteActivity.this, ContactPickerActivity.class);
-				intent.putExtra("type", ExternalInviteActivity.this.mRbEmail.isChecked() ? "email" : "sms");
+				intent.putExtra("type", mSelectedType);
 				if (mSelectedContacts != null && mSelectedContacts.size() > 0) {
 					intent.putStringArrayListExtra("data", mSelectedContacts);
 				}
@@ -131,10 +144,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 				final String message = mEtInviteMessage.getText().toString();
 
-				if (mSelectedContacts != null && mSelectedContacts.size() > 0) {
+				if (mSelectedType == SHARE_SOCIAL || (mSelectedContacts != null && mSelectedContacts.size() > 0)) {
 
-					final boolean email = mRbEmail.isChecked();
-					final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), email);
+					final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), mSelectedType, mCbAutoInvite.isChecked());
 
 					MainActivity.getNetworkController().getShortUrl(longUrl, new JsonHttpResponseHandler() {
 						public void onSuccess(int statusCode, JSONObject response) {
@@ -142,22 +154,24 @@ public class ExternalInviteActivity extends SherlockActivity {
 							if (TextUtils.isEmpty(shortUrl)) {
 								shortUrl = longUrl;
 							}
-							sendInvitation(message, shortUrl, email);
+							sendInvitation(message, shortUrl);
 						};
-						
+
 						public void onFailure(Throwable e, JSONObject errorResponse) {
 							SurespotLog.v(TAG, "getShortUrl, error: " + errorResponse.toString(), e);
-							sendInvitation(message, longUrl, email);
+							sendInvitation(message, longUrl);
 						};
 					});
 				}
-			}			
+			}
 		});
 	}
 
-	private void sendInvitation(String message, String shortUrl, boolean email) {
-		if (email) {
-			Intent intent = new Intent(Intent.ACTION_SENDTO);
+	private void sendInvitation(String message, String shortUrl) {
+		Intent intent;
+		switch (mSelectedType) {
+		case SHARE_EMAIL:
+			intent = new Intent(Intent.ACTION_SENDTO);
 			// intent.setType("text/plain");
 			intent.setData(Uri.parse("mailto:"));
 			// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
@@ -166,9 +180,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 			intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n" + shortUrl
 					+ "\n\non your android device to install surespot.");
 			startActivity(intent);
-		}
-		else {
-			Intent intent = new Intent(Intent.ACTION_VIEW);
+			break;
+		case SHARE_SMS:
+			intent = new Intent(Intent.ACTION_VIEW);
 			intent.setType("vnd.android-dir/mms-sms");
 
 			StringBuilder addressString = new StringBuilder();
@@ -178,27 +192,65 @@ public class ExternalInviteActivity extends SherlockActivity {
 			intent.putExtra("address", addressString.toString());
 			intent.putExtra("sms_body", message + " download surespot here: " + shortUrl);
 			startActivity(intent);
+			break;
+		case SHARE_SOCIAL:
+			intent = new Intent(Intent.ACTION_SEND);
+			intent.setType("text/plain");
+			intent.putExtra(Intent.EXTRA_TEXT, message + " download surespot here: " + shortUrl);
+			startActivity(intent);
+			break;
 		}
 	}
 
-	private String buildExternalInviteUrl(String username, boolean isEmail) {
+	private String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
 		String url = "https://play.google.com/store/apps/details?id=com.twofours.surespot&referrer=";
-		String query = "utm_source=surespot_android&utm_medium=" + (isEmail ? "email" : "sms");
-		query += "&utm_content=" + username;
+		String query = "utm_source=surespot_android&utm_medium=" + typeToString(type);
+
+		if (autoInvite) {
+			query += "&utm_content=" + username;
+		}
 
 		String eUrl = url + URLEncoder.encode(query);
 		SurespotLog.v(TAG, "play store url length: " + eUrl.length() + ", url: " + eUrl);
 		return eUrl;
 	}
 
-	private void setInviteType(boolean isEmail) {
-		if (isEmail) {
+	public static String typeToString(int type) {
+		switch (type) {
+		case SHARE_EMAIL:
+			return "email";
+		case SHARE_SMS:
+			return "sms";
+
+		case SHARE_SOCIAL:
+			return "social";
+		default:
+			return "unknown";
+		}
+	}
+
+	private void setInviteType(int type) {
+		mSelectedType = type;
+		switch (type) {
+		case SHARE_EMAIL:
+			mTvInviteViaLabel.setEnabled(true);
+			mEtInviteeData.setEnabled(true);
+			mBSelectContacts.setEnabled(true);
 			mTvInviteViaLabel.setText("bcc to (comma separated):");
 			mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-		}
-		else {
+			break;
+		case SHARE_SMS:
+			mTvInviteViaLabel.setEnabled(true);
+			mEtInviteeData.setEnabled(true);
+			mBSelectContacts.setEnabled(true);
 			mTvInviteViaLabel.setText("send to (comma separated):");
 			mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
+			break;
+		case SHARE_SOCIAL:
+			mTvInviteViaLabel.setEnabled(false);
+			mEtInviteeData.setEnabled(false);
+			mBSelectContacts.setEnabled(false);
+			break;
 		}
 	}
 
@@ -247,7 +299,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 	protected void onSaveInstanceState(Bundle outState) {
 
 		super.onSaveInstanceState(outState);
-		outState.putBoolean("email", mRbEmail.isChecked());
+		outState.putInt("type", mSelectedType);
 		outState.putStringArrayList("data", mSelectedContacts);
 	}
 };

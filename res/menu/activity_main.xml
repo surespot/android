@@ -21,7 +21,7 @@
               <item
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/ic_menu_friendslist"
-                android:title="external invite"/>
+                android:title="share surespot"/>
                 
             <item
                 android:id="@+id/menu_logout_bar"

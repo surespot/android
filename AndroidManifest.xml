@@ -88,19 +88,7 @@
             </intent-filter>
         </activity>
 
-        <!--
-        <activity
-            android:name="com.twofours.surespot.activities.StartupActivity"
-            android:label="@string/title_activity_main"
-            android:theme="@android:style/Theme.NoDisplay" >
-            
-            <intent-filter>
-            <action android:name="android.intent.action.SEND_MULTIPLE" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="image/*" />
-            </intent-filter>
-        </activity>
-        -->
+       
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup"
@@ -111,17 +99,7 @@
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login"
             android:windowSoftInputMode="stateVisible" >
-        </activity>
-        <!--
-        <activity
-            android:name="com.twofours.surespot.friends.FriendActivity"
-            android:windowSoftInputMode="stateHidden" >
-        </activity>
-        <activity
-            android:name="com.twofours.surespot.chat.ChatActivity"
-            android:windowSoftInputMode="stateHidden" >
-        </activity>
-        -->
+        </activity>   
         <activity android:name="com.twofours.surespot.images.ImageViewActivity" >
         </activity>
         <activity
