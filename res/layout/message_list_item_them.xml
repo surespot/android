@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="1dp"
                 android:layout_marginTop="1dp"
-                android:src="@android:drawable/ic_partial_secure"
+                android:src="@drawable/ic_partial_secure"
                 android:visibility="gone" />
 
             <ImageView
