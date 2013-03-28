@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui;
+package com.twofours.surespot.chat;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -18,7 +18,6 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;

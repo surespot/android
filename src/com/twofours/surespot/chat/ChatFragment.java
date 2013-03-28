@@ -35,7 +35,6 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.images.ImageViewActivity;
-import com.twofours.surespot.ui.MessageDialogMenuFragment;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";

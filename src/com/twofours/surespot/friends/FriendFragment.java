@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -44,7 +45,7 @@ public class FriendFragment extends SherlockFragment {
 	// private ChatController mChatController;
 	private ListView mListView;
 	private Timer mTimer;
-	
+
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
@@ -52,8 +53,8 @@ public class FriendFragment extends SherlockFragment {
 		mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
-		
-		//mListView.setEmptyView(view.findViewById(R.id.progressBar));
+
+		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 		// click on friend to join chat
 		mListView.setOnItemClickListener(new OnItemClickListener() {
@@ -71,13 +72,46 @@ public class FriendFragment extends SherlockFragment {
 
 							// handle send intent
 							sendFromIntent(friend.getName());
-							
+
 						}
 						chatController.setCurrentChat(friend.getName());
 					}
 
 				}
 			}
+		});
+
+		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				Friend friend = (Friend) mMainAdapter.getItem(position);
+
+				FriendMenuFragment dialog = new FriendMenuFragment();
+				dialog.setActivityAndMessage(getMainActivity(), friend);
+				dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+				return true;
+			}
+
+			// if (friend.isFriend()) {
+			//
+			// ChatController chatController = getMainActivity().getChatController();
+			// if (chatController != null) {
+			// if (chatController.getMode() == ChatController.MODE_SELECT) {
+			// // reset action bar header
+			// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+			// IdentityController.getLoggedInUser(), false);
+			//
+			// // handle send intent
+			// sendFromIntent(friend.getName());
+			//
+			// }
+			// chatController.setCurrentChat(friend.getName());
+			// }
+			//
+			// }
+
+			// return true;
+
 		});
 
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
@@ -89,7 +123,8 @@ public class FriendFragment extends SherlockFragment {
 		});
 
 		EditText editText = (EditText) view.findViewById(R.id.etFriend);
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
+				new LetterOrDigitInputFilter() });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -112,7 +147,7 @@ public class FriendFragment extends SherlockFragment {
 				SurespotLog.v(TAG, "setting progressbarvisible");
 				view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 			}
-			
+
 			SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
 			SurespotLog.v(TAG, "setting loading callback");
 			mMainAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
@@ -124,31 +159,31 @@ public class FriendFragment extends SherlockFragment {
 						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
 						// view.findViewById(R.id.main_list_empty).setVisibility(View.GONE);
 						// only show the dialog if we haven't loaded within 500 ms
-//						mTimer = new Timer();
-//						mTimer.schedule(new TimerTask() {
-//
-//							@Override
-//							public void run() {
-//
-//								Handler handler = MainActivity.getMainHandler();
-//								if (handler != null) {
-//									handler.post(new Runnable() {
-//
-//										@Override
-//										public void run() {
-//											if (loading) {
-//												SurespotLog.v(TAG, "showing progress");
-//												view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-//											}
-//										}
-//									});
-//								}
-//
-//							}
-//						}, 200);
+						// mTimer = new Timer();
+						// mTimer.schedule(new TimerTask() {
+						//
+						// @Override
+						// public void run() {
+						//
+						// Handler handler = MainActivity.getMainHandler();
+						// if (handler != null) {
+						// handler.post(new Runnable() {
+						//
+						// @Override
+						// public void run() {
+						// if (loading) {
+						// SurespotLog.v(TAG, "showing progress");
+						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+						// }
+						// }
+						// });
+						// }
+						//
+						// }
+						// }, 200);
 
-//					}
-	//				else {
+						// }
+						// else {
 						if (mTimer != null) {
 							mTimer.cancel();
 							mTimer = null;
@@ -200,7 +235,7 @@ public class FriendFragment extends SherlockFragment {
 								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
 										: R.string.could_not_upload_image));
 								// clear the intent
-							
+
 							}
 						});
 
@@ -209,7 +244,6 @@ public class FriendFragment extends SherlockFragment {
 						if (activity.getIntent().getExtras() != null) {
 							activity.getIntent().getExtras().clear();
 						}
-
 
 						// scrollToEnd();
 					}
@@ -253,7 +287,7 @@ public class FriendFragment extends SherlockFragment {
 					else {
 						Utils.makeToast(FriendFragment.this.getActivity(), friend + " has accepted your friend request.");
 					}
-					
+
 				}
 
 				@Override
@@ -285,10 +319,9 @@ public class FriendFragment extends SherlockFragment {
 			});
 		}
 	}
-	
 
 	private MainActivity getMainActivity() {
-		 return (MainActivity) getActivity();
+		return (MainActivity) getActivity();
 	}
 
 }

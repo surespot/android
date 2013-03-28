@@ -163,7 +163,7 @@ public class ChatController {
 
 					Utils.makeLongToast(mContext, "could not connect to the server");
 
-					mCallback401.handleResponse(null);				
+					mCallback401.handleResponse(null);
 				}
 			}
 
@@ -201,69 +201,7 @@ public class ChatController {
 				if (event.equals("control")) {
 					try {
 						SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
-
-						if (message.getType().equals("user")) {
-							mLatestUserControlId = message.getId();
-							if (message.getAction().equals("revoke")) {
-								IdentityController.updateLatestVersion(mContext,
-										ChatUtils.getOtherUser(message.getData(), IdentityController.getLoggedInUser()),
-										message.getMoreData());
-							}
-							else if (message.getAction().equals("added")) {
-								mFriendAdapter.addNewFriend(message.getData());
-							}
-							else if (message.getAction().equals("invited")) {
-								mFriendAdapter.addFriendInvited(message.getData());
-							}
-							else if (message.getAction().equals("invite")) {
-								mFriendAdapter.addFriendInviter(message.getData());
-							}
-							else if (message.getAction().equals("decline")) {
-								mFriendAdapter.removeFriend(message.getData());
-							}
-
-						}
-
-						else if (message.getType().equals("message")) {
-							String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
-							Friend friend = mFriendAdapter.getFriend(otherUser);
-							ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
-
-							if (chatAdapter != null) {
-								SurespotMessage dMessage = chatAdapter.getMessageById(Integer.parseInt(message.getMoreData()));
-								if (dMessage != null) {
-									if (message.getAction().equals("delete")) {
-
-										// if it's an image blow the http cache entry away
-										if (dMessage.getMimeType() != null) {
-											if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-												MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
-											}
-
-											boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
-											boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
-
-											// if i sent the delete, or it's not my message then delete it
-											// (if someone else deleted my message we don't care)
-											if (controlFromMe || !myMessage) {
-												SurespotLog.v(TAG, "deleting message");
-												chatAdapter.deleteMessageById(dMessage.getId());
-											}
-										}
-									}
-									else {
-										if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
-											SurespotLog.v(TAG, "setting message " + message.getAction());
-											dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
-										}
-
-									}
-								}
-								chatAdapter.notifyDataSetChanged();
-							}
-							friend.setLastReceivedMessageControlId(message.getId());
-							friend.setAvailableMessageControlId(message.getId());
-						}
+						handleControlMessage(null, message, true);
 					}
 					catch (JSONException e) {
 						SurespotLog.w(TAG, "error creating control message: " + e.toString(), e);
@@ -542,7 +480,6 @@ public class ChatController {
 			connect();
 		}
 	}
-	
 
 	private void updateUserMessageIds(SurespotMessage message) {
 		String otherUser = message.getOtherUser();
@@ -656,7 +593,7 @@ public class ChatController {
 	private void getLatestIds() {
 		SurespotLog.v(TAG, "getLatestIds");
 		// setMessagesLoading(true);
-	
+
 		MainActivity.getNetworkController().getLatestIds(mLatestUserControlId, new JsonHttpResponseHandler() {
 
 			@Override
@@ -775,49 +712,6 @@ public class ChatController {
 
 	}
 
-	private void getLatestMessagesAndControlsSync(final String username, int fetchMessageId, int fetchControlMessageId) {
-
-		SurespotLog.v(TAG, "getLatestMessagesAndControls: username: " + username + ", fetchMessageId: " + fetchMessageId
-				+ ", fetchControlMessageId: " + fetchControlMessageId);
-		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
-
-			// mChatAdapters.get(username).setLoading(true);
-			String sMessageData = MainActivity.getNetworkController().getMessageDataSync(username, fetchMessageId, fetchControlMessageId);
-			if (sMessageData != null) {
-				try {
-					JSONObject response = new JSONObject(sMessageData);
-					JSONArray controlMessages = response.optJSONArray("controlMessages");
-					if (controlMessages != null) {
-						handleControlMessages(username, controlMessages);
-						return;
-					}
-					String messages = response.optString("messages", null);
-					if (messages != null) {
-						handleMessages(username, messages);
-						return;
-					}
-				}
-				catch (JSONException e) {
-					SurespotLog.w(TAG, "getLatestMessagesAndControls", e);
-				}
-			}
-		}
-
-		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		if (chatAdapter != null) {
-			chatAdapter.doneCheckingSequence();
-		}
-		if (username.equals(mCurrentChat)) {
-			ChatFragment chatFragment = getChatFragment(username);
-			if (chatFragment != null) {
-				chatFragment.scrollToEnd();
-				chatFragment.requestFocus();
-
-			}
-		}
-
-	}
-
 	private void getLatestMessagesAndControls(final String username, int fetchMessageId, int fetchControlMessageId) {
 		SurespotLog.v(TAG, "getLatestMessagesAndControls: fetchMessageId: " + fetchMessageId + ", fetchControlMessageId: "
 				+ fetchControlMessageId);
@@ -864,60 +758,13 @@ public class ChatController {
 			try {
 				JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 				message = SurespotControlMessage.toSurespotControlMessage(jsonMessage);
-
+				handleControlMessage(chatAdapter, message, false);
 				// if it's a system message from another user then check version
 				if (message.getType().equals("user")) {
-					mLatestUserControlId = message.getId();
 					userActivity = true;
-					if (message.getAction().equals("revoke")) {
-						IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
-					}
-					else if (message.getAction().equals("invited")) {
-						mFriendAdapter.addFriendInvited(message.getData());
-					}
-					else if (message.getAction().equals("added")) {
-						mFriendAdapter.addNewFriend(message.getData());
-					}
-					else if (message.getAction().equals("invite")) {
-						mFriendAdapter.addFriendInviter(message.getData());
-					}
-					else if (message.getAction().equals("decline")) {
-						mFriendAdapter.removeFriend(message.getData());
-					}
-
 				}
-
 				else if (message.getType().equals("message")) {
 					messageActivity = true;
-					SurespotMessage dMessage = chatAdapter.getMessageById(Integer.parseInt(message.getMoreData()));
-					if (dMessage != null) {
-						if (message.getAction().equals("delete")) {
-
-							// if it's an image blow the http cache entry away
-							if (dMessage.getMimeType() != null) {
-								if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-									MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
-								}
-
-								boolean myControl = message.getFrom().equals(IdentityController.getLoggedInUser());
-								boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
-
-								// if i sent the delete, or it's not my message then delete it
-								// (if someone else deleted my message we don't care)
-								if (myControl || !myMessage) {
-									SurespotLog.v(TAG, "deleting message");
-									chatAdapter.deleteMessageById(dMessage.getId());
-								}
-
-							}
-						}
-						else {
-							if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
-								SurespotLog.v(TAG, "setting message " + message.getAction());
-								dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
-							}
-						}
-					}
 				}
 
 			}
@@ -932,7 +779,9 @@ public class ChatController {
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest control messages from the server.");
 
 			if (messageActivity) {
-				mFriendAdapter.getFriend(username).setLastReceivedMessageControlId(message.getId());
+				Friend friend = mFriendAdapter.getFriend(username);
+				friend.setLastReceivedMessageControlId(message.getId());
+				friend.setAvailableMessageControlId(message.getId());
 				mFriendAdapter.notifyDataSetChanged();
 				chatAdapter.sort();
 				chatAdapter.notifyDataSetChanged();
@@ -944,6 +793,89 @@ public class ChatController {
 		}
 
 		// chatAdapter.setLoading(false);
+	}
+
+	private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify) {
+		// if it's a system message from another user then check version
+		if (message.getType().equals("user")) {
+			mLatestUserControlId = message.getId();
+			if (message.getAction().equals("revoke")) {
+				IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
+			}
+			else if (message.getAction().equals("invited")) {
+				mFriendAdapter.addFriendInvited(message.getData());
+			}
+			else if (message.getAction().equals("added")) {
+				mFriendAdapter.addNewFriend(message.getData());
+			}
+			else if (message.getAction().equals("invite")) {
+				mFriendAdapter.addFriendInviter(message.getData());
+			}
+			else if (message.getAction().equals("decline")) {
+				mFriendAdapter.removeFriend(message.getData());
+			}
+		}
+		else if (message.getType().equals("message")) {
+			String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
+			Friend friend = mFriendAdapter.getFriend(otherUser);
+
+			if (chatAdapter == null) {
+				chatAdapter = mChatAdapters.get(otherUser);
+			}
+
+			if (chatAdapter != null) {
+				int messageId = Integer.parseInt(message.getMoreData());
+				SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
+				if (message.getAction().startsWith("delete")) {
+
+					boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
+
+					if (message.getAction().equals("deleteAll")) {
+
+						chatAdapter.deleteBeforeAndInclusiveOf(messageId, controlFromMe);
+					}
+					else {
+
+						if (dMessage != null) {
+							if (message.getAction().equals("delete")) {
+
+								// if it's an image blow the http cache entry away
+								if (dMessage.getMimeType() != null) {
+									if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+										MainActivity.getNetworkController().purgeCacheUrl(dMessage.getData());
+									}
+
+									boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
+
+									// if i sent the delete, or it's not my message then delete it
+									// (if someone else deleted my message we don't care)
+									if (controlFromMe || !myMessage) {
+										SurespotLog.v(TAG, "deleting message");
+										chatAdapter.deleteMessageById(dMessage.getId());
+									}
+								}
+							}
+
+						}
+
+					}
+				}
+				else {
+					if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
+						if (dMessage != null) {
+							SurespotLog.v(TAG, "setting message " + message.getAction());
+							dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
+						}
+					}
+				}
+			}
+
+			if (notify) {
+				friend.setLastReceivedMessageControlId(message.getId());
+				friend.setAvailableMessageControlId(message.getId());
+				chatAdapter.notifyDataSetChanged();
+			}
+		}
 	}
 
 	private void handleMessages(String username, String jsonMessageString) {
@@ -1369,9 +1301,37 @@ public class ChatController {
 
 		}
 	}
+	
+	public void deleteMessages(String name) {		
+		Friend friend = mFriendAdapter.getFriend(name);
+		if (friend != null) {
+			deleteMessages(friend);
+		}
+	}
 
-	public void toggleMessageShareable(SurespotMessage message) {		
-		if (message != null ) {
+	public void deleteMessages(Friend friend) {
+		// if it's on the server, send delete control message otherwise just delete it locally
+
+		if (friend != null) {
+			String username = friend.getName();
+
+			// mChatAdapters.get(username).deleteMyMessages();
+
+			SurespotControlMessage dmessage = new SurespotControlMessage();
+			String me = IdentityController.getLoggedInUser();
+			dmessage.setFrom(me);
+			dmessage.setType("message");
+			dmessage.setAction("deleteAll");
+			dmessage.setData(ChatUtils.getSpot(me, username));
+			dmessage.setMoreData(String.valueOf(friend.getLastViewedMessageId()));
+			dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(username) + 1));
+
+			sendControlMessage(dmessage);
+		}
+	}
+
+	public void toggleMessageShareable(SurespotMessage message) {
+		if (message != null) {
 			SurespotControlMessage dmessage = new SurespotControlMessage();
 			String me = IdentityController.getLoggedInUser();
 			dmessage.setFrom(me);

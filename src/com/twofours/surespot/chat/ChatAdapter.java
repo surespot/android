@@ -151,7 +151,7 @@ public class ChatAdapter extends BaseAdapter {
 		// }
 	}
 
-	public void setMessages(ArrayList<SurespotMessage> messages) {
+	public synchronized void setMessages(ArrayList<SurespotMessage> messages) {
 		if (messages.size() > 0) {
 			mMessages.clear();
 			mMessages.addAll(messages);
@@ -257,9 +257,7 @@ public class ChatAdapter extends BaseAdapter {
 				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 			}
 			else {
-				
-			
-				
+
 				if (item.getDateTime() != null) {
 
 					chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
@@ -296,7 +294,7 @@ public class ChatAdapter extends BaseAdapter {
 			if (!TextUtils.isEmpty(item.getData())) {
 				ImageDownloader.download(chatMessageViewHolder.imageView, item);
 			}
-			
+
 			if (item.isShareable()) {
 				chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 				chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
@@ -349,7 +347,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
+	public synchronized boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
 			throws SurespotMessageSequenceException {
 		boolean added = false;
 		added = addOrUpdateMessage(message, checkSequence, sort);
@@ -360,7 +358,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public void insertMessage(SurespotMessage message, boolean notify) {
+	public synchronized void insertMessage(SurespotMessage message, boolean notify) {
 
 		insertMessage(message);
 		if (notify) {
@@ -369,7 +367,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public SurespotMessage deleteMessageByIv(String iv) {
+	public synchronized SurespotMessage deleteMessageByIv(String iv) {
 		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
 			message = iterator.next();
@@ -384,7 +382,7 @@ public class ChatAdapter extends BaseAdapter {
 		return null;
 	}
 
-	public SurespotMessage deleteMessageById(Integer id) {
+	public synchronized SurespotMessage deleteMessageById(Integer id) {
 		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
@@ -424,6 +422,17 @@ public class ChatAdapter extends BaseAdapter {
 	public void sort() {
 		Collections.sort(mMessages);
 
+	}
+
+	public synchronized void deleteBeforeAndInclusiveOf(int id, boolean myMessages) {
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+			SurespotMessage message = iterator.next();
+			boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
+
+			if (message.getId() <= id && (myMessages || !myMessage)) {
+				iterator.remove();
+			}
+		}
 	}
 
 }

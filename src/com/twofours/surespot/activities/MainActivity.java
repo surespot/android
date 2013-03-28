@@ -331,7 +331,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		super.onOptionsItemSelected(item);
 		Intent intent = null;
-		String to = mChatController.getCurrentChat();
+		String currentChat = mChatController.getCurrentChat();
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			// This is called when the Home (Up) button is pressed
@@ -344,21 +344,21 @@ public class MainActivity extends SherlockFragmentActivity {
 			mChatController.closeTab();
 			return true;
 		case R.id.menu_send_image_bar:
-			if (to == null) {
+			if (currentChat == null) {
 				return true;
 			}
 			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("to", to);
+			intent.putExtra("to", currentChat);
 			// set start intent to avoid restarting every rotation
 			intent.putExtra("start", true);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
 			return true;
 		case R.id.menu_capture_image_bar:
-			if (to == null) {
+			if (currentChat == null) {
 				return true;
 			}
 
-			mImageCaptureHandler = new ImageCaptureHandler(this, to);
+			mImageCaptureHandler = new ImageCaptureHandler(this, currentChat);
 			mImageCaptureHandler.capture();
 
 			return true;
@@ -378,6 +378,10 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.menu_invite_external:
 			intent = new Intent(this, ExternalInviteActivity.class);
 			startActivity(intent);
+			return true;
+		case R.id.menu_clear_messages:
+			mChatController.deleteMessages(currentChat);
+			return true;
 		default:
 			return false;
 
