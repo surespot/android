@@ -62,6 +62,14 @@ public class NetworkController {
 		mClient.post(mBaseUrl + url, params, responseHandler);
 	}
 
+	public void put(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+		mClient.put(mBaseUrl + url, params, responseHandler);
+	}
+
+	public void delete(String url, AsyncHttpResponseHandler responseHandler) {
+		mClient.delete(mBaseUrl + url, responseHandler);
+	}
+
 	public CookieStore getCookieStore() {
 		return mCookieStore;
 	}
@@ -219,8 +227,7 @@ public class NetworkController {
 	}
 
 	public void getShortUrl(String longUrl, JsonHttpResponseHandler responseHandler) {
-		
-		
+
 		try {
 			JSONObject params = new JSONObject();
 			params.put("longUrl", longUrl);
@@ -236,7 +243,6 @@ public class NetworkController {
 			SurespotLog.v(TAG, "getShortUrl", e);
 			responseHandler.onFailure(e, new JSONObject());
 		}
-		
 
 	}
 
@@ -604,5 +610,21 @@ public class NetworkController {
 
 	public void purgeCacheUrl(String url) {
 		mCachingHttpClient.removeEntry(mBaseUrl + url);
+	}
+
+	public void deleteMessage(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
+		delete("/messages/" + username + "/" + id, responseHandler);
+
+	}
+
+	public void deleteMessages(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
+		delete("/messages/" + username + "/before/" + id, responseHandler);
+
+	}
+
+	public void setMessageShareable(String username, Integer id, boolean shareable, AsyncHttpResponseHandler responseHandler) {
+		RequestParams params = new RequestParams("shareable", shareable);
+		put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
+
 	}
 }

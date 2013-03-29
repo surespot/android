@@ -27,9 +27,9 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 
 		mMenuItemArray = null;
 
-		mMenuItemArray = new String[1];
+		mMenuItemArray = new String[2];
 		mMenuItemArray[0] = "delete all messages";
-		//mMenuItemArray[1] = "delete friend";
+		mMenuItemArray[1] = "delete friend";
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialogi, int which) {
@@ -41,6 +41,7 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 				case 0:
 					mActivity.getChatController().deleteMessages(mFriend);
 				case 1:
+					mActivity.getChatController().deleteFriend(mFriend);
 				}
 			}
 		});

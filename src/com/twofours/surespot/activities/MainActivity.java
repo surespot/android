@@ -128,7 +128,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 				mMainHandler = new Handler(getMainLooper());
 				mNetworkController = new NetworkController(MainActivity.this, m401Handler);
-				mChatController = new ChatController(MainActivity.this, getSupportFragmentManager(), m401Handler);
+				mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler);
 				mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 			}
 		}
