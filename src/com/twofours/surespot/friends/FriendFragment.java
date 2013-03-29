@@ -90,28 +90,7 @@ public class FriendFragment extends SherlockFragment {
 				dialog.setActivityAndMessage(getMainActivity(), friend);
 				dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
 				return true;
-			}
-
-			// if (friend.isFriend()) {
-			//
-			// ChatController chatController = getMainActivity().getChatController();
-			// if (chatController != null) {
-			// if (chatController.getMode() == ChatController.MODE_SELECT) {
-			// // reset action bar header
-			// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-			// IdentityController.getLoggedInUser(), false);
-			//
-			// // handle send intent
-			// sendFromIntent(friend.getName());
-			//
-			// }
-			// chatController.setCurrentChat(friend.getName());
-			// }
-			//
-			// }
-
-			// return true;
-
+			}		
 		});
 
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
@@ -207,14 +186,7 @@ public class FriendFragment extends SherlockFragment {
 		String type = intent.getType();
 		Bundle extras = intent.getExtras();
 
-		if (action.equals(Intent.ACTION_SEND)) {
-			// if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
-			// String sharedText = extras.getString(Intent.EXTRA_TEXT);
-			// SurespotLog.v(TAG, "received action send, data: " + sharedText);
-			// mEditText.append(sharedText);
-			// requestFocus();
-			// }
-			// else
+		if (action.equals(Intent.ACTION_SEND)) {		
 			if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
 				final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
