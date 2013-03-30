@@ -125,13 +125,13 @@ public class Friend implements Comparable<Friend> {
 		}
 	}
 
-	public boolean isInvited() {
+	public boolean isInvited() {		
 		return (mFlags & INVITED) == INVITED;
 	}
 
 
 	public void setDeleted() {
-		mFlags |= DELETED;		
+		mFlags = DELETED;		
 	}
 
 	
@@ -145,6 +145,7 @@ public class Friend implements Comparable<Friend> {
 			mFlags |= NEW_FRIEND;
 			mFlags &= ~INVITED;
 			mFlags &= ~INVITER;
+			mFlags &= ~DELETED;
 		}
 		else {
 			mFlags &= ~NEW_FRIEND;

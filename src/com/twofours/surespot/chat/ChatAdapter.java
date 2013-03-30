@@ -33,6 +33,7 @@ public class ChatAdapter extends BaseAdapter {
 	private IAsyncCallback<Boolean> mLoadingCallback;
 	private boolean mDebugMode;
 	private boolean mCheckingSequence;
+	private IAsyncCallback<Boolean> mDeletedCallback;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -41,6 +42,10 @@ public class ChatAdapter extends BaseAdapter {
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
 		// pm.getBoolean("pref_hide_deleted_messages", false);
 
+	}
+
+	public void setDeletedCallback(IAsyncCallback<Boolean> callback) {
+		mDeletedCallback = callback;
 	}
 
 	public void doneCheckingSequence() {
@@ -434,18 +439,25 @@ public class ChatAdapter extends BaseAdapter {
 			}
 		}
 	}
-	
 
-	
-
-	public void deleteMessages(String deletedUser) {
+	public void deleteMessages() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
 			SurespotMessage message = iterator.next();
-			
-			if (message.getId() != null && message.getFrom().equals(deletedUser)) {
+
+			// if it's not our message, delete it
+			if (message.getId() != null && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
 				iterator.remove();
 			}
-		}		
+		}
+	}
+
+	public void userDeleted(boolean delete) {
+		if (delete) {
+			deleteMessages();
+		}
+		if (mDeletedCallback != null) {
+			mDeletedCallback.handleResponse(delete);
+		}
 	}
 
 }

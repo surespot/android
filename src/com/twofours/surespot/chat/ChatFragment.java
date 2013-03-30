@@ -35,6 +35,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.images.ImageViewActivity;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
@@ -49,6 +50,7 @@ public class ChatFragment extends SherlockFragment {
 	private int mSelection;
 	private int mTop;
 	private boolean mJustLoaded;
+	private boolean mIsDeleted;
 
 	private ChatAdapter mChatAdapter;
 
@@ -138,7 +140,7 @@ public class ChatFragment extends SherlockFragment {
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mEditText.getText().toString().length() > 0) {
+				if (mEditText.getText().toString().length() > 0 && !mIsDeleted) {
 					sendMessage();
 				}
 				else {
@@ -199,12 +201,25 @@ public class ChatFragment extends SherlockFragment {
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
+			mChatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
+				
+				@Override
+				public void handleResponse(Boolean result) {
+					mIsDeleted = result;
+					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);		
+				}
+			});
 			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
 
+			//hide text box if the user is deleted
+			mIsDeleted = chatController.isFriendDeleted(mUsername);
+			
+			mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
+			
 		}
 
 		return view;

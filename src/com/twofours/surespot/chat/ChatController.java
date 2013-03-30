@@ -801,25 +801,7 @@ public class ChatController {
 	private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify) {
 		// if it's a system message from another user then check version
 		if (message.getType().equals("user")) {
-			mLatestUserControlId = message.getId();
-			if (message.getAction().equals("revoke")) {
-				IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
-			}
-			else if (message.getAction().equals("invited")) {
-				mFriendAdapter.addFriendInvited(message.getData());
-			}
-			else if (message.getAction().equals("added")) {
-				mFriendAdapter.addNewFriend(message.getData());
-			}
-			else if (message.getAction().equals("invite")) {
-				mFriendAdapter.addFriendInviter(message.getData());
-			}
-			else if (message.getAction().equals("decline")) {
-				mFriendAdapter.removeFriend(message.getData());
-			}
-			else if (message.getAction().equals("delete")) {
-				handleDeleteUser(message.getData(), message.getMoreData());
-			}
+			handleUserControlMessage(message);
 		}
 		else if (message.getType().equals("message")) {
 			String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
@@ -870,28 +852,66 @@ public class ChatController {
 		}
 	}
 
-	private void handleDeleteUser(String deletedUser, String deleter) {			
+	private void handleUserControlMessage(SurespotControlMessage message) {
+
+		mLatestUserControlId = message.getId();
+		String addedUser = null;
+
+		if (message.getAction().equals("revoke")) {
+			IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
+		}
+		else if (message.getAction().equals("invited")) {
+			addedUser = message.getData();
+			mFriendAdapter.addFriendInvited(addedUser);
+		}
+		else if (message.getAction().equals("added")) {
+			addedUser = message.getData();
+			mFriendAdapter.addNewFriend(addedUser);
+		}
+		else if (message.getAction().equals("invite")) {
+			addedUser = message.getData();
+			mFriendAdapter.addFriendInviter(addedUser);
+		}
+		else if (message.getAction().equals("decline")) {
+			mFriendAdapter.removeFriend(message.getData());
+		}
+		else if (message.getAction().equals("delete")) {
+			handleDeleteUser(message.getData(), message.getMoreData());
+		}
+
+		// if we added/invited a user let the chat adapter know
+		if (addedUser != null) {
+			ChatAdapter chatAdapter = mChatAdapters.get(addedUser);
+
+			if (chatAdapter != null) {
+				chatAdapter.userDeleted(false);
+			}
+		}
+	}
+
+	private void handleDeleteUser(String deletedUser, String deleter) {
 		String username = IdentityController.getLoggedInUser();
-		
-		
+
 		boolean iDidTheDeleting = deleter.equals(username);
 		if (iDidTheDeleting) {
-			//blow all the state associated with this user away
+			// blow all the state associated with this user away
 			StateController.wipeUserState(mContext, username, deletedUser);
-			//won't be needing this anymore
-			closeTab(deletedUser);						
-			//or you
+			// won't be needing this anymore
+			closeTab(deletedUser);
+			// or you
 			mFriendAdapter.removeFriend(deletedUser);
 		}
-		//you deleted me, you bastard!!
-		else {					
+		// you deleted me, you bastard!!
+		else {
 			ChatAdapter chatAdapter = mChatAdapters.get(deletedUser);
-			
-			//i'll delete all your messages then
-			chatAdapter.deleteMessages(deletedUser);		
-			chatAdapter.notifyDataSetChanged();	
-			
-			//and mark you as deleted until I want to delete you
+
+			// i'll delete all your messages then
+			if (chatAdapter != null) {
+				chatAdapter.userDeleted(true);
+				chatAdapter.notifyDataSetChanged();
+			}
+
+			// and mark you as deleted until I want to delete you
 			mFriendAdapter.setFriendDeleted(deletedUser);
 		}
 	}
@@ -1165,6 +1185,12 @@ public class ChatController {
 		if (chatAdapter == null) {
 
 			chatAdapter = new ChatAdapter(context);
+
+			Friend friend = mFriendAdapter.getFriend(username);
+			if (friend != null) {
+				chatAdapter.userDeleted(friend.isDeleted());
+			}
+
 			SurespotLog.v(TAG, "getChatAdapter created chat adapter for: " + username + ", id:  " + chatAdapter);
 			mChatAdapters.put(username, chatAdapter);
 
@@ -1446,7 +1472,8 @@ public class ChatController {
 
 				@Override
 				public void onFailure(Throwable error, String content) {
-					Utils.makeToast(mContext, "could delete friend");
+					SurespotLog.w(TAG, "deleteFriend", error);
+					Utils.makeToast(mContext, "could not delete friend");
 				}
 			});
 
@@ -1469,6 +1496,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
+						SurespotLog.w(TAG, "toggleMessageShareable", error);
 						Utils.makeToast(mContext, "could not set message lock state");
 					}
 
@@ -1494,6 +1522,10 @@ public class ChatController {
 		return mFriendAdapter;
 	}
 
+	public boolean isFriendDeleted(String username) {
+		return getFriendAdapter().getFriend(username).isDeleted();
+	}
+
 	private void getFriendsAndIds() {
 		if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
 			mFriendAdapter.setLoading(true);
@@ -1505,12 +1537,17 @@ public class ChatController {
 					ArrayList<Friend> friends = new ArrayList<Friend>();
 					try {
 						mLatestUserControlId = jsonObject.getInt("userControlId");
-						JSONArray jsonArray = jsonObject.getJSONArray("friends");
+						JSONObject friendsObject = jsonObject.getJSONObject("friends");
 
-						for (int i = 0; i < jsonArray.length(); i++) {
-							JSONObject jsonFriend = jsonArray.getJSONObject(i);
-							Friend friend = Friend.toFriend(jsonFriend);
-							friends.add(friend);
+						if (friendsObject != null && friendsObject.names() != null) {
+							for (int i = 0; i < friendsObject.names().length(); i++) {
+								JSONObject jsonFriend = new JSONObject();
+								String name = friendsObject.names().getString(i);
+								jsonFriend.put("name", name);
+								jsonFriend.put("flags", friendsObject.get(name));
+								Friend friend = Friend.toFriend(jsonFriend);
+								friends.add(friend);
+							}
 						}
 					}
 					catch (JSONException e) {

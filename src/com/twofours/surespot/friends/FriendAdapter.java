@@ -93,14 +93,12 @@ public class FriendAdapter extends BaseAdapter {
 			friend = new Friend(name);
 			mFriends.add(friend);
 		}
-		friend.setInvited(true);		
+		friend.setInvited(true);
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 		return true;
 
 	}
-	
-	
 
 	public void addFriendInviter(String name) {
 		Friend friend = getFriend(name);
@@ -108,12 +106,11 @@ public class FriendAdapter extends BaseAdapter {
 			friend = new Friend(name);
 			mFriends.add(friend);
 		}
-		friend.setInviter(true);		
+		friend.setInviter(true);
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 
 	}
-	
 
 	public void setFriendDeleted(String name) {
 		Friend friend = getFriend(name);
@@ -123,9 +120,8 @@ public class FriendAdapter extends BaseAdapter {
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
-		
-	}
 
+	}
 
 	public void setChatActive(String name, boolean b) {
 		Friend friend = getFriend(name);
@@ -237,6 +233,9 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
 
+			if (friend.isDeleted()) {
+				friendViewHolder.tvStatus.setText("deleted");
+			}
 			if (friend.isInvited()) {
 				friendViewHolder.tvStatus.setText("invited");
 			}
@@ -246,9 +245,7 @@ public class FriendAdapter extends BaseAdapter {
 			if (friend.isInviter()) {
 				friendViewHolder.tvStatus.setText("is inviting you to be friends");
 			}
-			if (friend.isDeleted()) {
-				friendViewHolder.tvStatus.setText("deleted");
-			}
+			
 
 		}
 		else {
@@ -290,12 +287,14 @@ public class FriendAdapter extends BaseAdapter {
 				public void onSuccess(String arg0) {
 
 					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
-					if (action.equals("accept")) {
-						friend.setInvited(false);
+					friend.setInviter(false);
+					if (action.equals("accept")) {						
 						friend.setNewFriend(true);
 					}
 					else {
-						mFriends.remove(position);
+						if (!friend.isDeleted()) {
+							mFriends.remove(position);
+						}
 					}
 					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 					Collections.sort(mFriends);
