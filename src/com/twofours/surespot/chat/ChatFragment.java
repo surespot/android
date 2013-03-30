@@ -206,7 +206,11 @@ public class ChatFragment extends SherlockFragment {
 				@Override
 				public void handleResponse(Boolean result) {
 					mIsDeleted = result;
-					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);		
+					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
+					if (mIsDeleted) {
+						mSendButton.setText("home");
+						mEditText.setText("");
+					}
 				}
 			});
 			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
@@ -217,6 +221,7 @@ public class ChatFragment extends SherlockFragment {
 
 			//hide text box if the user is deleted
 			mIsDeleted = chatController.isFriendDeleted(mUsername);
+			
 			
 			mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
 			

@@ -143,6 +143,24 @@ public class CredentialCachingService extends Service {
 	
 	
 	
+	public void clearUserData(String username) {
+		mLatestVersions.invalidate(username);	
+		
+		for (PublicKeyPairKey key : mPublicIdentities.asMap().keySet()) {
+			if (key.getUsername().equals(username)) {
+				SurespotLog.v(TAG,"invalidating public key cache entry for: " + username);
+				mPublicIdentities.invalidate(key);
+			}
+		}		
+		
+		for (SharedSecretKey key : mSharedSecrets.asMap().keySet()) {
+			if (key.getTheirUsername().equals(username)) {
+				SurespotLog.v(TAG,"invalidating shared secret cache entry for: " + username);
+				mSharedSecrets.invalidate(key);
+			}
+		}
+	}
+	
 
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {

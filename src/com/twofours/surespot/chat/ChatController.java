@@ -781,17 +781,24 @@ public class ChatController {
 
 			SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " latest control messages from the server.");
 
-			if (messageActivity) {
+			if (messageActivity || userActivity) {
 				Friend friend = mFriendAdapter.getFriend(username);
-				friend.setLastReceivedMessageControlId(message.getId());
-				friend.setAvailableMessageControlId(message.getId());
-				mFriendAdapter.notifyDataSetChanged();
-				chatAdapter.sort();
-				chatAdapter.notifyDataSetChanged();
-			}
+				if (friend != null) {
 
-			if (userActivity) {
-				mFriendAdapter.notifyDataSetChanged();
+					if (messageActivity) {
+
+						friend.setLastReceivedMessageControlId(message.getId());
+						friend.setAvailableMessageControlId(message.getId());
+						mFriendAdapter.notifyDataSetChanged();
+						chatAdapter.sort();
+						chatAdapter.notifyDataSetChanged();
+					}
+
+					if (userActivity) {
+						friend.setLastReceivedUserControlId(message.getId());
+						mFriendAdapter.notifyDataSetChanged();
+					}
+				}
 			}
 		}
 
@@ -801,7 +808,7 @@ public class ChatController {
 	private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify) {
 		// if it's a system message from another user then check version
 		if (message.getType().equals("user")) {
-			handleUserControlMessage(message);
+			handleUserControlMessage(message, notify);
 		}
 		else if (message.getType().equals("message")) {
 			String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
@@ -829,9 +836,7 @@ public class ChatController {
 
 								deleteMessageInternal(chatAdapter, dMessage, controlFromMe);
 							}
-
 						}
-
 					}
 				}
 				else {
@@ -852,41 +857,58 @@ public class ChatController {
 		}
 	}
 
-	private void handleUserControlMessage(SurespotControlMessage message) {
+	private void handleUserControlMessage(SurespotControlMessage message, boolean notify) {
 
 		mLatestUserControlId = message.getId();
-		String addedUser = null;
+		boolean addedUser = false;
+		boolean deletedUser = false;
+		String user = null;
 
 		if (message.getAction().equals("revoke")) {
 			IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
 		}
 		else if (message.getAction().equals("invited")) {
-			addedUser = message.getData();
-			mFriendAdapter.addFriendInvited(addedUser);
+			addedUser = true;
+			user = message.getData();
+			mFriendAdapter.addFriendInvited(user);
 		}
 		else if (message.getAction().equals("added")) {
-			addedUser = message.getData();
-			mFriendAdapter.addNewFriend(addedUser);
+			addedUser = true;
+			user = message.getData();
+			mFriendAdapter.addNewFriend(user);
 		}
 		else if (message.getAction().equals("invite")) {
-			addedUser = message.getData();
-			mFriendAdapter.addFriendInviter(addedUser);
+			addedUser = true;
+			user = message.getData();
+			mFriendAdapter.addFriendInviter(user);
 		}
 		else if (message.getAction().equals("decline")) {
 			mFriendAdapter.removeFriend(message.getData());
 		}
 		else if (message.getAction().equals("delete")) {
-			handleDeleteUser(message.getData(), message.getMoreData());
+			deletedUser = true;
+			user = message.getData();
+			handleDeleteUser(user, message.getMoreData());
 		}
 
-		// if we added/invited a user let the chat adapter know
-		if (addedUser != null) {
-			ChatAdapter chatAdapter = mChatAdapters.get(addedUser);
+		// if we added/invited a user let the chat adapter know the deleted status
+		if (addedUser) {
+			ChatAdapter chatAdapter = mChatAdapters.get(user);
 
 			if (chatAdapter != null) {
 				chatAdapter.userDeleted(false);
 			}
 		}
+
+		if (notify) {
+			if (addedUser || deletedUser) {
+				Friend friend = mFriendAdapter.getFriend(user);
+				if (friend != null) {
+					friend.setLastReceivedUserControlId(message.getId());
+				}
+			}
+		}
+
 	}
 
 	private void handleDeleteUser(String deletedUser, String deleter) {
@@ -894,16 +916,20 @@ public class ChatController {
 
 		boolean iDidTheDeleting = deleter.equals(username);
 		if (iDidTheDeleting) {
+			// won't be needing this anymore
+			closeTab(deletedUser);			
+
 			// blow all the state associated with this user away
 			StateController.wipeUserState(mContext, username, deletedUser);
-			// won't be needing this anymore
-			closeTab(deletedUser);
+
+			// clear in memory cached data
+			SurespotApplication.getCachingService().clearUserData(deletedUser);
 			// or you
 			mFriendAdapter.removeFriend(deletedUser);
 		}
 		// you deleted me, you bastard!!
 		else {
-			ChatAdapter chatAdapter = mChatAdapters.get(deletedUser);
+			ChatAdapter chatAdapter = mChatAdapters.get(deleter);
 
 			// i'll delete all your messages then
 			if (chatAdapter != null) {
@@ -912,7 +938,7 @@ public class ChatController {
 			}
 
 			// and mark you as deleted until I want to delete you
-			mFriendAdapter.setFriendDeleted(deletedUser);
+			mFriendAdapter.setFriendDeleted(deleter);
 		}
 	}
 
