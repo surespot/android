@@ -33,6 +33,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -816,6 +817,9 @@ public class ChatController {
 			else if (message.getAction().equals("decline")) {
 				mFriendAdapter.removeFriend(message.getData());
 			}
+			else if (message.getAction().equals("delete")) {
+				handleDeleteUser(message.getData(), message.getMoreData());
+			}
 		}
 		else if (message.getType().equals("message")) {
 			String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
@@ -863,6 +867,32 @@ public class ChatController {
 				friend.setAvailableMessageControlId(message.getId());
 				chatAdapter.notifyDataSetChanged();
 			}
+		}
+	}
+
+	private void handleDeleteUser(String deletedUser, String deleter) {			
+		String username = IdentityController.getLoggedInUser();
+		
+		
+		boolean iDidTheDeleting = deleter.equals(username);
+		if (iDidTheDeleting) {
+			//blow all the state associated with this user away
+			StateController.wipeUserState(mContext, username, deletedUser);
+			//won't be needing this anymore
+			closeTab(deletedUser);						
+			//or you
+			mFriendAdapter.removeFriend(deletedUser);
+		}
+		//you deleted me, you bastard!!
+		else {					
+			ChatAdapter chatAdapter = mChatAdapters.get(deletedUser);
+			
+			//i'll delete all your messages then
+			chatAdapter.deleteMessages(deletedUser);		
+			chatAdapter.notifyDataSetChanged();	
+			
+			//and mark you as deleted until I want to delete you
+			mFriendAdapter.setFriendDeleted(deletedUser);
 		}
 	}
 
@@ -1303,26 +1333,26 @@ public class ChatController {
 				mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
-//						MainActivity.getMainHandler().post(new Runnable() {
-//
-//							@Override
-//							public void run() {
-								deleteMessageInternal(chatAdapter, message, true);
+						// MainActivity.getMainHandler().post(new Runnable() {
+						//
+						// @Override
+						// public void run() {
+						deleteMessageInternal(chatAdapter, message, true);
 
-//							}
-//						});
+						// }
+						// });
 
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-//						MainActivity.getMainHandler().post(new Runnable() {
-//
-//							@Override
-//							public void run() {
-								Utils.makeToast(mContext, "could not delete message");
-//							}
-//						});
+						// MainActivity.getMainHandler().post(new Runnable() {
+						//
+						// @Override
+						// public void run() {
+						Utils.makeToast(mContext, "could not delete message");
+						// }
+						// });
 					}
 
 				});
@@ -1361,28 +1391,28 @@ public class ChatController {
 				mNetworkController.deleteMessages(username, lastViewedMessageId, new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
-//						MainActivity.getMainHandler().post(new Runnable() {
-//
-//							@Override
-//							public void run() {
-								chatAdapter.deleteBeforeAndInclusiveOf(lastViewedMessageId, true);
-								chatAdapter.notifyDataSetChanged();
+						// MainActivity.getMainHandler().post(new Runnable() {
+						//
+						// @Override
+						// public void run() {
+						chatAdapter.deleteBeforeAndInclusiveOf(lastViewedMessageId, true);
+						chatAdapter.notifyDataSetChanged();
 
-//							}
-//						});
+						// }
+						// });
 
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-//						MainActivity.getMainHandler().post(new Runnable() {
-//
-//							@Override
-//							public void run() {
-								Utils.makeToast(mContext, "could not delete messages");
+						// MainActivity.getMainHandler().post(new Runnable() {
+						//
+						// @Override
+						// public void run() {
+						Utils.makeToast(mContext, "could not delete messages");
 
-							//}
-						//});
+						// }
+						// });
 
 					}
 
@@ -1407,7 +1437,18 @@ public class ChatController {
 	public void deleteFriend(Friend friend) {
 
 		if (friend != null) {
-			String username = friend.getName();
+			final String username = friend.getName();
+			mNetworkController.deleteFriend(username, new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String content) {
+					handleDeleteUser(username, IdentityController.getLoggedInUser());
+				}
+
+				@Override
+				public void onFailure(Throwable error, String content) {
+					Utils.makeToast(mContext, "could delete friend");
+				}
+			});
 
 		}
 
@@ -1520,6 +1561,29 @@ public class ChatController {
 				mCurrentChat = mChatPagerAdapter.getChatName(position);
 
 				SurespotLog.v(TAG, "closeTab, new tab name: " + mCurrentChat + ", position: " + position);
+			}
+		}
+	}
+
+	/**
+	 * Called when a user has been deleted
+	 * 
+	 * @param username
+	 */
+
+	public void closeTab(String username) {
+		if (mChatPagerAdapter.getCount() > 0) {
+
+			int position = mChatPagerAdapter.getChatFragmentPosition(username);
+			if (position > 0) {
+
+				String name = mChatPagerAdapter.getChatName(position);
+				SurespotLog.v(TAG, "closeTab, name: " + name + ", position: " + position);
+
+				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
+				mEarliestMessage.remove(name);
+				destroyChatAdapter(name);
+				mIndicator.notifyDataSetChanged();
 			}
 		}
 	}

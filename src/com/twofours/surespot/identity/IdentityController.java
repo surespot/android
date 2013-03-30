@@ -307,14 +307,14 @@ public class IdentityController {
 
 	private static synchronized String savePublicKeyPair(String username, String version, String keyPair) {
 		try {
-			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext());
+			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username;
 			if (!FileUtils.ensureDir(dir)) {
 				SurespotLog.e(TAG, "Could not create public key pair dir: " + dir, new RuntimeException(
 						"Could not create public key pair dir: " + dir));
 				return null;
 			}
 
-			String pkFile = dir + File.separator + username + "_" + version + PUBLICKEYPAIR_EXTENSION;
+			String pkFile = dir + File.separator + version + PUBLICKEYPAIR_EXTENSION;
 			SurespotLog.v(TAG, "saving public key pair: " + pkFile);
 
 			FileOutputStream fos = new FileOutputStream(pkFile);
@@ -456,7 +456,7 @@ public class IdentityController {
 	private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
 
 		// try to load identity
-		String pkFilename = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username + "_" + version
+		String pkFilename = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username + File.separator + version
 				+ PUBLICKEYPAIR_EXTENSION;
 		File pkFile = new File(pkFilename);
 

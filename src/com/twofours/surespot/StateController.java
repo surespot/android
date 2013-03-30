@@ -399,26 +399,17 @@ public class StateController {
 	}
 
 	public static synchronized void wipeAllState(Context context) {
-		deleteRecursive(new File(FileUtils.getStateDir(context)));
-		deleteRecursive(new File(FileUtils.getPublicKeyDir(context)));
+		FileUtils.deleteRecursive(new File(FileUtils.getStateDir(context)));
+		FileUtils.deleteRecursive(new File(FileUtils.getPublicKeyDir(context)));
 	}
 
 	public static synchronized void wipeState(Context context, String identityName) {
 
-		deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
+		FileUtils.deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 
 	}
 
-	private static void deleteRecursive(File fileOrDirectory) {
-		if (fileOrDirectory.isDirectory()) {
-			File[] files = fileOrDirectory.listFiles();
-			if (files != null) {
-				for (File child : files)
-					deleteRecursive(child);
-			}
-		}
-		fileOrDirectory.delete();
-	}
+
 
 	public static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
 		new AsyncTask<Void, Void, Void>() {
@@ -453,5 +444,19 @@ public class StateController {
 			};
 
 		}.execute();
+	}
+	
+
+	public static void wipeUserState(Context context, String username, String otherUsername) {
+		String publicKeyDir = FileUtils.getPublicKeyDir(context) + File.separator + otherUsername;			
+		String room = ChatUtils.getSpot(username, otherUsername);
+		FileUtils.deleteRecursive(new File(publicKeyDir));
+		
+		String messageFile = FileUtils.getStateDir(context)+ File.separator + username + File.separator + "messages_" + room + STATE_EXTENSION;
+		File file = new File(messageFile);
+		file.delete();
+		
+		
+				
 	}
 }

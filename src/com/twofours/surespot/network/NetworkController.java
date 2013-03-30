@@ -627,4 +627,8 @@ public class NetworkController {
 		put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
 
 	}
+
+	public void deleteFriend(String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		delete("/friends/" + username, asyncHttpResponseHandler);
+	}
 }

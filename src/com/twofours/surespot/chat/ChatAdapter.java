@@ -434,5 +434,18 @@ public class ChatAdapter extends BaseAdapter {
 			}
 		}
 	}
+	
+
+	
+
+	public void deleteMessages(String deletedUser) {
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+			SurespotMessage message = iterator.next();
+			
+			if (message.getId() != null && message.getFrom().equals(deletedUser)) {
+				iterator.remove();
+			}
+		}		
+	}
 
 }

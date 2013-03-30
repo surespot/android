@@ -99,6 +99,8 @@ public class FriendAdapter extends BaseAdapter {
 		return true;
 
 	}
+	
+	
 
 	public void addFriendInviter(String name) {
 		Friend friend = getFriend(name);
@@ -111,6 +113,19 @@ public class FriendAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 
 	}
+	
+
+	public void setFriendDeleted(String name) {
+		Friend friend = getFriend(name);
+		if (friend != null) {
+			friend.setDeleted();
+
+			Collections.sort(mFriends);
+			notifyDataSetChanged();
+		}
+		
+	}
+
 
 	public void setChatActive(String name, boolean b) {
 		Friend friend = getFriend(name);
@@ -217,7 +232,7 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
-		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter()) {
+		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.isDeleted()) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
@@ -230,6 +245,9 @@ public class FriendAdapter extends BaseAdapter {
 			}
 			if (friend.isInviter()) {
 				friendViewHolder.tvStatus.setText("is inviting you to be friends");
+			}
+			if (friend.isDeleted()) {
+				friendViewHolder.tvStatus.setText("deleted");
 			}
 
 		}

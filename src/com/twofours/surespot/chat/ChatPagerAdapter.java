@@ -27,7 +27,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 			FriendFragment ff = new FriendFragment();
 			SurespotLog.v(TAG, "created new friend fragment: " + ff);
 
-			ff.setRetainInstance(true);
+			//ff.setRetainInstance(true);
 
 			return ff;
 		}
@@ -36,7 +36,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 			ChatFragment cf = ChatFragment.newInstance(name);
 			SurespotLog.v(TAG, "created new chat fragment: " + cf);
 
-			cf.setRetainInstance(true);
+		//	cf.setRetainInstance(true);
 
 			return cf;
 		}
