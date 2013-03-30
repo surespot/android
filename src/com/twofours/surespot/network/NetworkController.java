@@ -631,4 +631,8 @@ public class NetworkController {
 	public void deleteFriend(String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		delete("/friends/" + username, asyncHttpResponseHandler);
 	}
+	
+	public void blockUser(String username, boolean blocked, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler); 
+	}
 }

@@ -885,17 +885,16 @@ public class ChatController {
 		else if (message.getAction().equals("rescind")) {
 			String friendName = message.getData();
 			Friend friend = mFriendAdapter.getFriend(friendName);
-			
-			//if they're not deleted, remove them
+
+			// if they're not deleted, remove them
 			if (friend != null && !friend.isDeleted()) {
 				mFriendAdapter.removeFriend(friendName);
 			}
 			else {
 				friend.setInviter(false);
 			}
-			
 		}
-		else if (message.getAction().equals("decline")) {
+		else if (message.getAction().equals("ignore")) {
 			mFriendAdapter.removeFriend(message.getData());
 		}
 		else if (message.getAction().equals("delete")) {

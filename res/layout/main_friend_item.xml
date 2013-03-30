@@ -50,6 +50,15 @@
         android:orientation="horizontal" >
 
         <Button
+            android:id="@+id/notificationItemBlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:tag="block"
+            android:text="block" >
+        </Button>
+
+        <Button
             android:id="@+id/notificationItemIgnore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

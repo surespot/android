@@ -212,6 +212,7 @@ public class FriendAdapter extends BaseAdapter {
 			convertView = inflater.inflate(R.layout.main_friend_item, parent, false);
 
 			((Button) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
+			((Button) convertView.findViewById(R.id.notificationItemBlock)).setOnClickListener(FriendInviteResponseListener);
 			((Button) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
 
 			friendViewHolder = new FriendViewHolder();
@@ -245,7 +246,6 @@ public class FriendAdapter extends BaseAdapter {
 			if (friend.isInviter()) {
 				friendViewHolder.tvStatus.setText("is inviting you to be friends");
 			}
-			
 
 		}
 		else {
@@ -288,12 +288,21 @@ public class FriendAdapter extends BaseAdapter {
 
 					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
 					friend.setInviter(false);
-					if (action.equals("accept")) {						
+					if (action.equals("accept")) {
 						friend.setNewFriend(true);
 					}
 					else {
-						if (!friend.isDeleted()) {
-							mFriends.remove(position);
+						if (action.equals("block")) {
+							//ignore
+							if (!friend.isDeleted()) {
+								mFriends.remove(position);
+							}
+						}
+						else {
+							//ignore
+							if (!friend.isDeleted()) {
+								mFriends.remove(position);
+							}
 						}
 					}
 					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
