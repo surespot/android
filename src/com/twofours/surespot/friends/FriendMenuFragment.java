@@ -26,10 +26,20 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 		// builder.setTitle(R.string.pick_color);
 
 		mMenuItemArray = null;
-
-		mMenuItemArray = new String[2];
+		
+		//
+		if (!mFriend.isInviter()) {
+			mMenuItemArray = new String[2];
+			mMenuItemArray[1] = "delete friend";
+		}
+		else {
+			mMenuItemArray = new String[1];
+		}
+		
 		mMenuItemArray[0] = "delete all messages";
-		mMenuItemArray[1] = "delete friend";
+		
+		
+		
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialogi, int which) {

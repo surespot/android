@@ -882,6 +882,19 @@ public class ChatController {
 			user = message.getData();
 			mFriendAdapter.addFriendInviter(user);
 		}
+		else if (message.getAction().equals("rescind")) {
+			String friendName = message.getData();
+			Friend friend = mFriendAdapter.getFriend(friendName);
+			
+			//if they're not deleted, remove them
+			if (friend != null && !friend.isDeleted()) {
+				mFriendAdapter.removeFriend(friendName);
+			}
+			else {
+				friend.setInviter(false);
+			}
+			
+		}
 		else if (message.getAction().equals("decline")) {
 			mFriendAdapter.removeFriend(message.getData());
 		}
@@ -917,7 +930,7 @@ public class ChatController {
 		boolean iDidTheDeleting = deleter.equals(username);
 		if (iDidTheDeleting) {
 			// won't be needing this anymore
-			closeTab(deletedUser);			
+			closeTab(deletedUser);
 
 			// blow all the state associated with this user away
 			StateController.wipeUserState(mContext, username, deletedUser);
@@ -1398,6 +1411,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
+						SurespotLog.w(TAG, "deleteMessage", error);
 						// MainActivity.getMainHandler().post(new Runnable() {
 						//
 						// @Override
