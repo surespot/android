@@ -226,6 +226,14 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
+	public void getDeleteToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("authSig", authSignature);
+		post("/deletetoken", new RequestParams(params), asyncHttpResponseHandler);
+	}
+
 	public void getShortUrl(String longUrl, JsonHttpResponseHandler responseHandler) {
 
 		try {
@@ -361,13 +369,13 @@ public class NetworkController {
 
 	}
 
-	public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
-		int mId = messageId;
-		int cId = controlId;
-
-		return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
-
-	}
+//	public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
+//		int mId = messageId;
+//		int cId = controlId;
+//
+//		return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
+//
+//	}
 
 	// public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {
 	// int cId = controlId;
@@ -618,7 +626,7 @@ public class NetworkController {
 	}
 
 	public void deleteMessages(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
-		delete("/messages/" + username + "/before/" + id, responseHandler);
+		delete("/messages/" + username + "/utai/" + id, responseHandler);
 
 	}
 
@@ -631,8 +639,20 @@ public class NetworkController {
 	public void deleteFriend(String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		delete("/friends/" + username, asyncHttpResponseHandler);
 	}
-	
+
 	public void blockUser(String username, boolean blocked, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-		put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler); 
+		put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler);
+	}
+
+	public void deleteUser(String username, String password, String authSig, String tokenSig, String keyVersion,
+			AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("authSig", authSig);
+		params.put("tokenSig", tokenSig);
+		params.put("keyVersion", keyVersion);
+		post("/users/delete", new RequestParams(params), asyncHttpResponseHandler);
+
 	}
 }

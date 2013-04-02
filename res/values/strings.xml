@@ -21,11 +21,14 @@
     <string name="title_activity_export_identity">ExportIdentityActivity</string>
     <string name="import_identity_label">import identity...</string>
     <string name="export_identity_label">export identity...</string>
+    
+    <string name="delete_identity">delete identity...</string>
     <string name="import_identities">import identity...</string>
     <string name="create_identity_label">create new identity...</string>
     <string name="pref_create_identity">pref_create_identity</string>
     <string name="no_identity_exported">no identity exported</string>
     <string name="no_identity_imported">no identity imported</string>
+    <string name="no_identity_deleted">no identity deleted</string>
     <string name="identity_imported_successfully">identity imported successfully</string>
     <string name="could_not_import_identity">could not import identity</string>
     <string name="notifications_title">notifications</string>

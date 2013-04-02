@@ -161,7 +161,14 @@ public class CredentialCachingService extends Service {
 		}
 	}
 	
-
+	public synchronized void clear() {
+		mPublicIdentities.invalidateAll();
+		mSharedSecrets.invalidateAll();
+		mLatestVersions.invalidateAll();
+		mCookies.clear();
+		mIdentities.clear();
+	}
+		
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
 			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);

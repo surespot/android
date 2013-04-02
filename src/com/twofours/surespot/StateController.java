@@ -430,12 +430,15 @@ public class StateController {
 					networkController.clearCache();
 				}
 				
-				 
+				
 				
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);
 
+				
+				SurespotApplication.getCachingService().clear();
+				
 				return null;
 			}
 

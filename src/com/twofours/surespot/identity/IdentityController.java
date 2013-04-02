@@ -64,9 +64,9 @@ public class IdentityController {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = new SurespotIdentity(username);
 		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
-		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);		
+		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, identity, cookie);
-		
+
 	}
 
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
@@ -92,7 +92,7 @@ public class IdentityController {
 			json.put("keys", keys);
 
 			byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
-			
+
 			if (identityBytes == null) {
 				return null;
 			}
@@ -112,7 +112,7 @@ public class IdentityController {
 
 			return identityFile;
 		}
-		
+
 		catch (JSONException e) {
 			SurespotLog.w(TAG, "saveIdentity", e);
 		}
@@ -125,7 +125,22 @@ public class IdentityController {
 		}
 		return null;
 	}
-	
+
+	public static synchronized void deleteIdentity(Context context, String username, String password) {
+
+		StateController.wipeState(context, username);
+
+		String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
+		File file = new File(identityFilename);
+		file.delete();
+
+		SurespotApplication.getCachingService().clear();
+		
+		MainActivity.getNetworkController().clearCache();
+
+		launchLoginActivity(context);
+	}
+
 	public static SurespotIdentity getIdentity(String username) {
 		return SurespotApplication.getCachingService().getIdentity(username);
 	}
@@ -142,8 +157,6 @@ public class IdentityController {
 		return identity;
 
 	}
-
-
 
 	private synchronized static SurespotIdentity loadIdentity(Context context, String dir, String username, String password) {
 		String identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
@@ -256,7 +269,6 @@ public class IdentityController {
 
 	}
 
-
 	public static void exportIdentity(final Context context, String username, final String password, final IAsyncCallback<String> callback) {
 		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null) {
@@ -304,7 +316,6 @@ public class IdentityController {
 
 	}
 
-
 	private static synchronized String savePublicKeyPair(String username, String version, String keyPair) {
 		try {
 			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username;
@@ -331,7 +342,6 @@ public class IdentityController {
 		}
 		return null;
 	}
-
 
 	public static PublicKeys getPublicKeyPair(String username, String version) {
 
@@ -574,16 +584,20 @@ public class IdentityController {
 			MainActivity.getNetworkController().setUnauthorized(true);
 
 			// boot them out
-			Intent intent = new Intent(context, LoginActivity.class);
-			intent.putExtra("401", true);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			context.startActivity(intent);
-
+			launchLoginActivity(context);
 			// TODO notify user?
 		}
 		else {
 			SurespotApplication.getCachingService().updateLatestVersion(username, version);
 		}
+
+	}
+	
+	private static void launchLoginActivity(Context context) {
+		Intent intent = new Intent(context, LoginActivity.class);
+		intent.putExtra("401", true);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		context.startActivity(intent);
 
 	}
 }

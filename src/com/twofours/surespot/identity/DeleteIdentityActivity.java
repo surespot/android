@@ -1,0 +1,185 @@
+package com.twofours.surespot.identity;
+
+import java.security.PrivateKey;
+import java.util.List;
+
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
+
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.MenuItem;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.R;
+import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.MultiProgressDialog;
+import com.twofours.surespot.ui.UIUtils;
+
+public class DeleteIdentityActivity extends SherlockActivity {
+	private static final String TAG = null;
+	private List<String> mIdentityNames;
+	private MultiProgressDialog mMpd;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_delete_identity);
+		Utils.configureActionBar(this, "identity", "delete", true);
+		
+		mMpd = new MultiProgressDialog(this, "deleting identity", 250);
+
+
+		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
+
+		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
+		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+		mIdentityNames = IdentityController.getIdentityNames(this);
+
+		for (String name : mIdentityNames) {
+			adapter.add(name);
+		}
+
+		spinner.setAdapter(adapter);
+		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
+
+		Button deleteIdentityButton = (Button) findViewById(R.id.bDeleteIdentity);
+
+		deleteIdentityButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO progress
+				final String user = (String) spinner.getSelectedItem();
+				UIUtils.passwordDialog(DeleteIdentityActivity.this, "delete " + user + " identity", "enter password for " + user,
+						new IAsyncCallback<String>() {
+							@Override
+							public void handleResponse(String result) {
+								if (!TextUtils.isEmpty(result)) {
+									deleteIdentity(user, result);
+								}
+								else {
+									Utils.makeToast(DeleteIdentityActivity.this, "no identity deleted");
+								}
+							}
+						});
+
+			}
+		});
+	}
+
+	private void deleteIdentity(final String username, final String password) {
+
+		mMpd.incrProgress();
+		SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
+
+		if (identity == null) {
+			mMpd.decrProgress();
+			Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+			return;
+		}
+
+		final String version = identity.getLatestVersion();
+		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
+
+		// create auth sig
+		final String dPassword = EncryptionController.derivePassword(password);
+		final String authSignature = EncryptionController.sign(pk, username, dPassword);
+		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
+
+		// get a key update token from the server
+		MainActivity.getNetworkController().getDeleteToken(username, dPassword, authSignature, new AsyncHttpResponseHandler() {
+			@Override
+			public void onSuccess(int statusCode, final String deleteToken) {
+
+				new AsyncTask<Void, Void, DeleteIdentityWrapper>() {
+					@Override
+					protected DeleteIdentityWrapper doInBackground(Void... params) {						
+						SurespotLog.v(TAG, "received delete token: " + deleteToken);
+
+						// create token sig
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(deleteToken), dPassword.getBytes());
+
+						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
+
+						return new DeleteIdentityWrapper(tokenSignature, authSignature, version);
+					}
+
+					protected void onPostExecute(final DeleteIdentityWrapper result) {
+						if (result != null) {
+							// upload all this crap to the server
+							MainActivity.getNetworkController().deleteUser(username, dPassword, result.authSig, result.tokenSig,
+									result.keyVersion, new AsyncHttpResponseHandler() {
+										public void onSuccess(int statusCode, String content) {
+											// delete the identity stuff localally
+											IdentityController.deleteIdentity(DeleteIdentityActivity.this, username, password);
+											mMpd.decrProgress();
+											Utils.makeLongToast(DeleteIdentityActivity.this, "identity deleted");
+										};
+
+										@Override
+										public void onFailure(Throwable error, String content) {
+											SurespotLog.w(TAG, "deleteIdentity", error);
+											mMpd.decrProgress();
+											Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+
+										}
+									});
+						}
+						else {
+							mMpd.decrProgress();
+							Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+						}
+
+					};
+				}.execute();
+
+			}
+
+			@Override
+			public void onFailure(Throwable error, String content) {
+				mMpd.decrProgress();
+				Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+
+			}
+		});
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+
+	}
+
+	private class DeleteIdentityWrapper {
+
+		public String tokenSig;
+		public String authSig;
+		public String keyVersion;
+
+		public DeleteIdentityWrapper(String tokenSig, String authSig, String keyVersion) {
+			super();
+			this.tokenSig = tokenSig;
+			this.authSig = authSig;
+			this.keyVersion = keyVersion;
+		}
+
+	}
+
+}

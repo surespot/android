@@ -42,6 +42,10 @@
             <intent android:action="com.twofours.surespot.identity.ExportIdentityActivity" >
             </intent>
         </Preference>
+        <Preference android:title="@string/delete_identity" >
+            <intent android:action="com.twofours.surespot.identity.DeleteIdentityActivity" >
+            </intent>
+        </Preference>
         <Preference android:title="@string/key_management" >
             <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
             </intent>

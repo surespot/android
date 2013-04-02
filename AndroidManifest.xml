@@ -134,6 +134,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+          <activity android:name="com.twofours.surespot.identity.DeleteIdentityActivity" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.identity.DeleteIdentityActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="com.twofours.surespot.activities.ExternalInviteActivity"
             android:label="@string/title_activity_external_invite" >

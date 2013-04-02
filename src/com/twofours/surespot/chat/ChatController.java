@@ -881,26 +881,33 @@ public class ChatController {
 			addedUser = true;
 			user = message.getData();
 			mFriendAdapter.addFriendInviter(user);
-		}
-		else if (message.getAction().equals("rescind")) {
-			String friendName = message.getData();
-			Friend friend = mFriendAdapter.getFriend(friendName);
-
-			// if they're not deleted, remove them
-			if (friend != null && !friend.isDeleted()) {
-				mFriendAdapter.removeFriend(friendName);
-			}
-			else {
-				friend.setInviter(false);
-			}
-		}
+		}		
 		else if (message.getAction().equals("ignore")) {
 			mFriendAdapter.removeFriend(message.getData());
 		}
 		else if (message.getAction().equals("delete")) {
-			deletedUser = true;
-			user = message.getData();
-			handleDeleteUser(user, message.getMoreData());
+			String friendName = message.getData();
+			Friend friend = mFriendAdapter.getFriend(friendName);
+			
+			//if it was just a delete of an invite
+			if (friend.isInviter()) {
+				
+				//if they're not deleted, remove them
+				if (friend != null && !friend.isDeleted()) {
+					mFriendAdapter.removeFriend(friendName);
+				}
+				else {
+					//they've been deleted, just remove the inviter flag
+					friend.setInviter(false);
+				}
+			}
+			//they really deleted us boo hoo 
+			else {
+				deletedUser = true;
+				user = message.getData();
+				handleDeleteUser(user, message.getMoreData());
+			}
+			
 		}
 
 		// if we added/invited a user let the chat adapter know the deleted status
@@ -936,6 +943,9 @@ public class ChatController {
 
 			// clear in memory cached data
 			SurespotApplication.getCachingService().clearUserData(deletedUser);
+			
+			// clear the http cache 
+			mNetworkController.clearCache();
 			// or you
 			mFriendAdapter.removeFriend(deletedUser);
 		}

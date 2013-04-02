@@ -62,7 +62,7 @@ public class SignupActivity extends SherlockActivity {
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
-		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 0);
+		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 250);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
