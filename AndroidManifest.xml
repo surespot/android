@@ -57,7 +57,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.twofours.surespot.services.GCMIntentService" />
+        <service android:name="com.twofours.surespot.GCMIntentService" />
         <service
             android:name="com.twofours.surespot.services.CredentialCachingService"
             android:exported="false" >

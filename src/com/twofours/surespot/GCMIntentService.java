@@ -1,4 +1,4 @@
-package com.twofours.surespot.services;
+package com.twofours.surespot;
 
 import java.io.IOException;
 import java.util.Date;
@@ -21,6 +21,8 @@ import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
+import com.twofours.surespot.R.drawable;
+import com.twofours.surespot.R.string;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -32,7 +34,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 
-public class GCMIntentService extends GCMBaseIntentService {
+public class GCMIntentService extends GCMBaseIntentService { 
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
 
@@ -40,11 +42,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 		super(SENDER_ID);
 		SurespotLog.v(TAG, "GCMIntentService");
 	}
-
+	
 	@Override
 	protected void onError(Context arg0, String arg1) {
-		// TODO Auto-generated method stubgb
-
+		SurespotLog.w(TAG, "onError: " + arg1);
 	}
 
 	@Override
@@ -88,7 +89,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 				// the server and client match, we're golden
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
-				
 
 			}
 		}
@@ -99,10 +99,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	@Override
 	protected void onUnregistered(Context context, String arg1) {
-		
+
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, null);
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_RECEIVED, null);
-
 
 	}
 
@@ -111,14 +110,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
 		String to = intent.getStringExtra("to");
 
-		//make sure to is someone on this phone otherwise do not do a damn thing
+		// make sure to is someone on this phone otherwise do not do a damn thing
 		if (!IdentityController.getIdentityNames(context).contains(to)) {
 			return;
 		}
-		
-		String type = intent.getStringExtra("type");		
+
+		String type = intent.getStringExtra("type");
 		String from = intent.getStringExtra("sentfrom");
-		
+
 		if (type.equals("message")) {
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
@@ -162,7 +161,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 		Intent mainIntent = null;
 		mainIntent = new Intent(context, MainActivity.class);
 		mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		
 
 		// mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
