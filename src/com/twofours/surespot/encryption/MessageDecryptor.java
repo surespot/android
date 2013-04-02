@@ -41,7 +41,6 @@ public class MessageDecryptor {
 	private static final String TAG = "TextDecryptor";
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 
-
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
 	 * in the cache and will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
@@ -96,6 +95,7 @@ public class MessageDecryptor {
 					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData());
 
 			// set plaintext in message so we don't have to decrypt again
+
 			mMessage.setPlainData(plainText);
 
 			if (textViewReference != null) {
@@ -122,14 +122,23 @@ public class MessageDecryptor {
 							textView.setText(plainText);
 
 							// TODO put the row in the tag
+
 							TextView tvTime = (TextView) ((View) textView.getParent()).findViewById(R.id.messageTime);
-							if (mMessage.getDateTime() != null) {
-								
-								tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-										mMessage.getDateTime()));
+							if (plainText == null) {
+								mMessage.setErrorStatus(500);
+								tvTime.setText("ERROR DECRYPTING MESSAGE");
+							}
+							else {
+
+								if (mMessage.getDateTime() != null) {
+
+									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+											mMessage.getDateTime()));
+								}
 							}
 
 						}
+
 					});
 
 				}

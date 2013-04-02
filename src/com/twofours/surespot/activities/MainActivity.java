@@ -320,6 +320,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
 		}
 
+		mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
+
 		enableMenuItems();
 
 		return true;

@@ -457,7 +457,7 @@ public class ChatAdapter extends BaseAdapter {
 			SurespotMessage message = iterator.next();
 			boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
 
-			if (message.getId() != null && message.getId() <= id && (myMessages || !myMessage)) {
+			if (message.getId() == null || (message.getId() != null && message.getId() <= id && (myMessages || !myMessage))) {
 				iterator.remove();
 			}
 		}
