@@ -251,28 +251,34 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
-
 		boolean deleted = false;
-		if (item.getId() == null) {
-			chatMessageViewHolder.tvTime.setText("sending...");
+
+		if (item.getErrorStatus() > 0) {
+			setErrorText(chatMessageViewHolder.tvTime, item);
 		}
 		else {
 
-			if (item.getPlainData() == null) {
-				chatMessageViewHolder.tvTime.setText("loading and decrypting...");
+			if (item.getId() == null) {
+				chatMessageViewHolder.tvTime.setText("sending...");
 			}
 			else {
 
-				if (item.getDateTime() != null) {
-
-					chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-							item.getDateTime()));
+				if (item.getPlainData() == null) {
+					chatMessageViewHolder.tvTime.setText("loading and decrypting...");
 				}
 				else {
-					chatMessageViewHolder.tvTime.setText("");
-				}
-			}
 
+					if (item.getDateTime() != null) {
+
+						chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+								item.getDateTime()));
+					}
+					else {
+						chatMessageViewHolder.tvTime.setText("");
+					}
+				}
+
+			}
 		}
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || deleted) {
@@ -332,6 +338,23 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		return convertView;
+	}
+	
+	private void setErrorText(TextView textView, SurespotMessage message) {
+		String statusText = null;
+		switch (message.getErrorStatus()) {
+		case 403:
+			statusText = "ERROR SENDING MESSAGE: unauthorized";
+			break;
+		case 404:
+			statusText = "ERROR SENDING MESSAGE: unauthorized";
+			break;
+		case 500:
+			statusText = "ERROR SENDING MESSAGE";
+			break;
+		}
+				
+		textView.setText(statusText);
 	}
 
 	public static class ChatMessageViewHolder {

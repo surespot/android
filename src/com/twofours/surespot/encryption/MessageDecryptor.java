@@ -123,10 +123,8 @@ public class MessageDecryptor {
 
 							// TODO put the row in the tag
 							TextView tvTime = (TextView) ((View) textView.getParent()).findViewById(R.id.messageTime);
-							if (mMessage.getDateTime() == null) {
-								tvTime.setText("");
-							}
-							else {
+							if (mMessage.getDateTime() != null) {
+								
 								tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
 										mMessage.getDateTime()));
 							}

@@ -22,6 +22,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private String mPlainData;
 	private Integer mId;
 	private Integer mResendId;
+	private int mErrorStatus;
 	private String mMimeType;
 	private int mHeight;
 	private Date mDateTime;
@@ -142,6 +143,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		if (id > 0) {
 			chatMessage.setId(id);
 		}
+		
+		Integer errorStatus = jsonMessage.optInt("errorStatus");
+		if (errorStatus > 0) {
+			chatMessage.setErrorStatus(errorStatus);
+		}
+
 
 		Integer height = jsonMessage.optInt("height");
 		if (height > 0) {
@@ -174,6 +181,10 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("mimeType", this.getMimeType());
 			message.put("deletedTo", this.getDeletedTo());
 			message.put("shareable", this.isShareable());
+
+			if (this.getErrorStatus() > 0) {
+				message.put("errorStatus", this.getErrorStatus());
+			}
 
 			if (this.getId() != null) {
 				message.put("id", this.getId());
@@ -337,6 +348,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		}
 
 		return thisId.compareTo(rhsId);
+	}
+
+	public void setErrorStatus(int status) {
+		mErrorStatus = status;
+	}
+
+	public int getErrorStatus() {
+		return mErrorStatus;
 	}
 
 }

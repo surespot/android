@@ -208,10 +208,10 @@ public class ChatController {
 						handleControlMessage(null, message, true);
 					}
 					catch (JSONException e) {
-						SurespotLog.w(TAG, "error creating control message: " + e.toString(), e);
+						SurespotLog.w(TAG, "on control", e);
 					}
 				}
-				if (event.equals("message")) {
+				else if (event.equals("message")) {
 
 					// TODO check who from
 					try {
@@ -223,11 +223,25 @@ public class ChatController {
 
 					}
 					catch (JSONException e) {
-						SurespotLog.w(TAG, "on", e);
+						SurespotLog.w(TAG, "on message", e);
 					}
 
 				}
+				else if (event.equals("messageError")) {
+					// TODO check who from
+					try {
+						JSONObject jsonMessage =  (JSONObject) args[0];
+						SurespotLog.v(TAG, "received messageError: " + jsonMessage.toString());
+						SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
+						handleErrorMessage(errorMessage);
+
+					}
+					catch (JSONException e) {
+						SurespotLog.w(TAG, "on messageError", e);
+					}
+				}
 			}
+
 		};
 
 		mConnectivityReceiver = new BroadcastReceiver() {
@@ -881,33 +895,33 @@ public class ChatController {
 			addedUser = true;
 			user = message.getData();
 			mFriendAdapter.addFriendInviter(user);
-		}		
+		}
 		else if (message.getAction().equals("ignore")) {
 			mFriendAdapter.removeFriend(message.getData());
 		}
 		else if (message.getAction().equals("delete")) {
 			String friendName = message.getData();
 			Friend friend = mFriendAdapter.getFriend(friendName);
-			
-			//if it was just a delete of an invite
+
+			// if it was just a delete of an invite
 			if (friend.isInviter()) {
-				
-				//if they're not deleted, remove them
+
+				// if they're not deleted, remove them
 				if (friend != null && !friend.isDeleted()) {
 					mFriendAdapter.removeFriend(friendName);
 				}
 				else {
-					//they've been deleted, just remove the inviter flag
+					// they've been deleted, just remove the inviter flag
 					friend.setInviter(false);
 				}
 			}
-			//they really deleted us boo hoo 
+			// they really deleted us boo hoo
 			else {
 				deletedUser = true;
 				user = message.getData();
 				handleDeleteUser(user, message.getMoreData());
 			}
-			
+
 		}
 
 		// if we added/invited a user let the chat adapter know the deleted status
@@ -943,8 +957,8 @@ public class ChatController {
 
 			// clear in memory cached data
 			SurespotApplication.getCachingService().clearUserData(deletedUser);
-			
-			// clear the http cache 
+
+			// clear the http cache
 			mNetworkController.clearCache();
 			// or you
 			mFriendAdapter.removeFriend(deletedUser);
@@ -962,6 +976,28 @@ public class ChatController {
 			// and mark you as deleted until I want to delete you
 			mFriendAdapter.setFriendDeleted(deleter);
 		}
+	}
+
+	private void handleErrorMessage(SurespotErrorMessage errorMessage) {
+		SurespotMessage message = null;
+		Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
+		while (iterator.hasNext()) {
+			message = iterator.next();
+			if (message.getIv().equals(errorMessage.getId())) {
+				iterator.remove();
+
+				message.setErrorStatus(errorMessage.getStatus());
+				break;
+			}
+		}
+		
+		if (message != null) {
+			ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
+			if (chatAdapter != null) {
+				chatAdapter.notifyDataSetChanged();
+			}
+		}
+
 	}
 
 	private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
