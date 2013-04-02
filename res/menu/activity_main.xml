@@ -15,10 +15,6 @@
                 android:icon="@drawable/ic_menu_camera"
                 android:title="@string/capture_image"/>
             <item
-                android:id="@+id/menu_invite_external"
-                android:icon="@drawable/ic_menu_friendslist"
-                android:title="share surespot"/>
-            <item
                 android:id="@+id/menu_close_bar"
                 android:icon="@drawable/ic_menu_end_conversation"
                 android:title="@string/close_tab"/>
@@ -26,6 +22,12 @@
                 android:id="@+id/menu_clear_messages"
                 android:icon="@drawable/ic_menu_delete"
                 android:title="delete all messages"/>
+            
+            
+            <item
+                android:id="@+id/menu_invite_external"
+                android:icon="@drawable/ic_menu_friendslist"
+                android:title="share surespot"/>
             <item
                 android:id="@+id/menu_logout_bar"
                 android:icon="@drawable/ic_lock_power_off"
