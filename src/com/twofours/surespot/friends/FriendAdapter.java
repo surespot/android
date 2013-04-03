@@ -255,15 +255,18 @@ public class FriendAdapter extends BaseAdapter {
 		if (friend.isInviter()) {
 			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
 			friendViewHolder.vgActivity.setVisibility(View.GONE);
+			convertView.setBackgroundColor(Color.WHITE);
 		}
 		else {
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
 			if (friend.isChatActive()) {
-				convertView.setBackgroundColor(Color.WHITE);
+				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_active);
+				
 			}
 			else {
-				convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
+				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_inactive);
+				//convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
 
 			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);
