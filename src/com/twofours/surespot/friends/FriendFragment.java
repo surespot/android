@@ -86,11 +86,14 @@ public class FriendFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				Friend friend = (Friend) mMainAdapter.getItem(position);
 
-				FriendMenuFragment dialog = new FriendMenuFragment();
-				dialog.setActivityAndMessage(getMainActivity(), friend);
-				dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+				if (!friend.isInviter()) {
+					FriendMenuFragment dialog = new FriendMenuFragment();
+					dialog.setActivityAndMessage(getMainActivity(), friend);
+					dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+				}
 				return true;
-			}		
+				
+			}
 		});
 
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
@@ -186,7 +189,7 @@ public class FriendFragment extends SherlockFragment {
 		String type = intent.getType();
 		Bundle extras = intent.getExtras();
 
-		if (action.equals(Intent.ACTION_SEND)) {		
+		if (action.equals(Intent.ACTION_SEND)) {
 			if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
 				final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
