@@ -87,8 +87,6 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-
-       
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup"
@@ -99,7 +97,7 @@
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login"
             android:windowSoftInputMode="stateVisible" >
-        </activity>   
+        </activity>
         <activity android:name="com.twofours.surespot.images.ImageViewActivity" >
         </activity>
         <activity
@@ -134,9 +132,16 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-          <activity android:name="com.twofours.surespot.identity.DeleteIdentityActivity" >
+        <activity android:name="com.twofours.surespot.identity.DeleteIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.identity.DeleteIdentityActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.twofours.surespot.identity.ChangePasswordActivity" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.identity.ChangePasswordActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
