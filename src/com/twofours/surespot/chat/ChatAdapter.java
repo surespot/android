@@ -452,18 +452,21 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public synchronized void deleteBeforeAndInclusiveOf(int id, boolean myMessages) {
-		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-			SurespotMessage message = iterator.next();
-			boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
-
-			if (message.getId() == null || (message.getId() != null && message.getId() <= id && (myMessages || !myMessage))) {
-				iterator.remove();
-			}
-		}
+	
+	public synchronized void deleteAllMessages() {
+		
+		mMessages.clear();
+//		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+//			SurespotMessage message = iterator.next();
+//			boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
+//
+//			if (message.getId() == null || (message.getId() != null && message.getId() <= id && (myMessages || !myMessage))) {
+//				iterator.remove();
+//			}
+//		}
 	}
 
-	public void deleteMessages() {
+	public synchronized void deleteTheirMessages() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
 			SurespotMessage message = iterator.next();
 
@@ -476,7 +479,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void userDeleted(boolean delete) {
 		if (delete) {
-			deleteMessages();
+			deleteAllMessages();
 		}
 		if (mDeletedCallback != null) {
 			mDeletedCallback.handleResponse(delete);

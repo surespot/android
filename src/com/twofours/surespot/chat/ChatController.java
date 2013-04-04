@@ -230,7 +230,7 @@ public class ChatController {
 				else if (event.equals("messageError")) {
 					// TODO check who from
 					try {
-						JSONObject jsonMessage =  (JSONObject) args[0];
+						JSONObject jsonMessage = (JSONObject) args[0];
 						SurespotLog.v(TAG, "received messageError: " + jsonMessage.toString());
 						SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
 						handleErrorMessage(errorMessage);
@@ -833,31 +833,32 @@ public class ChatController {
 			}
 
 			if (chatAdapter != null) {
-				int messageId = Integer.parseInt(message.getMoreData());
-				SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
-				if (message.getAction().startsWith("delete")) {
+				boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
+				if (message.getAction().equals("delete")) {
+					int messageId = Integer.parseInt(message.getMoreData());
+					SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
 
-					boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
-
-					if (message.getAction().equals("deleteAll")) {
-
-						chatAdapter.deleteBeforeAndInclusiveOf(messageId, controlFromMe);
-					}
-					else {
-
-						if (dMessage != null) {
-							if (message.getAction().equals("delete")) {
-
-								deleteMessageInternal(chatAdapter, dMessage, controlFromMe);
-							}
-						}
+					if (dMessage != null) {
+						deleteMessageInternal(chatAdapter, dMessage, controlFromMe);
 					}
 				}
 				else {
-					if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
-						if (dMessage != null) {
-							SurespotLog.v(TAG, "setting message " + message.getAction());
-							dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
+					if (message.getAction().equals("deleteAll")) {
+						if (controlFromMe) {
+							chatAdapter.deleteAllMessages();
+						}
+						else {
+							chatAdapter.deleteTheirMessages();
+						}
+					}
+					else {
+						if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
+							int messageId = Integer.parseInt(message.getMoreData());
+							SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
+							if (dMessage != null) {
+								SurespotLog.v(TAG, "setting message " + message.getAction());
+								dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
+							}
 						}
 					}
 				}
@@ -990,7 +991,7 @@ public class ChatController {
 				break;
 			}
 		}
-		
+
 		if (message != null) {
 			ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
 			if (chatAdapter != null) {
@@ -1498,15 +1499,14 @@ public class ChatController {
 			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (chatAdapter != null) {
 
-				final int lastViewedMessageId = friend.getLastViewedMessageId();
-				mNetworkController.deleteMessages(username, lastViewedMessageId, new AsyncHttpResponseHandler() {
+				mNetworkController.deleteMessages(username, new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
 						// MainActivity.getMainHandler().post(new Runnable() {
 						//
 						// @Override
 						// public void run() {
-						chatAdapter.deleteBeforeAndInclusiveOf(lastViewedMessageId, true);
+						chatAdapter.deleteAllMessages();
 						chatAdapter.notifyDataSetChanged();
 
 						// }

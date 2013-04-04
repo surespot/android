@@ -625,8 +625,8 @@ public class NetworkController {
 
 	}
 
-	public void deleteMessages(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
-		delete("/messages/" + username + "/utai/" + id, responseHandler);
+	public void deleteMessages(String username, AsyncHttpResponseHandler responseHandler) {
+		delete("/messages/" + username, responseHandler);
 
 	}
 
