@@ -69,6 +69,14 @@ public class IdentityController {
 
 	}
 
+	public static void updatePassword(Context context, String username, String currentPassword, String newPassword) {
+		String identityDir = FileUtils.getIdentityDir(context);
+		SurespotIdentity identity = getIdentity(context, username, currentPassword);
+		if (identity != null) {
+			saveIdentity(identityDir, identity, newPassword + CACHE_IDENTITY_ID);	
+		}
+	}
+	
 	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
 		String filename = identity.getUsername() + IDENTITY_EXTENSION;
 		JSONObject json = new JSONObject();
@@ -600,4 +608,6 @@ public class IdentityController {
 		context.startActivity(intent);
 
 	}
+
+	
 }

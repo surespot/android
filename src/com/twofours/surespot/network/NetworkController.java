@@ -233,6 +233,14 @@ public class NetworkController {
 		params.put("authSig", authSignature);
 		post("/deletetoken", new RequestParams(params), asyncHttpResponseHandler);
 	}
+	
+	public void getPasswordToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("authSig", authSignature);
+		post("/passwordtoken", new RequestParams(params), asyncHttpResponseHandler);
+	}
 
 	public void getShortUrl(String longUrl, JsonHttpResponseHandler responseHandler) {
 
@@ -653,6 +661,19 @@ public class NetworkController {
 		params.put("tokenSig", tokenSig);
 		params.put("keyVersion", keyVersion);
 		post("/users/delete", new RequestParams(params), asyncHttpResponseHandler);
+
+	}
+	
+	public void changePassword(String username, String password, String newPassword, String authSig, String tokenSig, String keyVersion,
+			AsyncHttpResponseHandler asyncHttpResponseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("authSig", authSig);
+		params.put("tokenSig", tokenSig);
+		params.put("keyVersion", keyVersion);
+		params.put("newPassword", newPassword);
+		put("/users/password", new RequestParams(params), asyncHttpResponseHandler);
 
 	}
 }
