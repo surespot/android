@@ -202,7 +202,7 @@ public class ChatFragment extends SherlockFragment {
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
 			mChatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
-				
+
 				@Override
 				public void handleResponse(Boolean result) {
 					mIsDeleted = result;
@@ -219,12 +219,11 @@ public class ChatFragment extends SherlockFragment {
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
 
-			//hide text box if the user is deleted
+			// hide text box if the user is deleted
 			mIsDeleted = chatController.isFriendDeleted(mUsername);
-			
-			
+
 			mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
-			
+
 		}
 
 		return view;
@@ -476,9 +475,11 @@ public class ChatFragment extends SherlockFragment {
 
 		super.onSaveInstanceState(outState);
 
-		int selction = mListView.getLastVisiblePosition();
-		SurespotLog.v(TAG, "saving selected item: " + selction);
-		outState.putInt("selectedItem", selction);
+		if (mListView != null) {
+			int selction = mListView.getLastVisiblePosition();
+			SurespotLog.v(TAG, "saving selected item: " + selction);
+			outState.putInt("selectedItem", selction);
+		}
 
 	}
 
