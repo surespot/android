@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:padding="10dip"
     tools:context=".SignupActivity" >
-   
 
     <TextView
         android:id="@+id/textView2"
@@ -17,16 +16,15 @@
         android:id="@+id/etSignupUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dip"
         android:layout_marginTop="5dip"
         android:imeOptions="flagNoExtractUi|actionNext"
         android:inputType="textNoSuggestions"
         android:singleLine="true" />
 
     <TextView
-        android:id="@+id/tbInviteViaLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="0dip"
         android:text="password" />
 
     <EditText
@@ -34,15 +32,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
+        android:imeOptions="flagNoExtractUi|actionNext"
+        android:inputType="textPassword"
+        android:singleLine="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dip"
+        android:text="confirm password" />
+
+    <EditText
+        android:id="@+id/etSignupPasswordConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
         android:imeOptions="flagNoExtractUi|actionDone"
         android:inputType="textPassword"
-        android:singleLine="true" /> 
+        android:singleLine="true" />
 
     <Button
         android:id="@+id/bSignup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dip"
-        android:text="create account" />
+        android:text="create identity" />
 
 </LinearLayout>

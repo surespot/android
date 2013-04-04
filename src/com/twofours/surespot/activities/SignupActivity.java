@@ -77,7 +77,11 @@ public class SignupActivity extends SherlockActivity {
 			}
 		});
 
+		
 		editText = (EditText) findViewById(R.id.etSignupPassword);
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
+		
+		editText = (EditText) findViewById(R.id.etSignupPasswordConfirm);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -92,6 +96,8 @@ public class SignupActivity extends SherlockActivity {
 			}
 
 		});
+		
+		
 
 	}
 
@@ -131,7 +137,17 @@ public class SignupActivity extends SherlockActivity {
 
 		final EditText pwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPassword);
 		final String password = pwText.getText().toString();
-		if (!(username.length() > 0 && password.length() > 0)) {
+		
+		final EditText confirmPwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPasswordConfirm);
+		String confirmPassword = confirmPwText.getText().toString();
+		
+		
+		if (!(username.length() > 0 && password.length() > 0 && confirmPassword.length() > 0)) {
+			return;
+		}
+		
+		if (!confirmPassword.equals(password)) {
+			Utils.makeToast(this, "passwords do not match");
 			return;
 		}
 
