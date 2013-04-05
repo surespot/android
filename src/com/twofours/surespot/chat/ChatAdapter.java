@@ -479,7 +479,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void userDeleted(boolean delete) {
 		if (delete) {
-			deleteAllMessages();
+			deleteTheirMessages();
 		}
 		if (mDeletedCallback != null) {
 			mDeletedCallback.handleResponse(delete);
