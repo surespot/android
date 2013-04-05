@@ -36,7 +36,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		setContentView(R.layout.activity_change_password);
 		Utils.configureActionBar(this, "change", "password", true);
 
-		mMpd = new MultiProgressDialog(this, "changing password", 250);
+		mMpd = new MultiProgressDialog(this, "changing password", 500);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
@@ -76,18 +76,17 @@ public class ChangePasswordActivity extends SherlockActivity {
 	}
 
 	private void changePassword(final String username, final String currentPassword, final String newPassword, final String confirmPassword) {
-
-		mMpd.incrProgress();
-
-		if (!(username.length() > 0 && currentPassword.length() > 0 && newPassword.length() > 0 && confirmPassword.length() > 0)) {
+		if (!(username.length() > 0 && currentPassword.length() > 0 && newPassword.length() > 0 && confirmPassword.length() > 0)) {			
 			return;
 		}
 
 		if (!confirmPassword.equals(newPassword)) {
+			resetFields();
 			Utils.makeToast(this, "passwords do not match");
 			return;
 		}
-
+		
+		mMpd.incrProgress();
 		SurespotIdentity identity = IdentityController.getIdentity(this, username, currentPassword);
 
 		if (identity == null) {
@@ -135,15 +134,17 @@ public class ChangePasswordActivity extends SherlockActivity {
 											// update the password
 											IdentityController.updatePassword(ChangePasswordActivity.this, username, currentPassword,
 													newPassword);
-
-											mMpd.decrProgress();
+											resetFields();
+											mMpd.decrProgress();											
 											Utils.makeLongToast(ChangePasswordActivity.this, "password changed");
+											finish();
 										};
 
 										@Override
 										public void onFailure(Throwable error, String content) {
-											SurespotLog.w(TAG, "changePassword", error);
+											SurespotLog.w(TAG, "changePassword", error);											
 											mMpd.decrProgress();
+											resetFields();
 											Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
 
 										}
@@ -151,6 +152,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 						}
 						else {
 							mMpd.decrProgress();
+							resetFields();
 							Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
 						}
 
@@ -162,6 +164,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 			@Override
 			public void onFailure(Throwable error, String content) {
 				mMpd.decrProgress();
+				resetFields();
 				Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
 
 			}
@@ -196,6 +199,20 @@ public class ChangePasswordActivity extends SherlockActivity {
 			this.keyVersion = keyVersion;
 		}
 
+	}
+	
+	private void resetFields() {
+		final EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
+		etCurrent.setText("");
+
+		final EditText etNew = (EditText) findViewById(R.id.etChangePasswordNew);
+		etNew.setText("");
+
+		final EditText etConfirm = (EditText) findViewById(R.id.etChangePasswordConfirm);
+		etConfirm.setText("");
+		
+		etCurrent.requestFocus();
+		
 	}
 
 }
