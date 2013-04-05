@@ -875,30 +875,43 @@ public class ChatController {
 	private void handleUserControlMessage(SurespotControlMessage message, boolean notify) {
 
 		mLatestUserControlId = message.getId();
-		boolean addedUser = false;
-		boolean deletedUser = false;
 		String user = null;
 
 		if (message.getAction().equals("revoke")) {
 			IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
 		}
 		else if (message.getAction().equals("invited")) {
-			addedUser = true;
 			user = message.getData();
 			mFriendAdapter.addFriendInvited(user);
 		}
 		else if (message.getAction().equals("added")) {
-			addedUser = true;
 			user = message.getData();
 			mFriendAdapter.addNewFriend(user);
+			ChatAdapter chatAdapter = mChatAdapters.get(user);
+
+			if (chatAdapter != null) {
+				chatAdapter.userDeleted(false);
+			}
 		}
 		else if (message.getAction().equals("invite")) {
-			addedUser = true;
 			user = message.getData();
 			mFriendAdapter.addFriendInviter(user);
 		}
 		else if (message.getAction().equals("ignore")) {
-			mFriendAdapter.removeFriend(message.getData());
+			String friendName = message.getData();
+			Friend friend = mFriendAdapter.getFriend(friendName);
+
+			// if they're not deleted, remove them
+			if (friend != null && !friend.isDeleted()) {
+				mFriendAdapter.removeFriend(friendName);
+			}
+			else {
+				// they've been deleted, just remove the invite flags
+				friend.setInviter(false);
+				friend.setInvited(false);
+				
+			}
+			
 		}
 		else if (message.getAction().equals("delete")) {
 			String friendName = message.getData();
@@ -912,35 +925,26 @@ public class ChatController {
 					mFriendAdapter.removeFriend(friendName);
 				}
 				else {
-					// they've been deleted, just remove the inviter flag
+					// they've been deleted, just remove the invite flags
 					friend.setInviter(false);
+					friend.setInvited(false);
 				}
 			}
 			// they really deleted us boo hoo
 			else {
-				deletedUser = true;
 				user = message.getData();
 				handleDeleteUser(user, message.getMoreData());
-			}
-
-		}
-
-		// if we added/invited a user let the chat adapter know the deleted status
-		if (addedUser) {
-			ChatAdapter chatAdapter = mChatAdapters.get(user);
-
-			if (chatAdapter != null) {
-				chatAdapter.userDeleted(false);
 			}
 		}
 
 		if (notify) {
-			if (addedUser || deletedUser) {
-				Friend friend = mFriendAdapter.getFriend(user);
-				if (friend != null) {
-					friend.setLastReceivedUserControlId(message.getId());
-				}
+
+			Friend friend = mFriendAdapter.getFriend(user);
+			if (friend != null) {
+				friend.setLastReceivedUserControlId(message.getId());
 			}
+			mFriendAdapter.notifyDataSetChanged();
+
 		}
 
 	}
