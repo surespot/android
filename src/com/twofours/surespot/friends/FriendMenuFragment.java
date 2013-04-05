@@ -50,8 +50,10 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 				switch (which) {
 				case 0:
 					mActivity.getChatController().deleteMessages(mFriend);
+					break;
 				case 1:
 					mActivity.getChatController().deleteFriend(mFriend);
+					break;
 				}
 			}
 		});
