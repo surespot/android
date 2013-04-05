@@ -45,6 +45,7 @@ public class IdentityController {
 	public static final String PUBLICKEYPAIR_EXTENSION = ".spk";
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
+	public static final Object IDENTITY_FILE_LOCK = new Object();	
 	private static boolean mHasIdentity;
 
 	private synchronized static void setLoggedInUser(Context context, SurespotIdentity identity, Cookie cookie) {
@@ -64,7 +65,7 @@ public class IdentityController {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = new SurespotIdentity(username);
 		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
-		saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+		saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, identity, cookie);
 
 	}
@@ -73,11 +74,11 @@ public class IdentityController {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = getIdentity(context, username, currentPassword);
 		if (identity != null) {
-			saveIdentity(identityDir, identity, newPassword + CACHE_IDENTITY_ID);	
+			saveIdentity(context, identityDir, identity, newPassword + CACHE_IDENTITY_ID);
 		}
 	}
-	
-	private static synchronized String saveIdentity(String identityDir, SurespotIdentity identity, String password) {
+
+	private static synchronized String saveIdentity(Context context, String identityDir, SurespotIdentity identity, String password) {
 		String filename = identity.getUsername() + IDENTITY_EXTENSION;
 		JSONObject json = new JSONObject();
 		try {
@@ -106,18 +107,27 @@ public class IdentityController {
 			}
 
 			String identityFile = identityDir + File.separator + filename;
-			SurespotLog.v(TAG, "saving identity: " + identityFile);
+			
+			synchronized (IDENTITY_FILE_LOCK) {
+				
+				SurespotLog.v(TAG, "saving identity: " + identityFile);
 
-			if (!FileUtils.ensureDir(identityDir)) {
-				SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException("Could not create identity dir: "
-						+ identityDir));
-				return null;
+				if (!FileUtils.ensureDir(identityDir)) {
+					SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException(
+							"Could not create identity dir: " + identityDir));
+					return null;
+				}
+
+				FileOutputStream fos = new FileOutputStream(identityFile);
+				fos.write(identityBytes);
+				fos.close();
+				
 			}
-
-			FileOutputStream fos = new FileOutputStream(identityFile);
-			fos.write(identityBytes);
-			fos.close();
-
+			
+			//tell backup manager the data has changed
+			if (context != null) {
+				SurespotApplication.mBackupManager.dataChanged();
+			}
 			return identityFile;
 		}
 
@@ -138,15 +148,18 @@ public class IdentityController {
 
 		StateController.wipeState(context, username);
 
-		String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
-		File file = new File(identityFilename);
-		file.delete();
+		synchronized (IDENTITY_FILE_LOCK) {
+			String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
+			File file = new File(identityFilename);
+			file.delete();
+		}
 
 		SurespotApplication.getCachingService().clear();
-		
+
 		MainActivity.getNetworkController().clearCache();
 
 		launchLoginActivity(context);
+
 	}
 
 	public static SurespotIdentity getIdentity(String username) {
@@ -176,10 +189,13 @@ public class IdentityController {
 		}
 
 		try {
-			FileInputStream idStream = new FileInputStream(idFile);
-			byte[] idBytes = new byte[(int) idFile.length()];
-			idStream.read(idBytes);
-			idStream.close();
+			byte[] idBytes = null;
+			synchronized (IDENTITY_FILE_LOCK) {
+				FileInputStream idStream = new FileInputStream(idFile);
+				idBytes = new byte[(int) idFile.length()];
+				idStream.read(idBytes);
+				idStream.close();
+			}
 
 			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
 
@@ -237,7 +253,7 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-							saveIdentity(FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+							saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
 							callback.handleResponse(new IdentityOperationResult(context.getText(R.string.identity_imported_successfully)
 									.toString(), true));
 						}
@@ -290,7 +306,7 @@ public class IdentityController {
 			MainActivity.getNetworkController().validate(username, dpassword,
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
-							String path = saveIdentity(exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
+							String path = saveIdentity(null, exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
 							callback.handleResponse(path == null ? null : "identity exported to " + path);
 						}
 
@@ -431,6 +447,29 @@ public class IdentityController {
 		return null;
 	}
 
+	public static String[] getIdentityFiles(Context context) {
+		String dir = FileUtils.getIdentityDir(context);
+
+		File[] files = new File(dir).listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String filename) {
+				return filename.endsWith(IDENTITY_EXTENSION);
+			}
+		});
+
+		if (files != null) {
+			String[] identityFiles = new String[files.length];
+			for (int i = 0; i < files.length; i++) {
+				identityFiles[i] = FileUtils.IDENTITIES_DIR + File.separator + files[i].getName();
+			}
+			return identityFiles;
+		}
+
+		return null;
+
+	}
+
 	public static List<String> getIdentityNames(Context context, String dir) {
 
 		ArrayList<String> identityNames = new ArrayList<String>();
@@ -561,7 +600,7 @@ public class IdentityController {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
-		String idFile = saveIdentity(identityDir, identity, password + CACHE_IDENTITY_ID);
+		String idFile = saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
 		// big problems if we can't save it
 		if (idFile == null) {
 
@@ -600,7 +639,7 @@ public class IdentityController {
 		}
 
 	}
-	
+
 	private static void launchLoginActivity(Context context) {
 		Intent intent = new Intent(context, LoginActivity.class);
 		intent.putExtra("401", true);
@@ -609,5 +648,4 @@ public class IdentityController {
 
 	}
 
-	
 }

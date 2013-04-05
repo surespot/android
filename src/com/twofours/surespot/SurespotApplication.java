@@ -13,6 +13,7 @@ import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
+import android.app.backup.BackupManager;
 import android.content.Intent;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -25,6 +26,7 @@ public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
 	private static StateController mStateController = null;
+	public static BackupManager mBackupManager;
 	
 	public static final int CORE_POOL_SIZE = 10;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -51,8 +53,9 @@ public class SurespotApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		ACRA.init(this);
-
+		
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
+		mBackupManager = new BackupManager(this);
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
 		mStateController = new StateController();
 		try {
@@ -94,5 +97,7 @@ public class SurespotApplication extends Application {
 	public static StateController getStateController() {
 		return mStateController;
 	}
+	
+	
 
 }

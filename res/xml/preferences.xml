@@ -36,6 +36,12 @@
             android:title="@string/notifications_led" />
     </PreferenceCategory>
     <PreferenceCategory android:title="identity management" >
+        <CheckBoxPreference            
+            android:defaultValue="false"            
+            android:key="pref_auto_android_backup_enabled"
+            
+            android:title="auto backup/restore identities using android backup" />
+
         <Preference android:title="change password..." >
             <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity" >
             </intent>

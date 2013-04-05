@@ -5,11 +5,13 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
@@ -20,6 +22,15 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+			
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				SurespotApplication.mBackupManager.dataChanged();
+				return true;
+			}
+		};
 
 		// TODO put in fragment
 		PreferenceManager prefMgr = getPreferenceManager();
@@ -36,14 +47,17 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				info = manager.getPackageInfo(this.getPackageName(), 0);				
 				Preference version = prefMgr.findPreference("pref_version");
 				version.setTitle("version: " + info.versionName);
+				
+				prefMgr.findPreference("pref_auto_android_backup_enabled").setOnPreferenceClickListener(onPreferenceClickListener);				
+				prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(onPreferenceClickListener);				
+				prefMgr.findPreference(getString(R.string.pref_notifications_sound)).setOnPreferenceClickListener(onPreferenceClickListener);				
+				prefMgr.findPreference(getString(R.string.pref_notifications_vibration)).setOnPreferenceClickListener(onPreferenceClickListener);
+				prefMgr.findPreference(getString(R.string.pref_notifications_led)).setOnPreferenceClickListener(onPreferenceClickListener);
 			}
 			catch (NameNotFoundException e) {
 				SurespotLog.w(TAG,"onCreate", e);
-			}
-			
-		
+			}			
 		}
-
 	}
 
 	@Override
