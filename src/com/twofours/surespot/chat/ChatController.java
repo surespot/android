@@ -708,8 +708,16 @@ public class ChatController {
 		// getLatestMessageControlId(username);
 		int latestAvailableControlId = friend.getAvailableMessageControlId();
 
-		int fetchMessageId = latestAvailableId > latestMessageId ? latestMessageId : -1;
-		int fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
+		int fetchMessageId = 0;
+		if (latestMessageId > 0) {
+			fetchMessageId = latestAvailableId > latestMessageId ? latestMessageId : -1;
+		}
+
+		int fetchControlMessageId = 0;
+		if (fetchControlMessageId > 0) {
+
+			fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
+		}
 
 		LatestIdPair intPair = new LatestIdPair();
 		intPair.latestMessageId = fetchMessageId;
@@ -909,9 +917,9 @@ public class ChatController {
 				// they've been deleted, just remove the invite flags
 				friend.setInviter(false);
 				friend.setInvited(false);
-				
+
 			}
-			
+
 		}
 		else if (message.getAction().equals("delete")) {
 			String friendName = message.getData();
