@@ -28,6 +28,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.actionbarsherlock.view.MenuItem;
@@ -378,7 +379,9 @@ public class ChatController {
 	private void resendMessages() {
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
-		for (SurespotMessage message : resendMessages) {
+
+		for (int i = resendMessages.length - 1; i >= 0; i--) {
+			SurespotMessage message = resendMessages[i];
 			// set the last received id so the server knows which messages to check
 			String otherUser = message.getOtherUser();
 
@@ -400,7 +403,9 @@ public class ChatController {
 
 			SurespotLog.v(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
-			sendMessage(message);
+
+			enqueueMessage(message);
+			sendMessages();
 
 		}
 	}
@@ -431,8 +436,12 @@ public class ChatController {
 		return messages;
 
 	}
+	
+	private void enqueueMessage(SurespotMessage message) {
+		mSendBuffer.add(message);
+	}
 
-	private void sendMessages() {
+	private synchronized void sendMessages() {
 		if (mBackgroundTimer == null) {
 			mBackgroundTimer = new Timer("backgroundTimer");
 		}
@@ -442,13 +451,25 @@ public class ChatController {
 		Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
 		while (iterator.hasNext()) {
 			SurespotMessage message = iterator.next();
-			iterator.remove();
-			sendMessage(message);
+			if (isMessageReadyToSend(message)) {
+				iterator.remove();
+				sendMessage(message);
+			}
+			else {
+				break;
+			}
 		}
 
 	}
 
+	private boolean isMessageReadyToSend(SurespotMessage message) {
+		return !TextUtils.isEmpty(message.getData()) && !TextUtils.isEmpty(message.getFromVersion())
+				&& !TextUtils.isEmpty(message.getToVersion());
+	}
+
 	private void sendMessage(final SurespotMessage message) {
+		SurespotLog.v(TAG, "sendmessage adding message to ResendBuffer, text: " + message.getPlainData() + ", iv: " + message.getIv());
+
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
 			// TODO handle different mime types
@@ -1382,7 +1403,9 @@ public class ChatController {
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
 
 			try {
+
 				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
+				enqueueMessage(chatMessage);
 			}
 			catch (SurespotMessageSequenceException e) {
 				// not gonna happen
@@ -1403,9 +1426,13 @@ public class ChatController {
 						chatMessage.setData(result);
 						chatMessage.setFromVersion(ourLatestVersion);
 						chatMessage.setToVersion(theirLatestVersion);
-						ChatController.this.sendMessage(chatMessage);
+
+						SurespotLog.v(TAG, "sending message to chat controller, text: " + chatMessage.getPlainData() + ", iv: "
+								+ chatMessage.getIv());
+						
 					}
 
+					sendMessages();
 					return null;
 				}
 
