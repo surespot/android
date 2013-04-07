@@ -161,15 +161,15 @@ public class NetworkController {
 	}
 
 	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature,
-			String autoInviteUser, final CookieResponseHandler responseHandler) {
+			String referrers, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("dhPub", publicKeyDH);
 		params.put("dsaPub", publicKeyECDSA);
 		params.put("authSig", signature);
-		if (!TextUtils.isEmpty(autoInviteUser)) {
-			params.put("autoInviteUser", autoInviteUser);
+		if (!TextUtils.isEmpty(referrers)) {
+			params.put("referrers", referrers);
 		}
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -292,13 +292,13 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, String autoInviteUser, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, String referrers, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
-		if (!TextUtils.isEmpty(autoInviteUser)) {
-			params.put("autoInviteUser", autoInviteUser);
+		if (!TextUtils.isEmpty(referrers)) {
+			params.put("referrers", referrers);
 		}
 
 		// get the gcm id

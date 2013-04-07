@@ -3,12 +3,16 @@ package com.twofours.surespot;
 import java.net.URLDecoder;
 import java.util.HashMap;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -23,11 +27,26 @@ public class SurespotBroadcastReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Utils.logIntent(TAG, intent);
 
+		JSONArray referrers = null;
+		String sReferrers = Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.REFERRERS);
+		if (!TextUtils.isEmpty(sReferrers)) {
+			try {
+				referrers = new JSONArray(sReferrers);				
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, "onReceive", e);
+			}
+		}
+		
+		if (referrers == null) {
+			referrers = new JSONArray();
+		}
+
 		HashMap<String, String> values = new HashMap<String, String>();
 		try {
 			if (intent.hasExtra("referrer")) {
-				String referrers[] = intent.getStringExtra("referrer").split("&");
-				for (String referrerValue : referrers) {
+				String referrer[] = intent.getStringExtra("referrer").split("&");
+				for (String referrerValue : referrer) {
 					String keyValue[] = referrerValue.split("=");
 					values.put(URLDecoder.decode(keyValue[0]), URLDecoder.decode(keyValue[1]));
 
@@ -35,12 +54,14 @@ public class SurespotBroadcastReceiver extends BroadcastReceiver {
 			}
 		}
 		catch (Exception e) {
+			SurespotLog.w(TAG, "onReceive", e);
 		}
 
 		JSONObject jReferrer = new JSONObject(values);
 		SurespotLog.v(TAG, "onReceive, referrer: " + values);
-
-		Utils.putSharedPrefsString(context, "referrer", jReferrer.toString());
+		referrers.put(jReferrer);
+		
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.REFERRERS, referrers.toString());
 
 	}
 

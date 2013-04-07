@@ -2,8 +2,6 @@ package com.twofours.surespot.activities;
 
 import java.security.KeyPair;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 
 import android.content.ComponentName;
@@ -191,21 +189,10 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
-										String autoInviteUser = null;
 
-										String referrer = Utils.getSharedPrefsString(SignupActivity.this, "referrer");
-										if (referrer != null) {
-											try {
-												JSONObject jReferrer = new JSONObject(referrer);
-												autoInviteUser = jReferrer.getString("utm_content");
-											}
-											catch (JSONException e) {
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
-										}
-
-										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, autoInviteUser,
+										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
+										
+										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
 												new CookieResponseHandler() {
 
 													@Override
@@ -230,7 +217,7 @@ public class SignupActivity extends SherlockActivity {
 
 																@Override
 																protected Void doInBackground(Void... params) {
-
+																	Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
 																	IdentityController.createIdentity(SignupActivity.this, username,
 																			password, keyPair[0], keyPair[1], cookie);
 																	return null;

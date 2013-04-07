@@ -2,9 +2,6 @@ package com.twofours.surespot.activities;
 
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -204,24 +201,13 @@ public class LoginActivity extends SherlockActivity {
 				protected void onPostExecute(final IdSig idSig) {
 					if (idSig != null) {
 
-						NetworkController networkController = new NetworkController(LoginActivity.this, null);
-						String autoInviteUser = null;
+						NetworkController networkController = new NetworkController(LoginActivity.this, null);						
 						
-						String referrer = Utils.getSharedPrefsString(LoginActivity.this,"referrer");
-						if (referrer != null) {
-							try {
-								JSONObject jReferrer = new JSONObject(referrer);
-								autoInviteUser =  jReferrer.getString("utm_content");
-							}
-							catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} 
-						}
-						
-						networkController.login(username, idSig.derivedPassword, idSig.signature, autoInviteUser, new CookieResponseHandler() {
+						String referrers = Utils.getSharedPrefsString(LoginActivity.this,SurespotConstants.PrefNames.REFERRERS);						
+						networkController.login(username, idSig.derivedPassword, idSig.signature, referrers, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
+								Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
 
 								Intent intent = getIntent();
