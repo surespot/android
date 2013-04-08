@@ -436,7 +436,7 @@ public class ChatController {
 		return messages;
 
 	}
-	
+
 	private void enqueueMessage(SurespotMessage message) {
 		mSendBuffer.add(message);
 	}
@@ -718,7 +718,7 @@ public class ChatController {
 	private LatestIdPair getLatestIds(String username) {
 		Friend friend = getFriendAdapter().getFriend(username);
 		LatestIdPair idPair = mPreConnectIds.get(username);
-		
+
 		Integer latestMessageId = idPair.latestMessageId > -1 ? idPair.latestMessageId : 0;
 		int latestAvailableId = friend.getAvailableMessageId();
 
@@ -731,7 +731,7 @@ public class ChatController {
 		}
 
 		int fetchControlMessageId = 0;
-		if (latestControlId > 0) {			
+		if (latestControlId > 0) {
 			fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
 		}
 
@@ -1083,8 +1083,19 @@ public class ChatController {
 			int availableId = lastMessage.getId();
 			friend.setAvailableMessageId(availableId);
 
-			int adjustedLastViewedId = friend.getLastViewedMessageId() + sentByMeCount;
-			friend.setLastViewedMessageId(adjustedLastViewedId);
+			int lastViewedId = friend.getLastViewedMessageId();
+
+			// how many new messages total are there
+			int delta = availableId - lastViewedId;
+
+			// if all the new messages are mine then i've viewed them all
+			if (sentByMeCount == delta) {
+				friend.setLastViewedMessageId(availableId);
+			}
+			else {
+				//set the last viewed id to the difference caused by their messages
+				friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
+			}
 
 			chatAdapter.sort();
 			chatAdapter.notifyDataSetChanged();
@@ -1424,7 +1435,7 @@ public class ChatController {
 
 						SurespotLog.v(TAG, "sending message to chat controller, text: " + chatMessage.getPlainData() + ", iv: "
 								+ chatMessage.getIv());
-						
+
 					}
 
 					sendMessages();
