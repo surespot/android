@@ -14,12 +14,17 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
+import ch.boye.httpclientandroidlib.Header;
+import ch.boye.httpclientandroidlib.HeaderElement;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
+import ch.boye.httpclientandroidlib.HttpRequest;
+import ch.boye.httpclientandroidlib.HttpRequestInterceptor;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
 import ch.boye.httpclientandroidlib.client.CookieStore;
+import ch.boye.httpclientandroidlib.client.entity.GzipDecompressingEntity;
 import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
@@ -147,6 +152,34 @@ public class NetworkController {
 			}
 		};
 
+		HttpRequestInterceptor gzipRequestInterceptor = new HttpRequestInterceptor() {
+
+			public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+				if (!request.containsHeader("Accept-Encoding")) {
+					request.addHeader("Accept-Encoding", "gzip");
+				}
+			}
+		};
+
+		HttpResponseInterceptor gzipResponseInterceptor = new HttpResponseInterceptor() {
+
+			public void process(final HttpResponse response, final HttpContext context) throws HttpException, IOException {
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					Header ceheader = entity.getContentEncoding();
+					if (ceheader != null) {
+						HeaderElement[] codecs = ceheader.getElements();
+						for (int i = 0; i < codecs.length; i++) {
+							if (codecs[i].getName().equalsIgnoreCase("gzip")) {
+								response.setEntity(new GzipDecompressingEntity(response.getEntity()));
+								return;
+							}
+						}
+					}
+				}
+			}
+		};
+
 		if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
 
 			mClient.setCookieStore(mCookieStore);
@@ -154,9 +187,19 @@ public class NetworkController {
 			mCachingHttpClient.setCookieStore(mCookieStore);
 
 			// handle 401s
-			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
+			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);			
 			mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
+			
+			//gzip
+			mClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);			
+			mSyncClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);
+			mCachingHttpClient.addResponseInterceptor(gzipResponseInterceptor);
+			
+			mClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);			
+			mSyncClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);
+			mCachingHttpClient.addRequestInterceptor(gzipRequestInterceptor);		
+
 		}
 	}
 
@@ -226,15 +269,17 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
-	public void getDeleteToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+	public void getDeleteToken(final String username, String password, String authSignature,
+			AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", authSignature);
 		post("/deletetoken", new RequestParams(params), asyncHttpResponseHandler);
 	}
-	
-	public void getPasswordToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+
+	public void getPasswordToken(final String username, String password, String authSignature,
+			AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -377,13 +422,13 @@ public class NetworkController {
 
 	}
 
-//	public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
-//		int mId = messageId;
-//		int cId = controlId;
-//
-//		return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
-//
-//	}
+	// public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
+	// int mId = messageId;
+	// int cId = controlId;
+	//
+	// return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
+	//
+	// }
 
 	// public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {
 	// int cId = controlId;
@@ -663,7 +708,7 @@ public class NetworkController {
 		post("/users/delete", new RequestParams(params), asyncHttpResponseHandler);
 
 	}
-	
+
 	public void changePassword(String username, String password, String newPassword, String authSig, String tokenSig, String keyVersion,
 			AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
