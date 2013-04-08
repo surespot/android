@@ -717,16 +717,12 @@ public class ChatController {
 
 	private LatestIdPair getLatestIds(String username) {
 		Friend friend = getFriendAdapter().getFriend(username);
-
 		LatestIdPair idPair = mPreConnectIds.get(username);
+		
 		Integer latestMessageId = idPair.latestMessageId > -1 ? idPair.latestMessageId : 0;
-		// if (mPreConnectIds.containsKey(username)) {
-
-		// getLatestMessageId(username);
 		int latestAvailableId = friend.getAvailableMessageId();
 
 		int latestControlId = idPair.latestControlMessageId > -1 ? idPair.latestControlMessageId : friend.getLastReceivedMessageControlId();
-		// getLatestMessageControlId(username);
 		int latestAvailableControlId = friend.getAvailableMessageControlId();
 
 		int fetchMessageId = 0;
@@ -735,8 +731,7 @@ public class ChatController {
 		}
 
 		int fetchControlMessageId = 0;
-		if (fetchControlMessageId > 0) {
-
+		if (latestControlId > 0) {			
 			fetchControlMessageId = latestAvailableControlId > latestControlId ? latestControlId : -1;
 		}
 
