@@ -143,6 +143,13 @@ public class IdentityController {
 		}
 		return null;
 	}
+	
+	public static String getIdentityFile(Context context, String username) {
+		String identityDir = FileUtils.getIdentityDir(context);
+		String filename = username + IDENTITY_EXTENSION;
+		String identityFile = identityDir + File.separator + filename;
+		return identityFile;
+	}
 
 	public static synchronized void deleteIdentity(Context context, String username, String password) {
 
