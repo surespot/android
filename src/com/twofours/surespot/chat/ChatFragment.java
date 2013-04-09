@@ -5,6 +5,7 @@ import java.util.Timer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
@@ -46,11 +47,13 @@ public class ChatFragment extends SherlockFragment {
 	private int mPreviousTotal;
 	private Button mSendButton;
 	private Timer mTimer;
-	private int mSelectedItem;
+	private int mSelectedItem = -1;
+	private int mSelectedTop = 0;
 	private int mSelection;
 	private int mTop;
 	private boolean mJustLoaded;
 	private boolean mIsDeleted;
+	private Parcelable mListState;
 
 	private ChatAdapter mChatAdapter;
 
@@ -82,7 +85,13 @@ public class ChatFragment extends SherlockFragment {
 
 		if (savedInstanceState != null) {
 			mSelectedItem = savedInstanceState.getInt("selectedItem");
+			mSelectedTop = savedInstanceState.getInt("selectedTop");
+
 			SurespotLog.v(TAG, "loaded SelectedItem: " + mSelectedItem);
+
+			// mListState = savedInstanceState.getParcelable("listViewState");
+
+			// SurespotLog.v(TAG, "loaded listview state: " + mListState);
 		}
 
 	}
@@ -218,6 +227,7 @@ public class ChatFragment extends SherlockFragment {
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
+			scrollToState();
 
 			// hide text box if the user is deleted
 			mIsDeleted = chatController.isFriendDeleted(mUsername);
@@ -450,19 +460,29 @@ public class ChatFragment extends SherlockFragment {
 	}
 
 	public void scrollToEnd() {
+		SurespotLog.v(TAG, "scrollToEnd");
 		if (mChatAdapter != null && mListView != null) {
-			SurespotLog.v(TAG, "scrollToEnd");
-			mListView.setSelection(mChatAdapter.getCount());
+
+			mListView.setSelection(mChatAdapter.getCount() - 1);
 		}
 	}
 
 	public void scrollToState() {
-
+		SurespotLog.v(TAG, "scrollToState, mSelectedItem: " + mSelectedItem);
 		if (mChatAdapter != null && mListView != null) {
 
-			if (mSelectedItem > 0) {
-				SurespotLog.v(TAG, "scrollToState");
-				mListView.setSelection(mSelectedItem);
+			if (mSelectedItem > -1 && mSelectedItem != mListView.getSelectedItemPosition()) {
+
+				mListView.post(new Runnable() {
+
+					@Override
+					public void run() {
+
+						mListView.setSelectionFromTop(mSelectedItem, mSelectedTop);
+					}
+
+				});
+
 			}
 			else {
 				scrollToEnd();
@@ -476,9 +496,19 @@ public class ChatFragment extends SherlockFragment {
 		super.onSaveInstanceState(outState);
 
 		if (mListView != null) {
-			int selction = mListView.getLastVisiblePosition();
-			SurespotLog.v(TAG, "saving selected item: " + selction);
-			outState.putInt("selectedItem", selction);
+			// mListState = mListView.onSaveInstanceState();
+			// SurespotLog.v(TAG, "saved listview state: " + mListState);
+			// outState.putParcelable("listViewState", mListState);
+
+			int selection = mListView.getFirstVisiblePosition();
+			View v = mListView.getChildAt(0);
+
+			int top = (v == null) ? 0 : v.getTop();
+
+			SurespotLog.v(TAG, "saving selected item: " + selection);
+			outState.putInt("selectedItem", selection);
+			outState.putInt("selectedTop", top);
+
 		}
 
 	}

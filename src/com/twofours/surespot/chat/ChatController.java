@@ -772,6 +772,16 @@ public class ChatController {
 					if (messages != null) {
 						handleMessages(username, messages);
 					}
+					else {
+						if (username.equals(mCurrentChat)) {
+							ChatFragment chatFragment = getChatFragment(username);
+							if (chatFragment != null) {
+								chatFragment.scrollToState();
+								chatFragment.requestFocus();
+
+							}
+						}
+					}
 
 				}
 			});
@@ -780,7 +790,7 @@ public class ChatController {
 			if (username.equals(mCurrentChat)) {
 				ChatFragment chatFragment = getChatFragment(username);
 				if (chatFragment != null) {
-					chatFragment.scrollToEnd();
+					chatFragment.scrollToState();
 					chatFragment.requestFocus();
 
 				}
@@ -1076,6 +1086,8 @@ public class ChatController {
 			// getLatestMessagesAndControls(username, e.getMessageId(), -1);
 			return;
 		}
+		
+		boolean newMessage = false;
 
 		if (lastMessage != null) {
 			Friend friend = mFriendAdapter.getFriend(username);
@@ -1096,6 +1108,7 @@ public class ChatController {
 				//set the last viewed id to the difference caused by their messages
 				friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
 			}
+			newMessage = friend.isMessageActivity();
 
 			chatAdapter.sort();
 			chatAdapter.notifyDataSetChanged();
@@ -1107,7 +1120,13 @@ public class ChatController {
 		if (username.equals(mCurrentChat)) {
 			ChatFragment chatFragment = getChatFragment(username);
 			if (chatFragment != null) {
-				chatFragment.scrollToEnd();
+
+				if (newMessage) {
+					chatFragment.scrollToEnd();
+				}
+				else {
+					chatFragment.scrollToState();	
+				}
 				chatFragment.requestFocus();
 
 			}
