@@ -85,7 +85,7 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 					return;
 
 				mMessage.deleteObservers();
-				
+
 				AlertDialog dialog = (AlertDialog) MessageDialogMenuFragment.this.getDialog();
 				ListView listview = dialog.getListView();
 
@@ -164,10 +164,12 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 
 			}
 		};
-		mMessage.addObserver(mMessageObserver);
+		if (mMessage != null) {
+			mMessage.addObserver(mMessageObserver);
+		}
 		return dialog;
 	}
-	
+
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
