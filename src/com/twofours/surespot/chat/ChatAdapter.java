@@ -34,6 +34,7 @@ public class ChatAdapter extends BaseAdapter {
 	private boolean mDebugMode;
 	private boolean mCheckingSequence;
 	private IAsyncCallback<Boolean> mDeletedCallback;
+	private int mCurrentScrollPositionId;	
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -209,6 +210,14 @@ public class ChatAdapter extends BaseAdapter {
 		return position;
 	}
 
+	public int getCurrentScrollPositionId() {
+		return mCurrentScrollPositionId;
+	}
+
+	public void setCurrentScrollPositionId(int currentScrollPositionId) {
+		mCurrentScrollPositionId = currentScrollPositionId;
+	}
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
@@ -337,6 +346,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvMimeType.setText("mimeType: " + item.getMimeType());
 		}
 
+		chatMessageViewHolder.tvTime.setText(String.valueOf(position));
 		return convertView;
 	}
 	

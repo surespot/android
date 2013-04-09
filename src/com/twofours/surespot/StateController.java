@@ -311,14 +311,21 @@ public class StateController {
 
 	}
 
-	public void saveMessages(String spot, ArrayList<SurespotMessage> messages) {
+	public void saveMessages(String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
 		String filename = getFilename(MESSAGES_PREFIX + spot);
 		if (filename != null) {
 			if (messages != null) {
 				int messagesSize = messages.size();
-				SurespotLog.v(TAG, "saving " + (messagesSize > 30 ? 30 : messagesSize) + " messages");
-				String sMessages = ChatUtils.chatMessagesToJson(
-						messagesSize <= 30 ? messages : messages.subList(messagesSize - 30, messagesSize)).toString();
+				int saveSize = messagesSize - currentScrollPosition;
+				if (saveSize + SurespotConstants.SAVE_MESSAGE_BUFFER < SurespotConstants.SAVE_MESSAGE_MINIMUM) {
+					saveSize = SurespotConstants.SAVE_MESSAGE_MINIMUM;
+				}
+				else {
+					saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
+				}
+				
+			    SurespotLog.v(TAG, "saving " + saveSize + " messages");
+				String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize)).toString();
 				writeFile(filename, sMessages);
 			}
 			else {

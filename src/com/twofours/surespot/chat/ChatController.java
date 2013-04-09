@@ -1086,7 +1086,7 @@ public class ChatController {
 			// getLatestMessagesAndControls(username, e.getMessageId(), -1);
 			return;
 		}
-		
+
 		boolean newMessage = false;
 
 		if (lastMessage != null) {
@@ -1105,7 +1105,7 @@ public class ChatController {
 				friend.setLastViewedMessageId(availableId);
 			}
 			else {
-				//set the last viewed id to the difference caused by their messages
+				// set the last viewed id to the difference caused by their messages
 				friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
 			}
 			newMessage = friend.isMessageActivity();
@@ -1125,7 +1125,7 @@ public class ChatController {
 					chatFragment.scrollToEnd();
 				}
 				else {
-					chatFragment.scrollToState();	
+					chatFragment.scrollToState();
 				}
 				chatFragment.requestFocus();
 
@@ -1193,7 +1193,8 @@ public class ChatController {
 			for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 				String them = entry.getKey();
 				String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), them);
-				SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages());
+				SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages(),
+						entry.getValue().getCurrentScrollPositionId());
 			}
 		}
 	}
@@ -1205,7 +1206,7 @@ public class ChatController {
 
 		if (chatAdapter != null) {
 			SurespotApplication.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username),
-					chatAdapter.getMessages());
+					chatAdapter.getMessages(), chatAdapter.getCurrentScrollPositionId());
 		}
 
 	}

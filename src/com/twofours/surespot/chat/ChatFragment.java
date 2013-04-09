@@ -5,7 +5,6 @@ import java.util.Timer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
@@ -37,6 +36,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.UIUtils;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
@@ -52,9 +52,7 @@ public class ChatFragment extends SherlockFragment {
 	private int mSelection;
 	private int mTop;
 	private boolean mJustLoaded;
-	private boolean mIsDeleted;
-	private Parcelable mListState;
-
+	private boolean mIsDeleted;	
 	private ChatAdapter mChatAdapter;
 
 	public String getUsername() {
@@ -87,11 +85,9 @@ public class ChatFragment extends SherlockFragment {
 			mSelectedItem = savedInstanceState.getInt("selectedItem");
 			mSelectedTop = savedInstanceState.getInt("selectedTop");
 
-			SurespotLog.v(TAG, "loaded SelectedItem: " + mSelectedItem);
+			SurespotLog.v(TAG, "loaded selectedItem: " + mSelectedItem);
+			SurespotLog.v(TAG, "loaded selectedTop: " + mSelectedTop);
 
-			// mListState = savedInstanceState.getParcelable("listViewState");
-
-			// SurespotLog.v(TAG, "loaded listview state: " + mListState);
 		}
 
 	}
@@ -399,8 +395,10 @@ public class ChatFragment extends SherlockFragment {
 	@Override
 	public void onPause() {
 		super.onPause();
-		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername);
+		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername + ", currentScrollId: " + mListView.getFirstVisiblePosition());
+		// set the current scroll position so we know how many messages to save
 
+		mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
 		// mListView.removeOnScrollListener()):
 	}
 
@@ -500,17 +498,27 @@ public class ChatFragment extends SherlockFragment {
 			// SurespotLog.v(TAG, "saved listview state: " + mListState);
 			// outState.putParcelable("listViewState", mListState);
 
-			int selection = mListView.getFirstVisiblePosition();
-			View v = mListView.getChildAt(0);
+			if (mListView.getLastVisiblePosition() == mListView.getCount() -1 ) {
+				outState.putInt("selectedItem", -1);
+				outState.putInt("selectedTop", -1);
+			}
+			else {
 
-			int top = (v == null) ? 0 : v.getTop();
+				int selection = mListView.getFirstVisiblePosition();
+				// SurespotMessage message = (SurespotMessage) mListView.getItemAtPosition(selection);
+				View v = mListView.getChildAt(0);
 
-			SurespotLog.v(TAG, "saving selected item: " + selection);
-			outState.putInt("selectedItem", selection);
-			outState.putInt("selectedTop", top);
+				int top = (v == null) ? 0 : v.getTop();
 
+				SurespotLog.v(TAG, "saving selected item: " + selection);
+
+				// if we're at the bottom we want to go back to the bottom
+
+				outState.putInt("selectedItem", UIUtils.getResumePosition(selection, mListView.getCount()));
+				outState.putInt("selectedTop", top);
+				// outState.putString("selectedMessage", message.toJSONObject().toString());
+			}
 		}
 
 	}
-
 }
