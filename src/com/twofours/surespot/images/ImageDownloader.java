@@ -38,6 +38,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -68,11 +69,11 @@ public class ImageDownloader {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public static void download(ImageView imageView, SurespotMessage message) {
+	public static void download(ChatAdapter chatAdapter, ImageView imageView, SurespotMessage message) {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			forceDownload(imageView, message);
+			forceDownload(chatAdapter, imageView, message);
 		}
 		else {
 			cancelPotentialDownload(imageView, message);
@@ -88,6 +89,7 @@ public class ImageDownloader {
 			else {
 				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
 			}
+			chatAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -100,9 +102,9 @@ public class ImageDownloader {
 	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not
 	 * clear.
 	 */
-	private static void forceDownload(ImageView imageView, SurespotMessage message) {
+	private static void forceDownload(ChatAdapter chatAdapter, ImageView imageView, SurespotMessage message) {
 		if (cancelPotentialDownload(imageView, message)) {
-			BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, message);
+			BitmapDownloaderTask task = new BitmapDownloaderTask(chatAdapter, imageView, message);
 			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
 					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
@@ -158,11 +160,13 @@ public class ImageDownloader {
 			return mMessage;
 		}
 
+		private final WeakReference<ChatAdapter> chatAdapterReference;
 		private final WeakReference<ImageView> imageViewReference;
 
-		public BitmapDownloaderTask(ImageView imageView, SurespotMessage message) {
+		public BitmapDownloaderTask(ChatAdapter chatAdapter, ImageView imageView, SurespotMessage message) {
 			mMessage = message;
 			imageViewReference = new WeakReference<ImageView>(imageView);
+			chatAdapterReference = new WeakReference<ChatAdapter>(chatAdapter);
 		}
 
 		public void cancel() {
@@ -257,6 +261,10 @@ public class ImageDownloader {
 								else {
 									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
 											.format(mMessage.getDateTime()));
+								}
+								
+								if (chatAdapterReference != null) {
+									chatAdapterReference.get().notifyDataSetChanged();
 								}
 								
 							}});

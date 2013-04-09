@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
 
 /**
@@ -50,9 +51,9 @@ public class MessageDecryptor {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public static void decrypt(TextView textView, SurespotMessage message) {
+	public static void decrypt(ChatAdapter chatAdapter, TextView textView, SurespotMessage message) {
 
-		DecryptionTask task = new DecryptionTask(textView, message);
+		DecryptionTask task = new DecryptionTask(chatAdapter, textView, message);
 		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 		textView.setTag(decryptionTaskWrapper);
 		SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -83,9 +84,11 @@ public class MessageDecryptor {
 		private boolean mCancelled;
 
 		private final WeakReference<TextView> textViewReference;
+		private final WeakReference<ChatAdapter> chatAdapterReference;
 
-		public DecryptionTask(TextView textView, SurespotMessage message) {
+		public DecryptionTask(ChatAdapter adapter, TextView textView, SurespotMessage message) {
 			textViewReference = new WeakReference<TextView>(textView);
+			chatAdapterReference = new WeakReference<ChatAdapter>(adapter);
 			mMessage = message;
 		}
 
@@ -119,11 +122,11 @@ public class MessageDecryptor {
 
 						@Override
 						public void run() {
-							textView.setText(plainText);
-
+							textView.setText(plainText);						
 							// TODO put the row in the tag
+							View row = (View) textView.getParent();
 
-							TextView tvTime = (TextView) ((View) textView.getParent()).findViewById(R.id.messageTime);
+							TextView tvTime = (TextView) (row).findViewById(R.id.messageTime);
 							if (plainText == null) {
 								mMessage.setErrorStatus(500);
 								tvTime.setText("ERROR DECRYPTING MESSAGE");
@@ -135,6 +138,13 @@ public class MessageDecryptor {
 									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
 											mMessage.getDateTime()));
 								}
+							}
+							
+							//tell the chat adapter we updated
+							if (chatAdapterReference != null) {
+								ChatAdapter adapter = chatAdapterReference.get();
+								adapter.notifyDataSetChanged();
+								
 							}
 
 						}
