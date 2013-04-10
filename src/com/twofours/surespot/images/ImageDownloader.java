@@ -262,9 +262,10 @@ public class ImageDownloader {
 									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
 											.format(mMessage.getDateTime()));
 								}
+																
 								
 								if (chatAdapterReference != null) {
-									chatAdapterReference.get().notifyDataSetChanged();
+								//	chatAdapterReference.get().notifyDataSetChanged();
 								}
 								
 							}});

@@ -122,7 +122,7 @@ public class MessageDecryptor {
 
 						@Override
 						public void run() {
-							textView.setText(plainText);						
+							textView.setText(plainText);
 							// TODO put the row in the tag
 							View row = (View) textView.getParent();
 
@@ -139,12 +139,23 @@ public class MessageDecryptor {
 											mMessage.getDateTime()));
 								}
 							}
+//
+						//	textView.requestLayout();
 							
-							//tell the chat adapter we updated
+//							textView.post(new Runnable() {
+//
+//								@Override
+//								public void run() {
+//									textView.requestLayout();
+//
+//								}
+//							});
+
+							// tell the chat adapter we updated
 							if (chatAdapterReference != null) {
 								ChatAdapter adapter = chatAdapterReference.get();
-								adapter.notifyDataSetChanged();
-								
+								// adapter.notifyDataSetChanged();
+
 							}
 
 						}

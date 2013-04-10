@@ -52,7 +52,7 @@ public class ChatFragment extends SherlockFragment {
 	private int mSelection;
 	private int mTop;
 	private boolean mJustLoaded;
-	private boolean mIsDeleted;	
+	private boolean mIsDeleted;
 	private ChatAdapter mChatAdapter;
 
 	public String getUsername() {
@@ -460,8 +460,15 @@ public class ChatFragment extends SherlockFragment {
 	public void scrollToEnd() {
 		SurespotLog.v(TAG, "scrollToEnd");
 		if (mChatAdapter != null && mListView != null) {
+		//	mChatAdapter.notifyDataSetChanged();
+			mListView.postDelayed(new Runnable() {
 
-			mListView.setSelection(mChatAdapter.getCount() - 1);
+				@Override
+				public void run() {
+					mListView.setSelection(mChatAdapter.getCount() - 1);
+
+				}
+			},500);
 		}
 	}
 
@@ -498,7 +505,7 @@ public class ChatFragment extends SherlockFragment {
 			// SurespotLog.v(TAG, "saved listview state: " + mListState);
 			// outState.putParcelable("listViewState", mListState);
 
-			if (mListView.getLastVisiblePosition() == mListView.getCount() -1 ) {
+			if (mListView.getLastVisiblePosition() == mListView.getCount() - 1) {
 				outState.putInt("selectedItem", -1);
 				outState.putInt("selectedTop", -1);
 			}
