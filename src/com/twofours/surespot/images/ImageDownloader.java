@@ -89,7 +89,7 @@ public class ImageDownloader {
 			else {
 				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
 			}
-			chatAdapter.notifyDataSetChanged();
+			//chatAdapter.notifyDataSetChanged();
 		}
 	}
 

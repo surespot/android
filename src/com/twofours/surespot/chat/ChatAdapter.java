@@ -345,8 +345,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvData.setText("data: " + item.getData());
 			chatMessageViewHolder.tvMimeType.setText("mimeType: " + item.getMimeType());
 		}
-
-		chatMessageViewHolder.tvTime.setText(String.valueOf(position));
+	
 		return convertView;
 	}
 	
