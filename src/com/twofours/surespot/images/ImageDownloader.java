@@ -316,7 +316,7 @@ public class ImageDownloader {
 	 * @param bitmap
 	 *            The newly downloaded bitmap.
 	 */
-	private static void addBitmapToCache(String key, Bitmap bitmap) {
+	public static void addBitmapToCache(String key, Bitmap bitmap) {
 		if (bitmap != null) {
 			mBitmapCache.addBitmapToMemoryCache(key, bitmap);
 

@@ -5,6 +5,12 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,6 +29,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -37,6 +44,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -45,6 +53,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -520,20 +529,78 @@ public class ChatController {
 		}
 	}
 
-	private void updateUserMessageIds(SurespotMessage message) {
-		String otherUser = message.getOtherUser();
+	private void updateUserMessageIds(final SurespotMessage message) {
+		final String otherUser = message.getOtherUser();
 
-		ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
+		final ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 
 		// if the adapter is open add the message
 		if (chatAdapter != null) {
-			try {
-				chatAdapter.addOrUpdateMessage(message, true, true, true);
-			}
-			catch (SurespotMessageSequenceException e) {
-				SurespotLog.v(TAG, "updateUserMessageIds: " + e.getMessage());
-				getLatestMessagesAndControls(otherUser, e.getMessageId());
-			}
+
+			// decrypt the message before adding it so the size is set properly
+			new AsyncTask<Void, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(Void... params) {
+					if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+
+						// decrypt it before adding
+						final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(), message.getOtherUser(),
+								message.getTheirVersion(), message.getIv(), message.getData());
+
+						message.setPlainData(plainText);
+					}
+
+					else {
+
+						InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
+								message.getData());
+
+						Bitmap bitmap = null;
+						PipedOutputStream out = new PipedOutputStream();
+						PipedInputStream inputStream;
+						try {
+							inputStream = new PipedInputStream(out);
+
+							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
+									message.getIv(), new BufferedInputStream(imageStream), out);
+
+							byte[] bytes = Utils.inputStreamToBytes(inputStream);
+
+							bitmap = ChatUtils.getSampledImage(bytes);
+						}
+						catch (InterruptedIOException ioe) {
+
+							SurespotLog.w(TAG, "BitmapDownloaderTask ioe", ioe);
+
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, "BitmapDownloaderTask e", e);
+						}
+
+						if (bitmap != null) {
+							message.setHeight(bitmap.getHeight());
+							ImageDownloader.addBitmapToCache(message.getData(), bitmap);
+						}
+
+					}
+					return null;
+				}
+
+				protected void onPostExecute(Void result) {
+					try {
+						chatAdapter.addOrUpdateMessage(message, true, true, true);
+
+						//
+					}
+					catch (SurespotMessageSequenceException e) {
+						SurespotLog.v(TAG, "updateUserMessageIds: " + e.getMessage());
+						getLatestMessagesAndControls(otherUser, e.getMessageId());
+					}
+				};
+
+			}.execute();
+
 		}
 
 		Friend friend = mFriendAdapter.getFriend(otherUser);
