@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import android.content.BroadcastReceiver;
@@ -267,17 +266,19 @@ public class MainActivity extends SherlockFragmentActivity {
 				if (selectedImageUri != null) {
 
 					Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadPictureMessageAsync(this, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
 							if (result) {
+								
 								Utils.makeToast(MainActivity.this, getString(R.string.image_successfully_uploaded));
+								
 							}
 							else {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
 							}
 
-							new File(filename).delete();
+							//new File(filename).delete();
 						}
 					});
 				}

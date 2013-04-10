@@ -26,7 +26,6 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
 
 /**
@@ -51,9 +50,9 @@ public class MessageDecryptor {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public static void decrypt(ChatAdapter chatAdapter, TextView textView, SurespotMessage message) {
+	public static void decrypt(TextView textView, SurespotMessage message) {
 
-		DecryptionTask task = new DecryptionTask(chatAdapter, textView, message);
+		DecryptionTask task = new DecryptionTask(textView, message);
 		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 		textView.setTag(decryptionTaskWrapper);
 		SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -81,14 +80,11 @@ public class MessageDecryptor {
 	 */
 	static class DecryptionTask implements Runnable {
 		private SurespotMessage mMessage;
-		private boolean mCancelled;
-
+	
 		private final WeakReference<TextView> textViewReference;
-		private final WeakReference<ChatAdapter> chatAdapterReference;
 
-		public DecryptionTask(ChatAdapter adapter, TextView textView, SurespotMessage message) {
+		public DecryptionTask(TextView textView, SurespotMessage message) {
 			textViewReference = new WeakReference<TextView>(textView);
-			chatAdapterReference = new WeakReference<ChatAdapter>(adapter);
 			mMessage = message;
 		}
 
@@ -139,32 +135,10 @@ public class MessageDecryptor {
 											mMessage.getDateTime()));
 								}
 							}
-//
-						//	textView.requestLayout();
-							
-//							textView.post(new Runnable() {
-//
-//								@Override
-//								public void run() {
-//									textView.requestLayout();
-//
-//								}
-//							});
-
-							// tell the chat adapter we updated
-							if (chatAdapterReference != null) {
-								ChatAdapter adapter = chatAdapterReference.get();
-								// adapter.notifyDataSetChanged();
-
-							}
-
 						}
-
 					});
-
 				}
 			}
-
 		}
 	}
 

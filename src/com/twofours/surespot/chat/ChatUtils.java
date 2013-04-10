@@ -1,6 +1,7 @@
 package com.twofours.surespot.chat;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -13,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -28,8 +30,10 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class ChatUtils {
@@ -86,8 +90,8 @@ public class ChatUtils {
 	}
 
 	@SuppressWarnings("resource")
-	public static void uploadPictureMessageAsync(final Context context, final Uri imageUri, final String to, final boolean scale,
-			final IAsyncCallback<Boolean> callback) {
+	public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final Uri imageUri,
+			final String to, final boolean scale, final IAsyncCallback<Boolean> callback) {
 
 		Runnable runnable = new Runnable() {
 
@@ -97,17 +101,20 @@ public class ChatUtils {
 
 				SurespotLog.v(TAG, "uploadPictureMessageAsync");
 				try {
+					Bitmap bitmap = null;
 					InputStream dataStream;
 					if (scale) {
 						SurespotLog.v(TAG, "scalingImage");
-						final Bitmap bitmap = decodeSampledBitmapFromUri(context, imageUri, -1);
+						bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1);
+
+						final Bitmap finalBitmap = bitmap;
 						final PipedOutputStream pos = new PipedOutputStream();
 						dataStream = new PipedInputStream(pos);
 						Runnable runnable = new Runnable() {
 							@Override
 							public void run() {
 								SurespotLog.v(TAG, "compressingImage");
-								bitmap.compress(Bitmap.CompressFormat.JPEG, 75, pos);
+								finalBitmap.compress(Bitmap.CompressFormat.JPEG, 75, pos);
 								try {
 									pos.close();
 									SurespotLog.v(TAG, "imageCompressed");
@@ -120,18 +127,47 @@ public class ChatUtils {
 						SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 					}
 					else {
-						dataStream = context.getContentResolver().openInputStream(imageUri);
+						dataStream = activity.getContentResolver().openInputStream(imageUri);
 					}
 
 					PipedOutputStream fileOutputStream = new PipedOutputStream();
 					PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
 					String ourVersion = IdentityController.getOurLatestVersion();
 					String theirVersion = IdentityController.getTheirLatestVersion(to);
-					String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
-							fileOutputStream);
-					MainActivity.getNetworkController().postFileStream(context, ourVersion, to, theirVersion, iv, fileInputStream,
+					final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion,
+							new BufferedInputStream(dataStream), fileOutputStream);
+
+					MainActivity.getNetworkController().postFileStream(activity, ourVersion, to, theirVersion, iv, fileInputStream,
 							SurespotConstants.MimeTypes.IMAGE, callback);
 
+					// add a message immediately
+					if (scale) {
+						// use iv as key
+
+						if (bitmap != null) {
+							// scale to display size
+							ByteArrayOutputStream bos = new ByteArrayOutputStream();
+							bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
+							bitmap = getSampledImage(bos.toByteArray());
+							bos.close();
+						}
+					}
+					else {
+						// scale to display size
+						bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
+					}
+					if (bitmap != null) {
+						SurespotLog.v(TAG, "adding bitmap to cache: " + iv);
+						ImageDownloader.addBitmapToCache(iv, bitmap);
+						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, "uploading", iv, iv);
+						message.setHeight(bitmap.getHeight());
+						activity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								chatController.addMessage(message);
+							}
+						});
+					}
 				}
 
 				catch (IOException e) {
@@ -237,6 +273,7 @@ public class ChatUtils {
 		int reqHeight = SurespotConstants.IMAGE_DISPLAY_HEIGHT;
 		if (options.outHeight > reqHeight) {
 			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
+			SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
 		}
 
 		options.inJustDecodeBounds = false;
@@ -363,7 +400,7 @@ public class ChatUtils {
 		return messages;
 
 	}
-	
+
 	public static byte[] base64EncodeNowrap(byte[] buf) {
 		return Base64.encode(buf, Base64.NO_WRAP);
 	}
@@ -371,7 +408,7 @@ public class ChatUtils {
 	public static byte[] base64DecodeNowrap(String buf) {
 		return Base64.decode(buf, Base64.NO_WRAP);
 	}
-	
+
 	public static byte[] base64Encode(byte[] buf) {
 		return Base64.encode(buf, Base64.DEFAULT);
 	}
@@ -379,6 +416,5 @@ public class ChatUtils {
 	public static byte[] base64Decode(String buf) {
 		return Base64.decode(buf, Base64.DEFAULT);
 	}
-
 
 }

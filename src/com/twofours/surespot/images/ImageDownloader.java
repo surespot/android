@@ -38,7 +38,6 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -69,13 +68,15 @@ public class ImageDownloader {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public static void download(ChatAdapter chatAdapter, ImageView imageView, SurespotMessage message) {
+	public static void download(ImageView imageView, SurespotMessage message) {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			forceDownload(chatAdapter, imageView, message);
+			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
+			forceDownload(imageView, message);
 		}
 		else {
+			SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
 			cancelPotentialDownload(imageView, message);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
@@ -89,7 +90,7 @@ public class ImageDownloader {
 			else {
 				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
 			}
-			//chatAdapter.notifyDataSetChanged();
+			// chatAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -102,9 +103,9 @@ public class ImageDownloader {
 	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not
 	 * clear.
 	 */
-	private static void forceDownload(ChatAdapter chatAdapter, ImageView imageView, SurespotMessage message) {
+	private static void forceDownload(ImageView imageView, SurespotMessage message) {
 		if (cancelPotentialDownload(imageView, message)) {
-			BitmapDownloaderTask task = new BitmapDownloaderTask(chatAdapter, imageView, message);
+			BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, message);
 			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
 					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
@@ -160,13 +161,11 @@ public class ImageDownloader {
 			return mMessage;
 		}
 
-		private final WeakReference<ChatAdapter> chatAdapterReference;
 		private final WeakReference<ImageView> imageViewReference;
 
-		public BitmapDownloaderTask(ChatAdapter chatAdapter, ImageView imageView, SurespotMessage message) {
+		public BitmapDownloaderTask(ImageView imageView, SurespotMessage message) {
 			mMessage = message;
 			imageViewReference = new WeakReference<ImageView>(imageView);
-			chatAdapterReference = new WeakReference<ChatAdapter>(chatAdapter);
 		}
 
 		public void cancel() {
@@ -175,11 +174,9 @@ public class ImageDownloader {
 
 		@Override
 		public void run() {
-
-			InputStream imageStream = MainActivity.getNetworkController()
-					.getFileStream(MainActivity.getContext(), mMessage.getData());
-
 			Bitmap bitmap = null;
+
+			InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 
 			if (!mCancelled) {
 				PipedOutputStream out = new PipedOutputStream();
@@ -194,7 +191,7 @@ public class ImageDownloader {
 						inputStream.close();
 						return;
 					}
-					
+
 					byte[] bytes = Utils.inputStreamToBytes(inputStream);
 					if (mCancelled) {
 						return;
@@ -213,7 +210,9 @@ public class ImageDownloader {
 			}
 
 			if (bitmap != null) {
+
 				final Bitmap finalBitmap = bitmap;
+
 				ImageDownloader.addBitmapToCache(mMessage.getData(), bitmap);
 
 				if (imageViewReference != null) {
@@ -227,15 +226,22 @@ public class ImageDownloader {
 
 							@Override
 							public void run() {
+
 								imageView.clearAnimation();
-								Animation fadeIn = new AlphaAnimation(0, 1);
-								fadeIn.setDuration(1000);
-								imageView.startAnimation(fadeIn);
+								if (!"uploading".equals(mMessage.getPlainData())) {
+									Animation fadeIn = new AlphaAnimation(0, 1);
+									fadeIn.setDuration(1000);
+									imageView.startAnimation(fadeIn);
+								}
+								else {
+									SurespotLog.v(TAG, "clearing uploading flag");
+									mMessage.setPlainData(null);
+								}
+								
 								imageView.setImageBitmap(finalBitmap);
 								if (mMessage.getHeight() == 0) {
 									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
-									SurespotLog.v(
-											TAG,
+									SurespotLog.v(TAG,
 											"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
 													+ ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
 													+ finalBitmap.getWidth());
@@ -244,8 +250,9 @@ public class ImageDownloader {
 								// TODO put the row in the tag
 								TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
-								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageNotShareable);
-								
+								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent())
+										.findViewById(R.id.messageImageNotShareable);
+
 								if (mMessage.isShareable()) {
 									ivShareable.setVisibility(View.VISIBLE);
 									ivNotShareable.setVisibility(View.GONE);
@@ -254,23 +261,16 @@ public class ImageDownloader {
 									ivShareable.setVisibility(View.GONE);
 									ivNotShareable.setVisibility(View.VISIBLE);
 								}
-								
+
 								if (mMessage.getDateTime() == null) {
 									tvTime.setText("");
 								}
 								else {
-									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-											.format(mMessage.getDateTime()));
+									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+											mMessage.getDateTime()));
 								}
-																
-								
-								if (chatAdapterReference != null) {
-								//	chatAdapterReference.get().notifyDataSetChanged();
-								}
-								
-							}});
-						
-						
+							}
+						});
 					}
 				}
 			}

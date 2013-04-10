@@ -301,7 +301,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 			else {
 				chatMessageViewHolder.tvText.setText("");
-				MessageDecryptor.decrypt(this, chatMessageViewHolder.tvText, item);
+				MessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
 			chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
@@ -312,7 +312,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
 			if (!TextUtils.isEmpty(item.getData())) {
-				ImageDownloader.download(this, chatMessageViewHolder.imageView, item);
+				ImageDownloader.download(chatMessageViewHolder.imageView, item);
 			}
 
 			if (item.isShareable()) {

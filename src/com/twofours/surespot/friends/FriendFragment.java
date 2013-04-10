@@ -92,7 +92,7 @@ public class FriendFragment extends SherlockFragment {
 					dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
 				}
 				return true;
-				
+
 			}
 		});
 
@@ -198,31 +198,32 @@ public class FriendFragment extends SherlockFragment {
 
 				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 				final FragmentActivity activity = getActivity();
-				ChatUtils.uploadPictureMessageAsync(activity, imageUri, username, true, new IAsyncCallback<Boolean>() {
-
-					@Override
-					public void handleResponse(final Boolean result) {
-						SurespotLog.v(TAG, "upload picture response: " + result);
-						activity.runOnUiThread(new Runnable() {
+				ChatUtils.uploadPictureMessageAsync(activity, getMainActivity().getChatController(), imageUri, username, true,
+						new IAsyncCallback<Boolean>() {
 
 							@Override
-							public void run() {
-								Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
-										: R.string.could_not_upload_image));
-								// clear the intent
+							public void handleResponse(final Boolean result) {
+								SurespotLog.v(TAG, "upload picture response: " + result);
+								activity.runOnUiThread(new Runnable() {
 
+									@Override
+									public void run() {
+										Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
+												: R.string.could_not_upload_image));
+										// clear the intent
+
+									}
+								});
+
+								activity.getIntent().setAction(null);
+								activity.getIntent().setType(null);
+								if (activity.getIntent().getExtras() != null) {
+									activity.getIntent().getExtras().clear();
+								}
+
+								// scrollToEnd();
 							}
 						});
-
-						activity.getIntent().setAction(null);
-						activity.getIntent().setType(null);
-						if (activity.getIntent().getExtras() != null) {
-							activity.getIntent().getExtras().clear();
-						}
-
-						// scrollToEnd();
-					}
-				});
 				// }
 			}
 		}
