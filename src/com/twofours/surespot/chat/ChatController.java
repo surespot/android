@@ -966,9 +966,14 @@ public class ChatController {
 			}
 
 			if (notify) {
-				friend.setLastReceivedMessageControlId(message.getId());
-				friend.setAvailableMessageControlId(message.getId());
-				chatAdapter.notifyDataSetChanged();
+				if (friend != null) {
+					friend.setLastReceivedMessageControlId(message.getId());
+					friend.setAvailableMessageControlId(message.getId());
+				}
+
+				if (chatAdapter != null) {
+					chatAdapter.notifyDataSetChanged();
+				}
 			}
 		}
 	}
@@ -1533,19 +1538,19 @@ public class ChatController {
 		}
 
 	}
-	
+
 	void addMessage(SurespotMessage message) {
 		ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
 
 		try {
-			
+
 			chatAdapter.addOrUpdateMessage(message, false, true, true);
 			getChatFragment(message.getTo()).scrollToEnd();
 		}
 		catch (SurespotMessageSequenceException e) {
 			// not gonna happen
 			SurespotLog.v(TAG, "addMessage", e);
-		}	
+		}
 	}
 
 	public static String getCurrentChat() {
