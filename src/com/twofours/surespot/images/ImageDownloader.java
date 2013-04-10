@@ -227,18 +227,19 @@ public class ImageDownloader {
 							@Override
 							public void run() {
 
-								imageView.clearAnimation();
+								
 								if (!"uploading".equals(mMessage.getPlainData())) {
+									imageView.clearAnimation();
 									Animation fadeIn = new AlphaAnimation(0, 1);
 									fadeIn.setDuration(1000);
 									imageView.startAnimation(fadeIn);
+									imageView.setImageBitmap(finalBitmap);
 								}
 								else {
 									SurespotLog.v(TAG, "clearing uploading flag");
 									mMessage.setPlainData(null);
 								}
 								
-								imageView.setImageBitmap(finalBitmap);
 								if (mMessage.getHeight() == 0) {
 									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
 									SurespotLog.v(TAG,
