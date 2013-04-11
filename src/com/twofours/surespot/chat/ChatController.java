@@ -590,8 +590,11 @@ public class ChatController {
 				protected void onPostExecute(Void result) {
 					try {
 						chatAdapter.addOrUpdateMessage(message, true, true, true);
+						ChatFragment chatFragment = getChatFragment(otherUser);
+						if (chatFragment != null) {
+							chatFragment.scrollToEnd();
+						}
 
-						//
 					}
 					catch (SurespotMessageSequenceException e) {
 						SurespotLog.v(TAG, "updateUserMessageIds: " + e.getMessage());
@@ -614,11 +617,7 @@ public class ChatController {
 			if (otherUser.equals(mCurrentChat)) {
 				friend.setLastViewedMessageId(messageId);
 			}
-			ChatFragment chatFragment = getChatFragment(otherUser);
-			if (chatFragment != null) {
-				chatFragment.scrollToEnd();
-			}
-
+		
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
@@ -1502,7 +1501,7 @@ public class ChatController {
 
 			try {
 
-				chatAdapter.addOrUpdateMessage(chatMessage, false, true, false);
+				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
 				enqueueMessage(chatMessage);
 			}
 			catch (SurespotMessageSequenceException e) {
@@ -1544,7 +1543,7 @@ public class ChatController {
 
 		try {
 
-			chatAdapter.addOrUpdateMessage(message, false, true, false);
+			chatAdapter.addOrUpdateMessage(message, false, true, true);
 			getChatFragment(message.getTo()).scrollToEnd();
 		}
 		catch (SurespotMessageSequenceException e) {
@@ -1884,7 +1883,7 @@ public class ChatController {
 		if (chatFragment != null) {
 			chatFragment.scrollToEnd();
 		}
-		
+
 	}
 
 }

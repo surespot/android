@@ -19,7 +19,7 @@ public class BitmapCache {
 		// Use 1/8th of the available memory for this memory cache.
 		// final int cacheSize = maxMemory / 2;
 
-		mMemoryCache = new LruCache<String, Bitmap>(100);
+		mMemoryCache = new LruCache<String, Bitmap>(50);
 		// {
 		//
 		// @Override
