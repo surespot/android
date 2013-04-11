@@ -265,16 +265,12 @@ public class MainActivity extends SherlockFragmentActivity {
 				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
 
-					Utils.makeToast(this, getString(R.string.uploading_image));
+				//	Utils.makeToast(this, getString(R.string.uploading_image));
 					ChatUtils.uploadPictureMessageAsync(this, mChatController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean result) {
-							if (result) {
+							if (!result) {
 								
-								Utils.makeToast(MainActivity.this, getString(R.string.image_successfully_uploaded));
-								
-							}
-							else {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
 							}
 
@@ -286,6 +282,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			break;
 		case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
 			if (resultCode == RESULT_OK) {
+				
 				// TODO handle null exception by saving state
 				if (mImageCaptureHandler != null) {
 					mImageCaptureHandler.handleResult();

@@ -194,7 +194,7 @@ public class FriendFragment extends SherlockFragment {
 
 				final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
-				Utils.makeToast(getActivity(), getString(R.string.uploading_image));
+				// Utils.makeToast(getActivity(), getString(R.string.uploading_image));
 
 				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 				final FragmentActivity activity = getActivity();
@@ -204,16 +204,18 @@ public class FriendFragment extends SherlockFragment {
 							@Override
 							public void handleResponse(final Boolean result) {
 								SurespotLog.v(TAG, "upload picture response: " + result);
-								activity.runOnUiThread(new Runnable() {
 
-									@Override
-									public void run() {
-										Utils.makeToast(activity, getString(result ? R.string.image_successfully_uploaded
-												: R.string.could_not_upload_image));
-										// clear the intent
+								if (!result) {
+									activity.runOnUiThread(new Runnable() {
 
-									}
-								});
+										@Override
+										public void run() {
+											Utils.makeToast(activity, getString(R.string.could_not_upload_image));
+											// clear the intent
+
+										}
+									});
+								}
 
 								activity.getIntent().setAction(null);
 								activity.getIntent().setType(null);

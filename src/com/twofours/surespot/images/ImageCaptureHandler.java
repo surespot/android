@@ -47,17 +47,15 @@ public class ImageCaptureHandler {
 
 	
 	public void handleResult() {
-		Utils.makeToast(mActivity, mActivity.getString(R.string.uploading_image));
+		mActivity.getChatController().scrollToEnd(mTo);
+		//Utils.makeToast(mActivity, mActivity.getString(R.string.uploading_image));
 		ChatUtils.uploadPictureMessageAsync(mActivity, mActivity.getChatController(), Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
 			@Override
 			public void handleResponse(Boolean result) {
-				if (result) {
-					Utils.makeToast(mActivity, mActivity.getString(R.string.image_successfully_uploaded));
-					
-				}
-				else {
+				if (!result) {
 					Utils.makeToast(mActivity, mActivity.getString(R.string.could_not_upload_image));
 				}
+				
 
 				// new File(filename).delete();
 			}

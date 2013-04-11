@@ -1879,4 +1879,12 @@ public class ChatController {
 		}
 	}
 
+	public void scrollToEnd(String to) {
+		ChatFragment chatFragment = getChatFragment(to);
+		if (chatFragment != null) {
+			chatFragment.scrollToEnd();
+		}
+		
+	}
+
 }
