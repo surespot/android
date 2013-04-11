@@ -159,7 +159,8 @@ public class ChatUtils {
 					if (bitmap != null) {
 						SurespotLog.v(TAG, "adding bitmap to cache: " + iv);
 						ImageDownloader.addBitmapToCache(iv, bitmap);
-						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, "uploading", iv, iv);
+						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, iv);
+						message.setId(null);
 						message.setHeight(bitmap.getHeight());
 						activity.runOnUiThread(new Runnable() {
 							@Override

@@ -1502,7 +1502,7 @@ public class ChatController {
 
 			try {
 
-				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
+				chatAdapter.addOrUpdateMessage(chatMessage, false, true, false);
 				enqueueMessage(chatMessage);
 			}
 			catch (SurespotMessageSequenceException e) {
@@ -1544,7 +1544,7 @@ public class ChatController {
 
 		try {
 
-			chatAdapter.addOrUpdateMessage(message, false, true, true);
+			chatAdapter.addOrUpdateMessage(message, false, true, false);
 			getChatFragment(message.getTo()).scrollToEnd();
 		}
 		catch (SurespotMessageSequenceException e) {

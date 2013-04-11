@@ -25,13 +25,15 @@ import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -227,22 +229,27 @@ public class ImageDownloader {
 							@Override
 							public void run() {
 
-								
-								if (!"uploading".equals(mMessage.getPlainData())) {
+								Drawable drawable = imageView.getDrawable();
+								if (drawable instanceof DownloadedDrawable) {
+
 									SurespotLog.v(TAG, "image not uploading");
 									imageView.clearAnimation();
-									Animation fadeIn = new AlphaAnimation(0, 1);
-									fadeIn.setDuration(1000);
+									Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+																																	// AlphaAnimation(0,
+																																	// 1);
+									// Animation fadeout = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_out);
+									// fadeIn.setDuration(1000);
 									imageView.startAnimation(fadeIn);
-									
+
 								}
 								else {
 									SurespotLog.v(TAG, "clearing uploading flag");
-									mMessage.setPlainData(null);
+								//	mMessage.setPlainData(null);
+									ImageViewAnimatedChange(imageView.getContext(), imageView, finalBitmap);
 								}
-								
+
 								imageView.setImageBitmap(finalBitmap);
-								
+
 								if (mMessage.getHeight() == 0) {
 									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
 									SurespotLog.v(TAG,
@@ -280,6 +287,41 @@ public class ImageDownloader {
 			}
 
 		}
+	}
+
+	public static void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
+		SurespotLog.v(TAG, "switching image");
+		final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out);
+		final Animation anim_in = AnimationUtils.loadAnimation(c, android.R.anim.fade_in);
+		anim_out.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				v.setImageBitmap(new_image);
+				anim_in.setAnimationListener(new AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+					}
+				});
+				v.startAnimation(anim_in);
+			}
+		});
+		v.startAnimation(anim_out);
 	}
 
 	/**
