@@ -295,7 +295,7 @@ public class EncryptionController {
 					// cos.close();
 					bos.close();
 
-					SurespotLog.v(TAG, "read/write " + i + " bytes");
+					//SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
 				catch (InvalidCacheLoadException icle) {
@@ -353,7 +353,7 @@ public class EncryptionController {
 					cis.close();
 					bos.close();
 
-					SurespotLog.v(TAG, "read/write " + i + " bytes");
+					//SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
 				catch (InvalidCacheLoadException icle) {

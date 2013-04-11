@@ -74,11 +74,11 @@ public class ImageDownloader {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
+			//SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
 			forceDownload(imageView, message);
 		}
 		else {
-			SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
+			//SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
 			cancelPotentialDownload(imageView, message);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
@@ -92,7 +92,6 @@ public class ImageDownloader {
 			else {
 				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
 			}
-			// chatAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -232,7 +231,7 @@ public class ImageDownloader {
 								Drawable drawable = imageView.getDrawable();
 								if (drawable instanceof DownloadedDrawable) {
 
-									SurespotLog.v(TAG, "image not uploading");
+								
 									imageView.clearAnimation();
 									Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
 																																	// AlphaAnimation(0,
@@ -252,10 +251,10 @@ public class ImageDownloader {
 
 								if (mMessage.getHeight() == 0) {
 									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
-									SurespotLog.v(TAG,
-											"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
-													+ ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
-													+ finalBitmap.getWidth());
+//									SurespotLog.v(TAG,
+//											"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
+//													+ ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
+//													+ finalBitmap.getWidth());
 								}
 
 								// TODO put the row in the tag

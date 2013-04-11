@@ -274,7 +274,7 @@ public class ChatUtils {
 		int reqHeight = SurespotConstants.IMAGE_DISPLAY_HEIGHT;
 		if (options.outHeight > reqHeight) {
 			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
-			SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
+		//	SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
 		}
 
 		options.inJustDecodeBounds = false;
