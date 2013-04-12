@@ -624,7 +624,7 @@ public class ChatController {
 
 	// message handling shiznit
 
-	void loadEarlierMessages(final String username) {
+	void loadEarlierMessages(final String username, final IAsyncCallback<Void> callback) {
 
 		// mLoading = true;
 		// get the list of messages
@@ -642,6 +642,7 @@ public class ChatController {
 		// }
 
 		if (firstMessageId != null) {
+			
 			if (firstMessageId > 1) {
 
 				SurespotLog.v(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
@@ -650,45 +651,61 @@ public class ChatController {
 
 				mNetworkController.getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
-					public void onSuccess(JSONArray jsonArray) {
+					public void onSuccess(final JSONArray jsonArray) {
 						// on async http request, response seems to come back
 						// after app is destroyed sometimes
 						// (ie. on rotation on gingerbread)
 						// so check for null here
+						new AsyncTask<Void, Void, Void>() { 
+							@Override
+							protected Void doInBackground(Void... params) {
+								// if (getActivity() != null) {
+								SurespotMessage message = null;
 
-						// if (getActivity() != null) {
-						SurespotMessage message = null;
+								try {
+									for (int i = jsonArray.length() - 1; i >= 0; i--) {
+										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+										message = SurespotMessage.toSurespotMessage(jsonMessage);
 
-						try {
-							for (int i = jsonArray.length() - 1; i >= 0; i--) {
-								JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-								message = SurespotMessage.toSurespotMessage(jsonMessage);
+										chatAdapter.insertMessage(message, false);
+									}
+								}
+								catch (JSONException e) {
+									SurespotLog.e(TAG, username + ": error creating chat message: " + e.toString(), e);
+								}
 
-								chatAdapter.insertMessage(message, false);
+								SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " earlier messages from the server.");
+
+								if (message != null) {
+									mEarliestMessage.put(username, message.getId());
+								//	chatAdapter.notifyDataSetChanged();
+								}
+								return null;
+								
+							
 							}
-						}
-						catch (JSONException e) {
-							SurespotLog.e(TAG, username + ": error creating chat message: " + e.toString(), e);
-						}
+							
+							protected void onPostExecute(Void result) {
+								// chatAdapter.setLoading(false);
+								callback.handleResponse(null);
+								
+							};
+						}.execute();
 
-						SurespotLog.v(TAG, username + ": loaded: " + jsonArray.length() + " earlier messages from the server.");
-
-						if (message != null) {
-							mEarliestMessage.put(username, message.getId());
-							chatAdapter.notifyDataSetChanged();
-						}
-						// chatAdapter.setLoading(false);
+						
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
 						SurespotLog.w(TAG, username + ": getEarlierMessages", error);
 						// chatAdapter.setLoading(false);
+						callback.handleResponse(null);
 					}
 				});
 			}
 			else {
 				SurespotLog.v(TAG, username + ": getEarlierMessages: no more messages.");
+				callback.handleResponse(null);
 				// ChatFragment.this.mNoEarlierMessages = true;
 			}
 

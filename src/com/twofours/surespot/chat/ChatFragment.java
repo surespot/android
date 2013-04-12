@@ -49,8 +49,8 @@ public class ChatFragment extends SherlockFragment {
 	private Timer mTimer;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
-	private int mSelection;
-	private int mTop;
+	//private int mSelection;
+	//private int mTop;
 	private boolean mJustLoaded;
 	private boolean mIsDeleted;
 	private ChatAdapter mChatAdapter;
@@ -253,19 +253,6 @@ public class ChatFragment extends SherlockFragment {
 			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
 			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
 
-			// will have more items if we loaded them
-			if (mLoading && mPreviousTotal > 0 && totalItemCount > mPreviousTotal) {
-				// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
-
-				int loaded = totalItemCount - mPreviousTotal;
-				// SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
-				mListView.setSelectionFromTop(mSelection + loaded, mTop);
-
-				// mPreviousTotal = totalItemCount;
-				mJustLoaded = true;
-				mLoading = false;
-				return;
-			}
 
 			if (!mLoading) {
 				boolean hint = getUserVisibleHint();
@@ -294,11 +281,42 @@ public class ChatFragment extends SherlockFragment {
 
 							mLoading = true;
 							mPreviousTotal = mChatAdapter.getCount();
-							mSelection = firstVisibleItem;
-							View v = mListView.getChildAt(0);
-							mTop = (v == null) ? 0 : v.getTop();
+							//mSelection = firstVisibleItem;
+						//	View v = mListView.getChildAt(0);
+//							mTop = (v == null) ? 0 : v.getTop();
 
-							getMainActivity().getChatController().loadEarlierMessages(mUsername);
+							getMainActivity().getChatController().loadEarlierMessages(mUsername, new IAsyncCallback<Void>() {
+
+								@Override
+								public void handleResponse(Void nothing) {
+									
+									int selection = mListView.getFirstVisiblePosition();
+									//mSelection = firstVisibleItem;
+									View v = mListView.getChildAt(0);
+									int top = (v == null) ? 0 : v.getTop();
+									int totalItemCount = mChatAdapter.getCount();
+									// will have more items if we loaded them
+									if (mLoading && mPreviousTotal > 0 && totalItemCount> mPreviousTotal) {
+										// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
+										
+										//mChatAdapter.notifyDataSetChanged();
+
+										int loaded = totalItemCount - mPreviousTotal;
+										// SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
+										mListView.setSelectionFromTop(selection + loaded, top);
+
+										// mPreviousTotal = totalItemCount;
+										mJustLoaded = true;
+										mLoading = false;
+										return;
+									}
+									else {
+										mJustLoaded = false;
+										mLoading = false;
+									}
+									
+								}
+							});
 						}
 					}
 				}
