@@ -324,6 +324,10 @@ public class MainActivity extends SherlockFragmentActivity {
 		mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
 
 		enableMenuItems();
+		if (mChatController != null) {
+			mChatController.enableMenuItems();
+		}
+		
 
 		return true;
 	}
