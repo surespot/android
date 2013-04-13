@@ -443,16 +443,25 @@ public class ChatAdapter extends BaseAdapter {
 
 			Integer localId = message.getId();
 			if (localId != null && localId.equals(id)) {
-				// SurespotLog.v(TAG, "deleting message");
-				// message.setCipherData("deleted");
-				// if (message.getTo().equals(IdentityController.getLoggedInUser())) {
-				// message.setDeletedTo(true);
-				// }
+
 
 				return message;
 			}
 		}
-		// notifyDataSetChanged();
+		return null;
+	}
+	
+	public  SurespotMessage getMessageByIv(String  iv) {
+		SurespotMessage message = null;
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
+			message = iterator.previous();
+
+			String localIv = message.getIv();
+			if (localIv != null && localIv.equals(iv)) {				
+				return message;
+			}
+		}
+
 		return null;
 	}
 

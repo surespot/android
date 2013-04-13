@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.view.KeyEvent;
+import android.view.WindowManager.LayoutParams;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -56,6 +57,8 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+
 		mContext = this;
 
 		Intent intent = getIntent();
@@ -265,24 +268,25 @@ public class MainActivity extends SherlockFragmentActivity {
 				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
 
-				//	Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
-						@Override
-						public void handleResponse(Boolean result) {
-							if (!result) {
-								
-								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-							}
+					// Utils.makeToast(this, getString(R.string.uploading_image));
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false,
+							new IAsyncCallback<Boolean>() {
+								@Override
+								public void handleResponse(Boolean result) {
+									if (!result) {
 
-							//new File(filename).delete();
-						}
-					});
+										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+									}
+
+									// new File(filename).delete();
+								}
+							});
 				}
 			}
 			break;
 		case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
 			if (resultCode == RESULT_OK) {
-				
+
 				// TODO handle null exception by saving state
 				if (mImageCaptureHandler != null) {
 					mImageCaptureHandler.handleResult();
@@ -327,7 +331,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (mChatController != null) {
 			mChatController.enableMenuItems();
 		}
-		
 
 		return true;
 	}

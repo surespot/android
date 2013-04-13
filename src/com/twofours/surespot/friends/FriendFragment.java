@@ -198,7 +198,7 @@ public class FriendFragment extends SherlockFragment {
 
 				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 				final FragmentActivity activity = getActivity();
-				ChatUtils.uploadPictureMessageAsync(activity, getMainActivity().getChatController(), imageUri, username, true,
+				ChatUtils.uploadPictureMessageAsync(activity, getMainActivity().getChatController(), getMainActivity().getNetworkController(), imageUri, username, true,
 						new IAsyncCallback<Boolean>() {
 
 							@Override

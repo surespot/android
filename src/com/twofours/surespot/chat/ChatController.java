@@ -6,12 +6,18 @@ import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +42,16 @@ import android.os.AsyncTask;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
+import ch.boye.httpclientandroidlib.Header;
+import ch.boye.httpclientandroidlib.HttpStatus;
+import ch.boye.httpclientandroidlib.HttpVersion;
+import ch.boye.httpclientandroidlib.StatusLine;
+import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
+import ch.boye.httpclientandroidlib.impl.client.cache.HeapResource;
+import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
+import ch.boye.httpclientandroidlib.message.BasicHeader;
+import ch.boye.httpclientandroidlib.message.BasicStatusLine;
 
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -66,6 +81,8 @@ public class ChatController {
 	private static final int STATE_DISCONNECTED = 2;
 
 	private static final int MAX_RETRIES = 5;
+
+	private final StatusLine mImageStatusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "");
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;
@@ -228,7 +245,7 @@ public class ChatController {
 						JSONObject jsonMessage = new JSONObject((String) args[0]);
 						SurespotLog.v(TAG, "received message: " + jsonMessage.toString());
 						SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-						updateUserMessageIds(message);
+						handleMessage(message);
 						checkAndSendNextMessage(message);
 
 					}
@@ -494,22 +511,6 @@ public class ChatController {
 		}
 	}
 
-	// private void sendControlMessage(final SurespotControlMessage message) {
-	// mControlResendBuffer.add(message);
-	// if (getState() == STATE_CONNECTED) {
-	//
-	// SurespotLog.v(TAG, "sendcontrolmessage, socket: " + socket);
-	// JSONObject json = message.toJSONObject();
-	// SurespotLog.v(TAG, "sendcontrolmessage, json: " + json);
-	// String s = json.toString();
-	// SurespotLog.v(TAG, "sendcontrolmessage, message string: " + s);
-	//
-	// if (socket != null) {
-	// socket.emit("control", s);
-	// }
-	// }
-	// }
-
 	private int getState() {
 		return mConnectionState;
 	}
@@ -529,7 +530,7 @@ public class ChatController {
 		}
 	}
 
-	private void updateUserMessageIds(final SurespotMessage message) {
+	private void handleMessage(final SurespotMessage message) {
 		final String otherUser = message.getOtherUser();
 
 		final ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
@@ -552,6 +553,11 @@ public class ChatController {
 					}
 
 					else {
+						// if it's an image that i sent
+						// get the local message
+						if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
+							handleCachedImage(chatAdapter, message);
+						}
 
 						InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
 								message.getData());
@@ -617,8 +623,67 @@ public class ChatController {
 			if (otherUser.equals(mCurrentChat)) {
 				friend.setLastViewedMessageId(messageId);
 			}
-		
+
 			mFriendAdapter.notifyDataSetChanged();
+		}
+	}
+
+	// add entry to http cache for image we sent so we don't download it again
+	private void handleCachedImage(ChatAdapter chatAdapter, SurespotMessage message) {
+		SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
+
+		// if the data is different we haven't updated the url to point externally
+		if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
+			// add the remote cache entry for the new url
+
+			String localUri = localMessage.getData();
+
+			FileInputStream fis;
+			try {
+				fis = new FileInputStream(new File(new URI(localUri)));
+				byte[] imageData = Utils.inputStreamToBytes(fis);
+
+				String remoteUri = SurespotConfiguration.getBaseUrl() + message.getData();
+				HeapResource resource = new HeapResource(imageData);
+				Date date = new Date();
+				String sDate = DateUtils.formatDate(date);
+
+				Header[] cacheHeaders = new Header[3];
+
+				// create fake cache entry
+				cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
+				cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
+				cacheHeaders[2] = new BasicHeader("Date", sDate);
+
+				HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
+
+				SurespotLog.v(TAG, "creating http cache entry for: " + remoteUri);
+				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
+
+				// update message to point to real location
+				localMessage.setData(message.getData());
+
+			}
+			catch (FileNotFoundException e1) {
+				SurespotLog.w(TAG, "onMessage", e1);
+			}
+			catch (URISyntaxException e1) {
+				SurespotLog.w(TAG, "onMessage", e1);
+			}
+			catch (IOException e) {
+				SurespotLog.w(TAG, "onMessage", e);
+			}
+
+			// delete the file
+
+			try {
+				File file = new File(new URI(localUri));
+				file.delete();
+			}
+			catch (URISyntaxException e) {
+				SurespotLog.w(TAG, "handleMessage", e);
+			}
+
 		}
 	}
 
@@ -642,7 +707,7 @@ public class ChatController {
 		// }
 
 		if (firstMessageId != null) {
-			
+
 			if (firstMessageId > 1) {
 
 				SurespotLog.v(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
@@ -656,7 +721,7 @@ public class ChatController {
 						// after app is destroyed sometimes
 						// (ie. on rotation on gingerbread)
 						// so check for null here
-						new AsyncTask<Void, Void, Void>() { 
+						new AsyncTask<Void, Void, Void>() {
 							@Override
 							protected Void doInBackground(Void... params) {
 								// if (getActivity() != null) {
@@ -678,21 +743,19 @@ public class ChatController {
 
 								if (message != null) {
 									mEarliestMessage.put(username, message.getId());
-								//	chatAdapter.notifyDataSetChanged();
+									// chatAdapter.notifyDataSetChanged();
 								}
 								return null;
-								
-							
+
 							}
-							
+
 							protected void onPostExecute(Void result) {
 								// chatAdapter.setLoading(false);
 								callback.handleResponse(null);
-								
+
 							};
 						}.execute();
 
-						
 					}
 
 					@Override
@@ -1155,13 +1218,19 @@ public class ChatController {
 			JSONArray jsonUM = new JSONArray(jsonMessageString);
 			SurespotLog.v(TAG, username + ": loaded: " + jsonUM.length() + " messages from the server: " + jsonMessageString);
 			for (int i = 0; i < jsonUM.length(); i++) {
+
 				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
-				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);
-				mResendBuffer.remove(lastMessage);
-				if (added & lastMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
-					sentByMeCount++;
+				boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
+
+				if (myMessage && lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+					handleCachedImage(chatAdapter, lastMessage);
 				}
 
+				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);
+				mResendBuffer.remove(lastMessage);
+				if (added && myMessage) {
+					sentByMeCount++;
+				}
 			}
 		}
 		catch (JSONException e) {

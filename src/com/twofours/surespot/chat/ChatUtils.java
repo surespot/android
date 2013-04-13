@@ -2,17 +2,22 @@ package com.twofours.surespot.chat;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.util.io.TeeOutputStream;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,7 +32,6 @@ import android.provider.MediaStore.Images;
 import ch.boye.httpclientandroidlib.androidextra.Base64;
 
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -35,6 +39,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
 
 public class ChatUtils {
 	private static final String TAG = "ChatUtils";
@@ -90,8 +95,9 @@ public class ChatUtils {
 	}
 
 	@SuppressWarnings("resource")
-	public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final Uri imageUri,
-			final String to, final boolean scale, final IAsyncCallback<Boolean> callback) {
+	public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController,
+			final NetworkController networkController, final Uri imageUri, final String to, final boolean scale,
+			final IAsyncCallback<Boolean> callback) {
 
 		Runnable runnable = new Runnable() {
 
@@ -130,16 +136,33 @@ public class ChatUtils {
 						dataStream = activity.getContentResolver().openInputStream(imageUri);
 					}
 
+					// save encrypted image locally until we receive server confirmation
+					
+					
+					String localImageDir = activity.getCacheDir() + File.separator + "uploadedImages";					
+					new File(localImageDir).mkdirs();
+					
+					String localImageFilename = localImageDir + File.separator + URLEncoder.encode(new Random().nextInt() + ".tmp", "UTF-8");
+					File localImageFile = new File(localImageFilename);
+					
+					localImageFile.createNewFile();
+					String localImageUri = Uri.fromFile(localImageFile).toString();
+					SurespotLog.v(TAG, "saving copy of encrypted image to: " + localImageFilename);
+					
+					FileOutputStream fileOutputStream2 = new FileOutputStream(localImageFile);
 					PipedOutputStream fileOutputStream = new PipedOutputStream();
+
+					TeeOutputStream teeOutputStream = new TeeOutputStream(fileOutputStream, fileOutputStream2);
+
 					PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
+
 					String ourVersion = IdentityController.getOurLatestVersion();
 					String theirVersion = IdentityController.getTheirLatestVersion(to);
+
 					final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion,
-							new BufferedInputStream(dataStream), fileOutputStream);
+							new BufferedInputStream(dataStream), teeOutputStream);
 
-					MainActivity.getNetworkController().postFileStream(activity, ourVersion, to, theirVersion, iv, fileInputStream,
-							SurespotConstants.MimeTypes.IMAGE, callback);
-
+														
 					// add a message immediately
 					if (scale) {
 						// use iv as key
@@ -150,6 +173,7 @@ public class ChatUtils {
 							bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
 							bitmap = getSampledImage(bos.toByteArray());
 							bos.close();
+
 						}
 					}
 					else {
@@ -157,9 +181,10 @@ public class ChatUtils {
 						bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
 					}
 					if (bitmap != null) {
-						SurespotLog.v(TAG, "adding bitmap to cache: " + iv);
-						ImageDownloader.addBitmapToCache(iv, bitmap);
-						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, iv);
+						SurespotLog.v(TAG, "adding bitmap to caches: " + localImageUri);
+
+						ImageDownloader.addBitmapToCache(localImageUri, bitmap);
+						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
 						message.setId(null);
 						message.setHeight(bitmap.getHeight());
 						activity.runOnUiThread(new Runnable() {
@@ -169,6 +194,10 @@ public class ChatUtils {
 							}
 						});
 					}
+
+					networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, fileInputStream,
+							SurespotConstants.MimeTypes.IMAGE, callback);
+
 				}
 
 				catch (IOException e) {
@@ -274,7 +303,7 @@ public class ChatUtils {
 		int reqHeight = SurespotConstants.IMAGE_DISPLAY_HEIGHT;
 		if (options.outHeight > reqHeight) {
 			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
-		//	SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
+			// SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
 		}
 
 		options.inJustDecodeBounds = false;

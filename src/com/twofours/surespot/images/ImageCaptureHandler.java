@@ -1,7 +1,6 @@
 package com.twofours.surespot.images;
 
 import java.io.File;
-import java.io.IOException;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -39,7 +38,7 @@ public class ImageCaptureHandler {
 
 			mActivity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			SurespotLog.w(TAG, "capture", e);
 		}
 
@@ -49,7 +48,7 @@ public class ImageCaptureHandler {
 	public void handleResult() {
 		mActivity.getChatController().scrollToEnd(mTo);
 		//Utils.makeToast(mActivity, mActivity.getString(R.string.uploading_image));
-		ChatUtils.uploadPictureMessageAsync(mActivity, mActivity.getChatController(), Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
+		ChatUtils.uploadPictureMessageAsync(mActivity, mActivity.getChatController(),mActivity.getNetworkController(), Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
 			@Override
 			public void handleResponse(Boolean result) {
 				if (!result) {

@@ -20,6 +20,7 @@ import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
 import ch.boye.httpclientandroidlib.HttpStatus;
 import ch.boye.httpclientandroidlib.client.CookieStore;
+import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
 import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
@@ -147,33 +148,33 @@ public class NetworkController {
 			}
 		};
 
-//		HttpRequestInterceptor gzipRequestInterceptor = new HttpRequestInterceptor() {
-//
-//			public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
-//				if (!request.containsHeader("Accept-Encoding")) {
-//					request.addHeader("Accept-Encoding", "gzip");
-//				}
-//			}
-//		};
-//
-//		HttpResponseInterceptor gzipResponseInterceptor = new HttpResponseInterceptor() {
-//
-//			public void process(final HttpResponse response, final HttpContext context) throws HttpException, IOException {
-//				HttpEntity entity = response.getEntity();
-//				if (entity != null) {
-//					Header ceheader = entity.getContentEncoding();
-//					if (ceheader != null) {
-//						HeaderElement[] codecs = ceheader.getElements();
-//						for (int i = 0; i < codecs.length; i++) {
-//							if (codecs[i].getName().equalsIgnoreCase("gzip")) {
-//								response.setEntity(new GzipDecompressingEntity(response.getEntity()));
-//								return;
-//							}
-//						}
-//					}
-//				}
-//			}
-//		};
+		// HttpRequestInterceptor gzipRequestInterceptor = new HttpRequestInterceptor() {
+		//
+		// public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+		// if (!request.containsHeader("Accept-Encoding")) {
+		// request.addHeader("Accept-Encoding", "gzip");
+		// }
+		// }
+		// };
+		//
+		// HttpResponseInterceptor gzipResponseInterceptor = new HttpResponseInterceptor() {
+		//
+		// public void process(final HttpResponse response, final HttpContext context) throws HttpException, IOException {
+		// HttpEntity entity = response.getEntity();
+		// if (entity != null) {
+		// Header ceheader = entity.getContentEncoding();
+		// if (ceheader != null) {
+		// HeaderElement[] codecs = ceheader.getElements();
+		// for (int i = 0; i < codecs.length; i++) {
+		// if (codecs[i].getName().equalsIgnoreCase("gzip")) {
+		// response.setEntity(new GzipDecompressingEntity(response.getEntity()));
+		// return;
+		// }
+		// }
+		// }
+		// }
+		// }
+		// };
 
 		if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
 
@@ -182,18 +183,18 @@ public class NetworkController {
 			mCachingHttpClient.setCookieStore(mCookieStore);
 
 			// handle 401s
-			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);			
+			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-			
-			//gzip
-//			mClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);			
-//			mSyncClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);
-//			mCachingHttpClient.addResponseInterceptor(gzipResponseInterceptor);
-//			
-//			mClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);			
-//			mSyncClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);
-//			mCachingHttpClient.addRequestInterceptor(gzipRequestInterceptor);		
+
+			// gzip
+			// mClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);
+			// mSyncClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);
+			// mCachingHttpClient.addResponseInterceptor(gzipResponseInterceptor);
+			//
+			// mClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);
+			// mSyncClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);
+			// mCachingHttpClient.addRequestInterceptor(gzipRequestInterceptor);
 
 		}
 	}
@@ -633,7 +634,7 @@ public class NetworkController {
 
 	public InputStream getFileStream(Context context, final String url) {
 
-//		SurespotLog.v(TAG, "getting file stream");
+		// SurespotLog.v(TAG, "getting file stream");
 
 		HttpGet httpGet = new HttpGet(mBaseUrl + url);
 		HttpResponse response;
@@ -714,6 +715,20 @@ public class NetworkController {
 		params.put("keyVersion", keyVersion);
 		params.put("newPassword", newPassword);
 		put("/users/password", new RequestParams(params), asyncHttpResponseHandler);
+
+	}
+
+	public void addCacheEntry(String key, HttpCacheEntry httpCacheEntry) {
+		mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
+
+	}
+
+	public HttpCacheEntry getCacheEntry(String key) {
+		return mCachingHttpClient.getCacheEntry(key);
+	}
+
+	public void removeCacheEntry(String key) {
+		mCachingHttpClient.removeEntry(key);
 
 	}
 }
