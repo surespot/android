@@ -30,6 +30,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
+import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -357,6 +358,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (currentChat == null) {
 				return true;
 			}
+			ImageDownloader.evictCache();
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("to", currentChat);
 			// set start intent to avoid restarting every rotation
@@ -367,7 +369,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (currentChat == null) {
 				return true;
 			}
-
+			ImageDownloader.evictCache();
 			mImageCaptureHandler = new ImageCaptureHandler(this, currentChat);
 			mImageCaptureHandler.capture();
 
@@ -401,6 +403,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		ImageDownloader.evictCache();
 		SurespotLog.v(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
