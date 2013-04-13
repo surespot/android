@@ -10,15 +10,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.acra.ACRA;
+import org.acra.ACRAConfiguration;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
 import android.app.backup.BackupManager;
+import android.content.Context;
 import android.content.Intent;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.services.CredentialCachingService;
 
 @ReportsCrashes(formKey = "dHBRcnQzWFR5c0JwZW9tNEdOLW9oNHc6MQ")
@@ -27,7 +31,7 @@ public class SurespotApplication extends Application {
 	private static CredentialCachingService mCredentialCachingService;
 	private static StateController mStateController = null;
 	public static BackupManager mBackupManager;
-	
+
 	public static final int CORE_POOL_SIZE = 16;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	public static final int KEEP_ALIVE = 1;
@@ -52,8 +56,20 @@ public class SurespotApplication extends Application {
 
 	public void onCreate() {
 		super.onCreate();
-		ACRA.init(this);
+
 		
+		
+		String lastUser = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER);
+		if (lastUser != null) {
+			SurespotLog.v(TAG, "using shared prefs for user %s for ACRA", lastUser);
+			ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
+			config.setSharedPreferenceName(lastUser);
+			config.setSharedPreferenceMode(Context.MODE_PRIVATE);
+			ACRA.setConfig(config);
+		}
+
+		ACRA.init(this);
+
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 		mBackupManager = new BackupManager(this);
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
@@ -97,7 +113,5 @@ public class SurespotApplication extends Application {
 	public static StateController getStateController() {
 		return mStateController;
 	}
-	
-	
 
 }

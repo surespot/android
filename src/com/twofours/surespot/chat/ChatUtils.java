@@ -368,7 +368,7 @@ public class ChatUtils {
 				return rotation;
 			}
 			catch (IOException e) {
-				SurespotLog.e(TAG, "Error checking exif", e);
+				SurespotLog.e(TAG,e, "Error checking exif");
 			}
 		}
 		return 0f;

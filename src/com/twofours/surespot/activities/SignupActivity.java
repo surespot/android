@@ -246,7 +246,7 @@ public class SignupActivity extends SherlockActivity {
 													}
 
 													public void onFailure(Throwable arg0, String arg1) {
-														SurespotLog.e("SignupActivity", arg1, arg0);
+														SurespotLog.e(TAG, arg0, "signup: %s", arg1);
 														mMpd.decrProgress();
 														if (arg0 instanceof HttpResponseException) {
 															HttpResponseException error = (HttpResponseException) arg0;

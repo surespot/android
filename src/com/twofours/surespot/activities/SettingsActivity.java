@@ -4,6 +4,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
@@ -53,6 +54,15 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				prefMgr.findPreference(getString(R.string.pref_notifications_sound)).setOnPreferenceClickListener(onPreferenceClickListener);				
 				prefMgr.findPreference(getString(R.string.pref_notifications_vibration)).setOnPreferenceClickListener(onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_led)).setOnPreferenceClickListener(onPreferenceClickListener);
+				
+				prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+					
+					@Override
+					public boolean onPreferenceClick(Preference preference) {
+						SurespotLog.setLogging(((CheckBoxPreference) preference).isChecked()); 
+						return true;
+					}
+				});
 			}
 			catch (NameNotFoundException e) {
 				SurespotLog.w(TAG,"onCreate", e);

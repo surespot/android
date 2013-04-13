@@ -12,12 +12,14 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.acra.ACRA;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
@@ -45,7 +47,7 @@ public class IdentityController {
 	public static final String PUBLICKEYPAIR_EXTENSION = ".spk";
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
-	public static final Object IDENTITY_FILE_LOCK = new Object();	
+	public static final Object IDENTITY_FILE_LOCK = new Object();
 	private static boolean mHasIdentity;
 
 	private synchronized static void setLoggedInUser(Context context, SurespotIdentity identity, Cookie cookie) {
@@ -54,6 +56,17 @@ public class IdentityController {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
 			Utils.putSharedPrefsString(context, "referrer", null);
 			SurespotApplication.getCachingService().login(identity, cookie);
+
+			// set logging and crash reporting based on shared prefs for the user
+			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
+			SurespotLog.setLogging(sp.getBoolean("pref_logging", false));
+					
+			//you would think changing the shared prefs name would update the internal state but it doesn't
+			ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
+			ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
+			ACRA.getErrorReporter().setEnabled(sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false));
+			
+
 		}
 		else {
 			SurespotLog.w(TAG, "getIdentity null");
@@ -107,24 +120,24 @@ public class IdentityController {
 			}
 
 			String identityFile = identityDir + File.separator + filename;
-			
+
 			synchronized (IDENTITY_FILE_LOCK) {
-				
+
 				SurespotLog.v(TAG, "saving identity: " + identityFile);
 
 				if (!FileUtils.ensureDir(identityDir)) {
-					SurespotLog.e(TAG, "Could not create identity dir: " + identityDir, new RuntimeException(
-							"Could not create identity dir: " + identityDir));
+					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir),
+							"Could not create identity dir: %s", identityDir);
 					return null;
 				}
 
 				FileOutputStream fos = new FileOutputStream(identityFile);
 				fos.write(identityBytes);
 				fos.close();
-				
+
 			}
-			
-			//tell backup manager the data has changed
+
+			// tell backup manager the data has changed
 			if (context != null) {
 				SurespotApplication.mBackupManager.dataChanged();
 			}
@@ -143,7 +156,7 @@ public class IdentityController {
 		}
 		return null;
 	}
-	
+
 	public static String getIdentityFile(Context context, String username) {
 		String identityDir = FileUtils.getIdentityDir(context);
 		String filename = username + IDENTITY_EXTENSION;
@@ -191,7 +204,7 @@ public class IdentityController {
 		File idFile = new File(identityFilename);
 
 		if (!idFile.canRead()) {
-			SurespotLog.e(TAG, "Could not load identity.", new IOException("Could not load identity file: " + identityFilename));
+			SurespotLog.e(TAG, new IOException("Could not load identity file: " + identityFilename), "Could not load identity.");
 			return null;
 		}
 
@@ -207,15 +220,15 @@ public class IdentityController {
 			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
 
 			if (identity == null) {
-				SurespotLog.w(TAG, "could not decrypt identity: " + username);
+				SurespotLog.w(TAG, "could not decrypt identity: %s", username);
 				return null;
 			}
 			JSONObject jsonIdentity = new JSONObject(identity);
 			String name = (String) jsonIdentity.get("username");
 
 			if (!name.equals(username)) {
-				SurespotLog.e(TAG, "internal identity did not match", new RuntimeException("internal identity: " + name
-						+ " did not match: " + username));
+				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username),
+						"internal identity did not match");
 				return null;
 			}
 
@@ -351,13 +364,13 @@ public class IdentityController {
 		try {
 			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username;
 			if (!FileUtils.ensureDir(dir)) {
-				SurespotLog.e(TAG, "Could not create public key pair dir: " + dir, new RuntimeException(
-						"Could not create public key pair dir: " + dir));
+				SurespotLog.e(TAG, new RuntimeException("Could not create public key pair dir: " + dir),
+						"Could not create public key pair dir: %s", dir);
 				return null;
 			}
 
 			String pkFile = dir + File.separator + version + PUBLICKEYPAIR_EXTENSION;
-			SurespotLog.v(TAG, "saving public key pair: " + pkFile);
+			SurespotLog.v(TAG, "saving public key pair: %s", pkFile);
 
 			FileOutputStream fos = new FileOutputStream(pkFile);
 			fos.write(keyPair.getBytes());
@@ -613,8 +626,8 @@ public class IdentityController {
 
 			if (idFile == null) {
 				// TODO give user other options to save it
-				SurespotLog.e(TAG, "could not save identity after rolling keys",
-						new Exception("could not save identity after rolling keys"));
+				SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"),
+						"could not save identity after rolling keys");
 			}
 		}
 

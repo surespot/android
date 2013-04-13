@@ -150,13 +150,13 @@ public class EncryptionController {
 			pairs[1] = pair;
 		}
 		catch (NoSuchAlgorithmException e) {
-			SurespotLog.e(TAG, "generateKeyPairsSync", e);
+			SurespotLog.e(TAG, e, "generateKeyPairsSync");
 		}
 		catch (NoSuchProviderException e) {
-			SurespotLog.e(TAG, "generateKeyPairsSync", e);
+			SurespotLog.e(TAG, e, "generateKeyPairsSync");
 		}
 		catch (InvalidAlgorithmParameterException e) {
-			SurespotLog.e(TAG, "generateKeyPairsSync", e);
+			SurespotLog.e(TAG, e, "generateKeyPairsSync");
 		}
 		return pairs;
 
@@ -181,7 +181,7 @@ public class EncryptionController {
 	}
 
 	public static String sign(PrivateKey privateKey, byte[] data, byte[] derivedPassword) {
-		try {			
+		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 
 			// throw some random data in there so the signature is different every time
@@ -201,16 +201,16 @@ public class EncryptionController {
 
 		}
 		catch (SignatureException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 		}
 		catch (NoSuchAlgorithmException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 		}
 		catch (InvalidKeyException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 		}
 		catch (NoSuchProviderException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 		}
 		return null;
 
@@ -224,18 +224,18 @@ public class EncryptionController {
 			return dsa.verify(ChatUtils.base64Decode(signature));
 		}
 		catch (SignatureException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 
 		}
 		catch (NoSuchAlgorithmException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 
 		}
 		catch (InvalidKeyException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 		}
 		catch (NoSuchProviderException e) {
-			SurespotLog.e(TAG, "sign", e);
+			SurespotLog.e(TAG, e, "sign");
 		}
 		return false;
 
@@ -249,7 +249,8 @@ public class EncryptionController {
 			ka.doPhase(publicKey, true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			// SurespotLog.d(TAG, username + " shared Key: " + new String(ChatUtils.base64Encode(new BigInteger(sharedSecret).toByteArray())));
+			// SurespotLog.d(TAG, username + " shared Key: " + new String(ChatUtils.base64Encode(new
+			// BigInteger(sharedSecret).toByteArray())));
 			return sharedSecret;
 
 		}
@@ -295,7 +296,7 @@ public class EncryptionController {
 					// cos.close();
 					bos.close();
 
-					//SurespotLog.v(TAG, "read/write " + i + " bytes");
+					// SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
 				catch (InvalidCacheLoadException icle) {
@@ -353,7 +354,7 @@ public class EncryptionController {
 					cis.close();
 					bos.close();
 
-					//SurespotLog.v(TAG, "read/write " + i + " bytes");
+					// SurespotLog.v(TAG, "read/write " + i + " bytes");
 
 				}
 				catch (InvalidCacheLoadException icle) {
@@ -554,7 +555,6 @@ public class EncryptionController {
 			byte[] dpassword = derive(password, out.toByteArray());
 			out.close();
 
-			
 			return new String(ChatUtils.base64EncodeNowrap(dpassword));
 		}
 		catch (IOException e) {
@@ -580,7 +580,7 @@ public class EncryptionController {
 			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
 		}
 		catch (Exception e) {
-			SurespotLog.e(TAG, "deriveKey", e);
+			SurespotLog.e(TAG, e, "deriveKey");
 		}
 
 		derived[0] = salt;
@@ -601,7 +601,7 @@ public class EncryptionController {
 			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
 		}
 		catch (Exception e) {
-			SurespotLog.e(TAG, "derive", e);
+			SurespotLog.e(TAG, e, "derive");
 		}
 
 		return keyBytes;
