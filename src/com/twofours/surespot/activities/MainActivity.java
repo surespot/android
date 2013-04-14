@@ -2,6 +2,8 @@ package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
 
+import org.acra.ACRA;
+
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -54,11 +56,17 @@ public class MainActivity extends SherlockFragmentActivity {
 	private BroadcastReceiver mExternalStorageReceiver;
 	private boolean mExternalStorageAvailable = false;
 	private boolean mExternalStorageWriteable = false;
+	public boolean mDadLogging = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+
+		if (mDadLogging) {
+			ACRA.getErrorReporter().putCustomData("method", "MainActivity onCreate");
+			ACRA.getErrorReporter().handleSilentException(null);
+		}
 
 		mContext = this;
 
@@ -240,6 +248,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
+		if (mDadLogging) {
+			ACRA.getErrorReporter().putCustomData("method", "MainActivity onResume");
+			ACRA.getErrorReporter().handleSilentException(null);
+		}
+
 		if (mChatController != null) {
 			mChatController.onResume();
 		}
@@ -259,6 +272,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
 
+		if (mDadLogging) {
+			ACRA.getErrorReporter().putCustomData("method", "onActivityResult, requestCode: " + requestCode);
+			ACRA.getErrorReporter().handleSilentException(null);
+		}
+
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 			if (resultCode == RESULT_OK) {
@@ -266,7 +284,6 @@ public class MainActivity extends SherlockFragmentActivity {
 
 				String to = data.getStringExtra("to");
 				SurespotLog.v(TAG, "to: " + to);
-				final String filename = data.getStringExtra("filename");
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
@@ -278,8 +295,6 @@ public class MainActivity extends SherlockFragmentActivity {
 
 										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
 									}
-
-									// new File(filename).delete();
 								}
 							});
 				}
@@ -287,11 +302,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			break;
 		case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
 			if (resultCode == RESULT_OK) {
-
-				// TODO handle null exception by saving state
-				if (mImageCaptureHandler != null) {
-					mImageCaptureHandler.handleResult();
-				}
+				mImageCaptureHandler.handleResult(this);
 			}
 			break;
 		}
@@ -370,8 +381,8 @@ public class MainActivity extends SherlockFragmentActivity {
 				return true;
 			}
 			ImageDownloader.evictCache();
-			mImageCaptureHandler = new ImageCaptureHandler(this, currentChat);
-			mImageCaptureHandler.capture();
+			mImageCaptureHandler = new ImageCaptureHandler(currentChat);
+			mImageCaptureHandler.capture(this);
 
 			return true;
 		case R.id.menu_settings_bar:
@@ -488,6 +499,30 @@ public class MainActivity extends SherlockFragmentActivity {
 
 				}
 			}
+		}
+
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+
+		super.onSaveInstanceState(outState);
+		SurespotLog.v(TAG, "onSaveInstanceState");
+		if (mImageCaptureHandler != null) {
+			SurespotLog.v(TAG, "onSaveInstanceState saving imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
+					mImageCaptureHandler.getImagePath());
+			outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
+		}
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		SurespotLog.v(TAG, "onRestoreInstanceState");
+		mImageCaptureHandler = savedInstanceState.getParcelable("imageCaptureHandler");
+		if (mImageCaptureHandler != null) {
+			SurespotLog.v(TAG, "onRestoreInstanceState restored imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
+					mImageCaptureHandler.getImagePath());
 		}
 
 	}
