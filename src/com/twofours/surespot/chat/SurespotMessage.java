@@ -143,12 +143,11 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		if (id > 0) {
 			chatMessage.setId(id);
 		}
-		
+
 		Integer errorStatus = jsonMessage.optInt("errorStatus");
 		if (errorStatus > 0) {
 			chatMessage.setErrorStatus(errorStatus);
 		}
-
 
 		Integer height = jsonMessage.optInt("height");
 		if (height > 0) {
@@ -356,6 +355,29 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public int getErrorStatus() {
 		return mErrorStatus;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\nSurespotMessage:\n");
+		sb.append("\tid: " + getId() + "\n");
+		sb.append("\tto: " + getTo() + "\n");
+		sb.append("\tfrom: " + getFrom() + "\n");
+		sb.append("\ttoVersion: " + getToVersion() + "\n");
+		sb.append("\tfromVersion: " + getFromVersion() + "\n");
+		sb.append("\tiv: " + getIv() + "\n");
+		sb.append("\tdata: " + getData() + "\n");
+		sb.append("\tplainData: " + getPlainData() + "\n");
+		sb.append("\tmimeType: " + getMimeType() + "\n");
+		sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
+		sb.append("\tshareable: " + isShareable() + "\n");
+		sb.append("\terrorStatus: " + getErrorStatus() + "\n");
+		sb.append("\tresendId: " + getResendId() + "\n");
+		sb.append("\tdatetime: " + getDateTime() + "\n");
+		sb.append("\theight: " + getHeight() + "\n");
+
+		return sb.toString();
 	}
 
 }
