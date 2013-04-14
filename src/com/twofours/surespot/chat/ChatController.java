@@ -596,10 +596,7 @@ public class ChatController {
 				protected void onPostExecute(Void result) {
 					try {
 						chatAdapter.addOrUpdateMessage(message, true, true, true);
-						ChatFragment chatFragment = getChatFragment(otherUser);
-						if (chatFragment != null) {
-							chatFragment.scrollToEnd();
-						}
+						scrollToEnd(otherUser);
 
 					}
 					catch (SurespotMessageSequenceException e) {
@@ -1629,7 +1626,7 @@ public class ChatController {
 		try {
 
 			chatAdapter.addOrUpdateMessage(message, false, true, true);
-			getChatFragment(message.getTo()).scrollToEnd();
+			scrollToEnd(message.getTo());
 		}
 		catch (SurespotMessageSequenceException e) {
 			// not gonna happen
