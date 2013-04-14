@@ -34,7 +34,7 @@ public class ChatAdapter extends BaseAdapter {
 	private boolean mDebugMode;
 	private boolean mCheckingSequence;
 	private IAsyncCallback<Boolean> mDeletedCallback;
-	private int mCurrentScrollPositionId;	
+	private int mCurrentScrollPositionId;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -260,7 +260,8 @@ public class ChatAdapter extends BaseAdapter {
 		}
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
-		boolean deleted = false;
+
+		
 
 		if (item.getErrorStatus() > 0) {
 			setErrorText(chatMessageViewHolder.tvTime, item);
@@ -268,7 +269,9 @@ public class ChatAdapter extends BaseAdapter {
 		else {
 
 			if (item.getId() == null) {
+
 				chatMessageViewHolder.tvTime.setText("sending...");
+				SurespotLog.v(TAG, "getView, item: %s", item);
 			}
 			else {
 
@@ -284,13 +287,14 @@ public class ChatAdapter extends BaseAdapter {
 					}
 					else {
 						chatMessageViewHolder.tvTime.setText("");
+						SurespotLog.v(TAG, "getView, item: %s", item);
 					}
 				}
 
 			}
 		}
 
-		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || deleted) {
+		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
@@ -345,10 +349,10 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvData.setText("data: " + item.getData());
 			chatMessageViewHolder.tvMimeType.setText("mimeType: " + item.getMimeType());
 		}
-	
+
 		return convertView;
 	}
-	
+
 	private void setErrorText(TextView textView, SurespotMessage message) {
 		String statusText = null;
 		switch (message.getErrorStatus()) {
@@ -362,7 +366,7 @@ public class ChatAdapter extends BaseAdapter {
 			statusText = "ERROR SENDING MESSAGE";
 			break;
 		}
-				
+
 		textView.setText(statusText);
 	}
 
@@ -444,20 +448,19 @@ public class ChatAdapter extends BaseAdapter {
 			Integer localId = message.getId();
 			if (localId != null && localId.equals(id)) {
 
-
 				return message;
 			}
 		}
 		return null;
 	}
-	
-	public  SurespotMessage getMessageByIv(String  iv) {
+
+	public SurespotMessage getMessageByIv(String iv) {
 		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
 
 			String localIv = message.getIv();
-			if (localIv != null && localIv.equals(iv)) {				
+			if (localIv != null && localIv.equals(iv)) {
 				return message;
 			}
 		}
@@ -470,18 +473,17 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	
 	public synchronized void deleteAllMessages() {
-		
+
 		mMessages.clear();
-//		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-//			SurespotMessage message = iterator.next();
-//			boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
-//
-//			if (message.getId() == null || (message.getId() != null && message.getId() <= id && (myMessages || !myMessage))) {
-//				iterator.remove();
-//			}
-//		}
+		// for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+		// SurespotMessage message = iterator.next();
+		// boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
+		//
+		// if (message.getId() == null || (message.getId() != null && message.getId() <= id && (myMessages || !myMessage))) {
+		// iterator.remove();
+		// }
+		// }
 	}
 
 	public synchronized void deleteTheirMessages() {
