@@ -95,6 +95,15 @@ public class LoginActivity extends SherlockActivity {
 
 		});
 
+	}
+
+	
+	@Override
+	protected void onResume() {
+	
+		super.onResume();
+	
+	
 		// set the identities
 
 		Spinner spinner = (Spinner) findViewById(R.id.spinnerUsername);
@@ -133,6 +142,7 @@ public class LoginActivity extends SherlockActivity {
 
 			}
 		});
+
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -201,9 +211,9 @@ public class LoginActivity extends SherlockActivity {
 				protected void onPostExecute(final IdSig idSig) {
 					if (idSig != null) {
 
-						NetworkController networkController = new NetworkController(LoginActivity.this, null);						
-						
-						String referrers = Utils.getSharedPrefsString(LoginActivity.this,SurespotConstants.PrefNames.REFERRERS);						
+						NetworkController networkController = new NetworkController(LoginActivity.this, null);
+
+						String referrers = Utils.getSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.REFERRERS);
 						networkController.login(username, idSig.derivedPassword, idSig.signature, referrers, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
