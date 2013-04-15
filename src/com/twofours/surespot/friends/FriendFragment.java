@@ -88,7 +88,7 @@ public class FriendFragment extends SherlockFragment {
 
 				if (!friend.isInviter()) {
 					FriendMenuFragment dialog = new FriendMenuFragment();
-					dialog.setActivityAndMessage(getMainActivity(), friend);
+					dialog.setActivityAndFriend(getMainActivity(), friend);
 					dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
 				}
 				return true;

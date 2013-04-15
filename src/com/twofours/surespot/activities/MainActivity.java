@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -41,6 +42,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
+import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity {
@@ -65,9 +67,10 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		//Gingerbread does not like FLAG_SECURE
-		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO  || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+
+		// Gingerbread does not like FLAG_SECURE
+		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
+				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 		}
 
@@ -373,7 +376,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		super.onOptionsItemSelected(item);
 		Intent intent = null;
-		String currentChat = mChatController.getCurrentChat();
+		final String currentChat = mChatController.getCurrentChat();
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			// This is called when the Home (Up) button is pressed
@@ -423,7 +426,22 @@ public class MainActivity extends SherlockFragmentActivity {
 			startActivity(intent);
 			return true;
 		case R.id.menu_clear_messages:
-			mChatController.deleteMessages(currentChat);
+			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+			boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+			if (confirm) {
+				UIUtils.createAndShowConfirmationDialog(this, "are you sure you wish to delete all messages?", "delete all messages", "ok",
+						"cancel", new IAsyncCallback<Boolean>() {
+							public void handleResponse(Boolean result) {
+								if (result) {
+									mChatController.deleteMessages(currentChat);
+								}
+							};
+						});
+			}
+			else {
+				mChatController.deleteMessages(currentChat);
+			}
+
 			return true;
 		default:
 			return false;

@@ -10,8 +10,10 @@ import java.util.Observer;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.ListView;
@@ -24,6 +26,8 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.UIUtils;
 
 public class MessageDialogMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "MessageDialogMenuFragment";
@@ -62,25 +66,25 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 				&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 			mMenuItemArray = new String[2];
 			mMenuItemArray[0] = "save to gallery";
-			mMenuItemArray[1] = "delete";
+			mMenuItemArray[1] = "delete message";
 		}
 		else {
 			if (mMessage != null && mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())
 					&& mMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 				mMenuItemArray = new String[2];
 				mMenuItemArray[0] = mMessage.isShareable() ? "lock" : "unlock";
-				mMenuItemArray[1] = "delete";
+				mMenuItemArray[1] = "delete message";
 				mMyMessage = true;
 			}
 			else {
 				mMenuItemArray = new String[1];
-				mMenuItemArray[0] = "delete";
+				mMenuItemArray[0] = "delete message";
 				mDeleteOnly = true;
 			}
 		}
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialogi, int which) {
+			public void onClick(final DialogInterface dialogi, int which) {
 				if (mMessage == null)
 					return;
 
@@ -94,11 +98,30 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 				}
 
 				if (mDeleteOnly || which == 1) {
-					getMainActivity().getChatController().deleteMessage(mMessage);
+
+					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					boolean confirm = sp.getBoolean("pref_delete_message", true);
+					if (confirm) {
+						UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete this message?",
+								"delete message", "ok", "cancel", new IAsyncCallback<Boolean>() {
+									public void handleResponse(Boolean result) {
+										if (result) {
+											mActivity.getChatController().deleteMessage(mMessage);
+										}
+										else {
+											dialogi.cancel();
+										}
+									};
+								});
+					}
+					else {
+						mActivity.getChatController().deleteMessage(mMessage);
+					}
+
 				}
 				else {
 					if (mMyMessage) {
-						getMainActivity().getChatController().toggleMessageShareable(mMessage);
+						mActivity.getChatController().toggleMessageShareable(mMessage);
 					}
 					else {
 
@@ -168,10 +191,6 @@ public class MessageDialogMenuFragment extends SherlockDialogFragment {
 			mMessage.addObserver(mMessageObserver);
 		}
 		return dialog;
-	}
-
-	private MainActivity getMainActivity() {
-		return (MainActivity) getActivity();
 	}
 
 }

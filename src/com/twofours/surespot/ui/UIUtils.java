@@ -41,6 +41,29 @@ public class UIUtils {
 
 		alert.show();
 	}
+	
+	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText, String negativeButtonText, final IAsyncCallback<Boolean> callback) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setMessage(message).setTitle(title).setPositiveButton(positiveButtonText, new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				callback.handleResponse(true);
+
+			}
+		}).setNegativeButton(negativeButtonText, new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				callback.handleResponse(false);
+
+			}
+		});
+
+		builder.create().show();
+
+	}
+
 
 	public static int getResumePosition(int currentPos, int currentSize) {
 		// if we have less messages total than the minimum, just return the current position
