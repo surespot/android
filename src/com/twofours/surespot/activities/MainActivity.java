@@ -65,7 +65,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+		
+		//Gingerbread does not like FLAG_SECURE
+		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO  || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+		}
 
 		if (mDadLogging) {
 			ACRA.getErrorReporter().putCustomData("method", "MainActivity onCreate");
@@ -550,7 +554,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		SurespotLog.v(TAG, "progress status changed to: %b", inProgress);
 		if (inProgress) {
-			
+
 			Animation a = AnimationUtils.loadAnimation(this, R.anim.progress_anim);
 			a.setDuration(1000);
 			mHomeImageView.clearAnimation();
