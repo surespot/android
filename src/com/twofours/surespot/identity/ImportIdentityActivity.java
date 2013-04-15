@@ -54,6 +54,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				final String user = adapter.getItem(position).toString();
 
+				// make sure file we're going to save to is writable before we start
+				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user)) {
+					Utils.makeToast(ImportIdentityActivity.this, getText(R.string.could_not_import_identity).toString());
+					return;
+				}
+
 				UIUtils.passwordDialog(ImportIdentityActivity.this, "import " + user + " identity", "enter password for " + user,
 						new IAsyncCallback<String>() {
 							@Override

@@ -94,6 +94,13 @@ public class ChangePasswordActivity extends SherlockActivity {
 			Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
 			return;
 		}
+		
+		// make sure file we're going to save to is writable before we start
+		if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username)) {
+			Utils.makeToast(ChangePasswordActivity.this, "could not change password");
+			return;
+		}
+
 
 		final String version = identity.getLatestVersion();
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();

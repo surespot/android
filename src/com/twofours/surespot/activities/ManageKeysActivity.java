@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.io.File;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.util.List;
@@ -62,15 +61,13 @@ public class ManageKeysActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				final String user = (String) spinner.getSelectedItem();
-				
-				//make sure file we're going to save to is writable before we start
-				File identityFile = new File(IdentityController.getIdentityFile(ManageKeysActivity.this, user));
-				
-				if (!identityFile.canWrite()) {
-					Utils.makeToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));					
+
+				// make sure file we're going to save to is writable before we start
+				if (!IdentityController.ensureIdentityFile(ManageKeysActivity.this, user)) {
+					Utils.makeToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 					return;
-				}				
-				
+				}
+
 				UIUtils.passwordDialog(ManageKeysActivity.this, "create new keys for " + user, "enter password for " + user,
 						new IAsyncCallback<String>() {
 							@Override
@@ -144,8 +141,7 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(keyToken),
-								dPassword.getBytes());
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(keyToken), dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 						// generate new key pairs

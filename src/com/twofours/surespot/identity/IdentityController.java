@@ -56,8 +56,8 @@ public class IdentityController {
 
 			// set logging and crash reporting based on shared prefs for the user
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
-			
-			//TODO set to false on release
+
+			// TODO set to false on release
 			SurespotLog.setLogging(sp.getBoolean("pref_logging", SurespotConstants.LOGGING));
 
 			// you would think changing the shared prefs name would update the internal state but it doesn't
@@ -90,7 +90,7 @@ public class IdentityController {
 		}
 	}
 
-	private static synchronized String saveIdentity(Context context, String identityDir, SurespotIdentity identity, String password) {
+	private static synchronized String saveIdentity(Context backupContext, String identityDir, SurespotIdentity identity, String password) {
 		String filename = identity.getUsername() + IDENTITY_EXTENSION;
 		JSONObject json = new JSONObject();
 		try {
@@ -134,7 +134,7 @@ public class IdentityController {
 			}
 
 			// tell backup manager the data has changed
-			if (context != null) {
+			if (backupContext != null) {
 				SurespotApplication.mBackupManager.dataChanged();
 			}
 			return identityFile;
@@ -152,8 +152,28 @@ public class IdentityController {
 		}
 		return null;
 	}
+	
+	public static boolean ensureIdentityFile(Context context, String username) {
+		// make sure file we're going to save to is writable before we start
+		File identityFile = new File(getIdentityFile(context, username));
 
-	public static String getIdentityFile(Context context, String username) {
+		if (identityFile.exists()) {
+
+			return identityFile.isFile() && identityFile.canWrite();
+		}
+		else {
+
+			try {
+				identityFile.createNewFile();
+			}
+			catch (IOException e) {
+				return false;
+			}
+			return identityFile.isFile() && identityFile.canWrite();
+		}
+	}
+
+	private static String getIdentityFile(Context context, String username) {
 		String identityDir = FileUtils.getIdentityDir(context);
 		String filename = username + IDENTITY_EXTENSION;
 		String identityFile = identityDir + File.separator + filename;
@@ -207,9 +227,9 @@ public class IdentityController {
 		try {
 			byte[] idBytes = null;
 			synchronized (IDENTITY_FILE_LOCK) {
-				
+
 				idBytes = FileUtils.readFile(identityFilename);
-				
+
 			}
 
 			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
@@ -268,9 +288,18 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-							saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
-							callback.handleResponse(new IdentityOperationResult(context.getText(R.string.identity_imported_successfully)
-									.toString(), true));
+
+							// TODO check versions and reject if import is older
+
+							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+							if (file != null) {
+								callback.handleResponse(new IdentityOperationResult(context
+										.getText(R.string.identity_imported_successfully).toString(), true));
+							}
+							else {
+								callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
+										.toString(), false));
+							}
 						}
 
 						@Override
@@ -533,9 +562,9 @@ public class IdentityController {
 		}
 
 		try {
-			
+
 			byte[] pkBytes = FileUtils.readFile(pkFilename);
-			
+
 			JSONObject pkpJSON = new JSONObject(new String(pkBytes));
 
 			return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
@@ -609,16 +638,11 @@ public class IdentityController {
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
 		String idFile = saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
-		// big problems if we can't save it
+		// big problems if we can't save it, but shouldn't happen as we create the file first
 		if (idFile == null) {
-
-			if (idFile == null) {
-				// TODO give user other options to save it
-				SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"),
-						"could not save identity after rolling keys");
-			}
+			// TODO give user other options to save it
+			SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
 		}
-
 	}
 
 	public static void updateLatestVersion(Context context, String username, String version) {

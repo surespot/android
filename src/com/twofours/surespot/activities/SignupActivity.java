@@ -75,10 +75,9 @@ public class SignupActivity extends SherlockActivity {
 			}
 		});
 
-		
 		editText = (EditText) findViewById(R.id.etSignupPassword);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
-		
+
 		editText = (EditText) findViewById(R.id.etSignupPasswordConfirm);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 		editText.setOnEditorActionListener(new OnEditorActionListener() {
@@ -94,8 +93,6 @@ public class SignupActivity extends SherlockActivity {
 			}
 
 		});
-		
-		
 
 	}
 
@@ -135,15 +132,14 @@ public class SignupActivity extends SherlockActivity {
 
 		final EditText pwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPassword);
 		final String password = pwText.getText().toString();
-		
+
 		final EditText confirmPwText = (EditText) SignupActivity.this.findViewById(R.id.etSignupPasswordConfirm);
 		String confirmPassword = confirmPwText.getText().toString();
-		
-		
+
 		if (!(username.length() > 0 && password.length() > 0 && confirmPassword.length() > 0)) {
 			return;
 		}
-		
+
 		if (!confirmPassword.equals(password)) {
 			Utils.makeToast(this, "passwords do not match");
 			return;
@@ -162,6 +158,12 @@ public class SignupActivity extends SherlockActivity {
 					mMpd.decrProgress();
 				}
 				else {
+					// make sure we can create the file
+					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username)) {
+						Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
+						return;
+					}
+
 					final String dPassword = EncryptionController.derivePassword(password);
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
@@ -190,8 +192,9 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicECDSA = result[1];
 										String signature = result[2];
 
-										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
-										
+										String referrers = Utils.getSharedPrefsString(SignupActivity.this,
+												SurespotConstants.PrefNames.REFERRERS);
+
 										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
 												new CookieResponseHandler() {
 
@@ -217,7 +220,8 @@ public class SignupActivity extends SherlockActivity {
 
 																@Override
 																protected Void doInBackground(Void... params) {
-																	Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
+																	Utils.putSharedPrefsString(SignupActivity.this,
+																			SurespotConstants.PrefNames.REFERRERS, null);
 																	IdentityController.createIdentity(SignupActivity.this, username,
 																			password, keyPair[0], keyPair[1], cookie);
 																	return null;
