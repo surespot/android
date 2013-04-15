@@ -64,7 +64,7 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="debug" >
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="pref_logging"
             android:title="logging" />
    <!--      <CheckBoxPreference

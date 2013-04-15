@@ -1,9 +1,7 @@
 package com.twofours.surespot.identity;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.KeyException;
@@ -58,14 +56,16 @@ public class IdentityController {
 
 			// set logging and crash reporting based on shared prefs for the user
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
-			SurespotLog.setLogging(sp.getBoolean("pref_logging", false));
+			
+			//TODO set to false on release
+			SurespotLog.setLogging(sp.getBoolean("pref_logging", SurespotConstants.LOGGING));
 
 			// you would think changing the shared prefs name would update the internal state but it doesn't
-//			ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
-//			ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
-//
-//			boolean enableACRA = sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false);
-//			ACRA.getErrorReporter().setEnabled(enableACRA);
+			// ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
+			// ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
+			//
+			// boolean enableACRA = sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false);
+			// ACRA.getErrorReporter().setEnabled(enableACRA);
 		}
 		else {
 			SurespotLog.w(TAG, "getIdentity null");
@@ -122,7 +122,7 @@ public class IdentityController {
 
 			synchronized (IDENTITY_FILE_LOCK) {
 
-				SurespotLog.v(TAG, "saving identity: " + identityFile);
+				SurespotLog.v(TAG, "saving identity: %s", identityFile);
 
 				if (!FileUtils.ensureDir(identityDir)) {
 					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir),
@@ -130,10 +130,7 @@ public class IdentityController {
 					return null;
 				}
 
-				FileOutputStream fos = new FileOutputStream(identityFile);
-				fos.write(identityBytes);
-				fos.close();
-
+				FileUtils.writeFile(identityFile, identityBytes);
 			}
 
 			// tell backup manager the data has changed
@@ -144,14 +141,14 @@ public class IdentityController {
 		}
 
 		catch (JSONException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
+			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 
 		catch (FileNotFoundException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
+			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		catch (IOException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
+			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		return null;
 	}
@@ -210,10 +207,9 @@ public class IdentityController {
 		try {
 			byte[] idBytes = null;
 			synchronized (IDENTITY_FILE_LOCK) {
-				FileInputStream idStream = new FileInputStream(idFile);
-				idBytes = new byte[(int) idFile.length()];
-				idStream.read(idBytes);
-				idStream.close();
+				
+				idBytes = FileUtils.readFile(identityFilename);
+				
 			}
 
 			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
@@ -253,7 +249,7 @@ public class IdentityController {
 			return si;
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "loadIdentity", e);
+			SurespotLog.w(TAG, e, "loadIdentity");
 		}
 
 		return null;
@@ -293,7 +289,7 @@ public class IdentityController {
 									break;
 
 								default:
-									SurespotLog.w(TAG, "importIdentity", error);
+									SurespotLog.w(TAG, error, "importIdentity");
 									callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
 											.toString(), false));
 								}
@@ -343,7 +339,7 @@ public class IdentityController {
 									break;
 
 								default:
-									SurespotLog.w(TAG, "exportIdentity", error);
+									SurespotLog.w(TAG, error, "exportIdentity");
 									callback.handleResponse(null);
 								}
 							}
@@ -363,7 +359,7 @@ public class IdentityController {
 		try {
 			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username;
 			if (!FileUtils.ensureDir(dir)) {
-				SurespotLog.e(TAG, new RuntimeException("Could not create public key pair dir: " + dir),
+				SurespotLog.e(TAG, new RuntimeException("Could not create public key pair dir: %s" + dir),
 						"Could not create public key pair dir: %s", dir);
 				return null;
 			}
@@ -371,17 +367,12 @@ public class IdentityController {
 			String pkFile = dir + File.separator + version + PUBLICKEYPAIR_EXTENSION;
 			SurespotLog.v(TAG, "saving public key pair: %s", pkFile);
 
-			FileOutputStream fos = new FileOutputStream(pkFile);
-			fos.write(keyPair.getBytes());
-			fos.close();
+			FileUtils.writeFile(pkFile, keyPair);
 
 			return pkFile;
 		}
-		catch (FileNotFoundException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
-		}
 		catch (IOException e) {
-			SurespotLog.w(TAG, "saveIdentity", e);
+			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		return null;
 	}
@@ -418,7 +409,7 @@ public class IdentityController {
 				return new PublicKeys(version, dhPub, dsaPub);
 			}
 			catch (JSONException e) {
-				SurespotLog.w(TAG, "recreatePublicKeyPair", e);
+				SurespotLog.w(TAG, e, "recreatePublicKeyPair");
 			}
 		}
 		return null;
@@ -439,8 +430,8 @@ public class IdentityController {
 			if (!dhVerify) {
 				// TODO inform user
 				// alert alert
-				SurespotLog.w(TAG, "could not verify DH key against server signature", new KeyException(
-						"Could not verify DH key against server signature."));
+				SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."),
+						"could not verify DH key against server signature");
 				return null;
 			}
 			else {
@@ -450,8 +441,8 @@ public class IdentityController {
 			boolean dsaVerify = EncryptionController.verifyPublicKey(sSigECDSA, spubECDSA);
 			if (!dsaVerify) {
 				// alert alert
-				SurespotLog.w(TAG, "could not verify DSA key against server signature", new KeyException(
-						"Could not verify DSA key against server signature."));
+				SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."),
+						"could not verify DSA key against server signature");
 				return null;
 			}
 			else {
@@ -461,7 +452,7 @@ public class IdentityController {
 			return json;
 		}
 		catch (JSONException e) {
-			SurespotLog.w(TAG, "recreatePublicIdentity", e);
+			SurespotLog.w(TAG, e, "recreatePublicIdentity");
 		}
 		return null;
 	}
@@ -537,16 +528,14 @@ public class IdentityController {
 		File pkFile = new File(pkFilename);
 
 		if (!pkFile.canRead()) {
-			SurespotLog.v(TAG, "Could not load public key pair file: " + pkFilename);
+			SurespotLog.v(TAG, "Could not load public key pair file: %s", pkFilename);
 			return null;
 		}
 
 		try {
-			FileInputStream pkStream = new FileInputStream(pkFile);
-			byte[] pkBytes = new byte[(int) pkFile.length()];
-			pkStream.read(pkBytes);
-			pkStream.close();
-
+			
+			byte[] pkBytes = FileUtils.readFile(pkFilename);
+			
 			JSONObject pkpJSON = new JSONObject(new String(pkBytes));
 
 			return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
