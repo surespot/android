@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
-        android:imeOptions="flagNoExtractUi|actionNext"
+        android:imeOptions="actionNext"
         android:inputType="textNoSuggestions"
         android:singleLine="true" />
 
@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
-        android:imeOptions="flagNoExtractUi|actionNext"
+        android:imeOptions="actionNext"
         android:inputType="textPassword"
         android:singleLine="true" />
 
@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
-        android:imeOptions="flagNoExtractUi|actionDone"
+        android:imeOptions="actionDone"
         android:inputType="textPassword"
         android:singleLine="true" />
 

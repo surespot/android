@@ -43,7 +43,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/bSend"
-        android:imeOptions="flagNoExtractUi"
+        android:imeOptions="actionSend"        
+        android:imeActionLabel="send" 
         android:inputType="textMultiLine"
         android:maxHeight="150sp"
         android:minHeight="45sp" >
