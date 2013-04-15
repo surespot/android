@@ -12,7 +12,6 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.acra.ACRA;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,7 +49,7 @@ public class IdentityController {
 	public static final Object IDENTITY_FILE_LOCK = new Object();
 	private static boolean mHasIdentity;
 
-	private synchronized static void setLoggedInUser(Context context, SurespotIdentity identity, Cookie cookie) {
+	private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie) {
 		// load the identity
 		if (identity != null) {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
@@ -60,13 +59,13 @@ public class IdentityController {
 			// set logging and crash reporting based on shared prefs for the user
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
 			SurespotLog.setLogging(sp.getBoolean("pref_logging", false));
-					
-			//you would think changing the shared prefs name would update the internal state but it doesn't
-			ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
-			ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
-			ACRA.getErrorReporter().setEnabled(sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false));
-			
 
+			// you would think changing the shared prefs name would update the internal state but it doesn't
+//			ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
+//			ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
+//
+//			boolean enableACRA = sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false);
+//			ACRA.getErrorReporter().setEnabled(enableACRA);
 		}
 		else {
 			SurespotLog.w(TAG, "getIdentity null");

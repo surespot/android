@@ -67,10 +67,10 @@
             android:defaultValue="false"
             android:key="pref_logging"
             android:title="logging" />
-        <CheckBoxPreference
+   <!--      <CheckBoxPreference
             android:defaultValue="true"
             android:key="acra.enable"          
-            android:title="crash reporting" />
+            android:title="crash reporting" /> -->
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_debug_mode"

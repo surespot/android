@@ -70,5 +70,6 @@
     <string name="delete_message">delete message</string>
     <string name="title_activity_external_invite">ExternalInviteActivity</string>
     <string name="title_activity_contact_picker">ContactPickerActivity</string>
+    <string name="crash_toast_text">Unfortunately surespot just crashed. A report containing no personally identifying information has been sent to the developer.</string>
 
 </resources>

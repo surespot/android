@@ -26,7 +26,6 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.activities.ExternalInviteActivity;
-import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
 public class ContactPickerActivity extends SherlockActivity {
@@ -194,11 +193,11 @@ public class ContactPickerActivity extends SherlockActivity {
 
 				while (cur.moveToNext()) {
 
-					String columns[] = cur.getColumnNames();
-					for (String column : columns) {
-						int index = cur.getColumnIndex(column);
-						SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
-					}
+//					String columns[] = cur.getColumnNames();
+//					for (String column : columns) {
+//						int index = cur.getColumnIndex(column);
+//						SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+//					}
 
 					String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
