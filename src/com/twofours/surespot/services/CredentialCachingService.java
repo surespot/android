@@ -159,7 +159,7 @@ public class CredentialCachingService extends Service {
 				mSharedSecrets.invalidate(key);
 			}
 		}
-	}
+	}	
 	
 	public synchronized void clear() {
 		mPublicIdentities.invalidateAll();
@@ -168,12 +168,16 @@ public class CredentialCachingService extends Service {
 		mCookies.clear();
 		mIdentities.clear();
 	}
+	
+	public synchronized void clearIdentityData(String username) {
+		mCookies.remove(username);
+		mIdentities.remove(username);
+	}
 		
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
 			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
-			mCookies.remove(mLoggedInUser);
-			mIdentities.remove(mLoggedInUser);
+			clearIdentityData(mLoggedInUser);
 			mLoggedInUser = null;
 		}
 	}

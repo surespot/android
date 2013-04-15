@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.text.InputFilter;
 import android.widget.EditText;
 
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.network.IAsyncCallback;
 
@@ -100,5 +102,11 @@ public class UIUtils {
 		// // loaded
 		// return currentPos;
 		// }
+	}
+	
+	public static void launchMainActivity(Context context) {
+		Intent finalIntent = new Intent(context, MainActivity.class);
+		finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);		
+		context.startActivity(finalIntent);
 	}
 }

@@ -37,6 +37,7 @@ import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.ui.UIUtils;
 
 public class IdentityController {
 	private static final String TAG = "IdentityController";
@@ -152,13 +153,24 @@ public class IdentityController {
 		}
 		return null;
 	}
-	
+
 	public static boolean ensureIdentityFile(Context context, String username) {
 		// make sure file we're going to save to is writable before we start
-		File identityFile = new File(getIdentityFile(context, username));
+		
+		String identityDir = getIdentityDir(context);
+		File idDirFile = new File(identityDir);
+		idDirFile.mkdirs();
+		
+		if (!idDirFile.isDirectory()) {
+			return false;
+		}
+		
+		String filename = username + IDENTITY_EXTENSION;
+		String sIdentityFile = identityDir + File.separator + filename;
+		
+		File identityFile = new File(sIdentityFile);
 
 		if (identityFile.exists()) {
-
 			return identityFile.isFile() && identityFile.canWrite();
 		}
 		else {
@@ -173,15 +185,29 @@ public class IdentityController {
 		}
 	}
 
-	private static String getIdentityFile(Context context, String username) {
-		String identityDir = FileUtils.getIdentityDir(context);
-		String filename = username + IDENTITY_EXTENSION;
-		String identityFile = identityDir + File.separator + filename;
-		return identityFile;
+	private static String getIdentityDir(Context context) {
+		String identityDir = FileUtils.getIdentityDir(context);		
+		return identityDir;
 	}
 
 	public static synchronized void deleteIdentity(Context context, String username, String password) {
+		//force identity reload
+		mHasIdentity = false;
+		
+		boolean isLoggedIn = false;
+		if (username.equals(IdentityController.getLoggedInUser())) {
+			isLoggedIn = true;
+		}
 
+
+		if (isLoggedIn) {
+			SurespotApplication.getCachingService().logout();
+		}
+		else {
+			SurespotApplication.getCachingService().clearIdentityData(username);
+		}
+
+		MainActivity.getNetworkController().clearCache();
 		StateController.wipeState(context, username);
 
 		synchronized (IDENTITY_FILE_LOCK) {
@@ -189,12 +215,10 @@ public class IdentityController {
 			File file = new File(identityFilename);
 			file.delete();
 		}
-
-		SurespotApplication.getCachingService().clear();
-
-		MainActivity.getNetworkController().clearCache();
-
-		launchLoginActivity(context);
+		
+		if (isLoggedIn) {
+			UIUtils.launchMainActivity(context);
+		}
 
 	}
 
@@ -648,7 +672,7 @@ public class IdentityController {
 	public static void updateLatestVersion(Context context, String username, String version) {
 		// see if we are the user that's been revoked
 		// if we have the latest version locally, if we don't then this user has been revoked from a different device
-		// and should not be used on this device anymore
+		// and should not be used on this device anymore	
 		if (username.equals(getLoggedInUser()) && version.compareTo(getOurLatestVersion()) > 0) {
 			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 

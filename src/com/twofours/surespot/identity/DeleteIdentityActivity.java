@@ -28,6 +28,7 @@ import com.twofours.surespot.ui.UIUtils;
 public class DeleteIdentityActivity extends SherlockActivity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
+	private Spinner mSpinner;
 	private MultiProgressDialog mMpd;
 
 	@Override
@@ -35,31 +36,19 @@ public class DeleteIdentityActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_delete_identity);
 		Utils.configureActionBar(this, "identity", "delete", true);
-		
+
 		mMpd = new MultiProgressDialog(this, "deleting identity", 250);
 
-
-		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
-
-		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
-		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
-		mIdentityNames = IdentityController.getIdentityNames(this);
-
-		for (String name : mIdentityNames) {
-			adapter.add(name);
-		}
-
-		spinner.setAdapter(adapter);
-		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
-
 		Button deleteIdentityButton = (Button) findViewById(R.id.bDeleteIdentity);
+		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
+		refreshSpinner();
 
 		deleteIdentityButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				// TODO progress
-				final String user = (String) spinner.getSelectedItem();
+				final String user = (String) mSpinner.getSelectedItem();
 				UIUtils.passwordDialog(DeleteIdentityActivity.this, "delete " + user + " identity", "enter password for " + user,
 						new IAsyncCallback<String>() {
 							@Override
@@ -75,6 +64,23 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 			}
 		});
+	}
+
+	private void refreshSpinner() {
+		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
+		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+		mIdentityNames = IdentityController.getIdentityNames(this);
+
+		for (String name : mIdentityNames) {
+			adapter.add(name);
+		}
+
+		mSpinner.setAdapter(adapter);
+		String loggedInUser = IdentityController.getLoggedInUser();
+		if (loggedInUser != null) {
+			mSpinner.setSelection(adapter.getPosition(loggedInUser));
+		}
+
 	}
 
 	private void deleteIdentity(final String username, final String password) {
@@ -103,11 +109,12 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 				new AsyncTask<Void, Void, DeleteIdentityWrapper>() {
 					@Override
-					protected DeleteIdentityWrapper doInBackground(Void... params) {						
+					protected DeleteIdentityWrapper doInBackground(Void... params) {
 						SurespotLog.v(TAG, "received delete token: " + deleteToken);
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(deleteToken), dPassword.getBytes());
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(deleteToken),
+								dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 
@@ -122,6 +129,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 										public void onSuccess(int statusCode, String content) {
 											// delete the identity stuff localally
 											IdentityController.deleteIdentity(DeleteIdentityActivity.this, username, password);
+											refreshSpinner();
 											mMpd.decrProgress();
 											Utils.makeLongToast(DeleteIdentityActivity.this, "identity deleted");
 										};
