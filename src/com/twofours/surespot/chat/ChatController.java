@@ -111,6 +111,7 @@ public class ChatController {
 	private static String mCurrentChat;
 	private static boolean mPaused = true;
 	private NetworkController mNetworkController;
+	
 
 	private Context mContext;
 	public static final int MODE_NORMAL = 0;
@@ -119,13 +120,15 @@ public class ChatController {
 	private int mMode = MODE_NORMAL;
 
 	private IAsyncCallback<Void> mCallback401;
+	private IAsyncCallback<Boolean> mProgressCallback;
 
-	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401) {
+	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401, IAsyncCallback<Boolean> progressCallback) {
 		SurespotLog.v(TAG, "constructor: " + this);
 		mContext = context;
 		mNetworkController = networkController;
 
 		mCallback401 = callback401;
+		mProgressCallback = progressCallback;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		mFriendAdapter = new FriendAdapter(mContext);
@@ -833,6 +836,7 @@ public class ChatController {
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
+				
 				getLatestMessagesAndControls();
 
 			}
@@ -841,6 +845,7 @@ public class ChatController {
 			public void onFailure(Throwable error, String content) {
 				// setMessagesLoading(false);
 				Utils.makeToast(mContext, "loading latest messages failed: " + content);
+				setProgress(null, false);
 			}
 		});
 
@@ -855,6 +860,9 @@ public class ChatController {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 			getLatestMessagesAndControls(entry.getKey());
 		}
+		
+		//done with "global" updates
+		setProgress(null, false);
 	}
 
 	private LatestIdPair getLatestIds(String username) {
@@ -889,6 +897,7 @@ public class ChatController {
 		LatestIdPair ids = getLatestIds(username);
 
 		getLatestMessagesAndControls(username, ids.latestMessageId, ids.latestControlMessageId);
+	
 	}
 
 	private void getLatestMessagesAndControls(String username, int messageId) {
@@ -900,6 +909,7 @@ public class ChatController {
 		SurespotLog.v(TAG, "getLatestMessagesAndControls: fetchMessageId: %d, fetchControlMessageId: %d", fetchMessageId,
 				fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
+			setProgress(username, true);
 
 			// mChatAdapters.get(username).setLoading(true);
 			mNetworkController.getMessageData(username, fetchMessageId, fetchControlMessageId, new JsonHttpResponseHandler() {
@@ -923,6 +933,8 @@ public class ChatController {
 
 							}
 						}
+						
+						setProgress(username, false);
 					}
 
 				}
@@ -936,7 +948,7 @@ public class ChatController {
 					chatFragment.requestFocus();
 
 				}
-			}
+			}		
 		}
 	}
 
@@ -1237,6 +1249,7 @@ public class ChatController {
 			// shouldn't happen
 			SurespotLog.w(TAG, "handleMessages", e);
 			// getLatestMessagesAndControls(username, e.getMessageId(), -1);
+			setProgress(username, false);
 			return;
 		}
 
@@ -1284,6 +1297,8 @@ public class ChatController {
 
 			}
 		}
+		
+		setProgress(username,false);
 	}
 
 	// tell the chat adapters we've loaded their data (even if they didn't have any)
@@ -1428,11 +1443,43 @@ public class ChatController {
 		loadUnsentMessages();
 	}
 
+	
+	private boolean mGlobalProgress;
+	private HashMap<String, Boolean> mChatProgress = new HashMap<String, Boolean>();
+	
+	private synchronized void setProgress(String username, boolean inProgress) {
+		
+		if (username == null) {
+			mGlobalProgress = inProgress;
+		}
+		
+		else {
+			if (inProgress) {
+				mChatProgress.put(username, true);
+			}
+			else {
+				mChatProgress.remove(username);
+			}
+		}		
+		
+		boolean progress = isInProgress();
+		SurespotLog.v(TAG,"setProgress, isInProgress(): %b", progress);
+		
+		if (mProgressCallback != null) {
+			mProgressCallback.handleResponse(progress);
+		}
+	}
+	
+	public synchronized boolean isInProgress() {
+		return mGlobalProgress || !mChatProgress.isEmpty();
+	}
+	
 	public synchronized void onResume() {
 		SurespotLog.v(TAG, "onResume, mPaused: %b", mPaused);
 		if (mPaused) {
 			mPaused = false;
-
+		
+			setProgress(null, true);
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
@@ -1887,6 +1934,7 @@ public class ChatController {
 					if (!mNetworkController.isUnauthorized()) {
 						mFriendAdapter.setLoading(false);
 						SurespotLog.w(TAG, arg0, "getFriends: %s", content);
+						setProgress(null, false);
 					}
 				}
 			});
