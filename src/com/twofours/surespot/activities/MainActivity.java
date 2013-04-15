@@ -18,6 +18,9 @@ import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.view.KeyEvent;
 import android.view.WindowManager.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -57,6 +60,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private boolean mExternalStorageAvailable = false;
 	private boolean mExternalStorageWriteable = false;
 	public boolean mDadLogging = false;
+	private ImageView mHomeImageView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +133,11 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 			else {
 				setContentView(R.layout.activity_main);
+				mHomeImageView = (ImageView) findViewById(android.R.id.home);
+				if (mHomeImageView == null) {
+					mHomeImageView = (ImageView) findViewById(R.id.abs__home);
+				}
+				setHomeProgress(true);
 
 				SurespotLog.v(TAG, "binding cache service");
 				Intent cacheIntent = new Intent(this, CredentialCachingService.class);
@@ -139,7 +148,14 @@ public class MainActivity extends SherlockFragmentActivity {
 
 				mMainHandler = new Handler(getMainLooper());
 				mNetworkController = new NetworkController(MainActivity.this, m401Handler);
-				mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler);
+
+				mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler,
+						new IAsyncCallback<Boolean>() {
+							@Override
+							public void handleResponse(Boolean inProgress) {
+								setHomeProgress(inProgress);
+							}
+						});
 				mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
 			}
 		}
@@ -525,5 +541,23 @@ public class MainActivity extends SherlockFragmentActivity {
 					mImageCaptureHandler.getImagePath());
 		}
 
+	}
+
+	private void setHomeProgress(boolean inProgress) {
+		if (mHomeImageView == null) {
+			return;
+		}
+
+		SurespotLog.v(TAG, "progress status changed to: %b", inProgress);
+		if (inProgress) {
+			
+			Animation a = AnimationUtils.loadAnimation(this, R.anim.progress_anim);
+			a.setDuration(1000);
+			mHomeImageView.clearAnimation();
+			mHomeImageView.startAnimation(a);
+		}
+		else {
+			mHomeImageView.clearAnimation();
+		}
 	}
 }

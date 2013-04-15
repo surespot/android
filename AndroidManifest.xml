@@ -35,7 +35,7 @@
         android:name="com.twofours.surespot.SurespotApplication"
         android:allowBackup="true"
         android:backupAgent="com.twofours.surespot.identity.IdentityBackupAgent"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/surespot_logo"
         android:label="surespot"
         android:restoreAnyVersion="true"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar" >
