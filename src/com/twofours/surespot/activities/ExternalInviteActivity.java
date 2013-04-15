@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -40,7 +39,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 	private RadioButton mRbEmail;
 	private RadioButton mRbSms;
 	private RadioButton mRbSocial;
-//	private CheckBox mCbAutoInvite;
+	// private CheckBox mCbAutoInvite;
 	private Button mBSelectContacts;
 	private ArrayList<String> mSelectedContacts;
 	public static final int SHARE_EMAIL = 0;
@@ -65,7 +64,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		mRbEmail.setTag(SHARE_EMAIL);
 		mRbSocial = (RadioButton) findViewById(R.id.rbSocial);
 		mRbSocial.setTag(SHARE_SOCIAL);
-	//	mCbAutoInvite = (CheckBox) findViewById(R.id.cbAutoInvite);
+		// mCbAutoInvite = (CheckBox) findViewById(R.id.cbAutoInvite);
 		mEtInviteMessage = (EditText) findViewById(R.id.inviteMessage);
 		mEtInviteMessage
 				.setText("Dude! Check out this sick app! It allows for encrypted end to end communication. Take your privacy back!");
@@ -210,8 +209,8 @@ public class ExternalInviteActivity extends SherlockActivity {
 			query += "&utm_content=" + username;
 		}
 
-		String eUrl = url + URLEncoder.encode(query);
-		SurespotLog.v(TAG, "play store url length: " + eUrl.length() + ", url: " + eUrl);
+		String eUrl = url + URLEncoder.encode(query);		
+		SurespotLog.v(TAG, "play store url length %d:, url: %s ", eUrl.length(), eUrl);
 		return eUrl;
 	}
 
