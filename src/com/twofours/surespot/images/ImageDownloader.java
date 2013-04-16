@@ -86,10 +86,7 @@ public class ImageDownloader {
 
 			// TODO put the row in the tag
 			TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
-			if (message.getDateTime() == null) {
-				tvTime.setText("");
-			}
-			else {
+			if (message.getDateTime() != null) {
 				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
 			}
 		}

@@ -271,7 +271,7 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.getId() == null) {
 
 				chatMessageViewHolder.tvTime.setText("sending...");
-				SurespotLog.v(TAG, "getView, item: %s", item);
+				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
 			}
 			else {
 
