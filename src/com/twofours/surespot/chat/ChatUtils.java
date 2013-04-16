@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -188,6 +190,7 @@ public class ChatUtils {
 							@Override
 							public void run() {
 								chatController.addMessage(message);
+								
 							}
 						});
 					}
@@ -266,6 +269,27 @@ public class ChatUtils {
 
 		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 
+	}
+
+	public static void resendPictureMessage(Context context, NetworkController networkController, final SurespotMessage message,
+			IAsyncCallback<Boolean> callback) {
+
+		// upload encrypted image to server
+		FileInputStream uploadStream = null;
+		try {
+			uploadStream = new FileInputStream(new File(new URI(message.getData())));
+		}
+		catch (FileNotFoundException e) {
+			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+			callback.handleResponse(false);
+		}
+		catch (URISyntaxException e) {
+			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+			callback.handleResponse(false);
+		}
+
+		networkController.postFileStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(),
+				uploadStream, SurespotConstants.MimeTypes.IMAGE, callback);
 	}
 
 	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate) {

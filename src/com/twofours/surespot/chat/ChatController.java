@@ -1674,6 +1674,7 @@ public class ChatController {
 
 			chatAdapter.addOrUpdateMessage(message, false, true, true);
 			scrollToEnd(message.getTo());
+			saveState(message.getTo());
 		}
 		catch (SurespotMessageSequenceException e) {
 			// not gonna happen
@@ -1892,6 +1893,27 @@ public class ChatController {
 			// dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
 			// sendControlMessage(dmessage);
 		}
+	}
+
+	public void resendPictureMessage(final SurespotMessage message) {
+			
+		message.setErrorStatus(0);
+		
+		final ChatAdapter chatAdapter= mChatAdapters.get(message.getTo());
+		chatAdapter.notifyDataSetChanged();
+		
+		ChatUtils.resendPictureMessage(mContext, mNetworkController, message,new IAsyncCallback<Boolean>() {
+			
+			@Override
+			public void handleResponse(Boolean result) {
+				
+				if (!result) {
+					message.setErrorStatus(500);
+					chatAdapter.notifyDataSetChanged();
+				}
+			}
+		});
+		
 	}
 
 	public FriendAdapter getFriendAdapter() {

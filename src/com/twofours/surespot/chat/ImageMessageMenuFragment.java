@@ -105,38 +105,6 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 
 				String itemText = mItems.get(which);
 
-				if (itemText.equals("resend message")) {
-
-					return;
-				}
-
-				if (itemText.equals("delete message")) {
-					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-					boolean confirm = sp.getBoolean("pref_delete_message", true);
-					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete this message?",
-								"delete message", "ok", "cancel", new IAsyncCallback<Boolean>() {
-									public void handleResponse(Boolean result) {
-										if (result) {
-											mActivity.getChatController().deleteMessage(mMessage);
-										}
-										else {
-											dialogi.cancel();
-										}
-									};
-								});
-					}
-					else {
-						mActivity.getChatController().deleteMessage(mMessage);
-					}
-
-					return;
-				}
-
-				if (itemText.equals("resend message")) {
-
-					return;
-				}
 
 				if (itemText.contains("lock")) {
 					mActivity.getChatController().toggleMessageShareable(mMessage);
@@ -182,6 +150,35 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					}.execute();
 					return;
 
+				}
+
+
+				if (itemText.equals("delete message")) {
+					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					boolean confirm = sp.getBoolean("pref_delete_message", true);
+					if (confirm) {
+						UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete this message?",
+								"delete message", "ok", "cancel", new IAsyncCallback<Boolean>() {
+									public void handleResponse(Boolean result) {
+										if (result) {
+											mActivity.getChatController().deleteMessage(mMessage);
+										}
+										else {
+											dialogi.cancel();
+										}
+									};
+								});
+					}
+					else {
+						mActivity.getChatController().deleteMessage(mMessage);
+					}
+
+					return;
+				}
+
+				if (itemText.equals("resend message")) {
+					mActivity.getChatController().resendPictureMessage(mMessage);
+					return;
 				}
 
 			}
