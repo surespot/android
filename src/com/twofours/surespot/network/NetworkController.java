@@ -114,7 +114,7 @@ public class NetworkController {
 		}
 		catch (IOException e) {
 			// TODO tell user shit is fucked
-			ACRA.getErrorReporter().handleException(e);
+			ACRA.getErrorReporter().handleSilentException(e);
 			throw new RuntimeException(e);
 		}
 
