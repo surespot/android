@@ -2,6 +2,7 @@ package com.twofours.surespot.activities;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.util.Comparator;
 import java.util.List;
 
 import org.json.JSONException;
@@ -45,13 +46,21 @@ public class ManageKeysActivity extends SherlockActivity {
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
-		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
 		}
+		
+		adapter.sort(new Comparator<String>() {
+			@Override
+			public int compare(String lhs, String rhs) {
+				return lhs.compareToIgnoreCase(rhs);
+			}
+
+		});
 
 		spinner.setAdapter(adapter);
 

@@ -2,6 +2,7 @@ package com.twofours.surespot.identity;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.KeyException;
@@ -176,12 +177,16 @@ public class IdentityController {
 		else {
 
 			try {
-				identityFile.createNewFile();
+				//make sure we'll have the space to write the identity file
+				FileOutputStream fos = new FileOutputStream(identityFile);
+				fos.write(new byte[10000]);
+				fos.close();
+				identityFile.delete();
+				return true;
 			}
 			catch (IOException e) {
 				return false;
 			}
-			return identityFile.isFile() && identityFile.canWrite();
 		}
 	}
 
