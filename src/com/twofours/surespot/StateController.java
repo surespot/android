@@ -272,7 +272,7 @@ public class StateController {
 				FileUtils.wipeImageCaptureDir(context);
 				
 				//uploaded images dir
-				String localImageDir = context.getCacheDir() + File.separator + "uploadedImages";
+				String localImageDir = FileUtils.getImageUploadDir(context);
 				FileUtils.deleteRecursive(new File(localImageDir));
 
 				SurespotApplication.getCachingService().clear();

@@ -35,6 +35,7 @@ import android.provider.MediaStore.Images;
 import ch.boye.httpclientandroidlib.androidextra.Base64;
 
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -142,7 +143,7 @@ public class ChatUtils {
 
 					// save encrypted image locally until we receive server confirmation
 
-					String localImageDir = activity.getCacheDir() + File.separator + "uploadedImages";
+					String localImageDir = FileUtils.getImageUploadDir(activity);
 					new File(localImageDir).mkdirs();
 
 					String localImageFilename = localImageDir + File.separator
