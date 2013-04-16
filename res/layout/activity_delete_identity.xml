@@ -3,19 +3,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:layout_margin="10dp"
     tools:context=".DeleteIdentityActivity" >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dip"
+        android:text="select identity" />
 
     <Spinner
         android:id="@+id/identitySpinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginBottom="5dp"        
+        android:textSize="16dp" >
     </Spinner>
 
     <Button
         android:id="@+id/bDeleteIdentity"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/delete_identity" >
+        android:layout_height="wrap_content"        
+        android:text="@string/delete_identity"
+        android:textSize="16dp" >
     </Button>
 
 </LinearLayout>

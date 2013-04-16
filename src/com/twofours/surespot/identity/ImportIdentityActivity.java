@@ -28,7 +28,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_import_identity);
-		Utils.configureActionBar(this, "identity", "import", true);
+		Utils.configureActionBar(this, "identity", "restore", true);
 
 		mSignup = getIntent().getBooleanExtra("signup", false);
 
@@ -40,10 +40,19 @@ public class ImportIdentityActivity extends SherlockActivity {
 		final File exportDir = FileUtils.getIdentityExportDir();
 
 		TextView tvFound = (TextView) findViewById(R.id.foundText);
-		tvFound.setText("discovered the identities below in " + exportDir + ", click to import");
+		
 
 		for (String name : IdentityController.getIdentityNames(this, exportDir.getPath())) {
 			adapter.add(name);
+		}
+		
+		if (adapter.getCount() > 0) {
+			tvFound.setText("discovered the identities below in\n\t" + exportDir + "\n, click on a name to restore");
+			lvIdentities.setVisibility(View.VISIBLE);
+		}
+		else {
+			tvFound.setText("no surespot identity (*.ssi) files discovered in\n\t" + exportDir + "\nplease copy your identity file(s) there.");
+			lvIdentities.setVisibility(View.GONE);
 		}
 
 		lvIdentities.setAdapter(adapter);
