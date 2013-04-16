@@ -3,6 +3,8 @@ package com.twofours.surespot.chat;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +19,6 @@ import java.util.Random;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.spongycastle.util.io.TeeOutputStream;
 
 import android.app.Activity;
 import android.content.Context;
@@ -126,7 +127,7 @@ public class ChatUtils {
 									SurespotLog.v(TAG, "imageCompressed");
 								}
 								catch (IOException e) {
-									SurespotLog.w(TAG, "error compressing image", e);
+									SurespotLog.w(TAG, e, "error compressing image");
 								}
 							}
 						};
@@ -137,32 +138,28 @@ public class ChatUtils {
 					}
 
 					// save encrypted image locally until we receive server confirmation
-					
-					
-					String localImageDir = activity.getCacheDir() + File.separator + "uploadedImages";					
+
+					String localImageDir = activity.getCacheDir() + File.separator + "uploadedImages";
 					new File(localImageDir).mkdirs();
-					
-					String localImageFilename = localImageDir + File.separator + URLEncoder.encode(new Random().nextInt() + ".tmp", "UTF-8");
-					File localImageFile = new File(localImageFilename);
-					
+
+					String localImageFilename = localImageDir + File.separator
+							+ URLEncoder.encode(new Random().nextInt() + ".tmp", "UTF-8");
+					final File localImageFile = new File(localImageFilename);
+
 					localImageFile.createNewFile();
 					String localImageUri = Uri.fromFile(localImageFile).toString();
-					SurespotLog.v(TAG, "saving copy of encrypted image to: " + localImageFilename);
-					
-					FileOutputStream fileOutputStream2 = new FileOutputStream(localImageFile);
-					PipedOutputStream fileOutputStream = new PipedOutputStream();
+					SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
-					TeeOutputStream teeOutputStream = new TeeOutputStream(fileOutputStream, fileOutputStream2);
+					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 
-					PipedInputStream fileInputStream = new PipedInputStream(fileOutputStream);
 
-					String ourVersion = IdentityController.getOurLatestVersion();
-					String theirVersion = IdentityController.getTheirLatestVersion(to);
+					final String ourVersion = IdentityController.getOurLatestVersion();
+					final String theirVersion = IdentityController.getTheirLatestVersion(to);
 
 					final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion,
-							new BufferedInputStream(dataStream), teeOutputStream);
+							new BufferedInputStream(dataStream), encryptionOutputStream);
 
-														
 					// add a message immediately
 					if (scale) {
 						// use iv as key
@@ -181,7 +178,7 @@ public class ChatUtils {
 						bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
 					}
 					if (bitmap != null) {
-						SurespotLog.v(TAG, "adding bitmap to caches: " + localImageUri);
+						SurespotLog.v(TAG, "adding bitmap to caches: %s", localImageUri);
 
 						ImageDownloader.addBitmapToCache(localImageUri, bitmap);
 						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
@@ -195,13 +192,70 @@ public class ChatUtils {
 						});
 					}
 
-					networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, fileInputStream,
-							SurespotConstants.MimeTypes.IMAGE, callback);
+					Runnable saveFileRunnable = new Runnable() {
+						@Override
+						public void run() {
+
+							// save encrypted image to disk
+							FileOutputStream fileSaveStream;
+							try {
+								fileSaveStream = new FileOutputStream(localImageFile);
+
+								int bufferSize = 1024;
+								byte[] buffer = new byte[bufferSize];
+
+								int len = 0;
+								while ((len = encryptionInputStream.read(buffer)) != -1) {
+									fileSaveStream.write(buffer, 0, len);
+								}
+								fileSaveStream.close();
+								encryptionInputStream.close();
+
+							}
+
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+								callback.handleResponse(false);
+								return;
+							}
+
+							// upload encrypted image to server
+							FileInputStream uploadStream;
+							try {
+								uploadStream = new FileInputStream(localImageFile);
+							}
+							catch (FileNotFoundException e) {
+								SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+								callback.handleResponse(false);
+								return;
+							}
+
+							networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream,
+									SurespotConstants.MimeTypes.IMAGE, new IAsyncCallback<Boolean>() {
+
+										@Override
+										public void handleResponse(Boolean result) {
+											// if it failed update the message
+											if (!result) {
+												chatController.getChatAdapter(activity, to).getMessageByIv(iv).setErrorStatus(500);
+											}
+											else {
+												// localImageFile.delete();
+											}
+
+											callback.handleResponse(result);
+										}
+									});
+
+						}
+					};
+
+					SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
 
 				}
 
 				catch (IOException e) {
-					SurespotLog.w(TAG, "uploadPictureMessageAsync", e);
+					SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 				}
 			}
 		};
@@ -368,7 +422,7 @@ public class ChatUtils {
 				return rotation;
 			}
 			catch (IOException e) {
-				SurespotLog.e(TAG,e, "Error checking exif");
+				SurespotLog.e(TAG, e, "Error checking exif");
 			}
 		}
 		return 0f;

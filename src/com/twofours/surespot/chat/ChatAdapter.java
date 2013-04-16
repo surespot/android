@@ -357,13 +357,19 @@ public class ChatAdapter extends BaseAdapter {
 		String statusText = null;
 		switch (message.getErrorStatus()) {
 		case 403:
-			statusText = "ERROR SENDING MESSAGE: unauthorized";
+			statusText = "error sending message: unauthorized";
 			break;
 		case 404:
-			statusText = "ERROR SENDING MESSAGE: unauthorized";
+			statusText = "error sending message: unauthorized";
 			break;
 		case 500:
-			statusText = "ERROR SENDING MESSAGE";
+			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+				statusText = "error sending message";	
+			}
+			else {
+				statusText = "sending failed - long press to resend";
+			}
+			
 			break;
 		}
 

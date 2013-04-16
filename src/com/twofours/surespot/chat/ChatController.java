@@ -111,7 +111,6 @@ public class ChatController {
 	private static String mCurrentChat;
 	private static boolean mPaused = true;
 	private NetworkController mNetworkController;
-	
 
 	private Context mContext;
 	public static final int MODE_NORMAL = 0;
@@ -122,7 +121,8 @@ public class ChatController {
 	private IAsyncCallback<Void> mCallback401;
 	private IAsyncCallback<Boolean> mProgressCallback;
 
-	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401, IAsyncCallback<Boolean> progressCallback) {
+	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401,
+			IAsyncCallback<Boolean> progressCallback) {
 		SurespotLog.v(TAG, "constructor: " + this);
 		mContext = context;
 		mNetworkController = networkController;
@@ -195,7 +195,7 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					Utils.makeLongToast(mContext, "could not connect to the server");
+					// Utils.makeLongToast(mContext, "could not connect to the server");
 
 					mCallback401.handleResponse(null);
 				}
@@ -580,11 +580,11 @@ public class ChatController {
 						}
 						catch (InterruptedIOException ioe) {
 
-							SurespotLog.w(TAG, "BitmapDownloaderTask ioe", ioe);
+							SurespotLog.w(TAG, ioe, "BitmapDownloaderTask");
 
 						}
 						catch (IOException e) {
-							SurespotLog.w(TAG, "BitmapDownloaderTask e", e);
+							SurespotLog.w(TAG, e, "BitmapDownloaderTask");
 						}
 
 						if (bitmap != null) {
@@ -603,7 +603,7 @@ public class ChatController {
 
 					}
 					catch (SurespotMessageSequenceException e) {
-						SurespotLog.v(TAG, "updateUserMessageIds: " + e.getMessage());
+						SurespotLog.v(TAG, "updateUserMessageIds: %s" , e.getMessage());
 						getLatestMessagesAndControls(otherUser, e.getMessageId());
 					}
 				};
@@ -657,7 +657,7 @@ public class ChatController {
 
 				HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
 
-				SurespotLog.v(TAG, "creating http cache entry for: " + remoteUri);
+				SurespotLog.v(TAG, "creating http cache entry for: %s", remoteUri);
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
 				// update message to point to real location
@@ -665,23 +665,25 @@ public class ChatController {
 
 			}
 			catch (FileNotFoundException e1) {
-				SurespotLog.w(TAG, "onMessage", e1);
+				SurespotLog.w(TAG, e1, "onMessage");
 			}
 			catch (URISyntaxException e1) {
-				SurespotLog.w(TAG, "onMessage", e1);
+				SurespotLog.w(TAG, e1, "onMessage");
 			}
 			catch (IOException e) {
-				SurespotLog.w(TAG, "onMessage", e);
+				SurespotLog.w(TAG, e, "onMessage");
 			}
 
 			// delete the file
 
 			try {
+				SurespotLog.v(TAG, "handleCachedImage deleting local file: %s", localUri);
+				
 				File file = new File(new URI(localUri));
 				file.delete();
 			}
 			catch (URISyntaxException e) {
-				SurespotLog.w(TAG, "handleMessage", e);
+				SurespotLog.w(TAG, e, "handleMessage");
 			}
 
 		}
@@ -836,7 +838,6 @@ public class ChatController {
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
-				
 				getLatestMessagesAndControls();
 
 			}
@@ -860,8 +861,8 @@ public class ChatController {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 			getLatestMessagesAndControls(entry.getKey());
 		}
-		
-		//done with "global" updates
+
+		// done with "global" updates
 		setProgress(null, false);
 	}
 
@@ -897,7 +898,7 @@ public class ChatController {
 		LatestIdPair ids = getLatestIds(username);
 
 		getLatestMessagesAndControls(username, ids.latestMessageId, ids.latestControlMessageId);
-	
+
 	}
 
 	private void getLatestMessagesAndControls(String username, int messageId) {
@@ -933,7 +934,7 @@ public class ChatController {
 
 							}
 						}
-						
+
 						setProgress(username, false);
 					}
 
@@ -948,7 +949,7 @@ public class ChatController {
 					chatFragment.requestFocus();
 
 				}
-			}		
+			}
 		}
 	}
 
@@ -1297,8 +1298,8 @@ public class ChatController {
 
 			}
 		}
-		
-		setProgress(username,false);
+
+		setProgress(username, false);
 	}
 
 	// tell the chat adapters we've loaded their data (even if they didn't have any)
@@ -1443,16 +1444,15 @@ public class ChatController {
 		loadUnsentMessages();
 	}
 
-	
 	private boolean mGlobalProgress;
 	private HashMap<String, Boolean> mChatProgress = new HashMap<String, Boolean>();
-	
+
 	private synchronized void setProgress(String username, boolean inProgress) {
-		
+
 		if (username == null) {
 			mGlobalProgress = inProgress;
 		}
-		
+
 		else {
 			if (inProgress) {
 				mChatProgress.put(username, true);
@@ -1460,25 +1460,25 @@ public class ChatController {
 			else {
 				mChatProgress.remove(username);
 			}
-		}		
-		
+		}
+
 		boolean progress = isInProgress();
-		SurespotLog.v(TAG,"setProgress, isInProgress(): %b", progress);
-		
+		SurespotLog.v(TAG, "setProgress, isInProgress(): %b", progress);
+
 		if (mProgressCallback != null) {
 			mProgressCallback.handleResponse(progress);
 		}
 	}
-	
+
 	public synchronized boolean isInProgress() {
 		return mGlobalProgress || !mChatProgress.isEmpty();
 	}
-	
+
 	public synchronized void onResume() {
 		SurespotLog.v(TAG, "onResume, mPaused: %b", mPaused);
 		if (mPaused) {
 			mPaused = false;
-		
+
 			setProgress(null, true);
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -1980,7 +1980,7 @@ public class ChatController {
 			if (position > 0) {
 
 				String name = mChatPagerAdapter.getChatName(position);
-				SurespotLog.v(TAG, "closeTab, name: %s, position: %d" ,name,position);
+				SurespotLog.v(TAG, "closeTab, name: %s, position: %d", name, position);
 
 				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
 				mEarliestMessage.remove(name);

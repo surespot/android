@@ -17,6 +17,7 @@
 package com.twofours.surespot.images;
 
 import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -29,6 +30,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
@@ -74,11 +76,11 @@ public class ImageDownloader {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			//SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
+			// SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
 			forceDownload(imageView, message);
 		}
 		else {
-			//SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
+			// SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
 			cancelPotentialDownload(imageView, message);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
@@ -173,10 +175,21 @@ public class ImageDownloader {
 		@Override
 		public void run() {
 			Bitmap bitmap = null;
+			InputStream imageStream = null;
 
-			InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+			if (mMessage.getData().startsWith("file")) {
+				try {
+					imageStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
+				}
+				catch (FileNotFoundException e) {
+					SurespotLog.w(TAG, e, "BitmapDownloaderTask");
+				}
+			}
+			else {
+				imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+			}
 
-			if (!mCancelled) {
+			if (!mCancelled && imageStream != null) {
 				PipedOutputStream out = new PipedOutputStream();
 				PipedInputStream inputStream;
 				try {
@@ -228,7 +241,6 @@ public class ImageDownloader {
 								Drawable drawable = imageView.getDrawable();
 								if (drawable instanceof DownloadedDrawable) {
 
-								
 									imageView.clearAnimation();
 									Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
 																																	// AlphaAnimation(0,
@@ -240,7 +252,7 @@ public class ImageDownloader {
 								}
 								else {
 									SurespotLog.v(TAG, "clearing uploading flag");
-								//	mMessage.setPlainData(null);
+									// mMessage.setPlainData(null);
 									ImageViewAnimatedChange(imageView.getContext(), imageView, finalBitmap);
 								}
 
@@ -248,10 +260,10 @@ public class ImageDownloader {
 
 								if (mMessage.getHeight() == 0) {
 									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
-//									SurespotLog.v(TAG,
-//											"Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
-//													+ ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
-//													+ finalBitmap.getWidth());
+									// SurespotLog.v(TAG,
+									// "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
+									// + ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
+									// + finalBitmap.getWidth());
 								}
 
 								// TODO put the row in the tag

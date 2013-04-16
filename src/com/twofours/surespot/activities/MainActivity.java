@@ -326,6 +326,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
 			if (resultCode == RESULT_OK) {
 				mImageCaptureHandler.handleResult(this);
+				mImageCaptureHandler = null;
 			}
 			break;
 		}
