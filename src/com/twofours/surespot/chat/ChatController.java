@@ -603,7 +603,7 @@ public class ChatController {
 
 					}
 					catch (SurespotMessageSequenceException e) {
-						SurespotLog.v(TAG, "updateUserMessageIds: %s" , e.getMessage());
+						SurespotLog.v(TAG, "updateUserMessageIds: %s", e.getMessage());
 						getLatestMessagesAndControls(otherUser, e.getMessageId());
 					}
 				};
@@ -678,7 +678,7 @@ public class ChatController {
 
 			try {
 				SurespotLog.v(TAG, "handleCachedImage deleting local file: %s", localUri);
-				
+
 				File file = new File(new URI(localUri));
 				file.delete();
 			}
@@ -1736,7 +1736,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.w(TAG, "deleteMessage", error);
+						SurespotLog.w(TAG, error, "deleteMessage");
 						// MainActivity.getMainHandler().post(new Runnable() {
 						//
 						// @Override
@@ -1751,14 +1751,26 @@ public class ChatController {
 
 		}
 		else {
+			// remove the local message
 			String otherUser = message.getOtherUser();
 			mResendBuffer.remove(message);
 			mSendBuffer.remove(message);
-			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 
+			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 			chatAdapter.deleteMessageByIv(message.getIv());
 			saveState(otherUser);
 
+			// if it's an image, delete the local image file
+			if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				if (message.getData().startsWith("file")) {
+					try {
+						new File(new URI(message.getData())).delete();
+					}
+					catch (URISyntaxException e) {
+						SurespotLog.w(TAG, e, "deleteMessage");
+					}
+				}
+			}
 		}
 	}
 

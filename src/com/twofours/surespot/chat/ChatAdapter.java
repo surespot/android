@@ -22,6 +22,7 @@ import com.twofours.surespot.encryption.MessageDecryptor;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.UIUtils;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -264,7 +265,7 @@ public class ChatAdapter extends BaseAdapter {
 		
 
 		if (item.getErrorStatus() > 0) {
-			setErrorText(chatMessageViewHolder.tvTime, item);
+			UIUtils.setMessageErrorText(chatMessageViewHolder.tvTime, item);
 		}
 		else {
 
@@ -353,29 +354,7 @@ public class ChatAdapter extends BaseAdapter {
 		return convertView;
 	}
 
-	private void setErrorText(TextView textView, SurespotMessage message) {
-		String statusText = null;
-		switch (message.getErrorStatus()) {
-		case 403:
-			statusText = "error sending message: unauthorized";
-			break;
-		case 404:
-			statusText = "error sending message: unauthorized";
-			break;
-		case 500:
-			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-				statusText = "error sending message";	
-			}
-			else {
-				statusText = "sending failed - long press to resend";
-			}
-			
-			break;
-		}
-
-		textView.setText(statusText);
-	}
-
+	
 	public static class ChatMessageViewHolder {
 		public TextView tvText;
 		public TextView tvUser;

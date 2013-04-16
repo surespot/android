@@ -44,6 +44,7 @@ import com.twofours.surespot.network.NetworkController;
 
 public class ChatUtils {
 	private static final String TAG = "ChatUtils";
+	private static Random mImageUploadFileRandom = new Random();
 
 	public static String getOtherUser(String from, String to) {
 		return to.equals(IdentityController.getLoggedInUser()) ? from : to;
@@ -143,7 +144,7 @@ public class ChatUtils {
 					new File(localImageDir).mkdirs();
 
 					String localImageFilename = localImageDir + File.separator
-							+ URLEncoder.encode(new Random().nextInt() + ".tmp", "UTF-8");
+							+ URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
 					final File localImageFile = new File(localImageFilename);
 
 					localImageFile.createNewFile();
@@ -152,7 +153,6 @@ public class ChatUtils {
 
 					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
 					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-
 
 					final String ourVersion = IdentityController.getOurLatestVersion();
 					final String theirVersion = IdentityController.getTheirLatestVersion(to);
@@ -237,7 +237,11 @@ public class ChatUtils {
 										public void handleResponse(Boolean result) {
 											// if it failed update the message
 											if (!result) {
-												chatController.getChatAdapter(activity, to).getMessageByIv(iv).setErrorStatus(500);
+												ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
+												if (chatAdapter != null) {
+													chatAdapter.getMessageByIv(iv).setErrorStatus(500);
+													chatAdapter.notifyDataSetChanged();
+												}
 											}
 											else {
 												// localImageFile.delete();

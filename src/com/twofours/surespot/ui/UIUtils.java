@@ -7,8 +7,10 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.text.InputFilter;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.network.IAsyncCallback;
 
@@ -64,6 +66,30 @@ public class UIUtils {
 
 		builder.create().show();
 
+	}
+
+	
+	public static void setMessageErrorText(TextView textView, SurespotMessage message) {
+		String statusText = null;
+		switch (message.getErrorStatus()) {
+		case 403:
+			statusText = "error sending message: unauthorized";
+			break;
+		case 404:
+			statusText = "error sending message: unauthorized";
+			break;
+		case 500:
+			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+				statusText = "error sending message";	
+			}
+			else {
+				statusText = "sending failed - long press to resend";
+			}
+			
+			break;
+		}
+
+		textView.setText(statusText);
 	}
 
 
