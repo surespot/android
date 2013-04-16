@@ -179,6 +179,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 			intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n" + shortUrl
 					+ "\n\non your android device to install surespot.");
 			startActivity(intent);
+		
 			break;
 		case SHARE_SMS:
 			intent = new Intent(Intent.ACTION_VIEW);
@@ -199,6 +200,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 			startActivity(intent);
 			break;
 		}
+		finish();
 	}
 
 	private String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
