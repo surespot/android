@@ -49,8 +49,8 @@ public class ChatFragment extends SherlockFragment {
 	private Timer mTimer;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
-	//private int mSelection;
-	//private int mTop;
+	// private int mSelection;
+	// private int mTop;
 	private boolean mJustLoaded;
 	private boolean mIsDeleted;
 	private ChatAdapter mChatAdapter;
@@ -132,11 +132,20 @@ public class ChatFragment extends SherlockFragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
+				if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-				MessageDialogMenuFragment dialog = new MessageDialogMenuFragment();
-				dialog.setActivityAndMessage(getMainActivity(), message);
-				dialog.show(getActivity().getSupportFragmentManager(), "MessageDialogMenuFragment");
-				return true;
+					TextMessageMenuFragment dialog = new TextMessageMenuFragment();
+					dialog.setActivityAndMessage(getMainActivity(), message);
+					dialog.show(getActivity().getSupportFragmentManager(), "TextMessageMenuFragment");
+					return true;
+				}
+				else {
+
+					ImageMessageMenuFragment dialog = new ImageMessageMenuFragment();
+					dialog.setActivityAndMessage(getMainActivity(), message);
+					dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
+					return true;
+				}
 
 			}
 		});
@@ -253,7 +262,6 @@ public class ChatFragment extends SherlockFragment {
 			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
 			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
 
-
 			if (!mLoading) {
 				boolean hint = getUserVisibleHint();
 				// SurespotLog.v(TAG, "hint: " + hint);
@@ -281,25 +289,25 @@ public class ChatFragment extends SherlockFragment {
 
 							mLoading = true;
 							mPreviousTotal = mChatAdapter.getCount();
-							//mSelection = firstVisibleItem;
-						//	View v = mListView.getChildAt(0);
-//							mTop = (v == null) ? 0 : v.getTop();
+							// mSelection = firstVisibleItem;
+							// View v = mListView.getChildAt(0);
+							// mTop = (v == null) ? 0 : v.getTop();
 
 							getMainActivity().getChatController().loadEarlierMessages(mUsername, new IAsyncCallback<Void>() {
 
 								@Override
 								public void handleResponse(Void nothing) {
-									
+
 									int selection = mListView.getFirstVisiblePosition();
-									//mSelection = firstVisibleItem;
+									// mSelection = firstVisibleItem;
 									View v = mListView.getChildAt(0);
 									int top = (v == null) ? 0 : v.getTop();
 									int totalItemCount = mChatAdapter.getCount();
 									// will have more items if we loaded them
-									if (mLoading && mPreviousTotal > 0 && totalItemCount> mPreviousTotal) {
+									if (mLoading && mPreviousTotal > 0 && totalItemCount > mPreviousTotal) {
 										// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
-										
-										//mChatAdapter.notifyDataSetChanged();
+
+										// mChatAdapter.notifyDataSetChanged();
 
 										int loaded = totalItemCount - mPreviousTotal;
 										// SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
@@ -314,7 +322,7 @@ public class ChatFragment extends SherlockFragment {
 										mJustLoaded = false;
 										mLoading = false;
 									}
-									
+
 								}
 							});
 						}
@@ -477,17 +485,17 @@ public class ChatFragment extends SherlockFragment {
 
 	public void scrollToEnd() {
 		SurespotLog.v(TAG, "scrollToEnd");
-		if(mChatAdapter != null && mListView != null) {
+		if (mChatAdapter != null && mListView != null) {
 			mChatAdapter.notifyDataSetChanged();
 			mListView.postDelayed(new Runnable() {
 
 				@Override
 				public void run() {
-					//mChatAdapter.notifyDataSetChanged();
+					// mChatAdapter.notifyDataSetChanged();
 					mListView.setSelection(mChatAdapter.getCount() - 1);
 					//
 				}
-			},100);
+			}, 100);
 		}
 	}
 
