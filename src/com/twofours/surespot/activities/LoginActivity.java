@@ -273,7 +273,7 @@ public class LoginActivity extends SherlockActivity {
 										Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
 									}
 									else {
-										Utils.makeToast(LoginActivity.this, "Error: " + message);
+										Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
 									}
 								}
 								else {
