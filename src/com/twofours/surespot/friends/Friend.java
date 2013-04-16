@@ -196,7 +196,7 @@ public class Friend implements Comparable<Friend> {
 		// if the flags are the same sort by name
 		// not active or invite, sort by name
 		if ((another.getFlags() == this.getFlags()) || (another.getFlags() < MESSAGE_ACTIVITY && this.getFlags() < MESSAGE_ACTIVITY)) {
-			return this.getName().compareTo(another.getName());
+			return this.getName().compareToIgnoreCase(another.getName());
 		}
 		else {
 			// sort by flag value
