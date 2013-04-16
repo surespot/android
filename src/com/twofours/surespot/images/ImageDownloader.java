@@ -48,7 +48,6 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.ui.UIUtils;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -282,15 +281,15 @@ public class ImageDownloader {
 									ivNotShareable.setVisibility(View.VISIBLE);
 								}
 
-								if (mMessage.getErrorStatus() > 0) {
-									UIUtils.setMessageErrorText(tvTime, mMessage);
+								// if (mMessage.getErrorStatus() > 0) {
+								// UIUtils.setMessageErrorText(tvTime, mMessage);
+								// }
+								// else {
+								if (mMessage.getDateTime() != null) {
+									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
+											mMessage.getDateTime()));
 								}
-								else {
-									if (mMessage.getDateTime() != null) {
-										tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-												mMessage.getDateTime()));
-									}
-								}
+								// }
 							}
 						});
 					}
