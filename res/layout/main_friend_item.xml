@@ -3,78 +3,101 @@
     android:id="@+id/friendItemLayout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:descendantFocusability="blocksDescendants"
-    android:orientation="horizontal" >
+    android:orientation="vertical" >
 
     <LinearLayout
         android:id="@+id/statusLayout"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="15dp"
-        android:layout_weight="1"
-        android:minHeight="50dp"
-        android:orientation="vertical" >
+        android:background="@drawable/abs__list_selector_holo_light"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/friendAvatar"
+            android:layout_width="50dp"
+            android:layout_height="50dp" >
+        </ImageView>
 
         <TextView
             android:id="@+id/friendName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textSize="30sp" >
-        </TextView>
-
-        <TextView
-            android:id="@+id/friendStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="15dp"
+            android:layout_weight="1"
             android:textSize="20sp" >
         </TextView>
-    </LinearLayout>
 
-    <View
-        android:id="@+id/messageActivity"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="center"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/filled_blue_circle"
-        android:visibility="gone" >
-    </View>
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:id="@+id/friendStatus"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/abs__holo_blue_light"
+                android:textSize="15sp" >
+            </TextView>
+
+            <View
+                android:id="@+id/messageActivity"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/filled_blue_circle"
+                android:visibility="gone" >
+            </View>
+        </FrameLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/inviteLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal" >
 
-        <Button
+        <TextView
             android:id="@+id/notificationItemBlock"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:background="@drawable/abs__list_selector_holo_light"
+            android:gravity="center"
+            android:padding="3dp"
             android:tag="block"
-            android:text="block" >
-        </Button>
+            android:text="@string/block_underline"
+            android:textColor="@color/abs__holo_blue_light" >
+        </TextView>
 
-        <Button
+        <TextView
             android:id="@+id/notificationItemIgnore"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:background="@drawable/abs__list_selector_holo_light"
+            android:gravity="center"
+            android:padding="3dp"
             android:tag="ignore"
-            android:text="ignore" >
-        </Button>
+            android:text="@string/ignore_underline"
+            android:textColor="@color/abs__holo_blue_light" >
+        </TextView>
 
-        <Button
+        <TextView
             android:id="@+id/notificationItemAccept"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:background="@drawable/abs__list_selector_holo_light"
+            android:gravity="center"
+            android:padding="3dp"
             android:tag="accept"
-            android:text="accept" >
-        </Button>
+            android:text="@string/accept_underline"
+            android:textColor="@color/abs__holo_blue_light" >
+        </TextView>
     </LinearLayout>
 
 </LinearLayout>

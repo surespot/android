@@ -12,18 +12,13 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendAdapter extends BaseAdapter {
@@ -211,11 +206,55 @@ public class FriendAdapter extends BaseAdapter {
 			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.main_friend_item, parent, false);
 
-			((Button) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
-			((Button) convertView.findViewById(R.id.notificationItemBlock)).setOnClickListener(FriendInviteResponseListener);
-			((Button) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
+			((TextView) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
+			((TextView) convertView.findViewById(R.id.notificationItemBlock)).setOnClickListener(FriendInviteResponseListener);
+			((TextView) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
+			
+
+			// mListView.setOnItemClickListener(new OnItemClickListener() {
+			// @Override
+			// public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			// Friend friend = (Friend) mMainAdapter.getItem(position);
+			// if (friend.isFriend()) {
+			//
+			// ChatController chatController = getMainActivity().getChatController();
+			// if (chatController != null) {
+			// if (chatController.getMode() == ChatController.MODE_SELECT) {
+			// // reset action bar header
+			// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+			// IdentityController.getLoggedInUser(), false);
+			//
+			// // handle send intent
+			// sendFromIntent(friend.getName());
+			//
+			// }
+			// chatController.setCurrentChat(friend.getName());
+			// }
+			//
+			// }
+			// }
+			// });
+			//
+			// mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+			// @Override
+			// public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+			// Friend friend = (Friend) mMainAdapter.getItem(position);
+			//
+			// if (!friend.isInviter()) {
+			// FriendMenuFragment dialog = new FriendMenuFragment();
+			// dialog.setActivityAndFriend(getMainActivity(), friend);
+			// dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+			// }
+			// return true;
+			//
+			// }
+			// });
 
 			friendViewHolder = new FriendViewHolder();
+			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);			
+			friendViewHolder.statusLayout.setOnClickListener(mClickListener);
+			friendViewHolder.statusLayout.setOnLongClickListener(mLongClickListener);
+			
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
@@ -235,16 +274,16 @@ public class FriendAdapter extends BaseAdapter {
 			// TODO expose flags and use switch
 
 			if (friend.isDeleted()) {
-				friendViewHolder.tvStatus.setText("deleted");
+				friendViewHolder.tvStatus.setText("is deleted");
 			}
 			if (friend.isInvited()) {
-				friendViewHolder.tvStatus.setText("invited");
+				friendViewHolder.tvStatus.setText("is invited");
 			}
 			if (friend.isNewFriend()) {
-				friendViewHolder.tvStatus.setText("invitation accepted");
+				friendViewHolder.tvStatus.setText("has accepted");
 			}
 			if (friend.isInviter()) {
-				friendViewHolder.tvStatus.setText("is inviting you to be friends");
+				friendViewHolder.tvStatus.setText("is inviting");
 			}
 
 		}
@@ -253,20 +292,22 @@ public class FriendAdapter extends BaseAdapter {
 		}
 
 		if (friend.isInviter()) {
+			friendViewHolder.statusLayout.setEnabled(false);
 			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
 			friendViewHolder.vgActivity.setVisibility(View.GONE);
 			convertView.setBackgroundColor(Color.WHITE);
 		}
 		else {
+			friendViewHolder.statusLayout.setEnabled(true);
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
 			if (friend.isChatActive()) {
 				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_active);
-				
+
 			}
 			else {
 				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_inactive);
-				//convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
+				// convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
 			}
 
 			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);
@@ -281,43 +322,43 @@ public class FriendAdapter extends BaseAdapter {
 		@Override
 		public void onClick(View v) {
 
-			final String action = (String) v.getTag();
-			final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v.getParent());
-			final Friend friend = (Friend) getItem(position);
-			final String friendname = friend.getName();
-
-			MainActivity.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
-				public void onSuccess(String arg0) {
-
-					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
-					friend.setInviter(false);
-					if (action.equals("accept")) {
-						friend.setNewFriend(true);
-					}
-					else {
-						if (action.equals("block")) {
-							//ignore
-							if (!friend.isDeleted()) {
-								mFriends.remove(position);
-							}
-						}
-						else {
-							//ignore
-							if (!friend.isDeleted()) {
-								mFriends.remove(position);
-							}
-						}
-					}
-					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-					Collections.sort(mFriends);
-					notifyDataSetChanged();
-				}
-
-				public void onFailure(Throwable error, String content) {
-					SurespotLog.w(TAG, "respondToInvite", error);
-					Utils.makeToast(MainActivity.getContext(), "Could not respond to invite, please try again later.");
-				};
-			});
+			// final String action = (String) v.getTag();
+			// final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v.getParent());
+			// final Friend friend = (Friend) getItem(position);
+			// final String friendname = friend.getName();
+			//
+			// MainActivity.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
+			// public void onSuccess(String arg0) {
+			//
+			// SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
+			// friend.setInviter(false);
+			// if (action.equals("accept")) {
+			// friend.setNewFriend(true);
+			// }
+			// else {
+			// if (action.equals("block")) {
+			// // ignore
+			// if (!friend.isDeleted()) {
+			// mFriends.remove(position);
+			// }
+			// }
+			// else {
+			// // ignore
+			// if (!friend.isDeleted()) {
+			// mFriends.remove(position);
+			// }
+			// }
+			// }
+			// mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			// Collections.sort(mFriends);
+			// notifyDataSetChanged();
+			// }
+			//
+			// public void onFailure(Throwable error, String content) {
+			// SurespotLog.w(TAG, "respondToInvite", error);
+			// Utils.makeToast(MainActivity.getContext(), "Could not respond to invite, please try again later.");
+			// };
+			// });
 		}
 	};
 
@@ -330,6 +371,7 @@ public class FriendAdapter extends BaseAdapter {
 		public TextView tvStatus;
 		public View vgInvite;
 		public View vgActivity;
+		public View statusLayout;
 	}
 
 	public void sort() {
@@ -364,4 +406,43 @@ public class FriendAdapter extends BaseAdapter {
 		return names;
 	}
 
+	OnClickListener mClickListener = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			// Friend friend = (Friend) mMainAdapter.getItem(position);
+			// if (friend.isFriend()) {
+			//
+			// ChatController chatController = getMainActivity().getChatController();
+			// if (chatController != null) {
+			// if (chatController.getMode() == ChatController.MODE_SELECT) {
+			// // reset action bar header
+			// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+			// IdentityController.getLoggedInUser(), false);
+			//
+			// // handle send intent
+			// sendFromIntent(friend.getName());
+			//
+			// }
+			// chatController.setCurrentChat(friend.getName());
+			// }
+			//
+			// }
+		}
+	};
+
+	OnLongClickListener mLongClickListener = new OnLongClickListener() {
+		@Override
+		public boolean onLongClick(View view) {
+			// Friend friend = (Friend) mMainAdapter.getItem(position);
+			//
+			// if (!friend.isInviter()) {
+			// FriendMenuFragment dialog = new FriendMenuFragment();
+			// dialog.setActivityAndFriend(getMainActivity(), friend);
+			// dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+			// }
+			return true;
+
+		}
+
+	};
 }

@@ -13,9 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -57,44 +54,44 @@ public class FriendFragment extends SherlockFragment {
 		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 		// click on friend to join chat
-		mListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Friend friend = (Friend) mMainAdapter.getItem(position);
-				if (friend.isFriend()) {
-
-					ChatController chatController = getMainActivity().getChatController();
-					if (chatController != null) {
-						if (chatController.getMode() == ChatController.MODE_SELECT) {
-							// reset action bar header
-							Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-									IdentityController.getLoggedInUser(), false);
-
-							// handle send intent
-							sendFromIntent(friend.getName());
-
-						}
-						chatController.setCurrentChat(friend.getName());
-					}
-
-				}
-			}
-		});
-
-		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				Friend friend = (Friend) mMainAdapter.getItem(position);
-
-				if (!friend.isInviter()) {
-					FriendMenuFragment dialog = new FriendMenuFragment();
-					dialog.setActivityAndFriend(getMainActivity(), friend);
-					dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
-				}
-				return true;
-
-			}
-		});
+//		mListView.setOnItemClickListener(new OnItemClickListener() {
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//				Friend friend = (Friend) mMainAdapter.getItem(position);
+//				if (friend.isFriend()) {
+//
+//					ChatController chatController = getMainActivity().getChatController();
+//					if (chatController != null) {
+//						if (chatController.getMode() == ChatController.MODE_SELECT) {
+//							// reset action bar header
+//							Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+//									IdentityController.getLoggedInUser(), false);
+//
+//							// handle send intent
+//							sendFromIntent(friend.getName());
+//
+//						}
+//						chatController.setCurrentChat(friend.getName());
+//					}
+//
+//				}
+//			}
+//		});
+//
+//		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//				Friend friend = (Friend) mMainAdapter.getItem(position);
+//
+//				if (!friend.isInviter()) {
+//					FriendMenuFragment dialog = new FriendMenuFragment();
+//					dialog.setActivityAndFriend(getMainActivity(), friend);
+//					dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+//				}
+//				return true;
+//
+//			}
+//		});
 
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
