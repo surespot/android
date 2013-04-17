@@ -11,6 +11,8 @@ import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -54,44 +56,44 @@ public class FriendFragment extends SherlockFragment {
 		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
 		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 		// click on friend to join chat
-//		mListView.setOnItemClickListener(new OnItemClickListener() {
-//			@Override
-//			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//				Friend friend = (Friend) mMainAdapter.getItem(position);
-//				if (friend.isFriend()) {
-//
-//					ChatController chatController = getMainActivity().getChatController();
-//					if (chatController != null) {
-//						if (chatController.getMode() == ChatController.MODE_SELECT) {
-//							// reset action bar header
-//							Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-//									IdentityController.getLoggedInUser(), false);
-//
-//							// handle send intent
-//							sendFromIntent(friend.getName());
-//
-//						}
-//						chatController.setCurrentChat(friend.getName());
-//					}
-//
-//				}
-//			}
-//		});
-//
-//		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//				Friend friend = (Friend) mMainAdapter.getItem(position);
-//
-//				if (!friend.isInviter()) {
-//					FriendMenuFragment dialog = new FriendMenuFragment();
-//					dialog.setActivityAndFriend(getMainActivity(), friend);
-//					dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
-//				}
-//				return true;
-//
-//			}
-//		});
+		// mListView.setOnItemClickListener(new OnItemClickListener() {
+		// @Override
+		// public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		// Friend friend = (Friend) mMainAdapter.getItem(position);
+		// if (friend.isFriend()) {
+		//
+		// ChatController chatController = getMainActivity().getChatController();
+		// if (chatController != null) {
+		// if (chatController.getMode() == ChatController.MODE_SELECT) {
+		// // reset action bar header
+		// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+		// IdentityController.getLoggedInUser(), false);
+		//
+		// // handle send intent
+		// sendFromIntent(friend.getName());
+		//
+		// }
+		// chatController.setCurrentChat(friend.getName());
+		// }
+		//
+		// }
+		// }
+		// });
+		//
+		// mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+		// @Override
+		// public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+		// Friend friend = (Friend) mMainAdapter.getItem(position);
+		//
+		// if (!friend.isInviter()) {
+		// FriendMenuFragment dialog = new FriendMenuFragment();
+		// dialog.setActivityAndFriend(getMainActivity(), friend);
+		// dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+		// }
+		// return true;
+		//
+		// }
+		// });
 
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
@@ -120,6 +122,8 @@ public class FriendFragment extends SherlockFragment {
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
 			mMainAdapter = chatController.getFriendAdapter();
+			mMainAdapter.setItemListeners(mClickListener, mLongClickListener);
+
 			mListView.setAdapter(mMainAdapter);
 
 			if (!mMainAdapter.isLoaded()) {
@@ -179,6 +183,46 @@ public class FriendFragment extends SherlockFragment {
 		return view;
 	}
 
+	OnClickListener mClickListener = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			Friend friend = (Friend) view.getTag();
+			if (friend.isFriend()) {
+
+				ChatController chatController = getMainActivity().getChatController();
+				if (chatController != null) {
+					if (chatController.getMode() == ChatController.MODE_SELECT) {
+						// reset action bar header
+						Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
+								IdentityController.getLoggedInUser(), false);
+
+						// handle send intent
+						sendFromIntent(friend.getName());
+
+					}
+					chatController.setCurrentChat(friend.getName());
+				}
+
+			} 
+		}
+	};
+
+	OnLongClickListener mLongClickListener = new OnLongClickListener() {
+		@Override
+		public boolean onLongClick(View view) {
+			Friend friend = (Friend) view.getTag();
+
+			if (!friend.isInviter()) {
+				FriendMenuFragment dialog = new FriendMenuFragment();
+				dialog.setActivityAndFriend(getMainActivity(), friend);
+				dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+			}
+			return true;
+
+		}
+
+	};
+
 	// populate the edit box
 	private void sendFromIntent(String username) {
 		Intent intent = getActivity().getIntent();
@@ -195,34 +239,34 @@ public class FriendFragment extends SherlockFragment {
 
 				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 				final FragmentActivity activity = getActivity();
-				ChatUtils.uploadPictureMessageAsync(activity, getMainActivity().getChatController(), getMainActivity().getNetworkController(), imageUri, username, true,
-						new IAsyncCallback<Boolean>() {
+				ChatUtils.uploadPictureMessageAsync(activity, getMainActivity().getChatController(), getMainActivity()
+						.getNetworkController(), imageUri, username, true, new IAsyncCallback<Boolean>() {
 
-							@Override
-							public void handleResponse(final Boolean result) {
-								SurespotLog.v(TAG, "upload picture response: " + result);
+					@Override
+					public void handleResponse(final Boolean result) {
+						SurespotLog.v(TAG, "upload picture response: " + result);
 
-								if (!result) {
-									activity.runOnUiThread(new Runnable() {
+						if (!result) {
+							activity.runOnUiThread(new Runnable() {
 
-										@Override
-										public void run() {
-											Utils.makeToast(activity, getString(R.string.could_not_upload_image));
-											// clear the intent
+								@Override
+								public void run() {
+									Utils.makeToast(activity, getString(R.string.could_not_upload_image));
+									// clear the intent
 
-										}
-									});
 								}
+							});
+						}
 
-								activity.getIntent().setAction(null);
-								activity.getIntent().setType(null);
-								if (activity.getIntent().getExtras() != null) {
-									activity.getIntent().getExtras().clear();
-								}
+						activity.getIntent().setAction(null);
+						activity.getIntent().setType(null);
+						if (activity.getIntent().getExtras() != null) {
+							activity.getIntent().getExtras().clear();
+						}
 
-								// scrollToEnd();
-							}
-						});
+						// scrollToEnd();
+					}
+				});
 				// }
 			}
 		}

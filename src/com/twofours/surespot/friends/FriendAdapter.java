@@ -15,10 +15,15 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendAdapter extends BaseAdapter {
@@ -26,6 +31,8 @@ public class FriendAdapter extends BaseAdapter {
 
 	ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	private NotificationManager mNotificationManager;
+	private OnClickListener mClickListener;
+	private OnLongClickListener mLongClickListener;
 	private boolean mLoading;
 	private boolean mLoaded;
 
@@ -39,10 +46,16 @@ public class FriendAdapter extends BaseAdapter {
 
 	public FriendAdapter(Context context) {
 		mContext = context;
+		
 
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+	}
+	
+	public void setItemListeners(OnClickListener clickListener, OnLongClickListener longClickListener) {
+		mClickListener = clickListener;
+		mLongClickListener = longClickListener;
 	}
 
 	public boolean isLoading() {
@@ -254,6 +267,7 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);			
 			friendViewHolder.statusLayout.setOnClickListener(mClickListener);
 			friendViewHolder.statusLayout.setOnLongClickListener(mLongClickListener);
+			friendViewHolder.statusLayout.setTag(friend);
 			
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
@@ -273,17 +287,19 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
 
+			//add a space to workaround text clipping (so weak) 
+			//http://stackoverflow.com/questions/4353836/italic-textview-with-wrap-contents-seems-to-clip-the-text-at-right-edge
 			if (friend.isDeleted()) {
-				friendViewHolder.tvStatus.setText("is deleted");
+				friendViewHolder.tvStatus.setText("is deleted ");
 			}
 			if (friend.isInvited()) {
-				friendViewHolder.tvStatus.setText("is invited");
+				friendViewHolder.tvStatus.setText("is invited ");
 			}
 			if (friend.isNewFriend()) {
-				friendViewHolder.tvStatus.setText("has accepted");
+				friendViewHolder.tvStatus.setText("has accepted ");
 			}
 			if (friend.isInviter()) {
-				friendViewHolder.tvStatus.setText("is inviting");
+				friendViewHolder.tvStatus.setText("is inviting ");
 			}
 
 		}
@@ -322,43 +338,43 @@ public class FriendAdapter extends BaseAdapter {
 		@Override
 		public void onClick(View v) {
 
-			// final String action = (String) v.getTag();
-			// final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v.getParent());
-			// final Friend friend = (Friend) getItem(position);
-			// final String friendname = friend.getName();
-			//
-			// MainActivity.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
-			// public void onSuccess(String arg0) {
-			//
-			// SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
-			// friend.setInviter(false);
-			// if (action.equals("accept")) {
-			// friend.setNewFriend(true);
-			// }
-			// else {
-			// if (action.equals("block")) {
-			// // ignore
-			// if (!friend.isDeleted()) {
-			// mFriends.remove(position);
-			// }
-			// }
-			// else {
-			// // ignore
-			// if (!friend.isDeleted()) {
-			// mFriends.remove(position);
-			// }
-			// }
-			// }
-			// mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-			// Collections.sort(mFriends);
-			// notifyDataSetChanged();
-			// }
-			//
-			// public void onFailure(Throwable error, String content) {
-			// SurespotLog.w(TAG, "respondToInvite", error);
-			// Utils.makeToast(MainActivity.getContext(), "Could not respond to invite, please try again later.");
-			// };
-			// });
+			final String action = (String) v.getTag();
+			final int position = ((ListView) v.getParent().getParent().getParent()).getPositionForView((View) v.getParent());
+			final Friend friend = (Friend) getItem(position);
+			final String friendname = friend.getName();
+
+			MainActivity.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
+				public void onSuccess(String arg0) {
+
+					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
+					friend.setInviter(false);
+					if (action.equals("accept")) {
+						friend.setNewFriend(true);
+					}
+					else {
+						if (action.equals("block")) {
+							// ignore
+							if (!friend.isDeleted()) {
+								mFriends.remove(position);
+							}
+						}
+						else {
+							// ignore
+							if (!friend.isDeleted()) {
+								mFriends.remove(position);
+							}
+						}
+					}
+					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+					Collections.sort(mFriends);
+					notifyDataSetChanged();
+				}
+
+				public void onFailure(Throwable error, String content) {
+					SurespotLog.w(TAG, "respondToInvite", error);
+					Utils.makeToast(MainActivity.getContext(), "Could not respond to invite, please try again later.");
+				};
+			});
 		}
 	};
 
@@ -406,43 +422,5 @@ public class FriendAdapter extends BaseAdapter {
 		return names;
 	}
 
-	OnClickListener mClickListener = new OnClickListener() {
-		@Override
-		public void onClick(View view) {
-			// Friend friend = (Friend) mMainAdapter.getItem(position);
-			// if (friend.isFriend()) {
-			//
-			// ChatController chatController = getMainActivity().getChatController();
-			// if (chatController != null) {
-			// if (chatController.getMode() == ChatController.MODE_SELECT) {
-			// // reset action bar header
-			// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-			// IdentityController.getLoggedInUser(), false);
-			//
-			// // handle send intent
-			// sendFromIntent(friend.getName());
-			//
-			// }
-			// chatController.setCurrentChat(friend.getName());
-			// }
-			//
-			// }
-		}
-	};
-
-	OnLongClickListener mLongClickListener = new OnLongClickListener() {
-		@Override
-		public boolean onLongClick(View view) {
-			// Friend friend = (Friend) mMainAdapter.getItem(position);
-			//
-			// if (!friend.isInviter()) {
-			// FriendMenuFragment dialog = new FriendMenuFragment();
-			// dialog.setActivityAndFriend(getMainActivity(), friend);
-			// dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
-			// }
-			return true;
-
-		}
-
-	};
+	
 }
