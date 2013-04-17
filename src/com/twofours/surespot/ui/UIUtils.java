@@ -72,6 +72,10 @@ public class UIUtils {
 	public static void setMessageErrorText(TextView textView, SurespotMessage message) {
 		String statusText = null;
 		switch (message.getErrorStatus()) {
+		case 400:
+			statusText = "error sending message: invalid message";
+			break;
+		
 		case 403:
 			statusText = "error sending message: unauthorized";
 			break;
