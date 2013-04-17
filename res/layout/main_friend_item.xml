@@ -15,7 +15,9 @@
         <ImageView
             android:id="@+id/friendAvatar"
             android:layout_width="50dp"
-            android:layout_height="50dp" >
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            android:background="@android:drawable/sym_def_app_icon" >
         </ImageView>
 
         <TextView
@@ -23,20 +25,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
             android:layout_weight="1"
             android:textSize="20sp" >
         </TextView>
 
         <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" >
 
             <TextView
                 android:id="@+id/friendStatus"
-                android:layout_width="70dp"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
-                android:layout_marginLeft="15dp"
                 android:gravity="center_vertical"
                 android:textColor="@color/abs__holo_blue_light"
                 android:textSize="15sp" >
@@ -47,7 +51,6 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
-                android:layout_marginRight="10dp"
                 android:background="@drawable/filled_blue_circle"
                 android:visibility="gone" >
             </View>
