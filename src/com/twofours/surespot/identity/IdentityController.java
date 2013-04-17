@@ -221,6 +221,8 @@ public class IdentityController {
 			file.delete();
 		}
 		
+		SurespotApplication.mBackupManager.dataChanged();
+		
 		if (isLoggedIn) {
 			UIUtils.launchMainActivity(context);
 		}
