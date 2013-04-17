@@ -255,15 +255,22 @@ public class SignupActivity extends SherlockActivity {
 														if (arg0 instanceof HttpResponseException) {
 															HttpResponseException error = (HttpResponseException) arg0;
 															int statusCode = error.getStatusCode();
-															if (statusCode == 409) {
+
+															switch (statusCode) {
+															case 409:
 																Utils.makeToast(SignupActivity.this,
 																		"that username already exists, please choose another");
-															}
-															else {
-
+																break;
+															case 403:
+																//future use for when we have to add captcha like signup verification
+																Utils.makeToast(SignupActivity.this,
+																		"please update surespot to create a new user");
+																break;
+															default:
 																Utils.makeToast(SignupActivity.this,
 																		"could not create user, please try again later");
 															}
+															
 														}
 														else {
 															Utils.makeToast(SignupActivity.this,
