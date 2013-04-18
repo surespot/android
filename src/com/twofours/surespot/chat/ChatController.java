@@ -643,7 +643,7 @@ public class ChatController {
 				fis = new FileInputStream(new File(new URI(localUri)));
 				byte[] imageData = Utils.inputStreamToBytes(fis);
 
-				String remoteUri = SurespotConfiguration.getBaseUrl() + message.getData();
+				String remoteUri = message.getData();
 				HeapResource resource = new HeapResource(imageData);
 				Date date = new Date();
 				String sDate = DateUtils.formatDate(date);

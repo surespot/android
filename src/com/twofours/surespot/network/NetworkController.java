@@ -636,7 +636,7 @@ public class NetworkController {
 
 		// SurespotLog.v(TAG, "getting file stream");
 
-		HttpGet httpGet = new HttpGet(mBaseUrl + url);
+		HttpGet httpGet = new HttpGet(url);
 		HttpResponse response;
 		try {
 			response = mCachingHttpClient.execute(httpGet);
