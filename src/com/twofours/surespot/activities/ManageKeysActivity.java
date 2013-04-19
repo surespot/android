@@ -2,7 +2,6 @@ package com.twofours.surespot.activities;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.util.Comparator;
 import java.util.List;
 
 import org.json.JSONException;
@@ -52,15 +51,7 @@ public class ManageKeysActivity extends SherlockActivity {
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
-		}
-		
-		adapter.sort(new Comparator<String>() {
-			@Override
-			public int compare(String lhs, String rhs) {
-				return lhs.compareToIgnoreCase(rhs);
-			}
-
-		});
+		}	
 
 		spinner.setAdapter(adapter);
 

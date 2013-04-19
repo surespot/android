@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.util.Comparator;
 import java.util.List;
 
 import android.content.ComponentName;
@@ -110,19 +109,11 @@ public class LoginActivity extends SherlockActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
-
+		
 		for (String name : mIdentityNames) {
 			adapter.add(name);
 
 		}
-
-		adapter.sort(new Comparator<String>() {
-			@Override
-			public int compare(String lhs, String rhs) {
-				return lhs.compareToIgnoreCase(rhs);
-			}
-
-		});
 		spinner.setAdapter(adapter);
 
 		// select last user if there was one

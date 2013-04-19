@@ -1,7 +1,6 @@
 package com.twofours.surespot.identity;
 
 import java.security.PrivateKey;
-import java.util.Comparator;
 import java.util.List;
 
 import android.os.AsyncTask;
@@ -74,15 +73,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
-		}
-		
-		adapter.sort(new Comparator<String>() {
-			@Override
-			public int compare(String lhs, String rhs) {
-				return lhs.compareToIgnoreCase(rhs);
-			}
-
-		});
+		}			
 
 		mSpinner.setAdapter(adapter);
 		String loggedInUser = IdentityController.getLoggedInUser();

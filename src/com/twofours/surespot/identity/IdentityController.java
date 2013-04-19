@@ -9,6 +9,8 @@ import java.security.KeyException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -556,7 +558,15 @@ public class IdentityController {
 				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_EXTENSION.length()));
 			}
 		}
+		
+		//sort ignoring case
+		Collections.sort(identityNames, new Comparator<String>() {
 
+			@Override
+			public int compare(String lhs, String rhs) {
+				return lhs.compareToIgnoreCase(rhs);
+			}
+		});
 		return identityNames;
 
 	}

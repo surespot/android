@@ -1,7 +1,6 @@
 package com.twofours.surespot.identity;
 
 import java.io.File;
-import java.util.Comparator;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -46,15 +45,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		for (String name : IdentityController.getIdentityNames(this, exportDir.getPath())) {
 			adapter.add(name);
 		}
-		
-		adapter.sort(new Comparator<String>() {
-			@Override
-			public int compare(String lhs, String rhs) {
-				return lhs.compareToIgnoreCase(rhs);
-			}
-
-		});
-		
+				
 		if (adapter.getCount() > 0) {
 			tvFound.setText("discovered the identities below in\n\t" + exportDir + "\n click on a name to restore");
 			lvIdentities.setVisibility(View.VISIBLE);
@@ -65,7 +56,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 
 		lvIdentities.setAdapter(adapter);
-
 		lvIdentities.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
