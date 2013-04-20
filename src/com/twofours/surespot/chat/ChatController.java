@@ -661,7 +661,7 @@ public class ChatController {
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
 				// update message to point to real location
-				localMessage.setData(message.getData());
+				localMessage.setData(remoteUri);
 
 			}
 			catch (FileNotFoundException e1) {
