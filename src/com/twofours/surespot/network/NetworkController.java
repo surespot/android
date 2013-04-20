@@ -620,7 +620,7 @@ public class NetworkController {
 			}
 
 			protected void onPostExecute(HttpResponse response) {
-				if (response != null && response.getStatusLine().getStatusCode() == 200) {
+				if (response != null && response.getStatusLine().getStatusCode() == 204) {
 
 					callback.handleResponse(true);
 				}
