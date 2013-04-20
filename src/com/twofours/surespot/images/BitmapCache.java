@@ -46,4 +46,8 @@ public class BitmapCache {
 		SurespotLog.v(TAG, "evicting bitmap cache");
 		mMemoryCache.evictAll();
 	}
+	
+	public void remove(String key) {
+		mMemoryCache.remove(key);
+	}
 }

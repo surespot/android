@@ -660,6 +660,9 @@ public class ChatController {
 				SurespotLog.v(TAG, "creating http cache entry for: %s", remoteUri);
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
+				//update image cache
+				ImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
+				
 				// update message to point to real location
 				localMessage.setData(remoteUri);
 

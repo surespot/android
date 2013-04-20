@@ -395,4 +395,9 @@ public class ImageDownloader {
 
 	}
 
+	
+	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
+		mBitmapCache.addBitmapToMemoryCache(destKey, mBitmapCache.getBitmapFromMemCache(sourceKey));
+		mBitmapCache.remove(sourceKey);
+	}
 }
