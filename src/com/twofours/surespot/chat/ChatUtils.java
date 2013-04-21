@@ -66,6 +66,10 @@ public class ChatUtils {
 
 		return split[0].equals(user) ? split[1] : split[0];
 	}
+	
+	public static boolean isMyMessage(SurespotMessage message) {
+		return message.getFrom().equals(IdentityController.getLoggedInUser()); 
+	}
 
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();

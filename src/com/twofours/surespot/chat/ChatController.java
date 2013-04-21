@@ -409,7 +409,7 @@ public class ChatController {
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
 
-		for (int i = resendMessages.length - 1; i >= 0; i--) {
+		for (int i = 0; i < resendMessages.length; i++) {
 			SurespotMessage message = resendMessages[i];
 			// set the last received id so the server knows which messages to check
 			String otherUser = message.getOtherUser();
@@ -558,7 +558,7 @@ public class ChatController {
 					else {
 						// if it's an image that i sent
 						// get the local message
-						if (message.getFrom().equals(IdentityController.getLoggedInUser())) {
+						if (ChatUtils.isMyMessage(message)) {
 							handleCachedImage(chatAdapter, message);
 						}
 
@@ -619,9 +619,16 @@ public class ChatController {
 			// always update the available id
 			friend.setAvailableMessageId(messageId);
 
-			// if the chat is showing update the last viewed id
+			// if the chat is showing or we sent the message update the last viewed id
 			if (otherUser.equals(mCurrentChat)) {
+
 				friend.setLastViewedMessageId(messageId);
+			}
+			else {
+				// if it's my message increment the count by one to account for it as I may have unread messages from the other user; we can't just set the last viewed to the latest message
+				if (ChatUtils.isMyMessage(message)) {
+					friend.setLastViewedMessageId(friend.getLastViewedMessageId() + 1);
+				}
 			}
 
 			mFriendAdapter.notifyDataSetChanged();
@@ -661,9 +668,9 @@ public class ChatController {
 				SurespotLog.v(TAG, "creating http cache entry for: %s", remoteUri);
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
-				//update image cache
+				// update image cache
 				ImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
-				
+
 				// update message to point to real location
 				localMessage.setData(remoteUri);
 
@@ -1900,24 +1907,24 @@ public class ChatController {
 	}
 
 	public void resendPictureMessage(final SurespotMessage message) {
-			
+
 		message.setErrorStatus(0);
-		
-		final ChatAdapter chatAdapter= mChatAdapters.get(message.getTo());
+
+		final ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
 		chatAdapter.notifyDataSetChanged();
-		
-		ChatUtils.resendPictureMessage(mContext, mNetworkController, message,new IAsyncCallback<Boolean>() {
-			
+
+		ChatUtils.resendPictureMessage(mContext, mNetworkController, message, new IAsyncCallback<Boolean>() {
+
 			@Override
 			public void handleResponse(Boolean result) {
-				
+
 				if (!result) {
 					message.setErrorStatus(500);
 					chatAdapter.notifyDataSetChanged();
 				}
 			}
 		});
-		
+
 	}
 
 	public FriendAdapter getFriendAdapter() {
