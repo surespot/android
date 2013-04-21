@@ -240,6 +240,7 @@ public class ChatUtils {
 										@Override
 										public void handleResponse(Boolean result) {
 											// if it failed update the message
+											SurespotLog.v(TAG, "postFileStream complete");
 											if (!result) {
 												ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
 												if (chatAdapter != null) {

@@ -76,11 +76,11 @@ public class ImageDownloader {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			// SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
+			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
 			forceDownload(imageView, message);
 		}
 		else {
-			// SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
+			SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
 			cancelPotentialDownload(imageView, message);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
@@ -375,7 +375,6 @@ public class ImageDownloader {
 	public static void addBitmapToCache(String key, Bitmap bitmap) {
 		if (bitmap != null) {
 			mBitmapCache.addBitmapToMemoryCache(key, bitmap);
-
 		}
 	}
 
@@ -385,9 +384,7 @@ public class ImageDownloader {
 	 * @return The cached bitmap or null if it was not found.
 	 */
 	private static Bitmap getBitmapFromCache(String key) {
-
 		return mBitmapCache.getBitmapFromMemCache(key);
-
 	}
 
 	public static void evictCache() {
@@ -395,9 +392,11 @@ public class ImageDownloader {
 
 	}
 
-	
 	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
-		mBitmapCache.addBitmapToMemoryCache(destKey, mBitmapCache.getBitmapFromMemCache(sourceKey));
-		mBitmapCache.remove(sourceKey);
+		Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
+		if (bitmap != null) {
+			mBitmapCache.remove(sourceKey);
+			mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);			
+		}
 	}
 }

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 
 public class BitmapCache {
 	private LruCache<String, Bitmap> mMemoryCache;
@@ -33,21 +34,22 @@ public class BitmapCache {
 	}
 
 	public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-		if (getBitmapFromMemCache(key) == null) {
-			mMemoryCache.put(key, bitmap);
-		}
+		String md5Key = Utils.md5(key);
+		mMemoryCache.put(md5Key, bitmap);
 	}
 
 	public Bitmap getBitmapFromMemCache(String key) {
-		return mMemoryCache.get(key);
+		String md5Key = Utils.md5(key);
+		return mMemoryCache.get(md5Key);
 	}
 
 	public void evictAll() {
 		SurespotLog.v(TAG, "evicting bitmap cache");
 		mMemoryCache.evictAll();
 	}
-	
+
 	public void remove(String key) {
-		mMemoryCache.remove(key);
+		String md5Key = Utils.md5(key);
+		mMemoryCache.remove(md5Key);
 	}
 }
