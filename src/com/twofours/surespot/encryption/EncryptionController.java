@@ -75,7 +75,7 @@ public class EncryptionController {
 			}
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "recreatePublicKey", e);
+			SurespotLog.w(TAG, e, "recreatePublicKey");
 		}
 
 		return null;
@@ -90,7 +90,7 @@ public class EncryptionController {
 			return privKey;
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "recreatePrivateKey", e);
+			SurespotLog.w(TAG, e, "recreatePrivateKey");
 		}
 
 		return null;
@@ -120,7 +120,7 @@ public class EncryptionController {
 
 				}
 				catch (Exception e) {
-					SurespotLog.w(TAG, "generateKeyPair", e);
+					SurespotLog.w(TAG, e, "generateKeyPair");
 				}
 
 				return null;
@@ -256,10 +256,10 @@ public class EncryptionController {
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
-			SurespotLog.v(TAG, "generateSharedSecretSync", icle);
+			SurespotLog.v(TAG, icle, "generateSharedSecretSync");
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "generateSharedSecretSync", e);
+			SurespotLog.w(TAG, e, "generateSharedSecretSync");
 		}
 		return null;
 	}
@@ -301,11 +301,11 @@ public class EncryptionController {
 				}
 				catch (InvalidCacheLoadException icle) {
 					// will occur if couldn't load key
-					SurespotLog.v(TAG, "encryptTask", icle);
+					SurespotLog.v(TAG, icle, "encryptTask");
 				}
 
 				catch (Exception e) {
-					SurespotLog.w(TAG, "encryptTask", e);
+					SurespotLog.w(TAG, e, "encryptTask");
 				}
 				finally {
 					try {
@@ -313,7 +313,7 @@ public class EncryptionController {
 						out.close();
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, "encryptTask", e);
+						SurespotLog.w(TAG, e, "encryptTask");
 					}
 				}
 			}
@@ -359,11 +359,16 @@ public class EncryptionController {
 				}
 				catch (InvalidCacheLoadException icle) {
 					// will occur if couldn't load key
-					SurespotLog.v(TAG, "decryptTask", icle);
+					SurespotLog.v(TAG, icle, "decryptTask");
+				}
+				catch (IOException e) {
+					// will occur if couldn't load key
+					SurespotLog.v(TAG, e, "decryptTask");
 				}
 
+
 				catch (Exception e) {
-					SurespotLog.w(TAG, "decryptTask exception", e);
+					SurespotLog.w(TAG, e, "decryptTask exception");
 				}
 				finally {
 					try {
@@ -371,7 +376,7 @@ public class EncryptionController {
 						out.close();
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, "decryptTask finally", e);
+						SurespotLog.w(TAG, e, "decryptTask finally");
 					}
 
 				}
@@ -409,7 +414,7 @@ public class EncryptionController {
 			return new String(buf);
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricDecrypt", e);
+			SurespotLog.w(TAG, e, "symmetricDecrypt");
 		}
 		return null;
 
@@ -451,10 +456,10 @@ public class EncryptionController {
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
-			SurespotLog.v(TAG, "symmetricEncrypt", icle);
+			SurespotLog.v(TAG, icle, "symmetricEncrypt");
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricEncrypt", e);
+			SurespotLog.w(TAG, e, "symmetricEncrypt");
 		}
 		return null;
 	}
@@ -497,10 +502,10 @@ public class EncryptionController {
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
-			SurespotLog.v(TAG, "symmetricEncryptSyncPK", icle);
+			SurespotLog.v(TAG, icle, "symmetricEncryptSyncPK");
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricEncryptSyncPK", e);
+			SurespotLog.w(TAG, e, "symmetricEncryptSyncPK");
 		}
 		return null;
 
@@ -541,7 +546,7 @@ public class EncryptionController {
 			return new String(buf);
 		}
 		catch (Exception e) {
-			SurespotLog.w(TAG, "symmetricDecryptSyncPK", e);
+			SurespotLog.w(TAG, e, "symmetricDecryptSyncPK");
 		}
 		return null;
 
@@ -558,7 +563,7 @@ public class EncryptionController {
 			return new String(ChatUtils.base64EncodeNowrap(dpassword));
 		}
 		catch (IOException e) {
-			SurespotLog.w(TAG, "derivePassword", e);
+			SurespotLog.w(TAG, e, "derivePassword");
 		}
 		return null;
 	}
