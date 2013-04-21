@@ -583,11 +583,11 @@ public class IdentityController {
 		// ChatController chatController = MainActivity.getChatController();
 		// if (chatController != null) {
 		// chatController.logout();
-		// }
-		SurespotApplication.getCachingService().logout();
+		// }		
 		if (MainActivity.getNetworkController() != null) {
 			MainActivity.getNetworkController().logout();
 		}
+		SurespotApplication.getCachingService().logout();
 	}
 
 	private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
