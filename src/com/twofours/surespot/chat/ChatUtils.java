@@ -240,17 +240,14 @@ public class ChatUtils {
 										@Override
 										public void handleResponse(Boolean result) {
 											// if it failed update the message
-											SurespotLog.v(TAG, "postFileStream complete");
+											SurespotLog.v(TAG, "postFileStream complete, result: %b", result);
 											if (!result) {
 												ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
 												if (chatAdapter != null) {
 													chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 													chatAdapter.notifyDataSetChanged();
 												}
-											}
-											else {
-												// localImageFile.delete();
-											}
+											}											
 
 											callback.handleResponse(result);
 										}
