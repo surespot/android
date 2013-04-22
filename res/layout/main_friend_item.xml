@@ -16,8 +16,7 @@
             android:id="@+id/friendAvatar"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_margin="5dp"
-             >
+            android:layout_margin="5dp" >
         </ImageView>
 
         <TextView
@@ -25,7 +24,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginLeft="10dp"
             android:layout_weight="1"
             android:textSize="20sp" >
         </TextView>
