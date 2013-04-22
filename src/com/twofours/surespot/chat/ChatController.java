@@ -389,7 +389,7 @@ public class ChatController {
 
 	private void connected() {
 
-		getFriendsAndIds();
+		// getFriendsAndIds();
 		resendMessages();
 		// MainActivity.THREAD_POOL_EXECUTOR.execute(new UpdateDataTask());
 
@@ -625,7 +625,8 @@ public class ChatController {
 				friend.setLastViewedMessageId(messageId);
 			}
 			else {
-				// if it's my message increment the count by one to account for it as I may have unread messages from the other user; we can't just set the last viewed to the latest message
+				// if it's my message increment the count by one to account for it as I may have unread messages from the other user; we
+				// can't just set the last viewed to the latest message
 				if (ChatUtils.isMyMessage(message)) {
 					friend.setLastViewedMessageId(friend.getLastViewedMessageId() + 1);
 				}
@@ -1478,7 +1479,7 @@ public class ChatController {
 
 		if (mProgressCallback != null) {
 			mProgressCallback.handleResponse(progress);
-		}
+		}	
 	}
 
 	public synchronized boolean isInProgress() {
@@ -1491,6 +1492,7 @@ public class ChatController {
 			mPaused = false;
 
 			setProgress(null, true);
+			getFriendsAndIds();
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
@@ -1579,37 +1581,42 @@ public class ChatController {
 		if (loggedInUser == null) {
 			return;
 		}
-		mCurrentChat = username;
+		
+		Friend friend = null;
 		if (username != null) {
-			Friend friend = mFriendAdapter.getFriend(username);
-			if (friend != null) {
-				mChatPagerAdapter.addChatName(username);
-				friend.setChatActive(true);
-				friend.setLastViewedMessageId(friend.getAvailableMessageId());
-				mFriendAdapter.sort();
-				mFriendAdapter.notifyDataSetChanged();
+			friend = mFriendAdapter.getFriend(username);
+		}
+		
+		if (friend != null) {
+			mCurrentChat = username;
+			mChatPagerAdapter.addChatName(username);
+			friend.setChatActive(true);
+			friend.setLastViewedMessageId(friend.getAvailableMessageId());
+			mFriendAdapter.sort();
+			mFriendAdapter.notifyDataSetChanged();
 
-				// cancel associated notifications
-				mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
-						SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-				int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
+			// cancel associated notifications
+			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
-				if (wantedPosition != mViewPager.getCurrentItem()) {
-					mViewPager.setCurrentItem(wantedPosition, true);
-				}
-
-				ChatFragment chatFragment = getChatFragment(username);
-				if (chatFragment != null) {
-					chatFragment.requestFocus();
-				}
-
-				if (mMode == MODE_SELECT) {
-					chatFragment.handleSendIntent();
-					setMode(MODE_NORMAL);
-				}
+			if (wantedPosition != mViewPager.getCurrentItem()) {
+				mViewPager.setCurrentItem(wantedPosition, true);
 			}
+
+			ChatFragment chatFragment = getChatFragment(username);
+			if (chatFragment != null) {
+				chatFragment.requestFocus();
+			}
+
+			if (mMode == MODE_SELECT) {
+				chatFragment.handleSendIntent();
+				setMode(MODE_NORMAL);
+			}
+
 		}
 		else {
+			mCurrentChat = null;
 			mViewPager.setCurrentItem(0, true);
 			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
