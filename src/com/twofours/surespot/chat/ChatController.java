@@ -1124,7 +1124,7 @@ public class ChatController {
 			Friend friend = mFriendAdapter.getFriend(friendName);
 
 			// if it was just a delete of an invite
-			if (friend.isInviter()) {
+			if (friend.isInviter() || friend.isInvited()) {
 
 				// if they're not deleted, remove them
 				if (friend != null && !friend.isDeleted()) {
