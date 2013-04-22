@@ -632,6 +632,59 @@ public class NetworkController {
 		}.execute();
 	}
 
+	public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv,
+			final InputStream fileInputStream, final IAsyncCallback<String> callback) {
+		new AsyncTask<Void, Void, HttpResponse>() {
+
+			@Override
+			protected HttpResponse doInBackground(Void... params) {
+
+				SurespotLog.v(TAG, "posting file stream");
+
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user + "/" + ourVersion);
+
+				InputStreamBody isBody = new InputStreamBody(fileInputStream, SurespotConstants.MimeTypes.IMAGE, iv);
+
+				MultipartEntity reqEntity = new MultipartEntity();
+				reqEntity.addPart("image", isBody);
+				httppost.setEntity(reqEntity);
+				HttpResponse response = null;
+
+				try {
+					response = mCachingHttpClient.execute(httppost);
+
+				}
+				catch (Exception e) {
+					SurespotLog.w(TAG, "createPostFile", e);
+				}
+				return response;
+
+			}
+
+			protected void onPostExecute(HttpResponse response) {
+				if (response != null && response.getStatusLine().getStatusCode() == 200) {
+					try {
+						String url = Utils.inputStreamToString(response.getEntity().getContent());
+						callback.handleResponse(url);
+					}
+					catch (IllegalStateException e) {
+						SurespotLog.w(TAG,e , "postFriendImageStream");
+						callback.handleResponse(null);
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG,e , "postFriendImageStream");
+						callback.handleResponse(null);
+					}
+
+				}
+				else {
+					callback.handleResponse(null);
+				}
+
+			};
+		}.execute();
+	}
+
 	public InputStream getFileStream(Context context, final String url) {
 
 		// SurespotLog.v(TAG, "getting file stream");

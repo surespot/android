@@ -22,7 +22,12 @@ public class Friend implements Comparable<Friend> {
 	private int mLastReceivedMessageControlId;
 	private int mAvailableMessageControlId;
 	private int mLastReceivedUserControlId;
+	private String mImageUrl;
+	private String mImageVersion;
+	private String mImageIv;
 
+	
+	
 	public Friend(String name) {
 		mName = name;
 	}
@@ -174,6 +179,30 @@ public class Friend implements Comparable<Friend> {
 		mFlags = flags;
 	}
 
+	public String getImageUrl() {
+		return mImageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		mImageUrl = imageUrl;
+	}
+
+	public String getImageVersion() {
+		return mImageVersion;
+	}
+
+	public void setImageVersion(String imageVersion) {
+		mImageVersion = imageVersion;
+	}
+
+	public String getImageIv() {
+		return mImageIv;
+	}
+
+	public void setImageIv(String imageIv) {
+		mImageIv = imageIv;
+	}
+
 	public boolean isChatActive() {
 		return (mFlags & CHAT_ACTIVE) == CHAT_ACTIVE;
 	}
@@ -226,6 +255,9 @@ public class Friend implements Comparable<Friend> {
 				}
 
 				this.setName(jsonFriend.getString("name"));
+				this.setImageUrl(jsonFriend.getString("imageUrl"));
+				this.setImageVersion(jsonFriend.getString("imageVersion"));
+
 				setNewFriend(false);
 				return true;
 			}
@@ -239,7 +271,11 @@ public class Friend implements Comparable<Friend> {
 
 	public static Friend toFriend(JSONObject jsonFriend) throws JSONException {
 		Friend friend = new Friend(jsonFriend.getString("name"));
-
+		
+		friend.setImageUrl(jsonFriend.optString("imageUrl"));
+		friend.setImageVersion(jsonFriend.optString("imageVersion"));
+		friend.setImageIv(jsonFriend.optString("imageIv"));
+		
 		friend.setFlags(jsonFriend.optInt("flags"));
 		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
 		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
@@ -253,6 +289,9 @@ public class Friend implements Comparable<Friend> {
 		this.setNewFriend(false);
 		this.setInvited(friend.isInvited());
 		this.setInviter(friend.isInviter());
+		this.setImageUrl(friend.getImageUrl());
+		this.setImageVersion(friend.getImageVersion());
+		this.setImageIv(friend.getImageIv());
 		// this.setChatActive(friend.isChatActive());
 		// this.setMessageActivity(friend.isMessageActivity());
 	}
@@ -261,12 +300,16 @@ public class Friend implements Comparable<Friend> {
 		JSONObject jsonFriend = new JSONObject();
 
 		try {
+			
 			jsonFriend.put("name", this.getName());
 			jsonFriend.put("flags", this.getFlags());
 			jsonFriend.put("lastReceivedMessageControlId", this.getLastReceivedMessageControlId());
 			jsonFriend.put("lastAvailableMessageId", this.mAvailableMessageId);
 			jsonFriend.put("lastReceivedUserControlId", this.getLastReceivedUserControlId());
 			jsonFriend.put("lastViewedMessageId", this.getLastViewedMessageId());
+			jsonFriend.put("imageVersion", this.getImageVersion());
+			jsonFriend.put("imageUrl", this.getImageUrl());
+			jsonFriend.put("imageIv", this.getImageIv());
 
 			return jsonFriend;
 		}

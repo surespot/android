@@ -2,7 +2,10 @@ package com.twofours.surespot.friends;
 
 import java.util.Timer;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -33,8 +36,10 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;
+import com.twofours.surespot.ui.UIUtils;
 
 public class FriendFragment extends SherlockFragment {
 	private FriendAdapter mMainAdapter;
@@ -52,49 +57,7 @@ public class FriendFragment extends SherlockFragment {
 		mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
-
-		// mListView.setEmptyView(view.findViewById(R.id.progressBar));
-		// mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
-		// click on friend to join chat
-		// mListView.setOnItemClickListener(new OnItemClickListener() {
-		// @Override
-		// public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		// Friend friend = (Friend) mMainAdapter.getItem(position);
-		// if (friend.isFriend()) {
-		//
-		// ChatController chatController = getMainActivity().getChatController();
-		// if (chatController != null) {
-		// if (chatController.getMode() == ChatController.MODE_SELECT) {
-		// // reset action bar header
-		// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-		// IdentityController.getLoggedInUser(), false);
-		//
-		// // handle send intent
-		// sendFromIntent(friend.getName());
-		//
-		// }
-		// chatController.setCurrentChat(friend.getName());
-		// }
-		//
-		// }
-		// }
-		// });
-		//
-		// mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
-		// @Override
-		// public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-		// Friend friend = (Friend) mMainAdapter.getItem(position);
-		//
-		// if (!friend.isInviter()) {
-		// FriendMenuFragment dialog = new FriendMenuFragment();
-		// dialog.setActivityAndFriend(getMainActivity(), friend);
-		// dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
-		// }
-		// return true;
-		//
-		// }
-		// });
-
+	
 		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -203,7 +166,7 @@ public class FriendFragment extends SherlockFragment {
 					chatController.setCurrentChat(friend.getName());
 				}
 
-			} 
+			}
 		}
 	};
 
@@ -214,7 +177,13 @@ public class FriendFragment extends SherlockFragment {
 
 			if (!friend.isInviter()) {
 				FriendMenuFragment dialog = new FriendMenuFragment();
-				dialog.setActivityAndFriend(getMainActivity(), friend);
+
+				dialog.setActivityAndFriend(friend, new IAsyncCallbackTriplet<DialogInterface, Friend, String>() {
+					public void handleResponse(DialogInterface dialogi, Friend friend, String selection) {
+						handleMenuSelection(dialogi, friend, selection);
+					};
+				});
+
 				dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
 			}
 			return true;
@@ -222,6 +191,53 @@ public class FriendFragment extends SherlockFragment {
 		}
 
 	};
+
+	private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, String selection) {
+		final MainActivity activity = this.getMainActivity();
+		if (selection.equals("set image")) {
+			activity.uploadFriendImage(friend.getName());
+		}
+		else {
+
+			if (selection.equals("delete all messages")) {
+
+				SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+				boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+				if (confirm) {
+					UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete all messages?",
+							"delete all messages", "ok", "cancel", new IAsyncCallback<Boolean>() {
+								public void handleResponse(Boolean result) {
+									if (result) {
+										activity.getChatController().deleteMessages(friend);
+									}
+
+								};
+							});
+				}
+				else {
+					activity.getChatController().deleteMessages(friend);
+				}
+			}
+			else {
+				if (selection.equals("delete friend")) {
+					UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete friend: " + friend.getName() + "?",
+							"delete friend", "ok", "cancel", new IAsyncCallback<Boolean>() {
+								public void handleResponse(Boolean result) {
+									if (result) {
+										activity.getChatController().deleteFriend(friend);
+									}
+									else {
+										dialogi.cancel();
+									}
+								};
+							});
+				}
+			}
+		}
+
+	}
+
+	
 
 	// populate the edit box
 	private void sendFromIntent(String username) {
@@ -342,5 +358,4 @@ public class FriendFragment extends SherlockFragment {
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
-
 }

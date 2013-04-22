@@ -7,14 +7,18 @@ import java.util.List;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -46,13 +50,12 @@ public class FriendAdapter extends BaseAdapter {
 
 	public FriendAdapter(Context context) {
 		mContext = context;
-		
 
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
 	}
-	
+
 	public void setItemListeners(OnClickListener clickListener, OnLongClickListener longClickListener) {
 		mClickListener = clickListener;
 		mLongClickListener = longClickListener;
@@ -222,57 +225,18 @@ public class FriendAdapter extends BaseAdapter {
 			((TextView) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
 			((TextView) convertView.findViewById(R.id.notificationItemBlock)).setOnClickListener(FriendInviteResponseListener);
 			((TextView) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
-			
-
-			// mListView.setOnItemClickListener(new OnItemClickListener() {
-			// @Override
-			// public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			// Friend friend = (Friend) mMainAdapter.getItem(position);
-			// if (friend.isFriend()) {
-			//
-			// ChatController chatController = getMainActivity().getChatController();
-			// if (chatController != null) {
-			// if (chatController.getMode() == ChatController.MODE_SELECT) {
-			// // reset action bar header
-			// Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-			// IdentityController.getLoggedInUser(), false);
-			//
-			// // handle send intent
-			// sendFromIntent(friend.getName());
-			//
-			// }
-			// chatController.setCurrentChat(friend.getName());
-			// }
-			//
-			// }
-			// }
-			// });
-			//
-			// mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
-			// @Override
-			// public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-			// Friend friend = (Friend) mMainAdapter.getItem(position);
-			//
-			// if (!friend.isInviter()) {
-			// FriendMenuFragment dialog = new FriendMenuFragment();
-			// dialog.setActivityAndFriend(getMainActivity(), friend);
-			// dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
-			// }
-			// return true;
-			//
-			// }
-			// });
 
 			friendViewHolder = new FriendViewHolder();
-			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);			
+			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);
 			friendViewHolder.statusLayout.setOnClickListener(mClickListener);
 			friendViewHolder.statusLayout.setOnLongClickListener(mLongClickListener);
 			friendViewHolder.statusLayout.setTag(friend);
-			
+
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
 			friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
+			friendViewHolder.avatarImage = (ImageView) convertView.findViewById(R.id.friendAvatar);
 			convertView.setTag(friendViewHolder);
 
 		}
@@ -282,13 +246,21 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
+		// TODO download and decrypt on thread
+		if (!TextUtils.isEmpty(friend.getImageUrl())) {
+			
+			Bitmap bitmap = BitmapFactory.decodeStream(MainActivity.getNetworkController().getFileStream(mContext, friend.getImageUrl()));			
+			SurespotLog.v(TAG, "setting friend image uri to: %s", friend.getImageUrl());
+			friendViewHolder.avatarImage.setImageBitmap(bitmap);
+		}
+
 		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.isDeleted()) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
 			friendViewHolder.tvStatus.setVisibility(View.VISIBLE);
 			// TODO expose flags and use switch
 
-			//add a space to workaround text clipping (so weak) 
-			//http://stackoverflow.com/questions/4353836/italic-textview-with-wrap-contents-seems-to-clip-the-text-at-right-edge
+			// add a space to workaround text clipping (so weak)
+			// http://stackoverflow.com/questions/4353836/italic-textview-with-wrap-contents-seems-to-clip-the-text-at-right-edge
 			if (friend.isDeleted()) {
 				friendViewHolder.tvStatus.setText("is deleted ");
 			}
@@ -388,6 +360,7 @@ public class FriendAdapter extends BaseAdapter {
 		public View vgInvite;
 		public View vgActivity;
 		public View statusLayout;
+		public ImageView avatarImage;
 	}
 
 	public void sort() {
@@ -422,5 +395,4 @@ public class FriendAdapter extends BaseAdapter {
 		return names;
 	}
 
-	
 }

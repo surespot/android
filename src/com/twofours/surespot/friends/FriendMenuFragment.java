@@ -1,27 +1,25 @@
 package com.twofours.surespot.friends;
 
+import java.util.ArrayList;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.network.IAsyncCallbackTriplet;
 
 public class FriendMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "FriendMenuFragment";
 	private Friend mFriend;
-	private MainActivity mActivity;
-	private String[] mMenuItemArray;
+	private ArrayList<String> mItems;
+	private IAsyncCallbackTriplet<DialogInterface, Friend,String> mSelectionCallback;
 
-	public void setActivityAndFriend(MainActivity activity, Friend friend) {
-		mFriend = friend;
-		mActivity = activity;
+	public void setActivityAndFriend(Friend friend, IAsyncCallbackTriplet<DialogInterface, Friend,String> selectionCallback)  {
+		mFriend = friend;		
+		mSelectionCallback = selectionCallback;
 	}
 
 	@Override
@@ -29,67 +27,38 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
 
-		mMenuItemArray = null;
+		mItems = new ArrayList<String>(5);
 
-		//
+		mItems.add("set image");
+		mItems.add("delete all messages");
 		if (!mFriend.isInviter()) {
-			mMenuItemArray = new String[2];
-			mMenuItemArray[1] = "delete friend";
-		}
-		else {
-			mMenuItemArray = new String[1];
+			mItems.add("delete friend");
+
 		}
 
-		mMenuItemArray[0] = "delete all messages";
-
-		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
+		builder.setItems(mItems.toArray(new String[mItems.size()]), new DialogInterface.OnClickListener() {
 			public void onClick(final DialogInterface dialogi, int which) {
 				if (mFriend == null)
 					return;
 
-				switch (which) {
-				case 0:
+				AlertDialog dialog = (AlertDialog) FriendMenuFragment.this.getDialog();
+				ListView listview = dialog.getListView();
 
-					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-					boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
-					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete all messages?",
-								"delete all messages", "ok", "cancel", new IAsyncCallback<Boolean>() {
-									public void handleResponse(Boolean result) {
-										if (result) {
-											mActivity.getChatController().deleteMessages(mFriend);
-										}
-										else {
-											dialogi.cancel();
-										}
-									};
-								});
-					}
-					else {
-						mActivity.getChatController().deleteMessages(mFriend);
-					}
-
-					break;
-				case 1:
-
-					UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete friend: " + mFriend.getName() + "?",
-							"delete friend", "ok", "cancel", new IAsyncCallback<Boolean>() {
-								public void handleResponse(Boolean result) {
-									if (result) {
-										mActivity.getChatController().deleteFriend(mFriend);
-									}
-									else {
-										dialogi.cancel();
-									}
-								};
-							});
-					break;
+				if (!listview.getChildAt(which).isEnabled()) {
+					return;
 				}
+
+				String itemText = mItems.get(which);
+				
+				mSelectionCallback.handleResponse(dialogi, mFriend, itemText);
+				//dialogi.cancel();
+			
 			}
 		});
 
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
+
 
 }

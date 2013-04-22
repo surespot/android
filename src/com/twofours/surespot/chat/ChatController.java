@@ -1237,7 +1237,7 @@ public class ChatController {
 		SurespotMessage lastMessage = null;
 		try {
 			JSONArray jsonUM = new JSONArray(jsonMessageString);
-			SurespotLog.v(TAG, username + "%s: loaded: %d messages from the server: %s", username, jsonUM.length(), jsonMessageString);
+			SurespotLog.v(TAG, "%s: loaded: %d messages from the server: %s", username, jsonUM.length(), jsonMessageString);
 			for (int i = 0; i < jsonUM.length(); i++) {
 
 				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
@@ -1953,14 +1953,14 @@ public class ChatController {
 					ArrayList<Friend> friends = new ArrayList<Friend>();
 					try {
 						mLatestUserControlId = jsonObject.getInt("userControlId");
-						JSONObject friendsObject = jsonObject.getJSONObject("friends");
+						JSONArray friendsArray = jsonObject.getJSONArray("friends");
 
-						if (friendsObject != null && friendsObject.names() != null) {
-							for (int i = 0; i < friendsObject.names().length(); i++) {
-								JSONObject jsonFriend = new JSONObject();
-								String name = friendsObject.names().getString(i);
-								jsonFriend.put("name", name);
-								jsonFriend.put("flags", friendsObject.get(name));
+						if (friendsArray != null) {
+							for (int i = 0; i < friendsArray.length(); i++) {
+								JSONObject jsonFriend = friendsArray.getJSONObject(i);
+								//String name = jsonFriend.getString("name");
+								//jsonFriend.put("name", name);
+								//jsonFriend.put("flags", jsonFriend.getInt("flags"));
 								Friend friend = Friend.toFriend(jsonFriend);
 								friends.add(friend);
 							}
@@ -2066,6 +2066,15 @@ public class ChatController {
 			chatFragment.scrollToEnd();
 		}
 
+	}
+
+	public void setImageUrl(String name, String url) {
+		Friend friend = mFriendAdapter.getFriend(name);
+		if (friend != null) {
+			friend.setImageUrl(url);
+			mFriendAdapter.notifyDataSetChanged();
+		}
+		
 	}
 
 }

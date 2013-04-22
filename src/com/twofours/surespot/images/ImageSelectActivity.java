@@ -34,6 +34,8 @@ import com.twofours.surespot.common.Utils;
 public class ImageSelectActivity extends SherlockActivity {
 	private static final String TAG = "ImageSelectActivity";
 	public static final int SOURCE_EXISTING_IMAGE = 1;
+	public static final int IMAGE_SIZE_LARGE = 0;
+	public static final int IMAGE_SIZE_SMALL = 1;
 	private static final String COMPRESS_SUFFIX = "compress";
 	private ImageView mImageView;
 	private Button mSendButton;
@@ -41,6 +43,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	private File mCompressedImagePath;
 	private String mPath;
 	private String mTo;
+	private int mSize;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +86,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		if (savedInstanceState != null) {
 			mPath = savedInstanceState.getString("path");
 			mTo = savedInstanceState.getString("to");
+			mSize = savedInstanceState.getInt("size");
 			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
 			
 			if (mPath != null) {
@@ -99,6 +103,8 @@ public class ImageSelectActivity extends SherlockActivity {
 		if (start) {
 			getIntent().putExtra("start", false);
 			mTo = getIntent().getStringExtra("to");
+			mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
+			
 			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
 			
 			// TODO paid version allows any file
@@ -173,6 +179,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		super.onSaveInstanceState(outState);
 		outState.putString("path", mPath);
 		outState.putString("to", mTo);
+		outState.putInt("size", mSize);
 	}
 
 	private synchronized File createImageFile(String suffix) throws IOException {
@@ -234,7 +241,9 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 
 		// scale, compress and save the image
-		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, finalUri, rotate);
+		int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConstants.MESSAGE_IMAGE_DIMENSION : SurespotConstants.FRIEND_IMAGE_DIMENSION);
+		
+		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, finalUri, rotate, maxDimension);
 		try {
 
 			if (bitmap != null) {

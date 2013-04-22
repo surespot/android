@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.acra.ACRA;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -329,7 +330,34 @@ public class MainActivity extends SherlockFragmentActivity {
 				mImageCaptureHandler = null;
 			}
 			break;
+
+		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE:
+			if (resultCode == Activity.RESULT_OK) {
+				Uri selectedImageUri = data.getData();
+
+				final String to = data.getStringExtra("to");
+			
+					SurespotLog.v(TAG, "to: " + to);
+					if (selectedImageUri != null) {
+
+						// Utils.makeToast(this, getString(R.string.uploading_image));
+						ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallback<String>() {
+							@Override
+							public void handleResponse(String result) {
+								if (result == null) {
+									Utils.makeToast(MainActivity.this, "could not upload friend image");
+								}
+								else {
+									mChatController.setImageUrl(to, result);
+								}
+							}
+						});
+					}
+				
+			}
+			break;
 		}
+		
 	}
 
 	@Override
@@ -370,6 +398,17 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		return true;
 	}
+	
+	public void uploadFriendImage(String name) {
+		ImageDownloader.evictCache();
+		Intent intent = new Intent(this, ImageSelectActivity.class);
+		intent.putExtra("to", name);
+		intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
+		// set start intent to avoid restarting every rotation
+		intent.putExtra("start", true);
+		startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE);
+
+	}
 
 	private ImageCaptureHandler mImageCaptureHandler;
 
@@ -396,6 +435,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			ImageDownloader.evictCache();
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("to", currentChat);
+			intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
 			// set start intent to avoid restarting every rotation
 			intent.putExtra("start", true);
 			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);

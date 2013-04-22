@@ -66,9 +66,9 @@ public class ChatUtils {
 
 		return split[0].equals(user) ? split[1] : split[0];
 	}
-	
+
 	public static boolean isMyMessage(SurespotMessage message) {
-		return message.getFrom().equals(IdentityController.getLoggedInUser()); 
+		return message.getFrom().equals(IdentityController.getLoggedInUser());
 	}
 
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
@@ -120,7 +120,7 @@ public class ChatUtils {
 					InputStream dataStream;
 					if (scale) {
 						SurespotLog.v(TAG, "scalingImage");
-						bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1);
+						bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConstants.MESSAGE_IMAGE_DIMENSION);
 
 						final Bitmap finalBitmap = bitmap;
 						final PipedOutputStream pos = new PipedOutputStream();
@@ -144,19 +144,6 @@ public class ChatUtils {
 					else {
 						dataStream = activity.getContentResolver().openInputStream(imageUri);
 					}
-
-					// save encrypted image locally until we receive server confirmation
-
-					String localImageDir = FileUtils.getImageUploadDir(activity);
-					new File(localImageDir).mkdirs();
-
-					String localImageFilename = localImageDir + File.separator
-							+ URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
-					final File localImageFile = new File(localImageFilename);
-
-					localImageFile.createNewFile();
-					String localImageUri = Uri.fromFile(localImageFile).toString();
-					SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
 					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
 					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
@@ -184,6 +171,19 @@ public class ChatUtils {
 						// scale to display size
 						bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
 					}
+
+					// save encrypted image locally until we receive server confirmation
+					String localImageDir = FileUtils.getImageUploadDir(activity);
+					new File(localImageDir).mkdirs();
+
+					String localImageFilename = localImageDir + File.separator
+							+ URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
+					final File localImageFile = new File(localImageFilename);
+
+					localImageFile.createNewFile();
+					String localImageUri = Uri.fromFile(localImageFile).toString();
+					SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
+
 					if (bitmap != null) {
 						SurespotLog.v(TAG, "adding bitmap to caches: %s", localImageUri);
 
@@ -195,7 +195,7 @@ public class ChatUtils {
 							@Override
 							public void run() {
 								chatController.addMessage(message);
-								
+
 							}
 						});
 					}
@@ -251,7 +251,7 @@ public class ChatUtils {
 													chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 													chatAdapter.notifyDataSetChanged();
 												}
-											}											
+											}
 
 											callback.handleResponse(result);
 										}
@@ -266,6 +266,56 @@ public class ChatUtils {
 
 				catch (IOException e) {
 					SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+				}
+			}
+		};
+
+		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+
+	}
+
+	public static void uploadFriendImageAsync(final Activity activity, final NetworkController networkController, final Uri imageUri,
+			final String friendName, final IAsyncCallback<String> callback) {
+
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+
+				SurespotLog.v(TAG, "uploadFriendImageAsync");
+				try {
+					Bitmap bitmap = null;
+					InputStream dataStream = activity.getContentResolver().openInputStream(imageUri);
+
+					// save encrypted image locally until we receive server confirmation
+
+					// String localImageDir = FileUtils.getImageUploadDir(activity);
+					// new File(localImageDir).mkdirs();
+					//
+					// String localImageFilename = localImageDir + File.separator
+					// + URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
+					// final File localImageFile = new File(localImageFilename);
+					//
+					// localImageFile.createNewFile();
+					// String localImageUri = Uri.fromFile(localImageFile).toString();
+					// SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
+
+					// PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+					//
+					final String ourVersion = IdentityController.getOurLatestVersion();
+					//TODO Set iv and version in friend
+					
+					// final String username = IdentityController.getLoggedInUser();
+					// final String iv = EncryptionController.runEncryptTask(ourVersion, username, ourVersion, new BufferedInputStream(
+					// dataStream), encryptionOutputStream);
+
+					// final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
+					networkController.postFriendImageStream(activity, friendName, ourVersion, "iv", dataStream, callback);
+				}
+
+				catch (IOException e) {
+					SurespotLog.w(TAG, e, "uploadFriendImageAsync");
 				}
 			}
 		};
@@ -295,7 +345,7 @@ public class ChatUtils {
 				uploadStream, SurespotConstants.MimeTypes.IMAGE, callback);
 	}
 
-	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate) {
+	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate, int maxDimension) {
 		//
 
 		try {// First decode with inJustDecodeBounds=true to check dimensions
@@ -330,9 +380,9 @@ public class ChatUtils {
 
 			Bitmap srcBitmap;
 			is = context.getContentResolver().openInputStream(imageUri);
-			if (rotatedWidth > SurespotConstants.MAX_IMAGE_DIMENSION || rotatedHeight > SurespotConstants.MAX_IMAGE_DIMENSION) {
-				float widthRatio = ((float) rotatedWidth) / ((float) SurespotConstants.MAX_IMAGE_DIMENSION);
-				float heightRatio = ((float) rotatedHeight) / ((float) SurespotConstants.MAX_IMAGE_DIMENSION);
+			if (rotatedWidth > maxDimension || rotatedHeight > maxDimension) {
+				float widthRatio = ((float) rotatedWidth) / ((float) maxDimension);
+				float heightRatio = ((float) rotatedHeight) / ((float) maxDimension);
 				float maxRatio = Math.max(widthRatio, heightRatio);
 
 				// Create the bitmap from file
