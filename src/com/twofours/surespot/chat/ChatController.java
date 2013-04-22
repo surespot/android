@@ -68,7 +68,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.ImageDownloader;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -589,7 +589,7 @@ public class ChatController {
 
 						if (bitmap != null) {
 							message.setHeight(bitmap.getHeight());
-							ImageDownloader.addBitmapToCache(message.getData(), bitmap);
+							MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
 						}
 
 					}
@@ -670,7 +670,7 @@ public class ChatController {
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
 				// update image cache
-				ImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
+				MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
 
 				// update message to point to real location
 				localMessage.setData(remoteUri);
@@ -2068,10 +2068,12 @@ public class ChatController {
 
 	}
 
-	public void setImageUrl(String name, String url) {
+	public void setImageUrl(String name, String url, String version, String iv) {
 		Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
 			friend.setImageUrl(url);
+			friend.setImageIv(iv);
+			friend.setImageVersion(version);
 			mFriendAdapter.notifyDataSetChanged();
 		}
 		

@@ -37,9 +37,10 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
-import com.twofours.surespot.images.ImageDownloader;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -341,14 +342,14 @@ public class MainActivity extends SherlockFragmentActivity {
 					if (selectedImageUri != null) {
 
 						// Utils.makeToast(this, getString(R.string.uploading_image));
-						ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallback<String>() {
+						ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String,String,String>() {
 							@Override
-							public void handleResponse(String result) {
-								if (result == null) {
+							public void handleResponse(String url, String version, String iv) {
+								if (url == null) {
 									Utils.makeToast(MainActivity.this, "could not upload friend image");
 								}
-								else {
-									mChatController.setImageUrl(to, result);
+								else {									
+									mChatController.setImageUrl(to, url, version, iv);
 								}
 							}
 						});
@@ -400,7 +401,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	}
 	
 	public void uploadFriendImage(String name) {
-		ImageDownloader.evictCache();
+		MessageImageDownloader.evictCache();
 		Intent intent = new Intent(this, ImageSelectActivity.class);
 		intent.putExtra("to", name);
 		intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
@@ -432,7 +433,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (currentChat == null) {
 				return true;
 			}
-			ImageDownloader.evictCache();
+			MessageImageDownloader.evictCache();
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("to", currentChat);
 			intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
@@ -444,7 +445,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			if (currentChat == null) {
 				return true;
 			}
-			ImageDownloader.evictCache();
+			MessageImageDownloader.evictCache();
 			mImageCaptureHandler = new ImageCaptureHandler(currentChat);
 			mImageCaptureHandler.capture(this);
 
@@ -493,7 +494,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ImageDownloader.evictCache();
+		MessageImageDownloader.evictCache();
 		SurespotLog.v(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);

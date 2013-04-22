@@ -26,7 +26,7 @@ public class SurespotIdentity {
 		mKeyPairs.put(version, new PrivateKeyPairs(version, keyPairDH, keyPairDSA));
 
 	}
-
+	
 	public String getUsername() {
 		return mUsername;
 	}

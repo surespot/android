@@ -20,7 +20,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.ImageDownloader;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -70,7 +70,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	public void evictCache() {
-		ImageDownloader.evictCache();
+		MessageImageDownloader.evictCache();
 	}
 
 	public ArrayList<SurespotMessage> getMessages() {
@@ -317,7 +317,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
 			if (!TextUtils.isEmpty(item.getData())) {
-				ImageDownloader.download(chatMessageViewHolder.imageView, item);
+				MessageImageDownloader.download(chatMessageViewHolder.imageView, item);
 			}
 
 			if (item.isShareable()) {

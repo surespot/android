@@ -7,8 +7,6 @@ import java.util.List;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
@@ -28,6 +26,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class FriendAdapter extends BaseAdapter {
@@ -246,12 +245,8 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getName());
 
-		// TODO download and decrypt on thread
 		if (!TextUtils.isEmpty(friend.getImageUrl())) {
-			
-			Bitmap bitmap = BitmapFactory.decodeStream(MainActivity.getNetworkController().getFileStream(mContext, friend.getImageUrl()));			
-			SurespotLog.v(TAG, "setting friend image uri to: %s", friend.getImageUrl());
-			friendViewHolder.avatarImage.setImageBitmap(bitmap);
+			FriendImageDownloader.download(friendViewHolder.avatarImage, friend);
 		}
 
 		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.isDeleted()) {

@@ -41,8 +41,9 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.ImageDownloader;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
 
 public class ChatUtils {
@@ -187,7 +188,7 @@ public class ChatUtils {
 					if (bitmap != null) {
 						SurespotLog.v(TAG, "adding bitmap to caches: %s", localImageUri);
 
-						ImageDownloader.addBitmapToCache(localImageUri, bitmap);
+						MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
 						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
 						message.setId(null);
 						message.setHeight(bitmap.getHeight());
@@ -275,7 +276,7 @@ public class ChatUtils {
 	}
 
 	public static void uploadFriendImageAsync(final Activity activity, final NetworkController networkController, final Uri imageUri,
-			final String friendName, final IAsyncCallback<String> callback) {
+			final String friendName, final IAsyncCallbackTriplet<String, String, String> callback) {
 
 		Runnable runnable = new Runnable() {
 
@@ -285,7 +286,6 @@ public class ChatUtils {
 
 				SurespotLog.v(TAG, "uploadFriendImageAsync");
 				try {
-					Bitmap bitmap = null;
 					InputStream dataStream = activity.getContentResolver().openInputStream(imageUri);
 
 					// save encrypted image locally until we receive server confirmation
@@ -301,17 +301,27 @@ public class ChatUtils {
 					// String localImageUri = Uri.fromFile(localImageFile).toString();
 					// SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
-					// PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-					//
-					final String ourVersion = IdentityController.getOurLatestVersion();
-					//TODO Set iv and version in friend
+					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 					
-					// final String username = IdentityController.getLoggedInUser();
-					// final String iv = EncryptionController.runEncryptTask(ourVersion, username, ourVersion, new BufferedInputStream(
-					// dataStream), encryptionOutputStream);
+					final String ourVersion = IdentityController.getOurLatestVersion();
+					final String username = IdentityController.getLoggedInUser();
+					final String iv = EncryptionController.runEncryptTask(ourVersion, username, ourVersion, new BufferedInputStream(
+							dataStream), encryptionOutputStream);
 
-					// final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-					networkController.postFriendImageStream(activity, friendName, ourVersion, "iv", dataStream, callback);
+					networkController.postFriendImageStream(activity, friendName, ourVersion, iv, encryptionInputStream,
+							new IAsyncCallback<String>() {
+
+								@Override
+								public void handleResponse(String uri) {
+									if (uri != null) {
+										callback.handleResponse(uri, ourVersion, iv);
+									}
+									else {
+										callback.handleResponse(null, null, null);
+									}
+								}
+							});
 				}
 
 				catch (IOException e) {

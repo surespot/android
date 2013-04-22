@@ -33,7 +33,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.ImageDownloader;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
@@ -112,7 +112,7 @@ public class ChatFragment extends SherlockFragment {
 
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 						ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
-						if (!(imageView.getDrawable() instanceof ImageDownloader.DownloadedDrawable)) {
+						if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
 
 							Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
 							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -2,6 +2,7 @@ package com.twofours.surespot.services;
 
 import java.security.PublicKey;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -19,6 +20,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
@@ -27,7 +29,6 @@ public class CredentialCachingService extends Service {
 	private static final String TAG = "CredentialCachingService";
 
 	private final IBinder mBinder = new CredentialCachingBinder();
-
 
 	private Map<String, SurespotIdentity> mIdentities;
 	private Map<String, Cookie> mCookies = new HashMap<String, Cookie>();
@@ -103,9 +104,18 @@ public class CredentialCachingService extends Service {
 
 	public synchronized void login(SurespotIdentity identity, Cookie cookie) {
 		SurespotLog.v(TAG, "Logging in: " + identity.getUsername());
-		mLoggedInUser = identity.getUsername();	
+		mLoggedInUser = identity.getUsername();
 		this.mCookies.put(identity.getUsername(), cookie);
 		this.mIdentities.put(identity.getUsername(), identity);
+		// add all my public keys to the cache
+
+		Iterator<PrivateKeyPairs> iterator = identity.getKeyPairs().iterator();
+		while (iterator.hasNext()) {
+			PrivateKeyPairs pkp = iterator.next();
+			String version = pkp.getVersion();
+			this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)), new PublicKeys(version,
+					identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic()));
+		}
 	}
 
 	public String getLoggedInUser() {
@@ -131,36 +141,33 @@ public class CredentialCachingService extends Service {
 		return null;
 
 	}
-	
 
 	public SurespotIdentity getIdentity() {
 		return getIdentity(mLoggedInUser);
 	}
-		
+
 	public SurespotIdentity getIdentity(String username) {
 		return mIdentities.get(username);
 	}
-	
-	
-	
+
 	public void clearUserData(String username) {
-		mLatestVersions.invalidate(username);	
-		
+		mLatestVersions.invalidate(username);
+
 		for (PublicKeyPairKey key : mPublicIdentities.asMap().keySet()) {
 			if (key.getUsername().equals(username)) {
-				SurespotLog.v(TAG,"invalidating public key cache entry for: " + username);
+				SurespotLog.v(TAG, "invalidating public key cache entry for: " + username);
 				mPublicIdentities.invalidate(key);
 			}
-		}		
-		
+		}
+
 		for (SharedSecretKey key : mSharedSecrets.asMap().keySet()) {
 			if (key.getTheirUsername().equals(username)) {
-				SurespotLog.v(TAG,"invalidating shared secret cache entry for: " + username);
+				SurespotLog.v(TAG, "invalidating shared secret cache entry for: " + username);
 				mSharedSecrets.invalidate(key);
 			}
 		}
-	}	
-	
+	}
+
 	public synchronized void clear() {
 		mPublicIdentities.invalidateAll();
 		mSharedSecrets.invalidateAll();
@@ -168,12 +175,12 @@ public class CredentialCachingService extends Service {
 		mCookies.clear();
 		mIdentities.clear();
 	}
-	
+
 	public synchronized void clearIdentityData(String username) {
 		mCookies.remove(username);
 		mIdentities.remove(username);
 	}
-		
+
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
 			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
@@ -414,10 +421,5 @@ public class CredentialCachingService extends Service {
 		}
 
 	}
-
-	
-	
-
-	
 
 }
