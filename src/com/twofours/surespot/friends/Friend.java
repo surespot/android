@@ -320,4 +320,23 @@ public class Friend implements Comparable<Friend> {
 
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\nFriend:\n");
+		sb.append("\tname: " + getName() + "\n");
+		sb.append("\tflags: " + getFlags() + "\n");
+		sb.append("\timageUrl: " + getImageUrl() + "\n");
+		sb.append("\timageVersion: " + getImageVersion() + "\n");
+		sb.append("\timageIv: " + getImageIv() + "\n");
+		sb.append("\tlastViewedMessageId: " + getLastViewedMessageId() + "\n");
+		sb.append("\tavailableMessageId: " + getAvailableMessageId() + "\n");
+		sb.append("\tlastReceivedMessageControlId: " + getLastReceivedMessageControlId() + "\n");
+		sb.append("\tavailableMessageControlId: " + getAvailableMessageControlId() + "\n");
+		sb.append("\tlastReceivedUserControlId: " + getLastReceivedUserControlId() + "\n");
+		
+		return sb.toString();
+	}
+
+
 };

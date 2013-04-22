@@ -17,7 +17,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_margin="5dp"
-            android:background="@android:drawable/sym_def_app_icon" >
+             >
         </ImageView>
 
         <TextView

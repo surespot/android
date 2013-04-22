@@ -68,22 +68,27 @@ public class FriendImageDownloader {
 	 *            The ImageView to bind the downloaded image to.
 	 */
 	public static void download(ImageView imageView, Friend friend) {
-		if (TextUtils.isEmpty(friend.getImageUrl())) {
+		String imageUrl = friend.getImageUrl();
+		SurespotLog.v(TAG, "downloading image for %s", friend);
+		
+		
+		if (TextUtils.isEmpty(imageUrl)) {
 			return;
 		}
 
-		String imageUrl = friend.getImageUrl();
+		
 		Bitmap bitmap = getBitmapFromCache(imageUrl);
 
 		if (bitmap == null) {
-			SurespotLog.v(TAG, "bitmap not in cache: %s", imageUrl);
+			SurespotLog.v(TAG, "bitmap not in cache: %s, %s", friend.getName(), imageUrl);
 			forceDownload(imageView, friend);
 		}
 		else {
-			SurespotLog.v(TAG, "loading bitmap from cache: %s", imageUrl);
+			SurespotLog.v(TAG, "loading bitmap from cache: %s, %s",friend.getName(), imageUrl);
 			cancelPotentialDownload(imageView, friend);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
+			//imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
 
 
 		}
@@ -234,8 +239,9 @@ public class FriendImageDownloader {
 									ImageViewAnimatedChange(imageView.getContext(), imageView, finalBitmap);
 								}
 
+								SurespotLog.v(TAG, "setting image for %s", mFriend.getName());
 								imageView.setImageBitmap(finalBitmap);
-								imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
+							//	imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
 
 							}
 						});
