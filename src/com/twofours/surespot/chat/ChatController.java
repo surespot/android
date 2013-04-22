@@ -1479,7 +1479,7 @@ public class ChatController {
 
 		if (mProgressCallback != null) {
 			mProgressCallback.handleResponse(progress);
-		}	
+		}
 	}
 
 	public synchronized boolean isInProgress() {
@@ -1581,12 +1581,12 @@ public class ChatController {
 		if (loggedInUser == null) {
 			return;
 		}
-		
+
 		Friend friend = null;
 		if (username != null) {
 			friend = mFriendAdapter.getFriend(username);
 		}
-		
+
 		if (friend != null) {
 			mCurrentChat = username;
 			mChatPagerAdapter.addChatName(username);
@@ -1958,9 +1958,9 @@ public class ChatController {
 						if (friendsArray != null) {
 							for (int i = 0; i < friendsArray.length(); i++) {
 								JSONObject jsonFriend = friendsArray.getJSONObject(i);
-								//String name = jsonFriend.getString("name");
-								//jsonFriend.put("name", name);
-								//jsonFriend.put("flags", jsonFriend.getInt("flags"));
+								// String name = jsonFriend.getString("name");
+								// jsonFriend.put("name", name);
+								// jsonFriend.put("flags", jsonFriend.getInt("flags"));
 								Friend friend = Friend.toFriend(jsonFriend);
 								friends.add(friend);
 							}
@@ -2071,12 +2071,15 @@ public class ChatController {
 	public void setImageUrl(String name, String url, String version, String iv) {
 		Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
+			String oldUrl = friend.getImageUrl();
+			if (!TextUtils.isEmpty(oldUrl)) {
+				mNetworkController.removeCacheEntry(oldUrl);
+			}
+
 			friend.setImageUrl(url);
 			friend.setImageIv(iv);
 			friend.setImageVersion(version);
 			mFriendAdapter.notifyDataSetChanged();
 		}
-		
 	}
-
 }
