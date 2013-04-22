@@ -18,7 +18,7 @@
         app:footerLineHeight="0dp"
         app:footerPadding="8dp"
         app:selectedBold="true"
-        app:selectedColor="@color/abs__holo_blue_light"
+        app:selectedColor="@color/surespotBlue"
         app:topPadding="0dp" />
 
     <android.support.v4.view.ViewPager

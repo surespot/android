@@ -6,7 +6,7 @@
 
     <stroke
         android:width="3dp"
-        android:color="@color/abs__holo_blue_light" >
+        android:color="@color/surespotBlue" >
     </stroke>
 
 </shape>

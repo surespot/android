@@ -42,7 +42,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:gravity="center_vertical"
-                android:textColor="@color/abs__holo_blue_light"
+                android:textColor="@color/surespotBlue"
                 android:textSize="15sp" >
             </TextView>
 
@@ -73,7 +73,7 @@
             android:padding="3dp"
             android:tag="block"
             android:text="@string/block_underline"
-            android:textColor="@color/abs__holo_blue_light" >
+            android:textColor="@color/surespotBlue" >
         </TextView>
 
         <TextView
@@ -86,7 +86,7 @@
             android:padding="3dp"
             android:tag="ignore"
             android:text="@string/ignore_underline"
-            android:textColor="@color/abs__holo_blue_light" >
+            android:textColor="@color/surespotBlue" >
         </TextView>
 
         <TextView
@@ -99,7 +99,7 @@
             android:padding="3dp"
             android:tag="accept"
             android:text="@string/accept_underline"
-            android:textColor="@color/abs__holo_blue_light" >
+            android:textColor="@color/surespotBlue" >
         </TextView>
     </LinearLayout>
 
