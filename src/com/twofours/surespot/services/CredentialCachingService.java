@@ -106,8 +106,13 @@ public class CredentialCachingService extends Service {
 		SurespotLog.v(TAG, "Logging in: " + identity.getUsername());
 		mLoggedInUser = identity.getUsername();
 		this.mCookies.put(identity.getUsername(), cookie);
+		updateIdentity(identity);
+	}
+	
+
+	public void updateIdentity(SurespotIdentity identity) {
 		this.mIdentities.put(identity.getUsername(), identity);
-		// add all my public keys to the cache
+		// add all my identity's public keys to the cache
 
 		Iterator<PrivateKeyPairs> iterator = identity.getKeyPairs().iterator();
 		while (iterator.hasNext()) {
@@ -116,7 +121,9 @@ public class CredentialCachingService extends Service {
 			this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)), new PublicKeys(version,
 					identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic()));
 		}
+		
 	}
+
 
 	public String getLoggedInUser() {
 		return mLoggedInUser;
@@ -179,7 +186,10 @@ public class CredentialCachingService extends Service {
 	public synchronized void clearIdentityData(String username) {
 		mCookies.remove(username);
 		mIdentities.remove(username);
+		
 	}
+	
+	
 
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {

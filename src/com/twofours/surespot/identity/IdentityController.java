@@ -684,6 +684,12 @@ public class IdentityController {
 			// TODO give user other options to save it
 			SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
 		}
+		
+		//if we're logged in update the identity in the cache 
+		if (getLoggedInUser().equals(username)) {
+			SurespotApplication.getCachingService().updateIdentity(identity);
+		}
+		
 	}
 
 	public static void updateLatestVersion(Context context, String username, String version) {
