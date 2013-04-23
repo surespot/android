@@ -18,7 +18,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -27,12 +26,12 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.spongycastle.crypto.digests.SHA256Digest;
 import org.spongycastle.crypto.engines.AESLightEngine;
+import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.spongycastle.crypto.modes.GCMBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
@@ -571,22 +570,18 @@ public class EncryptionController {
 	public static byte[][] derive(String password) {
 		int iterationCount = 1000;
 		int saltLength = SALT_LENGTH;
-		int keyLength = AES_KEY_LENGTH;
+		int keyLength = AES_KEY_LENGTH*8;
 
 		byte[][] derived = new byte[2][];
 		byte[] keyBytes = null;
 		SecureRandom random = new SurespotSecureRandom();
 		byte[] salt = new byte[saltLength];
 		random.nextBytes(salt);
-		KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterationCount, keyLength);
-		SecretKeyFactory keyFactory;
-		try {
-			keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA-256AND256BITAES-CBC-BC", "SC");
-			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
-		}
-		catch (Exception e) {
-			SurespotLog.e(TAG, e, "deriveKey");
-		}
+		
+		PKCS5S2ParametersGenerator gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
+		gen.init(password.getBytes(), salt, iterationCount);
+		keyBytes = ((KeyParameter) gen.generateDerivedParameters(keyLength)).getKey();
+					
 
 		derived[0] = salt;
 		derived[1] = keyBytes;
@@ -595,19 +590,14 @@ public class EncryptionController {
 
 	private static byte[] derive(String password, byte[] salt) {
 		int iterationCount = 1000;
-		int keyLength = AES_KEY_LENGTH;
-
+		int keyLength = AES_KEY_LENGTH*8;
+		
 		byte[] keyBytes = null;
 
-		KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, iterationCount, keyLength);
-		SecretKeyFactory keyFactory;
-		try {
-			keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA-256AND256BITAES-CBC-BC", "SC");
-			keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
-		}
-		catch (Exception e) {
-			SurespotLog.e(TAG, e, "derive");
-		}
+		PKCS5S2ParametersGenerator gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
+		gen.init(password.getBytes(), salt, iterationCount);
+		keyBytes = ((KeyParameter) gen.generateDerivedParameters(keyLength)).getKey();
+	
 
 		return keyBytes;
 	}
