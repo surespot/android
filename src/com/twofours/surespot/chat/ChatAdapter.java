@@ -132,6 +132,8 @@ public class ChatAdapter extends BaseAdapter {
 			// SurespotLog.v(TAG, "addMessage, updating message");
 			SurespotMessage updateMessage = mMessages.get(index);
 			if (message.getId() != null) {
+				//if the id is null 'tis the same as adding the message
+				added = updateMessage.getId() == null;
 				updateMessage.setId(message.getId());
 			}
 			if (message.getDateTime() != null) {

@@ -621,7 +621,13 @@ public class ChatController {
 								// other user; we
 								// can't just set the last viewed to the latest message
 								if (ChatUtils.isMyMessage(message) && added) {
-									friend.setLastViewedMessageId(friend.getLastViewedMessageId() + 1);
+									int adjustedLastViewedId = friend.getLastViewedMessageId() + 1;
+									if (adjustedLastViewedId < messageId) {
+										friend.setLastViewedMessageId(adjustedLastViewedId);
+									}
+									else {
+										friend.setLastViewedMessageId(messageId);
+									}
 								}
 							}
 
@@ -1510,7 +1516,7 @@ public class ChatController {
 			mPaused = false;
 
 			setProgress(null, true);
-			//getFriendsAndIds();
+			// getFriendsAndIds();
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
