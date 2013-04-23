@@ -195,6 +195,7 @@ public class ChatUtils {
 						activity.runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
+								SurespotLog.v(TAG,"adding local image message %s", message);
 								chatController.addMessage(message);
 
 							}

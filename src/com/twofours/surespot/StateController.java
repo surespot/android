@@ -69,6 +69,7 @@ public class StateController {
 					for (int i = 0; i < friendsJson.length(); i++) {
 						Friend friend = Friend.toFriend(friendsJson.getJSONObject(i));
 						friends.add(friend);
+						SurespotLog.v(TAG, "loadFriends,  loaded friend: %s", friend);
 					}
 
 					FriendState friendState = new FriendState();
@@ -95,6 +96,7 @@ public class StateController {
 
 				while (iterator.hasNext()) {
 					Friend friend = iterator.next();
+					SurespotLog.v(TAG, "saveFriends,  saving friend: %s", friend);
 					jsonArray.put(friend.toJSONObject());
 				}
 
@@ -105,6 +107,7 @@ public class StateController {
 					String sFriends = jsonFriendState.toString();
 					FileUtils.writeFile(filename, sFriends);
 					SurespotLog.v(TAG, "Saved friends: %s", sFriends);
+					
 				}
 				catch (JSONException e) {
 					SurespotLog.w(TAG, e, "saveFriends");

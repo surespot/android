@@ -93,6 +93,7 @@ public class FriendAdapter extends BaseAdapter {
 		}
 
 		friend.setNewFriend(true);
+		
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 	}
@@ -116,7 +117,7 @@ public class FriendAdapter extends BaseAdapter {
 			friend = new Friend(name);
 			mFriends.add(friend);
 		}
-		friend.setInviter(true);
+		friend.setInviter(true);		
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 
@@ -125,8 +126,7 @@ public class FriendAdapter extends BaseAdapter {
 	public void setFriendDeleted(String name) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
-			friend.setDeleted();
-
+			friend.setDeleted();			
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
@@ -137,7 +137,6 @@ public class FriendAdapter extends BaseAdapter {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.setChatActive(b);
-
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
@@ -229,7 +228,7 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);
 			friendViewHolder.statusLayout.setOnClickListener(mClickListener);
 			friendViewHolder.statusLayout.setOnLongClickListener(mLongClickListener);
-			friendViewHolder.statusLayout.setTag(friend);
+			
 
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
@@ -243,6 +242,7 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder = (FriendViewHolder) convertView.getTag();
 		}
 
+		friendViewHolder.statusLayout.setTag(friend);
 		friendViewHolder.tvName.setText(friend.getName());
 
 		if (!TextUtils.isEmpty(friend.getImageUrl())) {
@@ -288,14 +288,14 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.statusLayout.setEnabled(true);
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
-			if (friend.isChatActive()) {
+			//if (friend.isChatActive()) {
 				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_active);
 
-			}
-			else {
-				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_inactive);
-				// convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
-			}
+//			}
+//			else {
+//				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_inactive);
+//				// convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
+			//}
 
 			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);
 

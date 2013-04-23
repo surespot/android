@@ -389,7 +389,7 @@ public class ChatController {
 
 	private void connected() {
 
-		// getFriendsAndIds();
+		getFriendsAndIds();
 		resendMessages();
 		// MainActivity.THREAD_POOL_EXECUTOR.execute(new UpdateDataTask());
 
@@ -534,6 +534,7 @@ public class ChatController {
 	}
 
 	private void handleMessage(final SurespotMessage message) {
+		SurespotLog.v(TAG, "handleMessage %s", message);
 		final String otherUser = message.getOtherUser();
 
 		final ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
@@ -561,35 +562,37 @@ public class ChatController {
 						if (ChatUtils.isMyMessage(message)) {
 							handleCachedImage(chatAdapter, message);
 						}
+						else {
 
-						InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
-								message.getData());
+							InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
+									message.getData());
 
-						Bitmap bitmap = null;
-						PipedOutputStream out = new PipedOutputStream();
-						PipedInputStream inputStream;
-						try {
-							inputStream = new PipedInputStream(out);
+							Bitmap bitmap = null;
+							PipedOutputStream out = new PipedOutputStream();
+							PipedInputStream inputStream;
+							try {
+								inputStream = new PipedInputStream(out);
 
-							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-									message.getIv(), new BufferedInputStream(imageStream), out);
+								EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(),
+										message.getTheirVersion(), message.getIv(), new BufferedInputStream(imageStream), out);
 
-							byte[] bytes = Utils.inputStreamToBytes(inputStream);
+								byte[] bytes = Utils.inputStreamToBytes(inputStream);
 
-							bitmap = ChatUtils.getSampledImage(bytes);
-						}
-						catch (InterruptedIOException ioe) {
+								bitmap = ChatUtils.getSampledImage(bytes);
+							}
+							catch (InterruptedIOException ioe) {
 
-							SurespotLog.w(TAG, ioe, "BitmapDownloaderTask");
+								SurespotLog.w(TAG, ioe, "handleMessage");
 
-						}
-						catch (IOException e) {
-							SurespotLog.w(TAG, e, "BitmapDownloaderTask");
-						}
+							}
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "handleMessage");
+							}
 
-						if (bitmap != null) {
-							message.setHeight(bitmap.getHeight());
-							MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
+							if (bitmap != null) {
+								message.setHeight(bitmap.getHeight());
+								MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
+							}
 						}
 
 					}
@@ -598,12 +601,37 @@ public class ChatController {
 
 				protected void onPostExecute(Void result) {
 					try {
-						chatAdapter.addOrUpdateMessage(message, true, true, true);
+						boolean added = chatAdapter.addOrUpdateMessage(message, true, true, true);
 						scrollToEnd(otherUser);
+
+						Friend friend = mFriendAdapter.getFriend(otherUser);
+						if (friend != null) {
+							int messageId = message.getId();
+
+							// always update the available id
+							friend.setAvailableMessageId(messageId);
+
+							// if the chat is showing or we sent the message update the last viewed id
+							if (otherUser.equals(mCurrentChat)) {
+
+								friend.setLastViewedMessageId(messageId);
+							}
+							else {
+								// if it's my message increment the count by one to account for it as I may have unread messages from the
+								// other user; we
+								// can't just set the last viewed to the latest message
+								if (ChatUtils.isMyMessage(message) && added) {
+									friend.setLastViewedMessageId(friend.getLastViewedMessageId() + 1);
+								}
+							}
+
+							mFriendAdapter.sort();
+							mFriendAdapter.notifyDataSetChanged();
+						}
 
 					}
 					catch (SurespotMessageSequenceException e) {
-						SurespotLog.v(TAG, "updateUserMessageIds: %s", e.getMessage());
+						SurespotLog.v(TAG, "handleMessage: %s", e.getMessage());
 						getLatestMessagesAndControls(otherUser, e.getMessageId());
 					}
 				};
@@ -611,29 +639,19 @@ public class ChatController {
 			}.execute();
 
 		}
+		else {
+			Friend friend = mFriendAdapter.getFriend(otherUser);
+			if (friend != null) {
+				int messageId = message.getId();
 
-		Friend friend = mFriendAdapter.getFriend(otherUser);
-		if (friend != null) {
-			int messageId = message.getId();
+				// always update the available id
+				friend.setAvailableMessageId(messageId);
 
-			// always update the available id
-			friend.setAvailableMessageId(messageId);
-
-			// if the chat is showing or we sent the message update the last viewed id
-			if (otherUser.equals(mCurrentChat)) {
-
-				friend.setLastViewedMessageId(messageId);
+				mFriendAdapter.sort();
+				mFriendAdapter.notifyDataSetChanged();
 			}
-			else {
-				// if it's my message increment the count by one to account for it as I may have unread messages from the other user; we
-				// can't just set the last viewed to the latest message
-				if (ChatUtils.isMyMessage(message)) {
-					friend.setLastViewedMessageId(friend.getLastViewedMessageId() + 1);
-				}
-			}
-
-			mFriendAdapter.notifyDataSetChanged();
 		}
+
 	}
 
 	// add entry to http cache for image we sent so we don't download it again
@@ -919,8 +937,8 @@ public class ChatController {
 	}
 
 	private void getLatestMessagesAndControls(final String username, int fetchMessageId, int fetchControlMessageId) {
-		SurespotLog.v(TAG, "getLatestMessagesAndControls: fetchMessageId: %d, fetchControlMessageId: %d", fetchMessageId,
-				fetchControlMessageId);
+		SurespotLog.v(TAG, "getLatestMessagesAndControls: name %s, fetchMessageId: %d, fetchControlMessageId: %d", username,
+				fetchMessageId, fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
 			setProgress(username, true);
 
@@ -1492,7 +1510,7 @@ public class ChatController {
 			mPaused = false;
 
 			setProgress(null, true);
-			getFriendsAndIds();
+			//getFriendsAndIds();
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 		}
@@ -1576,7 +1594,7 @@ public class ChatController {
 
 	public synchronized void setCurrentChat(final String username) {
 
-		SurespotLog.v(TAG, "%s: setCurrentChat", username);
+		SurespotLog.v(TAG, "setCurrentChat: %s", username);
 		String loggedInUser = IdentityController.getLoggedInUser();
 		if (loggedInUser == null) {
 			return;
@@ -1963,6 +1981,8 @@ public class ChatController {
 								// jsonFriend.put("flags", jsonFriend.getInt("flags"));
 								Friend friend = Friend.toFriend(jsonFriend);
 								friends.add(friend);
+
+								SurespotLog.v(TAG, "getFriendsAndIds,  adding friend: %s", friend);
 							}
 						}
 					}

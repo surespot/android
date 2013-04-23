@@ -26,10 +26,9 @@ public class Friend implements Comparable<Friend> {
 	private String mImageVersion;
 	private String mImageIv;
 
-	
-	
 	public Friend(String name) {
 		mName = name;
+		SurespotLog.v(TAG, "constructor, friend: %s", this);
 	}
 
 	public String getName() {
@@ -38,6 +37,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setName(String name) {
 		this.mName = name;
+
 	}
 
 	public int getLastViewedMessageId() {
@@ -51,6 +51,7 @@ public class Friend implements Comparable<Friend> {
 		else {
 			mLastViewedMessageId = mAvailableMessageId;
 		}
+		SurespotLog.v(TAG, "setLastViewedMessageId, lastViewedMessageId: %d, friend: %s", lastViewedMessageId, this);
 	}
 
 	public int getAvailableMessageId() {
@@ -61,8 +62,9 @@ public class Friend implements Comparable<Friend> {
 		if (availableMessageId > 0) {
 			mAvailableMessageId = availableMessageId;
 		}
+		SurespotLog.v(TAG, "setAvailableMessageId, %d, friend: %s", availableMessageId, this);
 	}
-	
+
 	public int getAvailableMessageControlId() {
 		return mAvailableMessageControlId;
 	}
@@ -71,6 +73,8 @@ public class Friend implements Comparable<Friend> {
 		if (availableMessageControlId > 0) {
 			mAvailableMessageControlId = availableMessageControlId;
 		}
+
+		SurespotLog.v(TAG, "setAvailabeMessageControlId, %d, friend: %s", availableMessageControlId, this);
 	}
 
 	public int getLastReceivedMessageControlId() {
@@ -79,6 +83,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setLastReceivedMessageControlId(int lastReceivedMessageControlId) {
 		mLastReceivedMessageControlId = lastReceivedMessageControlId;
+		SurespotLog.v(TAG, "setLastReceivedMessageControlId, friend: %s", this);
 	}
 
 	public int getLastReceivedUserControlId() {
@@ -87,6 +92,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setLastReceivedUserControlId(int lastReceivedUserControlId) {
 		mLastReceivedUserControlId = lastReceivedUserControlId;
+		SurespotLog.v(TAG, "setLastReceivedUserControlId, friend: %s", this);
 	}
 
 	public void setChatActive(boolean set) {
@@ -97,6 +103,8 @@ public class Friend implements Comparable<Friend> {
 		else {
 			mFlags &= ~CHAT_ACTIVE;
 		}
+
+		SurespotLog.v(TAG, "setChatActive, friend: %s", this);
 	}
 
 	// public void setMessageActivity(boolean set) {
@@ -115,6 +123,8 @@ public class Friend implements Comparable<Friend> {
 		else {
 			mFlags &= ~INVITER;
 		}
+
+		SurespotLog.v(TAG, "setInviter, %b, friend: %s", set, this);
 	}
 
 	public boolean isInviter() {
@@ -128,23 +138,22 @@ public class Friend implements Comparable<Friend> {
 		else {
 			mFlags &= ~INVITED;
 		}
+		SurespotLog.v(TAG, "setInvited, %b, friend: %s", set, this);
 	}
 
-	public boolean isInvited() {		
+	public boolean isInvited() {
 		return (mFlags & INVITED) == INVITED;
 	}
 
-
 	public void setDeleted() {
-		mFlags = DELETED;		
+		mFlags = DELETED;
+		SurespotLog.v(TAG, "setDeleted, friend: %s", this);
 	}
 
-	
 	public boolean isDeleted() {
 		return (mFlags & DELETED) == DELETED;
 	}
 
-	
 	public void setNewFriend(boolean set) {
 		if (set) {
 			mFlags |= NEW_FRIEND;
@@ -155,6 +164,8 @@ public class Friend implements Comparable<Friend> {
 		else {
 			mFlags &= ~NEW_FRIEND;
 		}
+
+		SurespotLog.v(TAG, "setNewFriend, set %b, friend: %s", set, this);
 	}
 
 	public boolean isNewFriend() {
@@ -162,8 +173,8 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public boolean isMessageActivity() {
-		// return (mFlags & MESSAGE_ACTIVITY) == MESSAGE_ACTIVITY;
-		SurespotLog.v(TAG, mName + ": isMessageActivity, lastviewed: " + mLastViewedMessageId + ", lastAvailable: " + mAvailableMessageId);
+	
+		// SurespotLog.v(TAG, "isMessageActivity, %s", toString());
 		return mAvailableMessageId - mLastViewedMessageId > 0;
 	}
 
@@ -177,6 +188,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setFlags(int flags) {
 		mFlags = flags;
+		SurespotLog.v(TAG, "setInviter, friend: %s", this);
 	}
 
 	public String getImageUrl() {
@@ -185,6 +197,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageUrl(String imageUrl) {
 		mImageUrl = imageUrl;
+		//SurespotLog.v(TAG, "setImageUrl, friend: %s", this);
 	}
 
 	public String getImageVersion() {
@@ -193,6 +206,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageVersion(String imageVersion) {
 		mImageVersion = imageVersion;
+	//	SurespotLog.v(TAG, "setImageVersion, friend: %s", this);
 	}
 
 	public String getImageIv() {
@@ -201,6 +215,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageIv(String imageIv) {
 		mImageIv = imageIv;
+		//SurespotLog.v(TAG, "setImageIv, friend: %s", this);
 	}
 
 	public boolean isChatActive() {
@@ -224,12 +239,26 @@ public class Friend implements Comparable<Friend> {
 	public int compareTo(Friend another) {
 		// if the flags are the same sort by name
 		// not active or invite, sort by name
-		if ((another.getFlags() == this.getFlags()) || (another.getFlags() < MESSAGE_ACTIVITY && this.getFlags() < MESSAGE_ACTIVITY)) {
+		
+		//for the purposes of sorting we'll add MESSAGE_ACTIVITY to the flags if they have new messages
+		int myFlags = this.getFlags();
+		if (this.isMessageActivity()) {
+			myFlags |= MESSAGE_ACTIVITY;
+		}
+				
+		int theirFlags = another.getFlags();
+		if (another.isMessageActivity()) {
+			theirFlags |= MESSAGE_ACTIVITY;
+		}
+		
+		SurespotLog.v(TAG,"comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
+				
+		if ((theirFlags == myFlags) || (theirFlags < MESSAGE_ACTIVITY && myFlags < MESSAGE_ACTIVITY)) {
 			return this.getName().compareToIgnoreCase(another.getName());
 		}
-		else {
+		else {					
 			// sort by flag value
-			return Integer.valueOf(another.getFlags()).compareTo(this.getFlags());
+			return Integer.valueOf(theirFlags).compareTo(myFlags);
 		}
 
 	}
@@ -259,6 +288,8 @@ public class Friend implements Comparable<Friend> {
 				this.setImageVersion(jsonFriend.getString("imageVersion"));
 
 				setNewFriend(false);
+
+				SurespotLog.v(TAG, "update <JSONObject>, friend: %s", this);
 				return true;
 			}
 
@@ -267,22 +298,6 @@ public class Friend implements Comparable<Friend> {
 			SurespotLog.w(TAG, "update", e);
 		}
 		return false;
-	}
-
-	public static Friend toFriend(JSONObject jsonFriend) throws JSONException {
-		Friend friend = new Friend(jsonFriend.getString("name"));
-		
-		friend.setImageUrl(jsonFriend.optString("imageUrl"));
-		friend.setImageVersion(jsonFriend.optString("imageVersion"));
-		friend.setImageIv(jsonFriend.optString("imageIv"));
-		
-		friend.setFlags(jsonFriend.optInt("flags"));
-		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
-		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
-		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
-		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
-
-		return friend;
 	}
 
 	public void update(Friend friend) {
@@ -294,13 +309,31 @@ public class Friend implements Comparable<Friend> {
 		this.setImageIv(friend.getImageIv());
 		// this.setChatActive(friend.isChatActive());
 		// this.setMessageActivity(friend.isMessageActivity());
+
+		SurespotLog.v(TAG, "update <Friend>, friend: %s", this);
+	}
+
+	public static Friend toFriend(JSONObject jsonFriend) throws JSONException {
+		Friend friend = new Friend(jsonFriend.getString("name"));
+
+		friend.setImageUrl(jsonFriend.optString("imageUrl"));
+		friend.setImageVersion(jsonFriend.optString("imageVersion"));
+		friend.setImageIv(jsonFriend.optString("imageIv"));
+
+		friend.setFlags(jsonFriend.optInt("flags"));
+		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
+		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
+		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
+		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
+
+		return friend;
 	}
 
 	public JSONObject toJSONObject() {
 		JSONObject jsonFriend = new JSONObject();
 
 		try {
-			
+
 			jsonFriend.put("name", this.getName());
 			jsonFriend.put("flags", this.getFlags());
 			jsonFriend.put("lastReceivedMessageControlId", this.getLastReceivedMessageControlId());
@@ -334,9 +367,8 @@ public class Friend implements Comparable<Friend> {
 		sb.append("\tlastReceivedMessageControlId: " + getLastReceivedMessageControlId() + "\n");
 		sb.append("\tavailableMessageControlId: " + getAvailableMessageControlId() + "\n");
 		sb.append("\tlastReceivedUserControlId: " + getLastReceivedUserControlId() + "\n");
-		
+
 		return sb.toString();
 	}
-
 
 };
