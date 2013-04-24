@@ -18,7 +18,7 @@ import android.app.backup.BackupManager;
 import android.content.Intent;
 
 import com.google.android.gcm.GCMRegistrar;
-import com.twofours.surespot.chat.SmileyParser;
+import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.services.CredentialCachingService;
@@ -96,7 +96,7 @@ public class SurespotApplication extends Application {
 		// }
 
 		ACRA.init(this);
-		SmileyParser.init(this);
+		EmojiParser.init(this);
 		
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 		mBackupManager = new BackupManager(this);

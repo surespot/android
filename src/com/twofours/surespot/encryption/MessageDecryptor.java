@@ -26,7 +26,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.SmileyParser;
+import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SurespotMessage;
 
 /**
@@ -81,7 +81,7 @@ public class MessageDecryptor {
 	 */
 	static class DecryptionTask implements Runnable {
 		private SurespotMessage mMessage;
-	
+
 		private final WeakReference<TextView> textViewReference;
 
 		public DecryptionTask(TextView textView, SurespotMessage message) {
@@ -91,12 +91,12 @@ public class MessageDecryptor {
 
 		@Override
 		public void run() {
-			final CharSequence plainText = SmileyParser.getInstance().addSmileySpans(EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
-					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData()));
+			final CharSequence plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
+					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData());
 
-			// set plaintext in message so we don't have to decrypt again
-
-			mMessage.setPlainData(plainText);
+			// set plaintext in messageso we don't have to decrypt again
+			final CharSequence plainData = EmojiParser.getInstance().addEmojiSpans(plainText.toString());
+			mMessage.setPlainData(plainData);
 
 			if (textViewReference != null) {
 
@@ -119,8 +119,9 @@ public class MessageDecryptor {
 
 						@Override
 						public void run() {
-														
-							textView.setText(plainText);
+
+							textView.setText(plainData);
+							
 							// TODO put the row in the tag
 							View row = (View) textView.getParent();
 
