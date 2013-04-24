@@ -72,7 +72,7 @@ public class ChatUtils {
 		return message.getFrom().equals(IdentityController.getLoggedInUser());
 	}
 
-	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
+	public static SurespotMessage buildPlainMessage(String to, String mimeType, CharSequence plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());

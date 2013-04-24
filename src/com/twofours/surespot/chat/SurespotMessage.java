@@ -19,7 +19,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private String mTo;
 	private String mIv;
 	private String mData;
-	private String mPlainData;
+	private CharSequence mPlainData;
 	private Integer mId;
 	private Integer mResendId;
 	private int mErrorStatus;
@@ -58,12 +58,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		mData = data;
 	}
 
-	public String getPlainData() {
+	public CharSequence getPlainData() {
 		return mPlainData;
 	}
 
-	public void setPlainData(String plainText) {
-		mPlainData = plainText;
+	public void setPlainData(CharSequence charSequence) {
+		mPlainData = charSequence;
 	}
 
 	public Integer getId() {

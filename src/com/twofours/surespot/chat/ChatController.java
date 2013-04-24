@@ -552,8 +552,13 @@ public class ChatController {
 						// decrypt it before adding
 						final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(), message.getOtherUser(),
 								message.getTheirVersion(), message.getIv(), message.getData());
-
-						message.setPlainData(plainText);
+				
+						//substitue emoticons
+						SmileyParser parser = SmileyParser.getInstance();
+						
+					
+				
+						message.setPlainData(parser.addSmileySpans(plainText));
 					}
 
 					else {
@@ -1666,7 +1671,8 @@ public class ChatController {
 			final byte[] iv = EncryptionController.getIv();
 
 			// build a message without the encryption values set as they could take a while
-			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, plainText,
+			
+			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, SmileyParser.getInstance().addSmileySpans(plainText),
 					new String(ChatUtils.base64EncodeNowrap(iv)));
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
 

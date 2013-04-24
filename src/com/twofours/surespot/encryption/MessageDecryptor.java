@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.SmileyParser;
 import com.twofours.surespot.chat.SurespotMessage;
 
 /**
@@ -90,8 +91,8 @@ public class MessageDecryptor {
 
 		@Override
 		public void run() {
-			final String plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
-					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData());
+			final CharSequence plainText = SmileyParser.getInstance().addSmileySpans(EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
+					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData()));
 
 			// set plaintext in message so we don't have to decrypt again
 
@@ -118,6 +119,7 @@ public class MessageDecryptor {
 
 						@Override
 						public void run() {
+														
 							textView.setText(plainText);
 							// TODO put the row in the tag
 							View row = (View) textView.getParent();
