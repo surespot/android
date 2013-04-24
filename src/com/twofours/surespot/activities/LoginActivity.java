@@ -198,7 +198,7 @@ public class LoginActivity extends SherlockActivity {
 					SurespotIdentity identity = IdentityController.getIdentity(LoginActivity.this, username, password);
 					if (identity != null) {
 						byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());						
-						final String dPassword = new String(EncryptionController.derive(password, saltBytes));
+						final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 						IdSig idSig = new IdSig();
 						idSig.identity = identity;
 						idSig.signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);

@@ -128,7 +128,7 @@ public class IdentityController {
 
 			synchronized (IDENTITY_FILE_LOCK) {
 
-				SurespotLog.v(TAG, "saving identity: %s", identityFile);
+				SurespotLog.v(TAG, "saving identity: %s, salt: %s", identityFile, identity.getSalt());
 
 				if (!FileUtils.ensureDir(identityDir)) {
 					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir),
@@ -274,9 +274,11 @@ public class IdentityController {
 				return null;
 			}
 			JSONObject jsonIdentity = new JSONObject(identity);
-			String name = (String) jsonIdentity.get("username");
-			String salt = (String) jsonIdentity.get("salt");
-
+			String name = jsonIdentity.getString("username");
+			String salt = jsonIdentity.getString("salt");
+			
+			
+			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", username, salt);
 			if (!name.equals(username)) {
 				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username),
 						"internal identity did not match");
