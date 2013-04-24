@@ -106,7 +106,8 @@ public class ChangePasswordActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		final String dPassword = EncryptionController.derivePassword(currentPassword);
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());		
+		final String dPassword = new String(EncryptionController.derive(currentPassword, saltBytes));
 
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
@@ -121,14 +122,17 @@ public class ChangePasswordActivity extends SherlockActivity {
 					protected ChangePasswordWrapper doInBackground(Void... params) {
 						SurespotLog.v(TAG, "received password token: " + passwordToken);
 
-						final String dNewPassword = EncryptionController.derivePassword(newPassword);
+						byte[][] derived = EncryptionController.derive(newPassword);
+						final String newSalt = new String(ChatUtils.base64EncodeNowrap(derived[0]));
+						final String dNewPassword = new String(ChatUtils.base64EncodeNowrap(derived[1])); 
+																							
 						// create token sig
 						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(passwordToken),
 								dNewPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 
-						return new ChangePasswordWrapper(dNewPassword, tokenSignature, authSignature, version);
+						return new ChangePasswordWrapper(dNewPassword, newSalt, tokenSignature, authSignature, version);
 					}
 
 					protected void onPostExecute(final ChangePasswordWrapper result) {
@@ -140,7 +144,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 										public void onSuccess(int statusCode, String content) {
 											// update the password
 											IdentityController.updatePassword(ChangePasswordActivity.this, username, currentPassword,
-													newPassword);
+													newPassword, result.salt);
 											resetFields();
 											mMpd.decrProgress();											
 											Utils.makeLongToast(ChangePasswordActivity.this, "password changed");
@@ -197,10 +201,12 @@ public class ChangePasswordActivity extends SherlockActivity {
 		public String authSig;
 		public String keyVersion;
 		public String password;
+		public String salt;
 
-		public ChangePasswordWrapper(String password, String tokenSig, String authSig, String keyVersion) {
+		public ChangePasswordWrapper(String password, String salt, String tokenSig, String authSig, String keyVersion) {
 			super();
 			this.password = password;
+			this.salt = salt;
 			this.tokenSig = tokenSig;
 			this.authSig = authSig;
 			this.keyVersion = keyVersion;

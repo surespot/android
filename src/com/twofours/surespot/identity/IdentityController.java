@@ -76,19 +76,20 @@ public class IdentityController {
 		}
 	}
 
-	public static synchronized void createIdentity(final Context context, final String username, final String password,
+	public static synchronized void createIdentity(final Context context, final String username, final String password, final String salt,
 			final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
 		String identityDir = FileUtils.getIdentityDir(context);
-		SurespotIdentity identity = new SurespotIdentity(username);
+		SurespotIdentity identity = new SurespotIdentity(username, salt);
 		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
 		saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, identity, cookie);
 
 	}
 
-	public static void updatePassword(Context context, String username, String currentPassword, String newPassword) {
+	public static void updatePassword(Context context, String username, String currentPassword, String newPassword, String newSalt) {
 		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = getIdentity(context, username, currentPassword);
+		identity.setSalt(newSalt);
 		if (identity != null) {
 			saveIdentity(context, identityDir, identity, newPassword + CACHE_IDENTITY_ID);
 		}
@@ -99,13 +100,14 @@ public class IdentityController {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("username", identity.getUsername());
+			json.put("salt", identity.getSalt());
 
 			JSONArray keys = new JSONArray();
 
 			for (PrivateKeyPairs keyPair : identity.getKeyPairs()) {
 				JSONObject jsonKeyPair = new JSONObject();
 
-				jsonKeyPair.put("version", keyPair.getVersion());
+				jsonKeyPair.put("version", keyPair.getVersion());				
 				jsonKeyPair.put("dhPriv", new String(ChatUtils.base64EncodeNowrap(keyPair.getKeyPairDH().getPrivate().getEncoded())));
 				jsonKeyPair.put("dhPub", EncryptionController.encodePublicKey(keyPair.getKeyPairDH().getPublic()));
 				jsonKeyPair.put("dsaPriv", new String(ChatUtils.base64EncodeNowrap(keyPair.getKeyPairDSA().getPrivate().getEncoded())));
@@ -273,6 +275,7 @@ public class IdentityController {
 			}
 			JSONObject jsonIdentity = new JSONObject(identity);
 			String name = (String) jsonIdentity.get("username");
+			String salt = (String) jsonIdentity.get("salt");
 
 			if (!name.equals(username)) {
 				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username),
@@ -280,7 +283,7 @@ public class IdentityController {
 				return null;
 			}
 
-			SurespotIdentity si = new SurespotIdentity(username);
+			SurespotIdentity si = new SurespotIdentity(username, salt);
 
 			JSONArray keys = jsonIdentity.getJSONArray("keys");
 			for (int i = 0; i < keys.length(); i++) {
@@ -312,7 +315,10 @@ public class IdentityController {
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
-			String dpassword = EncryptionController.derivePassword(password);
+			
+			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+			String dpassword = new String(EncryptionController.derive(password, saltBytes));
+			
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
 				networkController = new NetworkController(context, null);
@@ -378,7 +384,8 @@ public class IdentityController {
 
 		final File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
-			String dpassword = EncryptionController.derivePassword(password);
+			byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());			
+			String dpassword = new String(EncryptionController.derive(password, saltyBytes));
 			// do OOB verification
 			MainActivity.getNetworkController().validate(username, dpassword,
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {

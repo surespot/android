@@ -29,6 +29,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -164,7 +165,9 @@ public class SignupActivity extends SherlockActivity {
 						return;
 					}
 
-					final String dPassword = EncryptionController.derivePassword(password);
+					byte[][] derived = EncryptionController.derive(password);
+					final String salt = new String(ChatUtils.base64EncodeNowrap(derived[0]));
+					final String dPassword = new String(ChatUtils.base64EncodeNowrap(derived[1])); 
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
 					// successful
@@ -223,7 +226,7 @@ public class SignupActivity extends SherlockActivity {
 																	Utils.putSharedPrefsString(SignupActivity.this,
 																			SurespotConstants.PrefNames.REFERRERS, null);
 																	IdentityController.createIdentity(SignupActivity.this, username,
-																			password, keyPair[0], keyPair[1], cookie);
+																			password, salt, keyPair[0], keyPair[1], cookie);
 																	return null;
 																}
 

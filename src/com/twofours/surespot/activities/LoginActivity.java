@@ -31,6 +31,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -196,7 +197,8 @@ public class LoginActivity extends SherlockActivity {
 
 					SurespotIdentity identity = IdentityController.getIdentity(LoginActivity.this, username, password);
 					if (identity != null) {
-						final String dPassword = EncryptionController.derivePassword(password);
+						byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());						
+						final String dPassword = new String(EncryptionController.derive(password, saltBytes));
 						IdSig idSig = new IdSig();
 						idSig.identity = identity;
 						idSig.signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);

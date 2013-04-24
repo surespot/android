@@ -2,7 +2,6 @@ package com.twofours.surespot.encryption;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,7 +38,6 @@ import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.interfaces.ECPublicKey;
 import org.spongycastle.jce.spec.ECParameterSpec;
-import org.spongycastle.util.encoders.HexEncoder;
 
 import android.os.AsyncTask;
 
@@ -56,7 +54,6 @@ public class EncryptionController {
 	private static final int AES_KEY_LENGTH = 32;
 	private static final int SALT_LENGTH = 16;
 	private static final int IV_LENGTH = 16;
-	private static final String PASSWORD_SALT = "a540edbf8158bc534b39859927b2e927";
 
 	private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
 	private static SecureRandom mSecureRandom = new SurespotSecureRandom();
@@ -550,23 +547,7 @@ public class EncryptionController {
 		return null;
 
 	}
-
-	public static String derivePassword(String password) {
-		HexEncoder hexEncoder = new HexEncoder();
-		ByteArrayOutputStream out = new ByteArrayOutputStream(16);
-		try {
-			hexEncoder.decode(PASSWORD_SALT, out);
-			byte[] dpassword = derive(password, out.toByteArray());
-			out.close();
-
-			return new String(ChatUtils.base64EncodeNowrap(dpassword));
-		}
-		catch (IOException e) {
-			SurespotLog.w(TAG, e, "derivePassword");
-		}
-		return null;
-	}
-
+	
 	public static byte[][] derive(String password) {
 		int iterationCount = 1000;
 		int saltLength = SALT_LENGTH;
@@ -588,7 +569,7 @@ public class EncryptionController {
 		return derived;
 	}
 
-	private static byte[] derive(String password, byte[] salt) {
+	public static byte[] derive(String password, byte[] salt) {
 		int iterationCount = 1000;
 		int keyLength = AES_KEY_LENGTH*8;
 		
@@ -598,7 +579,6 @@ public class EncryptionController {
 		gen.init(password.getBytes(), salt, iterationCount);
 		keyBytes = ((KeyParameter) gen.generateDerivedParameters(keyLength)).getKey();
 	
-
 		return keyBytes;
 	}
 

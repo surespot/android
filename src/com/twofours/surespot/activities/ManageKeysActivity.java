@@ -116,7 +116,8 @@ public class ManageKeysActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		final String dPassword = EncryptionController.derivePassword(password);
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());		
+		final String dPassword = new String(EncryptionController.derive(password, saltBytes));
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 

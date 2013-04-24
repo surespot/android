@@ -10,11 +10,13 @@ public class SurespotIdentity {
 
 	private String mUsername;
 	private String mLatestVersion;
+	private String mSalt;
 
 	private HashMap<String, PrivateKeyPairs> mKeyPairs;
 
-	public SurespotIdentity(String username) {
+	public SurespotIdentity(String username, String salt) {
 		this.mUsername = username;
+		mSalt = salt;
 		mKeyPairs = new HashMap<String, PrivateKeyPairs>();
 	}
 
@@ -29,6 +31,14 @@ public class SurespotIdentity {
 	
 	public String getUsername() {
 		return mUsername;
+	}
+	
+	public String getSalt() {
+		return mSalt;
+	}
+	
+	public void setSalt(String newSalt) {
+		mSalt = newSalt;		
 	}
 
 	public KeyPair getKeyPairDH() {
@@ -54,4 +64,6 @@ public class SurespotIdentity {
 	public String getLatestVersion() {
 		return mLatestVersion;
 	}
+
+	
 }
