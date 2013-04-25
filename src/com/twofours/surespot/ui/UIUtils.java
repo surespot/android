@@ -1,11 +1,16 @@
 package com.twofours.surespot.ui;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.graphics.Point;
+import android.os.Build;
 import android.text.InputFilter;
+import android.view.Display;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -138,5 +143,18 @@ public class UIUtils {
 		Intent finalIntent = new Intent(context, MainActivity.class);
 		finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);		
 		context.startActivity(finalIntent);
+	}
+	
+	@SuppressLint("NewApi")
+	public static Point getScreenSize(Activity a) {
+	    Point size = new Point();
+	    Display d = a.getWindowManager().getDefaultDisplay();
+	    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+	        d.getSize(size);
+	    } else {
+	        size.x = d.getWidth();
+	        size.y = d.getHeight();
+	    }
+	    return size;
 	}
 }

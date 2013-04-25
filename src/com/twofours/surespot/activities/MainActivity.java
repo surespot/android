@@ -18,11 +18,28 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -31,6 +48,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.chat.EmojiAdapter;
+import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -65,6 +84,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	private boolean mExternalStorageWriteable = false;
 	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
+	private KeyboardStateHandler mKeyboardStateHandler;
+	private View mActivityRootView;
+	private EditText mEditText;
+	private Button mSendButton;
+	private GridView mEmojiView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +107,6 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		mContext = this;
 
-		Intent intent = getIntent();
-		Utils.logIntent(TAG, intent);
-
 		m401Handler = new IAsyncCallback<Void>() {
 
 			@Override
@@ -103,6 +124,9 @@ public class MainActivity extends SherlockFragmentActivity {
 				}
 			}
 		};
+
+		Intent intent = getIntent();
+		Utils.logIntent(TAG, intent);
 
 		// if we have any users or we don't need to create a user, figure out if we need to login
 		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
@@ -142,6 +166,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 			else {
 				setContentView(R.layout.activity_main);
+
 				mHomeImageView = (ImageView) findViewById(android.R.id.home);
 				if (mHomeImageView == null) {
 					mHomeImageView = (ImageView) findViewById(R.id.abs__home);
@@ -164,10 +189,208 @@ public class MainActivity extends SherlockFragmentActivity {
 							public void handleResponse(Boolean inProgress) {
 								setHomeProgress(inProgress);
 							}
+						}, new IAsyncCallback<Void>() {
+
+							@Override
+							public void handleResponse(Void result) {
+								handleSendIntent();
+
+							}
 						});
-				mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
+
+				mActivityRootView = findViewById(R.id.chatLayout);
+				final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
+
+				mKeyboardStateHandler = new KeyboardStateHandler();
+				mActivityRootView.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
+
+				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
+
+				setupChatControls();
+
+				handleSendIntent();
+
 			}
+
 		}
+
+	}
+
+	public static class KeyboardState {
+		public int mLastHeightDiff;
+		public int mMaxHeight = 0;
+		public int mMinHeight = Integer.MAX_VALUE;
+		public int mKeyboardHeight = 0;
+		public boolean mShowing = false;
+	}
+
+	class KeyboardStateHandler implements OnGlobalLayoutListener {
+		private KeyboardState mKeyboardState = new KeyboardState();
+
+		@Override
+		public void onGlobalLayout() {
+			final View activityRootView = findViewById(R.id.chatLayout);
+
+			int activityHeight = activityRootView.getHeight();
+			int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
+
+			if (activityHeight > mKeyboardState.mMaxHeight) {
+				mKeyboardState.mMaxHeight = activityHeight;
+			}
+
+			if (activityHeight < mKeyboardState.mMinHeight) {
+				mKeyboardState.mMinHeight = activityHeight;
+			}
+
+			if (mKeyboardState.mLastHeightDiff == 0) {
+				mKeyboardState.mLastHeightDiff = heightDelta;
+			}
+
+			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, currentHeightDiff: %d, lastheightDiff: %d",
+					activityRootView.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mKeyboardState.mLastHeightDiff);
+
+			if (heightDelta != mKeyboardState.mLastHeightDiff) {
+				SurespotLog.v(TAG, "onGlobalLayout, height change detected");
+				if (mKeyboardState.mKeyboardHeight == 0) {
+					int keyboardHeight = mKeyboardState.mLastHeightDiff - heightDelta;
+
+					mKeyboardState.mKeyboardHeight = Math.abs(keyboardHeight);
+					SurespotLog.v(TAG, "onGlobalLayout, deduced keyboard height: %d, maxHeight: %d, minHeight: %d",
+							mKeyboardState.mKeyboardHeight, mKeyboardState.mMaxHeight, mKeyboardState.mMinHeight);
+				}
+
+				if (heightDelta > 200) { // if more than 200 pixels, its probably a keyboard...
+
+					mKeyboardState.mShowing = true;
+					mEmojiView.setVisibility(View.GONE);
+				}
+				else {
+					mKeyboardState.mShowing = false;
+				}
+
+				mKeyboardState.mLastHeightDiff = heightDelta;
+
+				SurespotLog.v(TAG, "set showing: %b", mKeyboardState.mShowing);
+			}
+
+		}
+
+		public KeyboardState getKeyboardState() {
+			return mKeyboardState;
+		}
+
+	}
+
+	private void setupChatControls() {
+		mSendButton = (Button) findViewById(R.id.bSend);
+		mSendButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mEditText.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
+					sendMessage();
+				}
+				else {
+					// go to friends
+					// InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+					// ChatFragment.this.getActivity().INPUT_METHOD_SERVICE);
+					// imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
+					mChatController.setCurrentChat(null);
+				}
+			}
+		});
+
+		mEmojiView = (GridView) findViewById(R.id.fEmoji);
+		mEmojiView.setAdapter(new EmojiAdapter(this));
+
+		mEmojiView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+
+				mEditText.append(EmojiParser.getInstance().getEmojiChar(position));
+			}
+		});
+
+		Button emojiButton = (Button) findViewById(R.id.bEmoji);
+		emojiButton.setOnClickListener(new View.OnClickListener() {
+
+			boolean mKeyboardWasOpen = false;
+
+			@Override
+			public void onClick(View v) {
+
+				KeyboardState ks = mKeyboardStateHandler.getKeyboardState();
+				//
+
+				SurespotLog.v(TAG, "keyboardState,  showing: %b", ks.mShowing);
+				if (ks.mShowing) {
+
+					SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
+
+					mEmojiView.setVisibility(View.VISIBLE);
+					hideSoftKeyboard();
+					mKeyboardWasOpen = true;
+				}
+				else {
+					int visibility = mEmojiView.getVisibility();
+					if (visibility == View.VISIBLE) {
+						SurespotLog.v(TAG, "keyboardState,  hiding emoji");
+
+						if (mKeyboardWasOpen) {
+							SurespotLog.v(TAG, "keyboardState,  showing keyboard");
+							showSoftKeyboard(mEditText);
+						}
+
+						mEmojiView.setVisibility(View.GONE);
+					}
+					else {
+						SurespotLog.v(TAG, "keyboardState,  showing emoji");
+						mEmojiView.setVisibility(View.VISIBLE);
+
+					}
+					mKeyboardWasOpen = false;
+
+				}
+			}
+		});
+
+		mSendButton.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				if (mEditText.getText().toString().length() == 0) {
+					mChatController.closeTab();
+				}
+				return true;
+			}
+		});
+		mEditText = (EditText) findViewById(R.id.etMessage);
+		mEditText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+
+				if (actionId == EditorInfo.IME_ACTION_SEND) {
+					sendMessage();
+					handled = true;
+				}
+				return handled;
+			}
+		});
+
+		TextWatcher tw = new ChatTextWatcher();
+		mEditText.addTextChangedListener(tw);
+
+		mEditText.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+
+				if (MainActivity.this.mEmojiView.getVisibility() == View.GONE && !mKeyboardStateHandler.getKeyboardState().mShowing) {
+					showSoftKeyboard(v);					
+					mEditText.requestFocus();
+				}
+
+				return true;
+			}
+		});
 	}
 
 	private boolean needsLogin() {
@@ -337,28 +560,29 @@ public class MainActivity extends SherlockFragmentActivity {
 				Uri selectedImageUri = data.getData();
 
 				final String to = data.getStringExtra("to");
-			
-					SurespotLog.v(TAG, "to: " + to);
-					if (selectedImageUri != null) {
 
-						// Utils.makeToast(this, getString(R.string.uploading_image));
-						ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String,String,String>() {
-							@Override
-							public void handleResponse(String url, String version, String iv) {
-								if (url == null) {
-									Utils.makeToast(MainActivity.this, "could not upload friend image");
+				SurespotLog.v(TAG, "to: " + to);
+				if (selectedImageUri != null) {
+
+					// Utils.makeToast(this, getString(R.string.uploading_image));
+					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to,
+							new IAsyncCallbackTriplet<String, String, String>() {
+								@Override
+								public void handleResponse(String url, String version, String iv) {
+									if (url == null) {
+										Utils.makeToast(MainActivity.this, "could not upload friend image");
+									}
+									else {
+										mChatController.setImageUrl(to, url, version, iv);
+									}
 								}
-								else {									
-									mChatController.setImageUrl(to, url, version, iv);
-								}
-							}
-						});
-					}
-				
+							});
+				}
+
 			}
 			break;
 		}
-		
+
 	}
 
 	@Override
@@ -399,7 +623,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		return true;
 	}
-	
+
 	public void uploadFriendImage(String name) {
 		MessageImageDownloader.evictCache();
 		Intent intent = new Intent(this, ImageSelectActivity.class);
@@ -624,4 +848,84 @@ public class MainActivity extends SherlockFragmentActivity {
 			mHomeImageView.clearAnimation();
 		}
 	}
+
+	public KeyboardState getKeyboardState() {
+		return mKeyboardStateHandler.getKeyboardState();
+	}
+
+	private void hideSoftKeyboard() {
+		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
+	}
+
+	private void showSoftKeyboard(View view) {
+		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.showSoftInput(view, 0);
+	}
+
+	class ChatTextWatcher implements TextWatcher {
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			mEditText.removeTextChangedListener(this);
+			CharSequence message = mEditText.getText();
+			if (message.length() > 0) {
+				mSendButton.setText("send");
+			}
+			else {
+				mSendButton.setText("home");
+			}
+			mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
+			mEditText.addTextChangedListener(this);
+		}
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			mEditText.setSelection(s.length());
+		}
+	}
+
+	// populate the edit box
+	public void handleSendIntent() {
+		Intent intent = this.getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+		// Bundle extras = intent.getExtras();
+
+		if (action.equals(Intent.ACTION_SEND)) {
+			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
+				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
+				SurespotLog.v(TAG, "received action send, data: " + sharedText);
+				mEditText.append(sharedText);
+				// requestFocus();
+				// clear the intent
+				getIntent().setAction(null);
+				getIntent().setType(null);
+				if (getIntent().getExtras() != null) {
+					getIntent().getExtras().clear();
+				}
+			}
+
+			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+		}
+
+	}
+
+	private void sendMessage() {
+
+		final String message = mEditText.getText().toString();
+		mChatController.sendMessage(message, SurespotConstants.MimeTypes.TEXT);
+
+		//
+		TextKeyListener.clear(mEditText.getText());
+
+		// scroll to end
+		// scrollToEnd();
+	}
+
 }

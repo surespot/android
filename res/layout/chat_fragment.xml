@@ -41,60 +41,7 @@
             android:text="@string/no_messages"
             android:visibility="gone" />
 
-        <Button
-            android:id="@+id/bEmoji"
-            android:layout_width="70sp"
-            android:layout_height="70sp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_marginBottom="-10sp"
-            android:layout_marginLeft="-10sp"
-            android:background="@drawable/send_button"
-            android:text="emoji"
-            android:textColor="@android:color/black" />
-
-        <EditText
-            android:id="@+id/etMessage"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/bSend"
-            android:layout_toRightOf="@+id/bEmoji"
-            android:imeActionLabel="send"
-            android:imeOptions="actionSend"
-            android:inputType="textMultiLine"
-            android:maxHeight="150sp"
-            android:minHeight="45sp" >
-        </EditText>
-
-        <Button
-            android:id="@+id/bSend"
-            android:layout_width="70sp"
-            android:layout_height="70sp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginBottom="-10sp"
-            android:layout_marginRight="-10sp"
-            android:background="@drawable/send_button"
-            android:text="@string/home"
-            android:textColor="@android:color/black" />
     </RelativeLayout>
 
-    <GridView
-        android:layout_marginTop="10dp"
-        android:id="@+id/fEmoji"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:columnWidth="64dp"
-       
-        android:gravity="center"
-        android:horizontalSpacing="10dp"
-        android:numColumns="auto_fit"        
-        android:stretchMode="none"
-        android:verticalSpacing="10dp" >
-    </GridView>
 
 </RelativeLayout>

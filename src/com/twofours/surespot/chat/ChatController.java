@@ -120,9 +120,10 @@ public class ChatController {
 
 	private IAsyncCallback<Void> mCallback401;
 	private IAsyncCallback<Boolean> mProgressCallback;
+	private IAsyncCallback<Void> mSendIntentCallback;
 
 	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401,
-			IAsyncCallback<Boolean> progressCallback) {
+			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback) {
 		SurespotLog.v(TAG, "constructor: " + this);
 		mContext = context;
 		mNetworkController = networkController;
@@ -968,7 +969,7 @@ public class ChatController {
 							ChatFragment chatFragment = getChatFragment(username);
 							if (chatFragment != null) {
 								chatFragment.scrollToState();
-								chatFragment.requestFocus();
+								//chatFragment.requestFocus();
 
 							}
 						}
@@ -984,7 +985,7 @@ public class ChatController {
 				ChatFragment chatFragment = getChatFragment(username);
 				if (chatFragment != null) {
 					chatFragment.scrollToState();
-					chatFragment.requestFocus();
+				//	chatFragment.requestFocus();
 
 				}
 			}
@@ -1332,7 +1333,7 @@ public class ChatController {
 				else {
 					chatFragment.scrollToState();
 				}
-				chatFragment.requestFocus();
+			//	chatFragment.requestFocus();
 
 			}
 		}
@@ -1589,6 +1590,19 @@ public class ChatController {
 
 			// get latest messages from server
 			getLatestMessagesAndControls(username);
+			
+			chatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
+
+				@Override
+				public void handleResponse(Boolean result) {
+					//mIsDeleted = result;
+//					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
+//					if (mIsDeleted) {
+//						mSendButton.setText("home");
+//						mEditText.setText("");
+//					}
+				}
+			});
 
 		}
 		return chatAdapter;
@@ -1631,12 +1645,12 @@ public class ChatController {
 			}
 
 			ChatFragment chatFragment = getChatFragment(username);
-			if (chatFragment != null) {
-				chatFragment.requestFocus();
-			}
-
+//			if (chatFragment != null) {
+//				chatFragment.requestFocus();
+//			}
+//
 			if (mMode == MODE_SELECT) {
-				chatFragment.handleSendIntent();
+				mSendIntentCallback.handleResponse(null);
 				setMode(MODE_NORMAL);
 			}
 
@@ -1661,7 +1675,7 @@ public class ChatController {
 		return chatFragment;
 	}
 
-	void sendMessage(final String username, final String plainText, final String mimeType) {
+	public void sendMessage(final String plainText, final String mimeType) {
 		if (plainText.length() > 0) {
 
 			// display the message immediately
@@ -1669,9 +1683,9 @@ public class ChatController {
 
 			// build a message without the encryption values set as they could take a while
 			
-			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),
+			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mCurrentChat, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),
 					new String(ChatUtils.base64EncodeNowrap(iv)));
-			ChatAdapter chatAdapter = mChatAdapters.get(username);
+			ChatAdapter chatAdapter = mChatAdapters.get(mCurrentChat);
 
 			try {
 
@@ -1689,9 +1703,9 @@ public class ChatController {
 				@Override
 				protected SurespotMessage doInBackground(Void... arg0) {
 					String ourLatestVersion = IdentityController.getOurLatestVersion();
-					String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
+					String theirLatestVersion = IdentityController.getTheirLatestVersion(mCurrentChat);
 
-					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
+					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, mCurrentChat, theirLatestVersion, plainText, iv);
 
 					if (result != null) {
 						chatMessage.setData(result);
@@ -1968,6 +1982,11 @@ public class ChatController {
 	public boolean isFriendDeleted(String username) {
 		return getFriendAdapter().getFriend(username).isDeleted();
 	}
+	
+	public boolean isFriendDeleted() {
+		return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
+	}
+
 
 	private void getFriendsAndIds() {
 		if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
