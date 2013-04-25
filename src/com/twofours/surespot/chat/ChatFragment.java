@@ -259,7 +259,7 @@ public class ChatFragment extends SherlockFragment {
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-		//	mEditText.removeTextChangedListener(this);
+			mEditText.removeTextChangedListener(this);
 			CharSequence message = mEditText.getText();
 			if (message.length() > 0) {
 				mSendButton.setText("send");
@@ -267,13 +267,13 @@ public class ChatFragment extends SherlockFragment {
 			else {
 				mSendButton.setText("home");
 			}
-		//	mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
-		//	mEditText.addTextChangedListener(this);
-
+			mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
+			mEditText.addTextChangedListener(this);			
 		}
 
 		@Override
 		public void afterTextChanged(Editable s) {
+			mEditText.setSelection(s.length());
 		}
 	}
 
