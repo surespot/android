@@ -21,6 +21,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,8 +34,8 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.images.ImageViewActivity;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -167,6 +168,31 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
+		final GridView emojiView = (GridView) view.findViewById(R.id.fEmoji);
+		emojiView.setAdapter(new EmojiAdapter(this.getActivity()));
+
+		emojiView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+								
+				mEditText.append(EmojiParser.getInstance().getEmojiChar(position));
+			}
+		});
+
+		Button emojiButton = (Button) view.findViewById(R.id.bEmoji);
+		emojiButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				int visibility = emojiView.getVisibility();
+				if (visibility == View.VISIBLE) {
+
+					emojiView.setVisibility(View.GONE);
+				}
+				else {
+					emojiView.setVisibility(View.VISIBLE);
+				}
+			}
+		});
+
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
@@ -190,27 +216,8 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-		mEditText.addTextChangedListener(new TextWatcher() {
-
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-				if (mEditText.getText().length() > 0) {
-					mSendButton.setText("send");
-				}
-				else {
-					mSendButton.setText("home");
-				}
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-			}
-		});
+		TextWatcher tw = new ChatTextWatcher();
+		mEditText.addTextChangedListener(tw);
 
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
@@ -240,8 +247,34 @@ public class ChatFragment extends SherlockFragment {
 			mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
 
 		}
-
 		return view;
+	}
+
+	class ChatTextWatcher implements TextWatcher {
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+		//	mEditText.removeTextChangedListener(this);
+			CharSequence message = mEditText.getText();
+			if (message.length() > 0) {
+				mSendButton.setText("send");
+			}
+			else {
+				mSendButton.setText("home");
+			}
+		//	mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
+		//	mEditText.addTextChangedListener(this);
+
+		}
+
+		@Override
+		public void afterTextChanged(Editable s) {
+		}
 	}
 
 	private MainActivity getMainActivity() {

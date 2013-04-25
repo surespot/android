@@ -1,10 +1,10 @@
 <resources>
     <string-array name="emoji_unicode_char" translatable="false">
-      <item>\\u1f61c</item>   
-      <item>\\u1f61d</item>   
-      <item>\\u1f61b</item>   
-      <item>\\u1f601</item>   
-      <item>\\u1f631</item>   
+      <item>1f61c</item>   
+      <item>1f61d</item>   
+      <item>1f61b</item>   
+      <item>1f601</item>   
+      <item>1f631</item>   
      
     </string-array>
 

@@ -67,6 +67,10 @@ public class EmojiParser {
 		public static int getEmojiResource(int which) {
 			return sIconIds[which];
 		}
+
+		public static int getCount() {
+			return sIconIds.length;
+		}
 	}
 
 	// NOTE: if you change anything about this array, you must make the corresponding change in res/values/arrays.xml
@@ -91,10 +95,19 @@ public class EmojiParser {
 
 		HashMap<String, Integer> emojiCharToRes = new HashMap<String, Integer>(mEmojiChars.length);
 		for (int i = 0; i < mEmojiChars.length; i++) {
-			emojiCharToRes.put(mEmojiChars[i], EMOJI_RES_IDS[i]);
+			emojiCharToRes.put("\\u" + mEmojiChars[i], EMOJI_RES_IDS[i]);
 		}
 
 		return emojiCharToRes;
+	}
+
+	public CharSequence getEmojiChar(int position) {
+		int codePoint = Integer.parseInt(mEmojiChars[position], 16);
+		int end = Character.charCount(codePoint);
+
+		SpannableStringBuilder builder = new SpannableStringBuilder(new String(Character.toChars(codePoint)));
+		builder.setSpan(new ImageSpan(mContext, EMOJI_RES_IDS[position]), 0, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		return builder;
 	}
 
 	/**
@@ -108,8 +121,9 @@ public class EmojiParser {
 
 		SpannableStringBuilder builder = new SpannableStringBuilder(text);
 		StringBuilder suppCps = new StringBuilder();
-		//TODO use regex
-		//would be nice to use a regex for these wacky characters: http://stackoverflow.com/questions/5409636/java-support-for-non-bmp-unicode-characters-i-e-codepoints-0xffff-in-their
+		// TODO use regex
+		// would be nice to use a regex for these wacky characters:
+		// http://stackoverflow.com/questions/5409636/java-support-for-non-bmp-unicode-characters-i-e-codepoints-0xffff-in-their
 		Iterator<CodePoint> i = ChatUtils.codePoints(text).iterator();
 		while (i.hasNext()) {
 
