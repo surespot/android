@@ -120,7 +120,7 @@ public class EmojiParser {
 				Integer resId = mEmojiCharToRes.get(escapedUnicode);
 
 				if (resId != null) {
-					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 				else {
 					builder.replace(cp.start, cp.end - 1, escapedUnicode);
