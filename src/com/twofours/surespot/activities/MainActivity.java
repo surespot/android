@@ -94,6 +94,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mKeyboardShowing;
 	private boolean mHidingKeyboard;
 	private int mEmojiHeight;
+	private int mInitialHeightOffset;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -224,62 +225,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
-	public static class KeyboardState {
-		public int mInitialHeightDiff;
-		public int mMaxHeight = 0;
-		public int mMinHeight = Integer.MAX_VALUE;
-		public int mKeyboardHeight = 0;
-		public boolean mShowing = false;
-	}
-
 	class KeyboardStateHandler implements OnGlobalLayoutListener {
-		private KeyboardState mKeyboardState = new KeyboardState();
-
 		@Override
 		public void onGlobalLayout() {
 			final View activityRootView = findViewById(R.id.chatLayout);
-
 			int activityHeight = activityRootView.getHeight();
-
 			int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
 
+			if (mInitialHeightOffset == 0) {
+				mInitialHeightOffset = heightDelta;
+			}
 			
+			//set the emoji view to the keyboard height
+			mEmojiHeight = heightDelta - mInitialHeightOffset;
 
-			if (activityHeight > mKeyboardState.mMaxHeight) {
-				mKeyboardState.mMaxHeight = activityHeight;
-			}
-
-			if (activityHeight < mKeyboardState.mMinHeight) {
-				mKeyboardState.mMinHeight = activityHeight;
-			}
-
-			if (mKeyboardState.mInitialHeightDiff == 0) {
-				mKeyboardState.mInitialHeightDiff = heightDelta;
-			}
-
-			mEmojiHeight = heightDelta - mKeyboardState.mInitialHeightDiff;
-
-			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightHiff: %d", activityRootView
-					.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mKeyboardState.mInitialHeightDiff);
-
-			if (heightDelta != mKeyboardState.mInitialHeightDiff) {
-				SurespotLog.v(TAG, "onGlobalLayout, height change detected");
-				if (mKeyboardState.mKeyboardHeight == 0) {
-					int keyboardHeight = mKeyboardState.mInitialHeightDiff - heightDelta;
-
-					mKeyboardState.mKeyboardHeight = Math.abs(keyboardHeight);
-					SurespotLog.v(TAG, "onGlobalLayout, deduced keyboard height: %d, maxHeight: %d, minHeight: %d",
-							mKeyboardState.mKeyboardHeight, mKeyboardState.mMaxHeight, mKeyboardState.mMinHeight);
-				}
-
-			}
-
+			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView
+					.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
 		}
-
-		public KeyboardState getKeyboardState() {
-			return mKeyboardState;
-		}
-
 	}
 
 	private void setupChatControls() {
@@ -318,10 +280,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public void onClick(View v) {
 
-				KeyboardState ks = mKeyboardStateHandler.getKeyboardState();
-				//
-
-				SurespotLog.v(TAG, "keyboardState,  showing: %b", ks.mShowing);
+				SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
 				if (mKeyboardShowing) {
 
 					SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
@@ -391,8 +350,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 
-				if (MainActivity.this.mEmojiView.getVisibility() == View.GONE && !mKeyboardStateHandler.getKeyboardState().mShowing) {
+				if (!mKeyboardShowing) {
 					showSoftKeyboard(v);
+					
+					mShowEmoji = false;
 					mEditText.requestFocus();
 				}
 
@@ -861,9 +822,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-	public KeyboardState getKeyboardState() {
-		return mKeyboardStateHandler.getKeyboardState();
-	}
 
 	public void hideSoftKeyboard() {
 		SurespotLog.v(TAG, "hideSoftkeyboard");
