@@ -72,7 +72,6 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
-import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -81,7 +80,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private static CredentialCachingService mCredentialCachingService = null;
 	private static NetworkController mNetworkController = null;
-	private MultiProgressDialog mMpdInviteFriend;
 
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
@@ -112,7 +110,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
 		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		// Gingerbread does not like FLAG_SECURE
@@ -238,8 +235,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
 				setupChatControls();
-
-				handleSendIntent();
 
 			}
 
@@ -928,23 +923,61 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		Intent intent = this.getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-		// Bundle extras = intent.getExtras();
+		Bundle extras = intent.getExtras();
 
-		if (action != null && action.equals(Intent.ACTION_SEND)) {
+		if (action == null) {
+			return;
+		}
+
+		if (action.equals(Intent.ACTION_SEND)) {
+			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
 				SurespotLog.v(TAG, "received action send, data: " + sharedText);
 				mEditText.append(sharedText);
 				// requestFocus();
 				// clear the intent
-				getIntent().setAction(null);
-				getIntent().setType(null);
-				if (getIntent().getExtras() != null) {
-					getIntent().getExtras().clear();
-				}
+			
 			}
 
-			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+			else {
+				if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+
+					final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
+
+					// Utils.makeToast(getActivity(), getString(R.string.uploading_image));
+
+					SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
+
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri,
+							mCurrentFriend.getName(), true, new IAsyncCallback<Boolean>() {
+
+								@Override
+								public void handleResponse(final Boolean result) {
+									SurespotLog.v(TAG, "upload picture response: " + result);
+
+									if (!result) {
+
+										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+										// clear the intent
+
+									}
+
+									// scrollToEnd();
+								}
+							});
+					// }
+				}
+
+				else {
+					if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
+						// TODO implement
+					}
+				}
+			
+			}
+			Utils.clearIntent(getIntent());
 		}
 	}
 
@@ -1009,17 +1042,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				return;
 			}
 
-			mMpdInviteFriend.incrProgress();
+			setHomeProgress(true);
 			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
-				public void onSuccess(int statusCode, String arg0) { // TODO
-																		// indicate
-																		// in
-																		// the
-																		// UI
-					// that the request is
-					// pending somehow
-					mMpdInviteFriend.decrProgress();
+				public void onSuccess(int statusCode, String arg0) {
+					setHomeProgress(false);
 					TextKeyListener.clear(mEditText.getText());
 					if (mChatController.getFriendAdapter().addFriendInvited(friend)) {
 						Utils.makeToast(MainActivity.this, friend + " has been invited to be your friend.");
@@ -1032,7 +1059,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				@Override
 				public void onFailure(Throwable arg0, String content) {
-					mMpdInviteFriend.decrProgress();
+					setHomeProgress(false);
 					if (arg0 instanceof HttpResponseException) {
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();

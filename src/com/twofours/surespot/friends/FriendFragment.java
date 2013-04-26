@@ -4,11 +4,8 @@ import java.util.Timer;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,10 +17,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
@@ -33,7 +27,7 @@ public class FriendFragment extends SherlockFragment {
 	private FriendAdapter mMainAdapter;
 
 	protected static final String TAG = "FriendFragment";
-	//private MultiProgressDialog mMpdInviteFriend;
+	// private MultiProgressDialog mMpdInviteFriend;
 	// private ChatController mChatController;
 	private ListView mListView;
 	private Timer mTimer;
@@ -42,33 +36,33 @@ public class FriendFragment extends SherlockFragment {
 		super.onCreateView(inflater, container, savedInstanceState);
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 
-	//	mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
+		// mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
-//	
-//		Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
-//		addFriendButton.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				inviteFriend();
-//			}
-//		});
-//
-//		EditText editText = (EditText) view.findViewById(R.id.etFriend);
-//		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
-//				new LetterOrDigitInputFilter() });
-//		editText.setOnEditorActionListener(new OnEditorActionListener() {
-//			@Override
-//			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-//				boolean handled = false;
-//				if (actionId == EditorInfo.IME_ACTION_DONE) {
-//					//
-//					inviteFriend();
-//					handled = true;
-//				}
-//				return handled;
-//			}
-//		});
+		//
+		// Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
+		// addFriendButton.setOnClickListener(new View.OnClickListener() {
+		// @Override
+		// public void onClick(View v) {
+		// inviteFriend();
+		// }
+		// });
+		//
+		// EditText editText = (EditText) view.findViewById(R.id.etFriend);
+		// editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
+		// new LetterOrDigitInputFilter() });
+		// editText.setOnEditorActionListener(new OnEditorActionListener() {
+		// @Override
+		// public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+		// boolean handled = false;
+		// if (actionId == EditorInfo.IME_ACTION_DONE) {
+		// //
+		// inviteFriend();
+		// handled = true;
+		// }
+		// return handled;
+		// }
+		// });
 
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
@@ -142,18 +136,9 @@ public class FriendFragment extends SherlockFragment {
 
 				ChatController chatController = getMainActivity().getChatController();
 				if (chatController != null) {
-					if (chatController.getMode() == ChatController.MODE_SELECT) {
-						// reset action bar header
-						Utils.configureActionBar(FriendFragment.this.getSherlockActivity(), "surespot",
-								IdentityController.getLoggedInUser(), false);
 
-						// handle send intent
-						sendFromIntent(friend.getName());
-
-					}
 					chatController.setCurrentChat(friend.getName());
 				}
-
 			}
 		}
 	};
@@ -225,61 +210,6 @@ public class FriendFragment extends SherlockFragment {
 
 	}
 
-	
-
-	// populate the edit box
-	private void sendFromIntent(String username) {
-		Intent intent = getActivity().getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();
-		Bundle extras = intent.getExtras();
-
-		if (action.equals(Intent.ACTION_SEND)) {
-			if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
-
-				final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
-
-				// Utils.makeToast(getActivity(), getString(R.string.uploading_image));
-
-				SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
-				final FragmentActivity activity = getActivity();
-				ChatUtils.uploadPictureMessageAsync(activity, getMainActivity().getChatController(), getMainActivity()
-						.getNetworkController(), imageUri, username, true, new IAsyncCallback<Boolean>() {
-
-					@Override
-					public void handleResponse(final Boolean result) {
-						SurespotLog.v(TAG, "upload picture response: " + result);
-
-						if (!result) {
-							activity.runOnUiThread(new Runnable() {
-
-								@Override
-								public void run() {
-									Utils.makeToast(activity, getString(R.string.could_not_upload_image));
-									// clear the intent
-
-								}
-							});
-						}
-
-						activity.getIntent().setAction(null);
-						activity.getIntent().setType(null);
-						if (activity.getIntent().getExtras() != null) {
-							activity.getIntent().getExtras().clear();
-						}
-
-						// scrollToEnd();
-					}
-				});
-				// }
-			}
-		}
-		else {
-			if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
-				// TODO implement
-			}
-		}
-	}
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}

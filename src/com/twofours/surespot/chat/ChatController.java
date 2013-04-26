@@ -131,6 +131,8 @@ public class ChatController {
 
 		mCallback401 = callback401;
 		mProgressCallback = progressCallback;
+		mSendIntentCallback = sendIntentCallback;
+		
 		mTabShowingCallback = tabShowingCallback;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
@@ -1615,6 +1617,7 @@ public class ChatController {
 			friend = mFriendAdapter.getFriend(username);
 		}
 
+		mTabShowingCallback.handleResponse(friend);
 		if (friend != null) {
 			mCurrentChat = username;
 			mChatPagerAdapter.addChatName(username);
@@ -1632,7 +1635,7 @@ public class ChatController {
 				mViewPager.setCurrentItem(wantedPosition, true);
 			}
 
-			ChatFragment chatFragment = getChatFragment(username);
+			//ChatFragment chatFragment = getChatFragment(username);
 			// if (chatFragment != null) {
 			// chatFragment.requestFocus();
 			// }
@@ -1653,7 +1656,7 @@ public class ChatController {
 		// disable menu items
 		enableMenuItems();
 
-		mTabShowingCallback.handleResponse(friend);
+		
 
 	}
 
