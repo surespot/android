@@ -50,6 +50,8 @@ import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
 import com.twofours.surespot.chat.EmojiParser;
+import com.twofours.surespot.chat.MainActivityLayout;
+import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -66,7 +68,7 @@ import com.twofours.surespot.services.CredentialCachingService.CredentialCaching
 import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
 
-public class MainActivity extends SherlockFragmentActivity {
+public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
 
 	private static CredentialCachingService mCredentialCachingService = null;
@@ -85,10 +87,13 @@ public class MainActivity extends SherlockFragmentActivity {
 	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
 	private KeyboardStateHandler mKeyboardStateHandler;
-	private View mActivityRootView;
+	private MainActivityLayout mActivityLayout;
 	private EditText mEditText;
 	private Button mSendButton;
 	private GridView mEmojiView;
+	private boolean mKeyboardShowing;
+	private boolean mHidingKeyboard;
+	private int mEmojiHeight;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -198,11 +203,14 @@ public class MainActivity extends SherlockFragmentActivity {
 							}
 						});
 
-				mActivityRootView = findViewById(R.id.chatLayout);
+				mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
+				mActivityLayout.setOnSoftKeyboardListener(this);
+				mActivityLayout.setMainActivity(this);
+
 				final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
 
 				mKeyboardStateHandler = new KeyboardStateHandler();
-				mActivityRootView.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
+				mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
@@ -217,7 +225,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	}
 
 	public static class KeyboardState {
-		public int mLastHeightDiff;
+		public int mInitialHeightDiff;
 		public int mMaxHeight = 0;
 		public int mMinHeight = Integer.MAX_VALUE;
 		public int mKeyboardHeight = 0;
@@ -232,7 +240,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			final View activityRootView = findViewById(R.id.chatLayout);
 
 			int activityHeight = activityRootView.getHeight();
+
 			int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
+
+			
 
 			if (activityHeight > mKeyboardState.mMaxHeight) {
 				mKeyboardState.mMaxHeight = activityHeight;
@@ -242,35 +253,25 @@ public class MainActivity extends SherlockFragmentActivity {
 				mKeyboardState.mMinHeight = activityHeight;
 			}
 
-			if (mKeyboardState.mLastHeightDiff == 0) {
-				mKeyboardState.mLastHeightDiff = heightDelta;
+			if (mKeyboardState.mInitialHeightDiff == 0) {
+				mKeyboardState.mInitialHeightDiff = heightDelta;
 			}
 
-			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, currentHeightDiff: %d, lastheightDiff: %d",
-					activityRootView.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mKeyboardState.mLastHeightDiff);
+			mEmojiHeight = heightDelta - mKeyboardState.mInitialHeightDiff;
 
-			if (heightDelta != mKeyboardState.mLastHeightDiff) {
+			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightHiff: %d", activityRootView
+					.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mKeyboardState.mInitialHeightDiff);
+
+			if (heightDelta != mKeyboardState.mInitialHeightDiff) {
 				SurespotLog.v(TAG, "onGlobalLayout, height change detected");
 				if (mKeyboardState.mKeyboardHeight == 0) {
-					int keyboardHeight = mKeyboardState.mLastHeightDiff - heightDelta;
+					int keyboardHeight = mKeyboardState.mInitialHeightDiff - heightDelta;
 
 					mKeyboardState.mKeyboardHeight = Math.abs(keyboardHeight);
 					SurespotLog.v(TAG, "onGlobalLayout, deduced keyboard height: %d, maxHeight: %d, minHeight: %d",
 							mKeyboardState.mKeyboardHeight, mKeyboardState.mMaxHeight, mKeyboardState.mMinHeight);
 				}
 
-				if (heightDelta > 200) { // if more than 200 pixels, its probably a keyboard...
-
-					mKeyboardState.mShowing = true;
-					mEmojiView.setVisibility(View.GONE);
-				}
-				else {
-					mKeyboardState.mShowing = false;
-				}
-
-				mKeyboardState.mLastHeightDiff = heightDelta;
-
-				SurespotLog.v(TAG, "set showing: %b", mKeyboardState.mShowing);
 			}
 
 		}
@@ -321,15 +322,17 @@ public class MainActivity extends SherlockFragmentActivity {
 				//
 
 				SurespotLog.v(TAG, "keyboardState,  showing: %b", ks.mShowing);
-				if (ks.mShowing) {
+				if (mKeyboardShowing) {
 
 					SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
 
-					mEmojiView.setVisibility(View.VISIBLE);
+					mShowEmoji = true;
+					// mEmojiView.setVisibility(View.VISIBLE);
 					hideSoftKeyboard();
 					mKeyboardWasOpen = true;
 				}
 				else {
+
 					int visibility = mEmojiView.getVisibility();
 					if (visibility == View.VISIBLE) {
 						SurespotLog.v(TAG, "keyboardState,  hiding emoji");
@@ -337,16 +340,21 @@ public class MainActivity extends SherlockFragmentActivity {
 						if (mKeyboardWasOpen) {
 							SurespotLog.v(TAG, "keyboardState,  showing keyboard");
 							showSoftKeyboard(mEditText);
+							mKeyboardWasOpen = false;
+						}
+						else {
+							mEmojiView.setVisibility(View.GONE);
 						}
 
-						mEmojiView.setVisibility(View.GONE);
+						mShowEmoji = false;
+						//
 					}
 					else {
 						SurespotLog.v(TAG, "keyboardState,  showing emoji");
 						mEmojiView.setVisibility(View.VISIBLE);
+						mShowEmoji = true;
 
 					}
-					mKeyboardWasOpen = false;
 
 				}
 			}
@@ -384,7 +392,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			public boolean onTouch(View v, MotionEvent event) {
 
 				if (MainActivity.this.mEmojiView.getVisibility() == View.GONE && !mKeyboardStateHandler.getKeyboardState().mShowing) {
-					showSoftKeyboard(v);					
+					showSoftKeyboard(v);
 					mEditText.requestFocus();
 				}
 
@@ -392,6 +400,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 		});
 	}
+
+	private boolean mShowEmoji = false;
 
 	private boolean needsLogin() {
 		String user = IdentityController.getLoggedInUser();
@@ -574,9 +584,11 @@ public class MainActivity extends SherlockFragmentActivity {
 									}
 									else {
 										mChatController.setImageUrl(to, url, version, iv);
+
 									}
 								}
 							});
+
 				}
 
 			}
@@ -853,14 +865,18 @@ public class MainActivity extends SherlockFragmentActivity {
 		return mKeyboardStateHandler.getKeyboardState();
 	}
 
-	private void hideSoftKeyboard() {
+	public void hideSoftKeyboard() {
+		SurespotLog.v(TAG, "hideSoftkeyboard");
 		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
+		mKeyboardShowing = false;
 	}
 
 	private void showSoftKeyboard(View view) {
+		SurespotLog.v(TAG, "showSoftkeyboard");
 		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 		imm.showSoftInput(view, 0);
+		mKeyboardShowing = true;
 	}
 
 	class ChatTextWatcher implements TextWatcher {
@@ -926,6 +942,44 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		// scroll to end
 		// scrollToEnd();
+	}
+
+	public boolean backButtonPressed() {
+		boolean handled = false;
+		SurespotLog.v(TAG, "backButtonPressed");
+		if (mKeyboardShowing) {
+
+			hideSoftKeyboard();
+			mEmojiView.setVisibility(View.GONE);
+			mShowEmoji = false;
+			handled = true;
+		}
+		else {
+
+			if (mEmojiView.getVisibility() == View.VISIBLE) {
+				mEmojiView.setVisibility(View.GONE);
+				mShowEmoji = false;
+				handled = true;
+			}
+		}
+
+		return handled;
+	}
+
+	@Override
+	public void onLayoutMeasure() {
+		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
+		if (mShowEmoji) {
+			if (mEmojiHeight > 0) {
+				android.view.ViewGroup.LayoutParams layoutParams = mEmojiView.getLayoutParams();
+				layoutParams.height = mEmojiHeight;
+			}
+			mEmojiView.setVisibility(View.VISIBLE);
+		}
+		else {
+			mEmojiView.setVisibility(View.GONE);
+		}
+
 	}
 
 }
