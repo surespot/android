@@ -20,6 +20,8 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
@@ -41,11 +43,13 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -57,6 +61,7 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
@@ -66,6 +71,8 @@ import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
+import com.twofours.surespot.ui.LetterOrDigitInputFilter;
+import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -74,6 +81,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private static CredentialCachingService mCredentialCachingService = null;
 	private static NetworkController mNetworkController = null;
+	private MultiProgressDialog mMpdInviteFriend;
 
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
@@ -87,6 +95,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mExternalStorageWriteable = false;
 	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
+	InputMethodManager mImm;
 	private KeyboardStateHandler mKeyboardStateHandler;
 	private MainActivityLayout mActivityLayout;
 	private EditText mEditText;
@@ -95,10 +104,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mKeyboardShowing;
 	private int mEmojiHeight;
 	private int mInitialHeightOffset;
+	private Button mEmojiButton;
+	private Friend mCurrentFriend;
+	private boolean mShowEmoji = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		mMpdInviteFriend = new MultiProgressDialog(this, "inviting friend", 750);
+		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		// Gingerbread does not like FLAG_SECURE
 		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
@@ -202,6 +217,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								handleSendIntent();
 
 							}
+						}, new IAsyncCallback<Friend>() {
+
+							@Override
+							public void handleResponse(Friend result) {
+								handleTabChange(result);
+
+							}
 						});
 
 				mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
@@ -237,7 +259,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			// set the emoji view to the keyboard height
-			mEmojiHeight = heightDelta - mInitialHeightOffset;
+			mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
 
 			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView
 					.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
@@ -249,15 +271,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mEditText.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
-					sendMessage();
+
+				if (mCurrentFriend != null) {
+					if (mEditText.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
+						sendMessage();
+					}
+					else {
+						// go to friends
+						mChatController.setCurrentChat(null);
+					}
 				}
 				else {
-					// go to friends
-					// InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-					// ChatFragment.this.getActivity().INPUT_METHOD_SERVICE);
-					// imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
-					mChatController.setCurrentChat(null);
+					inviteFriend();
 				}
 			}
 		});
@@ -268,12 +293,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mEmojiView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-				mEditText.append(EmojiParser.getInstance().getEmojiChar(position));
+				// TODO inses
+				int start = mEditText.getSelectionStart();
+				int end = mEditText.getSelectionEnd();
+				mEditText.getText().replace(start, end, EmojiParser.getInstance().getEmojiChar(position));
+				mEditText.setSelection(end);
 			}
 		});
 
-		Button emojiButton = (Button) findViewById(R.id.bEmoji);
-		emojiButton.setOnClickListener(new View.OnClickListener() {
+		mEmojiButton = (Button) findViewById(R.id.bEmoji);
+		mEmojiButton.setOnClickListener(new View.OnClickListener() {
 
 			boolean mKeyboardWasOpen = false;
 
@@ -334,10 +363,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
 
-				if (actionId == EditorInfo.IME_ACTION_SEND) {
-					sendMessage();
-					handled = true;
+				if (mCurrentFriend == null) {
+					if (actionId == EditorInfo.IME_ACTION_SEND) {
+						inviteFriend();
+						handled = true;
+					}
 				}
+				else {
+					if (actionId == EditorInfo.IME_ACTION_DONE) {
+						mEditText.append("\n");
+						handled = true;
+					}
+					// sendMessage();
+				}
+
 				return handled;
 			}
 		});
@@ -364,8 +403,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 	}
-
-	private boolean mShowEmoji = false;
 
 	private boolean needsLogin() {
 		String user = IdentityController.getLoggedInUser();
@@ -793,6 +830,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mImageCaptureHandler.getImagePath());
 			outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
 		}
+
+		if (mKeyboardShowing) {
+			outState.putBoolean("keyboardShowing", mKeyboardShowing);
+		}
+
+		if (mInitialHeightOffset > 0) {
+			outState.putInt("heightOffset", mInitialHeightOffset);
+		}
 	}
 
 	@Override
@@ -805,6 +850,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mImageCaptureHandler.getImagePath());
 		}
 
+		mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing");
+
+		mInitialHeightOffset = savedInstanceState.getInt("heightOffset");
 	}
 
 	private void setHomeProgress(boolean inProgress) {
@@ -828,8 +876,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public synchronized void hideSoftKeyboard() {
 		SurespotLog.v(TAG, "hideSoftkeyboard");
 		mKeyboardShowing = false;
-		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0, new ResultReceiver(null) {
+
+		mImm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0, new ResultReceiver(null) {
 			@Override
 			protected void onReceiveResult(int resultCode, Bundle resultData) {
 				if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
@@ -842,8 +890,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private synchronized void showSoftKeyboard(View view) {
 		SurespotLog.v(TAG, "showSoftkeyboard");
 		mKeyboardShowing = true;
-		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.showSoftInput(view, 0, new ResultReceiver(null) {
+		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		mImm.showSoftInput(view, 0, new ResultReceiver(null) {
 			@Override
 			protected void onReceiveResult(int resultCode, Bundle resultData) {
 				if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
@@ -862,16 +910,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-			mEditText.removeTextChangedListener(this);
-			CharSequence message = mEditText.getText();
-			if (message.length() > 0) {
-				mSendButton.setText("send");
-			}
-			else {
-				mSendButton.setText("home");
-			}
-			mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
-			mEditText.addTextChangedListener(this);
+			// mEditText.removeTextChangedListener(this);
+
+			setButtonText();
+			// mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
+			// mEditText.addTextChangedListener(this);
 		}
 
 		@Override
@@ -887,7 +930,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		String type = intent.getType();
 		// Bundle extras = intent.getExtras();
 
-		if (action.equals(Intent.ACTION_SEND)) {
+		if (action != null && action.equals(Intent.ACTION_SEND)) {
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
 				SurespotLog.v(TAG, "received action send, data: " + sharedText);
@@ -952,6 +995,132 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		else {
 			mEmojiView.setVisibility(View.GONE);
 		}
+
+	}
+
+	private void inviteFriend() {
+
+		final String friend = mEditText.getText().toString();
+
+		if (friend.length() > 0) {
+			if (friend.equals(IdentityController.getLoggedInUser())) {
+				// TODO let them be friends with themselves?
+				Utils.makeToast(this, "You can't be friends with yourself, bro.");
+				return;
+			}
+
+			mMpdInviteFriend.incrProgress();
+			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String arg0) { // TODO
+																		// indicate
+																		// in
+																		// the
+																		// UI
+					// that the request is
+					// pending somehow
+					mMpdInviteFriend.decrProgress();
+					TextKeyListener.clear(mEditText.getText());
+					if (mChatController.getFriendAdapter().addFriendInvited(friend)) {
+						Utils.makeToast(MainActivity.this, friend + " has been invited to be your friend.");
+					}
+					else {
+						Utils.makeToast(MainActivity.this, friend + " has accepted your friend request.");
+					}
+
+				}
+
+				@Override
+				public void onFailure(Throwable arg0, String content) {
+					mMpdInviteFriend.decrProgress();
+					if (arg0 instanceof HttpResponseException) {
+						HttpResponseException error = (HttpResponseException) arg0;
+						int statusCode = error.getStatusCode();
+						switch (statusCode) {
+						case 404:
+							Utils.makeToast(MainActivity.this, "User does not exist.");
+							break;
+						case 409:
+							Utils.makeToast(MainActivity.this, "You are already friends.");
+							break;
+						case 403:
+							Utils.makeToast(MainActivity.this, "You have already invited this user.");
+							break;
+						default:
+							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+							Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
+						}
+					}
+					else {
+						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+						Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
+					}
+				}
+			});
+		}
+	}
+
+	private void setButtonText() {
+		if (mCurrentFriend == null) {
+			mSendButton.setText("invite");
+		}
+		else {
+			if (mEditText.getText().length() > 0) {
+				mSendButton.setText("send");
+			}
+			else {
+				mSendButton.setText("home");
+			}
+
+		}
+	}
+
+	private void handleTabChange(Friend friend) {
+		if (friend == null) {
+			mEmojiButton.setVisibility(View.GONE);
+
+			mEditText.setText("");
+			// mEditText.getLayoutParams().
+			mEditText.setImeActionLabel("invite", EditorInfo.IME_ACTION_SEND);
+			mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
+			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+			mEditText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
+					new LetterOrDigitInputFilter() });
+			mEditText.setSingleLine(true);
+
+			mEmojiView.setVisibility(View.GONE);
+			mShowEmoji = false;
+
+		}
+		else {
+			// if we're coming from the home tab clear the data
+
+			if (mCurrentFriend == null) {
+				mEditText.setText("");
+			}
+
+			mEditText.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
+			mEditText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+			mEditText.setFilters(new InputFilter[0]);
+			mEditText.setMaxLines(5);
+			mEditText.setVerticalScrollBarEnabled(true);
+			mEditText.setSingleLine(false);
+
+			if (friend.isDeleted()) {
+				mEmojiButton.setVisibility(View.GONE);
+				mEditText.setVisibility(View.GONE);
+
+			}
+			else {
+				mEditText.setVisibility(View.VISIBLE);
+				mEmojiButton.setVisibility(View.VISIBLE);
+
+			}
+		}
+
+		mCurrentFriend = friend;
+		setButtonText();
 
 	}
 

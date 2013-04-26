@@ -25,7 +25,6 @@ import android.text.style.ImageSpan;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils.CodePoint;
-import com.twofours.surespot.common.SurespotLog;
 
 /**
  * A class for annotating a CharSequence with spans to convert textual emoticons to graphical ones.
@@ -143,7 +142,7 @@ public class EmojiParser {
 
 		}
 
-		SurespotLog.v(TAG, "decrypted supp unicode chars: %s.", suppCps);
+		//SurespotLog.v(TAG, "decrypted supp unicode chars: %s.", suppCps);
 		return builder;
 	}
 }

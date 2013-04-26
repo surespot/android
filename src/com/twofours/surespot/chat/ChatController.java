@@ -121,15 +121,17 @@ public class ChatController {
 	private IAsyncCallback<Void> mCallback401;
 	private IAsyncCallback<Boolean> mProgressCallback;
 	private IAsyncCallback<Void> mSendIntentCallback;
+	private IAsyncCallback<Friend> mTabShowingCallback;
 
 	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401,
-			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback) {
+			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
 		SurespotLog.v(TAG, "constructor: " + this);
 		mContext = context;
 		mNetworkController = networkController;
 
 		mCallback401 = callback401;
 		mProgressCallback = progressCallback;
+		mTabShowingCallback = tabShowingCallback;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		mFriendAdapter = new FriendAdapter(mContext);
@@ -553,9 +555,9 @@ public class ChatController {
 						// decrypt it before adding
 						final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(), message.getOtherUser(),
 								message.getTheirVersion(), message.getIv(), message.getData());
-				
-						//substitute emoji
-						EmojiParser parser = EmojiParser.getInstance();						
+
+						// substitute emoji
+						EmojiParser parser = EmojiParser.getInstance();
 						message.setPlainData(parser.addEmojiSpans(plainText));
 					}
 
@@ -758,43 +760,29 @@ public class ChatController {
 				mNetworkController.getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(final JSONArray jsonArray) {
-						// on async http request, response seems to come back
-						// after app is destroyed sometimes
-						// (ie. on rotation on gingerbread)
-						// so check for null here
-						new AsyncTask<Void, Void, Void>() {
-							@Override
-							protected Void doInBackground(Void... params) {
-								// if (getActivity() != null) {
-								SurespotMessage message = null;
 
-								try {
-									for (int i = jsonArray.length() - 1; i >= 0; i--) {
-										JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
-										message = SurespotMessage.toSurespotMessage(jsonMessage);
+						// if (getActivity() != null) {
+						SurespotMessage message = null;
 
-										chatAdapter.insertMessage(message, false);
-									}
-								}
-								catch (JSONException e) {
-									SurespotLog.e(TAG, e, "%s: error creating chat message", username);
-								}
-
-								SurespotLog.v(TAG, "%s: loaded: %d earlier messages from the server.", username, jsonArray.length());
-								if (message != null) {
-									mEarliestMessage.put(username, message.getId());
-									// chatAdapter.notifyDataSetChanged();
-								}
-								return null;
-
+						try {
+							for (int i = jsonArray.length() - 1; i >= 0; i--) {
+								JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+								message = SurespotMessage.toSurespotMessage(jsonMessage);
+								chatAdapter.insertMessage(message, false);
 							}
+						}
+						catch (JSONException e) {
+							SurespotLog.e(TAG, e, "%s: error creating chat message", username);
+						}
 
-							protected void onPostExecute(Void result) {
-								// chatAdapter.setLoading(false);
-								callback.handleResponse(null);
+						SurespotLog.v(TAG, "%s: loaded: %d earlier messages from the server.", username, jsonArray.length());
+						if (message != null) {
+							mEarliestMessage.put(username, message.getId());
+							// chatAdapter.notifyDataSetChanged();
+						}
 
-							};
-						}.execute();
+						// chatAdapter.setLoading(false);
+						callback.handleResponse(null);
 
 					}
 
@@ -969,7 +957,7 @@ public class ChatController {
 							ChatFragment chatFragment = getChatFragment(username);
 							if (chatFragment != null) {
 								chatFragment.scrollToState();
-								//chatFragment.requestFocus();
+								// chatFragment.requestFocus();
 
 							}
 						}
@@ -985,7 +973,7 @@ public class ChatController {
 				ChatFragment chatFragment = getChatFragment(username);
 				if (chatFragment != null) {
 					chatFragment.scrollToState();
-				//	chatFragment.requestFocus();
+					// chatFragment.requestFocus();
 
 				}
 			}
@@ -1333,7 +1321,7 @@ public class ChatController {
 				else {
 					chatFragment.scrollToState();
 				}
-			//	chatFragment.requestFocus();
+				// chatFragment.requestFocus();
 
 			}
 		}
@@ -1590,17 +1578,17 @@ public class ChatController {
 
 			// get latest messages from server
 			getLatestMessagesAndControls(username);
-			
+
 			chatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
 
 				@Override
 				public void handleResponse(Boolean result) {
-					//mIsDeleted = result;
-//					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
-//					if (mIsDeleted) {
-//						mSendButton.setText("home");
-//						mEditText.setText("");
-//					}
+					// mIsDeleted = result;
+					// mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
+					// if (mIsDeleted) {
+					// mSendButton.setText("home");
+					// mEditText.setText("");
+					// }
 				}
 			});
 
@@ -1645,10 +1633,10 @@ public class ChatController {
 			}
 
 			ChatFragment chatFragment = getChatFragment(username);
-//			if (chatFragment != null) {
-//				chatFragment.requestFocus();
-//			}
-//
+			// if (chatFragment != null) {
+			// chatFragment.requestFocus();
+			// }
+			//
 			if (mMode == MODE_SELECT) {
 				mSendIntentCallback.handleResponse(null);
 				setMode(MODE_NORMAL);
@@ -1664,6 +1652,8 @@ public class ChatController {
 		}
 		// disable menu items
 		enableMenuItems();
+
+		mTabShowingCallback.handleResponse(friend);
 
 	}
 
@@ -1682,9 +1672,9 @@ public class ChatController {
 			final byte[] iv = EncryptionController.getIv();
 
 			// build a message without the encryption values set as they could take a while
-			
-			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mCurrentChat, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),
-					new String(ChatUtils.base64EncodeNowrap(iv)));
+
+			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mCurrentChat, mimeType, EmojiParser.getInstance()
+					.addEmojiSpans(plainText), new String(ChatUtils.base64EncodeNowrap(iv)));
 			ChatAdapter chatAdapter = mChatAdapters.get(mCurrentChat);
 
 			try {
@@ -1705,7 +1695,8 @@ public class ChatController {
 					String ourLatestVersion = IdentityController.getOurLatestVersion();
 					String theirLatestVersion = IdentityController.getTheirLatestVersion(mCurrentChat);
 
-					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, mCurrentChat, theirLatestVersion, plainText, iv);
+					String result = EncryptionController
+							.symmetricEncrypt(ourLatestVersion, mCurrentChat, theirLatestVersion, plainText, iv);
 
 					if (result != null) {
 						chatMessage.setData(result);
@@ -1982,11 +1973,10 @@ public class ChatController {
 	public boolean isFriendDeleted(String username) {
 		return getFriendAdapter().getFriend(username).isDeleted();
 	}
-	
+
 	public boolean isFriendDeleted() {
 		return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
 	}
-
 
 	private void getFriendsAndIds() {
 		if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {

@@ -3,11 +3,11 @@ package com.twofours.surespot.chat;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.twofours.surespot.activities.MainActivity;
 
-public class MainActivityLayout extends LinearLayout {
+public class MainActivityLayout extends RelativeLayout {
 	MainActivity mMainActivity;
 
 	// thanks to http://stackoverflow.com/questions/7300497/adjust-layout-when-soft-keyboard-is-on
