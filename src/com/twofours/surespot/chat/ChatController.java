@@ -132,7 +132,7 @@ public class ChatController {
 		mCallback401 = callback401;
 		mProgressCallback = progressCallback;
 		mSendIntentCallback = sendIntentCallback;
-		
+
 		mTabShowingCallback = tabShowingCallback;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
@@ -1202,7 +1202,12 @@ public class ChatController {
 			}
 
 			// and mark you as deleted until I want to delete you
-			mFriendAdapter.setFriendDeleted(deleter);
+			Friend friend = mFriendAdapter.setFriendDeleted(deletedUser);
+		
+			// force the controls to update
+			if (friend != null && mCurrentChat.equals(deletedUser)) {
+				mTabShowingCallback.handleResponse(friend);
+			}
 		}
 	}
 
@@ -1581,19 +1586,6 @@ public class ChatController {
 			// get latest messages from server
 			getLatestMessagesAndControls(username);
 
-			chatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
-
-				@Override
-				public void handleResponse(Boolean result) {
-					// mIsDeleted = result;
-					// mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
-					// if (mIsDeleted) {
-					// mSendButton.setText("home");
-					// mEditText.setText("");
-					// }
-				}
-			});
-
 		}
 		return chatAdapter;
 	}
@@ -1635,7 +1627,7 @@ public class ChatController {
 				mViewPager.setCurrentItem(wantedPosition, true);
 			}
 
-			//ChatFragment chatFragment = getChatFragment(username);
+			// ChatFragment chatFragment = getChatFragment(username);
 			// if (chatFragment != null) {
 			// chatFragment.requestFocus();
 			// }
@@ -1655,8 +1647,6 @@ public class ChatController {
 		}
 		// disable menu items
 		enableMenuItems();
-
-		
 
 	}
 

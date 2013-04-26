@@ -109,9 +109,7 @@ public class ChatFragment extends SherlockFragment {
 							ChatFragment.this.getActivity().startActivity(newIntent);
 						}
 					}
-
 				}
-
 			}
 		});
 
@@ -142,30 +140,13 @@ public class ChatFragment extends SherlockFragment {
 		
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
-			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
-			mChatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
-
-				@Override
-				public void handleResponse(Boolean result) {
-					mIsDeleted = result;
-//					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
-//					if (mIsDeleted) {
-//						mSendButton.setText("home");
-//						mEditText.setText("");
-//					}
-				}
-			});
+			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);			
 			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
 			scrollToState();
-
-			// hide text box if the user is deleted
-		//	mIsDeleted = chatController.isFriendDeleted(mUsername);
-
-		//	mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
 
 		}
 		return view;
@@ -446,6 +427,5 @@ public class ChatFragment extends SherlockFragment {
 				// outState.putString("selectedMessage", message.toJSONObject().toString());
 			}
 		}
-
 	}
 }
