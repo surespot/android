@@ -29,12 +29,14 @@
 
     <Button
         android:id="@+id/bEmoji"
-        android:layout_width="45sp"
-        android:layout_height="45sp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_above="@+id/fEmoji"
-        android:layout_alignWithParentIfMissing="true"        
-        android:text="emoji"
-        android:background="@drawable/emoji_button" />
+        android:layout_alignWithParentIfMissing="true"
+        android:background="@drawable/emoji_bitmap"
+        android:height="35dp"
+        android:visibility="gone"
+        android:width="35dp" />
 
     <EditText
         android:id="@+id/etMessage"
@@ -44,7 +46,7 @@
         android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@+id/bSend"
         android:layout_toRightOf="@+id/bEmoji"
-        android:imeOptions="actionSend"        
+        android:imeOptions="actionSend"
         android:maxHeight="150sp"
         android:minHeight="45sp" >
     </EditText>

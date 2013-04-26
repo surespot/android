@@ -3,6 +3,6 @@
 
     <item android:drawable="@drawable/filled_blue_circle" android:state_pressed="true"></item>
     <item android:drawable="@drawable/empty_blue_circle" android:state_focused="true"></item>
-    <item android:drawable="@drawable/empty_blue_circle"></item>
+    <item android:drawable="@drawable/smile" ></item>
 
 </selector>
