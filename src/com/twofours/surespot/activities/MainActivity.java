@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -92,7 +93,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private Button mSendButton;
 	private GridView mEmojiView;
 	private boolean mKeyboardShowing;
-	private boolean mHidingKeyboard;
 	private int mEmojiHeight;
 	private int mInitialHeightOffset;
 
@@ -235,8 +235,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (mInitialHeightOffset == 0) {
 				mInitialHeightOffset = heightDelta;
 			}
-			
-			//set the emoji view to the keyboard height
+
+			// set the emoji view to the keyboard height
 			mEmojiHeight = heightDelta - mInitialHeightOffset;
 
 			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView
@@ -351,13 +351,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onTouch(View v, MotionEvent event) {
 
 				if (!mKeyboardShowing) {
-					showSoftKeyboard(v);
-					
-					mShowEmoji = false;
 					mEditText.requestFocus();
+					showSoftKeyboard(v);
+
+					mShowEmoji = false;
+					return true;
+				}
+				else {
+					return false;
 				}
 
-				return true;
 			}
 		});
 	}
@@ -822,19 +825,32 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-
-	public void hideSoftKeyboard() {
+	public synchronized void hideSoftKeyboard() {
 		SurespotLog.v(TAG, "hideSoftkeyboard");
-		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
 		mKeyboardShowing = false;
+		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0, new ResultReceiver(null) {
+			@Override
+			protected void onReceiveResult(int resultCode, Bundle resultData) {
+				if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+					mKeyboardShowing = true;
+				}
+			}
+		});
 	}
 
-	private void showSoftKeyboard(View view) {
+	private synchronized void showSoftKeyboard(View view) {
 		SurespotLog.v(TAG, "showSoftkeyboard");
-		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.showSoftInput(view, 0);
 		mKeyboardShowing = true;
+		InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.showSoftInput(view, 0, new ResultReceiver(null) {
+			@Override
+			protected void onReceiveResult(int resultCode, Bundle resultData) {
+				if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
+					mKeyboardShowing = false;
+				}
+			}
+		});
 	}
 
 	class ChatTextWatcher implements TextWatcher {
@@ -887,7 +903,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
 		}
-
 	}
 
 	private void sendMessage() {
