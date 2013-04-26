@@ -1481,18 +1481,18 @@ public class ChatController {
 	private boolean mGlobalProgress;
 	private HashMap<String, Boolean> mChatProgress = new HashMap<String, Boolean>();
 
-	private synchronized void setProgress(String username, boolean inProgress) {
+	private synchronized void setProgress(String key, boolean inProgress) {
 
-		if (username == null) {
+		if (key == null) {
 			mGlobalProgress = inProgress;
 		}
 
 		else {
 			if (inProgress) {
-				mChatProgress.put(username, true);
+				mChatProgress.put(key, true);
 			}
 			else {
-				mChatProgress.remove(username);
+				mChatProgress.remove(key);
 			}
 		}
 
@@ -1763,6 +1763,7 @@ public class ChatController {
 
 			// String spot = ChatUtils.getSpot(message);
 			final ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
+			setProgress("delete", true);
 			if (chatAdapter != null) {
 				mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new AsyncHttpResponseHandler() {
 					@Override
@@ -1772,7 +1773,7 @@ public class ChatController {
 						// @Override
 						// public void run() {
 						deleteMessageInternal(chatAdapter, message, true);
-
+						setProgress("delete", false);
 						// }
 						// });
 
@@ -1785,6 +1786,7 @@ public class ChatController {
 						//
 						// @Override
 						// public void run() {
+						setProgress("delete", false);
 						Utils.makeToast(mContext, "could not delete message");
 						// }
 						// });
@@ -1831,6 +1833,7 @@ public class ChatController {
 		if (friend != null) {
 			String username = friend.getName();
 
+			setProgress("deleteMessages", true);
 			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (chatAdapter != null) {
 
@@ -1843,7 +1846,7 @@ public class ChatController {
 						// public void run() {
 						chatAdapter.deleteAllMessages();
 						chatAdapter.notifyDataSetChanged();
-
+						setProgress("deleteMessages", false);
 						// }
 						// });
 
@@ -1851,6 +1854,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
+						setProgress("deleteMessages", false);
 						// MainActivity.getMainHandler().post(new Runnable() {
 						//
 						// @Override
@@ -1884,15 +1888,18 @@ public class ChatController {
 
 		if (friend != null) {
 			final String username = friend.getName();
+			setProgress("deleteFriend", true);
 			mNetworkController.deleteFriend(username, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String content) {
 					handleDeleteUser(username, IdentityController.getLoggedInUser());
+					setProgress("deleteFriend", false);
 				}
 
 				@Override
 				public void onFailure(Throwable error, String content) {
 					SurespotLog.w(TAG, "deleteFriend", error);
+					setProgress("deleteFriend", false);
 					Utils.makeToast(mContext, "could not delete friend");
 				}
 			});
@@ -1907,17 +1914,21 @@ public class ChatController {
 			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (chatAdapter != null) {
 
+				setProgress("shareable", true);
 				mNetworkController.setMessageShareable(username, message.getId(), !message.isShareable(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
 						message.setShareable(!message.isShareable());
 						chatAdapter.notifyDataSetChanged();
+						setProgress("shareable", false);
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
 						SurespotLog.w(TAG, "toggleMessageShareable", error);
+						setProgress("shareable", false);
 						Utils.makeToast(mContext, "could not set message lock state");
+						
 					}
 
 				});
@@ -1945,11 +1956,12 @@ public class ChatController {
 		final ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
 		chatAdapter.notifyDataSetChanged();
 
+		setProgress("resend", true);
 		ChatUtils.resendPictureMessage(mContext, mNetworkController, message, new IAsyncCallback<Boolean>() {
 
 			@Override
 			public void handleResponse(Boolean result) {
-
+				setProgress("resend", false);
 				if (!result) {
 					message.setErrorStatus(500);
 					chatAdapter.notifyDataSetChanged();
