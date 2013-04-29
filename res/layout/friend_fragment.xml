@@ -99,7 +99,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <EditText
+ <!--    <EditText
         android:id="@+id/etFriend"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -123,5 +123,5 @@
         android:background="@drawable/send_button"
         android:text="invite"
         android:textColor="@android:color/black" />
-
+ -->
 </RelativeLayout>

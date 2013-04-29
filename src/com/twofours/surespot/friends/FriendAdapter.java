@@ -123,13 +123,14 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public void setFriendDeleted(String name) {
+	public Friend setFriendDeleted(String name) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.setDeleted();			
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
+		return friend;
 
 	}
 

@@ -72,7 +72,7 @@ public class ChatUtils {
 		return message.getFrom().equals(IdentityController.getLoggedInUser());
 	}
 
-	public static SurespotMessage buildPlainMessage(String to, String mimeType, String plainData, String iv) {
+	public static SurespotMessage buildPlainMessage(String to, String mimeType, CharSequence plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
 		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
@@ -592,5 +592,87 @@ public class ChatUtils {
 	public static byte[] base64Decode(String buf) {
 		return Base64.decode(buf, Base64.DEFAULT);
 	}
+	
+	  /**
+	   * Converts the string to the unicode format '\u0020'.
+	   * 
+	   * This format is the Java source code format.
+	   *
+	   * <pre>
+	   *   CharUtils.unicodeEscaped(' ') = "\u0020"
+	   *   CharUtils.unicodeEscaped('A') = "\u0041"
+	   * </pre>
+	   * 
+	   * @param ch  the character to convert
+	   * @return the escaped unicode string
+	   */
+	  public static String unicodeEscaped(int ch) {
+	      if (ch < 0x10) {
+	          return "\\u000" + Integer.toHexString(ch);
+	      } else if (ch < 0x100) {
+	          return "\\u00" + Integer.toHexString(ch);
+	      } else if (ch < 0x1000) {
+	          return "\\u0" + Integer.toHexString(ch);
+	      }
+	      return "\\u" + Integer.toHexString(ch);
+	  }
+	  
+	  /**
+	   * Converts the string to the unicode format '\u0020'.
+	   * 
+	   * This format is the Java source code format.
+	   * 
+	   * If <code>null</code> is passed in, <code>null</code> will be returned.
+	   *
+	   * <pre>
+	   *   CharUtils.unicodeEscaped(null) = null
+	   *   CharUtils.unicodeEscaped(' ')  = "\u0020"
+	   *   CharUtils.unicodeEscaped('A')  = "\u0041"
+	   * </pre>
+	   * 
+	   * @param ch  the character to convert, may be null
+	   * @return the escaped unicode string, null if null input
+	   */
+	  public static String unicodeEscaped(Character ch) {
+	      if (ch == null) {
+	          return null;
+	      }
+	      return unicodeEscaped(ch.charValue());
+	  }
+	  
+	  
+	  public static class CodePoint {
+		  public int codePoint;
+		  public int start;
+		  public int end;
+	  }
+	  
+	  //iterate through codepoints http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5003547
+	  public static Iterable<CodePoint> codePoints(final String s) {
+		    return new Iterable<CodePoint>() {
+		        public Iterator<CodePoint> iterator() {
+		            return new Iterator<CodePoint>() {
+		                int nextIndex = 0;
+		                public boolean hasNext() {
+		                    return nextIndex < s.length();
+		                }
+		                public CodePoint next() {
+		                    int result = s.codePointAt(nextIndex);
+		                    
+		                    
+		                    CodePoint cp = new CodePoint();
+		                    cp.codePoint = result;
+		                    cp.start = nextIndex;		                    
+		                    nextIndex += Character.charCount(result);
+		                    cp.end = nextIndex;
+		                    return cp;
+		                }
+		                public void remove() {
+		                    throw new UnsupportedOperationException();
+		                }
+		            };
+		        }
+		    };
+		}
 
 }

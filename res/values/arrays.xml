@@ -1,0 +1,19 @@
+<resources>
+    <string-array name="emoji_unicode_char" translatable="false">
+      <item>1f61c</item>   
+      <item>1f61d</item>   
+      <item>1f61b</item>   
+      <item>1f601</item>   
+      <item>1f631</item>   
+     
+    </string-array>
+
+      <string-array name="emoji_names">
+        <item>Face with stuck-out tongue and winking eye</item>                  
+        <item>Face with stuck-out tongue and tightly-closed eyes</item>                     
+        <item>Face with stuck-out tongue</item>                 
+        <item>Grinning face with smiling eyes</item>     
+        <item>Face screaming in fear</item>               
+        
+    </string-array>   
+</resources>

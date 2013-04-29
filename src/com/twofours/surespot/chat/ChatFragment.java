@@ -5,36 +5,24 @@ import java.util.Timer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.text.method.TextKeyListener;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.images.ImageViewActivity;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -42,10 +30,10 @@ public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
 	private String mUsername;
 	private ListView mListView;
-	private EditText mEditText;
+
 	private boolean mLoading;
 	private int mPreviousTotal;
-	private Button mSendButton;
+	
 	private Timer mTimer;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
@@ -54,6 +42,7 @@ public class ChatFragment extends SherlockFragment {
 	private boolean mJustLoaded;
 	private boolean mIsDeleted;
 	private ChatAdapter mChatAdapter;
+	private boolean mKeyboardWasOpen;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -120,9 +109,7 @@ public class ChatFragment extends SherlockFragment {
 							ChatFragment.this.getActivity().startActivity(newIntent);
 						}
 					}
-
 				}
-
 			}
 		});
 
@@ -150,83 +137,10 @@ public class ChatFragment extends SherlockFragment {
 			}
 		});
 
-		mSendButton = (Button) view.findViewById(R.id.bSend);
-		mSendButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mEditText.getText().toString().length() > 0 && !mIsDeleted) {
-					sendMessage();
-				}
-				else {
-					// go to friends
-					// InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-					// ChatFragment.this.getActivity().INPUT_METHOD_SERVICE);
-					// imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
-					getMainActivity().getChatController().setCurrentChat(null);
-				}
-			}
-		});
-
-		mSendButton.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				if (mEditText.getText().toString().length() == 0) {
-					getMainActivity().getChatController().closeTab();
-				}
-				return true;
-			}
-		});
-		mEditText = (EditText) view.findViewById(R.id.etMessage);
-		mEditText.setOnEditorActionListener(new OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				boolean handled = false;
-
-				if (actionId == EditorInfo.IME_ACTION_SEND) {
-					sendMessage();
-					handled = true;
-				}
-				return handled;
-			}
-		});
-
-		mEditText.addTextChangedListener(new TextWatcher() {
-
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-				if (mEditText.getText().length() > 0) {
-					mSendButton.setText("send");
-				}
-				else {
-					mSendButton.setText("home");
-				}
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-			}
-		});
-
+		
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
-			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
-			mChatAdapter.setDeletedCallback(new IAsyncCallback<Boolean>() {
-
-				@Override
-				public void handleResponse(Boolean result) {
-					mIsDeleted = result;
-					mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
-					if (mIsDeleted) {
-						mSendButton.setText("home");
-						mEditText.setText("");
-					}
-				}
-			});
+			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);			
 			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 			mListView.setAdapter(mChatAdapter);
@@ -234,16 +148,11 @@ public class ChatFragment extends SherlockFragment {
 			mListView.setOnScrollListener(mOnScrollListener);
 			scrollToState();
 
-			// hide text box if the user is deleted
-			mIsDeleted = chatController.isFriendDeleted(mUsername);
-
-			mEditText.setVisibility(mIsDeleted ? View.GONE : View.VISIBLE);
-
 		}
-
 		return view;
 	}
 
+	
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
@@ -438,50 +347,15 @@ public class ChatFragment extends SherlockFragment {
 
 	}
 
-	private void sendMessage() {
-		final EditText etMessage = ((EditText) getView().findViewById(R.id.etMessage));
-		final String message = etMessage.getText().toString();
-		getMainActivity().getChatController().sendMessage(mUsername, message, SurespotConstants.MimeTypes.TEXT);
+	
 
-		//
-		TextKeyListener.clear(etMessage.getText());
 
-		// scroll to end
-		scrollToEnd();
-	}
-
-	// populate the edit box
-	public void handleSendIntent() {
-		Intent intent = getActivity().getIntent();
-		String action = intent.getAction();
-		String type = intent.getType();
-		// Bundle extras = intent.getExtras();
-
-		if (action.equals(Intent.ACTION_SEND)) {
-			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
-				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
-				SurespotLog.v(TAG, "received action send, data: " + sharedText);
-				mEditText.append(sharedText);
-				requestFocus();
-				// clear the intent
-				getActivity().getIntent().setAction(null);
-				getActivity().getIntent().setType(null);
-				if (getActivity().getIntent().getExtras() != null) {
-					getActivity().getIntent().getExtras().clear();
-				}
-			}
-
-			Utils.configureActionBar(ChatFragment.this.getSherlockActivity(), "surespot", IdentityController.getLoggedInUser(), false);
-		}
-
-	}
-
-	public void requestFocus() {
-		SurespotLog.v(TAG, "requestFocus");
-		mEditText.clearFocus();
-		mEditText.requestFocus();
-
-	}
+//	public void requestFocus() {
+//		SurespotLog.v(TAG, "requestFocus");
+//		mEditText.clearFocus();
+//		mEditText.requestFocus();
+//
+//	}
 
 	public void scrollToEnd() {
 		SurespotLog.v(TAG, "scrollToEnd");
@@ -553,6 +427,5 @@ public class ChatFragment extends SherlockFragment {
 				// outState.putString("selectedMessage", message.toJSONObject().toString());
 			}
 		}
-
 	}
 }

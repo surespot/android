@@ -1,10 +1,9 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.twofours.surespot.chat.MainActivityLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chatLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
     tools:context=".ChatActivity" >
 
     <com.viewpagerindicator.TitlePageIndicator
@@ -24,7 +23,60 @@
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/etMessage"
+        android:layout_below="@+id/indicator" />
 
-</LinearLayout>
+    <Button
+        android:id="@+id/bEmoji"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_above="@+id/fEmoji"
+        android:layout_alignWithParentIfMissing="true"
+        android:background="@drawable/emoji_bitmap"
+        android:height="35dp"
+        android:visibility="gone"
+        android:width="35dp" />
+
+    <EditText
+        android:id="@+id/etMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/fEmoji"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_toLeftOf="@+id/bSend"
+        android:layout_toRightOf="@+id/bEmoji"
+        android:imeOptions="actionSend"
+        android:maxHeight="150sp"
+        android:minHeight="45sp" >
+    </EditText>
+
+    <Button
+        android:id="@+id/bSend"
+        android:layout_width="70sp"
+        android:layout_height="70sp"
+        android:layout_above="@+id/fEmoji"
+        android:layout_alignParentRight="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_marginBottom="-10sp"
+        android:layout_marginRight="-10sp"
+        android:background="@drawable/send_button"
+        android:text="@string/home"
+        android:textColor="@android:color/black" />
+
+    <GridView
+        android:id="@+id/fEmoji"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:columnWidth="64dp"
+        android:gravity="center"
+        android:horizontalSpacing="10dp"
+        android:numColumns="auto_fit"
+        android:paddingTop="10dp"
+        android:stretchMode="none"
+        android:verticalSpacing="10dp"
+        android:visibility="gone" >
+    </GridView>
+
+</com.twofours.surespot.chat.MainActivityLayout>

@@ -34,7 +34,6 @@ public class ChatAdapter extends BaseAdapter {
 	private IAsyncCallback<Boolean> mLoadingCallback;
 	private boolean mDebugMode;
 	private boolean mCheckingSequence;
-	private IAsyncCallback<Boolean> mDeletedCallback;
 	private int mCurrentScrollPositionId;
 
 	public ChatAdapter(Context context) {
@@ -44,10 +43,6 @@ public class ChatAdapter extends BaseAdapter {
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
 		// pm.getBoolean("pref_hide_deleted_messages", false);
 
-	}
-
-	public void setDeletedCallback(IAsyncCallback<Boolean> callback) {
-		mDeletedCallback = callback;
 	}
 
 	public void doneCheckingSequence() {
@@ -487,10 +482,7 @@ public class ChatAdapter extends BaseAdapter {
 	public void userDeleted(boolean delete) {
 		if (delete) {
 			deleteTheirMessages();
-		}
-		if (mDeletedCallback != null) {
-			mDeletedCallback.handleResponse(delete);
-		}
+		}		
 	}
 
 }

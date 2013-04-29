@@ -17,24 +17,51 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.TextWatcher;
+import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.chat.EmojiAdapter;
+import com.twofours.surespot.chat.EmojiParser;
+import com.twofours.surespot.chat.MainActivityLayout;
+import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
@@ -44,10 +71,11 @@ import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
+import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
 
-public class MainActivity extends SherlockFragmentActivity {
+public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
 
 	private static CredentialCachingService mCredentialCachingService = null;
@@ -65,10 +93,24 @@ public class MainActivity extends SherlockFragmentActivity {
 	private boolean mExternalStorageWriteable = false;
 	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
+	InputMethodManager mImm;
+	private KeyboardStateHandler mKeyboardStateHandler;
+	private MainActivityLayout mActivityLayout;
+	private EditText mEditText;
+	private Button mSendButton;
+	private GridView mEmojiView;
+	private boolean mKeyboardShowing;
+	private int mEmojiHeight;
+	private int mInitialHeightOffset;
+	private Button mEmojiButton;
+	private Friend mCurrentFriend;
+	private boolean mShowEmoji = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		// Gingerbread does not like FLAG_SECURE
 		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
@@ -82,9 +124,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 
 		mContext = this;
-
-		Intent intent = getIntent();
-		Utils.logIntent(TAG, intent);
 
 		m401Handler = new IAsyncCallback<Void>() {
 
@@ -103,6 +142,9 @@ public class MainActivity extends SherlockFragmentActivity {
 				}
 			}
 		};
+
+		Intent intent = getIntent();
+		Utils.logIntent(TAG, intent);
 
 		// if we have any users or we don't need to create a user, figure out if we need to login
 		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
@@ -142,6 +184,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 			else {
 				setContentView(R.layout.activity_main);
+
 				mHomeImageView = (ImageView) findViewById(android.R.id.home);
 				if (mHomeImageView == null) {
 					mHomeImageView = (ImageView) findViewById(R.id.abs__home);
@@ -164,10 +207,196 @@ public class MainActivity extends SherlockFragmentActivity {
 							public void handleResponse(Boolean inProgress) {
 								setHomeProgress(inProgress);
 							}
+						}, new IAsyncCallback<Void>() {
+
+							@Override
+							public void handleResponse(Void result) {
+								handleSendIntent();
+
+							}
+						}, new IAsyncCallback<Friend>() {
+
+							@Override
+							public void handleResponse(Friend result) {
+								handleTabChange(result);
+
+							}
 						});
-				mChatController.init((ViewPager) findViewById(R.id.pager), (TitlePageIndicator) findViewById(R.id.indicator), mMenuItems);
+
+				mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
+				mActivityLayout.setOnSoftKeyboardListener(this);
+				mActivityLayout.setMainActivity(this);
+
+				final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
+
+				mKeyboardStateHandler = new KeyboardStateHandler();
+				mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
+
+				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
+
+				setupChatControls();
+
 			}
+
 		}
+
+	}
+
+	class KeyboardStateHandler implements OnGlobalLayoutListener {
+		@Override
+		public void onGlobalLayout() {
+			final View activityRootView = findViewById(R.id.chatLayout);
+			int activityHeight = activityRootView.getHeight();
+			int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
+
+			if (mInitialHeightOffset == 0) {
+				mInitialHeightOffset = heightDelta;
+			}
+
+			// set the emoji view to the keyboard height
+			mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
+
+			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView
+					.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
+		}
+	}
+
+	private void setupChatControls() {
+		mSendButton = (Button) findViewById(R.id.bSend);
+		mSendButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+				if (mCurrentFriend != null) {
+					if (mEditText.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
+						sendMessage();
+					}
+					else {
+						// go to friends
+						mChatController.setCurrentChat(null);
+					}
+				}
+				else {
+					inviteFriend();
+				}
+			}
+		});
+
+		mEmojiView = (GridView) findViewById(R.id.fEmoji);
+		mEmojiView.setAdapter(new EmojiAdapter(this));
+
+		mEmojiView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+
+				// TODO inses
+				int start = mEditText.getSelectionStart();
+				int end = mEditText.getSelectionEnd();
+				mEditText.getText().replace(start, end, EmojiParser.getInstance().getEmojiChar(position));
+				mEditText.setSelection(end);
+			}
+		});
+
+		mEmojiButton = (Button) findViewById(R.id.bEmoji);
+		mEmojiButton.setOnClickListener(new View.OnClickListener() {
+
+			boolean mKeyboardWasOpen = false;
+
+			@Override
+			public void onClick(View v) {
+
+				SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
+				if (mKeyboardShowing) {
+
+					SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
+
+					mShowEmoji = true;
+					// mEmojiView.setVisibility(View.VISIBLE);
+					hideSoftKeyboard();
+					mKeyboardWasOpen = true;
+				}
+				else {
+
+					int visibility = mEmojiView.getVisibility();
+					if (visibility == View.VISIBLE) {
+						SurespotLog.v(TAG, "keyboardState,  hiding emoji");
+
+						if (mKeyboardWasOpen) {
+							SurespotLog.v(TAG, "keyboardState,  showing keyboard");
+							showSoftKeyboard(mEditText);
+							mKeyboardWasOpen = false;
+						}
+						else {
+							mEmojiView.setVisibility(View.GONE);
+						}
+
+						mShowEmoji = false;
+						//
+					}
+					else {
+						SurespotLog.v(TAG, "keyboardState,  showing emoji");
+						mEmojiView.setVisibility(View.VISIBLE);
+						mShowEmoji = true;
+
+					}
+
+				}
+			}
+		});
+
+		mSendButton.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				if (mEditText.getText().toString().length() == 0) {
+					mChatController.closeTab();
+				}
+				return true;
+			}
+		});
+		mEditText = (EditText) findViewById(R.id.etMessage);
+		mEditText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+
+				if (mCurrentFriend == null) {
+					if (actionId == EditorInfo.IME_ACTION_SEND) {
+						inviteFriend();
+						handled = true;
+					}
+				}
+				else {
+					if (actionId == EditorInfo.IME_ACTION_DONE) {
+						mEditText.append("\n");
+						handled = true;
+					}
+					// sendMessage();
+				}
+
+				return handled;
+			}
+		});
+
+		TextWatcher tw = new ChatTextWatcher();
+		mEditText.addTextChangedListener(tw);
+
+		mEditText.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+
+				if (!mKeyboardShowing) {
+					mEditText.requestFocus();
+					showSoftKeyboard(v);
+
+					mShowEmoji = false;
+					return true;
+				}
+				else {
+					return false;
+				}
+
+			}
+		});
 	}
 
 	private boolean needsLogin() {
@@ -337,28 +566,31 @@ public class MainActivity extends SherlockFragmentActivity {
 				Uri selectedImageUri = data.getData();
 
 				final String to = data.getStringExtra("to");
-			
-					SurespotLog.v(TAG, "to: " + to);
-					if (selectedImageUri != null) {
 
-						// Utils.makeToast(this, getString(R.string.uploading_image));
-						ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String,String,String>() {
-							@Override
-							public void handleResponse(String url, String version, String iv) {
-								if (url == null) {
-									Utils.makeToast(MainActivity.this, "could not upload friend image");
+				SurespotLog.v(TAG, "to: " + to);
+				if (selectedImageUri != null) {
+
+					// Utils.makeToast(this, getString(R.string.uploading_image));
+					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to,
+							new IAsyncCallbackTriplet<String, String, String>() {
+								@Override
+								public void handleResponse(String url, String version, String iv) {
+									if (url == null) {
+										Utils.makeToast(MainActivity.this, "could not upload friend image");
+									}
+									else {
+										mChatController.setImageUrl(to, url, version, iv);
+
+									}
 								}
-								else {									
-									mChatController.setImageUrl(to, url, version, iv);
-								}
-							}
-						});
-					}
-				
+							});
+
+				}
+
 			}
 			break;
 		}
-		
+
 	}
 
 	@Override
@@ -399,7 +631,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		return true;
 	}
-	
+
 	public void uploadFriendImage(String name) {
 		MessageImageDownloader.evictCache();
 		Intent intent = new Intent(this, ImageSelectActivity.class);
@@ -593,6 +825,14 @@ public class MainActivity extends SherlockFragmentActivity {
 					mImageCaptureHandler.getImagePath());
 			outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
 		}
+
+		if (mKeyboardShowing) {
+			outState.putBoolean("keyboardShowing", mKeyboardShowing);
+		}
+
+		if (mInitialHeightOffset > 0) {
+			outState.putInt("heightOffset", mInitialHeightOffset);
+		}
 	}
 
 	@Override
@@ -605,6 +845,9 @@ public class MainActivity extends SherlockFragmentActivity {
 					mImageCaptureHandler.getImagePath());
 		}
 
+		mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing");
+
+		mInitialHeightOffset = savedInstanceState.getInt("heightOffset");
 	}
 
 	private void setHomeProgress(boolean inProgress) {
@@ -624,4 +867,288 @@ public class MainActivity extends SherlockFragmentActivity {
 			mHomeImageView.clearAnimation();
 		}
 	}
+
+	public synchronized void hideSoftKeyboard() {
+		SurespotLog.v(TAG, "hideSoftkeyboard");
+		mKeyboardShowing = false;
+
+		mImm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0, new ResultReceiver(null) {
+			@Override
+			protected void onReceiveResult(int resultCode, Bundle resultData) {
+				if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+					mKeyboardShowing = true;
+				}
+			}
+		});
+	}
+
+	private synchronized void showSoftKeyboard(View view) {
+		SurespotLog.v(TAG, "showSoftkeyboard");
+		mKeyboardShowing = true;
+		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		mImm.showSoftInput(view, 0, new ResultReceiver(null) {
+			@Override
+			protected void onReceiveResult(int resultCode, Bundle resultData) {
+				if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
+					mKeyboardShowing = false;
+				}
+			}
+		});
+	}
+
+	class ChatTextWatcher implements TextWatcher {
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			// mEditText.removeTextChangedListener(this);
+
+			setButtonText();
+			// mEditText.setText(EmojiParser.getInstance().addEmojiSpans(s.toString()));
+			// mEditText.addTextChangedListener(this);
+		}
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			mEditText.setSelection(s.length());
+		}
+	}
+
+	// populate the edit box
+	public void handleSendIntent() {
+		Intent intent = this.getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+		Bundle extras = intent.getExtras();
+
+		if (action == null) {
+			return;
+		}
+
+		if (action.equals(Intent.ACTION_SEND)) {
+			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+
+			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
+				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
+				SurespotLog.v(TAG, "received action send, data: " + sharedText);
+				mEditText.append(sharedText);
+				// requestFocus();
+				// clear the intent
+			
+			}
+
+			else {
+				if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+
+					final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
+
+					// Utils.makeToast(getActivity(), getString(R.string.uploading_image));
+
+					SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
+
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri,
+							mCurrentFriend.getName(), true, new IAsyncCallback<Boolean>() {
+
+								@Override
+								public void handleResponse(final Boolean result) {
+									SurespotLog.v(TAG, "upload picture response: " + result);
+
+									if (!result) {
+
+										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+										// clear the intent
+
+									}
+
+									// scrollToEnd();
+								}
+							});
+					// }
+				}
+
+				else {
+					if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
+						// TODO implement
+					}
+				}
+			
+			}
+			Utils.clearIntent(getIntent());
+		}
+	}
+
+	private void sendMessage() {
+
+		final String message = mEditText.getText().toString();
+		mChatController.sendMessage(message, SurespotConstants.MimeTypes.TEXT);
+
+		//
+		TextKeyListener.clear(mEditText.getText());
+
+		// scroll to end
+		// scrollToEnd();
+	}
+
+	public boolean backButtonPressed() {
+		boolean handled = false;
+		SurespotLog.v(TAG, "backButtonPressed");
+		if (mKeyboardShowing) {
+
+			hideSoftKeyboard();
+			mEmojiView.setVisibility(View.GONE);
+			mShowEmoji = false;
+			handled = true;
+		}
+		else {
+
+			if (mEmojiView.getVisibility() == View.VISIBLE) {
+				mEmojiView.setVisibility(View.GONE);
+				mShowEmoji = false;
+				handled = true;
+			}
+		}
+
+		return handled;
+	}
+
+	@Override
+	public void onLayoutMeasure() {
+		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
+		if (mShowEmoji) {
+			if (mEmojiHeight > 0) {
+				android.view.ViewGroup.LayoutParams layoutParams = mEmojiView.getLayoutParams();
+				layoutParams.height = mEmojiHeight;
+			}
+			mEmojiView.setVisibility(View.VISIBLE);
+		}
+		else {
+			mEmojiView.setVisibility(View.GONE);
+		}
+
+	}
+
+	private void inviteFriend() {
+
+		final String friend = mEditText.getText().toString();
+
+		if (friend.length() > 0) {
+			if (friend.equals(IdentityController.getLoggedInUser())) {
+				// TODO let them be friends with themselves?
+				Utils.makeToast(this, "You can't be friends with yourself, bro.");
+				return;
+			}
+
+			setHomeProgress(true);
+			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String arg0) {
+					setHomeProgress(false);
+					TextKeyListener.clear(mEditText.getText());
+					if (mChatController.getFriendAdapter().addFriendInvited(friend)) {
+						Utils.makeToast(MainActivity.this, friend + " has been invited to be your friend.");
+					}
+					else {
+						Utils.makeToast(MainActivity.this, friend + " has accepted your friend request.");
+					}
+
+				}
+
+				@Override
+				public void onFailure(Throwable arg0, String content) {
+					setHomeProgress(false);
+					if (arg0 instanceof HttpResponseException) {
+						HttpResponseException error = (HttpResponseException) arg0;
+						int statusCode = error.getStatusCode();
+						switch (statusCode) {
+						case 404:
+							Utils.makeToast(MainActivity.this, "User does not exist.");
+							break;
+						case 409:
+							Utils.makeToast(MainActivity.this, "You are already friends.");
+							break;
+						case 403:
+							Utils.makeToast(MainActivity.this, "You have already invited this user.");
+							break;
+						default:
+							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+							Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
+						}
+					}
+					else {
+						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+						Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
+					}
+				}
+			});
+		}
+	}
+
+	private void setButtonText() {
+		if (mCurrentFriend == null) {
+			mSendButton.setText("invite");
+		}
+		else {
+			if (mEditText.getText().length() > 0) {
+				mSendButton.setText("send");
+			}
+			else {
+				mSendButton.setText("home");
+			}
+
+		}
+	}
+
+	private void handleTabChange(Friend friend) {
+		if (friend == null) {
+			mEmojiButton.setVisibility(View.GONE);
+
+			mEditText.setText("");
+			// mEditText.getLayoutParams().
+			mEditText.setImeActionLabel("invite", EditorInfo.IME_ACTION_SEND);
+			mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
+			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+			mEditText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
+					new LetterOrDigitInputFilter() });
+			mEditText.setSingleLine(true);
+
+			mEmojiView.setVisibility(View.GONE);
+			mShowEmoji = false;
+
+		}
+		else {
+			// if we're coming from the home tab clear the data
+
+			if (mCurrentFriend == null) {
+				mEditText.setText("");
+			}
+
+			mEditText.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
+			mEditText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+			mEditText.setFilters(new InputFilter[0]);
+			mEditText.setMaxLines(5);
+			mEditText.setVerticalScrollBarEnabled(true);
+			mEditText.setSingleLine(false);
+
+			if (friend.isDeleted()) {
+				mEmojiButton.setVisibility(View.GONE);
+				mEditText.setVisibility(View.GONE);
+
+			}
+			else {
+				mEditText.setVisibility(View.VISIBLE);
+				mEmojiButton.setVisibility(View.VISIBLE);
+
+			}
+		}
+
+		mCurrentFriend = friend;
+		setButtonText();
+
+	}
+
 }
