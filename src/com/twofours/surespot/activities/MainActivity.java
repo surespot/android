@@ -292,8 +292,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				int end = mEditText.getSelectionEnd();
 				CharSequence insertText = EmojiParser.getInstance().getEmojiChar(position);
 				mEditText.getText().replace(Math.min(start, end), Math.max(start, end), insertText);
-				mEditText.setSelection(Math.max(start, end)+insertText.length());
-				
+				mEditText.setSelection(Math.max(start, end) + insertText.length());
+
 			}
 		});
 
@@ -828,10 +828,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (mKeyboardShowing) {
+			SurespotLog.v(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
 			outState.putBoolean("keyboardShowing", mKeyboardShowing);
 		}
 
 		if (mInitialHeightOffset > 0) {
+			SurespotLog.v(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
 			outState.putInt("heightOffset", mInitialHeightOffset);
 		}
 	}
@@ -915,7 +917,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		@Override
 		public void afterTextChanged(Editable s) {
-			mEditText.setSelection(s.length());
+			// mEditText.setSelection(s.length());
 		}
 	}
 
