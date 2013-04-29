@@ -288,11 +288,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mEmojiView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-				// TODO inses
 				int start = mEditText.getSelectionStart();
 				int end = mEditText.getSelectionEnd();
-				mEditText.getText().replace(start, end, EmojiParser.getInstance().getEmojiChar(position));
-				mEditText.setSelection(end);
+				CharSequence insertText = EmojiParser.getInstance().getEmojiChar(position);
+				mEditText.getText().replace(Math.min(start, end), Math.max(start, end), insertText);
+				mEditText.setSelection(Math.max(start, end)+insertText.length());
+				
 			}
 		});
 
@@ -938,7 +939,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEditText.append(sharedText);
 				// requestFocus();
 				// clear the intent
-			
+
 			}
 
 			else {
@@ -950,8 +951,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri,
-							mCurrentFriend.getName(), true, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(),
+							true, new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(final Boolean result) {
@@ -975,7 +976,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						// TODO implement
 					}
 				}
-			
+
 			}
 			Utils.clearIntent(getIntent());
 		}
