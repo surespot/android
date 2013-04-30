@@ -62,8 +62,11 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public void setAvailableMessageId(int availableMessageId) {
-		if (availableMessageId > 0) {
+		if (availableMessageId > 0 && isFriend() && !isDeleted()) {
 			mAvailableMessageId = availableMessageId;
+
+			// we received a message so we're not "new"
+			setNewFriend(false);
 		}
 		SurespotLog.v(TAG, "setAvailableMessageId, %d, friend: %s", availableMessageId, this);
 	}
