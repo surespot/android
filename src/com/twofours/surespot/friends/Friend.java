@@ -3,6 +3,7 @@ package com.twofours.surespot.friends;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.twofours.surespot.AlphanumComparator;
 import com.twofours.surespot.common.SurespotLog;
 
 public class Friend implements Comparable<Friend> {
@@ -25,9 +26,11 @@ public class Friend implements Comparable<Friend> {
 	private String mImageUrl;
 	private String mImageVersion;
 	private String mImageIv;
+	private static AlphanumComparator mComparator = new AlphanumComparator();
 
 	public Friend(String name) {
 		mName = name;
+
 		SurespotLog.v(TAG, "constructor, friend: %s", this);
 	}
 
@@ -173,7 +176,7 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public boolean isMessageActivity() {
-	
+
 		// SurespotLog.v(TAG, "isMessageActivity, %s", toString());
 		return mAvailableMessageId - mLastViewedMessageId > 0;
 	}
@@ -197,7 +200,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageUrl(String imageUrl) {
 		mImageUrl = imageUrl;
-		//SurespotLog.v(TAG, "setImageUrl, friend: %s", this);
+		// SurespotLog.v(TAG, "setImageUrl, friend: %s", this);
 	}
 
 	public String getImageVersion() {
@@ -206,7 +209,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageVersion(String imageVersion) {
 		mImageVersion = imageVersion;
-	//	SurespotLog.v(TAG, "setImageVersion, friend: %s", this);
+		// SurespotLog.v(TAG, "setImageVersion, friend: %s", this);
 	}
 
 	public String getImageIv() {
@@ -215,7 +218,7 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageIv(String imageIv) {
 		mImageIv = imageIv;
-		//SurespotLog.v(TAG, "setImageIv, friend: %s", this);
+		// SurespotLog.v(TAG, "setImageIv, friend: %s", this);
 	}
 
 	public boolean isChatActive() {
@@ -239,24 +242,24 @@ public class Friend implements Comparable<Friend> {
 	public int compareTo(Friend another) {
 		// if the flags are the same sort by name
 		// not active or invite, sort by name
-		
-		//for the purposes of sorting we'll add MESSAGE_ACTIVITY to the flags if they have new messages
+
+		// for the purposes of sorting we'll add MESSAGE_ACTIVITY to the flags if they have new messages
 		int myFlags = this.getFlags();
 		if (this.isMessageActivity()) {
 			myFlags |= MESSAGE_ACTIVITY;
 		}
-				
+
 		int theirFlags = another.getFlags();
 		if (another.isMessageActivity()) {
 			theirFlags |= MESSAGE_ACTIVITY;
 		}
-		
-		SurespotLog.v(TAG,"comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
-				
+
+		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
+
 		if ((theirFlags == myFlags) || (theirFlags < MESSAGE_ACTIVITY && myFlags < MESSAGE_ACTIVITY)) {
-			return this.getName().compareToIgnoreCase(another.getName());
+			return mComparator.compare(this.getName().toLowerCase(), another.getName().toLowerCase());
 		}
-		else {					
+		else {
 			// sort by flag value
 			return Integer.valueOf(theirFlags).compareTo(myFlags);
 		}
