@@ -117,10 +117,7 @@ public class EmojiParser {
 		R.drawable.rice_ball,
 		R.drawable.cake,
 		R.drawable.two_women_holding_hands,
-		
-		
-		
-				 };
+	};
 
 		public static int SMILING_FACE_WITH_OPEN_MOUTH_AND_SMILING_EYES = 0;
 		public static int GRINNING_FACE_WITH_SMILING_EYES = 1;
@@ -277,7 +274,7 @@ public class EmojiParser {
 
 		HashMap<String, Integer> emojiCharToRes = new HashMap<String, Integer>(mEmojiChars.length);
 		for (int i = 0; i < mEmojiChars.length; i++) {
-			emojiCharToRes.put("\\u" + mEmojiChars[i], EMOJI_RES_IDS[i]);
+			emojiCharToRes.put(("\\u" + mEmojiChars[i]).toLowerCase(), EMOJI_RES_IDS[i]);
 		}
 
 		return emojiCharToRes;
@@ -313,7 +310,7 @@ public class EmojiParser {
 			if (Character.isSupplementaryCodePoint(cp.codePoint)) {
 				String escapedUnicode = ChatUtils.unicodeEscaped(cp.codePoint);
 				suppCps.append(escapedUnicode + (i.hasNext() ? ", " : ""));
-				Integer resId = mEmojiCharToRes.get(escapedUnicode);
+				Integer resId = mEmojiCharToRes.get(escapedUnicode.toLowerCase());
 
 				if (resId != null) {
 					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
