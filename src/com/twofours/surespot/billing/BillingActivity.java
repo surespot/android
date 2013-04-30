@@ -3,6 +3,7 @@ package com.twofours.surespot.billing;
 import java.util.List;
 
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,7 +14,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
 import com.twofours.surespot.R;
 import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
@@ -37,7 +37,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
-		Utils.configureActionBar(this, "pay", "what you like", false);
+		Utils.configureActionBar(this, "pay", "what you like!", false);
 
 		mHomeImageView = (ImageView) findViewById(android.R.id.home);
 		if (mHomeImageView == null) {
@@ -131,18 +131,16 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 	};
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getSupportMenuInflater().inflate(R.menu.billing, menu);
-
-		return true;
-	}
-
 	public void onPurchase(View arg0) {
 		String denom = (String) arg0.getTag();
 		showProgress();
 		try {
+			if (denom.equals("1000000")) {
+				Utils.makeToast(this, "haha, right!");
+				hideProgress();
+				return;
+			}
+			
 			mIabHelper.launchPurchaseFlow(this, "pwyl_" + denom, RC_REQUEST, new OnIabPurchaseFinishedListener() {
 
 				@Override
@@ -173,8 +171,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 	}
 
-	public void onPaypal(View arg0) {
-
+	private Uri getPayPalUri() {
 		Uri.Builder uriBuilder = new Uri.Builder();
 		uriBuilder.scheme("https").authority("www.paypal.com").path("cgi-bin/webscr");
 		uriBuilder.appendQueryParameter("cmd", "_donations");
@@ -188,20 +185,85 @@ public class BillingActivity extends SherlockFragmentActivity {
 		uriBuilder.appendQueryParameter("no_shipping", "1");
 		uriBuilder.appendQueryParameter("currency_code", Utils.getResourceString(this, "donations__paypal_currency_code"));
 		// uriBuilder.appendQueryParameter("bn", "PP-DonationsBF:btn_donate_LG.gif:NonHosted");
-		Uri payPalUri = uriBuilder.build();
+		return uriBuilder.build();
 
+	}
+
+	public void onPaypalBrowser(View arg0) {
+
+		Uri payPalUri = getPayPalUri();
 		SurespotLog.d(TAG, "Opening browser with url: %s", payPalUri);
 
 		// Start your favorite browser
 		Intent viewIntent = new Intent(Intent.ACTION_VIEW, payPalUri);
 		startActivity(viewIntent);
+		finish();
+	}
+
+	public void onPaypalEmail(View arg0) {
+		Uri payPalUri = getPayPalUri();
+		SurespotLog.d(TAG, "sending email with url: %s", payPalUri);
+
+		String subject = "surespot pay what you like paypal link";
+		String body = "thankyou for paying what you like for surespot! the paypal link is:\n\n" + payPalUri;
+
+		Intent intent = new Intent(Intent.ACTION_SENDTO);
+		// intent.setType("text/plain");
+		intent.setData(Uri.parse("mailto:"));
+		// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+
+		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+		intent.putExtra(Intent.EXTRA_TEXT, body);
+		startActivity(intent);
+		finish();
 
 	}
 
-	public void onBitcoin(View arg0) {
+	public void onBitcoinClipboard(View arg0) {
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-		clipboard.setText("this is the bitcoin address");
-		Utils.makeToast(this, "bitcoin address copied to clipboard");
+
+		String bitcoinAddy = Utils.getResourceString(this, "donations__bitcoin");
+		clipboard.setText(bitcoinAddy);
+		Utils.makeToast(this, bitcoinAddy + " copied to clipboard");
+
+	}
+
+	public void onBitcoinEmail(View arg0) {
+
+		String bitcoinAddy = Utils.getResourceString(this, "donations__bitcoin");
+
+		SurespotLog.d(TAG, "sending email with bitcoin");
+
+		String subject = "surespot pay what you like bitcoin address";
+		String body = "thankyou for paying what you like for surespot! the bitcoin address is:\n\n" + bitcoinAddy
+				+ "\n\nthe QR code can be viewed here: https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A" + bitcoinAddy
+				+ "&choe=UTF-8&chs=300x300";
+
+		Intent intent = new Intent(Intent.ACTION_SENDTO);
+		// intent.setType("text/plain");
+		intent.setData(Uri.parse("mailto:"));
+		// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+
+		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+		intent.putExtra(Intent.EXTRA_TEXT, body);
+		startActivity(intent);
+
+		finish();
+	}
+
+	public void onBitcoinWallet(View arg0) {
+		String bitcoinAddy = Utils.getResourceString(this, "donations__bitcoin");
+
+		Uri uri = Uri.parse("bitcoin:" + bitcoinAddy);
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		try {
+			startActivity(intent);
+			finish();
+		}
+		catch (ActivityNotFoundException anfe) {
+			Utils.makeToast(this, "could not open bitcoin wallet");
+		}
+		
 	}
 
 	@Override
