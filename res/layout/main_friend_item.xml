@@ -12,6 +12,24 @@
         android:background="@drawable/abs__list_selector_holo_light"
         android:orientation="horizontal" >
 
+        <View
+            android:id="@+id/friendInactive"
+            android:layout_width="5dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/transparent_rectangle"
+            android:visibility="visible" >
+        </View>
+
+        <View
+            android:id="@+id/friendActive"
+            android:layout_width="5dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/filled_blue_rectangle"
+            android:visibility="gone" >
+        </View>
+
         <ImageView
             android:id="@+id/friendAvatar"
             android:layout_width="50dp"

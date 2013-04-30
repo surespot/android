@@ -21,7 +21,7 @@
         android:layout_width="5dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:background="@drawable/empty_blue_rectangle"
+        android:background="@drawable/filled_black_rectangle_grey_border"
         android:visibility="visible" >
     </View>
 
@@ -30,7 +30,7 @@
         android:layout_width="5dp"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
-        android:background="@drawable/filled_blue_rectangle"
+        android:background="@drawable/filled_grey_rectangle"
         android:visibility="gone" >
     </View>
 

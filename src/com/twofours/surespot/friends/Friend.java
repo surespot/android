@@ -256,7 +256,7 @@ public class Friend implements Comparable<Friend> {
 
 		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
 
-		if ((theirFlags == myFlags) || (theirFlags < MESSAGE_ACTIVITY && myFlags < MESSAGE_ACTIVITY)) {
+		if ((theirFlags == myFlags) || (theirFlags < CHAT_ACTIVE && myFlags < CHAT_ACTIVE)) {
 			return mComparator.compare(this.getName().toLowerCase(), another.getName().toLowerCase());
 		}
 		else {

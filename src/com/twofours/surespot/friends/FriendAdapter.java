@@ -93,7 +93,7 @@ public class FriendAdapter extends BaseAdapter {
 		}
 
 		friend.setNewFriend(true);
-		
+
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 	}
@@ -117,7 +117,7 @@ public class FriendAdapter extends BaseAdapter {
 			friend = new Friend(name);
 			mFriends.add(friend);
 		}
-		friend.setInviter(true);		
+		friend.setInviter(true);
 		Collections.sort(mFriends);
 		notifyDataSetChanged();
 
@@ -126,7 +126,7 @@ public class FriendAdapter extends BaseAdapter {
 	public Friend setFriendDeleted(String name) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
-			friend.setDeleted();			
+			friend.setDeleted();
 			Collections.sort(mFriends);
 			notifyDataSetChanged();
 		}
@@ -229,8 +229,9 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);
 			friendViewHolder.statusLayout.setOnClickListener(mClickListener);
 			friendViewHolder.statusLayout.setOnLongClickListener(mLongClickListener);
-			
 
+			friendViewHolder.friendActive = convertView.findViewById(R.id.friendActive);
+			friendViewHolder.friendInactive = convertView.findViewById(R.id.friendInactive);
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
@@ -289,14 +290,14 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.statusLayout.setEnabled(true);
 			friendViewHolder.vgInvite.setVisibility(View.GONE);
 
-			//if (friend.isChatActive()) {
-				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_active);
-
-//			}
-//			else {
-//				convertView.setBackgroundResource(R.drawable.list_selector_friend_chat_inactive);
-//				// convertView.setBackgroundColor(Color.rgb(0xee, 0xee, 0xee));
-			//}
+			if (friend.isChatActive()) {
+				friendViewHolder.friendActive.setVisibility(View.VISIBLE);
+				friendViewHolder.friendInactive.setVisibility(View.GONE);
+			}
+			else {
+				friendViewHolder.friendActive.setVisibility(View.GONE);
+				friendViewHolder.friendInactive.setVisibility(View.VISIBLE);
+			}
 
 			friendViewHolder.vgActivity.setVisibility(friend.isMessageActivity() ? View.VISIBLE : View.GONE);
 
@@ -361,6 +362,8 @@ public class FriendAdapter extends BaseAdapter {
 		public View vgActivity;
 		public View statusLayout;
 		public ImageView avatarImage;
+		public View friendActive;
+		public View friendInactive;
 	}
 
 	public void sort() {
