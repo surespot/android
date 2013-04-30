@@ -337,6 +337,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						//
 					}
 					else {
+						//if we don't have a height, get it
+//						if (mEmojiHeight == 0) {
+//							
+//							showSoftKeyboard(mEditText);
+//							hideSoftKeyboard();
+//						}
+//						
+							
 						SurespotLog.v(TAG, "keyboardState,  showing emoji");
 						mEmojiView.setVisibility(View.VISIBLE);
 						mShowEmoji = true;

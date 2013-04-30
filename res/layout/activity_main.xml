@@ -67,15 +67,15 @@
     <GridView
         android:id="@+id/fEmoji"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:layout_alignParentBottom="true"
-        android:columnWidth="64dp"
+        android:columnWidth="40dp"
         android:gravity="center"
-        android:horizontalSpacing="10dp"
+        android:horizontalSpacing="2dp"
         android:numColumns="auto_fit"
         android:paddingTop="10dp"
         android:stretchMode="none"
-        android:verticalSpacing="10dp"
+        android:verticalSpacing="2dp"
         android:visibility="gone" >
     </GridView>
 
