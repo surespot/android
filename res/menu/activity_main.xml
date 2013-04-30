@@ -32,7 +32,7 @@
 
             <item
                 android:id="@+id/menu_pwyl"
-                android:icon="@drawable/ic_menu_friendslist"
+                android:icon="@drawable/heart"
                 android:title="pay what you like">
                 
             </item>
