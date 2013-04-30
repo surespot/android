@@ -117,7 +117,7 @@ public class EmojiParser {
 		R.drawable.rice_ball,
 		R.drawable.cake,
 		R.drawable.two_women_holding_hands,
-		R.drawable.pistol,
+		
 		
 		
 				 };
@@ -183,7 +183,7 @@ public class EmojiParser {
 		public static int RICE_BALL = 58;
 		public static int SHORTCAKE = 59;
 		public static int TWO_WOMEN_HOLDING_HANDS = 60;
-		public static int PISTOL = 61;
+		
 		
 	
 
@@ -259,7 +259,7 @@ public class EmojiParser {
 		Emojis.getEmojiResource(Emojis.RICE_BALL), //58
 		Emojis.getEmojiResource(Emojis.SHORTCAKE), //59
 		Emojis.getEmojiResource(Emojis.TWO_WOMEN_HOLDING_HANDS), //60
-		Emojis.getEmojiResource(Emojis.PISTOL)//61
+		
 		
 	};
 

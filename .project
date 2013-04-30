@@ -31,4 +31,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>libs/android-support-v4.jar</name>
+			<type>1</type>
+			<locationURI>PARENT-3-PROJECT_LOC/adt-bundle-windows-x86_64-20130219/sdk/extras/android/support/v4/android-support-v4.jar</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
