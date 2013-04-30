@@ -51,6 +51,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -93,7 +94,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mExternalStorageWriteable = false;
 	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
-	InputMethodManager mImm;
+	private InputMethodManager mImm;
 	private KeyboardStateHandler mKeyboardStateHandler;
 	private MainActivityLayout mActivityLayout;
 	private EditText mEditText;
@@ -105,6 +106,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private Button mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -235,6 +237,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
 				setupChatControls();
+							
 
 			}
 
@@ -288,11 +291,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mEmojiView.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-				// TODO inses
 				int start = mEditText.getSelectionStart();
 				int end = mEditText.getSelectionEnd();
-				mEditText.getText().replace(start, end, EmojiParser.getInstance().getEmojiChar(position));
-				mEditText.setSelection(end);
+				CharSequence insertText = EmojiParser.getInstance().getEmojiChar(position);
+				mEditText.getText().replace(Math.min(start, end), Math.max(start, end), insertText);
+				mEditText.setSelection(Math.max(start, end) + insertText.length());
+
 			}
 		});
 
@@ -716,6 +720,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.deleteMessages(currentChat);
 			}
 
+		
+			return true;
+		case R.id.menu_pwyl:
+			intent = new Intent(this, BillingActivity.class);
+			startActivity(intent);
 			return true;
 		default:
 			return false;
@@ -732,6 +741,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 		mChatController = null;
+	
 	}
 
 	public static NetworkController getNetworkController() {
@@ -827,10 +837,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (mKeyboardShowing) {
+			SurespotLog.v(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
 			outState.putBoolean("keyboardShowing", mKeyboardShowing);
 		}
 
 		if (mInitialHeightOffset > 0) {
+			SurespotLog.v(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
 			outState.putInt("heightOffset", mInitialHeightOffset);
 		}
 	}
@@ -914,7 +926,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		@Override
 		public void afterTextChanged(Editable s) {
-			mEditText.setSelection(s.length());
+			// mEditText.setSelection(s.length());
 		}
 	}
 
@@ -938,7 +950,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEditText.append(sharedText);
 				// requestFocus();
 				// clear the intent
-			
+
 			}
 
 			else {
@@ -950,8 +962,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri,
-							mCurrentFriend.getName(), true, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(),
+							true, new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(final Boolean result) {
@@ -975,7 +987,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						// TODO implement
 					}
 				}
-			
+
 			}
 			Utils.clearIntent(getIntent());
 		}

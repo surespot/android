@@ -31,6 +31,7 @@ import com.twofours.surespot.chat.ChatUtils.CodePoint;
  */
 public class EmojiParser {
 	// Singleton stuff
+	private static final String TAG = "EmojiParser";
 	private static EmojiParser sInstance;
 
 	public static EmojiParser getInstance() {
@@ -265,7 +266,7 @@ public class EmojiParser {
 
 	public static final int EMOJI_CHARS = R.array.emoji_unicode_char;
 	public static final int EMOJI_NAMES = R.array.emoji_names;
-	private static final String TAG = null;
+	
 
 	private HashMap<String, Integer> buildEmojiCharToRes() {
 		if (EMOJI_RES_IDS.length != mEmojiChars.length) {
@@ -315,10 +316,10 @@ public class EmojiParser {
 				Integer resId = mEmojiCharToRes.get(escapedUnicode);
 
 				if (resId != null) {
-					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end-1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 				else {
-					builder.replace(cp.start, cp.end-1, escapedUnicode);
+					builder.replace(cp.start, cp.end, escapedUnicode);
 				}
 			}
 

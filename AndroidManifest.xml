@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -72,7 +73,7 @@
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
             android:label="@string/title_activity_main"
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="adjustResize|stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -159,6 +160,15 @@
         <activity
             android:name="com.twofours.surespot.ContactPickerActivity"
             android:label="@string/title_activity_contact_picker" >
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.billing.BillingActivity"
+            android:label="@string/title_activity_billing" >
+             <intent-filter>
+                <action android:name="com.twofours.surespot.billing.BillingActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

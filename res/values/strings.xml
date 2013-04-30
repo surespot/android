@@ -21,7 +21,6 @@
     <string name="title_activity_export_identity">backup identity</string>
     <string name="import_identity_label">restore identity...</string>
     <string name="export_identity_label">backup identity...</string>
-    
     <string name="delete_identity">delete identity...</string>
     <string name="import_identities">restore identity...</string>
     <string name="create_identity_label">create new identity...</string>
@@ -71,7 +70,11 @@
     <string name="title_activity_external_invite">ExternalInviteActivity</string>
     <string name="title_activity_contact_picker">ContactPickerActivity</string>
     <string name="crash_toast_text">Unfortunately surespot just crashed. A report containing no personally identifying information has been sent to the developer.</string>
-	<string name="block_underline"><u>block</u></string>
-	<string name="ignore_underline"><u>ignore</u></string>
-	<string name="accept_underline"><u>accept</u></string>
+    <string name="block_underline"><u>block</u></string>
+    <string name="ignore_underline"><u>ignore</u></string>
+    <string name="accept_underline"><u>accept</u></string>
+    <string name="title_activity_billing">BillingActivity</string>
+    
+    
+
 </resources>
