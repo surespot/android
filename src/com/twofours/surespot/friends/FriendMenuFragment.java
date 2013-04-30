@@ -15,10 +15,10 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "FriendMenuFragment";
 	private Friend mFriend;
 	private ArrayList<String> mItems;
-	private IAsyncCallbackTriplet<DialogInterface, Friend,String> mSelectionCallback;
+	private IAsyncCallbackTriplet<DialogInterface, Friend, String> mSelectionCallback;
 
-	public void setActivityAndFriend(Friend friend, IAsyncCallbackTriplet<DialogInterface, Friend,String> selectionCallback)  {
-		mFriend = friend;		
+	public void setActivityAndFriend(Friend friend, IAsyncCallbackTriplet<DialogInterface, Friend, String> selectionCallback) {
+		mFriend = friend;
 		mSelectionCallback = selectionCallback;
 	}
 
@@ -29,8 +29,10 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 
 		mItems = new ArrayList<String>(5);
 
-		mItems.add("set image");
-		mItems.add("delete all messages");
+		if (mFriend.isFriend()) {
+			mItems.add("set image");
+			mItems.add("delete all messages");
+		}
 		if (!mFriend.isInviter()) {
 			mItems.add("delete friend");
 
@@ -49,16 +51,15 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 				}
 
 				String itemText = mItems.get(which);
-				
+
 				mSelectionCallback.handleResponse(dialogi, mFriend, itemText);
-				//dialogi.cancel();
-			
+				// dialogi.cancel();
+
 			}
 		});
 
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
-
 
 }
