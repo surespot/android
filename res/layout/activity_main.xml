@@ -65,17 +65,18 @@
         android:textColor="@android:color/black" />
 
     <GridView
+        
         android:id="@+id/fEmoji"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_alignParentBottom="true"
-        android:columnWidth="40dp"
+        android:columnWidth="36dp"
         android:gravity="center"
-        android:horizontalSpacing="2dp"
+        android:horizontalSpacing="4dp"
         android:numColumns="auto_fit"
-        android:paddingTop="10dp"
-        android:stretchMode="none"
-        android:verticalSpacing="2dp"
+        android:padding="10dp"
+        android:stretchMode="spacingWidth"
+        android:verticalSpacing="10dp"
         android:visibility="gone" >
     </GridView>
 
