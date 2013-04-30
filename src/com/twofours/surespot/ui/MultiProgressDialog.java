@@ -24,7 +24,7 @@ public class MultiProgressDialog {
 		mDelay = delay;
 	}
 
-	public void incrProgress() {
+	public synchronized void incrProgress() {
 		mProgressCounter++;
 		SurespotLog.v(TAG, "incr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 1) {
@@ -59,7 +59,7 @@ public class MultiProgressDialog {
 		}
 	}
 
-	public void decrProgress() {
+	public synchronized void decrProgress() {
 		mProgressCounter--;
 		SurespotLog.v(TAG, "decr, progress counter: " + mProgressCounter);
 		if (mProgressCounter == 0) {

@@ -4,8 +4,8 @@
         android:id="@+id/item_overflow"
         android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="100"
-        android:title="options"
-        android:showAsAction="always">
+        android:showAsAction="always"
+        android:title="options">
         <menu>
             <item
                 android:id="@+id/menu_send_image_bar"
@@ -23,12 +23,19 @@
                 android:id="@+id/menu_clear_messages"
                 android:icon="@drawable/ic_menu_delete"
                 android:title="delete all messages"/>
-            
-            
             <item
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/ic_menu_friendslist"
                 android:title="share surespot"/>
+
+            <!-- I told you before kid, paywhatyoulike -->
+
+            <item
+                android:id="@+id/menu_pwyl"
+                android:icon="@drawable/ic_menu_friendslist"
+                android:title="pay what you like">
+                
+            </item>
             <item
                 android:id="@+id/menu_logout_bar"
                 android:icon="@drawable/ic_lock_power_off"

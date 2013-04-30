@@ -51,6 +51,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -93,7 +94,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mExternalStorageWriteable = false;
 	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
-	InputMethodManager mImm;
+	private InputMethodManager mImm;
 	private KeyboardStateHandler mKeyboardStateHandler;
 	private MainActivityLayout mActivityLayout;
 	private EditText mEditText;
@@ -105,6 +106,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private Button mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -235,6 +237,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
 				setupChatControls();
+							
 
 			}
 
@@ -717,6 +720,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.deleteMessages(currentChat);
 			}
 
+		
+			return true;
+		case R.id.menu_pwyl:
+			intent = new Intent(this, BillingActivity.class);
+			startActivity(intent);
 			return true;
 		default:
 			return false;
@@ -733,6 +741,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 		mChatController = null;
+	
 	}
 
 	public static NetworkController getNetworkController() {
