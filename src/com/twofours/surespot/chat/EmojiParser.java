@@ -205,59 +205,60 @@ public class EmojiParser {
 		Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_HEART_SHAPED_EYES), //5
 		Emojis.getEmojiResource(Emojis.FACE_THROWING_A_KISS), //6
 		Emojis.getEmojiResource(Emojis.KISSING_FACE_WITH_CLOSE_EYES), //7
-		Emojis.getEmojiResource(Emojis.FLUSHED_FACE), //8
-		Emojis.getEmojiResource(Emojis.RELIEVED_FACE), //9
-		Emojis.getEmojiResource(Emojis.TOOTHY_FACE_WITH_SMILING_EYES), //10
-		Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE_AND_WINKING_EYE), //11
-		Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES), //12
-		Emojis.getEmojiResource(Emojis.UNAMUSED_FACE), //13
-		Emojis.getEmojiResource(Emojis.SMIRKING_FACE), //14
-		Emojis.getEmojiResource(Emojis.FACE_WITH_COLD_SWEAT), //15
-		Emojis.getEmojiResource(Emojis.PENSIVE_FACE), //16
-		Emojis.getEmojiResource(Emojis.KISSING_FACE), //17
-		Emojis.getEmojiResource(Emojis.KISSING_FACE_WITH_SMILING_EYES), //18
-		Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_TIGHTLY_CLOSED_EYES), //19
-		Emojis.getEmojiResource(Emojis.NEUTRAL_FACE), //20
-		Emojis.getEmojiResource(Emojis.FACE_WITH_OPEN_MOUTH), //21
-		Emojis.getEmojiResource(Emojis.EXPRESSIONLESS_FACE), //22
-		Emojis.getEmojiResource(Emojis.CONFUSED_FACE), //23
-		Emojis.getEmojiResource(Emojis.SLEEPING_FACE), //24
-		Emojis.getEmojiResource(Emojis.ANGUISHED_FACE), //25
-		Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_COLD_SWEAT), //26
-		Emojis.getEmojiResource(Emojis.GRIMICING_FACE), //27 	
-		Emojis.getEmojiResource(Emojis.FROWNING_FACE_WITH_OPEN_MOUTH), //28
-		Emojis.getEmojiResource(Emojis.DIZZY_FACE), //29
-		Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE), //30
-		Emojis.getEmojiResource(Emojis.GRINNING_FACE), //31
-		Emojis.getEmojiResource(Emojis.DOG_DIRT), //32
+		Emojis.getEmojiResource(Emojis.TOOTHY_FACE_WITH_SMILING_EYES), //8
+		Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE_AND_WINKING_EYE), //9
+		Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES), //10
+		Emojis.getEmojiResource(Emojis.SMIRKING_FACE), //11
+		Emojis.getEmojiResource(Emojis.KISSING_FACE), //12
+		Emojis.getEmojiResource(Emojis.KISSING_FACE_WITH_SMILING_EYES), //13
+		Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_TIGHTLY_CLOSED_EYES), //14
+		Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_COLD_SWEAT), //15
+		Emojis.getEmojiResource(Emojis.DIZZY_FACE), //16
+		Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE), //17
+		Emojis.getEmojiResource(Emojis.GRINNING_FACE), //18
+		Emojis.getEmojiResource(Emojis.NEUTRAL_FACE), //19
+		Emojis.getEmojiResource(Emojis.FLUSHED_FACE), //20
+		Emojis.getEmojiResource(Emojis.RELIEVED_FACE), //21
+		Emojis.getEmojiResource(Emojis.UNAMUSED_FACE), //22
+		Emojis.getEmojiResource(Emojis.FACE_WITH_COLD_SWEAT), //23
+		Emojis.getEmojiResource(Emojis.PENSIVE_FACE), //24
+		Emojis.getEmojiResource(Emojis.FACE_WITH_OPEN_MOUTH), //25
+		Emojis.getEmojiResource(Emojis.EXPRESSIONLESS_FACE), //26
+		Emojis.getEmojiResource(Emojis.CONFUSED_FACE), //27
+		Emojis.getEmojiResource(Emojis.SLEEPING_FACE), //28
+		Emojis.getEmojiResource(Emojis.ANGUISHED_FACE), //29
+		Emojis.getEmojiResource(Emojis.GRIMICING_FACE), //30
+		Emojis.getEmojiResource(Emojis.FROWNING_FACE_WITH_OPEN_MOUTH), //31
+		Emojis.getEmojiResource(Emojis.RED_HEART), //32
 		Emojis.getEmojiResource(Emojis.MAN_AND_WOMAN_HOLDING_HANDS), //33
 		Emojis.getEmojiResource(Emojis.FAMILY), //34
 		Emojis.getEmojiResource(Emojis.TWO_MEN_HOLDING_HANDS), //35
-		Emojis.getEmojiResource(Emojis.RED_HEART), //36
-		Emojis.getEmojiResource(Emojis.COUPLE_WITH_HEART), //37
-		Emojis.getEmojiResource(Emojis.CRESCENT_MOON), //38
-		Emojis.getEmojiResource(Emojis.LAST_QUARTER_MOON_SYMBOL), //39
-		Emojis.getEmojiResource(Emojis.FULL_MOON_SYMBOL), //40
-		Emojis.getEmojiResource(Emojis.WAXING_CRESCENT_MOON_SYMBOL), //41
-		Emojis.getEmojiResource(Emojis.LAST_QUARTER_MOON_WITH_FACE), //42
-		Emojis.getEmojiResource(Emojis.SUN_WITH_FACE), //43
-		Emojis.getEmojiResource(Emojis.BACTRIAN_CAMEL), //44
-		Emojis.getEmojiResource(Emojis.CHICKEN), //45
-		Emojis.getEmojiResource(Emojis.BOAR), //46
-		Emojis.getEmojiResource(Emojis.SNAKE), //47
-		Emojis.getEmojiResource(Emojis.SNAIL), //48
-		Emojis.getEmojiResource(Emojis.HORSE), //49
-		Emojis.getEmojiResource(Emojis.NEW_MOON), //50
-		Emojis.getEmojiResource(Emojis.RAINBOW), //51
-		Emojis.getEmojiResource(Emojis.KOALA), //52
-		Emojis.getEmojiResource(Emojis.ELEPHANT), //53
-		Emojis.getEmojiResource(Emojis.RECREATIONAL_VEHICLE), //54
-		Emojis.getEmojiResource(Emojis.AUTOMOBILE), //55
-		Emojis.getEmojiResource(Emojis.SLICE_OF_PIZZA), //56
-		Emojis.getEmojiResource(Emojis.HAMBURGER), //57
-		Emojis.getEmojiResource(Emojis.RICE_BALL), //58
-		Emojis.getEmojiResource(Emojis.SHORTCAKE), //59
-		Emojis.getEmojiResource(Emojis.TWO_WOMEN_HOLDING_HANDS), //60
+		Emojis.getEmojiResource(Emojis.COUPLE_WITH_HEART), //36
+		Emojis.getEmojiResource(Emojis.TWO_WOMEN_HOLDING_HANDS), //37
+		Emojis.getEmojiResource(Emojis.NEW_MOON), //38
+		Emojis.getEmojiResource(Emojis.CRESCENT_MOON), //39
+		Emojis.getEmojiResource(Emojis.LAST_QUARTER_MOON_SYMBOL), //40
+		Emojis.getEmojiResource(Emojis.FULL_MOON_SYMBOL), //41
+		Emojis.getEmojiResource(Emojis.WAXING_CRESCENT_MOON_SYMBOL), //42
+		Emojis.getEmojiResource(Emojis.LAST_QUARTER_MOON_WITH_FACE), //43
+		Emojis.getEmojiResource(Emojis.SUN_WITH_FACE), //44
+		Emojis.getEmojiResource(Emojis.RAINBOW), //45
+		Emojis.getEmojiResource(Emojis.DOG_DIRT), //46
+		Emojis.getEmojiResource(Emojis.BACTRIAN_CAMEL), //47
+		Emojis.getEmojiResource(Emojis.CHICKEN), //48
+		Emojis.getEmojiResource(Emojis.BOAR), //49
+		Emojis.getEmojiResource(Emojis.SNAKE), //50
+		Emojis.getEmojiResource(Emojis.SNAIL), //51
+		Emojis.getEmojiResource(Emojis.HORSE), //52
+		Emojis.getEmojiResource(Emojis.KOALA), //53
+		Emojis.getEmojiResource(Emojis.ELEPHANT), //54
+		Emojis.getEmojiResource(Emojis.RECREATIONAL_VEHICLE), //55
+		Emojis.getEmojiResource(Emojis.AUTOMOBILE), //56
+		Emojis.getEmojiResource(Emojis.SLICE_OF_PIZZA), //57
+		Emojis.getEmojiResource(Emojis.HAMBURGER), //58
+		Emojis.getEmojiResource(Emojis.RICE_BALL), //59
+		Emojis.getEmojiResource(Emojis.SHORTCAKE), //60
+		
 		
 		
 	};
