@@ -70,12 +70,12 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_alignParentBottom="true"
-        android:columnWidth="36dp"
+        android:columnWidth="64dp"
         android:gravity="center"
         android:horizontalSpacing="4dp"
         android:numColumns="auto_fit"
         android:padding="10dp"
-        android:stretchMode="spacingWidth"
+        android:stretchMode="none"
         android:verticalSpacing="10dp"
         android:visibility="gone" >
     </GridView>
