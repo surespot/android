@@ -4,14 +4,16 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 
 public class EmojiAdapter extends BaseAdapter {
+	private static final String TAG = "EmojiAdapter";
+
 	private Context mContext;
 
+
 	public EmojiAdapter(Context context) {
-		mContext = context;
+		mContext = context;	
 	}
 
 	public int getCount() {
@@ -31,10 +33,10 @@ public class EmojiAdapter extends BaseAdapter {
 		ImageView imageView;
 		if (convertView == null) { // if it's not recycled, initialize some attributes
 			imageView = new ImageView(mContext);
-			imageView.setLayoutParams(new GridView.LayoutParams(64,64));
-			//imageView.setAdjustViewBounds(true);
-			
-			//imageView.setPadding(8, 8, 8, 8);
+						
+			//imageView.setLayoutParams(new GridView.LayoutParams());
+			imageView.setAdjustViewBounds(true);			
+			imageView.setPadding(0, 8, 0, 8);
 		}
 		else {
 			imageView = (ImageView) convertView;

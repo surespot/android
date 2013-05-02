@@ -1,19 +1,19 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="8dp" >
+    android:layout_height="match_parent" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:padding="10dp"
         tools:context=".BillingActivity" >
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="pay what you like! we will donate 1% of the net to the ACLU"
+            android:text="pay what you like! we will donate a percentage to the EFF"
             android:textSize="16sp"
             android:textStyle="italic" />
 
@@ -63,8 +63,7 @@
                 android:onClick="onPurchase"
                 android:tag="10"
                 android:text="$10" />
-            
-            
+
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -78,7 +77,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
-
 
             <Button
                 android:layout_width="0dp"
