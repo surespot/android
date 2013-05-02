@@ -16,7 +16,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 	private ArrayList<String> mChatNames;
 
 	public ChatPagerAdapter(FragmentManager fm) {
-		super(fm);		
+		super(fm);
 	}
 
 	@Override
@@ -27,7 +27,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 			FriendFragment ff = new FriendFragment();
 			SurespotLog.v(TAG, "created new friend fragment: " + ff);
 
-			//ff.setRetainInstance(true);
+			// ff.setRetainInstance(true);
 
 			return ff;
 		}
@@ -36,7 +36,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 			ChatFragment cf = ChatFragment.newInstance(name);
 			SurespotLog.v(TAG, "created new chat fragment: " + cf);
 
-		//	cf.setRetainInstance(true);
+			// cf.setRetainInstance(true);
 
 			return cf;
 		}
@@ -146,22 +146,23 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		}
 	}
 
-	public void removeChat(int viewId, int index) {
+	public void removeChat(int viewId, int index) {		
 		String name = mChatNames.remove(index - 1);
-
-		// blow the fragment away
-		if (mCurTransaction == null) {
-			mCurTransaction = mFragmentManager.beginTransaction();
-		}
+		
 		String fragname = makeFragmentName(viewId, name.hashCode());
-
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
+
 		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());
-		mCurTransaction.remove(fragment);
+		if (fragment != null) {
+			// blow the fragment away
+			if (mCurTransaction == null) {
+				mCurTransaction = mFragmentManager.beginTransaction();
+			}
 
-		notifyDataSetChanged();
-
+			mCurTransaction.remove(fragment);
+			notifyDataSetChanged();
+		}
 	}
 
 	public long getItemId(int position) {

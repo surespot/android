@@ -167,43 +167,50 @@ public class FriendFragment extends SherlockFragment {
 
 	private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, String selection) {
 		final MainActivity activity = this.getMainActivity();
-		if (selection.equals("set image")) {
-			activity.uploadFriendImage(friend.getName());
+
+		if (selection.equals("close tab")) {
+			activity.getChatController().closeTab(friend.getName());
 		}
 		else {
 
-			if (selection.equals("delete all messages")) {
-
-				SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-				boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
-				if (confirm) {
-					UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete all messages?",
-							"delete all messages", "ok", "cancel", new IAsyncCallback<Boolean>() {
-								public void handleResponse(Boolean result) {
-									if (result) {
-										activity.getChatController().deleteMessages(friend);
-									}
-
-								};
-							});
-				}
-				else {
-					activity.getChatController().deleteMessages(friend);
-				}
+			if (selection.equals("set image")) {
+				activity.uploadFriendImage(friend.getName());
 			}
 			else {
-				if (selection.equals("delete friend")) {
-					UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete friend: " + friend.getName() + "?",
-							"delete friend", "ok", "cancel", new IAsyncCallback<Boolean>() {
-								public void handleResponse(Boolean result) {
-									if (result) {
-										activity.getChatController().deleteFriend(friend);
-									}
-									else {
-										dialogi.cancel();
-									}
-								};
-							});
+
+				if (selection.equals("delete all messages")) {
+
+					SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+					if (confirm) {
+						UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete all messages?",
+								"delete all messages", "ok", "cancel", new IAsyncCallback<Boolean>() {
+									public void handleResponse(Boolean result) {
+										if (result) {
+											activity.getChatController().deleteMessages(friend);
+										}
+
+									};
+								});
+					}
+					else {
+						activity.getChatController().deleteMessages(friend);
+					}
+				}
+				else {
+					if (selection.equals("delete friend")) {
+						UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete friend: " + friend.getName()
+								+ "?", "delete friend", "ok", "cancel", new IAsyncCallback<Boolean>() {
+							public void handleResponse(Boolean result) {
+								if (result) {
+									activity.getChatController().deleteFriend(friend);
+								}
+								else {
+									dialogi.cancel();
+								}
+							};
+						});
+					}
 				}
 			}
 		}

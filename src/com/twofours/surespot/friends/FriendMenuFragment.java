@@ -30,6 +30,9 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 		mItems = new ArrayList<String>(5);
 
 		if (mFriend.isFriend()) {
+			if (mFriend.isChatActive()) {
+				mItems.add("close tab");
+			}
 			mItems.add("set image");
 			mItems.add("delete all messages");
 		}

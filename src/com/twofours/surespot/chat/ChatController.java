@@ -2102,6 +2102,7 @@ public class ChatController {
 				SurespotLog.v(TAG, "closeTab, name: %s, position: %d", name, position);
 
 				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
+				mFriendAdapter.setChatActive(name, false);
 				mEarliestMessage.remove(name);
 				destroyChatAdapter(name);
 				mIndicator.notifyDataSetChanged();
