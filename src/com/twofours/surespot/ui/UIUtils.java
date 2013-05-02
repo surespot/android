@@ -87,6 +87,9 @@ public class UIUtils {
 		case 404:
 			statusText = "error sending message: unauthorized";
 			break;
+		case 429:
+			statusText = "error sending message: throttled";
+			break;			
 		case 500:
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 				statusText = "error sending message";	
