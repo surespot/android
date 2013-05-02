@@ -164,12 +164,18 @@
         <activity
             android:name="com.twofours.surespot.billing.BillingActivity"
             android:label="@string/title_activity_billing" >
-             <intent-filter>
+            <intent-filter>
                 <action android:name="com.twofours.surespot.billing.BillingActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="org.acra.CrashReportDialog"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Dialog" />
     </application>
 
 </manifest>

@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
@@ -22,10 +23,16 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.services.CredentialCachingService;
 
-@ReportsCrashes(formKey = "", // will not be used
+@ReportsCrashes(
+mode = ReportingInteractionMode.DIALOG,
+formKey = "", // will not be used
 formUri = "https://www.surespot.me:3000/logs/surespot",
 formUriBasicAuthLogin = "adam", // optional
-formUriBasicAuthPassword = "29g0Flq7hDer") // optional
+formUriBasicAuthPassword = "29g0Flq7hDer",
+resToastText = R.string.crash_toast_text,
+resDialogText = R.string.crash_dialog_text,
+resDialogOkToast = R.string.crash_dialog_ok_toast,
+resDialogCommentPrompt = R.string.crash_dialog_comment_prompt) // optional
 public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
