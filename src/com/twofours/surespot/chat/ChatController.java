@@ -166,14 +166,7 @@ public class ChatController {
 			}
 
 			@Override
-			public synchronized void onError(SocketIOException socketIOException) {
-				if (socketIOException.getMessage().equals("disconnected")) {
-					socket = null;
-					logout();
-					mCallback401.handleResponse("server disconnected, if this issue persists please try clearing local cache");
-					return;
-				}
-
+			public synchronized void onError(SocketIOException socketIOException) {				
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					socket = null;
