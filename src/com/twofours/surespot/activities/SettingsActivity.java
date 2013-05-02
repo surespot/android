@@ -23,9 +23,9 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
-			
+
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				SurespotApplication.mBackupManager.dataChanged();
@@ -38,35 +38,47 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 		String user = IdentityController.getLoggedInUser();
 		if (user != null) {
 			prefMgr.setSharedPreferencesName(user);
-			
+
 			addPreferencesFromResource(R.xml.preferences);
-			Utils.configureActionBar(this, "settings", user, true);		
-			
+			Utils.configureActionBar(this, "settings", user, true);
+
 			PackageManager manager = this.getPackageManager();
 			PackageInfo info = null;
 			try {
-				info = manager.getPackageInfo(this.getPackageName(), 0);				
+				info = manager.getPackageInfo(this.getPackageName(), 0);
 				Preference version = prefMgr.findPreference("pref_version");
 				version.setTitle("version: " + info.versionName);
-				
-				prefMgr.findPreference("pref_auto_android_backup_enabled").setOnPreferenceClickListener(onPreferenceClickListener);				
-				prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(onPreferenceClickListener);				
-				prefMgr.findPreference(getString(R.string.pref_notifications_sound)).setOnPreferenceClickListener(onPreferenceClickListener);				
-				prefMgr.findPreference(getString(R.string.pref_notifications_vibration)).setOnPreferenceClickListener(onPreferenceClickListener);
+
+				prefMgr.findPreference("pref_auto_android_backup_enabled").setOnPreferenceClickListener(onPreferenceClickListener);
+				prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(
+						onPreferenceClickListener);
+				prefMgr.findPreference(getString(R.string.pref_notifications_sound))
+						.setOnPreferenceClickListener(onPreferenceClickListener);
+				prefMgr.findPreference(getString(R.string.pref_notifications_vibration)).setOnPreferenceClickListener(
+						onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_led)).setOnPreferenceClickListener(onPreferenceClickListener);
-				
+
 				prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
-					
+
 					@Override
 					public boolean onPreferenceClick(Preference preference) {
-						SurespotLog.setLogging(((CheckBoxPreference) preference).isChecked()); 
+						SurespotLog.setLogging(((CheckBoxPreference) preference).isChecked());
+						return true;
+					}
+				});
+
+				prefMgr.findPreference("pref_crash_reporting").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+					@Override
+					public boolean onPreferenceClick(Preference preference) {
+						SurespotLog.setCrashReporting(((CheckBoxPreference) preference).isChecked());
 						return true;
 					}
 				});
 			}
 			catch (NameNotFoundException e) {
-				SurespotLog.w(TAG,"onCreate", e);
-			}			
+				SurespotLog.w(TAG, "onCreate", e);
+			}
 		}
 	}
 

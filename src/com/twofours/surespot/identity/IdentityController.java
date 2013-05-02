@@ -63,6 +63,7 @@ public class IdentityController {
 
 			// TODO set to false on release
 			SurespotLog.setLogging(sp.getBoolean("pref_logging", SurespotConstants.LOGGING));
+			SurespotLog.setCrashReporting(sp.getBoolean("pref_crash_reporting", SurespotConstants.CRASH_REPORTING));
 
 			// you would think changing the shared prefs name would update the internal state but it doesn't
 			// ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
