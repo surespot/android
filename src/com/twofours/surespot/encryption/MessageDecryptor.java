@@ -94,9 +94,12 @@ public class MessageDecryptor {
 			final CharSequence plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
 					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData());
 
-			// set plaintext in messageso we don't have to decrypt again
-			final CharSequence plainData = EmojiParser.getInstance().addEmojiSpans(plainText.toString());
-			mMessage.setPlainData(plainData);
+			CharSequence plainData = null;
+			if (plainText != null) {
+				// set plaintext in messageso we don't have to decrypt again
+				plainData = EmojiParser.getInstance().addEmojiSpans(plainText.toString());
+				mMessage.setPlainData(plainData);
+			}
 
 			if (textViewReference != null) {
 
@@ -115,23 +118,24 @@ public class MessageDecryptor {
 					// textView.startAnimation(fadeOut);
 					// }
 
+					final CharSequence finalPlainData = plainData;
 					mHandler.post(new Runnable() {
 
 						@Override
 						public void run() {
 
-							textView.setText(plainData);
 							
+
 							// TODO put the row in the tag
 							View row = (View) textView.getParent();
 
 							TextView tvTime = (TextView) (row).findViewById(R.id.messageTime);
-							if (plainText == null) {
+							if (finalPlainData == null) {
 								mMessage.setErrorStatus(500);
 								tvTime.setText("ERROR DECRYPTING MESSAGE");
 							}
-							else {
-
+							else {								
+								textView.setText(finalPlainData);
 								if (mMessage.getDateTime() != null) {
 
 									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(

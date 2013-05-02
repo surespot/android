@@ -22,6 +22,7 @@ import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.view.KeyEvent;
@@ -85,7 +86,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
-	private IAsyncCallback<Void> m401Handler;
+	private IAsyncCallback<String> m401Handler;
 	private ChatController mChatController = null;
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
@@ -106,7 +107,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private Button mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
-	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -127,10 +127,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mContext = this;
 
-		m401Handler = new IAsyncCallback<Void>() {
+		m401Handler = new IAsyncCallback<String>() {
 
 			@Override
-			public void handleResponse(Void result) {
+			public void handleResponse(String message) {
 				SurespotLog.v(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 					MainActivity.this.getNetworkController().setUnauthorized(true);
@@ -141,6 +141,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					startActivity(intent);
 					finish();
+
+					if (!TextUtils.isEmpty(message)) {
+						Utils.makeToast(MainActivity.this, message);
+					}
 				}
 			}
 		};
@@ -237,7 +241,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
 				setupChatControls();
-							
 
 			}
 
@@ -337,14 +340,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						//
 					}
 					else {
-						//if we don't have a height, get it
-//						if (mEmojiHeight == 0) {
-//							
-//							showSoftKeyboard(mEditText);
-//							hideSoftKeyboard();
-//						}
-//						
-							
+						// if we don't have a height, get it
+						// if (mEmojiHeight == 0) {
+						//
+						// showSoftKeyboard(mEditText);
+						// hideSoftKeyboard();
+						// }
+						//
+
 						SurespotLog.v(TAG, "keyboardState,  showing emoji");
 						mEmojiView.setVisibility(View.VISIBLE);
 						mShowEmoji = true;
@@ -728,7 +731,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.deleteMessages(currentChat);
 			}
 
-		
 			return true;
 		case R.id.menu_pwyl:
 			intent = new Intent(this, BillingActivity.class);
@@ -749,7 +751,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 		mChatController = null;
-	
+
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1149,7 +1151,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEditText.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
 			mEditText.setImeOptions(EditorInfo.IME_ACTION_DONE);
 			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-			mEditText.setFilters(new InputFilter[0]);
+			mEditText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH) });
 			mEditText.setMaxLines(5);
 			mEditText.setVerticalScrollBarEnabled(true);
 			mEditText.setSingleLine(false);

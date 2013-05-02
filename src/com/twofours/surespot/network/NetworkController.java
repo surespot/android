@@ -89,7 +89,7 @@ public class NetworkController {
 		}
 	}
 
-	public NetworkController(Context context, final IAsyncCallback<Void> callback401) {
+	public NetworkController(Context context, final IAsyncCallback<String> m401Handler) {
 		SurespotLog.v(TAG, "constructor");
 		mContext = context;
 
@@ -137,8 +137,8 @@ public class NetworkController {
 								mClient.cancelRequests(mContext, true);
 								mSyncClient.cancelRequests(mContext, true);
 
-								if (callback401 != null) {
-									callback401.handleResponse(null);
+								if (m401Handler != null) {
+									m401Handler.handleResponse("unauthorized");
 								}
 
 							}

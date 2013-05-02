@@ -118,18 +118,18 @@ public class ChatController {
 
 	private int mMode = MODE_NORMAL;
 
-	private IAsyncCallback<Void> mCallback401;
+	private IAsyncCallback<String> mCallback401;
 	private IAsyncCallback<Boolean> mProgressCallback;
 	private IAsyncCallback<Void> mSendIntentCallback;
 	private IAsyncCallback<Friend> mTabShowingCallback;
 
-	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<Void> callback401,
+	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<String> m401Handler,
 			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
 		SurespotLog.v(TAG, "constructor: " + this);
 		mContext = context;
 		mNetworkController = networkController;
 
-		mCallback401 = callback401;
+		mCallback401 = m401Handler;
 		mProgressCallback = progressCallback;
 		mSendIntentCallback = sendIntentCallback;
 
@@ -167,16 +167,23 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
+				if (socketIOException.getMessage().equals("disconnected")) {
+					socket = null;
+					logout();
+					mCallback401.handleResponse("server disconnected, if this issue persists please try clearing local cache");
+					return;
+				}
+
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					socket = null;
 					logout();
-					mCallback401.handleResponse(null);
+					mCallback401.handleResponse("could not login to server");
 					return;
 				}
 
-				SurespotLog.w(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: " + mRetries,
-						socketIOException);
+				SurespotLog.w(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: $d",
+						mRetries);
 
 				setOnWifi();
 				// kick off another task
@@ -200,9 +207,7 @@ public class ChatController {
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					// TODO more persistent error
 
-					// Utils.makeLongToast(mContext, "could not connect to the server");
-
-					mCallback401.handleResponse(null);
+					mCallback401.handleResponse("could not connect to server");
 				}
 			}
 
@@ -434,7 +439,7 @@ public class ChatController {
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
 		JSONArray sMessageList = new JSONArray();
-		
+
 		for (int i = 0; i < resendMessages.length; i++) {
 			SurespotMessage message = resendMessages[i];
 			// set the last received id so the server knows which messages to check
@@ -459,16 +464,14 @@ public class ChatController {
 			SurespotLog.v(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
 
-			//String sMessage = message.toJSONObject().toString();
+			// String sMessage = message.toJSONObject().toString();
 			sMessageList.put(message.toJSONObject());
-			
-			
-			
-			//enqueueMessage(message);
-			//sendMessages();
+
+			// enqueueMessage(message);
+			// sendMessages();
 
 		}
-		
+
 		socket.send(sMessageList.toString());
 	}
 
@@ -494,7 +497,7 @@ public class ChatController {
 
 	private SurespotMessage[] getResendMessages() {
 		SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
-		//mResendBuffer.clear();
+		// mResendBuffer.clear();
 		return messages;
 
 	}
@@ -546,9 +549,6 @@ public class ChatController {
 			}
 		}
 	}
-
-	
-	
 
 	private int getState() {
 		return mConnectionState;
