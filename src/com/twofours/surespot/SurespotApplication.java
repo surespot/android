@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
@@ -23,8 +22,10 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.services.CredentialCachingService;
 
-@ReportsCrashes(formKey = "dHBRcnQzWFR5c0JwZW9tNEdOLW9oNHc6MQ", 
-mode= ReportingInteractionMode.TOAST, resToastText = R.string.crash_toast_text)
+@ReportsCrashes(formKey = "", // will not be used
+formUri = "https://www.surespot.me:3000/logs/surespot",
+formUriBasicAuthLogin = "adam", // optional
+formUriBasicAuthPassword = "29g0Flq7hDer") // optional
 public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
@@ -97,7 +98,7 @@ public class SurespotApplication extends Application {
 
 		ACRA.init(this);
 		EmojiParser.init(this);
-		
+				
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 		mBackupManager = new BackupManager(this);
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
