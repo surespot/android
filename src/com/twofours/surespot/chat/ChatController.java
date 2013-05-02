@@ -256,6 +256,26 @@ public class ChatController {
 						handleMessage(message);
 						checkAndSendNextMessage(message);
 
+						// see if we have deletes
+						String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
+						if (sDeleteControlMessages != null) {
+							JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
+
+							if (deleteControlMessages.length() > 0) {
+								for (int i = 0; i < deleteControlMessages.length(); i++) {
+									try {
+										SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(
+												deleteControlMessages.getString(i)));
+										handleControlMessage(null, dMessage, true);
+									}
+									catch (JSONException e) {
+										SurespotLog.w(TAG, "on control", e);
+									}
+								}
+							}
+
+						}
+
 					}
 					catch (JSONException e) {
 						SurespotLog.w(TAG, "on message", e);
@@ -1203,7 +1223,7 @@ public class ChatController {
 
 			// and mark you as deleted until I want to delete you
 			Friend friend = mFriendAdapter.setFriendDeleted(deletedUser);
-		
+
 			// force the controls to update
 			if (friend != null && mCurrentChat.equals(deletedUser)) {
 				mTabShowingCallback.handleResponse(friend);
@@ -1928,7 +1948,7 @@ public class ChatController {
 						SurespotLog.w(TAG, "toggleMessageShareable", error);
 						setProgress("shareable", false);
 						Utils.makeToast(mContext, "could not set message lock state");
-						
+
 					}
 
 				});
