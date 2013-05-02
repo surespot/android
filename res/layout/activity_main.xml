@@ -30,7 +30,7 @@
     <Button
         android:id="@+id/bEmoji"
         android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_height="50dp"
         android:layout_above="@+id/fEmoji"
         android:layout_alignWithParentIfMissing="true"
         android:background="@drawable/emoji_bitmap"
