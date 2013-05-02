@@ -102,6 +102,28 @@
                 android:tag="1000000"
                 android:text="$1000000" />
         </LinearLayout>
+        
+         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp"
+            android:text="VIA PAYPAL"
+            android:textSize="12sp"
+            android:textStyle="bold" >
+        </TextView>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onPaypalBrowser"
+            android:text="open link in browser" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onPaypalEmail"
+            android:text="send link in email" />
 
         <TextView
             android:layout_width="match_parent"
@@ -138,28 +160,7 @@
             android:layout_height="wrap_content"
             android:onClick="onBitcoinWallet"
             android:text="open bitcoin wallet (if supported)" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="15dp"
-            android:text="VIA PAYPAL"
-            android:textSize="12sp"
-            android:textStyle="bold" >
-        </TextView>
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onPaypalBrowser"
-            android:text="open link in browser" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onPaypalEmail"
-            android:text="send link in email" />
+       
     </LinearLayout>
 
 </ScrollView>
