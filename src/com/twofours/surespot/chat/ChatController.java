@@ -433,7 +433,8 @@ public class ChatController {
 	private void resendMessages() {
 		// get the resend messages
 		SurespotMessage[] resendMessages = getResendMessages();
-
+		JSONArray sMessageList = new JSONArray();
+		
 		for (int i = 0; i < resendMessages.length; i++) {
 			SurespotMessage message = resendMessages[i];
 			// set the last received id so the server knows which messages to check
@@ -458,10 +459,17 @@ public class ChatController {
 			SurespotLog.v(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
 
-			enqueueMessage(message);
-			sendMessages();
+			//String sMessage = message.toJSONObject().toString();
+			sMessageList.put(message.toJSONObject());
+			
+			
+			
+			//enqueueMessage(message);
+			//sendMessages();
 
 		}
+		
+		socket.send(sMessageList.toString());
 	}
 
 	private void setOnWifi() {
@@ -486,7 +494,7 @@ public class ChatController {
 
 	private SurespotMessage[] getResendMessages() {
 		SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
-		mResendBuffer.clear();
+		//mResendBuffer.clear();
 		return messages;
 
 	}
@@ -538,6 +546,9 @@ public class ChatController {
 			}
 		}
 	}
+
+	
+	
 
 	private int getState() {
 		return mConnectionState;
