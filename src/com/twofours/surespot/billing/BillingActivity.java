@@ -1,9 +1,13 @@
 package com.twofours.surespot.billing;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -140,7 +144,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 				hideProgress();
 				return;
 			}
-			
+
 			mIabHelper.launchPurchaseFlow(this, "pwyl_" + denom, RC_REQUEST, new OnIabPurchaseFinishedListener() {
 
 				@Override
@@ -204,19 +208,41 @@ public class BillingActivity extends SherlockFragmentActivity {
 		Uri payPalUri = getPayPalUri();
 		SurespotLog.d(TAG, "sending email with url: %s", payPalUri);
 
-		String subject = "surespot pay what you like paypal link";
-		String body = "thankyou for paying what you like for surespot! the paypal link is:\n\n" + payPalUri;
+		final String subject = "surespot pay what you like paypal link";
+		final String body = "thankyou for paying what you like for surespot! the paypal link is:\n\n" + payPalUri;
 
-		Intent intent = new Intent(Intent.ACTION_SENDTO);
-		// intent.setType("text/plain");
-		intent.setData(Uri.parse("mailto:"));
-		// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
-		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		intent.putExtra(Intent.EXTRA_TEXT, body);
-		startActivity(intent);
-		finish();
+		toEmails.add("none");
 
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("send to?").setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				String choice = toEmails.get(which);
+				String email = "";
+				if (!choice.equals("none")) {
+					email = choice;
+				}
+
+				Intent intent = new Intent(Intent.ACTION_SENDTO);
+
+				// SurespotLog.v(TAG,"toEmail: " + toEmail);
+				// intent.setType("text/plain");
+				intent.setData(Uri.parse("mailto:" + email));
+				// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+
+				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+				intent.putExtra(Intent.EXTRA_TEXT, body);
+				startActivity(intent);
+				finish();
+			}
+
+		});
+
+		builder.create().show();
 	}
 
 	public void onBitcoinClipboard(View arg0) {
@@ -234,21 +260,45 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		SurespotLog.d(TAG, "sending email with bitcoin");
 
-		String subject = "surespot pay what you like bitcoin address";
-		String body = "thankyou for paying what you like for surespot! the bitcoin address is:\n\n" + bitcoinAddy
+		final String subject = "surespot pay what you like bitcoin address";
+		final String body = "thankyou for paying what you like for surespot! the bitcoin address is:\n\n" + bitcoinAddy
 				+ "\n\nthe QR code can be viewed here: https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A" + bitcoinAddy
 				+ "&choe=UTF-8&chs=300x300";
+		
 
-		Intent intent = new Intent(Intent.ACTION_SENDTO);
-		// intent.setType("text/plain");
-		intent.setData(Uri.parse("mailto:"));
-		// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
-		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		intent.putExtra(Intent.EXTRA_TEXT, body);
-		startActivity(intent);
+		toEmails.add("none");
 
-		finish();
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("send to?").setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				String choice = toEmails.get(which);
+				String email = "";
+				if (!choice.equals("none")) {
+					email = choice;
+				}
+
+				Intent intent = new Intent(Intent.ACTION_SENDTO);
+
+				// SurespotLog.v(TAG,"toEmail: " + toEmail);
+				// intent.setType("text/plain");
+				intent.setData(Uri.parse("mailto:" + email));
+				// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+
+				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+				intent.putExtra(Intent.EXTRA_TEXT, body);
+				startActivity(intent);
+				finish();
+			}
+
+		});
+
+		builder.create().show();
+
 	}
 
 	public void onBitcoinWallet(View arg0) {
@@ -263,7 +313,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		catch (ActivityNotFoundException anfe) {
 			Utils.makeToast(this, "could not open bitcoin wallet");
 		}
-		
+
 	}
 
 	@Override
