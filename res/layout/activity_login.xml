@@ -1,46 +1,51 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="10dip"
-    tools:context=".LoginActivity" >
+    android:layout_height="match_parent" >
 
-    <TextView
-        android:id="@+id/textView2"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="username" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dip"
+        tools:context=".LoginActivity" >
 
-    <Spinner
-        android:id="@+id/spinnerUsername"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dip"
-        android:layout_marginTop="5dip"
-        android:imeOptions="actionNext" />
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="username" />
 
-    <TextView
-        android:id="@+id/tbInviteViaLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="password" />
+        <Spinner
+            android:id="@+id/spinnerUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dip"
+            android:layout_marginTop="5dip"
+            android:imeOptions="actionNext" />
 
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dip"
-        android:imeOptions="actionDone"
-        android:imeActionLabel="login"
-        android:inputType="textPassword|textNoSuggestions"
-        android:singleLine="true" />
+        <TextView
+            android:id="@+id/tbInviteViaLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="password" />
 
-    <Button
-        android:id="@+id/bLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
-        android:text="login" />
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dip"
+            android:imeActionLabel="login"
+            android:imeOptions="actionDone"
+            android:inputType="textPassword|textNoSuggestions"
+            android:singleLine="true" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/bLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="login" />
+    </LinearLayout>
+
+</ScrollView>
