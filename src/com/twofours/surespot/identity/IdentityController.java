@@ -593,7 +593,8 @@ public class IdentityController {
 				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_EXTENSION.length()));
 			}
 		}
-
+		
+		
 		// sort ignoring case
 		Collections.sort(identityNames, new Comparator<String>() {
 
@@ -604,6 +605,10 @@ public class IdentityController {
 		});
 		return identityNames;
 
+	}
+	
+	public static synchronized int getIdentityCount(Context context) {
+		return getIdentityNames(context, FileUtils.getIdentityDir(context)).size();
 	}
 
 	public static List<String> getIdentityNames(Context context) {

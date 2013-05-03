@@ -110,7 +110,7 @@ public class LoginActivity extends SherlockActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
-		
+
 		for (String name : mIdentityNames) {
 			adapter.add(name);
 
@@ -197,7 +197,7 @@ public class LoginActivity extends SherlockActivity {
 
 					SurespotIdentity identity = IdentityController.getIdentity(LoginActivity.this, username, password);
 					if (identity != null) {
-						byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());						
+						byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
 						final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 						IdSig idSig = new IdSig();
 						idSig.identity = identity;
@@ -302,24 +302,60 @@ public class LoginActivity extends SherlockActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		Intent intent;
+
 		switch (item.getItemId()) {
 		case R.id.menu_import_identities_bar:
-			intent = new Intent(this, ImportIdentityActivity.class);
-			startActivity(intent);
-			return true;
-		case R.id.menu_create_identity_bar:
-			intent = new Intent(this, SignupActivity.class);
-			startActivity(intent);
-			return true;
-		case R.id.clear_local_cache_bar:
-			StateController.clearCache(LoginActivity.this, new IAsyncCallback<Void>() {
+			new AsyncTask<Void, Void, Void>() {
 
 				@Override
-				public void handleResponse(Void result) {
-					Utils.makeToast(LoginActivity.this, "local cache cleared");
+				protected Void doInBackground(Void... params) {
+					Intent intent = new Intent(LoginActivity.this, ImportIdentityActivity.class);
+					startActivity(intent);
+					return null;
 				}
-			});
+			}.execute();
+			return true;
+		case R.id.menu_create_identity_bar:
+			if (IdentityController.getIdentityCount(this) < SurespotConstants.MAX_IDENTITIES) {
+				new AsyncTask<Void, Void, Void>() {
+
+					@Override
+					protected Void doInBackground(Void... params) {
+						Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+						startActivity(intent);
+						return null;
+
+					}
+
+				}.execute();
+			}
+			else {
+				Utils.makeLongToast(this, "sorry, you have already created the maximum (" + SurespotConstants.MAX_IDENTITIES
+						+ ") number of identities\n\nidentities can be deleted from the settings menu");
+			}
+			return true;
+
+		case R.id.clear_local_cache_bar:
+			new AsyncTask<Void, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(Void... params) {
+					StateController.clearCache(LoginActivity.this, new IAsyncCallback<Void>() {
+
+						@Override
+						public void handleResponse(Void result) {
+							LoginActivity.this.runOnUiThread(new Runnable() {
+								public void run() {
+									Utils.makeToast(LoginActivity.this, "local cache cleared");
+								};
+							});
+
+						}
+					});
+					return null;
+				}
+			}.execute();
+
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

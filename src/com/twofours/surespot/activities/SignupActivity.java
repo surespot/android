@@ -162,7 +162,7 @@ public class SignupActivity extends SherlockActivity {
 					confirmPwText.setText("");
 					pwText.setText("");
 					userText.requestFocus();
-					mMpd.decrProgress();
+					mMpd.decrProgress();					
 				}
 				else {
 					// make sure we can create the file
@@ -172,6 +172,7 @@ public class SignupActivity extends SherlockActivity {
 						confirmPwText.setText("");
 						pwText.setText("");
 						userText.requestFocus();
+						mMpd.decrProgress();
 						return;
 					}
 
