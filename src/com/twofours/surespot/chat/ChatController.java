@@ -1480,11 +1480,15 @@ public class ChatController {
 			saveMessages();
 			SurespotLog.v(TAG, "saving last chat: %s", mCurrentChat);
 			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-			SurespotApplication.getStateController().saveFriends(mLatestUserControlId, mFriendAdapter.getFriends());
+			saveFriends();
 		}
 		else {
 			saveMessages(username);
 		}
+	}
+	
+	private void saveFriends() {
+		SurespotApplication.getStateController().saveFriends(mLatestUserControlId, mFriendAdapter.getFriends());
 	}
 
 	private void loadState() {
@@ -2161,6 +2165,7 @@ public class ChatController {
 			friend.setImageUrl(url);
 			friend.setImageIv(iv);
 			friend.setImageVersion(version);
+			saveFriends();
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
