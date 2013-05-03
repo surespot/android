@@ -639,11 +639,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
 
-		enableMenuItems();
 		if (mChatController != null) {
-			mChatController.enableMenuItems();
+			mChatController.enableMenuItems(mCurrentFriend);
 		}
-
+		enableImageMenuItems();
 		return true;
 	}
 
@@ -680,6 +679,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (currentChat == null) {
 				return true;
 			}
+			
+			//can't send images to deleted folk
+			if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+				return true;
+			}
+			
 			MessageImageDownloader.evictCache();
 			intent = new Intent(this, ImageSelectActivity.class);
 			intent.putExtra("to", currentChat);
@@ -692,6 +697,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (currentChat == null) {
 				return true;
 			}
+			//can't send images to deleted folk
+			if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+				return true;
+			}			
 			MessageImageDownloader.evictCache();
 			mImageCaptureHandler = new ImageCaptureHandler(currentChat);
 			mImageCaptureHandler.capture(this);
@@ -818,15 +827,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void handleExternalStorageState(boolean externalStorageAvailable, boolean externalStorageWriteable) {
 
-		enableMenuItems();
+		enableImageMenuItems();
 
 	}
 
-	public void enableMenuItems() {
+	public void enableImageMenuItems() {
 
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
 				if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+
 					menuItem.setEnabled(mExternalStorageWriteable);
 
 				}

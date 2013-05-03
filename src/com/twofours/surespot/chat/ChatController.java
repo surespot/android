@@ -56,6 +56,7 @@ import ch.boye.httpclientandroidlib.message.BasicStatusLine;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
@@ -166,7 +167,7 @@ public class ChatController {
 			}
 
 			@Override
-			public synchronized void onError(SocketIOException socketIOException) {				
+			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					socket = null;
@@ -1670,7 +1671,7 @@ public class ChatController {
 
 		}
 		// disable menu items
-		enableMenuItems();
+		enableMenuItems(friend);
 
 	}
 
@@ -2118,12 +2119,25 @@ public class ChatController {
 		return mMode;
 	}
 
-	public void enableMenuItems() {
+	public void enableMenuItems(Friend friend) {
 		boolean enabled = mMode != MODE_SELECT && mCurrentChat != null;
 		SurespotLog.v(TAG, "enableMenuItems, enabled: %b", enabled);
+
+		boolean isDeleted = false;
+		if (friend != null) {
+			isDeleted = friend.isDeleted();
+		}
+		
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
-				menuItem.setVisible(enabled);
+				// deleted users can't have images sent to them
+				if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+
+					menuItem.setVisible(enabled && !isDeleted);
+				}
+				else {
+					menuItem.setVisible(enabled);
+				}
 			}
 		}
 	}
