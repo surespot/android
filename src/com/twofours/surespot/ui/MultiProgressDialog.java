@@ -3,16 +3,23 @@ package com.twofours.surespot.ui;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.ProgressDialog;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 
 public class MultiProgressDialog {
 	private static final String TAG = "MultiProgressDialog";
 	private int mProgressCounter;
-	private ProgressDialog mMultiProgressDialog;
+	private AlertDialog mMultiProgressDialog;
 	private Context mContext;
 	private String mMessage;
 	private int mDelay;
@@ -30,10 +37,33 @@ public class MultiProgressDialog {
 		if (mProgressCounter == 1) {
 
 			if (mMultiProgressDialog == null) {
-				mMultiProgressDialog = new ProgressDialog(mContext);
-				mMultiProgressDialog.setIndeterminate(true);
+				
+				
+				LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				View layout = inflater.inflate(R.layout.dialog_progress, null, false);
+				
+				
+				TextView text = (TextView) layout.findViewById(R.id.text);
+				text.setText(mMessage);
+				ImageView image = (ImageView) layout.findViewById(R.id.image);
+								
+				Animation a = AnimationUtils.loadAnimation(mContext, R.anim.progress_anim);
+				a.setDuration(1000);
+				image.startAnimation(a);
+//					
+			//	mMultiProgressDialog.setIndeterminate(true);
+			//	mMultiProgressDialog.setIcon(R.drawable.surespot_logo);
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+				builder.setView(layout);
+				
+				mMultiProgressDialog = builder.create();							
+				mMultiProgressDialog.setCancelable(false);
+							
+				
+//		
 				// progressDialog.setTitle("loading");
-				mMultiProgressDialog.setMessage(mMessage);
+			//	mMultiProgressDialog.setMessage(mMessage);
 			}
 
 			// only show the dialog if we haven't loaded within 500 ms
