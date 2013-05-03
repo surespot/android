@@ -106,9 +106,9 @@ public class ChangePasswordActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());		
-		final String dPassword = new String(EncryptionController.derive(currentPassword, saltBytes));
-
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());									
+		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(currentPassword, saltBytes)));
+	
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
@@ -127,7 +127,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 						final String dNewPassword = new String(ChatUtils.base64EncodeNowrap(derived[1])); 
 																							
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(passwordToken),
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(passwordToken),
 								dNewPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
