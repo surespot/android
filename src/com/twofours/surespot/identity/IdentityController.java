@@ -160,6 +160,15 @@ public class IdentityController {
 		return null;
 	}
 
+	
+	public static boolean identityFileExists(Context context, String username) {
+		String identityDir = getIdentityDir(context);
+		String filename = username + IDENTITY_EXTENSION;
+		String sIdentityFile = identityDir + File.separator + filename;
+		return new File(sIdentityFile).exists();
+	}
+	
+	
 	public static boolean ensureIdentityFile(Context context, String username) {
 		// make sure file we're going to save to is writable before we start
 
@@ -177,7 +186,7 @@ public class IdentityController {
 		File identityFile = new File(sIdentityFile);
 
 		if (identityFile.exists()) {
-			return identityFile.isFile() && identityFile.canWrite();
+			return false;
 		}
 		else {
 
@@ -319,14 +328,14 @@ public class IdentityController {
 		return null;
 	}
 
-	public static void importIdentity(final Context context, File exportDir, String username, final String password,
+	public static void importIdentity(final Context context, File exportDir, final String username, final String password,
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 
-			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());							
+			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
 			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
-		
+
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
 				networkController = new NetworkController(context, null);
@@ -335,8 +344,18 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-
-							// TODO check versions and reject if import is older
+							
+							//should never happen
+							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+							if (existingIdentity != null) {
+								int importVersion = Integer.parseInt(identity.getLatestVersion());
+								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
+								if (importVersion <= existingVersion) {
+									callback.handleResponse(new IdentityOperationResult(
+											"identity not imported as a newer version of the identity you are trying to import already exists", false));
+									return;
+								}
+							}
 
 							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
