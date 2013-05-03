@@ -224,6 +224,13 @@ public class IdentityController {
 			String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
 			File file = new File(identityFilename);
 			file.delete();
+			
+			//delete export identity
+			final File exportDir = FileUtils.getIdentityExportDir();
+			identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
+			file = new File(identityFilename);
+			file.delete();
+					
 		}
 		
 		SurespotApplication.mBackupManager.dataChanged();

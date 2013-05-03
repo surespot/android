@@ -98,9 +98,8 @@ public class DeleteIdentityActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
-		
-		final String dPassword = new String(EncryptionController.derive(password, saltBytes));
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());						
+		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
@@ -115,7 +114,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 						SurespotLog.v(TAG, "received delete token: " + deleteToken);
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(deleteToken),
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(deleteToken),
 								dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
