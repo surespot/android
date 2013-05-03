@@ -324,9 +324,9 @@ public class IdentityController {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 
-			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
-			String dpassword = new String(EncryptionController.derive(password, saltBytes));
-
+			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());							
+			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
+		
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
 				networkController = new NetworkController(context, null);
