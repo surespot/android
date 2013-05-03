@@ -1,5 +1,8 @@
 package com.twofours.surespot.images;
 
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,7 +23,6 @@ import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
-import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -37,7 +39,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	public static final int IMAGE_SIZE_LARGE = 0;
 	public static final int IMAGE_SIZE_SMALL = 1;
 	private static final String COMPRESS_SUFFIX = "compress";
-	private ImageView mImageView;
+	private ImageViewTouch mImageView;
 	private Button mSendButton;
 	private Button mCancelButton;
 	private File mCompressedImagePath;
@@ -50,11 +52,9 @@ public class ImageSelectActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
 
-		mImageView = (ImageView) this.findViewById(R.id.imageViewer);
+		mImageView = (ImageViewTouch) this.findViewById(R.id.imageViewer);
 		mSendButton = (Button) this.findViewById(R.id.send);
 		mCancelButton = (Button) this.findViewById(R.id.cancel);
-
-		
 
 		mSendButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -88,7 +88,7 @@ public class ImageSelectActivity extends SherlockActivity {
 			mTo = savedInstanceState.getString("to");
 			mSize = savedInstanceState.getInt("size");
 			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
-			
+
 			if (mPath != null) {
 				mCompressedImagePath = new File(mPath);
 				setImage(BitmapFactory.decodeFile(mPath), true);
@@ -96,17 +96,14 @@ public class ImageSelectActivity extends SherlockActivity {
 			}
 		}
 
-			
-		
-		
 		boolean start = getIntent().getBooleanExtra("start", false);
 		if (start) {
 			getIntent().putExtra("start", false);
 			mTo = getIntent().getStringExtra("to");
 			mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
-			
+
 			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
-			
+
 			// TODO paid version allows any file
 			Intent intent = new Intent();
 			intent.setType("image/*");
@@ -118,8 +115,6 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	}
 
-	
-	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
@@ -170,8 +165,13 @@ public class ImageSelectActivity extends SherlockActivity {
 		else {
 			mImageView.clearAnimation();
 		}
+		mImageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
 		mImageView.setImageBitmap(bitmap);
 		mSendButton.setEnabled(true);
+
+		if (mSize == IMAGE_SIZE_SMALL) {
+			mImageView.zoomTo((float) .5, 2000);
+		}
 	}
 
 	@Override
@@ -241,8 +241,9 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 
 		// scale, compress and save the image
-		int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConstants.MESSAGE_IMAGE_DIMENSION : SurespotConstants.FRIEND_IMAGE_DIMENSION);
-		
+		int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConstants.MESSAGE_IMAGE_DIMENSION
+				: SurespotConstants.FRIEND_IMAGE_DIMENSION);
+
 		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, finalUri, rotate, maxDimension);
 		try {
 

@@ -61,7 +61,7 @@ public class SignupActivity extends SherlockActivity {
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
-		mMpd = new MultiProgressDialog(this, "creating a user and generating keys", 250);
+		mMpd = new MultiProgressDialog(this, "creating a user and generating key pairs", 250);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
@@ -143,6 +143,9 @@ public class SignupActivity extends SherlockActivity {
 
 		if (!confirmPassword.equals(password)) {
 			Utils.makeToast(this, "passwords do not match");
+			pwText.setText("");
+			confirmPwText.setText("");
+			pwText.requestFocus();
 			return;
 		}
 
@@ -155,19 +158,27 @@ public class SignupActivity extends SherlockActivity {
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
 					Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
+					userText.setText("");
+					confirmPwText.setText("");
 					pwText.setText("");
-					mMpd.decrProgress();
+					userText.requestFocus();
+					mMpd.decrProgress();					
 				}
 				else {
 					// make sure we can create the file
 					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username)) {
 						Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
+						userText.setText("");
+						confirmPwText.setText("");
+						pwText.setText("");
+						userText.requestFocus();
+						mMpd.decrProgress();
 						return;
 					}
 
 					byte[][] derived = EncryptionController.derive(password);
 					final String salt = new String(ChatUtils.base64EncodeNowrap(derived[0]));
-					final String dPassword = new String(ChatUtils.base64EncodeNowrap(derived[1])); 
+					final String dPassword = new String(ChatUtils.base64EncodeNowrap(derived[1]));
 					// generate key pair
 					// TODO don't always regenerate if the signup was not
 					// successful
@@ -203,6 +214,7 @@ public class SignupActivity extends SherlockActivity {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
+														confirmPwText.setText("");
 														pwText.setText("");
 
 														if (statusCode == 201) {
@@ -247,7 +259,9 @@ public class SignupActivity extends SherlockActivity {
 														}
 														else {
 															SurespotLog.w(TAG, "201 not returned on user create.");
+															confirmPwText.setText("");
 															pwText.setText("");
+															pwText.requestFocus();
 														}
 
 													}
@@ -263,9 +277,11 @@ public class SignupActivity extends SherlockActivity {
 															case 409:
 																Utils.makeToast(SignupActivity.this,
 																		"that username already exists, please choose another");
+																userText.setText("");
+																userText.requestFocus();
 																break;
 															case 403:
-																//future use for when we have to add captcha like signup verification
+																// future use for when we have to add captcha like signup verification
 																Utils.makeToast(SignupActivity.this,
 																		"please update surespot to create a new user");
 																break;
@@ -273,12 +289,13 @@ public class SignupActivity extends SherlockActivity {
 																Utils.makeToast(SignupActivity.this,
 																		"could not create user, please try again later");
 															}
-															
+
 														}
 														else {
 															Utils.makeToast(SignupActivity.this,
 																	"could not create user, please try again later");
 														}
+														confirmPwText.setText("");
 														pwText.setText("");
 
 													}

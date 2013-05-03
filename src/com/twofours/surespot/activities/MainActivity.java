@@ -2,8 +2,6 @@ package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
 
-import org.acra.ACRA;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -14,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -93,7 +92,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private BroadcastReceiver mExternalStorageReceiver;
 	private boolean mExternalStorageAvailable = false;
 	private boolean mExternalStorageWriteable = false;
-	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
 	private InputMethodManager mImm;
 	private KeyboardStateHandler mKeyboardStateHandler;
@@ -104,7 +102,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mKeyboardShowing;
 	private int mEmojiHeight;
 	private int mInitialHeightOffset;
-	private Button mEmojiButton;
+	private ImageView mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
 
@@ -120,10 +118,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 		}
 
-		if (mDadLogging) {
-			ACRA.getErrorReporter().putCustomData("method", "MainActivity onCreate");
-			ACRA.getErrorReporter().handleSilentException(null);
-		}
 
 		mContext = this;
 
@@ -303,7 +297,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
-		mEmojiButton = (Button) findViewById(R.id.bEmoji);
+		mEmojiButton = (ImageView) findViewById(R.id.bEmoji);
 		mEmojiButton.setOnClickListener(new View.OnClickListener() {
 
 			boolean mKeyboardWasOpen = false;
@@ -357,6 +351,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 			}
 		});
+		
+		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
 
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
@@ -517,10 +513,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onResume() {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
-		if (mDadLogging) {
-			ACRA.getErrorReporter().putCustomData("method", "MainActivity onResume");
-			ACRA.getErrorReporter().handleSilentException(null);
-		}
 
 		if (mChatController != null) {
 			mChatController.onResume();
@@ -540,11 +532,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
-
-		if (mDadLogging) {
-			ACRA.getErrorReporter().putCustomData("method", "onActivityResult, requestCode: " + requestCode);
-			ACRA.getErrorReporter().handleSilentException(null);
-		}
 
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
@@ -639,11 +626,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
 
-		enableMenuItems();
 		if (mChatController != null) {
-			mChatController.enableMenuItems();
+			mChatController.enableMenuItems(mCurrentFriend);
 		}
-
+		enableImageMenuItems();
 		return true;
 	}
 
@@ -663,7 +649,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		super.onOptionsItemSelected(item);
-		Intent intent = null;
 		final String currentChat = mChatController.getCurrentChat();
 		switch (item.getItemId()) {
 		case android.R.id.home:
@@ -680,39 +665,84 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (currentChat == null) {
 				return true;
 			}
-			MessageImageDownloader.evictCache();
-			intent = new Intent(this, ImageSelectActivity.class);
-			intent.putExtra("to", currentChat);
-			intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
-			// set start intent to avoid restarting every rotation
-			intent.putExtra("start", true);
-			startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+
+			// can't send images to deleted folk
+			if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+				return true;
+			}
+
+			new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... params) {
+					MessageImageDownloader.evictCache();
+					Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
+					intent.putExtra("to", currentChat);
+					intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
+					// set start intent to avoid restarting every rotation
+					intent.putExtra("start", true);
+					startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+					return null;
+				};
+
+			}.execute();
+
 			return true;
 		case R.id.menu_capture_image_bar:
 			if (currentChat == null) {
 				return true;
 			}
-			MessageImageDownloader.evictCache();
-			mImageCaptureHandler = new ImageCaptureHandler(currentChat);
-			mImageCaptureHandler.capture(this);
+			// can't send images to deleted folk
+			if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+				return true;
+			}
+
+			new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... params) {
+
+					MessageImageDownloader.evictCache();
+					mImageCaptureHandler = new ImageCaptureHandler(currentChat);
+					mImageCaptureHandler.capture(MainActivity.this);
+					return null;
+				}
+			}.execute();
 
 			return true;
 		case R.id.menu_settings_bar:
-			intent = new Intent(this, SettingsActivity.class);
-			startActivity(intent);
+
+			new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... params) {
+
+					Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+					startActivity(intent);
+					return null;
+				}
+			}.execute();
 			return true;
 		case R.id.menu_logout_bar:
 			mChatController.logout();
 			IdentityController.logout();
-			Intent finalIntent = new Intent(MainActivity.this, MainActivity.class);
-			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			mChatController = null;
-			MainActivity.this.startActivity(finalIntent);
-			finish();
+
+			new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... params) {
+
+					Intent finalIntent = new Intent(MainActivity.this, MainActivity.class);
+					finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					mChatController = null;
+					MainActivity.this.startActivity(finalIntent);
+					finish();
+					return null;
+				}
+			}.execute();
 			return true;
 		case R.id.menu_invite_external:
-			intent = new Intent(this, ExternalInviteActivity.class);
-			startActivity(intent);
+
+			new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... params) {
+
+					Intent intent = new Intent(MainActivity.this, ExternalInviteActivity.class);
+					startActivity(intent);
+					return null;
+				}
+			}.execute();
 			return true;
 		case R.id.menu_clear_messages:
 			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
@@ -733,8 +763,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			return true;
 		case R.id.menu_pwyl:
-			intent = new Intent(this, BillingActivity.class);
-			startActivity(intent);
+
+			new AsyncTask<Void, Void, Void>() {
+				protected Void doInBackground(Void... params) {
+
+					Intent intent = new Intent(MainActivity.this, BillingActivity.class);
+					startActivity(intent);
+					return null;
+				}
+			}.execute();
 			return true;
 		default:
 			return false;
@@ -818,15 +855,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void handleExternalStorageState(boolean externalStorageAvailable, boolean externalStorageWriteable) {
 
-		enableMenuItems();
+		enableImageMenuItems();
 
 	}
 
-	public void enableMenuItems() {
+	public void enableImageMenuItems() {
 
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
 				if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+
 					menuItem.setEnabled(mExternalStorageWriteable);
 
 				}

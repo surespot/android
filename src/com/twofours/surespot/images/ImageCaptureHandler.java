@@ -2,8 +2,6 @@ package com.twofours.surespot.images;
 
 import java.io.File;
 
-import org.acra.ACRA;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
@@ -44,7 +42,6 @@ public class ImageCaptureHandler implements Parcelable {
 	}
 
 	public void capture(MainActivity activity) {
-		// intent = new Intent(this, ImageCaptureActivity.class);
 		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
 		File f;
@@ -53,11 +50,7 @@ public class ImageCaptureHandler implements Parcelable {
 			mCurrentPhotoPath = f.getAbsolutePath();
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 
-			activity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
-			if (activity.mDadLogging) {
-				ACRA.getErrorReporter().putCustomData("method", "ImageCaptureHandler.capture");
-				ACRA.getErrorReporter().handleSilentException(null);
-			}
+			activity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);			
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "capture", e);
@@ -67,7 +60,6 @@ public class ImageCaptureHandler implements Parcelable {
 
 	public void handleResult(final MainActivity activity) {
 		activity.getChatController().scrollToEnd(mTo);
-		// Utils.makeToast(mActivity, mActivity.getString(R.string.uploading_image));
 		ChatUtils.uploadPictureMessageAsync(activity, activity.getChatController(), activity.getNetworkController(),
 				Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
 					@Override
@@ -75,8 +67,6 @@ public class ImageCaptureHandler implements Parcelable {
 						if (!result) {
 							Utils.makeToast(activity, activity.getString(R.string.could_not_upload_image));
 						}
-
-						// new File(filename).delete();
 					}
 				});
 		FileUtils.galleryAddPic(activity, mCurrentPhotoPath);

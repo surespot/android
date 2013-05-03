@@ -27,16 +27,19 @@
         android:layout_above="@+id/etMessage"
         android:layout_below="@+id/indicator" />
 
-    <Button
+    <ImageView
         android:id="@+id/bEmoji"
-        android:layout_width="35dp"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/fEmoji"
+        android:layout_alignBottom="@+id/etMessage"
+        android:layout_alignTop="@+id/etMessage"
+        
         android:layout_alignWithParentIfMissing="true"
-        android:background="@drawable/emoji_bitmap"
-        android:height="35dp"
-        android:visibility="gone"
-        android:width="35dp" />
+        android:padding="5dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/abs__list_selector_holo_light"
+        android:visibility="gone" />
 
     <EditText
         android:id="@+id/etMessage"
@@ -65,7 +68,6 @@
         android:textColor="@android:color/black" />
 
     <GridView
-        
         android:id="@+id/fEmoji"
         android:layout_width="match_parent"
         android:layout_height="200dp"

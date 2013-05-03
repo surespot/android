@@ -108,7 +108,7 @@ public class IdentityController {
 			for (PrivateKeyPairs keyPair : identity.getKeyPairs()) {
 				JSONObject jsonKeyPair = new JSONObject();
 
-				jsonKeyPair.put("version", keyPair.getVersion());				
+				jsonKeyPair.put("version", keyPair.getVersion());
 				jsonKeyPair.put("dhPriv", new String(ChatUtils.base64EncodeNowrap(keyPair.getKeyPairDH().getPrivate().getEncoded())));
 				jsonKeyPair.put("dhPub", EncryptionController.encodePublicKey(keyPair.getKeyPairDH().getPublic()));
 				jsonKeyPair.put("dsaPriv", new String(ChatUtils.base64EncodeNowrap(keyPair.getKeyPairDSA().getPrivate().getEncoded())));
@@ -160,29 +160,38 @@ public class IdentityController {
 		return null;
 	}
 
+	
+	public static boolean identityFileExists(Context context, String username) {
+		String identityDir = getIdentityDir(context);
+		String filename = username + IDENTITY_EXTENSION;
+		String sIdentityFile = identityDir + File.separator + filename;
+		return new File(sIdentityFile).exists();
+	}
+	
+	
 	public static boolean ensureIdentityFile(Context context, String username) {
 		// make sure file we're going to save to is writable before we start
-		
+
 		String identityDir = getIdentityDir(context);
 		File idDirFile = new File(identityDir);
 		idDirFile.mkdirs();
-		
+
 		if (!idDirFile.isDirectory()) {
 			return false;
 		}
-		
+
 		String filename = username + IDENTITY_EXTENSION;
 		String sIdentityFile = identityDir + File.separator + filename;
-		
+
 		File identityFile = new File(sIdentityFile);
 
 		if (identityFile.exists()) {
-			return identityFile.isFile() && identityFile.canWrite();
+			return false;
 		}
 		else {
 
 			try {
-				//make sure we'll have the space to write the identity file
+				// make sure we'll have the space to write the identity file
 				FileOutputStream fos = new FileOutputStream(identityFile);
 				fos.write(new byte[10000]);
 				fos.close();
@@ -196,19 +205,18 @@ public class IdentityController {
 	}
 
 	private static String getIdentityDir(Context context) {
-		String identityDir = FileUtils.getIdentityDir(context);		
+		String identityDir = FileUtils.getIdentityDir(context);
 		return identityDir;
 	}
 
 	public static synchronized void deleteIdentity(Context context, String username, String password) {
-		//force identity reload
+		// force identity reload
 		mHasIdentity = false;
-		
+
 		boolean isLoggedIn = false;
 		if (username.equals(IdentityController.getLoggedInUser())) {
 			isLoggedIn = true;
 		}
-
 
 		if (isLoggedIn) {
 			SurespotApplication.getCachingService().logout();
@@ -224,10 +232,17 @@ public class IdentityController {
 			String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
 			File file = new File(identityFilename);
 			file.delete();
+
+			// delete export identity
+			final File exportDir = FileUtils.getIdentityExportDir();
+			identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
+			file = new File(identityFilename);
+			file.delete();
+
 		}
-		
+
 		SurespotApplication.mBackupManager.dataChanged();
-		
+
 		if (isLoggedIn) {
 			UIUtils.launchMainActivity(context);
 		}
@@ -277,8 +292,7 @@ public class IdentityController {
 			JSONObject jsonIdentity = new JSONObject(identity);
 			String name = jsonIdentity.getString("username");
 			String salt = jsonIdentity.getString("salt");
-			
-			
+
 			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", username, salt);
 			if (!name.equals(username)) {
 				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username),
@@ -314,14 +328,14 @@ public class IdentityController {
 		return null;
 	}
 
-	public static void importIdentity(final Context context, File exportDir, String username, final String password,
+	public static void importIdentity(final Context context, File exportDir, final String username, final String password,
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
-			
+
 			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
-			String dpassword = new String(EncryptionController.derive(password, saltBytes));
-			
+			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
+
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
 				networkController = new NetworkController(context, null);
@@ -330,8 +344,18 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-
-							// TODO check versions and reject if import is older
+							
+							//should never happen
+							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+							if (existingIdentity != null) {
+								int importVersion = Integer.parseInt(identity.getLatestVersion());
+								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
+								if (importVersion <= existingVersion) {
+									callback.handleResponse(new IdentityOperationResult(
+											"identity not imported as a newer version of the identity you are trying to import already exists", false));
+									return;
+								}
+							}
 
 							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
@@ -387,11 +411,12 @@ public class IdentityController {
 
 		final File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
-			byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());			
-			String dpassword = new String(EncryptionController.derive(password, saltyBytes));
+			byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+
+			String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
 			// do OOB verification
-			MainActivity.getNetworkController().validate(username, dpassword,
-					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
+			MainActivity.getNetworkController().validate(username, dPassword,
+					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
 							String path = saveIdentity(null, exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
 							callback.handleResponse(path == null ? null : "identity exported to " + path);
@@ -569,7 +594,8 @@ public class IdentityController {
 			}
 		}
 		
-		//sort ignoring case
+		
+		// sort ignoring case
 		Collections.sort(identityNames, new Comparator<String>() {
 
 			@Override
@@ -579,6 +605,10 @@ public class IdentityController {
 		});
 		return identityNames;
 
+	}
+	
+	public static synchronized int getIdentityCount(Context context) {
+		return getIdentityNames(context, FileUtils.getIdentityDir(context)).size();
 	}
 
 	public static List<String> getIdentityNames(Context context) {
@@ -593,7 +623,7 @@ public class IdentityController {
 		// ChatController chatController = MainActivity.getChatController();
 		// if (chatController != null) {
 		// chatController.logout();
-		// }		
+		// }
 		if (MainActivity.getNetworkController() != null) {
 			MainActivity.getNetworkController().logout();
 		}
@@ -694,18 +724,18 @@ public class IdentityController {
 			// TODO give user other options to save it
 			SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
 		}
-		
-		//if we're logged in update the identity in the cache 
+
+		// if we're logged in update the identity in the cache
 		if (getLoggedInUser().equals(username)) {
 			SurespotApplication.getCachingService().updateIdentity(identity);
 		}
-		
+
 	}
 
 	public static void updateLatestVersion(Context context, String username, String version) {
 		// see if we are the user that's been revoked
 		// if we have the latest version locally, if we don't then this user has been revoked from a different device
-		// and should not be used on this device anymore	
+		// and should not be used on this device anymore
 		if (username.equals(getLoggedInUser()) && version.compareTo(getOurLatestVersion()) > 0) {
 			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 

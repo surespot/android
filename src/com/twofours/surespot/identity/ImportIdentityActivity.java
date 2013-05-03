@@ -62,6 +62,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				final String user = adapter.getItem(position).toString();
 
+				if (IdentityController.identityFileExists(ImportIdentityActivity.this, user)) {
+					Utils.makeToast(ImportIdentityActivity.this, "not importing identity as it already exists");
+					return;
+				}				
+				
 				// make sure file we're going to save to is writable before we start
 				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user)) {
 					Utils.makeToast(ImportIdentityActivity.this, getText(R.string.could_not_import_identity).toString());

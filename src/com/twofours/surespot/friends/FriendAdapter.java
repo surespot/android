@@ -268,11 +268,13 @@ public class FriendAdapter extends BaseAdapter {
 			if (friend.isInvited()) {
 				friendViewHolder.tvStatus.setText("is invited ");
 			}
-			if (friend.isNewFriend()) {
-				friendViewHolder.tvStatus.setText("has accepted ");
-			}
+			
 			if (friend.isInviter()) {
 				friendViewHolder.tvStatus.setText("is inviting ");
+			}
+			
+			if (friend.isNewFriend()) {
+				friendViewHolder.tvStatus.setText("");
 			}
 
 		}

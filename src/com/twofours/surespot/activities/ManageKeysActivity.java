@@ -48,13 +48,15 @@ public class ManageKeysActivity extends SherlockActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
+		
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
 		}	
 
 		spinner.setAdapter(adapter);
-
+		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
+		
 		Button rollKeysButton = (Button) findViewById(R.id.bRollKeys);
 		rollKeysButton.setOnClickListener(new OnClickListener() {
 
@@ -116,8 +118,8 @@ public class ManageKeysActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());		
-		final String dPassword = new String(EncryptionController.derive(password, saltBytes));
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());							
+		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));	
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
@@ -142,7 +144,7 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64Decode(keyToken), dPassword.getBytes());
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(keyToken), dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 						// generate new key pairs

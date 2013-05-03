@@ -86,65 +86,82 @@ public class StateController {
 		return null;
 	}
 
-	public void saveFriends(int latestUserControlId, List<Friend> friends) {
-		String filename = getFilename(FRIENDS);
-		if (filename != null) {
-			if (friends != null && friends.size() > 0) {
+	public synchronized void saveFriends(final int latestUserControlId, final List<Friend> friends) {
 
-				JSONArray jsonArray = new JSONArray();
-				ListIterator<Friend> iterator = friends.listIterator();
+		new AsyncTask<Void, Void, Void>() {
 
-				while (iterator.hasNext()) {
-					Friend friend = iterator.next();
-					SurespotLog.v(TAG, "saveFriends,  saving friend: %s", friend);
-					jsonArray.put(friend.toJSONObject());
-				}
+			@Override
+			protected Void doInBackground(Void... params) {
+				String filename = getFilename(FRIENDS);
+				if (filename != null) {
+					if (friends != null && friends.size() > 0) {
 
-				JSONObject jsonFriendState = new JSONObject();
-				try {
-					jsonFriendState.put("userControlId", latestUserControlId);
-					jsonFriendState.put("friends", jsonArray);
-					String sFriends = jsonFriendState.toString();
-					FileUtils.writeFile(filename, sFriends);
-					SurespotLog.v(TAG, "Saved friends: %s", sFriends);
-					
+						JSONArray jsonArray = new JSONArray();
+						ListIterator<Friend> iterator = friends.listIterator();
+
+						while (iterator.hasNext()) {
+							Friend friend = iterator.next();
+							SurespotLog.v(TAG, "saveFriends,  saving friend: %s", friend);
+							jsonArray.put(friend.toJSONObject());
+						}
+
+						JSONObject jsonFriendState = new JSONObject();
+						try {
+							jsonFriendState.put("userControlId", latestUserControlId);
+							jsonFriendState.put("friends", jsonArray);
+							String sFriends = jsonFriendState.toString();
+							FileUtils.writeFile(filename, sFriends);
+							SurespotLog.v(TAG, "Saved friends: %s", sFriends);
+
+						}
+						catch (JSONException e) {
+							SurespotLog.w(TAG, e, "saveFriends");
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "saveFriends");
+						}
+					}
+					else {
+						new File(filename).delete();
+					}
+
 				}
-				catch (JSONException e) {
-					SurespotLog.w(TAG, e, "saveFriends");
-				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "saveFriends");
-				}
+				return null;
 			}
-			else {
-				new File(filename).delete();
-			}
-		}
+		}.execute();
 	}
 
-	public void saveUnsentMessages(Collection<SurespotMessage> messages) {
-		String filename = getFilename(UNSENT_MESSAGES);
-		if (filename != null) {
-			if (messages != null) {
-				if (messages.size() > 0) {
+	public synchronized void saveUnsentMessages(final Collection<SurespotMessage> messages) {
+		new AsyncTask<Void, Void, Void>() {
 
-					String messageString = ChatUtils.chatMessagesToJson(messages).toString();
+			@Override
+			protected Void doInBackground(Void... params) {
 
-					try {
-						FileUtils.writeFile(filename, messageString);
+				String filename = getFilename(UNSENT_MESSAGES);
+				if (filename != null) {
+					if (messages != null) {
+						if (messages.size() > 0) {
+
+							String messageString = ChatUtils.chatMessagesToJson(messages).toString();
+
+							try {
+								FileUtils.writeFile(filename, messageString);
+							}
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "saveUnsentMessages");
+							}
+						}
+						else {
+							new File(filename).delete();
+						}
 					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "saveUnsentMessages");
+					else {
+						new File(filename).delete();
 					}
-				}	
-				else {
-					new File(filename).delete();
 				}
+				return null;
 			}
-			else {
-				new File(filename).delete();
-			}
-		}
+		}.execute();
 
 	}
 
@@ -176,33 +193,41 @@ public class StateController {
 
 	}
 
-	public void saveMessages(String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
-		String filename = getFilename(MESSAGES_PREFIX + spot);
-		if (filename != null) {
-			if (messages != null) {
-				int messagesSize = messages.size();
-				int saveSize = messagesSize - currentScrollPosition;
-				if (saveSize + SurespotConstants.SAVE_MESSAGE_BUFFER < SurespotConstants.SAVE_MESSAGE_MINIMUM) {
-					saveSize = SurespotConstants.SAVE_MESSAGE_MINIMUM;
-				}
-				else {
-					saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
-				}
+	public synchronized void saveMessages(final String spot, final ArrayList<SurespotMessage> messages, final int currentScrollPosition) {
+		new AsyncTask<Void, Void, Void>() {
 
-				SurespotLog.v(TAG, "saving %s messages", saveSize);
-				String sMessages = ChatUtils.chatMessagesToJson(
-						messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize)).toString();
-				try {
-					FileUtils.writeFile(filename, sMessages);
+			@Override
+			protected Void doInBackground(Void... params) {
+
+				String filename = getFilename(MESSAGES_PREFIX + spot);
+				if (filename != null) {
+					if (messages != null) {
+						int messagesSize = messages.size();
+						int saveSize = messagesSize - currentScrollPosition;
+						if (saveSize + SurespotConstants.SAVE_MESSAGE_BUFFER < SurespotConstants.SAVE_MESSAGE_MINIMUM) {
+							saveSize = SurespotConstants.SAVE_MESSAGE_MINIMUM;
+						}
+						else {
+							saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
+						}
+
+						SurespotLog.v(TAG, "saving %s messages", saveSize);
+						String sMessages = ChatUtils.chatMessagesToJson(
+								messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize)).toString();
+						try {
+							FileUtils.writeFile(filename, sMessages);
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "saveMessages");
+						}
+					}
+					else {
+						new File(filename).delete();
+					}
 				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "saveMessages");
-				}
+				return null;
 			}
-			else {
-				new File(filename).delete();
-			}
-		}
+		}.execute();
 	}
 
 	public ArrayList<SurespotMessage> loadMessages(String spot) {
@@ -216,7 +241,7 @@ public class StateController {
 			}
 			catch (FileNotFoundException f) {
 				SurespotLog.v(TAG, "loadMessages, no messages file found for: %s", spot);
-			}					
+			}
 			catch (IOException e) {
 				SurespotLog.w(TAG, e, "loadMessages");
 			}
@@ -252,7 +277,7 @@ public class StateController {
 		FileUtils.deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 	}
 
-	public static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
+	public static synchronized void clearCache(final Context context, final IAsyncCallback<Void> callback) {
 		new AsyncTask<Void, Void, Void>() {
 			protected Void doInBackground(Void... params) {
 				// clear out some shiznit
@@ -273,8 +298,8 @@ public class StateController {
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);
-				
-				//uploaded images dir
+
+				// uploaded images dir
 				String localImageDir = FileUtils.getImageUploadDir(context);
 				FileUtils.deleteRecursive(new File(localImageDir));
 
@@ -290,7 +315,7 @@ public class StateController {
 		}.execute();
 	}
 
-	public static void wipeUserState(Context context, String username, String otherUsername) {
+	public synchronized static void wipeUserState(Context context, String username, String otherUsername) {
 		String publicKeyDir = FileUtils.getPublicKeyDir(context) + File.separator + otherUsername;
 		String room = ChatUtils.getSpot(username, otherUsername);
 		FileUtils.deleteRecursive(new File(publicKeyDir));
