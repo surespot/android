@@ -17,6 +17,7 @@ package com.twofours.surespot.chat;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 
 import android.content.Context;
 import android.text.Spannable;
@@ -33,6 +34,7 @@ public class EmojiParser {
 	// Singleton stuff
 	private static final String TAG = "EmojiParser";
 	private static EmojiParser sInstance;
+	private static Random mRandom = new Random();
 
 	public static EmojiParser getInstance() {
 		return sInstance;
@@ -270,5 +272,9 @@ public class EmojiParser {
 
 		// SurespotLog.v(TAG, "decrypted supp unicode chars: %s.", suppCps);
 		return builder;
+	}
+
+	public int getRandomEmojiResource() {
+		return Emojis.getEmojiResource(mRandom.nextInt(Emojis.getCount()));
 	}
 }

@@ -2,8 +2,6 @@ package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
 
-import org.acra.ACRA;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -94,7 +92,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private BroadcastReceiver mExternalStorageReceiver;
 	private boolean mExternalStorageAvailable = false;
 	private boolean mExternalStorageWriteable = false;
-	public boolean mDadLogging = false;
 	private ImageView mHomeImageView;
 	private InputMethodManager mImm;
 	private KeyboardStateHandler mKeyboardStateHandler;
@@ -105,7 +102,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mKeyboardShowing;
 	private int mEmojiHeight;
 	private int mInitialHeightOffset;
-	private Button mEmojiButton;
+	private ImageView mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
 
@@ -121,10 +118,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 		}
 
-		if (mDadLogging) {
-			ACRA.getErrorReporter().putCustomData("method", "MainActivity onCreate");
-			ACRA.getErrorReporter().handleSilentException(null);
-		}
 
 		mContext = this;
 
@@ -304,7 +297,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
-		mEmojiButton = (Button) findViewById(R.id.bEmoji);
+		mEmojiButton = (ImageView) findViewById(R.id.bEmoji);
 		mEmojiButton.setOnClickListener(new View.OnClickListener() {
 
 			boolean mKeyboardWasOpen = false;
@@ -358,6 +351,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 			}
 		});
+		
+		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
 
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
@@ -518,10 +513,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onResume() {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume");
-		if (mDadLogging) {
-			ACRA.getErrorReporter().putCustomData("method", "MainActivity onResume");
-			ACRA.getErrorReporter().handleSilentException(null);
-		}
 
 		if (mChatController != null) {
 			mChatController.onResume();
@@ -541,11 +532,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
-
-		if (mDadLogging) {
-			ACRA.getErrorReporter().putCustomData("method", "onActivityResult, requestCode: " + requestCode);
-			ACRA.getErrorReporter().handleSilentException(null);
-		}
 
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
