@@ -51,7 +51,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			lvIdentities.setVisibility(View.VISIBLE);
 		}
 		else {
-			tvFound.setText("no surespot identity (*.ssi) files discovered in\n\t" + exportDir + "\nplease copy your identity file(s) there.");
+			tvFound.setText("no surespot identity (*.ssi) files discovered in\n\n\t" + exportDir + "\n\nplease copy your identity file(s) there. (Note: this may not be the SD card, it could be the device's internal storage)");
 			lvIdentities.setVisibility(View.GONE);
 		}
 

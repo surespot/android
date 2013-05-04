@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.os.Build;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.view.Display;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -26,6 +28,10 @@ public class UIUtils {
 		alert.setTitle(title);
 		alert.setMessage(message);
 		final EditText editText = new EditText(context);
+		editText.setImeActionLabel("done", EditorInfo.IME_ACTION_DONE);
+		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+		editText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 
 		alert.setView(editText);
@@ -50,8 +56,9 @@ public class UIUtils {
 
 		alert.show();
 	}
-	
-	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText, String negativeButtonText, final IAsyncCallback<Boolean> callback) {
+
+	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText,
+			String negativeButtonText, final IAsyncCallback<Boolean> callback) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		builder.setMessage(message).setTitle(title).setPositiveButton(positiveButtonText, new OnClickListener() {
 
@@ -73,14 +80,13 @@ public class UIUtils {
 
 	}
 
-	
 	public static void setMessageErrorText(TextView textView, SurespotMessage message) {
 		String statusText = null;
 		switch (message.getErrorStatus()) {
 		case 400:
 			statusText = "error sending message: invalid message";
 			break;
-		
+
 		case 403:
 			statusText = "error sending message: unauthorized";
 			break;
@@ -89,21 +95,20 @@ public class UIUtils {
 			break;
 		case 429:
 			statusText = "error sending message: throttled";
-			break;			
+			break;
 		case 500:
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-				statusText = "error sending message";	
+				statusText = "error sending message";
 			}
 			else {
 				statusText = "sending failed - long press to resend";
 			}
-			
+
 			break;
 		}
 
 		textView.setText(statusText);
 	}
-
 
 	public static int getResumePosition(int currentPos, int currentSize) {
 		// if we have less messages total than the minimum, just return the current position
@@ -141,23 +146,24 @@ public class UIUtils {
 		// return currentPos;
 		// }
 	}
-	
+
 	public static void launchMainActivity(Context context) {
 		Intent finalIntent = new Intent(context, MainActivity.class);
-		finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);		
+		finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(finalIntent);
 	}
-	
+
 	@SuppressLint("NewApi")
 	public static Point getScreenSize(Activity a) {
-	    Point size = new Point();
-	    Display d = a.getWindowManager().getDefaultDisplay();
-	    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-	        d.getSize(size);
-	    } else {
-	        size.x = d.getWidth();
-	        size.y = d.getHeight();
-	    }
-	    return size;
+		Point size = new Point();
+		Display d = a.getWindowManager().getDefaultDisplay();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			d.getSize(size);
+		}
+		else {
+			size.x = d.getWidth();
+			size.y = d.getHeight();
+		}
+		return size;
 	}
 }
