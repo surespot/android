@@ -1194,6 +1194,8 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 
 		}
+		saveFriends();
+		
 
 	}
 
@@ -1486,7 +1488,7 @@ public class ChatController {
 			saveMessages(username);
 		}
 	}
-	
+
 	private void saveFriends() {
 		SurespotApplication.getStateController().saveFriends(mLatestUserControlId, mFriendAdapter.getFriends());
 	}
@@ -1692,12 +1694,11 @@ public class ChatController {
 
 			// display the message immediately
 			final byte[] iv = EncryptionController.getIv();
-
+			final ChatAdapter chatAdapter = mChatAdapters.get(mCurrentChat);
 			// build a message without the encryption values set as they could take a while
 
 			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mCurrentChat, mimeType, EmojiParser.getInstance()
 					.addEmojiSpans(plainText), new String(ChatUtils.base64EncodeNowrap(iv)));
-			ChatAdapter chatAdapter = mChatAdapters.get(mCurrentChat);
 
 			try {
 
@@ -1706,14 +1707,14 @@ public class ChatController {
 			}
 			catch (SurespotMessageSequenceException e) {
 				// not gonna happen
-				SurespotLog.v(TAG, "sendMessage", e);
+				SurespotLog.v(TAG, e, "sendMessage");
 			}
 
 			// do encryption in background
-			new AsyncTask<Void, Void, SurespotMessage>() {
+			new AsyncTask<Void, Void, Boolean>() {
 
 				@Override
-				protected SurespotMessage doInBackground(Void... arg0) {
+				protected Boolean doInBackground(Void... arg0) {
 					String ourLatestVersion = IdentityController.getOurLatestVersion();
 					String theirLatestVersion = IdentityController.getTheirLatestVersion(mCurrentChat);
 
@@ -1725,14 +1726,24 @@ public class ChatController {
 						chatMessage.setFromVersion(ourLatestVersion);
 						chatMessage.setToVersion(theirLatestVersion);
 
-						SurespotLog.v(TAG, "sending message to chat controller, text: %s, iv: %s", chatMessage.getPlainData(),
-								chatMessage.getIv());
-
+						SurespotLog.v(TAG, "sending message to chat controller iv: %s", chatMessage.getIv());
+						sendMessages();
+						return true;
 					}
+					else {
+						SurespotLog.v(TAG, "could not encrypt message, iv: %s", chatMessage.getIv());
+						chatMessage.setErrorStatus(500);
 
-					sendMessages();
-					return null;
+						return false;
+					}
 				}
+
+				protected void onPostExecute(Boolean success) {
+					// if success is false we will have set an error status in the message so notify
+					if (!success) {
+						chatAdapter.notifyDataSetChanged();
+					}
+				};
 
 			}.execute();
 		}
@@ -2131,7 +2142,7 @@ public class ChatController {
 		if (friend != null) {
 			isDeleted = friend.isDeleted();
 		}
-		
+
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
 				// deleted users can't have images sent to them
