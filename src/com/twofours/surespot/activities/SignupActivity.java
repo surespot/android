@@ -274,6 +274,13 @@ public class SignupActivity extends SherlockActivity {
 															int statusCode = error.getStatusCode();
 
 															switch (statusCode) {
+															case 429:
+																Utils.makeToast(SignupActivity.this,
+																		"too many user creation attempts, try again later");
+																userText.setText("");
+																userText.requestFocus();
+																break;
+
 															case 409:
 																Utils.makeToast(SignupActivity.this,
 																		"that username already exists, please choose another");
@@ -281,7 +288,7 @@ public class SignupActivity extends SherlockActivity {
 																userText.requestFocus();
 																break;
 															case 403:
-																// future use for when we have to add captcha like signup verification
+																// future use
 																Utils.makeToast(SignupActivity.this,
 																		"please update surespot to create a new user");
 																break;
@@ -313,9 +320,32 @@ public class SignupActivity extends SherlockActivity {
 			}
 
 			@Override
-			public void onFailure(Throwable error, String content) {
-				SurespotLog.w(TAG, "userExists", error);
+			public void onFailure(Throwable arg0, String content) {
+				SurespotLog.w(TAG, arg0, "userExists");
 				mMpd.decrProgress();
+				if (arg0 instanceof HttpResponseException) {
+					HttpResponseException error = (HttpResponseException) arg0;
+					int statusCode = error.getStatusCode();
+
+					switch (statusCode) {
+					case 429:
+						Utils.makeToast(SignupActivity.this,
+								"too many user creation attempts, try again later");						
+						break;
+					default:
+						Utils.makeToast(SignupActivity.this,
+								"could not create user, please try again later");
+					}
+				}
+				else {
+					Utils.makeToast(SignupActivity.this,
+							"could not create user, please try again later");
+				}
+				
+				userText.setText("");
+				confirmPwText.setText("");
+				pwText.setText("");
+				userText.requestFocus();						
 			}
 		});
 	}
