@@ -173,7 +173,7 @@ public class FriendFragment extends SherlockFragment {
 		}
 		else {
 
-			if (selection.equals("set image")) {
+			if (selection.equals("assign image")) {
 				activity.uploadFriendImage(friend.getName());
 			}
 			else {

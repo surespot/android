@@ -45,6 +45,7 @@
     <string name="image_successfully_uploaded">image successfully uploaded</string>
     <string name="select_image">select image</string>
     <string name="capture_image">capture image</string>
+    <string name="assign_image">assign image</string>
     <string name="logout">logout</string>
     <string name="settings">settings</string>
     <string name="welcome_to_surespot">Welcome to surespot. Messages sent using this software are end to end encrypted using 256 bit AES and 512+ bit ECC key exchange. Enjoy.</string>

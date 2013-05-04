@@ -79,7 +79,7 @@
             android:key="pref_logging"
             android:title="logging" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="pref_crash_reporting"
             android:title="silent error reporting" />
 

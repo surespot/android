@@ -54,6 +54,9 @@ public class ImageSelectActivity extends SherlockActivity {
 
 		mImageView = (ImageViewTouch) this.findViewById(R.id.imageViewer);
 		mSendButton = (Button) this.findViewById(R.id.send);
+		
+		
+		
 		mCancelButton = (Button) this.findViewById(R.id.cancel);
 
 		mSendButton.setOnClickListener(new OnClickListener() {
@@ -87,8 +90,9 @@ public class ImageSelectActivity extends SherlockActivity {
 			mPath = savedInstanceState.getString("path");
 			mTo = savedInstanceState.getString("to");
 			mSize = savedInstanceState.getInt("size");
-			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
 
+			setTitle();
+			setButtonText();
 			if (mPath != null) {
 				mCompressedImagePath = new File(mPath);
 				setImage(BitmapFactory.decodeFile(mPath), true);
@@ -102,7 +106,8 @@ public class ImageSelectActivity extends SherlockActivity {
 			mTo = getIntent().getStringExtra("to");
 			mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
 
-			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
+			setTitle();
+			setButtonText();
 
 			// TODO paid version allows any file
 			Intent intent = new Intent();
@@ -115,6 +120,21 @@ public class ImageSelectActivity extends SherlockActivity {
 
 	}
 
+	private void setTitle() {
+
+		if (mSize == IMAGE_SIZE_LARGE) {
+			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
+		}
+		else {
+			Utils.configureActionBar(this, getString(R.string.assign_image), mTo, false);
+		}
+
+	}
+
+	private void setButtonText() {
+		mSendButton.setText(mSize == IMAGE_SIZE_LARGE ? "send" : "assign");
+	}
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
