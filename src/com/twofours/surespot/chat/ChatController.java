@@ -1232,7 +1232,7 @@ public class ChatController {
 			Friend friend = mFriendAdapter.setFriendDeleted(deletedUser);
 
 			// force the controls to update
-			if (friend != null && mCurrentChat.equals(deletedUser)) {
+			if (friend != null && mCurrentChat != null && mCurrentChat.equals(deletedUser)) {
 				mTabShowingCallback.handleResponse(friend);
 			}
 		}

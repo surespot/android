@@ -39,6 +39,7 @@ public class FriendFragment extends SherlockFragment {
 		// mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
+		mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 		//
 		// Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		// addFriendButton.setOnClickListener(new View.OnClickListener() {
@@ -118,7 +119,7 @@ public class FriendFragment extends SherlockFragment {
 						}
 
 						SurespotLog.v(TAG, "tearing progress down");
-						mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
+						
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 					}
 				}

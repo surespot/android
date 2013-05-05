@@ -181,6 +181,9 @@ public class Friend implements Comparable<Friend> {
 	public boolean isMessageActivity() {
 
 		// SurespotLog.v(TAG, "isMessageActivity, %s", toString());
+		if (isDeleted()) {
+			return false;
+		}
 		return mAvailableMessageId - mLastViewedMessageId > 0;
 	}
 
