@@ -1053,6 +1053,7 @@ public class ChatController {
 
 					if (userActivity) {
 						friend.setLastReceivedUserControlId(message.getId());
+						saveFriends();
 						mFriendAdapter.notifyDataSetChanged();
 					}
 				}
@@ -1192,9 +1193,9 @@ public class ChatController {
 				friend.setLastReceivedUserControlId(message.getId());
 			}
 			mFriendAdapter.notifyDataSetChanged();
-
+			saveFriends();
 		}
-		saveFriends();
+		
 		
 
 	}
