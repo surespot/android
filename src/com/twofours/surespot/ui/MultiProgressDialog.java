@@ -58,7 +58,7 @@ public class MultiProgressDialog {
 				builder.setView(layout);
 				
 				mMultiProgressDialog = builder.create();							
-				mMultiProgressDialog.setCancelable(false);
+				mMultiProgressDialog.setCanceledOnTouchOutside(false);
 							
 				
 //		
