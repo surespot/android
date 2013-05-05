@@ -49,6 +49,7 @@ public class MultiProgressDialog {
 								
 				Animation a = AnimationUtils.loadAnimation(mContext, R.anim.progress_anim);
 				a.setDuration(1000);
+				image.clearAnimation();
 				image.startAnimation(a);
 //					
 			//	mMultiProgressDialog.setIndeterminate(true);
