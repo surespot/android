@@ -155,7 +155,8 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.ExternalInviteActivity"
-            android:label="@string/title_activity_external_invite" >
+            android:label="@string/title_activity_external_invite"
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.ContactPickerActivity"

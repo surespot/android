@@ -12,11 +12,13 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -34,7 +36,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 	public static final String TAG = "ExternalInviteActivity";
 
 	private EditText mEtInviteeData;
-	private EditText mEtInviteMessage;
 	private TextView mTvInviteViaLabel;
 	private RadioButton mRbEmail;
 	private RadioButton mRbSms;
@@ -65,9 +66,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 		mRbSocial = (RadioButton) findViewById(R.id.rbSocial);
 		mRbSocial.setTag(SHARE_SOCIAL);
 		// mCbAutoInvite = (CheckBox) findViewById(R.id.cbAutoInvite);
-		mEtInviteMessage = (EditText) findViewById(R.id.inviteMessage);
-		mEtInviteMessage
-				.setText("Dude! Check out this sick app! It allows for encrypted end to end communication. Take your privacy back!");
 
 		mEtInviteeData = (EditText) findViewById(R.id.invitee);
 		mEtInviteeData.setFilters(new InputFilter[] { new InputFilter.LengthFilter(80) });
@@ -141,8 +139,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 					}
 				}
 
-				final String message = mEtInviteMessage.getText().toString();
-
 				if (mSelectedType == SHARE_SOCIAL || (mSelectedContacts != null && mSelectedContacts.size() > 0)) {
 
 					final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), mSelectedType, true);
@@ -153,22 +149,36 @@ public class ExternalInviteActivity extends SherlockActivity {
 							if (TextUtils.isEmpty(shortUrl)) {
 								shortUrl = longUrl;
 							}
-							sendInvitation(message, shortUrl);
+							sendInvitation(shortUrl);
 						};
 
 						public void onFailure(Throwable e, JSONObject errorResponse) {
 							SurespotLog.v(TAG, "getShortUrl, error: " + errorResponse.toString(), e);
-							sendInvitation(message, longUrl);
+							sendInvitation(longUrl);
 						};
 					});
 				}
 			}
 		});
+		
+		
+		   ScrollView view = (ScrollView)findViewById(R.id.svInviteExternal);
+		    view.setOnTouchListener(new View.OnTouchListener() {
+		        @Override
+		        public boolean onTouch(View v, MotionEvent event) {
+		            v.requestFocusFromTouch();
+		            return false;
+		        }
+		    });
 	}
+	
 
-	private void sendInvitation(String message, String shortUrl) {
+
+	private void sendInvitation(String shortUrl) {
 		Intent intent;
+		String message = getString(R.string.external_invite_message) + shortUrl;
 		switch (mSelectedType) {
+
 		case SHARE_EMAIL:
 			intent = new Intent(Intent.ACTION_SENDTO);
 			// intent.setType("text/plain");
@@ -176,10 +186,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 			// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
 			intent.putExtra(Intent.EXTRA_BCC, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
 			intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
-			intent.putExtra(Intent.EXTRA_TEXT, message + "\n\nPlease click\n\n" + shortUrl
-					+ "\n\non your android device to install surespot.");
+			intent.putExtra(Intent.EXTRA_TEXT, message);
 			startActivity(intent);
-		
+
 			break;
 		case SHARE_SMS:
 			intent = new Intent(Intent.ACTION_VIEW);
@@ -190,13 +199,13 @@ public class ExternalInviteActivity extends SherlockActivity {
 				addressString.append(address + ";");
 			}
 			intent.putExtra("address", addressString.toString());
-			intent.putExtra("sms_body", message + " download surespot here: " + shortUrl);
+			intent.putExtra("sms_body", message);
 			startActivity(intent);
 			break;
 		case SHARE_SOCIAL:
 			intent = new Intent(Intent.ACTION_SEND);
 			intent.setType("text/plain");
-			intent.putExtra(Intent.EXTRA_TEXT, message + " download surespot here: " + shortUrl);
+			intent.putExtra(Intent.EXTRA_TEXT, message);
 			startActivity(intent);
 			break;
 		}
@@ -211,7 +220,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 			query += "&utm_content=" + username;
 		}
 
-		String eUrl = url + URLEncoder.encode(query);		
+		String eUrl = url + URLEncoder.encode(query);
 		SurespotLog.v(TAG, "play store url length %d:, url: %s ", eUrl.length(), eUrl);
 		return eUrl;
 	}
@@ -237,17 +246,18 @@ public class ExternalInviteActivity extends SherlockActivity {
 			mTvInviteViaLabel.setEnabled(true);
 			mEtInviteeData.setEnabled(true);
 			mBSelectContacts.setEnabled(true);
-			mTvInviteViaLabel.setText("bcc to (comma separated):");
+			mTvInviteViaLabel.setText("additionally bcc to (comma separated):");
 			mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 			break;
 		case SHARE_SMS:
 			mTvInviteViaLabel.setEnabled(true);
 			mEtInviteeData.setEnabled(true);
 			mBSelectContacts.setEnabled(true);
-			mTvInviteViaLabel.setText("send to (comma separated):");
+			mTvInviteViaLabel.setText("additionally send to (comma separated):");
 			mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
 			break;
 		case SHARE_SOCIAL:
+			mTvInviteViaLabel.setText("not used");
 			mTvInviteViaLabel.setEnabled(false);
 			mEtInviteeData.setEnabled(false);
 			mBSelectContacts.setEnabled(false);
@@ -285,14 +295,14 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 		if (mSelectedContacts != null) {
 			mSelectedContacts.clear();
-			mBSelectContacts.setText(String.valueOf(mSelectedContacts.size()));
+			mBSelectContacts.setText("select contacts (" + String.valueOf(mSelectedContacts.size()) + ")");
 		}
 	}
 
 	private void setSelectedContacts(ArrayList<String> selectedContacts) {
 		mSelectedContacts = selectedContacts;
 		if (mSelectedContacts != null) {
-			mBSelectContacts.setText(String.valueOf(mSelectedContacts.size()));
+			mBSelectContacts.setText("select contacts (" + String.valueOf(mSelectedContacts.size()) + ")");
 		}
 	}
 

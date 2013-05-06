@@ -1,43 +1,17 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:descendantFocusability="beforeDescendants"
+    android:focusable="true"
+    android:focusableInTouchMode="true" 
+    android:id="@+id/svInviteExternal">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content" >
 
-        <RadioGroup
-            android:id="@+id/inviteRadioGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginTop="10dp" >
-
-            <RadioButton
-                android:id="@+id/rbEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="share via email" />
-
-            <RadioButton
-                android:id="@+id/rbInviteSMS"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="share via text message" />
-
-            <RadioButton
-                android:id="@+id/rbSocial"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="share via social media" />
-        </RadioGroup>
-
-  <!--       <CheckBox
+        <!--
+             <CheckBox
             android:checked="true"
             android:id="@+id/cbAutoInvite"
             android:layout_width="wrap_content"
@@ -45,88 +19,114 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/inviteRadioGroup"
             android:layout_marginTop="10dp"
-            android:text="auto invite me when app installed/opened from this link" /> -->
+            android:text="auto invite me when app installed/opened from this link" />
+        -->
 
-        <TextView
-            android:id="@+id/inviteMessageLabel"
+        <RadioGroup
+            android:id="@+id/inviteRadioGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/rbEmail"
-            android:layout_below="@+id/invitee"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="20dp"
-            android:text="invitation message:" />
+            android:layout_marginBottom="8dp" >
 
-        <EditText
-            android:id="@+id/inviteMessage"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/tvInviteMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:text="Invite others to communicate with you privately on surespot by sharing an auto-invite link with them."
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RadioButton
+                android:id="@+id/rbEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="share via email" />
+
+            <TextView
+                android:id="@+id/tvInviteEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="30dp"
+                android:paddingRight="15dp"
+                android:text="Enter email addresses manually, and/or click the contacts button to select email addresses from your phone contacts. They will be added as bcc recipients."
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RadioButton
+                android:id="@+id/rbInviteSMS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="share via text message" />
+
+            <TextView
+                android:id="@+id/tvInviteText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="30dp"
+                android:paddingRight="15dp"
+                android:text="Enter numbers manually, and/or click the contacts button to select numbers from your phone contacts."
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RadioButton
+                android:id="@+id/rbSocial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="share via other application" />
+
+            <TextView
+                android:id="@+id/tvInviteOther"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="30dp"
+                android:paddingRight="15dp"
+                android:text="Click the share button to select application to share with, eg. facebook, twitter."
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/bSelectContact"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/inviteMessageLabel"
-            android:layout_below="@+id/inviteMessageLabel"
-            android:layout_alignParentBottom="true"
-            android:layout_marginRight="5dp"
-            android:layout_toLeftOf="@+id/bSendInvitation"
-            android:ems="10"
-            android:gravity="bottom"
-            android:inputType="textMultiLine"
-            android:maxHeight="150dp"
-            android:minHeight="150dp"
-            android:scrollbars="vertical" />
+            android:layout_below="@+id/inviteRadioGroup"
+            android:layout_marginBottom="18dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:drawableLeft="@drawable/ic_menu_friendslist"
+            android:text="select contacts" />
 
         <TextView
             android:id="@+id/tbInviteViaLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_below="@+id/inviteRadioGroup"
+            android:layout_below="@+id/bSelectContact"
             android:layout_marginLeft="5dp"
-            android:layout_marginTop="20dp"
+            android:layout_toLeftOf="@+id/bSendInvitation"
+            android:maxLines="1"
+            android:singleLine="true"
             android:text="phone number" />
-
-        <Button
-            android:id="@+id/bSelectContact"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/tbInviteViaLabel"
-            android:layout_centerHorizontal="true"
-            android:layout_marginRight="5dp"
-            android:drawableLeft="@drawable/ic_menu_friendslist"
-            android:text="0" />
 
         <EditText
             android:id="@+id/invitee"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/plus"
-            android:layout_alignLeft="@+id/tbInviteViaLabel"
-            android:layout_alignTop="@+id/plus"
+            android:layout_alignParentLeft="true"
             android:layout_below="@+id/tbInviteViaLabel"
-            android:layout_toLeftOf="@+id/plus"
+            android:layout_toLeftOf="@+id/bSendInvitation"
             android:ems="10"
-            android:scrollbars="vertical"
-            android:singleLine="true" />
-
-        <TextView
-            android:id="@+id/plus"
-            android:layout_width="20dp"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/bSelectContact"
-            android:layout_alignTop="@+id/bSelectContact"
-            android:layout_toLeftOf="@+id/bSelectContact"
-            android:gravity="center"
-            android:text="+" />
+            android:singleLine="true" >
+        </EditText>
 
         <Button
             android:id="@+id/bSendInvitation"
-            android:layout_width="70sp"
-            android:layout_height="70sp"
-            android:layout_alignParentBottom="true"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_alignBottom="@+id/invitee"
             android:layout_alignParentRight="true"
             android:background="@drawable/send_button"
             android:text="share"
             android:textColor="@android:color/black" />
-
     </RelativeLayout>
 
 </ScrollView>
