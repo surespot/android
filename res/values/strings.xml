@@ -79,6 +79,6 @@
     <string name="crash_dialog_text">It is with deep shame that we have to confess that an unexpected error has occurred.\n\nPlease help us to fix the issue by clicking OK to send an error report containing no personally identifying information.</string>
     <string name="crash_dialog_comment_prompt">You can add your comments about the problem below if you like:</string>
     <string name="crash_dialog_ok_toast">Thank you!</string>
-    <string name="external_invite_message">"I'd like to communicate with you privately via surespot. Click this link to install the android app and invite me as a friend:"</string>
+    <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click this link to install the android app and invite me as a friend: "</string>
 
 </resources>

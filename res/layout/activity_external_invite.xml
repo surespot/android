@@ -1,10 +1,10 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/svInviteExternal"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:descendantFocusability="beforeDescendants"
     android:focusable="true"
-    android:focusableInTouchMode="true" 
-    android:id="@+id/svInviteExternal">
+    android:focusableInTouchMode="true" >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -35,13 +35,15 @@
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="5dp"
-                android:text="Invite others to communicate with you privately on surespot by sharing an auto-invite link with them."
+                android:text="Invite others to communicate with you privately via surespot by sharing an auto-invite link with them."
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RadioButton
                 android:id="@+id/rbEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 android:text="share via email" />
 
             <TextView
@@ -50,11 +52,13 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Enter email addresses manually, and/or click the contacts button to select email addresses from your phone contacts. They will be added as bcc recipients."
+                android:text="Click the select contacts button to select email addresses from your phone contacts, and/or enter them manually. They will be added as bcc recipients."
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RadioButton
                 android:id="@+id/rbInviteSMS"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="share via text message" />
@@ -65,11 +69,13 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Enter numbers manually, and/or click the contacts button to select numbers from your phone contacts."
+                android:text="Click the contacts button to select numbers from your phone contacts, and/or enter them manually."
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RadioButton
                 android:id="@+id/rbSocial"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="share via other application" />
@@ -80,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Click the share button to select application to share with, eg. facebook, twitter."
+                android:text="Touch the share button to select application to share with, eg. facebook, twitter."
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </RadioGroup>
 
