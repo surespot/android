@@ -68,7 +68,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 				}				
 				
 				// make sure file we're going to save to is writable before we start
-				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user)) {
+				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user, false)) {
 					Utils.makeToast(ImportIdentityActivity.this, getText(R.string.could_not_import_identity).toString());
 					return;
 				}

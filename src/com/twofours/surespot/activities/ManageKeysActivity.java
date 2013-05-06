@@ -65,7 +65,7 @@ public class ManageKeysActivity extends SherlockActivity {
 				final String user = (String) spinner.getSelectedItem();
 
 				// make sure file we're going to save to is writable before we start
-				if (!IdentityController.ensureIdentityFile(ManageKeysActivity.this, user)) {
+				if (!IdentityController.ensureIdentityFile(ManageKeysActivity.this, user, true)) {
 					Utils.makeToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 					return;
 				}

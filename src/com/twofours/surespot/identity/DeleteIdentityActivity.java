@@ -129,7 +129,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 									result.keyVersion, new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// delete the identity stuff localally
-											IdentityController.deleteIdentity(DeleteIdentityActivity.this, username, password);
+											IdentityController.deleteIdentity(DeleteIdentityActivity.this, username);
 											refreshSpinner();
 											mMpd.decrProgress();
 											Utils.makeLongToast(DeleteIdentityActivity.this, "identity deleted");

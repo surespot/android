@@ -166,7 +166,7 @@ public class SignupActivity extends SherlockActivity {
 				}
 				else {
 					// make sure we can create the file
-					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username)) {
+					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
 						Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
 						userText.setText("");
 						confirmPwText.setText("");

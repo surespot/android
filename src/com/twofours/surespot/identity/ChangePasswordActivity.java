@@ -96,7 +96,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		}
 		
 		// make sure file we're going to save to is writable before we start
-		if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username)) {
+		if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username, true)) {
 			Utils.makeToast(ChangePasswordActivity.this, "could not change password");
 			return;
 		}

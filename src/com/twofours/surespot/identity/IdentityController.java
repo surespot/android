@@ -160,16 +160,14 @@ public class IdentityController {
 		return null;
 	}
 
-	
 	public static boolean identityFileExists(Context context, String username) {
 		String identityDir = getIdentityDir(context);
 		String filename = username + IDENTITY_EXTENSION;
 		String sIdentityFile = identityDir + File.separator + filename;
 		return new File(sIdentityFile).exists();
 	}
-	
-	
-	public static boolean ensureIdentityFile(Context context, String username) {
+
+	public static boolean ensureIdentityFile(Context context, String username, boolean overwrite) {
 		// make sure file we're going to save to is writable before we start
 
 		String identityDir = getIdentityDir(context);
@@ -184,22 +182,28 @@ public class IdentityController {
 		String sIdentityFile = identityDir + File.separator + filename;
 
 		File identityFile = new File(sIdentityFile);
+		boolean exists = identityFile.exists();
 
-		if (identityFile.exists()) {
+		if (exists && !overwrite) {
 			return false;
 		}
 		else {
-
-			try {
-				// make sure we'll have the space to write the identity file
-				FileOutputStream fos = new FileOutputStream(identityFile);
-				fos.write(new byte[10000]);
-				fos.close();
-				identityFile.delete();
-				return true;
+			if (exists) {
+				return identityFile.isFile() && identityFile.canWrite();
 			}
-			catch (IOException e) {
-				return false;
+			else {
+
+				try {
+					// make sure we'll have the space to write the identity file
+					FileOutputStream fos = new FileOutputStream(identityFile);
+					fos.write(new byte[10000]);
+					fos.close();
+					identityFile.delete();
+					return true;
+				}
+				catch (IOException e) {
+					return false;
+				}
 			}
 		}
 	}
@@ -209,7 +213,7 @@ public class IdentityController {
 		return identityDir;
 	}
 
-	public static synchronized void deleteIdentity(Context context, String username, String password) {
+	public static synchronized void deleteIdentity(Context context, String username) {
 		// force identity reload
 		mHasIdentity = false;
 
@@ -344,15 +348,17 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-							
-							//should never happen
-							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+
+							// should never happen
+							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password
+									+ CACHE_IDENTITY_ID);
 							if (existingIdentity != null) {
 								int importVersion = Integer.parseInt(identity.getLatestVersion());
 								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
 								if (importVersion <= existingVersion) {
 									callback.handleResponse(new IdentityOperationResult(
-											"identity not imported as a newer version of the identity you are trying to import already exists", false));
+											"identity not imported as a newer version of the identity you are trying to import already exists",
+											false));
 									return;
 								}
 							}
@@ -593,8 +599,7 @@ public class IdentityController {
 				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_EXTENSION.length()));
 			}
 		}
-		
-		
+
 		// sort ignoring case
 		Collections.sort(identityNames, new Comparator<String>() {
 
@@ -606,7 +611,7 @@ public class IdentityController {
 		return identityNames;
 
 	}
-	
+
 	public static synchronized int getIdentityCount(Context context) {
 		return getIdentityNames(context, FileUtils.getIdentityDir(context)).size();
 	}
@@ -740,18 +745,18 @@ public class IdentityController {
 			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
 			// bad news
-			// first log them out
-			SurespotApplication.getCachingService().logout();
-
-			// clear the data
-			StateController.wipeState(context, username);
-
+			//delete the identity file and cached data
+			deleteIdentity(context, username);
+			
 			// delete identities locally?
 			MainActivity.getNetworkController().setUnauthorized(true);
 
 			// boot them out
 			launchLoginActivity(context);
-			// TODO notify user?
+			
+			//TODO tell user?
+			//Utils.makeLongToast(context, "identity: " + username + " revoked");
+			
 		}
 		else {
 			SurespotApplication.getCachingService().updateLatestVersion(username, version);
