@@ -11,7 +11,7 @@
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
-    <string name="export_sd">backup to external storage</string>
+    <string name="export_sd">backup to external storage*</string>
     <string name="import_sd">restore from external storage</string>
     <string name="title_activity_chat">chat</string>
     <string name="title_activity_image_view">image view</string>

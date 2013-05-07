@@ -109,6 +109,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
+	boolean mKeyboardWasOpen = false;
 	private int mOrientation;
 
 	@Override
@@ -123,7 +124,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 		}
-
 
 		mContext = this;
 
@@ -306,58 +306,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mEmojiButton = (ImageView) findViewById(R.id.bEmoji);
 		mEmojiButton.setOnClickListener(new View.OnClickListener() {
 
-			boolean mKeyboardWasOpen = false;
-
 			@Override
 			public void onClick(View v) {
 
-				SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
-				if (mKeyboardShowing) {
-
-					SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
-
-					mShowEmoji = true;
-					// mEmojiView.setVisibility(View.VISIBLE);
-					hideSoftKeyboard();
-					mKeyboardWasOpen = true;
-				}
-				else {
-
-					int visibility = mEmojiView.getVisibility();
-					if (visibility == View.VISIBLE) {
-						SurespotLog.v(TAG, "keyboardState,  hiding emoji");
-
-						if (mKeyboardWasOpen) {
-							SurespotLog.v(TAG, "keyboardState,  showing keyboard");
-							showSoftKeyboard(mEditText);
-							mKeyboardWasOpen = false;
-						}
-						else {
-							mEmojiView.setVisibility(View.GONE);
-						}
-
-						mShowEmoji = false;
-						//
-					}
-					else {
-						// if we don't have a height, get it
-						// if (mEmojiHeight == 0) {
-						//
-						// showSoftKeyboard(mEditText);
-						// hideSoftKeyboard();
-						// }
-						//
-
-						SurespotLog.v(TAG, "keyboardState,  showing emoji");
-						mEmojiView.setVisibility(View.VISIBLE);
-						mShowEmoji = true;
-
-					}
-
-				}
+				showEmoji();
 			}
 		});
-		
+
 		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
 
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
@@ -377,23 +332,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				if (mCurrentFriend == null) {
 					if (actionId == EditorInfo.IME_ACTION_SEND) {
-						inviteFriend();						
+						inviteFriend();
 						handled = true;
 					}
 				}
 				else {
 					if (actionId == EditorInfo.IME_ACTION_SEND) {
-					
-						//mEditText.append("\n");
+
+						// mEditText.append("\n");
 						sendMessage();
-						
-						//hide soft keyboard in landscape mode
+
+						// hide soft keyboard in landscape mode
 						if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
 							hideSoftKeyboard();
 						}
 						handled = true;
 					}
-					// 
+					//
 				}
 
 				return handled;
@@ -627,7 +582,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
 
 		MenuItem captureItem = menu.findItem(R.id.menu_capture_image_bar);
-		if (hasCamera()) {			
+		if (hasCamera()) {
 			mMenuItems.add(captureItem);
 			captureItem.setEnabled(FileUtils.isExternalStorageMounted());
 		}
@@ -644,7 +599,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		enableImageMenuItems();
 		return true;
 	}
-	
+
 	@SuppressLint("NewApi")
 	private boolean hasCamera() {
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
@@ -652,7 +607,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		else {
 			PackageManager pm = this.getPackageManager();
-			return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);					
+			return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
 		}
 	}
 
@@ -979,6 +934,54 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		});
 	}
 
+	private void showEmoji() {
+		SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
+		if (mKeyboardShowing) {
+
+			SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
+
+			mShowEmoji = true;
+			// mEmojiView.setVisibility(View.VISIBLE);
+			hideSoftKeyboard();
+			mKeyboardWasOpen = true;
+		}
+		else {
+
+			int visibility = mEmojiView.getVisibility();
+			if (visibility == View.VISIBLE) {
+				SurespotLog.v(TAG, "keyboardState,  hiding emoji");
+
+				if (mKeyboardWasOpen) {
+					SurespotLog.v(TAG, "keyboardState,  showing keyboard");
+					showSoftKeyboard(mEditText);
+					mKeyboardWasOpen = false;
+				}
+				else {
+					mEmojiView.setVisibility(View.GONE);
+				}
+
+				mShowEmoji = false;
+				//
+			}
+			else {
+				// if we don't have a height, get it
+				// if (mEmojiHeight == 0) {
+				//
+				// showSoftKeyboard(mEditText);
+				// hideSoftKeyboard();
+				// }
+				//
+
+				SurespotLog.v(TAG, "keyboardState,  showing emoji");
+				mEmojiView.setVisibility(View.VISIBLE);
+				mShowEmoji = true;
+
+			}
+
+		}
+
+	}
+
 	class ChatTextWatcher implements TextWatcher {
 
 		@Override
@@ -1064,7 +1067,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-	private void sendMessage() {		
+	private void sendMessage() {
 		final String message = mEditText.getText().toString();
 		mChatController.sendMessage(message, SurespotConstants.MimeTypes.TEXT);
 
@@ -1101,10 +1104,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public void onLayoutMeasure() {
 		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
 		if (mShowEmoji) {
+
+			if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+				mEmojiHeight = 200;
+			}
+
 			if (mEmojiHeight > 0) {
 				android.view.ViewGroup.LayoutParams layoutParams = mEmojiView.getLayoutParams();
 				layoutParams.height = mEmojiHeight;
 			}
+
 			mEmojiView.setVisibility(View.VISIBLE);
 		}
 		else {
@@ -1211,7 +1220,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
 			mEditText.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
-			
+
 			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 			mEditText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH) });
 			mEditText.setMaxLines(5);

@@ -25,7 +25,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_export_identity);
-		Utils.configureActionBar(this, "identity", "export", true);
+		Utils.configureActionBar(this, "identity", "backup", true);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
