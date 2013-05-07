@@ -3,6 +3,8 @@ package com.twofours.surespot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -193,11 +195,11 @@ public class ContactPickerActivity extends SherlockActivity {
 
 				while (cur.moveToNext()) {
 
-//					String columns[] = cur.getColumnNames();
-//					for (String column : columns) {
-//						int index = cur.getColumnIndex(column);
-//						SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
-//					}
+					// String columns[] = cur.getColumnNames();
+					// for (String column : columns) {
+					// int index = cur.getColumnIndex(column);
+					// SurespotLog.v(TAG, "Column: " + column + " == [" + cur.getString(index) + "]");
+					// }
 
 					String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
@@ -273,10 +275,14 @@ public class ContactPickerActivity extends SherlockActivity {
 	}
 
 	private ArrayList<String> getSelectedContactData() {
+		//prevent duplicates
 		ArrayList<String> selectedEmails = new ArrayList<String>();
+		Set<String> emails = new HashSet<String>();
 		for (ContactData contact : mAdapter.getContacts()) {
 			if (contact.isSelected()) {
-				selectedEmails.add(contact.getData());
+				if (emails.add(contact.getData())) {
+					selectedEmails.add(contact.getData());
+				}
 			}
 		}
 
