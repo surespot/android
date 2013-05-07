@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
+//import android.app.AlertDialog;
 
 public class MultiProgressDialog {
 	private static final String TAG = "MultiProgressDialog";
@@ -56,9 +57,10 @@ public class MultiProgressDialog {
 			//	mMultiProgressDialog.setIcon(R.drawable.surespot_logo);
 				
 				AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-				builder.setView(layout);
 				
-				mMultiProgressDialog = builder.create();							
+				
+				mMultiProgressDialog = builder.create();
+				mMultiProgressDialog.setView(layout, 0, 0, 0, 0);
 				mMultiProgressDialog.setCanceledOnTouchOutside(false);
 							
 				
