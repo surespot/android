@@ -1110,11 +1110,11 @@ public class ChatController {
 
 			if (notify) {
 				if (friend != null) {
-					//if the chat adapter is open we will have acted upon the control message
+					// if the chat adapter is open we will have acted upon the control message
 					if (chatAdapter != null) {
 						friend.setLastReceivedMessageControlId(message.getId());
 					}
-					
+
 					friend.setAvailableMessageControlId(message.getId());
 				}
 
@@ -1199,8 +1199,6 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 			saveFriends();
 		}
-		
-		
 
 	}
 
@@ -1872,62 +1870,46 @@ public class ChatController {
 		}
 	}
 
-	public void deleteMessages(Friend friend) {
+	public void deleteMessages(final Friend friend) {
 		// if it's on the server, send delete control message otherwise just delete it locally
 
 		if (friend != null) {
 			String username = friend.getName();
 
 			setProgress("deleteMessages", true);
+			int lastReceivedMessageId = 0;
 			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (chatAdapter != null) {
-
-				
-				final int lastReceivedMessageId = getLatestMessageId(username);
-				mNetworkController.deleteMessages(username, lastReceivedMessageId, new AsyncHttpResponseHandler() {
-					@Override
-					public void onSuccess(int statusCode, String content) {
-						// MainActivity.getMainHandler().post(new Runnable() {
-						//
-						// @Override
-						// public void run() {
-						chatAdapter.deleteAllMessages(lastReceivedMessageId);
-						chatAdapter.notifyDataSetChanged();
-						setProgress("deleteMessages", false);
-						// }
-						// });
-
-					}
-
-					@Override
-					public void onFailure(Throwable error, String content) {
-						setProgress("deleteMessages", false);
-						// MainActivity.getMainHandler().post(new Runnable() {
-						//
-						// @Override
-						// public void run() {
-						Utils.makeToast(mContext, "could not delete messages");
-
-						// }
-						// });
-
-					}
-
-				});
+				lastReceivedMessageId = getLatestMessageId(username);
+			}
+			else {
+				lastReceivedMessageId = friend.getLastViewedMessageId();
 			}
 
-			// mChatAdapters.get(username).deleteMyMessages();
+			final int finalMessageId = lastReceivedMessageId;
+			mNetworkController.deleteMessages(username, lastReceivedMessageId, new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String content) {
 
-			// SurespotControlMessage dmessage = new SurespotControlMessage();
-			// String me = IdentityController.getLoggedInUser();
-			// dmessage.setFrom(me);
-			// dmessage.setType("message");
-			// dmessage.setAction("deleteAll");
-			// dmessage.setData(ChatUtils.getSpot(me, username));
-			// dmessage.setMoreData(String.valueOf(friend.getLastViewedMessageId()));
-			// dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(username) + 1));
+					if (chatAdapter != null) {
+						chatAdapter.deleteAllMessages(finalMessageId);
+						chatAdapter.notifyDataSetChanged();
+					}
+					else {
+						//tell friend there's a new control message so they get it when the tab is opened
+						friend.setAvailableMessageControlId(friend.getAvailableMessageControlId() + 1);
+						saveFriends();
+					}					
+					
+					setProgress("deleteMessages", false);
+				}
 
-			// sendControlMessage(dmessage);
+				@Override
+				public void onFailure(Throwable error, String content) {
+					setProgress("deleteMessages", false);
+					Utils.makeToast(mContext, "could not delete messages");
+				}
+			});
 		}
 	}
 
