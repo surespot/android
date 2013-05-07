@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -105,12 +106,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mEmojiButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
+	private int mOrientation;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		mOrientation = getResources().getConfiguration().orientation;
 
 		// Gingerbread does not like FLAG_SECURE
 		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
@@ -371,16 +374,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				if (mCurrentFriend == null) {
 					if (actionId == EditorInfo.IME_ACTION_SEND) {
-						inviteFriend();
+						inviteFriend();						
 						handled = true;
 					}
 				}
 				else {
-					if (actionId == EditorInfo.IME_ACTION_DONE) {
-						mEditText.append("\n");
+					if (actionId == EditorInfo.IME_ACTION_SEND) {
+					
+						//mEditText.append("\n");
+						sendMessage();
+						
+						//hide soft keyboard in landscape mode
+						if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+							hideSoftKeyboard();
+						}
 						handled = true;
 					}
-					// sendMessage();
+					// 
 				}
 
 				return handled;
@@ -1041,8 +1051,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-	private void sendMessage() {
-
+	private void sendMessage() {		
 		final String message = mEditText.getText().toString();
 		mChatController.sendMessage(message, SurespotConstants.MimeTypes.TEXT);
 
@@ -1102,6 +1111,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				return;
 			}
 
+			hideSoftKeyboard();
 			setHomeProgress(true);
 			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
@@ -1186,8 +1196,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEditText.setText("");
 			}
 
+			mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
 			mEditText.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
-			mEditText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+			
 			mEditText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 			mEditText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH) });
 			mEditText.setMaxLines(5);
