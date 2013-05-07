@@ -1213,12 +1213,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (friend.isDeleted()) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
-
+				hideSoftKeyboard();
 			}
 			else {
 				mEtMessage.setVisibility(View.VISIBLE);
 				mEmojiButton.setVisibility(View.VISIBLE);
-
 			}
 
 			mEtInvite.setVisibility(View.GONE);
