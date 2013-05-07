@@ -372,7 +372,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				boolean handled = false;
 
 				if (mCurrentFriend == null) {
-					if (actionId == EditorInfo.IME_ACTION_SEND) {
+					if (actionId == EditorInfo.IME_ACTION_DONE) {
 						inviteFriend();
 						handled = true;
 					}
@@ -1138,7 +1138,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				return;
 			}
 
-			hideSoftKeyboard();
 			setHomeProgress(true);
 			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
@@ -1203,15 +1202,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		// SurespotLog.v(TAG, "cursor position %d", mEtMessage.getSelectionStart());
 		if (friend == null) {
 			mEmojiButton.setVisibility(View.GONE);
-
-			// mEtMessage.setText("");
-			// mEtMessage.getLayoutParams().
-			// mEtMessage.setImeActionLabel("invite", EditorInfo.IME_ACTION_SEND);
-
-			// mEtMessage.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
-			// new LetterOrDigitInputFilter() });
-			// mEtMessage.setSingleLine(true);
-			// mEtMessage.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 			mEtMessage.setVisibility(View.GONE);
 			mEtInvite.setVisibility(View.VISIBLE);
 			mEmojiView.setVisibility(View.GONE);
@@ -1219,25 +1209,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEtInvite.requestFocus();
 
 		}
-		else {
-			// if we're coming from the home tab clear the data
-
-			// if (mCurrentFriend == null) {
-			// mEtMessage.setText("");
-			// }
-			//
-			// int selectionStart = mEtMessage.getSelectionStart();
-			// int selectionEnd = mEtMessage.getSelectionEnd();
-
-			// mEtMessage.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
-			// mEtMessage.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH) });
-			// mEtMessage.setMaxLines(5);
-			// mEtMessage.setVerticalScrollBarEnabled(true);
-			// mEtMessage.setSingleLine(false);
-
-			// mEtMessage.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
-			// | InputType.TYPE_TEXT_VARIATION_NORMAL | InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE);
-
+		else {		
 			if (friend.isDeleted()) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
@@ -1251,7 +1223,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mEtInvite.setVisibility(View.GONE);
 			mEtMessage.requestFocus();
-			// mEtMessage.setSelection(selectionStart, selectionEnd);
 		}
 
 		mCurrentFriend = friend;
