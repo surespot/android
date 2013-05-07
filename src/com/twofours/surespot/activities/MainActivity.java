@@ -871,6 +871,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.v(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
 			outState.putInt("heightOffset", mInitialHeightOffset);
 		}
+
 	}
 
 	@Override
@@ -1195,6 +1196,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void handleTabChange(Friend friend) {
+	//	SurespotLog.v(TAG, "cursor position %d", mEditText.getSelectionStart());
 		if (friend == null) {
 			mEmojiButton.setVisibility(View.GONE);
 
@@ -1218,6 +1220,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEditText.setText("");
 			}
 
+			int selectionStart = mEditText.getSelectionStart();
+			int selectionEnd = mEditText.getSelectionEnd();
+
 			mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
 			mEditText.setImeActionLabel("send", EditorInfo.IME_ACTION_SEND);
 
@@ -1237,6 +1242,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEmojiButton.setVisibility(View.VISIBLE);
 
 			}
+
+			mEditText.setSelection(selectionStart, selectionEnd);
 		}
 
 		mCurrentFriend = friend;
