@@ -668,11 +668,11 @@ public class NetworkController {
 						callback.handleResponse(url);
 					}
 					catch (IllegalStateException e) {
-						SurespotLog.w(TAG,e , "postFriendImageStream");
+						SurespotLog.w(TAG, e, "postFriendImageStream");
 						callback.handleResponse(null);
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG,e , "postFriendImageStream");
+						SurespotLog.w(TAG, e, "postFriendImageStream");
 						callback.handleResponse(null);
 					}
 
@@ -727,8 +727,8 @@ public class NetworkController {
 
 	}
 
-	public void deleteMessages(String username, AsyncHttpResponseHandler responseHandler) {
-		delete("/messages/" + username, responseHandler);
+	public void deleteMessages(String username, int utaiId, AsyncHttpResponseHandler responseHandler) {
+		delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
 
 	}
 

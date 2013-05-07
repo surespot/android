@@ -1884,7 +1884,7 @@ public class ChatController {
 
 				
 				final int lastReceivedMessageId = getLatestMessageId(username);
-				mNetworkController.deleteMessages(username, new AsyncHttpResponseHandler() {
+				mNetworkController.deleteMessages(username, lastReceivedMessageId, new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
 						// MainActivity.getMainHandler().post(new Runnable() {
