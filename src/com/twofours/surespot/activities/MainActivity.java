@@ -1188,11 +1188,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mSendButton.setText("invite");
 		}
 		else {
-			if (mEtMessage.getText().length() > 0) {
-				mSendButton.setText("send");
+			if (mCurrentFriend.isDeleted()) {
+				mSendButton.setText("home");
 			}
 			else {
-				mSendButton.setText("home");
+				if (mEtMessage.getText().length() > 0) {
+					mSendButton.setText("send");
+				}
+				else {
+					mSendButton.setText("home");
+				}
 			}
 
 		}
@@ -1209,11 +1214,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEtInvite.requestFocus();
 
 		}
-		else {		
+		else {
 			if (friend.isDeleted()) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
+				mEmojiView.setVisibility(View.GONE);
 				hideSoftKeyboard();
+				mShowEmoji = false;
 			}
 			else {
 				mEtMessage.setVisibility(View.VISIBLE);
