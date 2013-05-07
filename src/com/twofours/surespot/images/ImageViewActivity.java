@@ -1,5 +1,8 @@
 package com.twofours.surespot.images;
 
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -68,9 +70,11 @@ public class ImageViewActivity extends SherlockActivity {
 
 					protected void onPostExecute(Bitmap result) {
 
-						ImageView imageView = (ImageView) findViewById(R.id.imageViewer);
+						ImageViewTouch imageView = (ImageViewTouch) findViewById(R.id.imageViewer);
+						imageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
 						if (result != null) {
 							imageView.setImageBitmap(result);
+							
 						}
 						else {
 							finish();
