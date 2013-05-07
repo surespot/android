@@ -1089,10 +1089,10 @@ public class ChatController {
 				else {
 					if (message.getAction().equals("deleteAll")) {
 						if (controlFromMe) {
-							chatAdapter.deleteAllMessages();
+							chatAdapter.deleteAllMessages(Integer.parseInt(message.getMoreData()));
 						}
 						else {
-							chatAdapter.deleteTheirMessages();
+							chatAdapter.deleteTheirMessages(Integer.parseInt(message.getMoreData()));
 						}
 					}
 					else {
@@ -1110,7 +1110,11 @@ public class ChatController {
 
 			if (notify) {
 				if (friend != null) {
-					friend.setLastReceivedMessageControlId(message.getId());
+					//if the chat adapter is open we will have acted upon the control message
+					if (chatAdapter != null) {
+						friend.setLastReceivedMessageControlId(message.getId());
+					}
+					
 					friend.setAvailableMessageControlId(message.getId());
 				}
 
@@ -1878,6 +1882,8 @@ public class ChatController {
 			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (chatAdapter != null) {
 
+				
+				final int lastReceivedMessageId = getLatestMessageId(username);
 				mNetworkController.deleteMessages(username, new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
@@ -1885,7 +1891,7 @@ public class ChatController {
 						//
 						// @Override
 						// public void run() {
-						chatAdapter.deleteAllMessages();
+						chatAdapter.deleteAllMessages(lastReceivedMessageId);
 						chatAdapter.notifyDataSetChanged();
 						setProgress("deleteMessages", false);
 						// }

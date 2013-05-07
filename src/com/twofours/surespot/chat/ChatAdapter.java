@@ -127,7 +127,7 @@ public class ChatAdapter extends BaseAdapter {
 			// SurespotLog.v(TAG, "addMessage, updating message");
 			SurespotMessage updateMessage = mMessages.get(index);
 			if (message.getId() != null) {
-				//if the id is null 'tis the same as adding the message
+				// if the id is null 'tis the same as adding the message
 				added = updateMessage.getId() == null;
 				updateMessage.setId(message.getId());
 			}
@@ -259,8 +259,6 @@ public class ChatAdapter extends BaseAdapter {
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 
-		
-
 		if (item.getErrorStatus() > 0) {
 			UIUtils.setMessageErrorText(chatMessageViewHolder.tvTime, item);
 		}
@@ -351,7 +349,6 @@ public class ChatAdapter extends BaseAdapter {
 		return convertView;
 	}
 
-	
 	public static class ChatMessageViewHolder {
 		public TextView tvText;
 		public TextView tvUser;
@@ -455,25 +452,26 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public synchronized void deleteAllMessages() {
+	public synchronized void deleteAllMessages(int utaiMessageId) {
 
-		mMessages.clear();
-		// for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-		// SurespotMessage message = iterator.next();
-		// boolean myMessage = message.getFrom().equals(IdentityController.getLoggedInUser());
 		//
-		// if (message.getId() == null || (message.getId() != null && message.getId() <= id && (myMessages || !myMessage))) {
-		// iterator.remove();
-		// }
-		// }
+		// mMessages.clear();
+		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+			SurespotMessage message = iterator.next();
+
+			if (message.getId() == null || (message.getId() != null && message.getId() <= utaiMessageId)) {
+				iterator.remove();
+			}
+		}
 	}
 
-	public synchronized void deleteTheirMessages() {
+	public synchronized void deleteTheirMessages(int utaiMessageId) {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
 			SurespotMessage message = iterator.next();
 
 			// if it's not our message, delete it
-			if (message.getId() != null && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+			if (message.getId() != null && message.getId() <= utaiMessageId
+					&& !message.getFrom().equals(IdentityController.getLoggedInUser())) {
 				iterator.remove();
 			}
 		}
@@ -481,8 +479,8 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void userDeleted(boolean delete) {
 		if (delete) {
-			deleteTheirMessages();
-		}		
+			deleteTheirMessages(Integer.MAX_VALUE);
+		}
 	}
 
 }
