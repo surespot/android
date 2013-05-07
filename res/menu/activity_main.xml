@@ -25,7 +25,7 @@
                 android:title="delete all messages"/>
             <item
                 android:id="@+id/menu_invite_external"
-                android:icon="@drawable/ic_menu_friendslist"
+                android:icon="@drawable/blue_heart"
                 android:title="share surespot"/>
 
             <!-- I told you before kid, paywhatyoulike -->
