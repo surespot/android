@@ -25,7 +25,6 @@ import android.view.animation.Animation;
 import android.widget.Button;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
@@ -123,7 +122,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	private void setTitle() {
 
 		if (mSize == IMAGE_SIZE_LARGE) {
-			Utils.configureActionBar(this, getString(R.string.select_image), "send to " + mTo, false);
+			Utils.configureActionBar(this, getString(R.string.select_image), mTo, false);
 		}
 		else {
 			Utils.configureActionBar(this, getString(R.string.assign_image), mTo, false);
@@ -287,18 +286,6 @@ public class ImageSelectActivity extends SherlockActivity {
 				mCompressedImagePath = null;
 			}
 			return null;
-		}
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			finish();
-
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
 	}
 }

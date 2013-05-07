@@ -338,17 +338,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 				else {
 					if (actionId == EditorInfo.IME_ACTION_SEND) {
-
-						// mEditText.append("\n");
 						sendMessage();
-
-						// hide soft keyboard in landscape mode
-						if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-							hideSoftKeyboard();
-						}
 						handled = true;
-					}
-					//
+					}					
 				}
 
 				return handled;

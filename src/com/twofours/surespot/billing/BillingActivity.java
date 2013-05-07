@@ -18,6 +18,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
@@ -41,7 +42,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
-		Utils.configureActionBar(this, "pay", "what you like!", false);
+		Utils.configureActionBar(this, "pay", "what you like", true);
 
 		mHomeImageView = (ImageView) findViewById(android.R.id.home);
 		if (mHomeImageView == null) {
@@ -348,6 +349,19 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 		else {
 			mHomeImageView.clearAnimation();
+		}
+
+	}
+	
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 
 	}
