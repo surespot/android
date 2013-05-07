@@ -2,6 +2,7 @@ package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -12,8 +13,10 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -624,13 +627,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
 
 		MenuItem captureItem = menu.findItem(R.id.menu_capture_image_bar);
-		PackageManager pm = this.getPackageManager();
-		if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-			SurespotLog.v(TAG, "hiding capture image menu option");
+		if (hasCamera()) {			
 			mMenuItems.add(captureItem);
 			captureItem.setEnabled(FileUtils.isExternalStorageMounted());
 		}
 		else {
+			SurespotLog.v(TAG, "hiding capture image menu option");
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
 		}
 
@@ -641,6 +643,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		enableImageMenuItems();
 		return true;
+	}
+	
+	@SuppressLint("NewApi")
+	private boolean hasCamera() {
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
+			return Camera.getNumberOfCameras() > 0;
+		}
+		else {
+			PackageManager pm = this.getPackageManager();
+			return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);					
+		}
 	}
 
 	public void uploadFriendImage(String name) {
