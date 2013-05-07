@@ -980,14 +980,14 @@ public class ChatController {
 						handleMessages(username, messages);
 					}
 					else {
-						if (username.equals(mCurrentChat)) {
-							ChatFragment chatFragment = getChatFragment(username);
-							if (chatFragment != null) {
-								chatFragment.scrollToState();
-								// chatFragment.requestFocus();
-
-							}
-						}
+//						if (username.equals(mCurrentChat)) {
+//							ChatFragment chatFragment = getChatFragment(username);
+//							if (chatFragment != null) {
+//								chatFragment.scrollToState();
+//								// chatFragment.requestFocus();
+//
+//							}
+//						}
 
 						setProgress(username, false);
 					}
@@ -995,16 +995,16 @@ public class ChatController {
 				}
 			});
 		}
-		else {
-			if (username.equals(mCurrentChat)) {
-				ChatFragment chatFragment = getChatFragment(username);
-				if (chatFragment != null) {
-					chatFragment.scrollToState();
-					// chatFragment.requestFocus();
-
-				}
-			}
-		}
+//		else {
+//			if (username.equals(mCurrentChat)) {
+//				ChatFragment chatFragment = getChatFragment(username);
+//				if (chatFragment != null) {
+//					chatFragment.scrollToState();
+//					// chatFragment.requestFocus();
+//
+//				}
+//			}
+//		}
 	}
 
 	private void handleControlMessages(String username, JSONArray jsonArray) {
@@ -1356,7 +1356,7 @@ public class ChatController {
 					chatFragment.scrollToEnd();
 				}
 				else {
-					chatFragment.scrollToState();
+	//				chatFragment.scrollToState();
 				}
 				// chatFragment.requestFocus();
 
