@@ -34,12 +34,27 @@
         android:layout_above="@+id/fEmoji"
         android:layout_alignBottom="@+id/etMessage"
         android:layout_alignTop="@+id/etMessage"
-        
         android:layout_alignWithParentIfMissing="true"
-        android:padding="5dp"
         android:adjustViewBounds="true"
         android:background="@drawable/abs__list_selector_holo_light"
+        android:padding="5dp"
         android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/etInvite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/fEmoji"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_toLeftOf="@+id/bSend"
+        android:layout_toRightOf="@+id/bEmoji"
+        android:imeActionLabel="invite"
+        android:imeOptions="actionSend"
+        android:singleLine="true"
+        android:inputType="textNoSuggestions"
+        android:maxHeight="150sp"
+        android:minHeight="45sp" >
+    </EditText>
 
     <EditText
         android:id="@+id/etMessage"
@@ -51,7 +66,13 @@
         android:layout_toRightOf="@+id/bEmoji"
         android:imeOptions="actionSend"
         android:maxHeight="150sp"
-        android:minHeight="45sp" >
+        android:minHeight="45sp"
+        android:maxLines="5"
+        android:scrollbars="vertical"
+        android:inputType="textMultiLine"
+        android:singleLine="false"
+        android:imeActionLabel="send"
+        android:visibility="gone" >
     </EditText>
 
     <Button
