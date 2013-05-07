@@ -1216,6 +1216,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEtInvite.setVisibility(View.VISIBLE);
 			mEmojiView.setVisibility(View.GONE);
 			mShowEmoji = false;
+			mEtInvite.requestFocus();
 
 		}
 		else {
@@ -1249,6 +1250,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mEtInvite.setVisibility(View.GONE);
+			mEtMessage.requestFocus();
 			// mEtMessage.setSelection(selectionStart, selectionEnd);
 		}
 
