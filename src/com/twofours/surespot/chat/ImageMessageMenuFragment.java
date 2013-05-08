@@ -36,27 +36,33 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 	private MainActivity mActivity;
 	private ArrayList<String> mItems;
 	private Observer mMessageObserver;
-	
 
 	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
 		mMessage = message;
 		mActivity = activity;
 	}
 
-	private void setButtonVisibility() {		
+	private void setButtonVisibility() {
 		AlertDialog dialog = (AlertDialog) ImageMessageMenuFragment.this.getDialog();
-		ListView listview = dialog.getListView();
-		
-		ListIterator<String> li = mItems.listIterator();
-		while (li.hasNext()) {
-			String item = li.next();
-		
-			if (item.equals("save to gallery")) {
-				listview.getChildAt(li.previousIndex()).setEnabled(mMessage.isShareable() && FileUtils.isExternalStorageMounted());
-				return;
+
+		if (dialog != null) {
+			ListView listview = dialog.getListView();
+
+			ListIterator<String> li = mItems.listIterator();
+			while (li.hasNext()) {
+				String item = li.next();
+
+				if (item.equals("save to gallery")) {
+					listview.getChildAt(li.previousIndex()).setEnabled(mMessage.isShareable() && FileUtils.isExternalStorageMounted());
+					return;
+				}
 			}
 		}
-		
+		else {
+			mActivity = null;
+			mMessage.deleteObserver(mMessageObserver);
+			mMessage = null;
+		}
 	}
 
 	@Override
@@ -105,7 +111,6 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 
 				String itemText = mItems.get(which);
 
-
 				if (itemText.contains("lock")) {
 					mActivity.getChatController().toggleMessageShareable(mMessage);
 					return;
@@ -151,7 +156,6 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					return;
 
 				}
-
 
 				if (itemText.equals("delete message")) {
 					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
