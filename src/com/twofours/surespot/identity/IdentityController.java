@@ -417,6 +417,7 @@ public class IdentityController {
 		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null) {
 			callback.handleResponse(null);
+			return;
 		}
 
 		final File exportDir = FileUtils.getIdentityExportDir();
