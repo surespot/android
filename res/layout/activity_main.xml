@@ -24,7 +24,7 @@
         android:id="@+id/pager"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/etMessage"
+        android:layout_above="@+id/editTexts"
         android:layout_below="@+id/indicator" />
 
     <ImageView
@@ -32,48 +32,50 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/fEmoji"
-        android:layout_alignBottom="@+id/etMessage"
-        android:layout_alignTop="@+id/etMessage"
+        android:layout_alignBottom="@+id/editTexts"
+        android:layout_alignTop="@+id/editTexts"
         android:layout_alignWithParentIfMissing="true"
         android:adjustViewBounds="true"
         android:background="@drawable/abs__list_selector_holo_light"
         android:padding="5dp"
         android:visibility="gone" />
 
-    <EditText
-        android:id="@+id/etInvite"
+    <FrameLayout
+        android:id="@+id/editTexts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/fEmoji"
         android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@+id/bSend"
-        android:layout_toRightOf="@+id/bEmoji"
-        android:imeActionLabel="invite"
-        android:imeOptions="actionDone"
-        android:singleLine="true"
-        android:inputType="textNoSuggestions|textVisiblePassword"
-        android:maxHeight="150sp"
-        android:minHeight="45sp" >
-    </EditText>
+        android:layout_toRightOf="@+id/bEmoji" >
 
-    <EditText
-        android:id="@+id/etMessage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/fEmoji"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_toLeftOf="@+id/bSend"
-        android:layout_toRightOf="@+id/bEmoji"
-        android:imeOptions="actionSend"
-        android:maxHeight="150sp"
-        android:minHeight="45sp"
-        android:maxLines="5"
-        android:scrollbars="vertical"
-        android:inputType="textMultiLine"
-        android:singleLine="false"
-        android:imeActionLabel="send"
-        android:visibility="gone" >
-    </EditText>
+        <EditText
+            android:id="@+id/etInvite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeActionLabel="invite"
+            android:imeOptions="actionDone"
+            android:inputType="textNoSuggestions|textVisiblePassword"
+            android:maxHeight="150sp"
+            android:minHeight="45sp"
+            android:singleLine="true" >
+        </EditText>
+
+        <EditText
+            android:id="@+id/etMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeActionLabel="send"
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine"
+            android:maxHeight="150sp"
+            android:maxLines="5"
+            android:minHeight="45sp"
+            android:scrollbars="vertical"
+            android:singleLine="false"
+            android:visibility="gone" >
+        </EditText>
+    </FrameLayout>
 
     <Button
         android:id="@+id/bSend"

@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/friendLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
     <ListView
         android:id="@+id/main_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/etFriend"
         android:background="@android:color/transparent" />
 
     <FrameLayout
         android:id="@+id/progressBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/etFriend"
         android:visibility="gone" >
 
         <ProgressBar
@@ -29,7 +28,7 @@
         android:id="@+id/main_list_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/etFriend"
+        android:layout_above="@+id/etInvite"
         android:visibility="gone" >
 
         <LinearLayout
@@ -104,31 +103,4 @@
         </LinearLayout>
     </ScrollView>
 
-    <!--
-    <EditText
-        android:id="@+id/etFriend"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/bAddFriend"
-        android:imeActionLabel="invite"
-        android:imeOptions="actionDone"
-        android:inputType="textNoSuggestions"
-        android:singleLine="true"
-        android:textSize="20sp" />
-
-    <Button
-        android:id="@+id/bAddFriend"
-        android:layout_width="70sp"
-        android:layout_height="70sp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="-10sp"
-        android:layout_marginRight="-10sp"
-        android:background="@drawable/send_button"
-        android:text="invite"
-        android:textColor="@android:color/black" />
-    -->
-
-</RelativeLayout>
+</LinearLayout>
