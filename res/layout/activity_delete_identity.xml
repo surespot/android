@@ -5,25 +5,36 @@
     android:orientation="vertical"
     android:padding="10dp"
     tools:context=".DeleteIdentityActivity" >
+    
+     <TextView
+        android:text="Deleting an identity will erase all messages that identity has sent. It can not be undone."
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp" />
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="select identity" />
+        android:orientation="horizontal" >
 
-    <Spinner
-        android:id="@+id/identitySpinner"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="10dp"        
-        android:textSize="16dp" >
-    </Spinner>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="identity:" />
+
+        <Spinner
+            android:id="@+id/identitySpinner"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:textSize="16dp" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/bDeleteIdentity"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"        
+        android:layout_height="wrap_content"
         android:text="@string/delete_identity"
         android:textSize="16dp" >
     </Button>

@@ -47,11 +47,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 				
 		if (adapter.getCount() > 0) {
-			tvFound.setText("discovered the identities below in\n\t" + exportDir + "\n click on a name to restore");
+			tvFound.setText("Discovered the identities below in:\n\n\t" + exportDir + "\n\n click on a name to restore.");
 			lvIdentities.setVisibility(View.VISIBLE);
 		}
 		else {
-			tvFound.setText("no surespot identity (*.ssi) files discovered in\n\n\t" + exportDir + "\n\nplease copy your identity file(s) there. (Note: this may not be the SD card, it could be the device's internal storage)");
+			tvFound.setText("No surespot identity (*.ssi) files discovered in\n\n\t" + exportDir + "\n\nplease copy your identity file(s) there. (Note: this may not be the SD card, it could be the device's internal storage).");
 			lvIdentities.setVisibility(View.GONE);
 		}
 

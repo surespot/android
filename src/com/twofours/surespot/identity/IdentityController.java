@@ -361,7 +361,7 @@ public class IdentityController {
 								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
 								if (importVersion <= existingVersion) {
 									callback.handleResponse(new IdentityOperationResult(
-											"identity not imported as a newer version of the identity you are trying to import already exists",
+											"identity not restored as a newer version of the identity you are trying to restore already exists",
 											false));
 									return;
 								}
@@ -413,7 +413,7 @@ public class IdentityController {
 
 	}
 
-	public static void exportIdentity(final Context context, String username, final String password, final IAsyncCallback<String> callback) {
+	public static void exportIdentity(final Context context, final String username, final String password, final IAsyncCallback<String> callback) {
 		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null) {
 			callback.handleResponse(null);
@@ -430,7 +430,7 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
 							String path = saveIdentity(null, exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
-							callback.handleResponse(path == null ? null : "identity exported to " + path);
+							callback.handleResponse(path == null ? null : "backed up " + username + " identity to " + path);
 						}
 
 						public void onFailure(Throwable error) {

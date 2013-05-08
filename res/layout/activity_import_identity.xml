@@ -6,6 +6,8 @@
     android:padding="10dp"
     tools:context=".ImportIdentityActivity" >
 
+    
+    
     <TextView
         android:id="@+id/foundText"
         android:layout_width="wrap_content"

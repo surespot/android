@@ -10,15 +10,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="select identity" />
+        android:text="Generate new private key pairs for your identity and revoke the current pair. Any other devices (ie. lost or stolen phones) with the current private key pair will no longer be able to access surespot. You should backup your identity again after performing this operation." />
 
-    <Spinner
-        android:id="@+id/identitySpinner"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:textSize="16dp" >
-    </Spinner>
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="identity: " />
+
+        <Spinner
+            android:id="@+id/identitySpinner"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:textSize="16dp" >
+        </Spinner>
+    </LinearLayout>
 
     <Button
         android:id="@+id/bRollKeys"

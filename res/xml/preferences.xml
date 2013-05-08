@@ -40,47 +40,63 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_message"
+            android:summary="confirm before deleting a message"
             android:title="delete message" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_all_messages"
+            android:summary="confirm before deleting all messages"
             android:title="delete all messages" />
     </PreferenceCategory>
     <PreferenceCategory android:title="identity management" >
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_auto_android_backup_enabled"
-            android:title="auto backup/restore identities using android backup" />
-
         <Preference android:title="change password..." >
             <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity" >
             </intent>
         </Preference>
-        <Preference android:title="@string/export_identity_label" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_auto_android_backup_enabled"
+            android:summary="Backup your identity to Google&apos;s backup servers encrypted with AES256 using PBKDF based on your surespot password, which should be strong." 
+            android:title="auto backup/restore" />
+        
+        <Preference
+            android:summary="Manually backup your identity to local device storage. This is in theory more secure than backing up via Google's cloud, but also not as convenient."
+            android:title="@string/export_identity_label" >
             <intent android:action="com.twofours.surespot.identity.ExportIdentityActivity" >
             </intent>
         </Preference>
-        <Preference android:title="@string/import_identity_label" >
+        <Preference
+            android:summary="Restore your identity from local device storage."
+            android:title="@string/import_identity_label" >
             <intent android:action="com.twofours.surespot.identity.ImportIdentityActivity" >
             </intent>
         </Preference>
-        <Preference android:title="@string/delete_identity" >
+        <Preference
+            android:summary="Deleting an identity can not be undone."
+            android:title="@string/delete_identity" >
             <intent android:action="com.twofours.surespot.identity.DeleteIdentityActivity" >
             </intent>
         </Preference>
-        <Preference android:title="@string/key_management" >
+        <Preference
+            android:summary="For the paranoid."
+            android:title="@string/key_management" >
             <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
             </intent>
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory android:title="debug" >
-        <CheckBoxPreference
+
+        <!--
+             <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_logging"
+            android:summary="Logs to android"
             android:title="logging" />
+        -->
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_crash_reporting"
+            android:summary="Silently sends error reports containing no personally identifying information to surespot developers."
             android:title="silent error reporting" />
 
         <!--
@@ -92,6 +108,7 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_debug_mode"
+            android:summary="Shows more information about messages for debugging purposes."
             android:title="message debug mode" />
     </PreferenceCategory>
 

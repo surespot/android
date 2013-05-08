@@ -11,7 +11,7 @@
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
-    <string name="export_sd">backup to external storage*</string>
+    <string name="export_sd">backup to external storage</string>
     <string name="import_sd">restore from external storage</string>
     <string name="title_activity_chat">chat</string>
     <string name="title_activity_image_view">image view</string>
@@ -30,7 +30,7 @@
     <string name="no_identity_deleted">no identity deleted</string>
     <string name="identity_imported_successfully">identity restored successfully</string>
     <string name="could_not_import_identity">could not restore identity</string>
-    <string name="notifications_title">notifications</string>
+    <string name="notifications_title">push notifications</string>
     <string name="notifications_vibration">vibration</string>
     <string name="notifications_sound">sound</string>
     <string name="notifications_led">led</string>
@@ -48,7 +48,7 @@
     <string name="assign_image">assign image</string>
     <string name="logout">logout</string>
     <string name="settings">settings</string>
-    <string name="welcome_to_surespot">Welcome to surespot. Messages sent using this app are end to end encrypted using 256 bit AES and 512+ bit ECC key exchange. Enjoy.</string>
+    <string name="welcome_to_surespot">Welcome to surespot. Messages sent using this app are end to end encrypted using 256 bit AES and 521 bit ECC key exchange.</string>
     <string name="no_friends">No friends...yet. Invite surespot users by entering their username and touching "invite".\nUse the "share surespot" menu option to invite future surespot users.</string>
     <string name="navigate_between_chat_tabs">Navigate between tabs by swiping.</string>
     <string name="help_shortPress">Touch "home" to go to the home tab.</string>
@@ -81,5 +81,6 @@
     <string name="crash_dialog_comment_prompt">You can add your comments about the problem below if you like:</string>
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click this link to install the android app and invite me as a friend: "</string>
+    <string name="help_backupIdentities">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone or reinstall the app you will not be able to login unless you have backed up your identity. Surespot has a cloud based identity backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your keys manually to local storage from the settings menu."</string>
 
 </resources>

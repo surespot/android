@@ -58,14 +58,14 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 						onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_led)).setOnPreferenceClickListener(onPreferenceClickListener);
 
-				prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-					@Override
-					public boolean onPreferenceClick(Preference preference) {
-						SurespotLog.setLogging(((CheckBoxPreference) preference).isChecked());
-						return true;
-					}
-				});
+//				prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+//
+//					@Override
+//					public boolean onPreferenceClick(Preference preference) {
+//						SurespotLog.setLogging(((CheckBoxPreference) preference).isChecked());
+//						return true;
+//					}
+//				});
 
 				prefMgr.findPreference("pref_crash_reporting").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 

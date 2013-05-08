@@ -10,15 +10,45 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="select identity" />
+        android:text="This will export a copy of the selected identity encrypted with 256 bit AES with a key derived from your password through a PBKDF (Password Based Key Derivation Function) to the location below. This file should then be copied from your device (via USB cable for maximum security) to a secure backup location on a PC or elsewhere so that it can be restored in the case of a lost or stolen device, or if the identity data was somehow removed from the device." />
 
-    <Spinner
-        android:id="@+id/identitySpinner"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="identity:" />
+
+        <Spinner
+            android:id="@+id/identitySpinner"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
+            android:textSize="16dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:textSize="16dp" >
-    </Spinner>
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="*backup location: " >
+        </TextView>
+
+        <TextView
+            android:id="@+id/identityBackupPath"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/bExportSd"
