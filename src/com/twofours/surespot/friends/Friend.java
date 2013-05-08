@@ -3,8 +3,8 @@ package com.twofours.surespot.friends;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.twofours.surespot.AlphanumComparator;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.ui.AlphanumComparator;
 
 public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;

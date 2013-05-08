@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.ui;
 
 /*
  * The Alphanum Algorithm is an improved sorting algorithm for strings
