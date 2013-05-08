@@ -1,6 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
@@ -8,6 +7,7 @@ import java.util.ListIterator;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
@@ -277,9 +278,8 @@ public class ChatAdapter extends BaseAdapter {
 				else {
 
 					if (item.getDateTime() != null) {
-
-						chatMessageViewHolder.tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-								item.getDateTime()));
+						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(item.getDateTime())
+								+ " " + DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));						
 					}
 					else {
 						chatMessageViewHolder.tvTime.setText("");

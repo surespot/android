@@ -24,7 +24,6 @@ import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
-import java.text.DateFormat;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,6 +31,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -84,12 +84,15 @@ public class MessageImageDownloader {
 			cancelPotentialDownload(imageView, message);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
-		//	imageView.setTag(message);
+			// imageView.setTag(message);
 
 			// TODO put the row in the tag
 			TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 			if (message.getDateTime() != null) {
-				tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(message.getDateTime()));
+
+				tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
+						+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+
 			}
 		}
 	}
@@ -109,7 +112,7 @@ public class MessageImageDownloader {
 			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
 					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
-			//imageView.setTag(message);
+			// imageView.setTag(message);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
 		}
 	}
@@ -285,9 +288,11 @@ public class MessageImageDownloader {
 								// UIUtils.setMessageErrorText(tvTime, mMessage);
 								// }
 								// else {
+
 								if (mMessage.getDateTime() != null) {
-									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-											mMessage.getDateTime()));
+
+									tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
+											+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
 								}
 								// }
 							}
@@ -396,7 +401,7 @@ public class MessageImageDownloader {
 		Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
 		if (bitmap != null) {
 			mBitmapCache.remove(sourceKey);
-			mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);			
+			mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
 		}
 	}
 }

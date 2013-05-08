@@ -17,9 +17,9 @@
 package com.twofours.surespot.encryption;
 
 import java.lang.ref.WeakReference;
-import java.text.DateFormat;
 
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.TextView;
 
@@ -124,8 +124,6 @@ public class MessageDecryptor {
 						@Override
 						public void run() {
 
-							
-
 							// TODO put the row in the tag
 							View row = (View) textView.getParent();
 
@@ -134,12 +132,12 @@ public class MessageDecryptor {
 								mMessage.setErrorStatus(500);
 								tvTime.setText("ERROR DECRYPTING MESSAGE");
 							}
-							else {								
+							else {
 								textView.setText(finalPlainData);
 								if (mMessage.getDateTime() != null) {
 
-									tvTime.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(
-											mMessage.getDateTime()));
+									tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
+											+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
 								}
 							}
 						}
