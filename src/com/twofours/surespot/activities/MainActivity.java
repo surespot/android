@@ -600,6 +600,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.enableMenuItems(mCurrentFriend);
 		}
+		
+		//TODO PROD enable for release
+		menu.findItem(R.id.menu_invite_external).setEnabled(false);
+		
 		enableImageMenuItems();
 		return true;
 	}
