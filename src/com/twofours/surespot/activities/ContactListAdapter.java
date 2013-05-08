@@ -1,6 +1,10 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
+
+import com.twofours.surespot.R;
+import com.twofours.surespot.R.id;
+import com.twofours.surespot.R.layout;
 
 import android.content.Context;
 import android.view.LayoutInflater;

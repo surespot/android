@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 public class ContactData  {
 

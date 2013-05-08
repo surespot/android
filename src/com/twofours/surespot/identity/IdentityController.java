@@ -62,7 +62,10 @@ public class IdentityController {
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
 
 			// TODO set to false on release
-			SurespotLog.setLogging(sp.getBoolean("pref_logging", SurespotConstants.LOGGING));
+			boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
+			SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
+			
+			SurespotLog.setLogging(prefLogging);
 			SurespotLog.setCrashReporting(sp.getBoolean("pref_crash_reporting", SurespotConstants.CRASH_REPORTING));
 
 			// you would think changing the shared prefs name would update the internal state but it doesn't
@@ -142,6 +145,7 @@ public class IdentityController {
 
 			// tell backup manager the data has changed
 			if (backupContext != null) {
+				SurespotLog.v(TAG, "telling backup manager data changed");
 				SurespotApplication.mBackupManager.dataChanged();
 			}
 			return identityFile;

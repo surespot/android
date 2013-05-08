@@ -331,7 +331,7 @@ public class LoginActivity extends SherlockActivity {
 			}
 			else {
 				Utils.makeLongToast(this, "sorry, you have already created the maximum (" + SurespotConstants.MAX_IDENTITIES
-						+ ") number of identities\n\nidentities can be deleted from the settings menu");
+						+ ") number of identities\n\nidentities can be deleted from the settings menu after logging in");
 			}
 			return true;
 

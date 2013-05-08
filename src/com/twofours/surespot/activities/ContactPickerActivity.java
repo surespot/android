@@ -1,4 +1,4 @@
-package com.twofours.surespot;
+package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +27,12 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.twofours.surespot.activities.ExternalInviteActivity;
+import com.twofours.surespot.R;
+import com.twofours.surespot.R.id;
+import com.twofours.surespot.R.layout;
+import com.twofours.surespot.R.menu;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.contacts.SurespotContact;
 
 public class ContactPickerActivity extends SherlockActivity {
 
