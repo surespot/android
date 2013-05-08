@@ -30,7 +30,7 @@ public class UIUtils {
 		final EditText editText = new EditText(context);
 		editText.setImeActionLabel("done", EditorInfo.IME_ACTION_DONE);
 		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
-		editText.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+		editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 
