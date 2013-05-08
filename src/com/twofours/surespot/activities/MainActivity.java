@@ -241,11 +241,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
 				setupChatControls();
-
+				
 			}
-
 		}
-
 	}
 
 	class KeyboardStateHandler implements OnGlobalLayoutListener {
@@ -602,7 +600,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		
 		//TODO PROD enable for release
-		menu.findItem(R.id.menu_invite_external).setEnabled(false);
+	//	menu.findItem(R.id.menu_invite_external).setEnabled(false);
 		
 		enableImageMenuItems();
 		return true;
