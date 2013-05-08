@@ -634,7 +634,7 @@ public class ChatController {
 				protected void onPostExecute(Void result) {
 					try {
 						boolean added = chatAdapter.addOrUpdateMessage(message, true, true, true);
-						scrollToEnd(otherUser);
+						scrollToEnd(otherUser, false);
 
 						Friend friend = mFriendAdapter.getFriend(otherUser);
 						if (friend != null) {
@@ -1353,7 +1353,7 @@ public class ChatController {
 			if (chatFragment != null) {
 
 				if (newMessage) {
-					chatFragment.scrollToEnd();
+					chatFragment.scrollToEnd(true);
 				}
 				else {
 	//				chatFragment.scrollToState();
@@ -1759,7 +1759,7 @@ public class ChatController {
 		try {
 
 			chatAdapter.addOrUpdateMessage(message, false, true, true);
-			scrollToEnd(message.getTo());
+			scrollToEnd(message.getTo(), false);
 			saveState(message.getTo());
 		}
 		catch (SurespotMessageSequenceException e) {
@@ -2146,10 +2146,10 @@ public class ChatController {
 		}
 	}
 
-	public void scrollToEnd(String to) {
+	public void scrollToEnd(String to, boolean delay) {
 		ChatFragment chatFragment = getChatFragment(to);
 		if (chatFragment != null) {
-			chatFragment.scrollToEnd();
+			chatFragment.scrollToEnd(delay);
 		}
 
 	}
