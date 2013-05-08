@@ -159,7 +159,7 @@
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
-            android:name="com.twofours.surespot.activities.ContactPickerActivity"
+            android:name="com.twofours.surespot.contacts.ContactPickerActivity"
             android:label="@string/title_activity_contact_picker" >
         </activity>
         <activity

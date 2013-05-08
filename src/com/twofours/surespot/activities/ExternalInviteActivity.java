@@ -28,6 +28,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.contacts.ContactPickerActivity;
 import com.twofours.surespot.identity.IdentityController;
 
 public class ExternalInviteActivity extends SherlockActivity {

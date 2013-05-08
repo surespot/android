@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.contacts;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,8 +31,8 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.R.id;
 import com.twofours.surespot.R.layout;
 import com.twofours.surespot.R.menu;
+import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.contacts.SurespotContact;
 
 public class ContactPickerActivity extends SherlockActivity {
 

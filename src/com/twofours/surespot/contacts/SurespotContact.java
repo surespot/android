@@ -2,7 +2,6 @@ package com.twofours.surespot.contacts;
 
 import java.util.ArrayList;
 
-import com.twofours.surespot.activities.ContactData;
 
 public class SurespotContact implements Comparable<SurespotContact> {
 	private String mId;

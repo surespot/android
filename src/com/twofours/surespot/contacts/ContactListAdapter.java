@@ -1,4 +1,4 @@
-package com.twofours.surespot.activities;
+package com.twofours.surespot.contacts;
 
 import java.util.ArrayList;
 
