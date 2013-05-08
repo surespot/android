@@ -5,13 +5,18 @@ import java.util.Timer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
@@ -40,6 +45,13 @@ public class FriendFragment extends SherlockFragment {
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
 		mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
+		
+		TextView tvBackupWarning = (TextView) view.findViewById(R.id.backupIdentitiesWarning);		
+		Spannable s1 = new SpannableString(getString(R.string.help_backupIdentities1));
+	    s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+	    
+	    tvBackupWarning.setText(s1);
+	    
 		//
 		// Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
 		// addFriendButton.setOnClickListener(new View.OnClickListener() {

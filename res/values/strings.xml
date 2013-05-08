@@ -81,6 +81,7 @@
     <string name="crash_dialog_comment_prompt">You can add your comments about the problem below if you like:</string>
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click this link to install the android app and invite me as a friend: "</string>
-    <string name="help_backupIdentities">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone or reinstall the app you will not be able to login unless you have backed up your identity. Surespot has a cloud based identity backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your keys manually to local storage from the settings menu."</string>
+    <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
+    <string name="help_backupIdentities2">"Surespot has a cloud based identity backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your keys manually to local storage from the settings menu."</string>
 
 </resources>
