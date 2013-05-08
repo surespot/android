@@ -3,15 +3,20 @@ package com.twofours.surespot.identity;
 import java.security.PrivateKey;
 import java.util.List;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -51,6 +56,15 @@ public class ChangePasswordActivity extends SherlockActivity {
 		spinner.setAdapter(adapter);
 		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
 
+		TextView tvSignupHelp = (TextView) findViewById(R.id.tvChangePasswordWarning);
+
+		Spannable warning = new SpannableString(
+				"WARNING: There is no password reset functionality in surespot so make sure you remember it!");
+
+		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		tvSignupHelp.setText(warning);
+
 		final EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
 		etCurrent.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 
@@ -76,7 +90,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 	}
 
 	private void changePassword(final String username, final String currentPassword, final String newPassword, final String confirmPassword) {
-		if (!(username.length() > 0 && currentPassword.length() > 0 && newPassword.length() > 0 && confirmPassword.length() > 0)) {			
+		if (!(username.length() > 0 && currentPassword.length() > 0 && newPassword.length() > 0 && confirmPassword.length() > 0)) {
 			return;
 		}
 
@@ -85,7 +99,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 			Utils.makeToast(this, "passwords do not match");
 			return;
 		}
-		
+
 		mMpd.incrProgress();
 		SurespotIdentity identity = IdentityController.getIdentity(this, username, currentPassword);
 
@@ -94,21 +108,20 @@ public class ChangePasswordActivity extends SherlockActivity {
 			Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
 			return;
 		}
-		
+
 		// make sure file we're going to save to is writable before we start
 		if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username, true)) {
 			Utils.makeToast(ChangePasswordActivity.this, "could not change password");
 			return;
 		}
 
-
 		final String version = identity.getLatestVersion();
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());									
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
 		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(currentPassword, saltBytes)));
-	
+
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
@@ -124,8 +137,8 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 						byte[][] derived = EncryptionController.derive(newPassword);
 						final String newSalt = new String(ChatUtils.base64EncodeNowrap(derived[0]));
-						final String dNewPassword = new String(ChatUtils.base64EncodeNowrap(derived[1])); 
-																							
+						final String dNewPassword = new String(ChatUtils.base64EncodeNowrap(derived[1]));
+
 						// create token sig
 						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(passwordToken),
 								dNewPassword.getBytes());
@@ -146,14 +159,14 @@ public class ChangePasswordActivity extends SherlockActivity {
 											IdentityController.updatePassword(ChangePasswordActivity.this, username, currentPassword,
 													newPassword, result.salt);
 											resetFields();
-											mMpd.decrProgress();											
+											mMpd.decrProgress();
 											Utils.makeLongToast(ChangePasswordActivity.this, "password changed");
 											finish();
 										};
 
 										@Override
 										public void onFailure(Throwable error, String content) {
-											SurespotLog.w(TAG, "changePassword", error);											
+											SurespotLog.w(TAG, "changePassword", error);
 											mMpd.decrProgress();
 											resetFields();
 											Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
@@ -213,7 +226,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		}
 
 	}
-	
+
 	private void resetFields() {
 		final EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
 		etCurrent.setText("");
@@ -223,9 +236,9 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 		final EditText etConfirm = (EditText) findViewById(R.id.etChangePasswordConfirm);
 		etConfirm.setText("");
-		
+
 		etCurrent.requestFocus();
-		
+
 	}
 
 }
