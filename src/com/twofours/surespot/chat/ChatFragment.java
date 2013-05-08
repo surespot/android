@@ -1,8 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.util.Timer;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,6 +18,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -33,15 +31,10 @@ public class ChatFragment extends SherlockFragment {
 	private boolean mLoading;
 	private int mPreviousTotal;
 
-	private Timer mTimer;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
-	// private int mSelection;
-	// private int mTop;
 	private boolean mJustLoaded;
-	private boolean mIsDeleted;
 	private ChatAdapter mChatAdapter;
-	private boolean mKeyboardWasOpen;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -60,7 +53,6 @@ public class ChatFragment extends SherlockFragment {
 		Bundle bundle = new Bundle();
 		bundle.putString("username", username);
 		cf.setArguments(bundle);
-		//cf.setRetainInstance(true);
 		return cf;
 	}
 
@@ -70,24 +62,14 @@ public class ChatFragment extends SherlockFragment {
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
 		SurespotLog.v(TAG, "onCreate");
-		
+
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
-		SurespotLog.v(TAG, "onCreateView, username: %s, selectedItem: %d",mUsername ,mSelectedItem);
+		SurespotLog.v(TAG, "onCreateView, username: %s", mUsername);
 
-		if (savedInstanceState != null) {
-			mSelectedItem = savedInstanceState.getInt("selectedItem");
-			mSelectedTop = savedInstanceState.getInt("selectedTop");
-
-			SurespotLog.v(TAG, "loaded selectedItem: " + mSelectedItem);
-			SurespotLog.v(TAG, "loaded selectedTop: " + mSelectedTop);
-
-		}
-
-		
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
 		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
@@ -147,7 +129,6 @@ public class ChatFragment extends SherlockFragment {
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
-			scrollToState();
 
 		}
 		return view;
@@ -157,12 +138,6 @@ public class ChatFragment extends SherlockFragment {
 		return (MainActivity) getActivity();
 	}
 
-	@Override
-	public void onDetach() {
-		// TODO Auto-generated method stub
-		super.onDetach();
-		SurespotLog.v(TAG, "onDetach: " + mUsername);
-	}
 
 	private OnScrollListener mOnScrollListener = new OnScrollListener() {
 
@@ -250,133 +225,84 @@ public class ChatFragment extends SherlockFragment {
 	public void onResume() {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume: " + mUsername);
-		// scrollToState();
 
-		// ChatController chatController = getMainActivity().getChatController();
-		// if (chatController != null) {
-		// mChatAdapter = chatController.getChatAdapter(getMainActivity().getContext(), mUsername);
-		// SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
-		//
-		// mListView.setAdapter(mChatAdapter);
-		// mListView.setDividerHeight(1);
-		// mListView.setOnScrollListener(mOnScrollListener);
-		// mChatAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
-		//
-		// @Override
-		// public void handleResponse(Boolean loading) {
-		// // mLoading = loading;
-		// SurespotLog.v(TAG, "chatAdapter loading: " + loading);
-		// if (loading) {
-		// // view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		// // only show the dialog if we haven't loaded within 500 ms
-		// if (mTimer != null) {
-		// mTimer.cancel();
-		// }
-		//
-		// mTimer = new Timer();
-		// mTimer.schedule(new TimerTask() {
-		//
-		// @Override
-		// public void run() {
-		// Handler handler = getMainActivity().getMainHandler();
-		// if (handler != null) {
-		// handler.post(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		// SurespotLog.v(TAG, "chat fragment showing progress");
-		// //view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-		// }
-		// });
-		// }
-		//
-		// }
-		// }, 250);
-		//
-		// }
-		// else {
-		// SurespotLog.v(TAG, "chat fragment tearing progress down");
-		// if (mTimer != null) {
-		// mTimer.cancel();
-		// mTimer = null;
-		// }
-		//
-		// //view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-		// //view.findViewById(R.id.message_list_empty).setVisibility(View.VISIBLE);
-		// // mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-		// }
-		// }
-		// });
-		// }
+		ChatController chatController = getMainActivity().getChatController();
+
+		if (chatController != null) {
+			Friend friend = chatController.getFriendAdapter().getFriend(mUsername);
+
+			if (friend != null) {
+			
+				mSelectedItem = friend.getSelectedItem();
+				mSelectedTop = friend.getSelectedTop();
+			
+				scrollToState();
+			}
+		}
+		
 
 	};
-
-	@Override
-	public void onAttach(Activity activity) {
-		// TODO Auto-generated method stub
-		super.onAttach(activity);
-
-		SurespotLog.v(TAG, "onAttach, mSelectedItem: %d", mSelectedItem );
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
-		super.onActivityCreated(savedInstanceState);
-		SurespotLog.v(TAG, "onActivityCreated");
-
-//		if (savedInstanceState != null) {
-//			mSelectedItem = savedInstanceState.getInt("selectedItem");
-//			mSelectedTop = savedInstanceState.getInt("selectedTop");
-//
-//			SurespotLog.v(TAG, "loaded selectedItem: " + mSelectedItem);
-//			SurespotLog.v(TAG, "loaded selectedTop: " + mSelectedTop);
-//
-//		}
-
-	}
-
+	
 	@Override
 	public void onPause() {
 		super.onPause();
 		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername + ", currentScrollId: " + mListView.getFirstVisiblePosition());
 		// set the current scroll position so we know how many messages to save
 
-
 		mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
 		// mListView.removeOnScrollListener()):
+
+		if (mListView != null) {
+			ChatController chatController = getMainActivity().getChatController();
+			if (chatController != null) {
+
+				Friend friend = chatController.getFriendAdapter().getFriend(mUsername);
+
+				if (friend != null) {
+
+					int lastVisiblePosition = mListView.getLastVisiblePosition();
+
+					SurespotLog.v(TAG, "onPause lastVisiblePosition: %d", lastVisiblePosition);
+					SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);
+					if (lastVisiblePosition == mListView.getCount() - 1) {
+
+						SurespotLog.v(TAG, "saving selected item: %d", -1);
+						friend.setSelectedItem(-1);
+						friend.setSelectedTop(-1);
+				
+					}
+					else {
+
+						int selection = mListView.getFirstVisiblePosition();
+						View v = mListView.getChildAt(0);
+
+						int top = (v == null) ? 0 : v.getTop();
+
+						SurespotLog.v(TAG, "saving selected item: %d", selection);
+
+
+						friend.setSelectedItem(selection);
+						friend.setSelectedTop(top);
+						
+					}
+				}
+			}
+		}
+
 	}
-
-	public void onDestroy() {
-		super.onDestroy();
-		SurespotLog.v(TAG, "onDestroy");
-		// ChatController chatController = getMainActivity().getChatController();
-		// if (chatController != null) {
-		// chatController.destroyChatAdapter(mUsername);
-		// }
-
-	}
-
-	// public void requestFocus() {
-	// SurespotLog.v(TAG, "requestFocus");
-	// mEditText.clearFocus();
-	// mEditText.requestFocus();
-	//
-	// }
 
 	public void scrollToEnd() {
 		SurespotLog.v(TAG, "scrollToEnd");
 		if (mChatAdapter != null && mListView != null) {
-			mChatAdapter.notifyDataSetChanged();
 			mListView.postDelayed(new Runnable() {
 
 				@Override
 				public void run() {
-					// mChatAdapter.notifyDataSetChanged();
+
 					mListView.setSelection(mChatAdapter.getCount() - 1);
-					//
+
 				}
-			}, 100);
+			}, 2000);
 		}
 	}
 
@@ -399,42 +325,6 @@ public class ChatFragment extends SherlockFragment {
 			}
 			else {
 				scrollToEnd();
-			}
-		}
-	}
-	
-	
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-
-		super.onSaveInstanceState(outState);
-
-		if (mListView != null) {
-			
-			int lastVisiblePosition = mListView.getLastVisiblePosition() ;
-			
-			SurespotLog.v(TAG, "onSaveInstanceState lastVisiblePosition: %d", lastVisiblePosition);
-			SurespotLog.v(TAG, "onSaveInstanceState mListview count() - 1: %d", mListView.getCount() - 1);
-			if (lastVisiblePosition == mListView.getCount() - 1) {
-				outState.putInt("selectedItem", -1);
-				outState.putInt("selectedTop", -1);
-			}
-			else {
-
-				int selection = mListView.getFirstVisiblePosition();
-				// SurespotMessage message = (SurespotMessage) mListView.getItemAtPosition(selection);
-				View v = mListView.getChildAt(0);
-
-				int top = (v == null) ? 0 : v.getTop();
-
-				SurespotLog.v(TAG, "saving selected item: %d", selection);
-
-				// if we're at the bottom we want to go back to the bottom
-
-				outState.putInt("selectedItem", selection);//UIUtils.getResumePosition(selection, mListView.getCount()));
-				outState.putInt("selectedTop", top);
-				// outState.putString("selectedMessage", message.toJSONObject().toString());
 			}
 		}
 	}

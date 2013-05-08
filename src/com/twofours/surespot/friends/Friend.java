@@ -27,6 +27,9 @@ public class Friend implements Comparable<Friend> {
 	private String mImageVersion;
 	private String mImageIv;
 	private static AlphanumComparator mComparator = new AlphanumComparator();
+	private int mSelectedItem = -1;
+	private int mSelectedTop = -1;
+	
 
 	public Friend(String name) {
 		mName = name;
@@ -316,6 +319,8 @@ public class Friend implements Comparable<Friend> {
 		this.setImageUrl(friend.getImageUrl());
 		this.setImageVersion(friend.getImageVersion());
 		this.setImageIv(friend.getImageIv());
+		this.setSelectedItem(friend.getSelectedItem());
+		this.setSelectedTop(friend.getSelectedTop());
 		// this.setChatActive(friend.isChatActive());
 		// this.setMessageActivity(friend.isMessageActivity());
 
@@ -334,6 +339,8 @@ public class Friend implements Comparable<Friend> {
 		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
 		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
+		friend.setSelectedItem(jsonFriend.optInt("selectedItem", -1));
+		friend.setSelectedTop(jsonFriend.optInt("selectedTop", -1));
 
 		return friend;
 	}
@@ -352,6 +359,10 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("imageVersion", this.getImageVersion());
 			jsonFriend.put("imageUrl", this.getImageUrl());
 			jsonFriend.put("imageIv", this.getImageIv());
+			
+			
+			jsonFriend.put("selectedItem", this.getSelectedItem());
+			jsonFriend.put("selectedTop", this.getSelectedTop());
 
 			return jsonFriend;
 		}
@@ -376,8 +387,29 @@ public class Friend implements Comparable<Friend> {
 		sb.append("\tlastReceivedMessageControlId: " + getLastReceivedMessageControlId() + "\n");
 		sb.append("\tavailableMessageControlId: " + getAvailableMessageControlId() + "\n");
 		sb.append("\tlastReceivedUserControlId: " + getLastReceivedUserControlId() + "\n");
+		sb.append("\tselectedItem: " + getSelectedItem() + "\n");
+		sb.append("\tselectedTop: " + getSelectedTop() + "\n");
 
 		return sb.toString();
+	}
+
+	public void setSelectedItem(int i) {
+		mSelectedItem = i;
+		
+	}
+
+	public void setSelectedTop(int i) {
+		mSelectedTop = i;
+		
+	}
+
+	public int getSelectedItem() {
+
+		return  mSelectedItem;
+	}
+
+	public int getSelectedTop() {
+		return mSelectedTop;
 	}
 
 };
