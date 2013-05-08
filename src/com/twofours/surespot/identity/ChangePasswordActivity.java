@@ -34,7 +34,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_change_password);
-		Utils.configureActionBar(this, "change", "password", true);
+		Utils.configureActionBar(this, "password", "change", true);
 
 		mMpd = new MultiProgressDialog(this, "changing password", 500);
 

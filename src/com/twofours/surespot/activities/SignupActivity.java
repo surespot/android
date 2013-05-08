@@ -8,9 +8,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -57,11 +62,24 @@ public class SignupActivity extends SherlockActivity {
 		setContentView(R.layout.activity_signup);
 		Utils.configureActionBar(this, "identity", "create", false);
 
+		
+		TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
+		
+		Spannable suggestion = new SpannableString("Please enter a username and password. The password should be at least 8 characters long and contain funky characters in weird places.\n\n");
+	    Spannable warning = new SpannableString("WARNING: There is no password reset functionality in surespot so make sure you remember it!");
+		
+	    warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+	    
+	    tvSignupHelp.setText(TextUtils.concat(suggestion, warning));
+	    
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
 		mMpd = new MultiProgressDialog(this, "creating a user and generating key pairs", 250);
+		
+		
+		
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),

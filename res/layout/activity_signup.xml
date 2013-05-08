@@ -7,8 +7,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dip"
+        android:padding="10dp"
         tools:context=".SignupActivity" >
+
+        <TextView
+            android:id="@+id/tvSignupHelp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginBottom="10dp" />
 
         <TextView
             android:id="@+id/textView2"
