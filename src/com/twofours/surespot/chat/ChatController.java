@@ -634,7 +634,7 @@ public class ChatController {
 				protected void onPostExecute(Void result) {
 					try {
 						boolean added = chatAdapter.addOrUpdateMessage(message, true, true, true);
-						scrollToEnd(otherUser, false);
+						scrollToEnd(otherUser);
 
 						Friend friend = mFriendAdapter.getFriend(otherUser);
 						if (friend != null) {
@@ -1348,30 +1348,9 @@ public class ChatController {
 
 		}
 
-		if (username.equals(mCurrentChat)) {
-			ChatFragment chatFragment = getChatFragment(username);
-			if (chatFragment != null) {
-
-				if (newMessage) {
-					chatFragment.scrollToEnd(true);
-				}
-				else {
-	//				chatFragment.scrollToState();
-				}
-				// chatFragment.requestFocus();
-
-			}
-		}
-
 		setProgress(username, false);
 	}
 
-	// tell the chat adapters we've loaded their data (even if they didn't have any)
-	public void setMessagesLoading(boolean loading) {
-		for (ChatAdapter ca : mChatAdapters.values()) {
-			ca.setLoading(loading);
-		}
-	}
 
 	private Integer getEarliestMessageId(String username) {
 
@@ -1759,7 +1738,7 @@ public class ChatController {
 		try {
 
 			chatAdapter.addOrUpdateMessage(message, false, true, true);
-			scrollToEnd(message.getTo(), false);
+			scrollToEnd(message.getTo());
 			saveState(message.getTo());
 		}
 		catch (SurespotMessageSequenceException e) {
@@ -2146,10 +2125,10 @@ public class ChatController {
 		}
 	}
 
-	public void scrollToEnd(String to, boolean delay) {
+	public void scrollToEnd(String to) {
 		ChatFragment chatFragment = getChatFragment(to);
 		if (chatFragment != null) {
-			chatFragment.scrollToEnd(delay);
+			chatFragment.scrollToEnd();
 		}
 
 	}

@@ -124,6 +124,16 @@ public class ChatFragment extends SherlockFragment {
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
+			mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
+
+				@Override
+				public void handleResponse(Boolean result) {
+
+					SurespotLog.v(TAG, "messages completed loading, scrolling to state");
+					scrollToState();
+
+				}
+			});
 			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
 
 			mListView.setAdapter(mChatAdapter);
@@ -137,7 +147,6 @@ public class ChatFragment extends SherlockFragment {
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
-
 
 	private OnScrollListener mOnScrollListener = new OnScrollListener() {
 
@@ -232,17 +241,19 @@ public class ChatFragment extends SherlockFragment {
 			Friend friend = chatController.getFriendAdapter().getFriend(mUsername);
 
 			if (friend != null) {
-			
+
 				mSelectedItem = friend.getSelectedItem();
 				mSelectedTop = friend.getSelectedTop();
-			
-				scrollToState();
+
+				if (mChatAdapter.isLoaded()) {
+					SurespotLog.v(TAG, "chat adapter loaded already, scrolling");
+					scrollToState();
+				}
 			}
 		}
-		
 
 	};
-	
+
 	@Override
 	public void onPause() {
 		super.onPause();
@@ -269,7 +280,7 @@ public class ChatFragment extends SherlockFragment {
 						SurespotLog.v(TAG, "saving selected item: %d", -1);
 						friend.setSelectedItem(-1);
 						friend.setSelectedTop(-1);
-				
+
 					}
 					else {
 
@@ -280,10 +291,9 @@ public class ChatFragment extends SherlockFragment {
 
 						SurespotLog.v(TAG, "saving selected item: %d", selection);
 
-
 						friend.setSelectedItem(selection);
 						friend.setSelectedTop(top);
-						
+
 					}
 				}
 			}
@@ -291,10 +301,10 @@ public class ChatFragment extends SherlockFragment {
 
 	}
 
-	public void scrollToEnd(boolean delay) {
+	public void scrollToEnd() {
 		SurespotLog.v(TAG, "scrollToEnd");
 		if (mChatAdapter != null && mListView != null) {
-			mListView.postDelayed(new Runnable() {
+			mListView.post(new Runnable() {
 
 				@Override
 				public void run() {
@@ -302,7 +312,7 @@ public class ChatFragment extends SherlockFragment {
 					mListView.setSelection(mChatAdapter.getCount() - 1);
 
 				}
-			}, delay ? 2000 : 0);
+			});
 		}
 	}
 
@@ -324,7 +334,7 @@ public class ChatFragment extends SherlockFragment {
 
 			}
 			else {
-				scrollToEnd(true);
+				scrollToEnd();
 			}
 		}
 	}

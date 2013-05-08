@@ -32,6 +32,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mDeletedTo;
 	private boolean mShareable;
 
+	private boolean mLoaded;
 	private boolean mLoading;
 
 	public String getFrom() {
@@ -220,7 +221,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		result = prime * result + mHeight;
 		result = prime * result + ((mId == null) ? 0 : mId.hashCode());
 		result = prime * result + ((mIv == null) ? 0 : mIv.hashCode());
-		result = prime * result + (mLoading ? 1231 : 1237);
 		result = prime * result + ((mMimeType == null) ? 0 : mMimeType.hashCode());
 		result = prime * result + ((mPlainData == null) ? 0 : mPlainData.hashCode());
 		result = prime * result + ((mResendId == null) ? 0 : mResendId.hashCode());
@@ -267,12 +267,20 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		this.mIv = mIv;
 	}
 
+	public boolean isLoaded() {
+		return mLoaded;
+	}
+
+	public void setLoaded(boolean mLoaded) {
+		this.mLoaded = mLoaded;
+	}
+
 	public boolean isLoading() {
 		return mLoading;
 	}
 
-	public void setLoading(boolean mLoading) {
-		this.mLoading = mLoading;
+	public void setLoading(boolean loading) {
+		mLoading = loading;
 	}
 
 	public Integer getHeight() {

@@ -32,10 +32,13 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_US = 0;
 	private final static int TYPE_THEM = 1;
 	private boolean mLoading;
-	private IAsyncCallback<Boolean> mLoadingCallback;
+	private IAsyncCallback<Boolean> mAllLoadedCallback;
 	private boolean mDebugMode;
 	private boolean mCheckingSequence;
 	private int mCurrentScrollPositionId;
+	private MessageDecryptor mMessageDecryptor;
+	private MessageImageDownloader mMessageImageDownloader;
+	private boolean mLoaded;
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -43,26 +46,16 @@ public class ChatAdapter extends BaseAdapter {
 		SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
 		// pm.getBoolean("pref_hide_deleted_messages", false);
-
+		mMessageDecryptor = new MessageDecryptor(this);
+		mMessageImageDownloader = new MessageImageDownloader(this);
 	}
 
 	public void doneCheckingSequence() {
 		mCheckingSequence = false;
 	}
 
-	public boolean isLoading() {
-		return mLoading;
-	}
-
-	public void setLoading(boolean loading) {
-		mLoading = loading;
-		if (mLoadingCallback != null) {
-			mLoadingCallback.handleResponse(loading);
-		}
-	}
-
-	public void setLoadingCallback(IAsyncCallback<Boolean> callback) {
-		mLoadingCallback = callback;
+	public void setAllLoadedCallback(IAsyncCallback<Boolean> callback) {
+		mAllLoadedCallback = callback;
 	}
 
 	public void evictCache() {
@@ -279,7 +272,7 @@ public class ChatAdapter extends BaseAdapter {
 
 					if (item.getDateTime() != null) {
 						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(item.getDateTime())
-								+ " " + DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));						
+								+ " " + DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));
 					}
 					else {
 						chatMessageViewHolder.tvTime.setText("");
@@ -301,7 +294,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 			else {
 				chatMessageViewHolder.tvText.setText("");
-				MessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
+				mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
 			chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
@@ -312,7 +305,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
 			chatMessageViewHolder.tvText.setText("");
 			if (!TextUtils.isEmpty(item.getData())) {
-				MessageImageDownloader.download(chatMessageViewHolder.imageView, item);
+				mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
 			}
 
 			if (item.isShareable()) {
@@ -481,6 +474,28 @@ public class ChatAdapter extends BaseAdapter {
 		if (delete) {
 			deleteTheirMessages(Integer.MAX_VALUE);
 		}
+	}
+
+	//the first time we load the listview doesn't know 
+	//where to scroll because the items change size
+	//so we keep track of which messages we're loading
+	//so we know when they're done, and when they are
+	//we can scroll to where we need to be
+	public void checkLoaded() {
+		if (!mLoaded) {
+			for (SurespotMessage message : mMessages) {
+				if (message.isLoading() && !message.isLoaded()) {
+					return;
+				}
+			}
+
+			mAllLoadedCallback.handleResponse(true);
+			mLoaded = true;
+		}
+	}
+
+	public boolean isLoaded() {
+		return mLoaded;
 	}
 
 }

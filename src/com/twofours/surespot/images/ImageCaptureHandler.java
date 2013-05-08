@@ -59,7 +59,7 @@ public class ImageCaptureHandler implements Parcelable {
 	}
 
 	public void handleResult(final MainActivity activity) {
-		activity.getChatController().scrollToEnd(mTo, false);
+		activity.getChatController().scrollToEnd(mTo);
 		ChatUtils.uploadPictureMessageAsync(activity, activity.getChatController(), activity.getNetworkController(),
 				Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
 					@Override

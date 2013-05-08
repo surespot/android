@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SurespotMessage;
 
@@ -41,6 +42,11 @@ import com.twofours.surespot.chat.SurespotMessage;
 public class MessageDecryptor {
 	private static final String TAG = "TextDecryptor";
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+	private ChatAdapter mChatAdapter;
+
+	public MessageDecryptor(ChatAdapter chatAdapter) {
+		mChatAdapter = chatAdapter;
+	}
 
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
@@ -51,11 +57,13 @@ public class MessageDecryptor {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public static void decrypt(TextView textView, SurespotMessage message) {
+	public void decrypt(TextView textView, SurespotMessage message) {
 
 		DecryptionTask task = new DecryptionTask(textView, message);
 		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 		textView.setTag(decryptionTaskWrapper);
+		message.setLoading(true);
+		message.setLoaded(false);
 		SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
 
 	}
@@ -65,7 +73,7 @@ public class MessageDecryptor {
 	 *            Any imageView
 	 * @return Retrieve the currently active download task (if any) associated with this imageView. null if there is no such task.
 	 */
-	private static DecryptionTask getDecryptionTask(TextView textView) {
+	private DecryptionTask getDecryptionTask(TextView textView) {
 		if (textView != null) {
 			Object oDecryptionTaskWrapper = textView.getTag();
 			if (oDecryptionTaskWrapper instanceof DecryptionTaskWrapper) {
@@ -79,7 +87,7 @@ public class MessageDecryptor {
 	/**
 	 * The actual AsyncTask that will asynchronously download the image.
 	 */
-	static class DecryptionTask implements Runnable {
+	class DecryptionTask implements Runnable {
 		private SurespotMessage mMessage;
 
 		private final WeakReference<TextView> textViewReference;
@@ -100,6 +108,12 @@ public class MessageDecryptor {
 				plainData = EmojiParser.getInstance().addEmojiSpans(plainText.toString());
 				mMessage.setPlainData(plainData);
 			}
+
+			mMessage.setLoading(false);
+			mMessage.setLoaded(true);
+			mChatAdapter.checkLoaded();
+				
+			
 
 			if (textViewReference != null) {
 
@@ -138,6 +152,7 @@ public class MessageDecryptor {
 
 									tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
 											+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
+
 								}
 							}
 						}
@@ -150,7 +165,7 @@ public class MessageDecryptor {
 	/**
 	 * makes sure that only the last started decrypt process can bind its result, independently of the finish order. </p>
 	 */
-	static class DecryptionTaskWrapper {
+	class DecryptionTaskWrapper {
 		private final WeakReference<DecryptionTask> decryptionTaskReference;
 
 		public DecryptionTaskWrapper(DecryptionTask decryptionTask) {
