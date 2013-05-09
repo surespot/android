@@ -20,14 +20,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
+import android.app.NotificationManager;
 import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
+import android.content.Context;
 import android.os.ParcelFileDescriptor;
+import android.support.v4.app.NotificationCompat;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
@@ -38,8 +44,10 @@ public class IdentityBackupAgent extends BackupAgent {
 	public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) throws IOException {
 
 		List<String> names = IdentityController.getIdentityNames(this);
-
-		for (String name : names) {
+		String identitiesBackedUp = "";
+		Iterator<String> iterator = names.iterator();
+		while (iterator.hasNext()) {
+			String name = iterator.next();
 			if (getSharedPreferences(name, MODE_PRIVATE).getBoolean("pref_auto_android_backup_enabled", false)) {
 				String filename = FileUtils.getIdentityDir(this) + File.separator + name + IdentityController.IDENTITY_EXTENSION;
 				SurespotLog.v(TAG, "backing up identity: " + filename);
@@ -63,9 +71,27 @@ public class IdentityBackupAgent extends BackupAgent {
 				data.writeEntityHeader("sharedPref:" + name, len);
 				data.writeEntityData(buffer, len);
 				fis.close();
+								
+				identitiesBackedUp += name + (iterator.hasNext() ? ", " : ".");
+				
 			}
 		}
+		
+		if (identitiesBackedUp.length() > 0) {
+			createBackedupNotification(identitiesBackedUp);			
+		}
 
+	}
+	
+	public void createBackedupNotification(String sIdentities) {
+
+		int icon = R.drawable.surespot_logo;
+		
+		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setSmallIcon(icon).setContentTitle("identities backed up")
+				.setContentText("identity backup completed for: " + sIdentities).setAutoCancel(true);
+
+		notificationManager.notify(SurespotConstants.IntentRequestCodes.BACKUP_NOTIFICATION, builder.build());
 	}
 
 	@Override
