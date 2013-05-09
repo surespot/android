@@ -187,6 +187,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				startActivity(newIntent);
 				finish();
+				
 			}
 			else {
 				setContentView(R.layout.activity_main);
@@ -600,7 +601,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		
 		//TODO PROD enable for release
-	//	menu.findItem(R.id.menu_invite_external).setEnabled(false);
+		//menu.findItem(R.id.menu_invite_external).setEnabled(false);
 		
 		enableImageMenuItems();
 		return true;
@@ -705,17 +706,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.logout();
 			IdentityController.logout();
 
-			new AsyncTask<Void, Void, Void>() {
-				protected Void doInBackground(Void... params) {
+//			new AsyncTask<Void, Void, Void>() {
+//				protected Void doInBackground(Void... params) {
 
-					Intent finalIntent = new Intent(MainActivity.this, MainActivity.class);
+					Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
 					finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 					mChatController = null;
 					MainActivity.this.startActivity(finalIntent);
 					finish();
-					return null;
-				}
-			}.execute();
+		//			return null;
+	//			}
+//			}.execute();
 			return true;
 		case R.id.menu_invite_external:
 
