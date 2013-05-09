@@ -113,6 +113,37 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private int mOrientation;
 
 	@Override
+	protected void onNewIntent(Intent intent) {
+
+		super.onNewIntent(intent);
+		SurespotLog.v(TAG, "on new intent.");
+		// handle case where we deleted the identity we were logged in as
+		boolean deleted = intent.getBooleanExtra("deleted", false);
+
+		if (deleted) {
+			// if we have any users or we don't need to create a user, figure out if we need to login
+			if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
+				// otherwise show the signup activity
+
+				SurespotLog.v(TAG, "I was deleted and there are no other users so starting signup activity.");
+				Intent newIntent = new Intent(this, SignupActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(newIntent);
+				finish();
+			}
+			else {
+
+				SurespotLog.v(TAG, "I was deleted and there are different users so starting login activity.");
+				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
+				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(newIntent);
+				finish();
+			}
+		}
+
+	}
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -187,17 +218,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				startActivity(newIntent);
 				finish();
-				
+
 			}
 			else {
-				//we're loading so build the ui
+				// we're loading so build the ui
 				setContentView(R.layout.activity_main);
 
 				mHomeImageView = (ImageView) findViewById(android.R.id.home);
 				if (mHomeImageView == null) {
 					mHomeImageView = (ImageView) findViewById(R.id.abs__home);
 				}
-				
+
 				setHomeProgress(true);
 
 				SurespotLog.v(TAG, "binding cache service");
@@ -244,7 +275,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
 
 				setupChatControls();
-				
+
 			}
 		}
 	}
@@ -595,10 +626,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.enableMenuItems(mCurrentFriend);
 		}
-		
-		//TODO PROD enable for release
-		//menu.findItem(R.id.menu_invite_external).setEnabled(false);
-		
+
+		// TODO PROD enable for release
+		// menu.findItem(R.id.menu_invite_external).setEnabled(false);
+
 		enableImageMenuItems();
 		return true;
 	}
@@ -704,17 +735,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.logout();
 			IdentityController.logout();
 
-//			new AsyncTask<Void, Void, Void>() {
-//				protected Void doInBackground(Void... params) {
+			// new AsyncTask<Void, Void, Void>() {
+			// protected Void doInBackground(Void... params) {
 
-					Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
-					finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					mChatController = null;
-					MainActivity.this.startActivity(finalIntent);
-					finish();
-		//			return null;
-	//			}
-//			}.execute();
+			Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
+			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			mChatController = null;
+			MainActivity.this.startActivity(finalIntent);
+			finish();
+			// return null;
+			// }
+			// }.execute();
 			return true;
 		case R.id.menu_invite_external:
 

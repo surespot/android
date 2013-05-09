@@ -149,8 +149,9 @@ public class UIUtils {
 		// }
 	}
 
-	public static void launchMainActivity(Context context) {
+	public static void launchMainActivityDeleted(Context context) {
 		Intent finalIntent = new Intent(context, MainActivity.class);
+		finalIntent.putExtra("deleted",true);
 		finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(finalIntent);
 	}
