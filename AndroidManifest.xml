@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
     android:versionCode="3"
-    android:versionName="770d5ff" >
+    android:versionName="bc35f8f" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -73,6 +73,7 @@
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
             android:label="@string/title_activity_main"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize|stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

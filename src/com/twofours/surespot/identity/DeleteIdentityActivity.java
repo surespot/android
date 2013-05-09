@@ -47,7 +47,6 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO progress
 				final String user = (String) mSpinner.getSelectedItem();
 				UIUtils.passwordDialog(DeleteIdentityActivity.this, "delete " + user + " identity", "enter password for " + user,
 						new IAsyncCallback<String>() {

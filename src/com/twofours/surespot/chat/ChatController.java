@@ -199,8 +199,6 @@ public class ChatController {
 				else {
 					// TODO tell user
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
-					// TODO more persistent error
-
 					mCallback401.handleResponse("could not connect to server");
 				}
 			}
@@ -246,8 +244,6 @@ public class ChatController {
 					}
 				}
 				else if (event.equals("message")) {
-
-					// TODO check who from
 					try {
 						JSONObject jsonMessage = new JSONObject((String) args[0]);
 						SurespotLog.v(TAG, "received message: " + jsonMessage.toString());
@@ -281,8 +277,7 @@ public class ChatController {
 					}
 
 				}
-				else if (event.equals("messageError")) {
-					// TODO check who from
+				else if (event.equals("messageError")) {			
 					try {
 						JSONObject jsonMessage = (JSONObject) args[0];
 						SurespotLog.v(TAG, "received messageError: " + jsonMessage.toString());

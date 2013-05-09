@@ -137,7 +137,6 @@ public class LoginActivity extends SherlockActivity {
 
 			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
-				// TODO Auto-generated method stub
 
 			}
 		});

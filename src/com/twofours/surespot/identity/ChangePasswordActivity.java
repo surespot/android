@@ -80,9 +80,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO progress
 				final String user = (String) spinner.getSelectedItem();
-
 				changePassword(user, etCurrent.getText().toString(), etNew.getText().toString(), etConfirm.getText().toString());
 
 			}

@@ -93,9 +93,7 @@ public class MessageImageDownloader {
 			imageView.setImageBitmap(bitmap);
 			message.setLoaded(true);
 			message.setLoading(false);
-			// imageView.setTag(message);
 
-			// TODO put the row in the tag
 			TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 			if (message.getDateTime() != null) {
 
@@ -123,7 +121,6 @@ public class MessageImageDownloader {
 			imageView.setImageDrawable(downloadedDrawable);
 			message.setLoaded(false);
 			message.setLoading(true);
-			// imageView.setTag(message);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
 		}
 	}
@@ -289,7 +286,6 @@ public class MessageImageDownloader {
 									// + finalBitmap.getWidth());
 								}
 
-								// TODO put the row in the tag
 								TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
 								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent())

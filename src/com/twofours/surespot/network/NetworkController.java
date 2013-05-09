@@ -152,34 +152,7 @@ public class NetworkController {
 			}
 		};
 
-		// HttpRequestInterceptor gzipRequestInterceptor = new HttpRequestInterceptor() {
-		//
-		// public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
-		// if (!request.containsHeader("Accept-Encoding")) {
-		// request.addHeader("Accept-Encoding", "gzip");
-		// }
-		// }
-		// };
-		//
-		// HttpResponseInterceptor gzipResponseInterceptor = new HttpResponseInterceptor() {
-		//
-		// public void process(final HttpResponse response, final HttpContext context) throws HttpException, IOException {
-		// HttpEntity entity = response.getEntity();
-		// if (entity != null) {
-		// Header ceheader = entity.getContentEncoding();
-		// if (ceheader != null) {
-		// HeaderElement[] codecs = ceheader.getElements();
-		// for (int i = 0; i < codecs.length; i++) {
-		// if (codecs[i].getName().equalsIgnoreCase("gzip")) {
-		// response.setEntity(new GzipDecompressingEntity(response.getEntity()));
-		// return;
-		// }
-		// }
-		// }
-		// }
-		// }
-		// };
-
+	
 		if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
 
 			mClient.setCookieStore(mCookieStore);
@@ -190,15 +163,6 @@ public class NetworkController {
 			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-
-			// gzip
-			// mClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);
-			// mSyncClient.getAbstractHttpClient().addResponseInterceptor(gzipResponseInterceptor);
-			// mCachingHttpClient.addResponseInterceptor(gzipResponseInterceptor);
-			//
-			// mClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);
-			// mSyncClient.getAbstractHttpClient().addRequestInterceptor(gzipRequestInterceptor);
-			// mCachingHttpClient.addRequestInterceptor(gzipRequestInterceptor);
 
 		}
 	}
@@ -401,18 +365,7 @@ public class NetworkController {
 
 	public void getFriends(AsyncHttpResponseHandler responseHandler) {
 		get("/friends", null, responseHandler);
-	}
-
-	// if we have an id get the messages since the id, otherwise get the last x
-	// public void getMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
-	//
-	// if (id == null) {
-	// get("/messages/" + room, null, responseHandler);
-	// }
-	// else {
-	// get("/messages/" + room + "/after/" + id, null, responseHandler);
-	// }
-	// }
+	}	
 
 	public void getMessageData(String user, Integer messageId, Integer controlId, AsyncHttpResponseHandler responseHandler) {
 		int mId = messageId;
@@ -422,60 +375,9 @@ public class NetworkController {
 
 	}
 
-	// public String getMessageDataSync(String user, Integer messageId, Integer controlId) {
-	// int mId = messageId;
-	// int cId = controlId;
-	//
-	// return mSyncClient.get(mBaseUrl + "/messagedata/" + user + "/" + mId + "/" + cId);
-	//
-	// }
-
-	// public void getUserControlData(String user, Integer controlId, AsyncHttpResponseHandler responseHandler) {
-	// int cId = controlId;
-	// get("/usercontrol/" + cId, null, responseHandler);
-	// }
-
-	// public void getLatestMessages(JSONObject messageIds, JsonHttpResponseHandler responseHandler) {
-	// // using a post because async http client sends the params url encoded which leaks too much data imo
-	//
-	// String smessageIds = null;
-	//
-	// if (messageIds.length() > 0) {
-	// smessageIds = messageIds.toString();
-	//
-	// SurespotLog.v(TAG, "asking server for messages after message ids: " + smessageIds);
-	//
-	// RequestParams params = new RequestParams();
-	// params.put("messageIds", smessageIds);
-	// post("/messages", params, responseHandler);
-	// }
-	// else {
-	// post("/messages", null, responseHandler);
-	// }
-	//
-	// }
-
 	public void getLatestIds(int userControlId, JsonHttpResponseHandler responseHandler) {
 		get("/latestids/" + userControlId, null, responseHandler);
 	}
-
-	// public void getLatestMessages(JSONArray messageIds, JsonHttpResponseHandler responseHandler) {
-	// //TODO
-	// //could use a post here and not send the message id's in the url but
-	// //using a POST when nothing is changing server side doesn't feel right
-	// //but neither does exposing the chat names in the url hm
-	// URIBuilder builder;
-	// try {
-	// builder = new URIBuilder(mBaseUrl);
-	// builder.setPath("/messages").setParameter("messageIds", messageIds.toString());
-	// mClient.get(builder.build().toString(), null, responseHandler);
-	// }
-	// catch (URISyntaxException e) {
-	// SurespotLog.w(TAG, "getLatestMessages",e);
-	// responseHandler.onFailure(e, "could not build uri");
-	// }
-	//
-	// }
 
 	// if we have an id get the messages since the id, otherwise get the last x
 	public void getEarlierMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
@@ -485,11 +387,6 @@ public class NetworkController {
 	public void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
 		get("/conversations/ids", null, responseHandler);
 	}
-
-	// public void getPublicKey(String username, AsyncHttpResponseHandler responseHandler) {
-	// get("/publickey/" + username, null, responseHandler);
-	//
-	// }
 
 	public String getPublicKeysSync(String username, String version) {
 

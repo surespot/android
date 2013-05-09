@@ -137,8 +137,6 @@ public class MessageDecryptor {
 
 						@Override
 						public void run() {
-
-							// TODO put the row in the tag
 							View row = (View) textView.getParent();
 
 							TextView tvTime = (TextView) (row).findViewById(R.id.messageTime);

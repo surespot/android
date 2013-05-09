@@ -113,8 +113,6 @@ public class ChatUtils {
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-
 				SurespotLog.v(TAG, "uploadPictureMessageAsync");
 				try {
 					Bitmap bitmap = null;
@@ -283,25 +281,9 @@ public class ChatUtils {
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-
 				SurespotLog.v(TAG, "uploadFriendImageAsync");
 				try {
 					InputStream dataStream = activity.getContentResolver().openInputStream(imageUri);
-
-					// save encrypted image locally until we receive server confirmation
-
-					// String localImageDir = FileUtils.getImageUploadDir(activity);
-					// new File(localImageDir).mkdirs();
-					//
-					// String localImageFilename = localImageDir + File.separator
-					// + URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
-					// final File localImageFile = new File(localImageFilename);
-					//
-					// localImageFile.createNewFile();
-					// String localImageUri = Uri.fromFile(localImageFile).toString();
-					// SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
-
 					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
 					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 					
@@ -425,20 +407,7 @@ public class ChatUtils {
 			SurespotLog.w(TAG, "decodeSampledBitmapFromUri", e);
 		}
 		return null;
-
-		// Calculate inSampleSize
-		// options.inSampleSize = 8;// calculateInSampleSize(options, reqWidth, reqHeight);
-		//
-		// // Decode bitmap with inSampleSize set
-		// options.inJustDecodeBounds = false;
-		// try {
-		// return BitmapFactory.decodeStream(context.getContentResolver().openInputStream(imageUri), null, options);
-		// }
-		// catch (FileNotFoundException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// return null;
+		
 
 	}
 
@@ -449,7 +418,7 @@ public class ChatUtils {
 		int reqHeight = SurespotConstants.IMAGE_DISPLAY_HEIGHT;
 		if (options.outHeight > reqHeight) {
 			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
-			// SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
+			SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
 		}
 
 		options.inJustDecodeBounds = false;

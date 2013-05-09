@@ -61,7 +61,7 @@ public class IdentityController {
 			// set logging and crash reporting based on shared prefs for the user
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
 
-			// TODO set to false on release
+			// PROD TODO set to false on release
 			boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
 			SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
 			

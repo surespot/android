@@ -333,7 +333,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		mIabHelper = null;
 	}
 
-	// TODO Factor this out
+	// TODO Factor this out with main activity...
 	private void setProgress(boolean inProgress) {
 		if (mHomeImageView == null) {
 			return;

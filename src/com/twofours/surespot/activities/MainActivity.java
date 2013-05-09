@@ -567,12 +567,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
-		return super.onPrepareOptionsMenu(menu);
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		SurespotLog.v(TAG, "onCreateOptionsMenu");
@@ -656,6 +650,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				return true;
 			}
 
+			setHomeProgress(true);
 			new AsyncTask<Void, Void, Void>() {
 				protected Void doInBackground(Void... params) {
 					MessageImageDownloader.evictCache();
@@ -680,6 +675,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				return true;
 			}
 
+			setHomeProgress(true);
 			new AsyncTask<Void, Void, Void>() {
 				protected Void doInBackground(Void... params) {
 

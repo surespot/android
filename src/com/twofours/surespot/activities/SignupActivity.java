@@ -205,10 +205,6 @@ public class SignupActivity extends SherlockActivity {
 						@Override
 						public void handleResponse(final KeyPair[] keyPair) {
 							if (keyPair != null) {
-
-								// TODO use password derived from user's password
-								// get the publick keys
-
 								new AsyncTask<Void, Void, String[]>() {
 									protected String[] doInBackground(Void... params) {
 
@@ -239,16 +235,7 @@ public class SignupActivity extends SherlockActivity {
 															// save key pair now
 															// that we've created
 															// a
-															// user successfully
-															// TODO add setkey pair
-															// method to
-															// encryption
-															// controller to not
-															// have to pass it
-															// into the callback
-															// and back into the
-															// encryption
-															// controller
+															// user successfully															
 															new AsyncTask<Void, Void, Void>() {
 
 																@Override
