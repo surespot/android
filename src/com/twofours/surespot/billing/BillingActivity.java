@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -26,6 +27,7 @@ import com.twofours.surespot.billing.IabHelper.OnIabSetupFinishedListener;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.ui.UIUtils;
 
 public class BillingActivity extends SherlockFragmentActivity {
 
@@ -43,6 +45,9 @@ public class BillingActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
 		Utils.configureActionBar(this, "pay", "what you like", true);
+		
+		TextView tvPwyl = (TextView) findViewById(R.id.tvPwyl);
+		UIUtils.setHtml(this, tvPwyl, R.string.pwyl_text);
 
 		mHomeImageView = (ImageView) findViewById(android.R.id.home);
 		if (mHomeImageView == null) {
