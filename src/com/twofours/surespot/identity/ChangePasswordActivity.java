@@ -102,14 +102,17 @@ public class ChangePasswordActivity extends SherlockActivity {
 		SurespotIdentity identity = IdentityController.getIdentity(this, username, currentPassword);
 
 		if (identity == null) {
-			mMpd.decrProgress();
+			mMpd.decrProgress();			
 			Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
+			resetFields();
 			return;
 		}
 
 		// make sure file we're going to save to is writable before we start
 		if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username, true)) {
-			Utils.makeToast(ChangePasswordActivity.this, "could not change password");
+			mMpd.decrProgress();
+			resetFields();
+			Utils.makeToast(ChangePasswordActivity.this, "could not change password");			
 			return;
 		}
 
