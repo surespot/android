@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,8 +45,9 @@ public class IdentityBackupAgent extends BackupAgent {
 	public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) throws IOException {
 
 		List<String> names = IdentityController.getIdentityNames(this);
-		String identitiesBackedUp = "";
+		List<String> backedUp = new ArrayList<String>(names.size());
 		Iterator<String> iterator = names.iterator();
+		
 		while (iterator.hasNext()) {
 			String name = iterator.next();
 			if (getSharedPreferences(name, MODE_PRIVATE).getBoolean("pref_auto_android_backup_enabled", false)) {
@@ -72,24 +74,33 @@ public class IdentityBackupAgent extends BackupAgent {
 				data.writeEntityData(buffer, len);
 				fis.close();
 								
-				identitiesBackedUp += name + (iterator.hasNext() ? ", " : ".");
+				backedUp.add(name);
+				
 				
 			}
 		}
 		
-		if (identitiesBackedUp.length() > 0) {
-			createBackedupNotification(identitiesBackedUp);			
+		if (backedUp.size() > 0) {			
+			createBackedupNotification(backedUp);			
 		}
 
 	}
 	
-	public void createBackedupNotification(String sIdentities) {
+	public void createBackedupNotification(List<String> backedUp) {
 
 		int icon = R.drawable.surespot_logo;
+		String message = "";
+		//don't get big notifications till 4.1
+		if (backedUp.size() == 1) {
+			message = "identity " + backedUp.get(0) + " backed up";
+		}
+		else {
+			message = String.valueOf(backedUp.size()) + " identities backed up";
+		}
 		
 		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setSmallIcon(icon).setContentTitle("identities backed up")
-				.setContentText("identity backup completed for: " + sIdentities).setAutoCancel(true);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setSmallIcon(icon).setContentTitle("identity backup complete")
+				.setContentText(message);
 
 		notificationManager.notify(SurespotConstants.IntentRequestCodes.BACKUP_NOTIFICATION, builder.build());
 	}
