@@ -65,12 +65,17 @@ public class SignupActivity extends SherlockActivity {
 		
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
 		
-		Spannable suggestion = new SpannableString("Please enter a username and password. The password should be at least 8 characters long and contain funky characters in weird places.\n\n");
+		Spannable suggestion1 = new SpannableString("Please enter a username and password.");
+		Spannable suggestion2 = new SpannableString("Usernames are case sensitive");
+		suggestion2.setSpan(new ForegroundColorSpan(Color.RED), 0, suggestion2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);		
+		Spannable suggestion3 = new SpannableString(" so please be aware of this when sharing them with others. The password should be at least 8 characters long and contain funky characters in weird places. ");
+		
+		
 	    Spannable warning = new SpannableString("WARNING: There is no password reset functionality in surespot so make sure you remember it!");
 		
 	    warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 	    
-	    tvSignupHelp.setText(TextUtils.concat(suggestion, warning));
+	    tvSignupHelp.setText(TextUtils.concat(suggestion1, suggestion2, suggestion3, warning));
 	    
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
