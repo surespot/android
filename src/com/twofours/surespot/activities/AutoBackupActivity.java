@@ -23,37 +23,34 @@ public class AutoBackupActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_auto_backup);
-		
+
 		String user = IdentityController.getLoggedInUser();
 		Utils.configureActionBar(this, "settings", user, true);
-		
-		TextView t1 = (TextView)findViewById(R.id.helpAutoBackup1);
+
+		TextView t1 = (TextView) findViewById(R.id.helpAutoBackup1);
 		UIUtils.setHtml(this, t1, R.string.help_auto_backup1);
-		
-		TextView t2 = (TextView)findViewById(R.id.helpAutoBackup2);	
+
+		TextView t2 = (TextView) findViewById(R.id.helpAutoBackup2);
 		UIUtils.setHtml(this, t2, R.string.help_auto_backup2);
-		
-		
+
 		final SharedPreferences sp = getSharedPreferences(user, Context.MODE_PRIVATE);
 		boolean abEnabled = sp.getBoolean("pref_auto_android_backup_enabled", false);
-		
+
 		CheckBox cb = (CheckBox) findViewById(R.id.cbAutoBackup);
 		cb.setChecked(abEnabled);
 		cb.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
+
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				Editor editor = sp.edit();
 				editor.putBoolean("pref_auto_android_backup_enabled", isChecked);
-				editor.commit();				
-				
-				if (isChecked) {
-					SurespotApplication.mBackupManager.dataChanged();
-				}
+				editor.commit();
+
+				SurespotApplication.mBackupManager.dataChanged();
+
 			}
 		});
 	}
-
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

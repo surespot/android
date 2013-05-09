@@ -28,7 +28,6 @@
         android:id="@+id/main_list_empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/etInvite"
         android:fadeScrollbars="false"
         android:visibility="gone" >
 
@@ -38,12 +37,12 @@
             android:orientation="vertical" >
 
             <TextView
+                android:id="@+id/tvWelcome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_marginTop="10dp"
-                android:text="@string/welcome_to_surespot" />
+                android:layout_marginTop="10dp" />
 
             <TextView
                 android:id="@+id/backupIdentitiesWarning"

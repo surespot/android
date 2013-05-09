@@ -52,30 +52,9 @@ public class FriendFragment extends SherlockFragment {
 	    
 	    tvBackupWarning.setText(s1);
 	    
-		//
-		// Button addFriendButton = (Button) view.findViewById(R.id.bAddFriend);
-		// addFriendButton.setOnClickListener(new View.OnClickListener() {
-		// @Override
-		// public void onClick(View v) {
-		// inviteFriend();
-		// }
-		// });
-		//
-		// EditText editText = (EditText) view.findViewById(R.id.etFriend);
-		// editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
-		// new LetterOrDigitInputFilter() });
-		// editText.setOnEditorActionListener(new OnEditorActionListener() {
-		// @Override
-		// public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-		// boolean handled = false;
-		// if (actionId == EditorInfo.IME_ACTION_DONE) {
-		// //
-		// inviteFriend();
-		// handled = true;
-		// }
-		// return handled;
-		// }
-		// });
+	    TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
+		UIUtils.setHtml(getActivity(), tvWelcome, R.string.welcome_to_surespot);
+		
 
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
@@ -97,41 +76,12 @@ public class FriendFragment extends SherlockFragment {
 				public void handleResponse(final Boolean loading) {
 
 					if (!loading) {
-						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-						// view.findViewById(R.id.main_list_empty).setVisibility(View.GONE);
-						// only show the dialog if we haven't loaded within 500 ms
-						// mTimer = new Timer();
-						// mTimer.schedule(new TimerTask() {
-						//
-						// @Override
-						// public void run() {
-						//
-						// Handler handler = MainActivity.getMainHandler();
-						// if (handler != null) {
-						// handler.post(new Runnable() {
-						//
-						// @Override
-						// public void run() {
-						// if (loading) {
-						// SurespotLog.v(TAG, "showing progress");
-						// view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-						// }
-						// }
-						// });
-						// }
-						//
-						// }
-						// }, 200);
-
-						// }
-						// else {
 						if (mTimer != null) {
 							mTimer.cancel();
 							mTimer = null;
 						}
 
-						SurespotLog.v(TAG, "tearing progress down");
-						
+						SurespotLog.v(TAG, "tearing progress down");						
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 					}
 				}

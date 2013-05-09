@@ -265,7 +265,6 @@ public class BillingActivity extends SherlockFragmentActivity {
 		final String body = "thankyou for paying what you like for surespot! the bitcoin address is:\n\n" + bitcoinAddy
 				+ "\n\nthe QR code can be viewed here: https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A" + bitcoinAddy
 				+ "&choe=UTF-8&chs=300x300";
-		
 
 		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
@@ -328,8 +327,14 @@ public class BillingActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if (mIabHelper != null)
-			mIabHelper.dispose();
+		if (mIabHelper != null && mQueried) {
+			try {
+				mIabHelper.dispose();
+			}
+			catch (Exception e) {
+			}
+		}
+
 		mIabHelper = null;
 	}
 
@@ -352,7 +357,6 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 
 	}
-	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

@@ -190,12 +190,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				
 			}
 			else {
+				//we're loading so build the ui
 				setContentView(R.layout.activity_main);
 
 				mHomeImageView = (ImageView) findViewById(android.R.id.home);
 				if (mHomeImageView == null) {
 					mHomeImageView = (ImageView) findViewById(R.id.abs__home);
 				}
+				
 				setHomeProgress(true);
 
 				SurespotLog.v(TAG, "binding cache service");
