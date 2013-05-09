@@ -13,6 +13,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
@@ -31,15 +32,23 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 
-public class GCMIntentService extends GCMBaseIntentService { 
+public class GCMIntentService extends GCMBaseIntentService {
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
+	private PowerManager mPm;
 
 	public GCMIntentService() {
 		super(SENDER_ID);
 		SurespotLog.v(TAG, "GCMIntentService");
+
 	}
-	
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		mPm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+	}
+
 	@Override
 	protected void onError(Context arg0, String arg1) {
 		SurespotLog.w(TAG, "onError: " + arg1);
@@ -70,7 +79,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 			}
 			catch (IOException e) {
 				// TODO tell user shit is fucked
-				ACRA.getErrorReporter().handleSilentException(e);
+				// get shared prefs
+				SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+				if (pm.getBoolean("pref_crash_reporting", false)) {
+					ACRA.getErrorReporter().handleSilentException(e);
+				}
 				return;
 			}
 
@@ -118,8 +131,20 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (type.equals("message")) {
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
-			if (IdentityController.hasLoggedInUser() && !ChatController.isPaused() && to.equals(IdentityController.getLoggedInUser())
-					&& from.equals(ChatController.getCurrentChat())) {
+
+			boolean isScreenOn = false;
+			if (mPm != null) {
+				isScreenOn = mPm.isScreenOn();
+			}
+			boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
+			boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+			boolean tabOpenToUser = from.equals(ChatController.getCurrentChat());
+			boolean paused = ChatController.isPaused();
+
+			SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
+					sameUser, tabOpenToUser);
+
+			if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && !paused) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
 			}
