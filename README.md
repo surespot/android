@@ -77,7 +77,7 @@ Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) This pro
    This product includes software (package org.acra.jraf.android.util.activitylifecyclecallbackscompat) developed at JRAF, Copyright (C) 2013 Benoit 'BoD' Lubek (BoD@JRAF.org), ASL 2.0.
 * [google guava](https://code.google.com/p/guava-libraries/) - Apache License 2.0
 * [httpclientandroidlib](https://code.google.com/p/httpclientandroidlib/) - Apache License 2.0
-* [alphanum algorithm](http://www.davekoelle.com/alphanum.html) - (c) 1997-2010 David Koelle LGPL License (https.//www.gnu.org/icenses/lpgl.html)
+* [alphanum algorithm](http://www.davekoelle.com/alphanum.html) - (c) 1997-2010 David Koelle LGPL License (https.//www.gnu.org/licenses/lpgl.html)
 * [PhantomOpenEmoji](https://github.com/Genshin/PhantomOpenEmoji) - Emoji by Genshin Souzou K.K. Phantom Creation Inc
 
 
