@@ -9,8 +9,10 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Build;
+import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.method.LinkMovementMethod;
 import android.view.Display;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -166,4 +168,10 @@ public class UIUtils {
 		}
 		return size;
 	}
+
+	public static void setHtml(Context context, TextView tv, int stringId) {
+		tv.setText(Html.fromHtml(context.getString(stringId)));
+		tv.setMovementMethod(LinkMovementMethod.getInstance());
+	}
+
 }

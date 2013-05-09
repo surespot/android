@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -47,6 +46,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 	public static final int SHARE_SMS = 1;
 	public static final int SHARE_SOCIAL = 2;
 	private int mSelectedType;
+	private boolean mScrolled;
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -160,20 +160,28 @@ public class ExternalInviteActivity extends SherlockActivity {
 				}
 			}
 		});
+
 		
-		
-		   ScrollView view = (ScrollView)findViewById(R.id.svInviteExternal);
-		    view.setOnTouchListener(new View.OnTouchListener() {
-		        @Override
-		        public boolean onTouch(View v, MotionEvent event) {
-		            v.requestFocusFromTouch();
-		            return false;
-		        }
-		    });
 	}
 	
+	@Override
+	protected void onResume() {
+	
+		super.onResume();
+		
+		if (!mScrolled) {
+			final ScrollView sv = (ScrollView) findViewById(R.id.svInviteExternal);
+			sv.post(new Runnable() {
 
-
+				@Override
+				public void run() {
+					sv.smoothScrollTo(0, 0);
+					mScrolled = true;
+				}
+			});
+			
+		}
+	}
 	private void sendInvitation(String shortUrl) {
 		Intent intent;
 		String message = getString(R.string.external_invite_message) + shortUrl;

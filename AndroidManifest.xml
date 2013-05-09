@@ -178,6 +178,14 @@
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
             android:theme="@android:style/Theme.Dialog" />
+        <activity
+            android:name="com.twofours.surespot.activities.AutoBackupActivity"
+            android:label="@string/title_activity_auto_backup" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.AutoBackupActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

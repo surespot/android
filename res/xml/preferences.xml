@@ -53,14 +53,14 @@
             <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity" >
             </intent>
         </Preference>
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_auto_android_backup_enabled"
-            android:summary="Backup your identity to Google&apos;s backup servers encrypted with AES256 using PBKDF based on your surespot password, which should be strong." 
-            android:title="auto backup/restore" />
-        
         <Preference
-            android:summary="Manually backup your identity to local device storage. This is in theory more secure than backing up via Google's cloud, but also not as convenient."
+            android:summary="Backup and restore your identity automatically using Google&apos;s backup servers."
+            android:title="identity auto backup..." >
+            <intent android:action="com.twofours.surespot.activities.AutoBackupActivity" >
+            </intent>
+        </Preference>
+        <Preference
+            android:summary="Manually backup your identity to local device storage. This is in theory more secure than backing up via Google&apos;s cloud, but also not as convenient."
             android:title="@string/export_identity_label" >
             <intent android:action="com.twofours.surespot.identity.ExportIdentityActivity" >
             </intent>

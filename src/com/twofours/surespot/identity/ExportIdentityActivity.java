@@ -29,6 +29,10 @@ public class ExportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_export_identity);
+		
+		TextView tvBlurb = (TextView) findViewById(R.id.tvHelpManualBackup);
+		UIUtils.setHtml(this, tvBlurb, R.string.help_manual_backup);
+		
 		Utils.configureActionBar(this, "identity", "backup", true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
 

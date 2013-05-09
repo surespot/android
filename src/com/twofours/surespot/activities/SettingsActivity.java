@@ -49,7 +49,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				Preference version = prefMgr.findPreference("pref_version");
 				version.setTitle("version: " + info.versionName);
 
-				prefMgr.findPreference("pref_auto_android_backup_enabled").setOnPreferenceClickListener(onPreferenceClickListener);
+				//prefMgr.findPreference("pref_auto_android_backup_enabled").setOnPreferenceClickListener(onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(
 						onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_sound))
