@@ -1199,6 +1199,8 @@ public class ChatController {
 
 	private void handleDeleteUser(String deletedUser, String deleter) {
 		String username = IdentityController.getLoggedInUser();
+		
+		Friend friend = mFriendAdapter.getFriend(deletedUser);
 
 		boolean iDidTheDeleting = deleter.equals(username);
 		if (iDidTheDeleting) {
@@ -1227,13 +1229,15 @@ public class ChatController {
 			}
 
 			// and mark you as deleted until I want to delete you
-			Friend friend = mFriendAdapter.setFriendDeleted(deletedUser);
+			friend.setDeleted();
 
 			// force the controls to update
 			if (friend != null && mCurrentChat != null && mCurrentChat.equals(deletedUser)) {
 				mTabShowingCallback.handleResponse(friend);
 			}
 		}
+		
+		enableMenuItems(friend);
 	}
 
 	private void handleErrorMessage(SurespotErrorMessage errorMessage) {
