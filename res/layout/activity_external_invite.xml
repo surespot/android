@@ -1,6 +1,6 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/svInviteExternal"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
     <RelativeLayout
@@ -91,10 +91,10 @@
             android:id="@+id/bSelectContact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/inviteRadioGroup"
-            android:layout_marginBottom="18dp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
+            android:layout_below="@+id/inviteRadioGroup"            
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/bSendInvitation"
             android:drawableLeft="@drawable/ic_menu_friendslist"
             android:text="select contacts" />
 
