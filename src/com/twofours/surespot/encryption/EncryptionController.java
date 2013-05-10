@@ -441,12 +441,7 @@ public class EncryptionController {
 
 			int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
 
-			len += ccm.doFinal(buf, len);
-			// String[] returns = new String[2];
-
-			// returns[0] = new String(ChatUtils.base64Encode(iv));
-			// returns[1] = new String(ChatUtils.base64Encode(buf));
-
+			len += ccm.doFinal(buf, len);			
 			return new String(ChatUtils.base64EncodeNowrap(buf));
 
 		}
