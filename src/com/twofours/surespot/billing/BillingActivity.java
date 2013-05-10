@@ -90,6 +90,8 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 			}
 		});
+		
+
 
 	}
 
@@ -155,8 +157,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				@Override
 				public void onIabPurchaseFinished(IabResult result, Purchase info) {
-					if (result.isFailure()) {
-						Utils.makeToast(BillingActivity.this, "error purchasing: " + result);
+					if (result.isFailure()) {						
 						hideProgress();
 						return;
 					}
@@ -181,6 +182,24 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 	}
 
+	
+	 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SurespotLog.d(TAG, "onActivityResult(%s, $s, $s)", requestCode ,resultCode , data);
+
+        // Pass on the activity result to the helper for handling
+        if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
+            // not handled, so handle it ourselves (here's where you'd
+            // perform any handling of activity results not related to in-app
+            // billing...
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+        else {
+            SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
+        }
+    }
+	
 	private Uri getPayPalUri() {
 		Uri.Builder uriBuilder = new Uri.Builder();
 		uriBuilder.scheme("https").authority("www.paypal.com").path("cgi-bin/webscr");
