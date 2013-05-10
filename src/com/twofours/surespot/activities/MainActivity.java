@@ -33,7 +33,6 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -151,10 +150,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mOrientation = getResources().getConfiguration().orientation;
 
 		// Gingerbread does not like FLAG_SECURE
-		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
-				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-		}
+//		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
+//				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+//			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+//		}
 
 		mContext = this;
 

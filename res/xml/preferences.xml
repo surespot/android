@@ -1,9 +1,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory android:title="about" >
-        <Preference
-            android:key="pref_version"
-            android:title="version" >
+        <Preference android:title="about surespot..." >
+            <intent android:action="com.twofours.surespot.activities.AboutActivity" >
+            </intent>
         </Preference>
     </PreferenceCategory>
     <!--

@@ -1,8 +1,5 @@
 package com.twofours.surespot.activities;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -42,14 +39,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			addPreferencesFromResource(R.xml.preferences);
 			Utils.configureActionBar(this, "settings", user, true);
 
-			PackageManager manager = this.getPackageManager();
-			PackageInfo info = null;
-			try {
-				info = manager.getPackageInfo(this.getPackageName(), 0);
-				Preference version = prefMgr.findPreference("pref_version");
-				version.setTitle("version: " + info.versionName);
 
-				//prefMgr.findPreference("pref_auto_android_backup_enabled").setOnPreferenceClickListener(onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(
 						onPreferenceClickListener);
 				prefMgr.findPreference(getString(R.string.pref_notifications_sound))
@@ -75,10 +65,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 						return true;
 					}
 				});
-			}
-			catch (NameNotFoundException e) {
-				SurespotLog.w(TAG, "onCreate", e);
-			}
 		}
 	}
 

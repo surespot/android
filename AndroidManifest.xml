@@ -183,8 +183,18 @@
             android:label="@string/title_activity_auto_backup" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.AutoBackupActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.AboutActivity"
+            android:label="@string/title_activity_about" >
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.AboutActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            
         </activity>
     </application>
 
