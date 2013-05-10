@@ -106,10 +106,13 @@
             android:label="login"
             android:windowSoftInputMode="stateVisible" >
         </activity>
-        <activity android:name="com.twofours.surespot.images.ImageViewActivity" >
+        <activity
+            android:name="com.twofours.surespot.images.ImageViewActivity"
+            android:noHistory="true" >
         </activity>
         <activity
             android:name="com.twofours.surespot.images.ImageSelectActivity"
+            android:noHistory="true"
             android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
@@ -119,35 +122,45 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
         </activity>
-        <activity android:name="com.twofours.surespot.identity.ExportIdentityActivity" >
+        <activity
+            android:name="com.twofours.surespot.identity.ExportIdentityActivity"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.identity.ExportIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="com.twofours.surespot.identity.ImportIdentityActivity" >
+        <activity
+            android:name="com.twofours.surespot.identity.ImportIdentityActivity"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.identity.ImportIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="com.twofours.surespot.activities.ManageKeysActivity" >
+        <activity
+            android:name="com.twofours.surespot.activities.ManageKeysActivity"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="com.twofours.surespot.identity.DeleteIdentityActivity" >
+        <activity
+            android:name="com.twofours.surespot.identity.DeleteIdentityActivity"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.identity.DeleteIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="com.twofours.surespot.identity.ChangePasswordActivity" >
+        <activity
+            android:name="com.twofours.surespot.identity.ChangePasswordActivity"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.identity.ChangePasswordActivity" />
 
@@ -157,15 +170,18 @@
         <activity
             android:name="com.twofours.surespot.activities.ExternalInviteActivity"
             android:label="@string/title_activity_external_invite"
+            android:noHistory="true"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.contacts.ContactPickerActivity"
-            android:label="@string/title_activity_contact_picker" >
+            android:label="@string/title_activity_contact_picker"
+            android:noHistory="true" >
         </activity>
         <activity
             android:name="com.twofours.surespot.billing.BillingActivity"
-            android:label="@string/title_activity_billing" >
+            android:label="@string/title_activity_billing"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.billing.BillingActivity" />
 
@@ -177,10 +193,12 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@android:style/Theme.Dialog" />
         <activity
             android:name="com.twofours.surespot.activities.AutoBackupActivity"
-            android:label="@string/title_activity_auto_backup" >
+            android:label="@string/title_activity_auto_backup"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.AutoBackupActivity" />
 
@@ -192,9 +210,9 @@
             android:label="@string/title_activity_about" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.AboutActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            
         </activity>
     </application>
 

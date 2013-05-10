@@ -36,8 +36,8 @@ public class AboutActivity extends SherlockActivity {
 			SurespotLog.w(TAG, "onCreate", e);
 		}
 
-		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutVersion), R.string.about_legal);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutAbout), R.string.about_about);
+		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutOpenSource), R.string.about_opensource);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutTech), R.string.about_tech);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutWebsite), R.string.about_website);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutEmail), R.string.about_support);

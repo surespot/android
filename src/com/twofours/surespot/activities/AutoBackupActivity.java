@@ -23,9 +23,10 @@ public class AutoBackupActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_auto_backup);
+		
+		Utils.configureActionBar(this, "identity", "auto backup", true);
 
-		String user = IdentityController.getLoggedInUser();
-		Utils.configureActionBar(this, "settings", user, true);
+		String user = IdentityController.getLoggedInUser();	
 
 		TextView t1 = (TextView) findViewById(R.id.helpAutoBackup1);
 		UIUtils.setHtml(this, t1, R.string.help_auto_backup1);

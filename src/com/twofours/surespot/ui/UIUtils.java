@@ -174,5 +174,11 @@ public class UIUtils {
 		tv.setText(Html.fromHtml(context.getString(stringId)));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
+	
+	public static void setHtml(Context context, TextView tv, String html) {
+		tv.setText(Html.fromHtml(html));
+		tv.setMovementMethod(LinkMovementMethod.getInstance());
+	}
+
 
 }

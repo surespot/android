@@ -40,7 +40,7 @@ public class ManageKeysActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage_keys);
-		Utils.configureActionBar(this, "settings", "keys", true);
+		Utils.configureActionBar(this, "identity", "keys", true);
 		mMpd = new MultiProgressDialog(this, "generating and uploading new keys", 750);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);

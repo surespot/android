@@ -89,10 +89,11 @@
     <string name="pwyl_text"><![CDATA["no ads<br><br>pay what you like<br><br>help support the <a href="https://www.eff.org/issues/privacy">EFF</a>"]]></string>
     <string name="help_messageHistory">Surespot has a 1000 message history. Once you reach 1000 messages your oldest message will be deleted so you will only ever have 1000 (encrypted) messages stored on the server. Of course you can delete any and all of your messages at any time.</string>
     <string name="title_activity_about">about surespot</string>
-    <string name="about_legal"><![CDATA["For legal information such as terms of service and our privacy policy, please visit: <a href="https://www.surespot.me/legal.html">legal</a>"]]></string>
-    <string name="about_website"><![CDATA["Please visit the surespot website at <a href="https://www.surespot.me">https://www.surespot.me</a> for more information."]]></string>
-    <string name="about_tech"><![CDATA["For a more technical overview of how surespot works read this: <a href="https://www.surespot.me/documents/how_surespot_works.pdf">How Surespot Works</a>"]]></string>
-    <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
-    <string name="about_support"><![CDATA["For questions or support please email <a href="mailto:support@surespot.com>support@2fours.com</a>]]></string>
+
+       <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
+    <string name="about_website"><![CDATA["please visit the surespot website at <a href="https://www.surespot.me">https://www.surespot.me</a> for more information, including the terms of service and privacy policy"]]></string>
+    <string name="about_opensource"><![CDATA["surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>"]]></string>
+    <string name="about_tech"><![CDATA["for a more technical overview of how surespot works please click <a href="https://www.surespot.me/support.html">https://www.surespot.me/support.html</a>"]]></string>
+    <string name="about_support"><![CDATA["for questions or support please email <a href="mailto:support@2fours.com">support@2fours.com</a>]]></string>
 
 </resources>
