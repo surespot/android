@@ -4,22 +4,14 @@
     android:layout_height="match_parent"
     android:background="@android:color/black"
     android:orientation="vertical"
-    android:paddingTop="10dp"
     android:paddingBottom="10dp"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
+    android:paddingTop="10dp"
     tools:context=".AboutActivity" >
 
     <TextView
         android:id="@+id/tvAboutAbout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
-    <TextView
-        android:id="@+id/tvAboutVersion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -52,6 +44,14 @@
 
     <TextView
         android:id="@+id/tvAboutEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/surespotBlue" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/tvAboutVersion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
