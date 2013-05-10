@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -110,6 +111,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mShowEmoji = false;
 	boolean mKeyboardWasOpen = false;
 	private int mOrientation;
+	
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -149,13 +151,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 		mOrientation = getResources().getConfiguration().orientation;
 
-		// Gingerbread does not like FLAG_SECURE
-		// if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
-		// || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-		// getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-		// }
+		//PROD Gingerbread does not like FLAG_SECURE
+		 if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
+		 || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+		 getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+		 }
 
 		mContext = this;
+		
+		
+		
 
 		m401Handler = new IAsyncCallback<String>() {
 
