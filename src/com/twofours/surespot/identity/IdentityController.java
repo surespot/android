@@ -45,6 +45,7 @@ import com.twofours.surespot.ui.UIUtils;
 public class IdentityController {
 	private static final String TAG = "IdentityController";
 	public static final String IDENTITY_EXTENSION = ".ssi";
+	public static final String IDENTITY_DELETED_EXTENSION = ".dsi";
 	public static final String PUBLICKEYPAIR_EXTENSION = ".spk";
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
@@ -62,10 +63,10 @@ public class IdentityController {
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
 
 			// PROD TODO set to false on release
-			boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
-			SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
+		//	boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
+			//SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
 			
-			SurespotLog.setLogging(prefLogging);
+		//	SurespotLog.setLogging(prefLogging);
 			SurespotLog.setCrashReporting(sp.getBoolean("pref_crash_reporting", SurespotConstants.CRASH_REPORTING));
 
 			// you would think changing the shared prefs name would update the internal state but it doesn't
@@ -247,6 +248,15 @@ public class IdentityController {
 			file = new File(identityFilename);
 			file.delete();
 
+			//create deleted file so we can remove the backup if there is one
+			String deletedFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_DELETED_EXTENSION;
+			try {
+				new File(deletedFilename).createNewFile();
+			}
+			catch (IOException e) {
+				SurespotLog.e(TAG, e, "could not create deleted identity file: %s", deletedFilename);
+			}
+			
 		}
 
 		SurespotApplication.mBackupManager.dataChanged();
@@ -615,6 +625,27 @@ public class IdentityController {
 		});
 		return identityNames;
 
+	}
+	
+	public static List<String> getDeletedIdentityNames(Context context) {
+		String dir = getIdentityDir(context);
+
+		ArrayList<String> identityNames = new ArrayList<String>();
+		File[] files = new File(dir).listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String filename) {
+				return filename.endsWith(IDENTITY_DELETED_EXTENSION);
+			}
+		});
+
+		if (files != null) {
+			for (File f : files) {
+				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_DELETED_EXTENSION.length()));
+			}
+		}
+		
+		return identityNames;
 	}
 
 	public static synchronized int getIdentityCount(Context context) {
