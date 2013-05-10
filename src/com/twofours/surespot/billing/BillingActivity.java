@@ -176,7 +176,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 		catch (IllegalStateException ise) {
 			hideProgress();
-			Utils.makeToast(this, "pay what you want already in progress");
+			Utils.makeToast(this, "pay what you like already in progress");
 			SurespotLog.v(TAG, ise, "onPurchase error");
 		}
 	}
