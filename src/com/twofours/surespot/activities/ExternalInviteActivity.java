@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import org.json.JSONObject;
@@ -124,7 +123,8 @@ public class ExternalInviteActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				String contactData = ExternalInviteActivity.this.mEtInviteeData.getText().toString();
-
+				
+				
 				String[] splits = contactData.split(",");
 				for (String data : splits) {
 					String trimmedData = data.trim();
@@ -158,6 +158,11 @@ public class ExternalInviteActivity extends SherlockActivity {
 						};
 					});
 				}
+				else {
+					if (mSelectedContacts == null || mSelectedContacts.size() == 0) {
+						Utils.makeToast(ExternalInviteActivity.this, "no contact data selected or entered");
+					}
+				}
 			}
 		});
 
@@ -183,7 +188,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		}
 	}
 	private void sendInvitation(String shortUrl) {
-		Intent intent;
+		Intent intent; 
 		String message = getString(R.string.external_invite_message) + shortUrl;
 		switch (mSelectedType) {
 
@@ -230,10 +235,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 //			query += "&utm_content=" + username;
 //		}
 
-		String url = "https://server.surespot.me/autoinvite/username/" + typeToString(type);
-		String eUrl = URLEncoder.encode(url);
-		SurespotLog.v(TAG, "play store url length %d:, url: %s ", eUrl.length(), eUrl);
-		return eUrl;
+		String url = "https://server.surespot.me/autoinvite/" + username + "/" + typeToString(type);		
+		SurespotLog.v(TAG, "auto invite url length %d:, url: %s ", url.length(), url);
+		return url;
 	}
 
 	public static String typeToString(int type) {
