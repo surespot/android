@@ -301,15 +301,12 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, String referrers, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
-		if (!TextUtils.isEmpty(referrers)) {
-			params.put("referrers", referrers);
-		}
-
+		
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);

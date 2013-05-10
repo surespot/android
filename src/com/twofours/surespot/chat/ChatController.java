@@ -123,6 +123,7 @@ public class ChatController {
 	private IAsyncCallback<Boolean> mProgressCallback;
 	private IAsyncCallback<Void> mSendIntentCallback;
 	private IAsyncCallback<Friend> mTabShowingCallback;
+	private String mAutoInviteUser;
 
 	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<String> m401Handler,
 			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
@@ -277,7 +278,7 @@ public class ChatController {
 					}
 
 				}
-				else if (event.equals("messageError")) {			
+				else if (event.equals("messageError")) {
 					try {
 						JSONObject jsonMessage = (JSONObject) args[0];
 						SurespotLog.v(TAG, "received messageError: " + jsonMessage.toString());
@@ -332,9 +333,10 @@ public class ChatController {
 	}
 
 	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
-	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems) {
+	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems, String autoInviteUser) {
 		mChatPagerAdapter = new ChatPagerAdapter(mFragmentManager);
 		mMenuItems = menuItems;
+		mAutoInviteUser = autoInviteUser;
 
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
@@ -410,6 +412,19 @@ public class ChatController {
 
 		getFriendsAndIds();
 		resendMessages();
+
+		// if we need to invite someone then do it
+		if (mAutoInviteUser != null) {
+			mNetworkController.invite(mAutoInviteUser, new AsyncHttpResponseHandler() {
+				@Override
+				public void onSuccess(int statusCode, String arg0) {
+					getFriendAdapter().addFriendInvited(mAutoInviteUser);
+					mAutoInviteUser = null;
+
+				}				
+			});
+
+		}
 		// MainActivity.THREAD_POOL_EXECUTOR.execute(new UpdateDataTask());
 
 	}
@@ -975,14 +990,14 @@ public class ChatController {
 						handleMessages(username, messages);
 					}
 					else {
-//						if (username.equals(mCurrentChat)) {
-//							ChatFragment chatFragment = getChatFragment(username);
-//							if (chatFragment != null) {
-//								chatFragment.scrollToState();
-//								// chatFragment.requestFocus();
-//
-//							}
-//						}
+						// if (username.equals(mCurrentChat)) {
+						// ChatFragment chatFragment = getChatFragment(username);
+						// if (chatFragment != null) {
+						// chatFragment.scrollToState();
+						// // chatFragment.requestFocus();
+						//
+						// }
+						// }
 
 						setProgress(username, false);
 					}
@@ -990,16 +1005,16 @@ public class ChatController {
 				}
 			});
 		}
-//		else {
-//			if (username.equals(mCurrentChat)) {
-//				ChatFragment chatFragment = getChatFragment(username);
-//				if (chatFragment != null) {
-//					chatFragment.scrollToState();
-//					// chatFragment.requestFocus();
-//
-//				}
-//			}
-//		}
+		// else {
+		// if (username.equals(mCurrentChat)) {
+		// ChatFragment chatFragment = getChatFragment(username);
+		// if (chatFragment != null) {
+		// chatFragment.scrollToState();
+		// // chatFragment.requestFocus();
+		//
+		// }
+		// }
+		// }
 	}
 
 	private void handleControlMessages(String username, JSONArray jsonArray) {
@@ -1199,7 +1214,7 @@ public class ChatController {
 
 	private void handleDeleteUser(String deletedUser, String deleter) {
 		String username = IdentityController.getLoggedInUser();
-		
+
 		Friend friend = mFriendAdapter.getFriend(deletedUser);
 
 		boolean iDidTheDeleting = deleter.equals(username);
@@ -1236,7 +1251,7 @@ public class ChatController {
 				mTabShowingCallback.handleResponse(friend);
 			}
 		}
-		
+
 		enableMenuItems(friend);
 	}
 
@@ -1349,7 +1364,6 @@ public class ChatController {
 
 		setProgress(username, false);
 	}
-
 
 	private Integer getEarliestMessageId(String username) {
 
@@ -1874,11 +1888,11 @@ public class ChatController {
 						chatAdapter.notifyDataSetChanged();
 					}
 					else {
-						//tell friend there's a new control message so they get it when the tab is opened
+						// tell friend there's a new control message so they get it when the tab is opened
 						friend.setAvailableMessageControlId(friend.getAvailableMessageControlId() + 1);
 						saveFriends();
-					}					
-					
+					}
+
 					setProgress("deleteMessages", false);
 				}
 

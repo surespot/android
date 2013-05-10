@@ -221,14 +221,17 @@ public class ExternalInviteActivity extends SherlockActivity {
 	}
 
 	private String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
-		String url = "https://play.google.com/store/apps/details?id=com.twofours.surespot&referrer=";
-		String query = "utm_source=surespot_android&utm_medium=" + typeToString(type);
+		//String url = "https://play.google.com/store/apps/details?id=com.twofours.surespot&referrer=";
+		//String query = "utm_source=surespot_android&utm_medium=" + typeToString(type);
+		
+		
 
-		if (autoInvite) {
-			query += "&utm_content=" + username;
-		}
+//		if (autoInvite) {
+//			query += "&utm_content=" + username;
+//		}
 
-		String eUrl = url + URLEncoder.encode(query);
+		String url = "https://server.surespot.me/autoinvite/username/" + typeToString(type);
+		String eUrl = URLEncoder.encode(url);
 		SurespotLog.v(TAG, "play store url length %d:, url: %s ", eUrl.length(), eUrl);
 		return eUrl;
 	}

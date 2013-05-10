@@ -210,10 +210,8 @@ public class LoginActivity extends SherlockActivity {
 				protected void onPostExecute(final IdSig idSig) {
 					if (idSig != null) {
 
-						NetworkController networkController = new NetworkController(LoginActivity.this, null);
-
-						String referrers = Utils.getSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.REFERRERS);
-						networkController.login(username, idSig.derivedPassword, idSig.signature, referrers, new CookieResponseHandler() {
+						NetworkController networkController = new NetworkController(LoginActivity.this, null);						
+						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
@@ -221,6 +219,7 @@ public class LoginActivity extends SherlockActivity {
 
 								Intent intent = getIntent();
 								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
+								newIntent.setData(intent.getData());
 								newIntent.setAction(intent.getAction());
 								newIntent.setType(intent.getType());
 								Bundle extras = intent.getExtras();

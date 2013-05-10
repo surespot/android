@@ -94,6 +94,16 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="server.surespot.me"
+                    android:pathPrefix="/autoinvite"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
@@ -178,7 +188,7 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.billing.BillingActivity"
-            android:label="@string/title_activity_billing">
+            android:label="@string/title_activity_billing" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.billing.BillingActivity" />
 

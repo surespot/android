@@ -1,6 +1,7 @@
 package com.twofours.surespot.activities;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -111,13 +112,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mShowEmoji = false;
 	boolean mKeyboardWasOpen = false;
 	private int mOrientation;
-	
 
 	@Override
 	protected void onNewIntent(Intent intent) {
 
 		super.onNewIntent(intent);
-		SurespotLog.v(TAG, "on new intent.");
+		SurespotLog.v(TAG, "onNewIntent.");
+		Utils.logIntent(TAG, intent);
 		// handle case where we deleted the identity we were logged in as
 		boolean deleted = intent.getBooleanExtra("deleted", false);
 
@@ -148,19 +149,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		SurespotLog.v(TAG, "onCreate");
+
+		Intent intent = getIntent();
+		Utils.logIntent(TAG, intent);
+
 		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 		mOrientation = getResources().getConfiguration().orientation;
 
-		//PROD Gingerbread does not like FLAG_SECURE
-		 if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
-		 || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-		 getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-		 }
+		// PROD Gingerbread does not like FLAG_SECURE
+		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
+				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+		}
 
 		mContext = this;
-		
-		
-		
 
 		m401Handler = new IAsyncCallback<String>() {
 
@@ -193,9 +196,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		};
 
-		Intent intent = getIntent();
-		Utils.logIntent(TAG, intent);
-
 		// if we have any users or we don't need to create a user, figure out if we need to login
 		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
 			// otherwise show the signup activity
@@ -221,6 +221,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 
 				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
+				newIntent.setData(intent.getData());
 				newIntent.setAction(intent.getAction());
 				newIntent.setType(intent.getType());
 				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -285,12 +286,40 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mKeyboardStateHandler = new KeyboardStateHandler();
 				mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
-				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
+				String autoInviteUser = null;
+				if (isAutoInviteIntent(intent)) {
+
+					// path is /autoinvite/username/type
+					Uri uri = intent.getData();
+					List<String> segments = uri.getPathSegments();
+
+					if (segments.size() > 1) {
+						autoInviteUser = segments.get(1);
+						intent.setData(null);
+						SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);
+					}
+				}
+
+				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteUser);
 
 				setupChatControls();
 
 			}
 		}
+	}
+
+	private boolean isAutoInviteIntent(Intent intent) {
+		Uri uri = intent.getData();
+		if (uri != null) {
+			String path = uri.getPath();
+			if (path != null) {
+				if (path.startsWith("/autoinvite")) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	class KeyboardStateHandler implements OnGlobalLayoutListener {
@@ -1184,7 +1213,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			setHomeProgress(true);
-			MainActivity.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+			mNetworkController.invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) {
 					setHomeProgress(false);
