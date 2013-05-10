@@ -24,6 +24,8 @@ public class MultiProgressDialog {
 	private Context mContext;
 	private String mMessage;
 	private int mDelay;
+	private ImageView mImageView;
+	private Animation mAnimation;
 
 	public MultiProgressDialog(Context context, String message, int delay) {
 		mProgressCounter = 0;
@@ -46,12 +48,11 @@ public class MultiProgressDialog {
 				
 				TextView text = (TextView) layout.findViewById(R.id.text);
 				text.setText(mMessage);
-				ImageView image = (ImageView) layout.findViewById(R.id.image);
+				
 								
-				Animation a = AnimationUtils.loadAnimation(mContext, R.anim.progress_anim);
-				a.setDuration(1000);
-				image.clearAnimation();
-				image.startAnimation(a);
+				mImageView = (ImageView) layout.findViewById(R.id.image);
+				mAnimation = AnimationUtils.loadAnimation(mContext, R.anim.progress_anim);
+				mAnimation.setDuration(1000);
 //					
 			//	mMultiProgressDialog.setIndeterminate(true);
 			//	mMultiProgressDialog.setIcon(R.drawable.surespot_logo);
@@ -68,6 +69,10 @@ public class MultiProgressDialog {
 				// progressDialog.setTitle("loading");
 			//	mMultiProgressDialog.setMessage(mMessage);
 			}
+			
+			
+			mImageView.clearAnimation();
+			mImageView.startAnimation(mAnimation);
 
 			// only show the dialog if we haven't loaded within 500 ms
 			Timer timer = new Timer();
