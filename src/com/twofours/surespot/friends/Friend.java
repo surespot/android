@@ -28,7 +28,7 @@ public class Friend implements Comparable<Friend> {
 	private String mImageIv;
 	private static AlphanumComparator mComparator = new AlphanumComparator();
 	private int mSelectedItem = -1;
-	private int mSelectedTop = -1;
+	private int mSelectedTop = 0;
 	
 
 	public Friend(String name) {
@@ -275,42 +275,42 @@ public class Friend implements Comparable<Friend> {
 
 	}
 
-	public boolean update(JSONObject jsonFriend) {
-
-		String status;
-
-		try {
-
-			String name = jsonFriend.getString("name");
-			if (name.equals(this.getName())) {
-				status = jsonFriend.getString("status");
-
-				if (status.equals("invited")) {
-					this.setInvited(true);
-				}
-
-				else {
-					if (status.equals("invitee")) {
-						this.setInviter(true);
-					}
-				}
-
-				this.setName(jsonFriend.getString("name"));
-				this.setImageUrl(jsonFriend.getString("imageUrl"));
-				this.setImageVersion(jsonFriend.getString("imageVersion"));
-
-				setNewFriend(false);
-
-				SurespotLog.v(TAG, "update <JSONObject>, friend: %s", this);
-				return true;
-			}
-
-		}
-		catch (JSONException e) {
-			SurespotLog.w(TAG, "update", e);
-		}
-		return false;
-	}
+//	public boolean update(JSONObject jsonFriend) {
+//
+//		String status;
+//
+//		try {
+//
+//			String name = jsonFriend.getString("name");
+//			if (name.equals(this.getName())) {
+//				status = jsonFriend.getString("status");
+//
+//				if (status.equals("invited")) {
+//					this.setInvited(true);
+//				}
+//
+//				else {
+//					if (status.equals("invitee")) {
+//						this.setInviter(true);
+//					}
+//				}
+//
+//				this.setName(jsonFriend.getString("name"));
+//				this.setImageUrl(jsonFriend.getString("imageUrl"));
+//				this.setImageVersion(jsonFriend.getString("imageVersion"));
+//
+//				setNewFriend(false);
+//
+//				SurespotLog.v(TAG, "update <JSONObject>, friend: %s", this);
+//				return true;
+//			}
+//
+//		}
+//		catch (JSONException e) {
+//			SurespotLog.w(TAG, "update", e);
+//		}
+//		return false;
+//	}
 
 	public void update(Friend friend) {
 		this.setNewFriend(false);
@@ -319,8 +319,8 @@ public class Friend implements Comparable<Friend> {
 		this.setImageUrl(friend.getImageUrl());
 		this.setImageVersion(friend.getImageVersion());
 		this.setImageIv(friend.getImageIv());
-		this.setSelectedItem(friend.getSelectedItem());
-		this.setSelectedTop(friend.getSelectedTop());
+		//this.setSelectedItem(friend.getSelectedItem());
+		//this.setSelectedTop(friend.getSelectedTop());
 		// this.setChatActive(friend.isChatActive());
 		// this.setMessageActivity(friend.isMessageActivity());
 
@@ -340,7 +340,7 @@ public class Friend implements Comparable<Friend> {
 		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
 		friend.setSelectedItem(jsonFriend.optInt("selectedItem", -1));
-		friend.setSelectedTop(jsonFriend.optInt("selectedTop", -1));
+		friend.setSelectedTop(jsonFriend.optInt("selectedTop", 0));
 
 		return friend;
 	}
@@ -394,7 +394,13 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public void setSelectedItem(int i) {
+		//if (i == 0) {
+			//SurespotLog.v(TAG, "SELECTED ITEM SET TO 0 FOR USER: %s", getName());
+			//Utils.makeLongToast(MainActivity.getContext(), "SELECTED ITEM SET TO 0");
+		//}
+		//SurespotLog.v(TAG, "setSelectedItemAfter: %s", this);
 		mSelectedItem = i;
+	//	SurespotLog.v(TAG, "setSelectedItemBefore: %s", this);
 		
 	}
 
