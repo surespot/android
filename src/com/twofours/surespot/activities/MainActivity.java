@@ -150,17 +150,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mOrientation = getResources().getConfiguration().orientation;
 
 		// Gingerbread does not like FLAG_SECURE
-//		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
-//				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-//			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-//		}
+		// if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
+		// || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+		// getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+		// }
 
 		mContext = this;
 
 		m401Handler = new IAsyncCallback<String>() {
 
 			@Override
-			public void handleResponse(String message) {
+			public void handleResponse(final String message) {
 				SurespotLog.v(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 					MainActivity.this.getNetworkController().setUnauthorized(true);
@@ -173,7 +173,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					finish();
 
 					if (!TextUtils.isEmpty(message)) {
-						Utils.makeToast(MainActivity.this, message);
+						Runnable runnable = new Runnable() {
+
+							@Override
+							public void run() {
+								Utils.makeToast(MainActivity.this, message);
+
+							}
+						};
+
+						MainActivity.this.runOnUiThread(runnable);
 					}
 				}
 			}
