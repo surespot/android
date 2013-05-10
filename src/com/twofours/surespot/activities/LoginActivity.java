@@ -213,8 +213,7 @@ public class LoginActivity extends SherlockActivity {
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);						
 						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
 							@Override
-							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
-								Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
+							public void onSuccess(int responseCode, String arg0, Cookie cookie) {								
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
 
 								Intent intent = getIntent();
