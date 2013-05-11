@@ -315,7 +315,7 @@ public class ChatFragment extends SherlockFragment {
 	public void scrollToEnd() {
 		SurespotLog.v(TAG, "scrollToEnd");
 		if (mChatAdapter != null && mListView != null) {
-			mListView.post(new Runnable() {
+			mListView.postDelayed(new Runnable() {
 
 				@Override
 				public void run() {
@@ -323,7 +323,7 @@ public class ChatFragment extends SherlockFragment {
 					mListView.setSelection(mChatAdapter.getCount() - 1);
 
 				}
-			});
+			}, 500);
 		}
 	}
 
