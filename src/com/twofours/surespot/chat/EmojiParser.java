@@ -244,6 +244,9 @@ public class EmojiParser {
 	 * @return A CharSequence annotated with ImageSpans covering any recognized emoticons.
 	 */
 	public CharSequence addEmojiSpans(String text) {
+		if (text == null) {
+			return null;
+		}
 
 		SpannableStringBuilder builder = new SpannableStringBuilder(text);
 		StringBuilder suppCps = new StringBuilder();

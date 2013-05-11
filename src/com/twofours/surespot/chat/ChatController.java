@@ -594,8 +594,10 @@ public class ChatController {
 								message.getTheirVersion(), message.getIv(), message.getData());
 
 						// substitute emoji
-						EmojiParser parser = EmojiParser.getInstance();
-						message.setPlainData(parser.addEmojiSpans(plainText));
+						if (plainText != null) {
+							EmojiParser parser = EmojiParser.getInstance();
+							message.setPlainData(parser.addEmojiSpans(plainText));
+						}
 					}
 
 					else {
