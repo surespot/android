@@ -221,7 +221,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 
 				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
-				newIntent.setData(intent.getData());
+				newIntent.putExtra("autoinviteuri", intent.getData());
 				newIntent.setAction(intent.getAction());
 				newIntent.setType(intent.getType());
 				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -286,40 +286,50 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mKeyboardStateHandler = new KeyboardStateHandler();
 				mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
-				String autoInviteUser = null;
-				if (isAutoInviteIntent(intent)) {
-
-					// path is /autoinvite/username/type
-					Uri uri = intent.getData();
-					List<String> segments = uri.getPathSegments();
-
-					if (segments.size() > 1) {
-						autoInviteUser = segments.get(1);
-						intent.setData(null);
-						SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);
-					}
+				String autoInviteUser = getAutoInviteUser(intent);
+				if (autoInviteUser != null) {
+					SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);					
 				}
-
+				
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteUser);
-
 				setupChatControls();
-
 			}
 		}
 	}
 
-	private boolean isAutoInviteIntent(Intent intent) {
+	private String getAutoInviteUser(Intent intent) {
 		Uri uri = intent.getData();
-		if (uri != null) {
-			String path = uri.getPath();
-			if (path != null) {
-				if (path.startsWith("/autoinvite")) {
-					return true;
+		boolean dataUri = true;
+
+		if (uri == null) {
+			uri = intent.getExtras().getParcelable("autoinviteuri");
+			dataUri = false;
+		}
+
+		if (uri == null) {
+			return null;
+		}
+
+		String uriPath = uri.getPath();
+		if (uriPath != null) {
+			if (uriPath.startsWith("/autoinvite")) {
+
+				List<String> segments = uri.getPathSegments();
+
+				if (segments.size() > 1) {
+					if (dataUri) {
+						intent.setData(null);
+					}
+					else {
+						intent.removeExtra("autoinviteurl");
+					}
+					
+					return segments.get(1);
 				}
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	class KeyboardStateHandler implements OnGlobalLayoutListener {
