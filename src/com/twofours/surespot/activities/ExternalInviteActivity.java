@@ -197,7 +197,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 			// intent.setType("text/plain");
 			intent.setData(Uri.parse("mailto:"));
 			// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
-			intent.putExtra(Intent.EXTRA_BCC, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
+			intent.putExtra(Intent.EXTRA_EMAIL, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
 			intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
 			intent.putExtra(Intent.EXTRA_TEXT, message);
 			startActivity(intent);

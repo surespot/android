@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Click the select contacts button to select email addresses from your phone contacts, and/or enter them manually. They will be added as bcc recipients."
+                android:text="Click the select contacts button to select email addresses from your phone contacts, and/or enter them manually."
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RadioButton
