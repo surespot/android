@@ -288,9 +288,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				String autoInviteUser = getAutoInviteUser(intent);
 				if (autoInviteUser != null) {
-					SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);					
+					SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);
 				}
-				
+
 				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteUser);
 				setupChatControls();
 			}
@@ -302,8 +302,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		boolean dataUri = true;
 
 		if (uri == null) {
-			uri = intent.getExtras().getParcelable("autoinviteuri");
-			dataUri = false;
+			Bundle extras = intent.getExtras();
+			if (extras != null) {
+				uri = extras.getParcelable("autoinviteuri");
+				dataUri = false;
+			}
 		}
 
 		if (uri == null) {
@@ -323,7 +326,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					else {
 						intent.removeExtra("autoinviteurl");
 					}
-					
+
 					return segments.get(1);
 				}
 			}
