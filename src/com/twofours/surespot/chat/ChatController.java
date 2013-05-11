@@ -421,7 +421,7 @@ public class ChatController {
 					getFriendAdapter().addFriendInvited(mAutoInviteUser);
 					mAutoInviteUser = null;
 
-				}				
+				}
 			});
 
 		}
@@ -1165,14 +1165,17 @@ public class ChatController {
 			Friend friend = mFriendAdapter.getFriend(friendName);
 
 			// if they're not deleted, remove them
-			if (friend != null && !friend.isDeleted()) {
-				mFriendAdapter.removeFriend(friendName);
-			}
-			else {
-				// they've been deleted, just remove the invite flags
-				friend.setInviter(false);
-				friend.setInvited(false);
+			if (friend != null) {
+				if (!friend.isDeleted()) {
 
+					mFriendAdapter.removeFriend(friendName);
+				}
+				else {
+					// they've been deleted, just remove the invite flags
+					friend.setInviter(false);
+					friend.setInvited(false);
+
+				}
 			}
 
 		}
@@ -1180,23 +1183,25 @@ public class ChatController {
 			String friendName = message.getData();
 			Friend friend = mFriendAdapter.getFriend(friendName);
 
-			// if it was just a delete of an invite
-			if (friend.isInviter() || friend.isInvited()) {
+			if (friend != null) {
+				// if it was just a delete of an invite
+				if (friend.isInviter() || friend.isInvited()) {
 
-				// if they're not deleted, remove them
-				if (friend != null && !friend.isDeleted()) {
-					mFriendAdapter.removeFriend(friendName);
+					// if they're not deleted, remove them
+					if (!friend.isDeleted()) {
+						mFriendAdapter.removeFriend(friendName);
+					}
+					else {
+						// they've been deleted, just remove the invite flags
+						friend.setInviter(false);
+						friend.setInvited(false);
+					}
 				}
+				// they really deleted us boo hoo
 				else {
-					// they've been deleted, just remove the invite flags
-					friend.setInviter(false);
-					friend.setInvited(false);
+					user = message.getData();
+					handleDeleteUser(user, message.getMoreData());
 				}
-			}
-			// they really deleted us boo hoo
-			else {
-				user = message.getData();
-				handleDeleteUser(user, message.getMoreData());
 			}
 		}
 
