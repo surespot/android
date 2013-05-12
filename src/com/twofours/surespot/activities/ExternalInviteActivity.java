@@ -5,12 +5,18 @@ import java.util.ArrayList;
 import org.json.JSONObject;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -18,6 +24,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.TextView.BufferType;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -123,8 +130,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				String contactData = ExternalInviteActivity.this.mEtInviteeData.getText().toString();
-				
-				
+
 				String[] splits = contactData.split(",");
 				for (String data : splits) {
 					String trimmedData = data.trim();
@@ -166,14 +172,57 @@ public class ExternalInviteActivity extends SherlockActivity {
 			}
 		});
 
-		
+		// give user option to fix sms contact population
+		// http://stackoverflow.com/questions/9584136/how-to-click-or-tap-on-a-textview-text-on-different-words
+
+		TextView tvInviteText = (TextView) findViewById(R.id.tvInviteText);
+		tvInviteText.setMovementMethod(LinkMovementMethod.getInstance());
+		String inviteText = getString(R.string.invite_text);
+		tvInviteText.setText(setClickHereListener(inviteText), BufferType.SPANNABLE);
+
 	}
-	
+
+	private SpannableStringBuilder setClickHereListener(String str) {
+
+		int idx1 = str.indexOf("[");
+		int idx2 = str.indexOf("]");
+
+		if (idx1 < idx2) {
+
+			String preString = str.substring(0, idx1);
+			String linkString = str.substring(idx1+1, idx2);
+			String endString = str.substring(idx2+1, str.length());
+
+			SpannableStringBuilder ssb = new SpannableStringBuilder(preString + linkString + endString);
+
+			ssb.setSpan(new ClickableSpan() {
+
+				@Override
+				public void onClick(View widget) {
+					SharedPreferences sp = ExternalInviteActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(),
+							Context.MODE_PRIVATE);
+					boolean altDelimiter = sp.getBoolean("pref_alternate_text_delimiter", false);
+
+					Editor editor = sp.edit();
+					editor.putBoolean("pref_alternate_text_delimiter", !altDelimiter);
+					editor.commit();
+
+					Utils.makeToast(ExternalInviteActivity.this, "toggled sms contact population mechanism");
+				}
+			}, idx1, idx2-1, 0);
+
+			return ssb;
+		}
+
+		return new SpannableStringBuilder(str);
+
+	}
+
 	@Override
 	protected void onResume() {
-	
+
 		super.onResume();
-		
+
 		if (!mScrolled) {
 			final ScrollView sv = (ScrollView) findViewById(R.id.svInviteExternal);
 			sv.post(new Runnable() {
@@ -184,11 +233,12 @@ public class ExternalInviteActivity extends SherlockActivity {
 					mScrolled = true;
 				}
 			});
-			
+
 		}
 	}
+
 	private void sendInvitation(String shortUrl) {
-		Intent intent; 
+		Intent intent;
 		String message = getString(R.string.external_invite_message) + shortUrl;
 		switch (mSelectedType) {
 
@@ -207,9 +257,15 @@ public class ExternalInviteActivity extends SherlockActivity {
 			intent = new Intent(Intent.ACTION_VIEW);
 			intent.setType("vnd.android-dir/mms-sms");
 
+			// some devices (samsung) sms app don't like semi-colon delimiter
+			// http://stackoverflow.com/questions/9721714/android-passing-multiple-numbers-to-sms-intent
+			SharedPreferences sp = this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+			boolean altDelimiter = sp.getBoolean("pref_alternate_text_delimiter", false);
+			String delimiter = altDelimiter ? "," : ";";
+
 			StringBuilder addressString = new StringBuilder();
 			for (String address : mSelectedContacts) {
-				addressString.append(address + ";");
+				addressString.append(address + delimiter);
 			}
 			intent.putExtra("address", addressString.toString());
 			intent.putExtra("sms_body", message);
@@ -226,16 +282,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 	}
 
 	private String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
-		//String url = "https://play.google.com/store/apps/details?id=com.twofours.surespot&referrer=";
-		//String query = "utm_source=surespot_android&utm_medium=" + typeToString(type);
-		
-		
-
-//		if (autoInvite) {
-//			query += "&utm_content=" + username;
-//		}
-
-		String url = "https://server.surespot.me/autoinvite/" + username + "/" + typeToString(type);		
+		String url = "https://server.surespot.me/autoinvite/" + username + "/" + typeToString(type);
 		SurespotLog.v(TAG, "auto invite url length %d:, url: %s ", url.length(), url);
 		return url;
 	}

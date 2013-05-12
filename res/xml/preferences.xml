@@ -84,6 +84,13 @@
             </intent>
         </Preference>
     </PreferenceCategory>
+    <PreferenceCategory android:title="options" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:summary="Needs to be enabled on some devices to populate the sms 'to' field correctly when multiple contacts are selected in share surespot."
+            android:key="pref_alternate_text_delimiter"
+            android:title="alternate sms share 'to'" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="debug" >
 
         <!--

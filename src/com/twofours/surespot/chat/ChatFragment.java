@@ -323,7 +323,7 @@ public class ChatFragment extends SherlockFragment {
 					mListView.setSelection(mChatAdapter.getCount() - 1);
 
 				}
-			}, 500);
+			}, 750);
 		}
 	}
 

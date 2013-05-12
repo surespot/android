@@ -65,10 +65,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
-                android:paddingRight="15dp"
-                android:text="Click the contacts button to select numbers from your phone contacts, and/or enter them manually."
+                android:paddingRight="15dp"                
                 android:textAppearance="?android:attr/textAppearanceSmall" />
-
+            
             <RadioButton
                 android:id="@+id/rbSocial"
                 android:layout_width="wrap_content"
