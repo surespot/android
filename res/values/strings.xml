@@ -93,7 +93,7 @@
     <string name="about_website"><![CDATA["please visit the surespot website at <a href="https://www.surespot.me">https://www.surespot.me</a> for more information, including the <a href="https://www.surespot.me/documents/surespot_terms_of_service_5-7-13.html">terms of service</a> and <a href="https://www.surespot.me/documents/surespot_privacy_policy_5-7-13.html">privacy policy</a>"]]></string>
     <string name="about_opensource"><![CDATA["surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>"]]></string>
     <string name="about_tech"><![CDATA["for a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>"]]></string>
-    <string name="about_support"><![CDATA["for questions or support please email <a href="mailto:support@2fours.com">support@2fours.com</a>]]></string>
+    <string name="about_support"><![CDATA["for questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>]]></string>
     <!--  anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
     <string name="invite_text">"Click the contacts button to select numbers from your phone contacts, and/or enter them manually. (Please [click here] if contacts fail to populate in your sms app)."</string>
 

@@ -10,58 +10,67 @@
     android:paddingTop="10dp"
     tools:context=".AboutActivity" >
 
-    <TextView
-        android:id="@+id/tvAboutAbout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
-    <TextView
-        android:id="@+id/tvAboutWebsite"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
-    <TextView
-        android:id="@+id/tvAboutOpenSource"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
-    <TextView
-        android:id="@+id/tvAboutTech"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
-    <TextView
-        android:id="@+id/tvAboutEmail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
-    <TextView
-        android:id="@+id/tvAboutVersion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@color/surespotBlue" >
-    </TextView>
-
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"        
+        android:layout_height="0dp"        
+        android:layout_weight="1"
         android:src="@drawable/surespotlauncher512" >
     </ImageView>
+
+    <LinearLayout
+        
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/tvAboutAbout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/tvAboutWebsite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/tvAboutOpenSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/tvAboutTech"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/tvAboutEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+
+        <TextView
+            android:id="@+id/tvAboutVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+    </LinearLayout>
 
 </LinearLayout>
