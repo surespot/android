@@ -35,6 +35,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.contacts.ContactPickerActivity;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.ui.SingleProgressDialog;
 
 public class ExternalInviteActivity extends SherlockActivity {
 
@@ -53,6 +54,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 	public static final int SHARE_SOCIAL = 2;
 	private int mSelectedType;
 	private boolean mScrolled;
+	private SingleProgressDialog mMpd;
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -64,6 +66,8 @@ public class ExternalInviteActivity extends SherlockActivity {
 		setContentView(R.layout.activity_external_invite);
 
 		Utils.configureActionBar(this, "share", IdentityController.getLoggedInUser(), true);
+
+		mMpd = new SingleProgressDialog(this, "creating invitation", 750);
 
 		mRbSms = (RadioButton) findViewById(R.id.rbInviteSMS);
 		mRbSms.setTag(SHARE_SMS);
@@ -129,6 +133,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
+
 				String contactData = ExternalInviteActivity.this.mEtInviteeData.getText().toString();
 
 				String[] splits = contactData.split(",");
@@ -147,6 +152,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 				if (mSelectedType == SHARE_SOCIAL || (mSelectedContacts != null && mSelectedContacts.size() > 0)) {
 
+					mMpd.show();
 					final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), mSelectedType, true);
 
 					MainActivity.getNetworkController().getShortUrl(longUrl, new JsonHttpResponseHandler() {
@@ -156,11 +162,13 @@ public class ExternalInviteActivity extends SherlockActivity {
 								shortUrl = longUrl;
 							}
 							sendInvitation(shortUrl);
+							mMpd.hide();
 						};
 
 						public void onFailure(Throwable e, JSONObject errorResponse) {
 							SurespotLog.v(TAG, "getShortUrl, error: " + errorResponse.toString(), e);
 							sendInvitation(longUrl);
+							mMpd.hide();
 						};
 					});
 				}
@@ -190,8 +198,8 @@ public class ExternalInviteActivity extends SherlockActivity {
 		if (idx1 < idx2) {
 
 			String preString = str.substring(0, idx1);
-			String linkString = str.substring(idx1+1, idx2);
-			String endString = str.substring(idx2+1, str.length());
+			String linkString = str.substring(idx1 + 1, idx2);
+			String endString = str.substring(idx2 + 1, str.length());
 
 			SpannableStringBuilder ssb = new SpannableStringBuilder(preString + linkString + endString);
 
@@ -209,7 +217,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 					Utils.makeToast(ExternalInviteActivity.this, "toggled sms contact population mechanism");
 				}
-			}, idx1, idx2-1, 0);
+			}, idx1, idx2 - 1, 0);
 
 			return ssb;
 		}
@@ -238,47 +246,52 @@ public class ExternalInviteActivity extends SherlockActivity {
 	}
 
 	private void sendInvitation(String shortUrl) {
-		Intent intent;
-		String message = getString(R.string.external_invite_message) + shortUrl;
-		switch (mSelectedType) {
+		try {
+			Intent intent;
+			String message = getString(R.string.external_invite_message) + shortUrl;
+			switch (mSelectedType) {
 
-		case SHARE_EMAIL:
-			intent = new Intent(Intent.ACTION_SENDTO);
-			// intent.setType("text/plain");
-			intent.setData(Uri.parse("mailto:"));
-			// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
-			intent.putExtra(Intent.EXTRA_EMAIL, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
-			intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
-			intent.putExtra(Intent.EXTRA_TEXT, message);
-			startActivity(intent);
+			case SHARE_EMAIL:
+				intent = new Intent(Intent.ACTION_SENDTO);
+				// intent.setType("text/plain");
+				intent.setData(Uri.parse("mailto:"));
+				// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
+				intent.putExtra(Intent.EXTRA_EMAIL, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
+				intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
+				intent.putExtra(Intent.EXTRA_TEXT, message);
+				startActivity(intent);
 
-			break;
-		case SHARE_SMS:
-			intent = new Intent(Intent.ACTION_VIEW);
-			intent.setType("vnd.android-dir/mms-sms");
+				break;
+			case SHARE_SMS:
+				intent = new Intent(Intent.ACTION_VIEW);
+				intent.setType("vnd.android-dir/mms-sms");
 
-			// some devices (samsung) sms app don't like semi-colon delimiter
-			// http://stackoverflow.com/questions/9721714/android-passing-multiple-numbers-to-sms-intent
-			SharedPreferences sp = this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-			boolean altDelimiter = sp.getBoolean("pref_alternate_text_delimiter", false);
-			String delimiter = altDelimiter ? "," : ";";
+				// some devices (samsung) sms app don't like semi-colon delimiter
+				// http://stackoverflow.com/questions/9721714/android-passing-multiple-numbers-to-sms-intent
+				SharedPreferences sp = this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+				boolean altDelimiter = sp.getBoolean("pref_alternate_text_delimiter", false);
+				String delimiter = altDelimiter ? "," : ";";
 
-			StringBuilder addressString = new StringBuilder();
-			for (String address : mSelectedContacts) {
-				addressString.append(address + delimiter);
+				StringBuilder addressString = new StringBuilder();
+				for (String address : mSelectedContacts) {
+					addressString.append(address + delimiter);
+				}
+				intent.putExtra("address", addressString.toString());
+				intent.putExtra("sms_body", message);
+				startActivity(intent);
+				break;
+			case SHARE_SOCIAL:
+				intent = new Intent(Intent.ACTION_SEND);
+				intent.setType("text/plain");
+				intent.putExtra(Intent.EXTRA_TEXT, message);
+				startActivity(intent);
+				break;
 			}
-			intent.putExtra("address", addressString.toString());
-			intent.putExtra("sms_body", message);
-			startActivity(intent);
-			break;
-		case SHARE_SOCIAL:
-			intent = new Intent(Intent.ACTION_SEND);
-			intent.setType("text/plain");
-			intent.putExtra(Intent.EXTRA_TEXT, message);
-			startActivity(intent);
-			break;
+			finish();
 		}
-		finish();
+		catch (ActivityNotFoundException e) {
+			Utils.makeToast(this, "No application found to handle share.");
+		}
 	}
 
 	private String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
