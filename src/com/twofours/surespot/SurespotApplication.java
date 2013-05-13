@@ -27,8 +27,6 @@ import com.twofours.surespot.services.CredentialCachingService;
 mode = ReportingInteractionMode.DIALOG,
 formKey = "", // will not be used
 formUri = "https://www.surespot.me:3000/logs/surespot",
-formUriBasicAuthLogin = "adam", // optional
-formUriBasicAuthPassword = "29g0Flq7hDer",
 resToastText = R.string.crash_toast_text,
 resDialogText = R.string.crash_dialog_text,
 resDialogOkToast = R.string.crash_dialog_ok_toast,
