@@ -231,7 +231,7 @@ public class IdentityController {
 			SurespotApplication.getCachingService().logout();
 		}
 		else {
-			SurespotApplication.getCachingService().clearIdentityData(username);
+			SurespotApplication.getCachingService().clearIdentityData(username, true);
 		}
 
 		MainActivity.getNetworkController().clearCache();

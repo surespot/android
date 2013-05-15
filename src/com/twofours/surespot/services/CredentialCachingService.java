@@ -183,10 +183,17 @@ public class CredentialCachingService extends Service {
 		mIdentities.clear();
 	}
 
-	public synchronized void clearIdentityData(String username) {
+	public synchronized void clearIdentityData(String username, boolean fully) {
 		mCookies.remove(username);
 		mIdentities.remove(username);
 		
+		if (fully) {
+			for (SharedSecretKey key : mSharedSecrets.asMap().keySet()) {
+				if (key.getOurUsername().equals(username)) {
+					mSharedSecrets.invalidate(key);
+				}
+			}
+		}		
 	}
 	
 	
@@ -194,7 +201,7 @@ public class CredentialCachingService extends Service {
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
 			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
-			clearIdentityData(mLoggedInUser);
+			clearIdentityData(mLoggedInUser, false);
 			mLoggedInUser = null;
 		}
 	}
@@ -209,7 +216,7 @@ public class CredentialCachingService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		return START_STICKY;
 
-	}
+	} 
 
 	@Override
 	public IBinder onBind(Intent intent) {
