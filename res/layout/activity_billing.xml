@@ -7,15 +7,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp"        
+        android:padding="10dp"
         tools:context=".BillingActivity" >
 
         <TextView
             android:id="@+id/tvPwyl"
-            android:gravity="center"
-            android:textAlignment="center"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAlignment="center" />
 
         <TextView
             android:layout_width="match_parent"
@@ -28,6 +28,7 @@
         </TextView>
 
         <LinearLayout
+            android:id="@+id/inAppButtons1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
@@ -63,20 +64,21 @@
                 android:onClick="onPurchase"
                 android:tag="10"
                 android:text="$10" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/inAppButtons2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:onClick="onPurchase"
                 android:tag="20"
                 android:text="$20" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
 
             <Button
                 android:layout_width="0dp"
@@ -93,17 +95,9 @@
                 android:onClick="onPurchase"
                 android:tag="100"
                 android:text="$100" />
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:onClick="onPurchase"
-                android:tag="1000000"
-                android:text="$1000000" />
         </LinearLayout>
-        
-         <TextView
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
@@ -160,7 +154,6 @@
             android:layout_height="wrap_content"
             android:onClick="onBitcoinWallet"
             android:text="open bitcoin wallet (if supported)" />
-       
     </LinearLayout>
 
 </ScrollView>

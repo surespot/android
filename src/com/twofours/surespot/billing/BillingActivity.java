@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -13,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.ClipboardManager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -36,16 +36,16 @@ public class BillingActivity extends SherlockFragmentActivity {
 	// (arbitrary) request code for the purchase flow
 	static final int RC_REQUEST = 10001;
 	private IabHelper mIabHelper;
-	private ProgressDialog mMpd;
 	private boolean mQueried;
 	private ImageView mHomeImageView;
+	private boolean mHelperReady;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
 		Utils.configureActionBar(this, "pay", "what you like", true);
-		
+
 		TextView tvPwyl = (TextView) findViewById(R.id.tvPwyl);
 		UIUtils.setHtml(this, tvPwyl, R.string.pwyl_text);
 
@@ -54,11 +54,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 			mHomeImageView = (ImageView) findViewById(R.id.abs__home);
 		}
 
-		mMpd = new ProgressDialog(this);
-		mMpd.setIndeterminate(true);
-		// progressDialog.setTitle("loading");
-		mMpd.setMessage("hooking it up");
-
+		
 		mIabHelper = new IabHelper(this, SurespotConstants.GOOGLE_APP_LICENSE_KEY);
 
 		if (savedInstanceState != null) {
@@ -66,6 +62,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 
 		showProgress();
+		mHelperReady = false;
 		mIabHelper.startSetup(new OnIabSetupFinishedListener() {
 
 			@Override
@@ -73,10 +70,20 @@ public class BillingActivity extends SherlockFragmentActivity {
 				if (!result.isSuccess()) {
 					// Oh noes, there was a problem.
 					SurespotLog.v(TAG, "Problem setting up In-app Billing: " + result);
+					Utils.makeLongToast(BillingActivity.this, "Could not enable in-app billing.");
+					
+					//disable in app purchase buttons
+					ViewGroup layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
+					UIUtils.disableImmediateChildren(layout);
+					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
+					UIUtils.disableImmediateChildren(layout);
+					
+										
 					hideProgress();
 					return;
 				}
 
+				mHelperReady = true;
 				if (!mQueried) {
 					mQueried = true;
 
@@ -90,10 +97,10 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 			}
 		});
-		
-
 
 	}
+	
+	
 
 	private void showProgress() {
 		// mMpd.show();
@@ -144,62 +151,56 @@ public class BillingActivity extends SherlockFragmentActivity {
 	};
 
 	public void onPurchase(View arg0) {
-		String denom = (String) arg0.getTag();
-		showProgress();
-		try {
-			if (denom.equals("1000000")) {
-				Utils.makeToast(this, "haha, right!");
-				hideProgress();
-				return;
-			}
+		String denom = (String) arg0.getTag();		
+		try {			
+			if (mHelperReady) {
+				showProgress();
+				mIabHelper.launchPurchaseFlow(this, "pwyl_" + denom, RC_REQUEST, new OnIabPurchaseFinishedListener() {
 
-			mIabHelper.launchPurchaseFlow(this, "pwyl_" + denom, RC_REQUEST, new OnIabPurchaseFinishedListener() {
-
-				@Override
-				public void onIabPurchaseFinished(IabResult result, Purchase info) {
-					if (result.isFailure()) {						
-						hideProgress();
-						return;
-					}
-					// Utils.makeToast(BillingActivity.this, "thank you");
-					SurespotLog.v(TAG, "purchase successful, consuming");
-					mIabHelper.consumeAsync(info, new OnConsumeFinishedListener() {
-
-						@Override
-						public void onConsumeFinished(Purchase purchase, IabResult result) {
-							SurespotLog.v(TAG, "consumption result: " + result.isSuccess());
+					@Override
+					public void onIabPurchaseFinished(IabResult result, Purchase info) {
+						if (result.isFailure()) {
 							hideProgress();
-
+							return;
 						}
-					});
-				}
-			});
+						// Utils.makeToast(BillingActivity.this, "thank you");
+						SurespotLog.v(TAG, "purchase successful, consuming");
+						mIabHelper.consumeAsync(info, new OnConsumeFinishedListener() {
+
+							@Override
+							public void onConsumeFinished(Purchase purchase, IabResult result) {
+								SurespotLog.v(TAG, "consumption result: " + result.isSuccess());
+								hideProgress();
+
+							}
+						});
+					}
+				});
+			}
 		}
 		catch (IllegalStateException ise) {
 			hideProgress();
-			Utils.makeToast(this, "pay what you like already in progress");
+			Utils.makeToast(this, "Error, could not complete purchase.");
 			SurespotLog.v(TAG, ise, "onPurchase error");
 		}
 	}
 
-	
-	 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        SurespotLog.d(TAG, "onActivityResult(%s, $s, $s)", requestCode ,resultCode , data);
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		SurespotLog.d(TAG, "onActivityResult(%s, $s, $s)", requestCode, resultCode, data);
 
-        // Pass on the activity result to the helper for handling
-        if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
-            // not handled, so handle it ourselves (here's where you'd
-            // perform any handling of activity results not related to in-app
-            // billing...
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-        else {
-            SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
-        }
-    }
-	
+		// Pass on the activity result to the helper for handling
+		if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
+			// not handled, so handle it ourselves (here's where you'd
+			// perform any handling of activity results not related to in-app
+			// billing...
+			super.onActivityResult(requestCode, resultCode, data);
+		}
+		else {
+			SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
+		}
+	}
+
 	private Uri getPayPalUri() {
 		Uri.Builder uriBuilder = new Uri.Builder();
 		uriBuilder.scheme("https").authority("www.paypal.com").path("cgi-bin/webscr");

@@ -14,6 +14,8 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.LinkMovementMethod;
 import android.view.Display;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -151,7 +153,7 @@ public class UIUtils {
 
 	public static void launchMainActivityDeleted(Context context) {
 		Intent finalIntent = new Intent(context, MainActivity.class);
-		finalIntent.putExtra("deleted",true);
+		finalIntent.putExtra("deleted", true);
 		finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(finalIntent);
 	}
@@ -174,11 +176,17 @@ public class UIUtils {
 		tv.setText(Html.fromHtml(context.getString(stringId)));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
-	
+
 	public static void setHtml(Context context, TextView tv, String html) {
 		tv.setText(Html.fromHtml(html));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
+	public static void disableImmediateChildren(ViewGroup layout) {
+		for (int i = 0; i < layout.getChildCount(); i++) {
+			View child = layout.getChildAt(i);
+			child.setEnabled(false);
+		}
 
+	}
 }
