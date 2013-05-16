@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,6 +15,8 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -25,10 +28,14 @@ import android.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
+import android.text.style.ForegroundColorSpan;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -74,6 +81,8 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.qr.QRCodeEncoder;
+import com.twofours.surespot.qr.WriterException;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
@@ -108,6 +117,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private int mEmojiHeight;
 	private int mInitialHeightOffset;
 	private ImageView mEmojiButton;
+	private ImageView mQRButton;
 	private Friend mCurrentFriend;
 	private boolean mShowEmoji = false;
 	boolean mKeyboardWasOpen = false;
@@ -401,6 +411,51 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		});
 
 		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
+
+		mQRButton = (ImageView) findViewById(R.id.bQR);
+		mQRButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				LayoutInflater inflator = getLayoutInflater();
+				View dialogLayout = inflator.inflate(R.layout.qr_invite_layout, null, false);
+				TextView tvQrInviteText = (TextView) dialogLayout.findViewById(R.id.tvQrInviteText);
+				ImageView ivQr = (ImageView) dialogLayout.findViewById(R.id.ivQr);
+
+				String user = IdentityController.getLoggedInUser();
+
+				Spannable s1 = new SpannableString(user);
+				s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+				String inviteUrl = "https://server.surespot.me/autoinvite/" + user + "/qr_droid";
+				// String qrImageUrl = "https://chart.googleapis.com/chart?cht=qr&chl=" + inviteUrl + "&chs=300x300&chld=Q|0";
+
+				tvQrInviteText.setText(TextUtils.concat("scanning this QR code will invite ", s1,
+						" to be a friend on surespot, installing surespot from the play store if necessary"));
+
+			//	URL imageUri;
+
+				Bitmap bitmap;
+				try {
+					bitmap = QRCodeEncoder.encodeAsBitmap(inviteUrl, 300);
+					ivQr.setImageBitmap(bitmap);
+				}
+				catch (WriterException e) {
+					// TODO Auto-generated catch block
+
+					SurespotLog.w(TAG, e, "generate invite QR");
+					return;
+
+				
+
+				}
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this).setTitle(null);
+				AlertDialog dialog = builder.create();
+				dialog.setView(dialogLayout, 0, 0, 0, 0);
+				dialog.show();
+			}
+		});
 
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
@@ -1298,6 +1353,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEtInvite.setVisibility(View.VISIBLE);
 			mEmojiView.setVisibility(View.GONE);
 			mShowEmoji = false;
+			mQRButton.setVisibility(View.VISIBLE);
 			mEtInvite.requestFocus();
 
 		}
@@ -1315,6 +1371,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mEtInvite.setVisibility(View.GONE);
+			mQRButton.setVisibility(View.GONE);
 			mEtMessage.requestFocus();
 		}
 

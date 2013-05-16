@@ -415,25 +415,20 @@ public class ChatController {
 
 		// if we need to invite someone then do it
 		if (mAutoInviteUser != null) {
-			mNetworkController.invite(mAutoInviteUser, new AsyncHttpResponseHandler() {
-				@Override
-				public void onSuccess(int statusCode, String arg0) {
-					getFriendAdapter().addFriendInvited(mAutoInviteUser);
-					mAutoInviteUser = null;
+			if (mFriendAdapter.getFriend(mAutoInviteUser) == null) {
+				mNetworkController.invite(mAutoInviteUser, new AsyncHttpResponseHandler() {
+					@Override
+					public void onSuccess(int statusCode, String arg0) {
+						getFriendAdapter().addFriendInvited(mAutoInviteUser);
+						mAutoInviteUser = null;
 
-				}
-			});
-
-		}
-		// MainActivity.THREAD_POOL_EXECUTOR.execute(new UpdateDataTask());
-
-	}
-
-	private class UpdateDataTask implements Runnable {
-
-		@Override
-		public void run() {
-			getFriendsAndIds();
+					}
+				});
+			}
+			else {
+				Utils.makeToast(mContext, "your friend list already contains " + mAutoInviteUser);
+				mAutoInviteUser = null;
+			}
 
 		}
 

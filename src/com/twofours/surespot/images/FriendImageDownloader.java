@@ -324,7 +324,7 @@ public class FriendImageDownloader {
 	 *            The URL of the image that will be retrieved from the cache.
 	 * @return The cached bitmap or null if it was not found.
 	 */
-	private static Bitmap getBitmapFromCache(String key) {
+	public static Bitmap getBitmapFromCache(String key) {
 		return mBitmapCache.getBitmapFromMemCache(key);
 	}
 
