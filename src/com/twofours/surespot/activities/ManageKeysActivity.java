@@ -7,14 +7,19 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -42,6 +47,16 @@ public class ManageKeysActivity extends SherlockActivity {
 		setContentView(R.layout.activity_manage_keys);
 		Utils.configureActionBar(this, "identity", "keys", true);
 		mMpd = new MultiProgressDialog(this, "generating and uploading new keys", 750);
+		
+		TextView tvBackupWarning = (TextView) findViewById(R.id.newKeysBackup);
+
+		Spannable warning = new SpannableString(
+				"After performing this operation any backed up identities will no longer be able to be restored so make sure you backup your identity again!");
+
+		
+		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		tvBackupWarning.setText(TextUtils.concat(warning));
+
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 

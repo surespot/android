@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -59,11 +60,21 @@ public class ChangePasswordActivity extends SherlockActivity {
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvChangePasswordWarning);
 
 		Spannable warning = new SpannableString(
-				"WARNING: There is no password reset functionality in surespot so make sure you remember it!");
+				"There is no password reset functionality in surespot so make sure you remember it!");
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		tvSignupHelp.setText(warning);
+		tvSignupHelp.setText(TextUtils.concat(warning));
+		
+		TextView tvBackup = (TextView) findViewById(R.id.changePasswordBackup);
+
+		warning = new SpannableString(
+				"After performing this operation any backed up identities will no longer be able to be restored so make sure you backup your identity again!");
+
+		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		tvBackup.setText(TextUtils.concat(warning));
+
 
 		final EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
 		etCurrent.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
