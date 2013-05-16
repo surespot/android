@@ -230,10 +230,9 @@ public class IdentityController {
 		if (isLoggedIn) {
 			SurespotApplication.getCachingService().logout();
 		}
-		else {
-			SurespotApplication.getCachingService().clearIdentityData(username, true);
-		}
-
+		
+		SurespotApplication.getCachingService().clearIdentityData(username, true);
+		
 		MainActivity.getNetworkController().clearCache();
 		StateController.wipeState(context, username);
 
