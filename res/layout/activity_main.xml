@@ -30,26 +30,23 @@
     <FrameLayout
         android:id="@+id/fButtons"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_above="@+id/fEmoji"
-        android:layout_alignBottom="@+id/editTexts"
         android:layout_alignTop="@+id/editTexts"
         android:layout_alignWithParentIfMissing="true" >
 
         <ImageView
             android:id="@+id/bEmoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@drawable/abs__list_selector_holo_light"
             android:padding="5dp"
             android:visibility="gone" />
 
         <ImageView
             android:id="@+id/bQR"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@drawable/abs__list_selector_holo_light"
             android:padding="5dp"
             android:src="@drawable/qr_surespot" />
