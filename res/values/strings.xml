@@ -49,7 +49,8 @@
     <string name="logout">logout</string>
     <string name="settings">settings</string>
     <string name="welcome_to_surespot"><![CDATA["Welcome to surespot! Data sent using this app is <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> encrypted with <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">symmetric-key</a> encryption (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) using keys created with 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
-    <string name="no_friends">No friends...yet. Invite surespot users by entering their username and touching "invite".\nUse the "share surespot" menu option to invite future surespot users.</string>
+    <string name="no_friends">No friends...yet. Invite surespot users by entering their username and touching "invite".</string>
+    <string name="invite_contacts">Use the "invite contacts" menu option to invite users via email, text message, or other applications.</string>
     <string name="navigate_between_chat_tabs">Navigate between tabs by swiping.</string>
     <string name="help_shortPress">Touch "home" to go to the home tab.</string>
     <string name="help_longPress">Hold "home" to close the chat tab.</string>
@@ -94,7 +95,7 @@
     <string name="about_opensource"><![CDATA["surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>"]]></string>
     <string name="about_tech"><![CDATA["for a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>"]]></string>
     <string name="about_support"><![CDATA["for questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>]]></string>
-    <!--  anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
-    <string name="invite_text">"Click the contacts button to select numbers from your phone contacts, and/or enter them manually. (Please [click here] if contacts fail to populate in your sms app)."</string>
+    <!-- anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
+    <string name="invite_text">"Click the select contacts button to select numbers from your phone contacts, and/or enter them manually. (Please [click here] if contacts fail to populate in your sms app)."</string>
 
 </resources>

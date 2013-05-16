@@ -87,9 +87,9 @@
     <PreferenceCategory android:title="options" >
         <CheckBoxPreference
             android:defaultValue="false"
-            android:summary="Needs to be enabled on some devices to populate the sms 'to' field correctly when multiple contacts are selected in share surespot."
+            android:summary="Needs to be enabled on some devices to populate the sms 'to' field correctly when multiple contacts are selected in invite contacts."
             android:key="pref_alternate_text_delimiter"
-            android:title="alternate sms share 'to'" />
+            android:title="alternate sms invite 'to'" />
     </PreferenceCategory>
     <PreferenceCategory android:title="debug" >
 

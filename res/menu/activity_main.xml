@@ -26,7 +26,7 @@
             <item
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/blue_heart"
-                android:title="share surespot"/>
+                android:title="invite contacts"/>
 
             <!-- I told you before kid, paywhatyoulike -->
 

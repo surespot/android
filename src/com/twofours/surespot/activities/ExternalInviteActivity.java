@@ -65,7 +65,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_external_invite);
 
-		Utils.configureActionBar(this, "share", IdentityController.getLoggedInUser(), true);
+		Utils.configureActionBar(this, "invite", IdentityController.getLoggedInUser(), true);
 
 		mMpd = new SingleProgressDialog(this, "creating invitation", 750);
 
@@ -257,7 +257,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 				intent.setData(Uri.parse("mailto:"));
 				// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
 				intent.putExtra(Intent.EXTRA_EMAIL, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
-				intent.putExtra(Intent.EXTRA_SUBJECT, "surespot invitation");
+				intent.putExtra(Intent.EXTRA_SUBJECT, "Invitation to chat with me privately via surespot");
 				intent.putExtra(Intent.EXTRA_TEXT, message);
 				startActivity(intent);
 
@@ -321,14 +321,14 @@ public class ExternalInviteActivity extends SherlockActivity {
 			mTvInviteViaLabel.setEnabled(true);
 			mEtInviteeData.setEnabled(true);
 			mBSelectContacts.setEnabled(true);
-			mTvInviteViaLabel.setText("additionally bcc to (comma separated):");
+			mTvInviteViaLabel.setText("also send to (comma separated):");
 			mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 			break;
 		case SHARE_SMS:
 			mTvInviteViaLabel.setEnabled(true);
 			mEtInviteeData.setEnabled(true);
 			mBSelectContacts.setEnabled(true);
-			mTvInviteViaLabel.setText("additionally send to (comma separated):");
+			mTvInviteViaLabel.setText("also send to (comma separated):");
 			mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
 			break;
 		case SHARE_SOCIAL:

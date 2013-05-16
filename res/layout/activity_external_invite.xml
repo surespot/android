@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="share via email" />
+                android:text="invite via email" />
 
             <TextView
                 android:id="@+id/tvInviteEmail"
@@ -58,23 +58,23 @@
                 android:layout_height="wrap_content"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="share via text message" />
+                android:text="invite via text message" />
 
             <TextView
                 android:id="@+id/tvInviteText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
-                android:paddingRight="15dp"                
+                android:paddingRight="15dp"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
-            
+
             <RadioButton
                 android:id="@+id/rbSocial"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="share via other application" />
+                android:text="invite via other application" />
 
             <TextView
                 android:id="@+id/tvInviteOther"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Touch the share button to select application to share with, eg. facebook, twitter."
+                android:text="Touch the invite button to select application to invite with, eg. facebook, twitter."
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </RadioGroup>
 
@@ -90,10 +90,9 @@
             android:id="@+id/bSelectContact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/inviteRadioGroup"            
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_toLeftOf="@+id/bSendInvitation"
+            android:layout_below="@+id/inviteRadioGroup"
+            android:layout_margin="10dp"
+            android:layout_toLeftOf="@+id/fInvite"
             android:drawableLeft="@drawable/ic_menu_friendslist"
             android:text="select contacts" />
 
@@ -104,7 +103,7 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/bSelectContact"
             android:layout_marginLeft="5dp"
-            android:layout_toLeftOf="@+id/bSendInvitation"
+            android:layout_toLeftOf="@+id/fInvite"
             android:maxLines="1"
             android:singleLine="true"
             android:text="phone number" />
@@ -115,20 +114,29 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/tbInviteViaLabel"
-            android:layout_toLeftOf="@+id/bSendInvitation"
+            android:layout_toLeftOf="@+id/fInvite"
             android:ems="10"
             android:singleLine="true" >
         </EditText>
 
-        <Button
-            android:id="@+id/bSendInvitation"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_alignBottom="@+id/invitee"
+        <FrameLayout
+            android:id="@+id/fInvite"
+            android:layout_alignBottom="@+id/invitee"            
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_alignParentRight="true"
-            android:background="@drawable/send_button"
-            android:text="share"
-            android:textColor="@android:color/black" />
+            android:layout_alignTop="@+id/bSelectContact" >
+
+            <Button
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="-10dp"
+                android:id="@+id/bSendInvitation"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:background="@drawable/send_button"
+                android:text="invite"
+                android:textColor="@android:color/black" />
+        </FrameLayout>
     </RelativeLayout>
 
 </ScrollView>
