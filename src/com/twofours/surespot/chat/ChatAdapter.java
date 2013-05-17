@@ -183,6 +183,10 @@ public class ChatAdapter extends BaseAdapter {
 	@Override
 	public int getItemViewType(int position) {
 		SurespotMessage message = mMessages.get(position);
+		return getTypeForMessage(message);
+	}
+	
+	public int getTypeForMessage(SurespotMessage message) {
 		String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
@@ -214,16 +218,33 @@ public class ChatAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
 		final int type = getItemViewType(position);
-		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		final ChatMessageViewHolder chatMessageViewHolder;
-		if (convertView == null) {
-			chatMessageViewHolder = new ChatMessageViewHolder();
+		ChatMessageViewHolder chatMessageViewHolder = null;
+				
+		//check type again based on http://stackoverflow.com/questions/12018997/why-does-getview-return-wrong-convertview-objects-on-separatedlistadapter
+		//and NPE I was getting that would only happen with wrong type
+	
+		if (convertView != null) {
+			ChatMessageViewHolder currentViewHolder = (ChatMessageViewHolder) convertView.getTag();
+			if (currentViewHolder.type != type) {
+				SurespotLog.v(TAG, "types do not match, creating new view for the row");
+				convertView = null;
+			}
+			else {
+				chatMessageViewHolder = currentViewHolder;
+			}
+		}			
+		
 
+		if (convertView == null) {
+			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			chatMessageViewHolder = new ChatMessageViewHolder();
+			chatMessageViewHolder.type = type;
+			
 			switch (type) {
 			case TYPE_US:
 				convertView = inflater.inflate(R.layout.message_list_item_us, parent, false);
 				chatMessageViewHolder.vMessageSending = convertView.findViewById(R.id.messageSending);
-				chatMessageViewHolder.vMessageSent = convertView.findViewById(R.id.messageSent);
+				chatMessageViewHolder.vMessageSent = convertView.findViewById(R.id.messageSent);			
 				break;
 			case TYPE_THEM:
 				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
@@ -247,12 +268,9 @@ public class ChatAdapter extends BaseAdapter {
 
 			convertView.setTag(chatMessageViewHolder);
 		}
-		else {
-			chatMessageViewHolder = (ChatMessageViewHolder) convertView.getTag();
-		}
-
+	
 		final SurespotMessage item = (SurespotMessage) getItem(position);
-
+	
 		if (item.getErrorStatus() > 0) {
 			UIUtils.setMessageErrorText(chatMessageViewHolder.tvTime, item);
 		}
@@ -357,6 +375,7 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvMimeType;
 		public ImageView ivShareable;
 		public ImageView ivNotShareable;
+		public int type;
 
 	}
 
