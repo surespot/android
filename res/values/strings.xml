@@ -279,8 +279,8 @@
     <string name="pref_title_options">options</string>
     <string name="pref_summary_delete_message">confirm before deleting a message</string>
     <string name="pref_summary_delete_all_messages">confirm before deleting all messages</string>
-    <string name="pref_summary_identity_auto_backup">Backup and restore your identity automatically using Google&amp;apos;s backup servers.</string>
-    <string name="pref_summary_export_identity">Manually backup your identity to local device storage. This is in theory more secure than backing up via Google&amp;apos;s cloud, but also not as convenient.</string>
+    <string name="pref_summary_identity_auto_backup">Backup and restore your identity automatically using Google\'s backup servers.</string>
+    <string name="pref_summary_export_identity">Manually backup your identity to local device storage. This is in theory more secure than backing up via Google\'s cloud, but also not as convenient.</string>
     <string name="pref_summary_import_identity">Restore your identity from local device storage.</string>
     <string name="pref_summary_delete_identity">Deleting an identity can not be undone.</string>
     <string name="pref_summary_regen_keys">For the paranoid.</string>
