@@ -1191,8 +1191,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 									if (!result) {
 
-										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-										// clear the intent
+										Runnable runnable = new Runnable() {
+											
+											@Override
+											public void run() {
+												Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+												
+											}
+										};
+										
+										getMainHandler().post(runnable);
 
 									}
 

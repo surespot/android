@@ -116,152 +116,160 @@ public class ChatUtils {
 				SurespotLog.v(TAG, "uploadPictureMessageAsync");
 				try {
 					Bitmap bitmap = null;
-					InputStream dataStream;
+					InputStream dataStream = null;
 					if (scale) {
 						SurespotLog.v(TAG, "scalingImage");
 						bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConstants.MESSAGE_IMAGE_DIMENSION);
 
-						final Bitmap finalBitmap = bitmap;
-						final PipedOutputStream pos = new PipedOutputStream();
-						dataStream = new PipedInputStream(pos);
-						Runnable runnable = new Runnable() {
-							@Override
-							public void run() {
-								SurespotLog.v(TAG, "compressingImage");
-								finalBitmap.compress(Bitmap.CompressFormat.JPEG, 75, pos);
-								try {
-									pos.close();
-									SurespotLog.v(TAG, "imageCompressed");
+						if (bitmap != null) {
+							final Bitmap finalBitmap = bitmap;
+							final PipedOutputStream pos = new PipedOutputStream();
+							dataStream = new PipedInputStream(pos);
+							Runnable runnable = new Runnable() {
+								@Override
+								public void run() {
+									SurespotLog.v(TAG, "compressingImage");
+									finalBitmap.compress(Bitmap.CompressFormat.JPEG, 75, pos);
+									try {
+										pos.close();
+										SurespotLog.v(TAG, "imageCompressed");
+									}
+									catch (IOException e) {
+										SurespotLog.w(TAG, e, "error compressing image");
+									}
 								}
-								catch (IOException e) {
-									SurespotLog.w(TAG, e, "error compressing image");
-								}
-							}
-						};
-						SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+							};
+							SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+						}
 					}
 					else {
 						dataStream = activity.getContentResolver().openInputStream(imageUri);
 					}
 
-					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
+					if (dataStream != null) {
 
-					final String ourVersion = IdentityController.getOurLatestVersion();
-					final String theirVersion = IdentityController.getTheirLatestVersion(to);
+						PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+						final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 
-					final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion,
-							new BufferedInputStream(dataStream), encryptionOutputStream);
+						final String ourVersion = IdentityController.getOurLatestVersion();
+						final String theirVersion = IdentityController.getTheirLatestVersion(to);
 
-					// add a message immediately
-					if (scale) {
-						// use iv as key
+						final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(
+								dataStream), encryptionOutputStream);
+
+						// add a message immediately
+						if (scale) {
+							// use iv as key
+
+							if (bitmap != null) {
+								// scale to display size
+								ByteArrayOutputStream bos = new ByteArrayOutputStream();
+								bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
+								bitmap = getSampledImage(bos.toByteArray());
+								bos.close();
+
+							}
+						}
+						else {
+							// scale to display size
+							bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
+						}
+
+						// save encrypted image locally until we receive server confirmation
+						String localImageDir = FileUtils.getImageUploadDir(activity);
+						new File(localImageDir).mkdirs();
+
+						String localImageFilename = localImageDir + File.separator
+								+ URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
+						final File localImageFile = new File(localImageFilename);
+
+						localImageFile.createNewFile();
+						String localImageUri = Uri.fromFile(localImageFile).toString();
+						SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
 						if (bitmap != null) {
-							// scale to display size
-							ByteArrayOutputStream bos = new ByteArrayOutputStream();
-							bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
-							bitmap = getSampledImage(bos.toByteArray());
-							bos.close();
+							SurespotLog.v(TAG, "adding bitmap to caches: %s", localImageUri);
 
+							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
+							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
+							message.setId(null);
+							message.setHeight(bitmap.getHeight());
+							activity.runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									SurespotLog.v(TAG, "adding local image message %s", message);
+									chatController.addMessage(message);
+
+								}
+							});
 						}
-					}
-					else {
-						// scale to display size
-						bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
-					}
 
-					// save encrypted image locally until we receive server confirmation
-					String localImageDir = FileUtils.getImageUploadDir(activity);
-					new File(localImageDir).mkdirs();
-
-					String localImageFilename = localImageDir + File.separator
-							+ URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
-					final File localImageFile = new File(localImageFilename);
-
-					localImageFile.createNewFile();
-					String localImageUri = Uri.fromFile(localImageFile).toString();
-					SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
-
-					if (bitmap != null) {
-						SurespotLog.v(TAG, "adding bitmap to caches: %s", localImageUri);
-
-						MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
-						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
-						message.setId(null);
-						message.setHeight(bitmap.getHeight());
-						activity.runOnUiThread(new Runnable() {
+						Runnable saveFileRunnable = new Runnable() {
 							@Override
 							public void run() {
-								SurespotLog.v(TAG,"adding local image message %s", message);
-								chatController.addMessage(message);
 
-							}
-						});
-					}
+								// save encrypted image to disk
+								FileOutputStream fileSaveStream;
+								try {
+									fileSaveStream = new FileOutputStream(localImageFile);
 
-					Runnable saveFileRunnable = new Runnable() {
-						@Override
-						public void run() {
+									int bufferSize = 1024;
+									byte[] buffer = new byte[bufferSize];
 
-							// save encrypted image to disk
-							FileOutputStream fileSaveStream;
-							try {
-								fileSaveStream = new FileOutputStream(localImageFile);
+									int len = 0;
+									while ((len = encryptionInputStream.read(buffer)) != -1) {
+										fileSaveStream.write(buffer, 0, len);
+									}
+									fileSaveStream.close();
+									encryptionInputStream.close();
 
-								int bufferSize = 1024;
-								byte[] buffer = new byte[bufferSize];
-
-								int len = 0;
-								while ((len = encryptionInputStream.read(buffer)) != -1) {
-									fileSaveStream.write(buffer, 0, len);
 								}
-								fileSaveStream.close();
-								encryptionInputStream.close();
 
-							}
+								catch (IOException e) {
+									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+									callback.handleResponse(false);
+									return;
+								}
 
-							catch (IOException e) {
-								SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-								callback.handleResponse(false);
-								return;
-							}
+								// upload encrypted image to server
+								FileInputStream uploadStream;
+								try {
+									uploadStream = new FileInputStream(localImageFile);
+								}
+								catch (FileNotFoundException e) {
+									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+									callback.handleResponse(false);
+									return;
+								}
 
-							// upload encrypted image to server
-							FileInputStream uploadStream;
-							try {
-								uploadStream = new FileInputStream(localImageFile);
-							}
-							catch (FileNotFoundException e) {
-								SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-								callback.handleResponse(false);
-								return;
-							}
+								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream,
+										SurespotConstants.MimeTypes.IMAGE, new IAsyncCallback<Boolean>() {
 
-							networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream,
-									SurespotConstants.MimeTypes.IMAGE, new IAsyncCallback<Boolean>() {
-
-										@Override
-										public void handleResponse(Boolean result) {
-											// if it failed update the message
-											SurespotLog.v(TAG, "postFileStream complete, result: %b", result);
-											if (!result) {
-												ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
-												if (chatAdapter != null) {
-													chatAdapter.getMessageByIv(iv).setErrorStatus(500);
-													chatAdapter.notifyDataSetChanged();
+											@Override
+											public void handleResponse(Boolean result) {
+												// if it failed update the message
+												SurespotLog.v(TAG, "postFileStream complete, result: %b", result);
+												if (!result) {
+													ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
+													if (chatAdapter != null) {
+														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
+														chatAdapter.notifyDataSetChanged();
+													}
 												}
+
+												callback.handleResponse(result);
 											}
+										});
 
-											callback.handleResponse(result);
-										}
-									});
+							}
+						};
 
-						}
-					};
+						SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
 
-					SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
-
+					}
+					else {
+						callback.handleResponse(false);
+					}
 				}
 
 				catch (IOException e) {
@@ -286,7 +294,7 @@ public class ChatUtils {
 					InputStream dataStream = activity.getContentResolver().openInputStream(imageUri);
 					PipedOutputStream encryptionOutputStream = new PipedOutputStream();
 					final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-					
+
 					final String ourVersion = IdentityController.getOurLatestVersion();
 					final String username = IdentityController.getLoggedInUser();
 					final String iv = EncryptionController.runEncryptTask(ourVersion, username, ourVersion, new BufferedInputStream(
@@ -407,7 +415,6 @@ public class ChatUtils {
 			SurespotLog.w(TAG, "decodeSampledBitmapFromUri", e);
 		}
 		return null;
-		
 
 	}
 
@@ -561,87 +568,92 @@ public class ChatUtils {
 	public static byte[] base64Decode(String buf) {
 		return Base64.decode(buf, Base64.DEFAULT);
 	}
-	
-	  /**
-	   * Converts the string to the unicode format '\u0020'.
-	   * 
-	   * This format is the Java source code format.
-	   *
-	   * <pre>
-	   *   CharUtils.unicodeEscaped(' ') = "\u0020"
-	   *   CharUtils.unicodeEscaped('A') = "\u0041"
-	   * </pre>
-	   * 
-	   * @param ch  the character to convert
-	   * @return the escaped unicode string
-	   */
-	  public static String unicodeEscaped(int ch) {
-	      if (ch < 0x10) {
-	          return "\\u000" + Integer.toHexString(ch);
-	      } else if (ch < 0x100) {
-	          return "\\u00" + Integer.toHexString(ch);
-	      } else if (ch < 0x1000) {
-	          return "\\u0" + Integer.toHexString(ch);
-	      }
-	      return "\\u" + Integer.toHexString(ch);
-	  }
-	  
-	  /**
-	   * Converts the string to the unicode format '\u0020'.
-	   * 
-	   * This format is the Java source code format.
-	   * 
-	   * If <code>null</code> is passed in, <code>null</code> will be returned.
-	   *
-	   * <pre>
-	   *   CharUtils.unicodeEscaped(null) = null
-	   *   CharUtils.unicodeEscaped(' ')  = "\u0020"
-	   *   CharUtils.unicodeEscaped('A')  = "\u0041"
-	   * </pre>
-	   * 
-	   * @param ch  the character to convert, may be null
-	   * @return the escaped unicode string, null if null input
-	   */
-	  public static String unicodeEscaped(Character ch) {
-	      if (ch == null) {
-	          return null;
-	      }
-	      return unicodeEscaped(ch.charValue());
-	  }
-	  
-	  
-	  public static class CodePoint {
-		  public int codePoint;
-		  public int start;
-		  public int end;
-	  }
-	  
-	  //iterate through codepoints http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5003547
-	  public static Iterable<CodePoint> codePoints(final String s) {
-		    return new Iterable<CodePoint>() {
-		        public Iterator<CodePoint> iterator() {
-		            return new Iterator<CodePoint>() {
-		                int nextIndex = 0;
-		                public boolean hasNext() {
-		                    return nextIndex < s.length();
-		                }
-		                public CodePoint next() {
-		                    int result = s.codePointAt(nextIndex);
-		                    
-		                    
-		                    CodePoint cp = new CodePoint();
-		                    cp.codePoint = result;
-		                    cp.start = nextIndex;		                    
-		                    nextIndex += Character.charCount(result);
-		                    cp.end = nextIndex;
-		                    return cp;
-		                }
-		                public void remove() {
-		                    throw new UnsupportedOperationException();
-		                }
-		            };
-		        }
-		    };
+
+	/**
+	 * Converts the string to the unicode format '\u0020'.
+	 * 
+	 * This format is the Java source code format.
+	 * 
+	 * <pre>
+	 *   CharUtils.unicodeEscaped(' ') = "\u0020"
+	 *   CharUtils.unicodeEscaped('A') = "\u0041"
+	 * </pre>
+	 * 
+	 * @param ch
+	 *            the character to convert
+	 * @return the escaped unicode string
+	 */
+	public static String unicodeEscaped(int ch) {
+		if (ch < 0x10) {
+			return "\\u000" + Integer.toHexString(ch);
 		}
+		else if (ch < 0x100) {
+			return "\\u00" + Integer.toHexString(ch);
+		}
+		else if (ch < 0x1000) {
+			return "\\u0" + Integer.toHexString(ch);
+		}
+		return "\\u" + Integer.toHexString(ch);
+	}
+
+	/**
+	 * Converts the string to the unicode format '\u0020'.
+	 * 
+	 * This format is the Java source code format.
+	 * 
+	 * If <code>null</code> is passed in, <code>null</code> will be returned.
+	 * 
+	 * <pre>
+	 *   CharUtils.unicodeEscaped(null) = null
+	 *   CharUtils.unicodeEscaped(' ')  = "\u0020"
+	 *   CharUtils.unicodeEscaped('A')  = "\u0041"
+	 * </pre>
+	 * 
+	 * @param ch
+	 *            the character to convert, may be null
+	 * @return the escaped unicode string, null if null input
+	 */
+	public static String unicodeEscaped(Character ch) {
+		if (ch == null) {
+			return null;
+		}
+		return unicodeEscaped(ch.charValue());
+	}
+
+	public static class CodePoint {
+		public int codePoint;
+		public int start;
+		public int end;
+	}
+
+	// iterate through codepoints http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5003547
+	public static Iterable<CodePoint> codePoints(final String s) {
+		return new Iterable<CodePoint>() {
+			public Iterator<CodePoint> iterator() {
+				return new Iterator<CodePoint>() {
+					int nextIndex = 0;
+
+					public boolean hasNext() {
+						return nextIndex < s.length();
+					}
+
+					public CodePoint next() {
+						int result = s.codePointAt(nextIndex);
+
+						CodePoint cp = new CodePoint();
+						cp.codePoint = result;
+						cp.start = nextIndex;
+						nextIndex += Character.charCount(result);
+						cp.end = nextIndex;
+						return cp;
+					}
+
+					public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
+			}
+		};
+	}
 
 }
