@@ -65,7 +65,7 @@
         </Preference>
         <Preference
             android:summary="@string/pref_summary_delete_identity"
-            android:title="@string/delete_identity" >
+            android:title="@string/pref_title_delete_identity" >
             <intent android:action="com.twofours.surespot.identity.DeleteIdentityActivity" >
             </intent>
         </Preference>

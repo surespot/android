@@ -288,6 +288,7 @@
     <string name="pref_summary_silent_error_reporting">Silently sends error reports containing no personally identifying information to surespot developers.</string>
     <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>
     <string name="menu_invite_contacts">invite contacts</string>
+    <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
 
 </resources>
