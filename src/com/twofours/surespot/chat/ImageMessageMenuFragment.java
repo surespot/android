@@ -139,7 +139,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 							}
 
 							catch (IOException e) {
-								SurespotLog.w(TAG, "onCreateDialog", e);
+								SurespotLog.w(TAG, e, "onCreateDialog");
 
 							}
 							return false;
@@ -149,10 +149,10 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 							if (mActivity != null) {
 								if (result) {
 
-									Utils.makeToast(mActivity, getString(R.string.image_saved_to_gallery));
+									Utils.makeToast(mActivity, mActivity.getString(R.string.image_saved_to_gallery));
 								}
 								else {
-									Utils.makeToast(mActivity, getString(R.string.error_saving_image_to_gallery));
+									Utils.makeToast(mActivity, mActivity.getString(R.string.error_saving_image_to_gallery));
 								}
 							}
 						};
@@ -166,8 +166,8 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
 						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
-								getString(R.string.delete_message), getString(R.string.ok),
-								getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel),
+								new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											mActivity.getChatController().deleteMessage(mMessage);
