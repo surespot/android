@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:text="select none" />
+        android:text="@string/select_none" />
 
     <Button
         android:id="@+id/bSelectAll"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/bSelectNone"
-        android:text="select all" />
+        android:text="@string/select_all" />
 
     <Button
         android:id="@+id/bSelectContacts"
@@ -35,7 +35,7 @@
         android:layout_marginBottom="-10sp"
         android:layout_marginRight="-10sp"
         android:background="@drawable/send_button"
-        android:text="ok"
+        android:text="@string/ok"
         android:textColor="@android:color/black" />
 
 </RelativeLayout>

@@ -60,7 +60,7 @@ public class LoginActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		Utils.configureActionBar(this, "login", "", false);
+		Utils.configureActionBar(this, getString(R.string.login), "", false);
 
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
@@ -68,7 +68,7 @@ public class LoginActivity extends SherlockActivity {
 
 		Utils.logIntent(TAG, getIntent());
 
-		mMpd = new MultiProgressDialog(this, "logging in", 750);
+		mMpd = new MultiProgressDialog(this, getString(R.string.login_progress), 750);
 
 		this.loginButton = (Button) this.findViewById(R.id.bLogin);
 		this.loginButton.setOnClickListener(new View.OnClickListener() {
@@ -210,14 +210,14 @@ public class LoginActivity extends SherlockActivity {
 				protected void onPostExecute(final IdSig idSig) {
 					if (idSig != null) {
 
-						NetworkController networkController = new NetworkController(LoginActivity.this, null);						
+						NetworkController networkController = new NetworkController(LoginActivity.this, null);
 						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
 							@Override
-							public void onSuccess(int responseCode, String arg0, Cookie cookie) {								
+							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
 
 								Intent intent = getIntent();
-								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);								
+								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
 								newIntent.setAction(intent.getAction());
 								newIntent.setType(intent.getType());
 								Bundle extras = intent.getExtras();
@@ -259,14 +259,14 @@ public class LoginActivity extends SherlockActivity {
 									HttpResponseException error = (HttpResponseException) arg0;
 									int statusCode = error.getStatusCode();
 									if (statusCode == 401) {
-										Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
+										Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
 									}
 									else {
-										Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
+										Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
 									}
 								}
 								else {
-									Utils.makeToast(LoginActivity.this, "Error logging in, please try again later.");
+									Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
 								}
 								pwText.setText("");
 							}
@@ -279,7 +279,7 @@ public class LoginActivity extends SherlockActivity {
 					}
 					else {
 						mMpd.decrProgress();
-						Utils.makeToast(LoginActivity.this, "Could not login, please make sure your password is correct.");
+						Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
 						pwText.setText("");
 					}
 
@@ -326,8 +326,7 @@ public class LoginActivity extends SherlockActivity {
 				}.execute();
 			}
 			else {
-				Utils.makeLongToast(this, "sorry, you have already created the maximum (" + SurespotConstants.MAX_IDENTITIES
-						+ ") number of identities\n\nidentities can be deleted from the settings menu after logging in");
+				Utils.makeLongToast(this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
 			}
 			return true;
 
@@ -342,7 +341,7 @@ public class LoginActivity extends SherlockActivity {
 						public void handleResponse(Void result) {
 							LoginActivity.this.runOnUiThread(new Runnable() {
 								public void run() {
-									Utils.makeToast(LoginActivity.this, "local cache cleared");
+									Utils.makeToast(LoginActivity.this, getString(R.string.local_cache_cleared));
 								};
 							});
 

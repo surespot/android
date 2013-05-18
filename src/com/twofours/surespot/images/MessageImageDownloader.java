@@ -65,10 +65,10 @@ public class MessageImageDownloader {
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 	private ChatAdapter mChatAdapter;
 
-	public MessageImageDownloader (ChatAdapter chatAdapter) {
+	public MessageImageDownloader(ChatAdapter chatAdapter) {
 		mChatAdapter = chatAdapter;
 	}
-	
+
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
 	 * in the cache and will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
@@ -83,7 +83,7 @@ public class MessageImageDownloader {
 
 		if (bitmap == null) {
 			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
-			
+
 			forceDownload(imageView, message);
 		}
 		else {
@@ -242,7 +242,7 @@ public class MessageImageDownloader {
 				final Bitmap finalBitmap = bitmap;
 
 				MessageImageDownloader.addBitmapToCache(mMessage.getData(), bitmap);
-				
+
 				mMessage.setLoaded(true);
 				mMessage.setLoading(false);
 
@@ -254,7 +254,7 @@ public class MessageImageDownloader {
 					if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
 
 						mHandler.post(new Runnable() {
-							
+
 							@Override
 							public void run() {
 
@@ -310,8 +310,7 @@ public class MessageImageDownloader {
 									tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
 											+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
 								}
-								
-								
+
 								mChatAdapter.checkLoaded();
 								// }
 							}

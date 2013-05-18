@@ -24,7 +24,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="cancel" >
+            android:text="@string/cancel" >
         </Button>
 
         <Button
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:enabled="false"
-            android:text="send" >
+            android:text="@string/send" >
         </Button>
     </LinearLayout>
 

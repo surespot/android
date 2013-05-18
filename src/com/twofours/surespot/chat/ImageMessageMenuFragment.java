@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotLog;
@@ -52,7 +53,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 			while (li.hasNext()) {
 				String item = li.next();
 
-				if (item.equals("save to gallery")) {
+				if (item.equals(getString(R.string.menu_save_to_gallery))) {
 					listview.getChildAt(li.previousIndex()).setEnabled(mMessage.isShareable() && FileUtils.isExternalStorageMounted());
 					return;
 				}
@@ -79,21 +80,21 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 
 		// if we have an errored image we can resend it
 		if (mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getErrorStatus() > 0) {
-			mItems.add("resend message");
+			mItems.add(getString(R.string.menu_resend_message));
 		}
 
 		// if it's not our message we can save it to gallery
 		if (!mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
-			mItems.add("save to gallery");
+			mItems.add(getString(R.string.menu_save_to_gallery));
 
 		}
 		// if it's our message and it's been sent we can mark it locked or unlocked
 		if (mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
-			mItems.add(mMessage.isShareable() ? "lock" : "unlock");
+			mItems.add(mMessage.isShareable() ? getString(R.string.menu_lock) : getString(R.string.menu_unlock));
 		}
 
 		// can always delete
-		mItems.add("delete message");
+		mItems.add(getString(R.string.menu_delete_message));
 
 		builder.setItems(mItems.toArray(new String[mItems.size()]), new DialogInterface.OnClickListener() {
 			public void onClick(final DialogInterface dialogi, int which) {
@@ -111,12 +112,12 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 
 				String itemText = mItems.get(which);
 
-				if (itemText.contains("lock")) {
+				if (itemText.equals(getString(R.string.menu_lock)) || itemText.equals(getString(R.string.menu_unlock))) {
 					mActivity.getChatController().toggleMessageShareable(mMessage);
 					return;
 				}
 
-				if (itemText.equals("save to gallery")) {
+				if (itemText.equals(getString(R.string.menu_save_to_gallery))) {
 
 					// Utils.makeToast(mActivity, "saving image in gallery");
 					new AsyncTask<Void, Void, Boolean>() {
@@ -145,11 +146,14 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 						}
 
 						protected void onPostExecute(Boolean result) {
-							if (result) {
-								Utils.makeToast(mActivity, "image saved to gallery");
-							}
-							else {
-								Utils.makeToast(mActivity, "error saving image to gallery");
+							if (mActivity != null) {
+								if (result) {
+
+									Utils.makeToast(mActivity, getString(R.string.image_saved_to_gallery));
+								}
+								else {
+									Utils.makeToast(mActivity, getString(R.string.error_saving_image_to_gallery));
+								}
 							}
 						};
 					}.execute();
@@ -157,12 +161,13 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 
 				}
 
-				if (itemText.equals("delete message")) {
+				if (itemText.equals(getString(R.string.menu_delete_message))) {
 					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete this message?",
-								"delete message", "ok", "cancel", new IAsyncCallback<Boolean>() {
+						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+								getString(R.string.delete_message), getString(R.string.ok),
+								getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											mActivity.getChatController().deleteMessage(mMessage);
@@ -180,7 +185,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					return;
 				}
 
-				if (itemText.equals("resend message")) {
+				if (itemText.equals(getString(R.string.menu_resend_message))) {
 					mActivity.getChatController().resendPictureMessage(mMessage);
 					return;
 				}

@@ -28,9 +28,6 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
-import com.twofours.surespot.R.id;
-import com.twofours.surespot.R.layout;
-import com.twofours.surespot.R.menu;
 import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.common.Utils;
 
@@ -104,10 +101,25 @@ public class ContactPickerActivity extends SherlockActivity {
 		}
 
 		mSelectEmail = type == ExternalInviteActivity.SHARE_EMAIL;
-		Utils.configureActionBar(this, "select contacts", ExternalInviteActivity.typeToString(type), true);
+		Utils.configureActionBar(this, getString(R.string.invite_select_contacts), typeToUserString(type), true);
 		populateContactList(savedPreviouslySelected);
 	}
 
+	
+	public String typeToUserString(int type) {
+		switch (type) {
+		case ExternalInviteActivity.SHARE_EMAIL:
+			return getString(R.string.email);
+		case ExternalInviteActivity.SHARE_SMS:
+			return getString(R.string.sms);
+
+		case ExternalInviteActivity.SHARE_SOCIAL:
+			return getString(R.string.social);
+		default:
+			return getString(R.string.unknown);
+		}
+	}
+	
 	/**
 	 * Populate the contact list based on account currently selected in the account spinner.
 	 */

@@ -3,6 +3,7 @@ package com.twofours.surespot.billing;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -29,6 +30,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.ui.UIUtils;
 
+@SuppressLint("InlinedApi")
 public class BillingActivity extends SherlockFragmentActivity {
 
 	protected static final String TAG = "BillingActivity";
@@ -44,7 +46,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
-		Utils.configureActionBar(this, "pay", "what you like", true);
+		Utils.configureActionBar(this, getString(R.string.pay), getString(R.string.what_you_like), true);
 
 		TextView tvPwyl = (TextView) findViewById(R.id.tvPwyl);
 		UIUtils.setHtml(this, tvPwyl, R.string.pwyl_text);
@@ -54,7 +56,6 @@ public class BillingActivity extends SherlockFragmentActivity {
 			mHomeImageView = (ImageView) findViewById(R.id.abs__home);
 		}
 
-		
 		mIabHelper = new IabHelper(this, SurespotConstants.GOOGLE_APP_LICENSE_KEY);
 
 		if (savedInstanceState != null) {
@@ -70,15 +71,14 @@ public class BillingActivity extends SherlockFragmentActivity {
 				if (!result.isSuccess()) {
 					// Oh noes, there was a problem.
 					SurespotLog.v(TAG, "Problem setting up In-app Billing: " + result);
-					Utils.makeLongToast(BillingActivity.this, "Could not enable in-app billing.");
-					
-					//disable in app purchase buttons
+					Utils.makeLongToast(BillingActivity.this, getString(R.string.billing_could_not_enable));
+
+					// disable in app purchase buttons
 					ViewGroup layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
 					UIUtils.disableImmediateChildren(layout);
 					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
 					UIUtils.disableImmediateChildren(layout);
-					
-										
+
 					hideProgress();
 					return;
 				}
@@ -99,8 +99,6 @@ public class BillingActivity extends SherlockFragmentActivity {
 		});
 
 	}
-	
-	
 
 	private void showProgress() {
 		// mMpd.show();
@@ -151,8 +149,8 @@ public class BillingActivity extends SherlockFragmentActivity {
 	};
 
 	public void onPurchase(View arg0) {
-		String denom = (String) arg0.getTag();		
-		try {			
+		String denom = (String) arg0.getTag();
+		try {
 			if (mHelperReady) {
 				showProgress();
 				mIabHelper.launchPurchaseFlow(this, "pwyl_" + denom, RC_REQUEST, new OnIabPurchaseFinishedListener() {
@@ -180,7 +178,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 		catch (IllegalStateException ise) {
 			hideProgress();
-			Utils.makeToast(this, "Error, could not complete purchase.");
+			Utils.makeToast(this, getString(R.string.billing_purchase_error));
 			SurespotLog.v(TAG, ise, "onPurchase error");
 		}
 	}
@@ -234,22 +232,25 @@ public class BillingActivity extends SherlockFragmentActivity {
 		Uri payPalUri = getPayPalUri();
 		SurespotLog.d(TAG, "sending email with url: %s", payPalUri);
 
-		final String subject = "surespot pay what you like paypal link";
-		final String body = "thankyou for paying what you like for surespot! the paypal link is:\n\n" + payPalUri;
+		final String subject = getString(R.string.billing_paypal_link_email_subject);
+		final String body = getString(R.string.billing_paypal_link_email_body) + "\n\n" + payPalUri;
 
 		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
-		toEmails.add("none");
+		toEmails.add(getString(R.string.none));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("send to?").setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
+		builder.setTitle(R.string.send_to_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 
 				String choice = toEmails.get(which);
 				String email = "";
-				if (!choice.equals("none")) {
+				if (choice.equals(getString(R.string.none))) {
+					return;
+				}
+				else {
 					email = choice;
 				}
 
@@ -276,7 +277,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		String bitcoinAddy = Utils.getResourceString(this, "donations__bitcoin");
 		clipboard.setText(bitcoinAddy);
-		Utils.makeToast(this, bitcoinAddy + " copied to clipboard");
+		Utils.makeToast(this, getString(R.string.billing_bitcoin_copied_to_clipboard, bitcoinAddy));
 
 	}
 
@@ -286,24 +287,27 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		SurespotLog.d(TAG, "sending email with bitcoin");
 
-		final String subject = "surespot pay what you like bitcoin address";
-		final String body = "thankyou for paying what you like for surespot! the bitcoin address is:\n\n" + bitcoinAddy
-				+ "\n\nthe QR code can be viewed here: https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A" + bitcoinAddy
-				+ "&choe=UTF-8&chs=300x300";
+		final String subject = getString(R.string.billing_bitcoin_email_subject);
+		final String body = getString(R.string.billing_bitcoin_email_body_address, bitcoinAddy) + "\n\n"
+				+ getString(R.string.billing_bitcoin_email_body_qr, "https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A" + bitcoinAddy
+				+ "&choe=UTF-8&chs=300x300");
 
 		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
-		toEmails.add("none");
+		toEmails.add(getString(R.string.none));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("send to?").setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
+		builder.setTitle(R.string.send_to_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 
 				String choice = toEmails.get(which);
 				String email = "";
-				if (!choice.equals("none")) {
+				if (choice.equals(getString(R.string.none))) {
+					return;
+				}
+				else {							
 					email = choice;
 				}
 
@@ -336,7 +340,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 			finish();
 		}
 		catch (ActivityNotFoundException anfe) {
-			Utils.makeToast(this, "could not open bitcoin wallet");
+			Utils.makeToast(this, getString(R.string.could_not_open_bitcoin_wallet));
 		}
 
 	}

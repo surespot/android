@@ -65,9 +65,9 @@ public class ExternalInviteActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_external_invite);
 
-		Utils.configureActionBar(this, "invite", IdentityController.getLoggedInUser(), true);
+		Utils.configureActionBar(this, getString(R.string.invite), IdentityController.getLoggedInUser(), true);
 
-		mMpd = new SingleProgressDialog(this, "creating invitation", 750);
+		mMpd = new SingleProgressDialog(this, getString(R.string.invite_progress_text), 750);
 
 		mRbSms = (RadioButton) findViewById(R.id.rbInviteSMS);
 		mRbSms.setTag(SHARE_SMS);
@@ -166,7 +166,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 						};
 
 						public void onFailure(Throwable e, JSONObject errorResponse) {
-							SurespotLog.v(TAG, "getShortUrl, error: " + errorResponse.toString(), e);
+							SurespotLog.v(TAG, e, "getShortUrl, error: " + errorResponse.toString());
 							sendInvitation(longUrl);
 							mMpd.hide();
 						};
@@ -174,7 +174,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 				}
 				else {
 					if (mSelectedContacts == null || mSelectedContacts.size() == 0) {
-						Utils.makeToast(ExternalInviteActivity.this, "no contact data selected or entered");
+						Utils.makeToast(ExternalInviteActivity.this, getString(R.string.no_contact_data_selected_or_entered));
 					}
 				}
 			}
@@ -215,7 +215,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 					editor.putBoolean("pref_alternate_text_delimiter", !altDelimiter);
 					editor.commit();
 
-					Utils.makeToast(ExternalInviteActivity.this, "toggled sms contact population mechanism");
+					Utils.makeToast(ExternalInviteActivity.this, getString(R.string.toggled_sms_contact_population_mechanism));
 				}
 			}, idx1, idx2 - 1, 0);
 
@@ -257,7 +257,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 				intent.setData(Uri.parse("mailto:"));
 				// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
 				intent.putExtra(Intent.EXTRA_EMAIL, mSelectedContacts.toArray(new String[mSelectedContacts.size()]));
-				intent.putExtra(Intent.EXTRA_SUBJECT, "Invitation to chat with me privately via surespot");
+				intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.invitation_email_subject));
 				intent.putExtra(Intent.EXTRA_TEXT, message);
 				startActivity(intent);
 
@@ -290,7 +290,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 			finish();
 		}
 		catch (ActivityNotFoundException e) {
-			Utils.makeToast(this, "No application found to handle share.");
+			Utils.makeToast(this, getString(R.string.invite_no_application_found));
 		}
 	}
 
@@ -321,18 +321,18 @@ public class ExternalInviteActivity extends SherlockActivity {
 			mTvInviteViaLabel.setEnabled(true);
 			mEtInviteeData.setEnabled(true);
 			mBSelectContacts.setEnabled(true);
-			mTvInviteViaLabel.setText("also send to (comma separated):");
+			mTvInviteViaLabel.setText(R.string.invite_also_send_to);
 			mEtInviteeData.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 			break;
 		case SHARE_SMS:
 			mTvInviteViaLabel.setEnabled(true);
 			mEtInviteeData.setEnabled(true);
 			mBSelectContacts.setEnabled(true);
-			mTvInviteViaLabel.setText("also send to (comma separated):");
+			mTvInviteViaLabel.setText(R.string.invite_also_send_to);
 			mEtInviteeData.setInputType(InputType.TYPE_CLASS_PHONE);
 			break;
 		case SHARE_SOCIAL:
-			mTvInviteViaLabel.setText("not used");
+			mTvInviteViaLabel.setText(R.string.invite_not_used);
 			mTvInviteViaLabel.setEnabled(false);
 			mEtInviteeData.setEnabled(false);
 			mBSelectContacts.setEnabled(false);
@@ -370,14 +370,14 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 		if (mSelectedContacts != null) {
 			mSelectedContacts.clear();
-			mBSelectContacts.setText("select contacts (" + String.valueOf(mSelectedContacts.size()) + ")");
+			mBSelectContacts.setText(getString(R.string.invite_select_contacts) + " (" + String.valueOf(mSelectedContacts.size()) + ")");
 		}
 	}
 
 	private void setSelectedContacts(ArrayList<String> selectedContacts) {
 		mSelectedContacts = selectedContacts;
 		if (mSelectedContacts != null) {
-			mBSelectContacts.setText("select contacts (" + String.valueOf(mSelectedContacts.size()) + ")");
+			mBSelectContacts.setText(getString(R.string.invite_select_contacts) + " (" + String.valueOf(mSelectedContacts.size()) + ")");
 		}
 	}
 

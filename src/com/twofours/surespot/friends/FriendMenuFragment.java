@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.twofours.surespot.R;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 
 public class FriendMenuFragment extends SherlockDialogFragment {
@@ -31,13 +32,13 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 
 		if (mFriend.isFriend()) {
 			if (mFriend.isChatActive()) {
-				mItems.add("close tab");
+				mItems.add(getString(R.string.menu_close_tab));
 			}
-			mItems.add("assign image");
-			mItems.add("delete all messages");
+			mItems.add(getString(R.string.menu_assign_image));
+			mItems.add(getString(R.string.menu_delete_all_messages));
 		}
 		if (!mFriend.isInviter()) {
-			mItems.add("delete friend");
+			mItems.add(getString(R.string.menu_delete_friend));
 
 		}
 

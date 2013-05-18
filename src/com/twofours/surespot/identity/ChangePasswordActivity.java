@@ -40,9 +40,9 @@ public class ChangePasswordActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_change_password);
-		Utils.configureActionBar(this, "password", "change", true);
+		Utils.configureActionBar(this, getString(R.string.password), getString(R.string.change_password_actionbar_right), true);
 
-		mMpd = new MultiProgressDialog(this, "changing password", 500);
+		mMpd = new MultiProgressDialog(this, getString(R.string.change_password_progress), 500);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
@@ -59,22 +59,19 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvChangePasswordWarning);
 
-		Spannable warning = new SpannableString(
-				"There is no password reset functionality in surespot so make sure you remember it!");
+		Spannable warning = new SpannableString(getString(R.string.warning_password_reset));
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 		tvSignupHelp.setText(TextUtils.concat(warning));
-		
+
 		TextView tvBackup = (TextView) findViewById(R.id.changePasswordBackup);
 
-		warning = new SpannableString(
-				"After performing this operation any backed up identities will no longer be able to be restored so make sure you backup your identity again!");
+		warning = new SpannableString(getString(R.string.backup_identities_again));
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 		tvBackup.setText(TextUtils.concat(warning));
-
 
 		final EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
 		etCurrent.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
@@ -105,7 +102,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 		if (!confirmPassword.equals(newPassword)) {
 			resetFields();
-			Utils.makeToast(this, "passwords do not match");
+			Utils.makeToast(this, getString(R.string.passwords_do_not_match));
 			return;
 		}
 
@@ -113,8 +110,8 @@ public class ChangePasswordActivity extends SherlockActivity {
 		SurespotIdentity identity = IdentityController.getIdentity(this, username, currentPassword);
 
 		if (identity == null) {
-			mMpd.decrProgress();			
-			Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
+			mMpd.decrProgress();
+			Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
 			resetFields();
 			return;
 		}
@@ -123,7 +120,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username, true)) {
 			mMpd.decrProgress();
 			resetFields();
-			Utils.makeToast(ChangePasswordActivity.this, "could not change password");			
+			Utils.makeToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
 			return;
 		}
 
@@ -172,7 +169,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 													newPassword, result.salt);
 											resetFields();
 											mMpd.decrProgress();
-											Utils.makeLongToast(ChangePasswordActivity.this, "password changed");
+											Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed));
 											finish();
 										};
 
@@ -181,7 +178,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 											SurespotLog.w(TAG, "changePassword", error);
 											mMpd.decrProgress();
 											resetFields();
-											Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
+											Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
 
 										}
 									});
@@ -189,7 +186,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 						else {
 							mMpd.decrProgress();
 							resetFields();
-							Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
+							Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
 						}
 
 					};
@@ -201,7 +198,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 			public void onFailure(Throwable error, String content) {
 				mMpd.decrProgress();
 				resetFields();
-				Utils.makeLongToast(ChangePasswordActivity.this, "could not change password");
+				Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
 
 			}
 		});

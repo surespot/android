@@ -272,19 +272,19 @@ public class ChatAdapter extends BaseAdapter {
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 	
 		if (item.getErrorStatus() > 0) {
-			UIUtils.setMessageErrorText(chatMessageViewHolder.tvTime, item);
+			UIUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
 		}
 		else {
 
 			if (item.getId() == null) {
 
-				chatMessageViewHolder.tvTime.setText("sending...");
+				chatMessageViewHolder.tvTime.setText(R.string.message_sending);
 				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
 			}
 			else {
 
 				if (item.getPlainData() == null) {
-					chatMessageViewHolder.tvTime.setText("loading and decrypting...");
+					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
 				}
 				else {
 

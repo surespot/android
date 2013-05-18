@@ -173,7 +173,7 @@ public class ChatController {
 				if (socketIOException.getHttpStatus() == 403) {
 					socket = null;
 					logout();
-					mCallback401.handleResponse("could not login to server");
+					mCallback401.handleResponse(mContext.getString(R.string.could_not_login_to_server));
 					return;
 				}
 
@@ -200,7 +200,7 @@ public class ChatController {
 				else {
 					// TODO tell user
 					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
-					mCallback401.handleResponse("could not connect to server");
+					mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server));
 				}
 			}
 
@@ -334,7 +334,7 @@ public class ChatController {
 
 	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
 	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems, String autoInviteUser) {
-		mChatPagerAdapter = new ChatPagerAdapter(mFragmentManager);
+		mChatPagerAdapter = new ChatPagerAdapter(mContext, mFragmentManager);
 		mMenuItems = menuItems;
 		mAutoInviteUser = autoInviteUser;
 
@@ -426,7 +426,7 @@ public class ChatController {
 				});
 			}
 			else {
-				Utils.makeToast(mContext, "your friend list already contains " + mAutoInviteUser);
+				Utils.makeToast(mContext, mContext.getString(R.string.autoinvite_user_exists, mAutoInviteUser));
 				mAutoInviteUser = null;
 			}
 
@@ -906,7 +906,8 @@ public class ChatController {
 			@Override
 			public void onFailure(Throwable error, String content) {
 				// setMessagesLoading(false);
-				Utils.makeToast(mContext, "loading latest messages failed: " + content);
+				SurespotLog.w(TAG, error, "loading latest messages failed");
+				Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
 				setProgress(null, false);
 			}
 		});
@@ -1323,12 +1324,12 @@ public class ChatController {
 			}
 		}
 		catch (JSONException e) {
-			SurespotLog.w(TAG, "jsonStringsToMessages", e);
+			SurespotLog.w(TAG, e, "jsonStringsToMessages");
 
 		}
 		catch (SurespotMessageSequenceException e) {
 			// shouldn't happen
-			SurespotLog.w(TAG, "handleMessages", e);
+			SurespotLog.w(TAG, e, "handleMessages");
 			// getLatestMessagesAndControls(username, e.getMessageId(), -1);
 			setProgress(username, false);
 			return;
@@ -1824,7 +1825,7 @@ public class ChatController {
 						// @Override
 						// public void run() {
 						setProgress("delete", false);
-						Utils.makeToast(mContext, "could not delete message");
+						Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_message));
 						// }
 						// });
 					}
@@ -1901,7 +1902,7 @@ public class ChatController {
 				@Override
 				public void onFailure(Throwable error, String content) {
 					setProgress("deleteMessages", false);
-					Utils.makeToast(mContext, "could not delete messages");
+					Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_messages));
 				}
 			});
 		}
@@ -1923,7 +1924,7 @@ public class ChatController {
 				public void onFailure(Throwable error, String content) {
 					SurespotLog.w(TAG, "deleteFriend", error);
 					setProgress("deleteFriend", false);
-					Utils.makeToast(mContext, "could not delete friend");
+					Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_friend));
 				}
 			});
 
@@ -1948,27 +1949,14 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.w(TAG, "toggleMessageShareable", error);
+						SurespotLog.w(TAG, error, "toggleMessageShareable");
 						setProgress("shareable", false);
-						Utils.makeToast(mContext, "could not set message lock state");
+						Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
 
 					}
 
 				});
-			}
-
-			//
-			//
-			// SurespotControlMessage dmessage = new SurespotControlMessage();
-			//
-			// String me = IdentityController.getLoggedInUser();
-			// dmessage.setFrom(me);
-			// dmessage.setType("message");
-			// dmessage.setAction(!message.isShareable() ? "shareable" : "notshareable");
-			// dmessage.setData(ChatUtils.getSpot(message));
-			// dmessage.setMoreData(message.getId().toString());
-			// dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
-			// sendControlMessage(dmessage);
+			}	
 		}
 	}
 

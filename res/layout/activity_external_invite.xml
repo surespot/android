@@ -32,7 +32,7 @@
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="5dp"
-                android:text="Invite others to communicate with you privately via surespot by sharing an auto-invite link with them."
+                android:text="@string/invite_others"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RadioButton
@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="invite via email" />
+                android:text="@string/invite_via_email" />
 
             <TextView
                 android:id="@+id/tvInviteEmail"
@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Click the select contacts button to select email addresses from your phone contacts, and/or enter them manually."
+                android:text="@string/click_to_select_email_contacts"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RadioButton
@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="invite via text message" />
+                android:text="@string/invite_via_text_message" />
 
             <TextView
                 android:id="@+id/tvInviteText"
@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="invite via other application" />
+                android:text="@string/invite_via_other_application" />
 
             <TextView
                 android:id="@+id/tvInviteOther"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="30dp"
                 android:paddingRight="15dp"
-                android:text="Touch the invite button to select application to invite with, eg. facebook, twitter."
+                android:text="@string/touch_invite_button"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </RadioGroup>
 
@@ -94,7 +94,7 @@
             android:layout_margin="10dp"
             android:layout_toLeftOf="@+id/fInvite"
             android:drawableLeft="@drawable/ic_menu_friendslist"
-            android:text="select contacts" />
+            android:text="@string/select_contacts" />
 
         <TextView
             android:id="@+id/tbInviteViaLabel"
@@ -106,7 +106,7 @@
             android:layout_toLeftOf="@+id/fInvite"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="phone number" />
+            android:text="@string/phone_number" />
 
         <EditText
             android:id="@+id/invitee"
@@ -134,7 +134,7 @@
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:background="@drawable/send_button"
-                android:text="invite"
+                android:text="@string/invite"
                 android:textColor="@android:color/black" />
         </FrameLayout>
     </RelativeLayout>

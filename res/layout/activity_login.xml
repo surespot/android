@@ -14,7 +14,7 @@
             android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="username" />
+            android:text="@string/username" />
 
         <Spinner
             android:id="@+id/spinnerUsername"
@@ -28,7 +28,7 @@
             android:id="@+id/tbInviteViaLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="password" />
+            android:text="@string/password" />
 
         <EditText
             android:id="@+id/etPassword"
@@ -45,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"
-            android:text="login" />
+            android:text="@string/login" />
     </LinearLayout>
 
 </ScrollView>

@@ -1,20 +1,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="about" >
-        <Preference android:title="about surespot..." >
+    <PreferenceCategory android:title="@string/pref_title_about" >
+        <Preference android:title="@string/pref_title_about_surespot" >
             <intent android:action="com.twofours.surespot.activities.AboutActivity" >
             </intent>
         </Preference>
     </PreferenceCategory>
-    <!--
-         <PreferenceCategory android:title="display" >
-        <CheckBoxPreference
-            android:key="pref_hide_deleted_messages"
-            android:title="hide deleted messages" >
-        </CheckBoxPreference>
-    </PreferenceCategory>
-    -->
-
+  
     <PreferenceCategory android:title="@string/notifications_title" >
         <CheckBoxPreference
             android:defaultValue="true"
@@ -36,62 +28,62 @@
             android:key="pref_notifications_led"
             android:title="@string/notifications_led" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="confirmations" >
+    <PreferenceCategory android:title="@string/pref_title_confirmations" >
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_message"
-            android:summary="confirm before deleting a message"
-            android:title="delete message" />
+            android:summary="@string/pref_summary_delete_message"
+            android:title="@string/pref_title_delete_message" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_all_messages"
-            android:summary="confirm before deleting all messages"
-            android:title="delete all messages" />
+            android:summary="@string/pref_summary_delete_all_messages"
+            android:title="@string/pref_title_delete_all_messages" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="identity management" >
-        <Preference android:title="change password..." >
+    <PreferenceCategory android:title="@string/pref_title_identity_management" >
+        <Preference android:title="@string/pref_title_change_password" >
             <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity" >
             </intent>
         </Preference>
         <Preference
-            android:summary="Backup and restore your identity automatically using Google&apos;s backup servers."
-            android:title="identity auto backup..." >
+            android:summary="@string/pref_summary_identity_auto_backup"
+            android:title="@string/pref_title_identity_auto_backup" >
             <intent android:action="com.twofours.surespot.activities.AutoBackupActivity" >
             </intent>
         </Preference>
         <Preference
-            android:summary="Manually backup your identity to local device storage. This is in theory more secure than backing up via Google&apos;s cloud, but also not as convenient."
+            android:summary="@string/pref_summary_export_identity"
             android:title="@string/export_identity_label" >
             <intent android:action="com.twofours.surespot.identity.ExportIdentityActivity" >
             </intent>
         </Preference>
         <Preference
-            android:summary="Restore your identity from local device storage."
+            android:summary="@string/pref_summary_import_identity"
             android:title="@string/import_identity_label" >
             <intent android:action="com.twofours.surespot.identity.ImportIdentityActivity" >
             </intent>
         </Preference>
         <Preference
-            android:summary="Deleting an identity can not be undone."
+            android:summary="@string/pref_summary_delete_identity"
             android:title="@string/delete_identity" >
             <intent android:action="com.twofours.surespot.identity.DeleteIdentityActivity" >
             </intent>
         </Preference>
         <Preference
-            android:summary="For the paranoid."
+            android:summary="@string/pref_summary_regen_keys"
             android:title="@string/key_management" >
             <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
             </intent>
         </Preference>
     </PreferenceCategory>
-    <PreferenceCategory android:title="options" >
+    <PreferenceCategory android:title="@string/pref_title_options" >
         <CheckBoxPreference
             android:defaultValue="false"
-            android:summary="Needs to be enabled on some devices to populate the sms 'to' field correctly when multiple contacts are selected in invite contacts."
+            android:summary="@string/pref_summary_alternate_sms_delimiter"
             android:key="pref_alternate_text_delimiter"
-            android:title="alternate sms invite 'to'" />
+            android:title="@string/pref_title_alternate_sms_invite_to" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="debug" >
+    <PreferenceCategory android:title="@string/pref_title_debug" >
 
         <!--
              <CheckBoxPreference
@@ -103,8 +95,8 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_crash_reporting"
-            android:summary="Silently sends error reports containing no personally identifying information to surespot developers."
-            android:title="silent error reporting" />
+            android:summary="@string/pref_summary_silent_error_reporting"
+            android:title="@string/pref_title_silent_error_reporting" />
 
         <!--
              <CheckBoxPreference
@@ -115,8 +107,8 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_debug_mode"
-            android:summary="Shows more information about messages for debugging purposes."
-            android:title="message debug mode" />
+            android:summary="@string/pref_summary_message_debug_mode"
+            android:title="@string/pref_title_message_debug_mode" />
     </PreferenceCategory>
 
 </PreferenceScreen>

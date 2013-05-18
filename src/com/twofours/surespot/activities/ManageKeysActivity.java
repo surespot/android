@@ -45,33 +45,29 @@ public class ManageKeysActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage_keys);
-		Utils.configureActionBar(this, "identity", "keys", true);
-		mMpd = new MultiProgressDialog(this, "generating and uploading new keys", 750);
-		
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.keys), true);
+		mMpd = new MultiProgressDialog(this, getString(R.string.generating_keys_progress), 750);
+
 		TextView tvBackupWarning = (TextView) findViewById(R.id.newKeysBackup);
 
-		Spannable warning = new SpannableString(
-				"After performing this operation any backed up identities will no longer be able to be restored so make sure you backup your identity again!");
+		Spannable warning = new SpannableString(getString(R.string.backup_identities_again));
 
-		
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		tvBackupWarning.setText(TextUtils.concat(warning));
-
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
-		
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
-		}	
+		}
 
 		spinner.setAdapter(adapter);
 		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
-		
+
 		Button rollKeysButton = (Button) findViewById(R.id.bRollKeys);
 		rollKeysButton.setOnClickListener(new OnClickListener() {
 
@@ -85,8 +81,8 @@ public class ManageKeysActivity extends SherlockActivity {
 					return;
 				}
 
-				UIUtils.passwordDialog(ManageKeysActivity.this, "create new keys for " + user, "enter password for " + user,
-						new IAsyncCallback<String>() {
+				UIUtils.passwordDialog(ManageKeysActivity.this, getString(R.string.create_new_keys_for, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
@@ -133,8 +129,8 @@ public class ManageKeysActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());							
-		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));	
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
@@ -159,7 +155,8 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(keyToken), dPassword.getBytes());
+						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(keyToken),
+								dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
 						// generate new key pairs

@@ -5,7 +5,7 @@
         android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="100"
         android:showAsAction="always"
-        android:title="options">
+        android:title="@string/options">
         <menu>
             <item
                 android:id="@+id/menu_send_image_bar"
@@ -22,18 +22,18 @@
             <item
                 android:id="@+id/menu_clear_messages"
                 android:icon="@drawable/ic_menu_delete"
-                android:title="delete all messages"/>
+                android:title="@string/delete_all_messages"/>
             <item
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/blue_heart"
-                android:title="invite contacts"/>
+                android:title="@string/menu_invite_contacts"/>
 
             <!-- I told you before kid, paywhatyoulike -->
 
             <item
                 android:id="@+id/menu_pwyl"
                 android:icon="@drawable/heart"
-                android:title="pay what you like">
+                android:title="@string/pay_what_you_like">
                 
             </item>
             <item

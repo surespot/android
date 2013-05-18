@@ -29,11 +29,11 @@ public class ExportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_export_identity);
-		
+
 		TextView tvBlurb = (TextView) findViewById(R.id.tvHelpManualBackup);
 		UIUtils.setHtml(this, tvBlurb, R.string.help_manual_backup);
-		
-		Utils.configureActionBar(this, "identity", "backup", true);
+
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.backup), true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
 
 		final TextView tvPath = (TextView) findViewById(R.id.identityBackupPath);
@@ -60,7 +60,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
-			
+
 			}
 
 		});
@@ -75,15 +75,15 @@ public class ExportIdentityActivity extends SherlockActivity {
 			public void onClick(View v) {
 				// TODO progress
 				final String user = (String) spinner.getSelectedItem();
-				UIUtils.passwordDialog(ExportIdentityActivity.this, "backup " + user + " identity", "enter password for " + user,
-						new IAsyncCallback<String>() {
+				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
 									exportIdentity(user, result);
 								}
 								else {
-									Utils.makeToast(ExportIdentityActivity.this, getText(R.string.no_identity_exported).toString());
+									Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
 								}
 							}
 						});
@@ -97,7 +97,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			@Override
 			public void handleResponse(String response) {
 				if (response == null) {
-					Utils.makeToast(ExportIdentityActivity.this, getText(R.string.no_identity_exported).toString());
+					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
 				}
 				else {
 					Utils.makeLongToast(ExportIdentityActivity.this, response);

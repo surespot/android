@@ -32,7 +32,7 @@
             android:id="@+id/cbAutoBackup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="auto identity backup via google" />
+            android:text="@string/auto_identity_backup_via_google" />
     </LinearLayout>
 
 </ScrollView>

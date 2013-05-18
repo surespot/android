@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="15dp"
-            android:text="VIA GOOGLE PLAY IN APP PURCHASE"
+            android:text="@string/via_google_play_in_app_purchase"
             android:textSize="12sp"
             android:textStyle="bold" >
         </TextView>
@@ -102,7 +102,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="15dp"
-            android:text="VIA PAYPAL"
+            android:text="@string/via_paypal"
             android:textSize="12sp"
             android:textStyle="bold" >
         </TextView>
@@ -111,19 +111,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onPaypalBrowser"
-            android:text="open link in browser" />
+            android:text="@string/open_link_in_browser" />
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onPaypalEmail"
-            android:text="send link in email" />
+            android:text="@string/send_link_in_email" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="VIA BITCOIN"
+            android:text="@string/via_bitcoin"
             android:textSize="12sp"
             android:textStyle="bold" >
         </TextView>
@@ -141,19 +141,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onBitcoinClipboard"
-            android:text="copy address to clipboard" />
+            android:text="@string/copy_address_to_clipboard" />
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onBitcoinEmail"
-            android:text="send address and QR code in email" />
+            android:text="@string/send_address_and_qr_code_in_email" />
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onBitcoinWallet"
-            android:text="open bitcoin wallet (if supported)" />
+            android:text="@string/open_bitcoin_wallet" />
     </LinearLayout>
 
 </ScrollView>

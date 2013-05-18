@@ -142,7 +142,7 @@ public class MessageDecryptor {
 							TextView tvTime = (TextView) (row).findViewById(R.id.messageTime);
 							if (finalPlainData == null) {
 								mMessage.setErrorStatus(500);
-								tvTime.setText("ERROR DECRYPTING MESSAGE");
+								tvTime.setText(R.string.message_error_decrypting_message);
 							}
 							else {
 								textView.setText(finalPlainData);

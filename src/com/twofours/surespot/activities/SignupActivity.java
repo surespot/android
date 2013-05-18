@@ -60,31 +60,28 @@ public class SignupActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
-		Utils.configureActionBar(this, "identity", "create", false);
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);
 
-		
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
-		
-		Spannable suggestion1 = new SpannableString("Please enter a username and password.");
-		Spannable suggestion2 = new SpannableString("Usernames are case sensitive");
-		suggestion2.setSpan(new ForegroundColorSpan(Color.RED), 0, suggestion2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);		
-		Spannable suggestion3 = new SpannableString(" so please be aware of this when sharing them with others. The password should be at least 8 characters long and contain funky characters in weird places. ");
-		
-		
-	    Spannable warning = new SpannableString("WARNING: There is no password reset functionality in surespot so make sure you remember it!");
-		
-	    warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-	    
-	    tvSignupHelp.setText(TextUtils.concat(suggestion1, suggestion2, suggestion3, warning));
-	    
+
+		Spannable suggestion1 = new SpannableString(getString(R.string.enter_username_and_password));
+		Spannable suggestion2 = new SpannableString(getString(R.string.usernames_case_sensitive));
+		suggestion2.setSpan(new ForegroundColorSpan(Color.RED), 0, suggestion2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		Spannable suggestion3 = new SpannableString(
+				getString(R.string.aware_username_password));
+
+		Spannable warning = new SpannableString(
+				getString(R.string.warning_password_reset));
+
+		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		tvSignupHelp.setText(TextUtils.concat(suggestion1, suggestion2, " ", suggestion3, " ", warning));
+
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
-		mMpd = new MultiProgressDialog(this, "creating a user and generating key pairs", 250);
-		
-		
-		
+		mMpd = new MultiProgressDialog(this, getString(R.string.create_user_progress), 250);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
@@ -165,7 +162,7 @@ public class SignupActivity extends SherlockActivity {
 		}
 
 		if (!confirmPassword.equals(password)) {
-			Utils.makeToast(this, "passwords do not match");
+			Utils.makeToast(this, getString(R.string.passwords_do_not_match));
 			pwText.setText("");
 			confirmPwText.setText("");
 			pwText.requestFocus();
@@ -180,17 +177,17 @@ public class SignupActivity extends SherlockActivity {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
-					Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
+					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
 					userText.setText("");
 					confirmPwText.setText("");
 					pwText.setText("");
 					userText.requestFocus();
-					mMpd.decrProgress();					
+					mMpd.decrProgress();
 				}
 				else {
 					// make sure we can create the file
 					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
-						Utils.makeToast(SignupActivity.this, "That username already exists, please choose another.");
+						Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
 						userText.setText("");
 						confirmPwText.setText("");
 						pwText.setText("");
@@ -240,7 +237,7 @@ public class SignupActivity extends SherlockActivity {
 															// save key pair now
 															// that we've created
 															// a
-															// user successfully															
+															// user successfully
 															new AsyncTask<Void, Void, Void>() {
 
 																@Override
@@ -286,31 +283,31 @@ public class SignupActivity extends SherlockActivity {
 															switch (statusCode) {
 															case 429:
 																Utils.makeToast(SignupActivity.this,
-																		"too many user creation attempts, try again later");
+																		getString(R.string.user_creation_throttled));
 																userText.setText("");
 																userText.requestFocus();
 																break;
 
 															case 409:
 																Utils.makeToast(SignupActivity.this,
-																		"that username already exists, please choose another");
+																		getString(R.string.username_exists));
 																userText.setText("");
 																userText.requestFocus();
 																break;
 															case 403:
 																// future use
 																Utils.makeToast(SignupActivity.this,
-																		"please update surespot to create a new user");
+																		getString(R.string.signup_update));
 																break;
 															default:
 																Utils.makeToast(SignupActivity.this,
-																		"could not create user, please try again later");
+																		getString(R.string.could_not_create_user));
 															}
 
 														}
 														else {
 															Utils.makeToast(SignupActivity.this,
-																	"could not create user, please try again later");
+																	getString(R.string.could_not_create_user));
 														}
 														confirmPwText.setText("");
 														pwText.setText("");
@@ -339,23 +336,20 @@ public class SignupActivity extends SherlockActivity {
 
 					switch (statusCode) {
 					case 429:
-						Utils.makeToast(SignupActivity.this,
-								"too many user creation attempts, try again later");						
+						Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
 						break;
 					default:
-						Utils.makeToast(SignupActivity.this,
-								"could not create user, please try again later");
+						Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 					}
 				}
 				else {
-					Utils.makeToast(SignupActivity.this,
-							"could not create user, please try again later");
+					Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 				}
-				
+
 				userText.setText("");
 				confirmPwText.setText("");
 				pwText.setText("");
-				userText.requestFocus();						
+				userText.requestFocus();
 			}
 		});
 	}

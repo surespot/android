@@ -131,23 +131,23 @@ public class FriendFragment extends SherlockFragment {
 	private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, String selection) {
 		final MainActivity activity = this.getMainActivity();
 
-		if (selection.equals("close tab")) {
+		if (selection.equals(getString(R.string.menu_close_tab))) {
 			activity.getChatController().closeTab(friend.getName());
 		}
 		else {
 
-			if (selection.equals("assign image")) {
+			if (selection.equals(getString(R.string.menu_assign_image))) {
 				activity.uploadFriendImage(friend.getName());
 			}
 			else {
 
-				if (selection.equals("delete all messages")) {
+				if (selection.equals(getString(R.string.menu_delete_all_messages))) {
 
 					SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete all messages?",
-								"delete all messages", "ok", "cancel", new IAsyncCallback<Boolean>() {
+						UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
+								getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											activity.getChatController().deleteMessages(friend);
@@ -161,9 +161,8 @@ public class FriendFragment extends SherlockFragment {
 					}
 				}
 				else {
-					if (selection.equals("delete friend")) {
-						UIUtils.createAndShowConfirmationDialog(activity, "are you sure you wish to delete friend: " + friend.getName()
-								+ "?", "delete friend", "ok", "cancel", new IAsyncCallback<Boolean>() {
+					if (selection.equals(getString(R.string.menu_delete_friend))) {
+						UIUtils.createAndShowConfirmationDialog(activity, getMainActivity().getString(R.string.delete_friend_confirmation, friend.getName()), getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 							public void handleResponse(Boolean result) {
 								if (result) {
 									activity.getChatController().deleteFriend(friend);

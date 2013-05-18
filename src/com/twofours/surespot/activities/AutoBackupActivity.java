@@ -24,7 +24,7 @@ public class AutoBackupActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_auto_backup);
 		
-		Utils.configureActionBar(this, "identity", "auto backup", true);
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.auto_backup_action_bar_right), true);
 
 		String user = IdentityController.getLoggedInUser();	
 

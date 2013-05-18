@@ -7,7 +7,7 @@
     tools:context=".DeleteIdentityActivity" >
     
      <TextView
-        android:text="Deleting an identity will erase all messages that identity has sent. It can not be undone."
+        android:text="@string/delete_identity_message_warning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp" />
@@ -21,7 +21,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="identity:" />
+            android:text="@string/identity_colon" />
 
         <Spinner
             android:id="@+id/identitySpinner"

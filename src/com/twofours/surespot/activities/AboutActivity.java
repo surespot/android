@@ -22,14 +22,14 @@ public class AboutActivity extends SherlockActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_about);
 
-		Utils.configureActionBar(this, "surespot", "about", true);
+		Utils.configureActionBar(this, getString(R.string.surespot), getString(R.string.about_action_bar_right), true);
 
 		// set version
 		PackageManager manager = this.getPackageManager();
 		PackageInfo info = null;
 		try {
 			info = manager.getPackageInfo(this.getPackageName(), 0);
-			((TextView) findViewById(R.id.tvAboutVersion)).setText("version: " + info.versionName);
+			((TextView) findViewById(R.id.tvAboutVersion)).setText(getString(R.string.about_version, info.versionName));
 
 		}
 		catch (NameNotFoundException e) {

@@ -41,7 +41,7 @@ public class IdentityBackupAgent extends BackupAgent {
 				SurespotLog.v(TAG, "backing up identity: " + filename);
 
 				synchronized (IdentityController.IDENTITY_FILE_LOCK) {
-					//identity
+					// identity
 					FileInputStream fis = new FileInputStream(filename);
 					byte[] buffer = Utils.inputStreamToBytes(fis);
 					int len = buffer.length;
@@ -49,7 +49,7 @@ public class IdentityBackupAgent extends BackupAgent {
 					data.writeEntityData(buffer, len);
 					fis.close();
 
-					//shared prefs
+					// shared prefs
 					filename = this.getApplicationInfo().dataDir + File.separator + "shared_prefs" + File.separator + name + ".xml";
 					SurespotLog.v(TAG, "backing up shared prefs: " + filename);
 					fis = new FileInputStream(filename);
@@ -60,16 +60,15 @@ public class IdentityBackupAgent extends BackupAgent {
 					data.writeEntityData(buffer, len);
 					fis.close();
 				}
-				
+
 				backedUp.add(name);
 
 			}
 			else {
-				//delete the backup if there is one
+				// delete the backup if there is one
 				deletedNames.add(name);
 			}
 		}
-
 
 		iterator = deletedNames.iterator();
 
@@ -78,12 +77,12 @@ public class IdentityBackupAgent extends BackupAgent {
 			SurespotLog.v(TAG, "deleting identity backup for: %s", name);
 
 			synchronized (IdentityController.IDENTITY_FILE_LOCK) {
-				//delete identity backup
+				// delete identity backup
 				data.writeEntityHeader("identity:" + name, -1);
 				String filename = FileUtils.getIdentityDir(this) + File.separator + name + IdentityController.IDENTITY_DELETED_EXTENSION;
 				new File(filename).delete();
 
-				//delete shared prefs backup
+				// delete shared prefs backup
 				data.writeEntityHeader("sharedPref:" + name, -1);
 				filename = this.getApplicationInfo().dataDir + File.separator + "shared_prefs" + File.separator + name + ".xml";
 				SurespotLog.v(TAG, "deleting shared prefs backup for: %s", name);
@@ -103,15 +102,15 @@ public class IdentityBackupAgent extends BackupAgent {
 		String message = "";
 		// don't get big notifications till 4.1
 		if (backedUp.size() == 1) {
-			message = "identity " + backedUp.get(0) + " backed up";
+			message = getString(R.string.identity_backed_up, backedUp.get(0));
 		}
 		else {
-			message = String.valueOf(backedUp.size()) + " identities backed up";
+			message = getString(R.string.identities_backed_up, backedUp.size());
 		}
 
 		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setSmallIcon(icon)
-				.setContentTitle("identity backup complete").setContentText(message);
+				.setContentTitle(getString(R.string.identity_backup_complete_notification_title)).setContentText(message);
 
 		notificationManager.notify(SurespotConstants.IntentRequestCodes.BACKUP_NOTIFICATION, builder.build());
 	}

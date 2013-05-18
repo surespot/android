@@ -263,16 +263,16 @@ public class FriendAdapter extends BaseAdapter {
 			// add a space to workaround text clipping (so weak)
 			// http://stackoverflow.com/questions/4353836/italic-textview-with-wrap-contents-seems-to-clip-the-text-at-right-edge
 			if (friend.isDeleted()) {
-				friendViewHolder.tvStatus.setText("is deleted ");
+				friendViewHolder.tvStatus.setText(mContext.getString(R.string.friend_status_is_deleted) + " ");
 			}
 			if (friend.isInvited()) {
-				friendViewHolder.tvStatus.setText("is invited ");
+				friendViewHolder.tvStatus.setText(mContext.getString(R.string.friend_status_is_invited) + " ");
 			}
-			
+
 			if (friend.isInviter()) {
-				friendViewHolder.tvStatus.setText("is inviting ");
+				friendViewHolder.tvStatus.setText(mContext.getString(R.string.friend_status_is_inviting) + " ");
 			}
-			
+
 			if (friend.isNewFriend()) {
 				friendViewHolder.tvStatus.setText("");
 			}
@@ -347,7 +347,7 @@ public class FriendAdapter extends BaseAdapter {
 
 				public void onFailure(Throwable error, String content) {
 					SurespotLog.w(TAG, "respondToInvite", error);
-					Utils.makeToast(MainActivity.getContext(), "Could not respond to invite, please try again later.");
+					Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
 				};
 			});
 		}

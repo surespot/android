@@ -37,7 +37,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			prefMgr.setSharedPreferencesName(user);
 
 			addPreferencesFromResource(R.xml.preferences);
-			Utils.configureActionBar(this, "settings", user, true);
+			Utils.configureActionBar(this, getString(R.string.settings), user, true);
 
 
 				prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:text="Generate new private key pairs for your identity and revoke the current pair. Any other devices (ie. lost or stolen phones) with the current private key pair will no longer be able to access surespot." />
+        android:text="@string/generate_new_keypairs" />
 
     <TextView
         android:id="@+id/newKeysBackup"
@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="identity: " />
+            android:text="@string/identity_colon" />
 
         <Spinner
             android:id="@+id/identitySpinner"

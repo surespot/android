@@ -140,8 +140,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 			boolean tabOpenToUser = from.equals(ChatController.getCurrentChat());
 			boolean paused = ChatController.isPaused();
 
-			SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
-					sameUser, tabOpenToUser);
+			SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused,
+					hasLoggedInUser, sameUser, tabOpenToUser);
 
 			if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && !paused) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
@@ -149,17 +149,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 			}
 
 			String spot = ChatUtils.getSpot(from, to);
-			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, "surespot", to + ": new message from " + from, spot,
-					IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
+					context.getString(R.string.notification_message, to, from), spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 		}
 		else {
 			if (type.equals("invite")) {
-				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, "surespot", to + ": friend invite from " + from,
-						from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
+						context.getString(R.string.notification_invite, to, from), from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			}
 			else {
-				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, "surespot", to + ": " + from
-						+ " has accepted your friend invite", to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
+						context.getString(R.string.notification_invite_accept, to, from), to,
+						IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 			}
 		}
 	}

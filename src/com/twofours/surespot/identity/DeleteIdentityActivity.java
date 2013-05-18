@@ -35,9 +35,9 @@ public class DeleteIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_delete_identity);
-		Utils.configureActionBar(this, "identity", "delete", true);
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.delete), true);
 
-		mMpd = new MultiProgressDialog(this, "deleting identity", 250);
+		mMpd = new MultiProgressDialog(this, getString(R.string.delete_identity_progress), 250);
 
 		Button deleteIdentityButton = (Button) findViewById(R.id.bDeleteIdentity);
 		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
@@ -48,15 +48,15 @@ public class DeleteIdentityActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				final String user = (String) mSpinner.getSelectedItem();
-				UIUtils.passwordDialog(DeleteIdentityActivity.this, "delete " + user + " identity", "enter password for " + user,
-						new IAsyncCallback<String>() {
+				UIUtils.passwordDialog(DeleteIdentityActivity.this, getString(R.string.delete_identity_user, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
 									deleteIdentity(user, result);
 								}
 								else {
-									Utils.makeToast(DeleteIdentityActivity.this, "no identity deleted");
+									Utils.makeToast(DeleteIdentityActivity.this, getString(R.string.no_identity_deleted));
 								}
 							}
 						});
@@ -72,7 +72,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
-		}			
+		}
 
 		mSpinner.setAdapter(adapter);
 		String loggedInUser = IdentityController.getLoggedInUser();
@@ -89,7 +89,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 		if (identity == null) {
 			mMpd.decrProgress();
-			Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+			Utils.makeLongToast(DeleteIdentityActivity.this, getString(R.string.could_not_delete_identity));
 			return;
 		}
 
@@ -97,7 +97,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
-		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());						
+		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
 		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 		final String authSignature = EncryptionController.sign(pk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
@@ -131,21 +131,21 @@ public class DeleteIdentityActivity extends SherlockActivity {
 											IdentityController.deleteIdentity(DeleteIdentityActivity.this, username);
 											refreshSpinner();
 											mMpd.decrProgress();
-											Utils.makeLongToast(DeleteIdentityActivity.this, "identity deleted");
+											Utils.makeLongToast(DeleteIdentityActivity.this, getString(R.string.identity_deleted));
 										};
 
 										@Override
 										public void onFailure(Throwable error, String content) {
 											SurespotLog.w(TAG, "deleteIdentity", error);
 											mMpd.decrProgress();
-											Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+											Utils.makeLongToast(DeleteIdentityActivity.this, getString(R.string.could_not_delete_identity));
 
 										}
 									});
 						}
 						else {
 							mMpd.decrProgress();
-							Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+							Utils.makeLongToast(DeleteIdentityActivity.this, getString(R.string.could_not_delete_identity));
 						}
 
 					};
@@ -156,7 +156,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 			@Override
 			public void onFailure(Throwable error, String content) {
 				mMpd.decrProgress();
-				Utils.makeLongToast(DeleteIdentityActivity.this, "could not delete identity");
+				Utils.makeLongToast(DeleteIdentityActivity.this, getString(R.string.could_not_delete_identity));
 
 			}
 		});

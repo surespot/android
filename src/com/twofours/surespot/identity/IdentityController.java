@@ -63,10 +63,10 @@ public class IdentityController {
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
 
 			// PROD TODO set to false on release
-		//	boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
-			//SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
-			
-		//	SurespotLog.setLogging(prefLogging);
+			// boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
+			// SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
+
+			// SurespotLog.setLogging(prefLogging);
 			SurespotLog.setCrashReporting(sp.getBoolean("pref_crash_reporting", SurespotConstants.CRASH_REPORTING));
 
 			// you would think changing the shared prefs name would update the internal state but it doesn't
@@ -230,9 +230,9 @@ public class IdentityController {
 		if (isLoggedIn) {
 			SurespotApplication.getCachingService().logout();
 		}
-		
+
 		SurespotApplication.getCachingService().clearIdentityData(username, true);
-		
+
 		MainActivity.getNetworkController().clearCache();
 		StateController.wipeState(context, username);
 
@@ -247,7 +247,7 @@ public class IdentityController {
 			file = new File(identityFilename);
 			file.delete();
 
-			//create deleted file so we can remove the backup if there is one
+			// create deleted file so we can remove the backup if there is one
 			String deletedFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_DELETED_EXTENSION;
 			try {
 				new File(deletedFilename).createNewFile();
@@ -255,7 +255,7 @@ public class IdentityController {
 			catch (IOException e) {
 				SurespotLog.e(TAG, e, "could not create deleted identity file: %s", deletedFilename);
 			}
-			
+
 		}
 
 		SurespotApplication.mBackupManager.dataChanged();
@@ -369,8 +369,7 @@ public class IdentityController {
 								int importVersion = Integer.parseInt(identity.getLatestVersion());
 								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
 								if (importVersion <= existingVersion) {
-									callback.handleResponse(new IdentityOperationResult(
-											"identity not restored as a newer version of the identity you are trying to restore already exists",
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.newer_identity_exists),
 											false));
 									return;
 								}
@@ -379,11 +378,11 @@ public class IdentityController {
 							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context
-										.getText(R.string.identity_imported_successfully).toString(), true));
+										.getString(R.string.identity_imported_successfully), true));
 							}
 							else {
-								callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
-										.toString(), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity),
+										false));
 							}
 						}
 
@@ -404,25 +403,26 @@ public class IdentityController {
 
 								default:
 									SurespotLog.w(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
-											.toString(), false));
+									callback.handleResponse(new IdentityOperationResult(context
+											.getString(R.string.could_not_import_identity), false));
 								}
 							}
 							else {
-								callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity)
-										.toString(), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity),
+										false));
 							}
 						}
 					});
 
 		}
 		else {
-			callback.handleResponse(new IdentityOperationResult(context.getText(R.string.could_not_import_identity).toString(), false));
+			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
 		}
 
 	}
 
-	public static void exportIdentity(final Context context, final String username, final String password, final IAsyncCallback<String> callback) {
+	public static void exportIdentity(final Context context, final String username, final String password,
+			final IAsyncCallback<String> callback) {
 		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null) {
 			callback.handleResponse(null);
@@ -439,7 +439,8 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
 							String path = saveIdentity(null, exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
-							callback.handleResponse(path == null ? null : "backed up " + username + " identity to " + path);
+							callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, username,
+									path));
 						}
 
 						public void onFailure(Throwable error) {
@@ -625,7 +626,7 @@ public class IdentityController {
 		return identityNames;
 
 	}
-	
+
 	public static List<String> getDeletedIdentityNames(Context context) {
 		String dir = getIdentityDir(context);
 
@@ -643,7 +644,7 @@ public class IdentityController {
 				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_DELETED_EXTENSION.length()));
 			}
 		}
-		
+
 		return identityNames;
 	}
 
@@ -780,18 +781,18 @@ public class IdentityController {
 			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
 			// bad news
-			//delete the identity file and cached data
+			// delete the identity file and cached data
 			deleteIdentity(context, username);
-			
+
 			// delete identities locally?
 			MainActivity.getNetworkController().setUnauthorized(true);
 
 			// boot them out
 			launchLoginActivity(context);
-			
-			//TODO tell user?
-			//Utils.makeLongToast(context, "identity: " + username + " revoked");
-			
+
+			// TODO tell user?
+			// Utils.makeLongToast(context, "identity: " + username + " revoked");
+
 		}
 		else {
 			SurespotApplication.getCachingService().updateLatestVersion(username, version);

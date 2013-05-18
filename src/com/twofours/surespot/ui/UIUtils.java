@@ -20,6 +20,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -32,7 +33,7 @@ public class UIUtils {
 		alert.setTitle(title);
 		alert.setMessage(message);
 		final EditText editText = new EditText(context);
-		editText.setImeActionLabel("done", EditorInfo.IME_ACTION_DONE);
+		editText.setImeActionLabel(context.getString(R.string.done), EditorInfo.IME_ACTION_DONE);
 		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
 		editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
@@ -40,7 +41,7 @@ public class UIUtils {
 
 		alert.setView(editText);
 
-		alert.setPositiveButton("ok", new OnClickListener() {
+		alert.setPositiveButton(R.string.ok, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -49,7 +50,7 @@ public class UIUtils {
 			}
 		});
 
-		alert.setNegativeButton("cancel", new OnClickListener() {
+		alert.setNegativeButton(R.string.cancel, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -84,28 +85,28 @@ public class UIUtils {
 
 	}
 
-	public static void setMessageErrorText(TextView textView, SurespotMessage message) {
+	public static void setMessageErrorText(Context context, TextView textView, SurespotMessage message) {
 		String statusText = null;
 		switch (message.getErrorStatus()) {
 		case 400:
-			statusText = "error sending message: invalid message";
+			statusText = context.getString(R.string.message_error_invalid);
 			break;
 
 		case 403:
-			statusText = "error sending message: unauthorized";
+			statusText = context.getString(R.string.message_error_unauthorized);
 			break;
 		case 404:
-			statusText = "error sending message: unauthorized";
+			statusText = context.getString(R.string.message_error_unauthorized);
 			break;
 		case 429:
-			statusText = "error sending message: throttled";
+			statusText = context.getString(R.string.error_message_throttled);
 			break;
 		case 500:
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-				statusText = "error sending message";
+				statusText = context.getString(R.string.error_message_generic);
 			}
 			else {
-				statusText = "sending failed - long press to resend";
+				statusText = context.getString(R.string.error_message_resend);
 			}
 
 			break;

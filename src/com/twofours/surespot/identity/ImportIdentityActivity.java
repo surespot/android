@@ -28,7 +28,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_import_identity);
-		Utils.configureActionBar(this, "identity", "restore", true);
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.restore), true);
 
 		mSignup = getIntent().getBooleanExtra("signup", false);
 
@@ -40,18 +40,17 @@ public class ImportIdentityActivity extends SherlockActivity {
 		final File exportDir = FileUtils.getIdentityExportDir();
 
 		TextView tvFound = (TextView) findViewById(R.id.foundText);
-		
 
 		for (String name : IdentityController.getIdentityNames(this, exportDir.getPath())) {
 			adapter.add(name);
 		}
-				
+
 		if (adapter.getCount() > 0) {
-			tvFound.setText("Discovered the identities below in:\n\n\t" + exportDir + "\n\n click on a name to restore.");
+			tvFound.setText(getString(R.string.restore_discovered_identities_location, exportDir));
 			lvIdentities.setVisibility(View.VISIBLE);
 		}
 		else {
-			tvFound.setText("No surespot identity (*.ssi) files discovered in\n\n\t" + exportDir + "\n\nplease copy your identity file(s) there. (Note: this may not be the SD card, it could be the device's internal storage).");
+			tvFound.setText(getString(R.string.restore_identities_none_discovered, exportDir));
 			lvIdentities.setVisibility(View.GONE);
 		}
 
@@ -63,18 +62,18 @@ public class ImportIdentityActivity extends SherlockActivity {
 				final String user = adapter.getItem(position).toString();
 
 				if (IdentityController.identityFileExists(ImportIdentityActivity.this, user)) {
-					Utils.makeToast(ImportIdentityActivity.this, "not importing identity as it already exists");
-					return;
-				}				
-				
-				// make sure file we're going to save to is writable before we start
-				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user, false)) {
-					Utils.makeToast(ImportIdentityActivity.this, getText(R.string.could_not_import_identity).toString());
+					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.restore_identity_already_exists));
 					return;
 				}
 
-				UIUtils.passwordDialog(ImportIdentityActivity.this, "import " + user + " identity", "enter password for " + user,
-						new IAsyncCallback<String>() {
+				// make sure file we're going to save to is writable before we start
+				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user, false)) {
+					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_import_identity));
+					return;
+				}
+
+				UIUtils.passwordDialog(ImportIdentityActivity.this, getString(R.string.restore_identity, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
@@ -102,7 +101,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 								}
 								else {
-									Utils.makeToast(ImportIdentityActivity.this, getText(R.string.no_identity_imported).toString());
+									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 							}
 						});

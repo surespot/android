@@ -3,9 +3,11 @@ package com.twofours.surespot.chat;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.ui.SurespotFragmentPagerAdapter;
@@ -14,9 +16,12 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
+	
+	private static String mHomeName;
 
-	public ChatPagerAdapter(FragmentManager fm) {
+	public ChatPagerAdapter(Context context, FragmentManager fm) {
 		super(fm);
+		mHomeName =  context.getResources().getString(R.string.home);
 	}
 
 	@Override
@@ -77,7 +82,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 	@Override
 	public CharSequence getPageTitle(int position) {
 		if (position == 0) {
-			return "home";
+			return mHomeName;
 		}
 		else {
 			if (mChatNames.size() > position - 1) {
@@ -167,7 +172,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 
 	public long getItemId(int position) {
 		if (position == 0) {
-			return "home".hashCode();
+			return mHomeName.hashCode();
 		}
 		else {
 			return mChatNames.get(position - 1).hashCode();

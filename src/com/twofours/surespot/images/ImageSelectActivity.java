@@ -112,7 +112,7 @@ public class ImageSelectActivity extends SherlockActivity {
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			startActivityForResult(Intent.createChooser(intent, "select image"),
+			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
 					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 
 		}
@@ -131,7 +131,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	}
 
 	private void setButtonText() {
-		mSendButton.setText(mSize == IMAGE_SIZE_LARGE ? "send" : "assign");
+		mSendButton.setText(mSize == IMAGE_SIZE_LARGE ? R.string.send : R.string.assign);
 	}
 	
 	@Override
@@ -254,7 +254,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 		catch (IOException e1) {
 			SurespotLog.w(TAG, "compressImage", e1);
-			Utils.makeLongToast(this, "could not load image");
+			Utils.makeLongToast(this, getString(R.string.could_not_load_image));
 			finish();
 			return null;
 		}
@@ -274,7 +274,7 @@ public class ImageSelectActivity extends SherlockActivity {
 				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
 			}
 			else {
-				Utils.makeLongToast(this, "could not load image");
+				Utils.makeLongToast(this, getString(R.string.could_not_load_image));
 				finish();
 			}
 			return bitmap;

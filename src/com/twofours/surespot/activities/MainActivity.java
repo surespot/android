@@ -430,10 +430,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				String inviteUrl = "https://server.surespot.me/autoinvite/" + user + "/qr_droid";
 				// String qrImageUrl = "https://chart.googleapis.com/chart?cht=qr&chl=" + inviteUrl + "&chs=300x300&chld=Q|0";
 
-				tvQrInviteText.setText(TextUtils.concat("scanning this QR code will invite ", s1,
-						" to be a friend on surespot, installing surespot from the play store if necessary"));
+				tvQrInviteText.setText(TextUtils.concat(MainActivity.this.getString(R.string.qr_pre_username_help), " ", s1, " ",
+						MainActivity.this.getString(R.string.qr_post_username_help)));
 
-			//	URL imageUri;
+				// URL imageUri;
 
 				Bitmap bitmap;
 				try {
@@ -446,10 +446,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					SurespotLog.w(TAG, e, "generate invite QR");
 					return;
 
-				
-
 				}
-				
+
 				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this).setTitle(null);
 				AlertDialog dialog = builder.create();
 				dialog.setView(dialogLayout, 0, 0, 0, 0);
@@ -579,7 +577,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.v(TAG, "started from invite");
 			mSet = true;
 			Utils.clearIntent(intent);
-			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
 		}
 
 		// message received show chat activity for user
@@ -587,7 +585,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			SurespotLog.v(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
 			mSet = true;
 			Utils.clearIntent(intent);
 			Utils.logIntent(TAG, intent);
@@ -599,7 +597,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			Utils.configureActionBar(this, "send", "select recipient", false);
+			Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), false);
 			SurespotLog.v(TAG, "started from SEND");
 			// need to select a user so put the chat controller in select mode
 
@@ -611,7 +609,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (!mSet) {
-			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
 			String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 			if (lastName != null) {
 				SurespotLog.v(TAG, "using LAST_CHAT");
@@ -692,7 +690,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								@Override
 								public void handleResponse(String url, String version, String iv) {
 									if (url == null) {
-										Utils.makeToast(MainActivity.this, "could not upload friend image");
+										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 									}
 									else {
 										mChatController.setImageUrl(to, url, version, iv);
@@ -872,8 +870,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 			boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 			if (confirm) {
-				UIUtils.createAndShowConfirmationDialog(this, "are you sure you wish to delete all messages?", "delete all messages", "ok",
-						"cancel", new IAsyncCallback<Boolean>() {
+				UIUtils.createAndShowConfirmationDialog(this, getString(R.string.delete_all_confirmation),
+						getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
+						new IAsyncCallback<Boolean>() {
 							public void handleResponse(Boolean result) {
 								if (result) {
 									mChatController.deleteMessages(currentChat);
@@ -1163,7 +1162,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (action.equals(Intent.ACTION_SEND)) {
-			Utils.configureActionBar(this, "surespot", IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
 
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
@@ -1276,7 +1275,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (friend.length() > 0) {
 			if (friend.equals(IdentityController.getLoggedInUser())) {
 				// TODO let them be friends with themselves?
-				Utils.makeToast(this, "Unfortunately you can't be friends with yourself.");
+				Utils.makeToast(this, getString(R.string.friend_self_error));
 				return;
 			}
 
@@ -1287,10 +1286,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					setHomeProgress(false);
 					TextKeyListener.clear(mEtInvite.getText());
 					if (mChatController.getFriendAdapter().addFriendInvited(friend)) {
-						Utils.makeToast(MainActivity.this, friend + " has been invited to be your friend.");
+						Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
 					}
 					else {
-						Utils.makeToast(MainActivity.this, friend + " has accepted your friend request.");
+						Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
 					}
 
 				}
@@ -1303,22 +1302,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						int statusCode = error.getStatusCode();
 						switch (statusCode) {
 						case 404:
-							Utils.makeToast(MainActivity.this, "User does not exist.");
+							Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
 							break;
 						case 409:
-							Utils.makeToast(MainActivity.this, "You are already friends.");
+							Utils.makeToast(MainActivity.this, getString(R.string.you_are_already_friends));
 							break;
 						case 403:
-							Utils.makeToast(MainActivity.this, "You have already invited this user.");
+							Utils.makeToast(MainActivity.this, getString(R.string.already_invited));
 							break;
 						default:
 							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-							Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
+							Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 						}
 					}
 					else {
 						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
-						Utils.makeToast(MainActivity.this, "Could not invite friend, please try again later.");
+						Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 					}
 				}
 			});
@@ -1327,18 +1326,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setButtonText() {
 		if (mCurrentFriend == null) {
-			mSendButton.setText("invite");
+			mSendButton.setText(R.string.invite);
 		}
 		else {
 			if (mCurrentFriend.isDeleted()) {
-				mSendButton.setText("home");
+				mSendButton.setText(R.string.home);
 			}
 			else {
 				if (mEtMessage.getText().length() > 0) {
-					mSendButton.setText("send");
+					mSendButton.setText(R.string.send);
 				}
 				else {
-					mSendButton.setText("home");
+					mSendButton.setText(R.string.home);
 				}
 			}
 

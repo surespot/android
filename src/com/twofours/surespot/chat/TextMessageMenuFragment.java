@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -30,18 +31,19 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		// builder.setTitle(R.string.pick_color);
 
 		mMenuItemArray = new String[1];
-		mMenuItemArray[0] = "delete message";
+		mMenuItemArray[0] = getString(R.string.menu_delete_message);
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
 			public void onClick(final DialogInterface dialogi, int which) {
 				if (mMessage == null)
 					return;
-				
+
 				SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 				boolean confirm = sp.getBoolean("pref_delete_message", true);
 				if (confirm) {
-					UIUtils.createAndShowConfirmationDialog(mActivity, "are you sure you wish to delete this message?", "delete message",
-							"ok", "cancel", new IAsyncCallback<Boolean>() {
+					UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+							getString(R.string.delete_message), getString(R.string.ok),
+							getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 								public void handleResponse(Boolean result) {
 									if (result) {
 										mActivity.getChatController().deleteMessage(mMessage);
