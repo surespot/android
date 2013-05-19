@@ -12,7 +12,11 @@ import android.os.Build;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ForegroundColorSpan;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
@@ -182,6 +186,11 @@ public class UIUtils {
 		tv.setText(Html.fromHtml(html));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
+	
+	public static void setHtml(Context context, TextView tv, Spanned html) {
+		tv.setText(Html.toHtml(html));
+		tv.setMovementMethod(LinkMovementMethod.getInstance());
+	}
 
 	public static void disableImmediateChildren(ViewGroup layout) {
 		for (int i = 0; i < layout.getChildCount(); i++) {
@@ -189,5 +198,13 @@ public class UIUtils {
 			child.setEnabled(false);
 		}
 
-	}	
+	}
+
+	public static Spannable createColoredSpannable(String text, int color) {
+		Spannable s1 = new SpannableString(text);
+		s1.setSpan(new ForegroundColorSpan(color), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		return s1;
+		
+	}
+
 }

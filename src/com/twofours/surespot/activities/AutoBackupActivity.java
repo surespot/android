@@ -3,7 +3,13 @@ package com.twofours.surespot.activities;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -28,8 +34,14 @@ public class AutoBackupActivity extends SherlockActivity {
 
 		String user = IdentityController.getLoggedInUser();	
 
-		TextView t1 = (TextView) findViewById(R.id.helpAutoBackup1);
-		UIUtils.setHtml(this, t1, R.string.help_auto_backup1);
+				
+		TextView t1 = (TextView) findViewById(R.id.helpAutoBackup1);		
+		Spanned pre = Html.fromHtml(getString(R.string.help_auto_backup_warning_pre));
+		Spannable warning = UIUtils.createColoredSpannable(getString(R.string.help_auto_backup_warning), Color.RED);
+		String post = getString(R.string.help_auto_backup_warning_post);
+				
+		t1.setText(TextUtils.concat(pre, " ", warning, " ", post));
+		t1.setMovementMethod(LinkMovementMethod.getInstance());
 
 		TextView t2 = (TextView) findViewById(R.id.helpAutoBackup2);
 		UIUtils.setHtml(this, t2, R.string.help_auto_backup2);
