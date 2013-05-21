@@ -77,7 +77,7 @@
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click this link to install the android app and invite me as a friend: "</string>
     <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
-    <string name="help_backupIdentities2">"Surespot has a cloud based identity backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your keys manually to local storage from the settings menu."</string>
+    <string name="help_backupIdentities2">"Surespot has a cloud based identity backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your identity manually to local storage from the settings menu."</string>
     <string name="title_activity_auto_backup">Auto Backup</string>
     <string name="help_auto_backup_warning_pre"><![CDATA["By checking below you are enabling surespot to backup your identity via <a href="https://developer.android.com/google/backup/index.html">Google's Android Data Backup Service</a>. In order for this to work your phone <a href='https://support.google.com/android/bin/answer.py?hl=en&answer=1663708'>must have 'backup my data' and 'automatic restore' enabled.</a> There are some caveats around this. While surespot can tell Google 'hey we need a backup done', as to when that backup actually occurs is anyone's guess. For this reason surespot will notify you when the backup actually occurs."]]></string>
     <string name="help_auto_backup_warning">Until then your identities are not backed up so try not to lose your phone or clear phone/surespot data!</string>
@@ -278,7 +278,7 @@
     <string name="pref_summary_delete_message">confirm before deleting a message</string>
     <string name="pref_summary_delete_all_messages">confirm before deleting all messages</string>
     <string name="pref_summary_identity_auto_backup">Backup and restore your identity automatically using Google\'s backup servers.</string>
-    <string name="pref_summary_export_identity">Manually backup your identity to local device storage. This is in theory more secure than backing up via Google\'s cloud, but also not as convenient.</string>
+    <string name="pref_summary_export_identity">Manually backup your identity to local device storage.</string>
     <string name="pref_summary_import_identity">Restore your identity from local device storage.</string>
     <string name="pref_summary_delete_identity">Deleting an identity can not be undone.</string>
     <string name="pref_summary_regen_keys">For the paranoid.</string>
@@ -288,6 +288,6 @@
     <string name="menu_invite_contacts">invite contacts</string>
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
-    <string name="surespot_help">help</string>
+    <string name="surespot_help">surespot help</string>
 
 </resources>
