@@ -67,7 +67,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 		TextView tvBackup = (TextView) findViewById(R.id.changePasswordBackup);
 
-		warning = new SpannableString(getString(R.string.backup_identities_again));
+		warning = new SpannableString(getString(R.string.backup_identities_again_password));
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 

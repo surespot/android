@@ -38,9 +38,8 @@ public class AutoBackupActivity extends SherlockActivity {
 		TextView t1 = (TextView) findViewById(R.id.helpAutoBackup1);		
 		Spanned pre = Html.fromHtml(getString(R.string.help_auto_backup_warning_pre));
 		Spannable warning = UIUtils.createColoredSpannable(getString(R.string.help_auto_backup_warning), Color.RED);
-		String post = getString(R.string.help_auto_backup_warning_post);
-				
-		t1.setText(TextUtils.concat(pre, " ", warning, " ", post));
+						
+		t1.setText(TextUtils.concat(pre, " ", warning));
 		t1.setMovementMethod(LinkMovementMethod.getInstance());
 
 		TextView t2 = (TextView) findViewById(R.id.helpAutoBackup2);

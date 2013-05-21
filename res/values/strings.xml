@@ -11,8 +11,8 @@
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
-    <string name="export_sd">backup to external storage</string>
-    <string name="import_sd">restore from external storage</string>
+    <string name="export_sd">backup to local storage</string>
+    <string name="import_sd">restore from local storage</string>
     <string name="title_activity_chat">chat</string>
     <string name="title_activity_image_view">image view</string>
     <string name="title_activity_image_select">image select</string>
@@ -58,7 +58,7 @@
     <string name="key_management">generate new key pairs...</string>
     <string name="regenerate_keys">generate new key pairs</string>
     <string name="could_not_create_new_keys">could not create new key pairs</string>
-    <string name="keys_created">key pairs created and successfully uploaded to the server</string>
+    <string name="keys_created">new keys successfully created, please backup the identity (again)</string>
     <string name="close_tab">close tab</string>
     <string name="action_settings">Settings</string>
     <string name="no_messages">no messages</string>
@@ -77,21 +77,20 @@
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click this link to install the android app and invite me as a friend: "</string>
     <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
-    <string name="help_backupIdentities2">"Surespot has a cloud based identity backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your identity manually to local storage from the settings menu."</string>
-    <string name="title_activity_auto_backup">Auto Backup</string>
-    <string name="help_auto_backup_warning_pre"><![CDATA["By checking below you are enabling surespot to backup your identity via <a href="https://developer.android.com/google/backup/index.html">Google's Android Data Backup Service</a>. In order for this to work your phone <a href='https://support.google.com/android/bin/answer.py?hl=en&answer=1663708'>must have 'backup my data' and 'automatic restore' enabled.</a> There are some caveats around this. While surespot can tell Google 'hey we need a backup done', as to when that backup actually occurs is anyone's guess. For this reason surespot will notify you when the backup actually occurs."]]></string>
-    <string name="help_auto_backup_warning">Until then your identities are not backed up so try not to lose your phone or clear phone/surespot data!</string>
-    <string name="help_auto_backup_warning_post">We recommend backing up manually.</string>    
-    <string name="help_auto_backup2"><![CDATA["By enabling this you will be storing a copy of your <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">private keys</a> on a cloud server which means that anyone that gains access to them (through hacking or other means) can perform attacks against them (eg. <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute force</a>) to try to gain access to your account. Your keys will be encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> with a key derived from your password. While surespot uses a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> to slow down a brute force attack, be aware that the <a href="https://en.wikipedia.org/wiki/Password_strength">strength</a> of your password in this backup scenario ultimately determines the level of security."]]></string>
-    <string name="help_manual_backup"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function) to the location below. This file should then be copied from your device (via USB cable for maximum security) to a secure backup location on a PC or elsewhere so that it can be restored in the case of app uninstall, a lost or stolen device, or if the identity data was somehow removed from the device."]]></string>
-    <string name="pwyl_text"><![CDATA["surespot is ad and data mining free<br><br>servers and storage cost money; your donations ensure that we do not have to charge for surespot<br><br>we will donate a percentage to the <a href="https://www.eff.org/issues/privacy">EFF</a> that they may continue to fight for all of our electronic freedoms"]]></string>
+    <string name="help_backupIdentities2">"Surespot has a cloud based identity auto-backup mechanism that can be enabled from the settings menu. You can also choose to leave this disabled and backup your identity to local device storage from the settings menu."</string>
+    <string name="title_activity_auto_backup">Auto-Backup</string>
+    <string name="help_auto_backup_warning_pre"><![CDATA["By checking below you are enabling surespot to automatically backup your identity via <a href="https://developer.android.com/google/backup/index.html">Google's Android Data Backup Service</a>. In order for this to work your phone <a href='https://support.google.com/android/bin/answer.py?hl=en&answer=1663708'>must have 'backup my data' and 'automatic restore' enabled.</a> There are some caveats around this. While surespot can tell Google 'hey we need a backup done', as to when that backup actually occurs is anyone's guess. For this reason surespot will notify you when the backup actually occurs."]]></string>
+    <string name="help_auto_backup_warning">Until then your identities are not backed up so try not to lose your phone or clear phone/surespot data!</string>       
+    <string name="help_auto_backup2"><![CDATA["By enabling auto-backup you will be storing a copy of your <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">private keys</a> on a Google cloud server. Your keys are encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> using a key derived by executing a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> upon your password. Should a third party somehow gain access to Google’s server and attempt to decrypt your identity file by <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute force attack</a>, be aware that the <a href="https://en.wikipedia.org/wiki/Password_strength">strength</a> of your password will ultimately determine their success."]]></string>
+    <string name="help_manual_backup"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function) to the location below. For maximum security this file should then be copied from your device to a secure backup location so that it can be restored in the case of app uninstall or 'clear data', a lost or stolen device, or other data loss."]]></string>
+    <string name="pwyl_text"><![CDATA["Surespot is ad and data mining free.<br><br>Servers and storage cost money; your donations ensure that we do not have to charge for surespot.<br><br>We will donate a percentage to the <a href="https://www.eff.org/issues/privacy">EFF</a> that they may continue to fight for all of our electronic freedoms."]]></string>
     <string name="help_messageHistory">Surespot has a 1000 message history. Once you reach 1000 messages your oldest message will be deleted so you will only ever have 1000 (encrypted) messages stored on the server. Of course you can delete any and all of your messages at any time.</string>
     <string name="title_activity_about">about surespot</string>
     <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
-    <string name="about_website"><![CDATA["please visit the surespot website at <a href="https://www.surespot.me">https://www.surespot.me</a> for more information, including the <a href="https://www.surespot.me/documents/surespot_terms_of_service_5-7-13.html">terms of service</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy_5-7-13.html">privacy policy</a>, and <a href="https://www.surespot.me/documents/threat.html">data and threat analysis</a>."]]></string>
-    <string name="about_opensource"><![CDATA["surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>"]]></string>
-    <string name="about_tech"><![CDATA["for a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>"]]></string>
-    <string name="about_support"><![CDATA["for questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>]]></string>
+    <string name="about_website"><![CDATA["Please visit the surespot website at <a href="https://www.surespot.me">https://www.surespot.me</a> for more information, including the <a href="https://www.surespot.me/documents/surespot_terms_of_service_5-7-13.html">terms of service</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy_5-7-13.html">privacy policy</a>, and <a href="https://www.surespot.me/documents/threat.html">data and threat analysis</a>."]]></string>
+    <string name="about_opensource"><![CDATA["Surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>."]]></string>
+    <string name="about_tech"><![CDATA["For a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>."]]></string>
+    <string name="about_support"><![CDATA["For questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
     <!-- anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
     <string name="invite_text">"Click the select contacts button to select numbers from your phone contacts, and/or enter them manually. (Please [click here] if contacts fail to populate in your sms app)."</string>
     <string name="notification_title">surespot</string>
@@ -102,7 +101,7 @@
     <string name="surespot">surespot</string>
     <string name="about_action_bar_right">about</string>
     <string name="identity">identity</string>
-    <string name="auto_backup_action_bar_right">auto backup</string>
+    <string name="auto_backup_action_bar_right">auto-backup</string>
     <string name="invite">invite</string>
     <string name="no_contact_data_selected_or_entered">no contact data selected or entered</string>
     <string name="toggled_sms_contact_population_mechanism">toggled sms contact population mechanism</string>
@@ -140,7 +139,8 @@
     <string name="could_not_invite">Could not invite friend, please try again later.</string>
     <string name="keys">keys</string>
     <string name="generating_keys_progress">generating and uploading new keys</string>
-    <string name="backup_identities_again">After performing this operation any backed up identities will no longer be able to be restored so make sure you backup your identity again!</string>
+    <string name="backup_identities_again_keys">Since your identity keys will change, please backup this identity (again) after the operation completes successfully. If you have auto-backup enabled, you will receive a notification when the identity has been backed up.</string>
+    <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity again after the operation completes successfully. If you have auto-backup enabled, you will receive a notification when the identity has been backed up.</string>
     <string name="create_new_keys_for">create new keys for %s</string>
     <string name="enter_password_for">enter password for %s</string>
     <string name="enter_username_and_password">Please enter a username and password.</string>
@@ -159,13 +159,13 @@
     <string name="billing_could_not_enable">Could not enable in-app billing.</string>
     <string name="billing_purchase_error">Error, could not complete purchase.</string>
     <string name="billing_paypal_link_email_subject">surespot pay what you like paypal link</string>
-    <string name="billing_paypal_link_email_body">thankyou for paying what you like for surespot! the paypal link is:</string>
+    <string name="billing_paypal_link_email_body">Thankyou for paying what you like for surespot! The paypal link is:</string>
     <string name="none">none</string>
     <string name="send_to_title">send to?</string>
     <string name="billing_bitcoin_copied_to_clipboard">%s copied to clipboard</string>
     <string name="billing_bitcoin_email_subject">surespot pay what you like bitcoin address</string>
-    <string name="billing_bitcoin_email_body_address">thankyou for paying what you like for surespot! the bitcoin address is: %s</string>
-    <string name="billing_bitcoin_email_body_qr">the QR code can be viewed here: %s</string>
+    <string name="billing_bitcoin_email_body_address">Thankyou for paying what you like for surespot! The bitcoin address is: %s</string>
+    <string name="billing_bitcoin_email_body_qr">The QR code can be viewed here: %s</string>
     <string name="could_not_open_bitcoin_wallet">could not open bitcoin wallet</string>
     <string name="message_sending">sending...</string>
     <string name="message_loading_and_decrypting">loading and decrypting...</string>
@@ -213,7 +213,7 @@
     <string name="backed_up_identity_to_path">backed up identity %1$s to %2$s</string>
     <string name="restore">restore</string>
     <string name="restore_discovered_identities_location">Discovered the identities below in:\n\n\t%s\n\n click on a name to restore.</string>
-    <string name="restore_identities_none_discovered">No surespot identity (*.ssi) files discovered in\n\n\t%s\n\nplease copy your identity file(s) there. (Note: this may not be the SD card, it could be the device\'s internal storage).</string>
+    <string name="restore_identities_none_discovered">No surespot identity (*.ssi) files discovered in\n\n\t%s\n\nplease copy your identity file(s) there. (Note: this may not be the removable SD card, it could be the device\'s internal storage).</string>
     <string name="restore_identity_already_exists">not restoring identity as it already exists</string>
     <string name="restore_identity">restore %s identity</string>
     <string name="assign">assign</string>
@@ -226,7 +226,7 @@
     <string name="error_message_throttled">error sending message: throttled</string>
     <string name="error_message_generic">error sending message</string>
     <string name="error_message_resend">sending failed - long press to resend</string>
-    <string name="auto_identity_backup_via_google">auto identity backup via google</string>
+    <string name="auto_identity_backup_via_google">auto-backup identity via google</string>
     <string name="via_google_play_in_app_purchase">VIA GOOGLE PLAY IN APP PURCHASE</string>
     <string name="via_paypal">VIA PAYPAL</string>
     <string name="open_link_in_browser">open link in browser</string>
@@ -244,8 +244,8 @@
     <string name="select_all">select all</string>
     <string name="delete_identity_message_warning">Deleting an identity will erase all messages that identity has sent. It can not be undone.</string>
     <string name="identity_colon">identity:</string>
-    <string name="backup_location">"*backup location: "</string>
-    <string name="backup_location_note">*note: this may or may not be the SD card depending on your ROM</string>
+    <string name="backup_location">"backup location: "</string>
+    <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your ROM.</string>
     <string name="invite_others">Invite others to communicate with you privately via surespot by sharing an auto-invite link with them.</string>
     <string name="invite_via_email">invite via email</string>
     <string name="click_to_select_email_contacts">Click the select contacts button to select email addresses from your phone contacts, and/or enter them manually.</string>
@@ -254,7 +254,7 @@
     <string name="touch_invite_button">Touch the invite button to select application to invite with, eg. facebook, twitter.</string>
     <string name="select_contacts">select contacts</string>
     <string name="phone_number">phone number</string>
-    <string name="generate_new_keypairs">Generate new private key pairs for your identity and revoke the current pair. Any other devices (ie. lost or stolen phones) with the current private key pair will no longer be able to access surespot.</string>
+    <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices (ie. lost or stolen phones) will no longer be able to access surespot using the selected identity.</string>
     <string name="username">username</string>
     <string name="create_identity">create identity</string>
     <string name="options">options</string>
@@ -269,7 +269,7 @@
     <string name="pref_title_delete_all_messages">delete all messages</string>
     <string name="pref_title_identity_management">identity management</string>
     <string name="pref_title_change_password">change password...</string>
-    <string name="pref_title_identity_auto_backup">identity auto backup...</string>
+    <string name="pref_title_identity_auto_backup">identity auto-backup...</string>
     <string name="pref_title_alternate_sms_invite_to">alternate sms invite \'to\'</string>
     <string name="pref_title_silent_error_reporting">silent error reporting</string>
     <string name="pref_title_message_debug_mode">message debug mode</string>
@@ -278,7 +278,7 @@
     <string name="pref_summary_delete_message">confirm before deleting a message</string>
     <string name="pref_summary_delete_all_messages">confirm before deleting all messages</string>
     <string name="pref_summary_identity_auto_backup">Backup and restore your identity automatically using Google\'s backup servers.</string>
-    <string name="pref_summary_export_identity">Manually backup your identity to local device storage.</string>
+    <string name="pref_summary_export_identity">Backup your identity to local device storage.</string>
     <string name="pref_summary_import_identity">Restore your identity from local device storage.</string>
     <string name="pref_summary_delete_identity">Deleting an identity can not be undone.</string>
     <string name="pref_summary_regen_keys">For the paranoid.</string>

@@ -50,7 +50,7 @@ public class ManageKeysActivity extends SherlockActivity {
 
 		TextView tvBackupWarning = (TextView) findViewById(R.id.newKeysBackup);
 
-		Spannable warning = new SpannableString(getString(R.string.backup_identities_again));
+		Spannable warning = new SpannableString(getString(R.string.backup_identities_again_keys));
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		tvBackupWarning.setText(TextUtils.concat(warning));

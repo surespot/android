@@ -50,18 +50,18 @@
             android:layout_weight="1" />
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:text="@string/backup_location_note" />
+
     <Button
         android:id="@+id/bExportSd"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:text="@string/export_sd"
         android:textSize="16dp" >
     </Button>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/backup_location_note" />
 
 </LinearLayout>

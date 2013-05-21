@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
     android:versionCode="19"
-    android:versionName="0972cd9" >
+    android:versionName="f272daa" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -96,6 +96,7 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -133,7 +134,7 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.identity.ExportIdentityActivity"
-            android:noHistory="true" >
+            >
             <intent-filter>
                 <action android:name="com.twofours.surespot.identity.ExportIdentityActivity" />
 
@@ -204,8 +205,7 @@
             android:theme="@android:style/Theme.Dialog" />
         <activity
             android:name="com.twofours.surespot.activities.AutoBackupActivity"
-            android:label="@string/title_activity_auto_backup"
-            android:noHistory="true" >
+            android:label="@string/title_activity_auto_backup" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.activities.AutoBackupActivity" />
 
