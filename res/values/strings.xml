@@ -213,7 +213,7 @@
     <string name="backup">backup</string>
     <string name="backup_identity">backup identity %s</string>
     <string name="identity_backed_up">identity %s backed up</string>
-    <string name="identities_backed_up">%d identities backed up</string>
+    <string name="identity_backup_deleted">identity %s backup deleted</string>
     <string name="identity_backup_complete_notification_title">identity backup complete</string>
     <string name="newer_identity_exists">identity not restored as a newer version of the identity you are trying to restore already exists</string>
     <string name="backed_up_identity_to_path">backed up identity %1$s to %2$s</string>
