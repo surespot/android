@@ -68,8 +68,8 @@
             android:imeActionLabel="invite"
             android:imeOptions="actionDone"
             android:inputType="textNoSuggestions|textVisiblePassword"
-            android:maxHeight="150sp"
-            android:minHeight="45sp"
+            android:maxHeight="150dp"
+            android:minHeight="45dp"
             android:singleLine="true" >
         </EditText>
 
@@ -80,9 +80,9 @@
             android:imeActionLabel="send"
             android:imeOptions="actionSend"
             android:inputType="textMultiLine"
-            android:maxHeight="150sp"
+            android:maxHeight="150dp"
             android:maxLines="5"
-            android:minHeight="45sp"
+            android:minHeight="45dp"
             android:scrollbars="vertical"
             android:singleLine="false"
             android:visibility="gone" >
@@ -91,13 +91,13 @@
 
     <Button
         android:id="@+id/bSend"
-        android:layout_width="70sp"
-        android:layout_height="70sp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_above="@+id/fEmoji"
         android:layout_alignParentRight="true"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_marginBottom="-10sp"
-        android:layout_marginRight="-10sp"
+        android:layout_marginBottom="-10dp"
+        android:layout_marginRight="-10dp"
         android:background="@drawable/send_button"
         android:text="@string/home"
         android:textColor="@android:color/black" />

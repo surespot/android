@@ -1,67 +1,72 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="10dp"
-    tools:context=".ExportIdentityActivity" >
-
-    <TextView
-        android:id="@+id/tvHelpManualBackup"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp" />
+        android:layout_height="match_parent">
 
-    <LinearLayout
+    <LinearLayout        
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal" >
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="10dp"
+        tools:context=".ExportIdentityActivity" >
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvHelpManualBackup"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/identity_colon" />
+            android:layout_marginBottom="10dp" />
 
-        <Spinner
-            android:id="@+id/identitySpinner"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:textSize="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/identity_colon" />
+
+            <Spinner
+                android:id="@+id/identitySpinner"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:textSize="16dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/backup_location" >
+            </TextView>
+
+            <TextView
+                android:id="@+id/identityBackupPath"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/backup_location_note" />
+
+        <Button
+            android:id="@+id/bExportSd"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/export_sd"
+            android:textSize="16dp" >
+        </Button>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal" >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/backup_location" >
-        </TextView>
-
-        <TextView
-            android:id="@+id/identityBackupPath"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:text="@string/backup_location_note" />
-
-    <Button
-        android:id="@+id/bExportSd"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/export_sd"
-        android:textSize="16dp" >
-    </Button>
-
-</LinearLayout>
+</ScrollView>

@@ -35,7 +35,7 @@
         android:layout_marginBottom="-10sp"
         android:layout_marginRight="-10sp"
         android:background="@drawable/send_button"
-        android:text="@string/ok"
+        android:text="@string/invite"
         android:textColor="@android:color/black" />
 
 </RelativeLayout>

@@ -91,8 +91,7 @@
     <string name="about_opensource"><![CDATA["Surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>."]]></string>
     <string name="about_tech"><![CDATA["For a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>."]]></string>
     <string name="about_support"><![CDATA["For questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
-    <!-- anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
-    <string name="invite_text">"Click the select contacts button to select numbers from your phone contacts, and/or enter them manually. (Please [click here] if contacts fail to populate in your sms app)."</string>
+    
     <string name="notification_title">surespot</string>
     <string name="notification_message">"%1$s: new message from %2$s"</string>
     <string name="notification_invite">"%1$s: friend invite from %2$s"</string>
@@ -107,10 +106,7 @@
     <string name="toggled_sms_contact_population_mechanism">toggled sms contact population mechanism</string>
     <string name="invitation_email_subject">Invitation to chat with me privately via surespot</string>
     <string name="invite_no_application_found">No application found to handle invite.</string>
-    <string name="invite_progress_text">creating invitation</string>
-    <string name="invite_also_send_to">also send to (comma separated):</string>
-    <string name="invite_not_used">not used</string>
-    <string name="invite_select_contacts">select contacts</string>
+    <string name="invite_progress_text">creating invitation</string>    
     <string name="email">email</string>
     <string name="sms">sms</string>
     <string name="social">social</string>
@@ -161,7 +157,7 @@
     <string name="billing_paypal_link_email_subject">surespot pay what you like paypal link</string>
     <string name="billing_paypal_link_email_body">Thankyou for paying what you like for surespot! The paypal link is:</string>
     <string name="none">none</string>
-    <string name="send_to_title">send to?</string>
+    <string name="send_to_title">send to yourself at?</string>
     <string name="billing_bitcoin_copied_to_clipboard">%s copied to clipboard</string>
     <string name="billing_bitcoin_email_subject">surespot pay what you like bitcoin address</string>
     <string name="billing_bitcoin_email_body_address">Thankyou for paying what you like for surespot! The bitcoin address is: %s</string>
@@ -230,7 +226,7 @@
     <string name="via_google_play_in_app_purchase">VIA GOOGLE PLAY IN APP PURCHASE</string>
     <string name="via_paypal">VIA PAYPAL</string>
     <string name="open_link_in_browser">open link in browser</string>
-    <string name="send_link_in_email">send link in email</string>
+    <string name="send_link_in_email">send to yourself at?</string>
     <string name="via_bitcoin">VIA BITCOIN</string>
     <string name="copy_address_to_clipboard">copy address to clipboard</string>
     <string name="send_address_and_qr_code_in_email">send address and QR code in email</string>
@@ -247,12 +243,15 @@
     <string name="backup_location">"backup location: "</string>
     <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your ROM.</string>
     <string name="invite_others">Invite others to communicate with you privately via surespot by sharing an auto-invite link with them.</string>
-    <string name="invite_via_email">invite via email</string>
-    <string name="click_to_select_email_contacts">Click the select contacts button to select email addresses from your phone contacts, and/or enter them manually.</string>
+    <string name="invite_reassurance">Your contact information is not stored, uploaded, or used anywhere other than in this capacity.</string>
+     
+    <string name="invite_via_email">invite via email</string>    
     <string name="invite_via_text_message">invite via text message</string>
     <string name="invite_via_other_application">invite via other application</string>
-    <string name="touch_invite_button">Touch the invite button to select application to invite with, eg. facebook, twitter.</string>
-    <string name="select_contacts">select contacts</string>
+    <string name="click_to_select_email_contacts">"Touch 'next' to select email addresses and launch your email app."</string>
+    <!-- anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
+    <string name="invite_text">"Touch 'next' to select phone numbers and launch your sms app. (Please [click here] if contacts fail to populate in your sms app)."</string>
+    <string name="touch_invite_button">"Touch 'invite' to select application to invite with, eg. facebook, twitter."</string>
     <string name="phone_number">phone number</string>
     <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices (ie. lost or stolen phones) will no longer be able to access surespot using the selected identity.</string>
     <string name="username">username</string>
@@ -289,5 +288,5 @@
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
     <string name="surespot_help">surespot help</string>
-
+	<string name="next">next</string>
 </resources>

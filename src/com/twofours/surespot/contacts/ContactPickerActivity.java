@@ -8,9 +8,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,19 +27,22 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ExternalInviteActivity;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.ui.UIUtils;
 
 public class ContactPickerActivity extends SherlockActivity {
 
 	private static final String TAG = "ContactPickerActivity";
 	private ListView mContactList;
-	private boolean mSelectEmail;
+	private int mSelectedType;
 	private ContactListAdapter mAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_contact_picker);
+
 		mContactList = (ListView) findViewById(R.id.contactList);
 		mContactList.setOnItemClickListener(new OnItemClickListener() {
 
@@ -77,12 +78,14 @@ public class ContactPickerActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				Intent dataIntent = new Intent();
 
-				dataIntent.putStringArrayListExtra("data", getSelectedContactData());
-				setResult(Activity.RESULT_OK, dataIntent);
-				finish();
-
+				ArrayList<String> selectedContacts = getSelectedContactData();
+				if (selectedContacts != null && selectedContacts.size() > 0) {
+					UIUtils.sendInvitation(ContactPickerActivity.this, MainActivity.getNetworkController(), mSelectedType, selectedContacts, true);
+				}
+				else {
+					Utils.makeToast(ContactPickerActivity.this, getString(R.string.no_contact_data_selected_or_entered));
+				}
 			}
 		});
 
@@ -100,12 +103,11 @@ public class ContactPickerActivity extends SherlockActivity {
 			}
 		}
 
-		mSelectEmail = type == ExternalInviteActivity.SHARE_EMAIL;
-		Utils.configureActionBar(this, getString(R.string.invite_select_contacts), typeToUserString(type), true);
+		mSelectedType = type;
+		Utils.configureActionBar(this, getString(R.string.invite), typeToUserString(type), true);
 		populateContactList(savedPreviouslySelected);
 	}
 
-	
 	public String typeToUserString(int type) {
 		switch (type) {
 		case ExternalInviteActivity.SHARE_EMAIL:
@@ -113,13 +115,11 @@ public class ContactPickerActivity extends SherlockActivity {
 		case ExternalInviteActivity.SHARE_SMS:
 			return getString(R.string.sms);
 
-		case ExternalInviteActivity.SHARE_SOCIAL:
-			return getString(R.string.social);
 		default:
 			return getString(R.string.unknown);
 		}
 	}
-	
+
 	/**
 	 * Populate the contact list based on account currently selected in the account spinner.
 	 */
@@ -168,7 +168,7 @@ public class ContactPickerActivity extends SherlockActivity {
 
 		Cursor cur = null;
 
-		if (!mSelectEmail) {
+		if (mSelectedType != ExternalInviteActivity.SHARE_EMAIL) {
 			cur = getContactPhones();
 
 			if (cur.getCount() > 0) {
@@ -291,7 +291,7 @@ public class ContactPickerActivity extends SherlockActivity {
 	}
 
 	private ArrayList<String> getSelectedContactData() {
-		//prevent duplicates
+		// prevent duplicates
 		ArrayList<String> selectedEmails = new ArrayList<String>();
 		Set<String> emails = new HashSet<String>();
 		for (ContactData contact : mAdapter.getContacts()) {
@@ -376,4 +376,5 @@ public class ContactPickerActivity extends SherlockActivity {
 		}
 
 	}
+
 }

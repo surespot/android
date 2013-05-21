@@ -1,13 +1,8 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/svInviteExternal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="match_parent" >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <!--
+    <!--
              <CheckBox
             android:checked="true"
             android:id="@+id/cbAutoInvite"
@@ -17,126 +12,111 @@
             android:layout_below="@+id/inviteRadioGroup"
             android:layout_marginTop="10dp"
             android:text="auto invite me when app installed/opened from this link" />
-        -->
+    -->
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bQR"
+        android:layout_alignParentTop="true" >
 
         <RadioGroup
             android:id="@+id/inviteRadioGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp" >
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/tvInviteMessage"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:text="@string/invite_others" />
+
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="5dp"
-                android:text="@string/invite_others"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:text="@string/invite_reassurance" />
 
             <RadioButton
                 android:id="@+id/rbEmail"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
                 android:text="@string/invite_via_email" />
 
             <TextView
                 android:id="@+id/tvInviteEmail"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:paddingLeft="30dp"
-                android:paddingRight="15dp"
-                android:text="@string/click_to_select_email_contacts"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:paddingRight="20dp"
+                android:text="@string/click_to_select_email_contacts" />
 
             <RadioButton
                 android:id="@+id/rbInviteSMS"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
                 android:text="@string/invite_via_text_message" />
 
             <TextView
                 android:id="@+id/tvInviteText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:paddingLeft="30dp"
-                android:paddingRight="15dp"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:paddingRight="20dp" />
 
             <RadioButton
                 android:id="@+id/rbSocial"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
                 android:text="@string/invite_via_other_application" />
 
             <TextView
                 android:id="@+id/tvInviteOther"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:paddingLeft="30dp"
-                android:paddingRight="15dp"
-                android:text="@string/touch_invite_button"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:paddingRight="20dp"
+                android:text="@string/touch_invite_button" />
         </RadioGroup>
+    </ScrollView>
 
-        <Button
-            android:id="@+id/bSelectContact"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/inviteRadioGroup"
-            android:layout_margin="10dp"
-            android:layout_toLeftOf="@+id/fInvite"
-            android:drawableLeft="@drawable/ic_menu_friendslist"
-            android:text="@string/select_contacts" />
+    <ImageView
+        android:id="@+id/bQR"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:background="@drawable/abs__list_selector_holo_light"
+        android:padding="5dp"
+        android:src="@drawable/qr_surespot" />
 
-        <TextView
-            android:id="@+id/tbInviteViaLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/bSelectContact"
-            android:layout_marginLeft="5dp"
-            android:layout_toLeftOf="@+id/fInvite"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:text="@string/phone_number" />
+    <Button
+        android:id="@+id/bSendInvitation"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="-10dp"
+        android:layout_marginRight="-10dp"
+        android:background="@drawable/send_button"
+        android:text="@string/next"
+        android:textColor="@android:color/black" />
 
-        <EditText
-            android:id="@+id/invitee"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/tbInviteViaLabel"
-            android:layout_toLeftOf="@+id/fInvite"
-            android:ems="10"
-            android:singleLine="true" >
-        </EditText>
-
-        <FrameLayout
-            android:id="@+id/fInvite"
-            android:layout_alignBottom="@+id/invitee"            
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/bSelectContact" >
-
-            <Button
-                android:layout_gravity="center_vertical"
-                android:layout_marginRight="-10dp"
-                android:id="@+id/bSendInvitation"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:background="@drawable/send_button"
-                android:text="@string/invite"
-                android:textColor="@android:color/black" />
-        </FrameLayout>
-    </RelativeLayout>
-
-</ScrollView>
+</RelativeLayout>
