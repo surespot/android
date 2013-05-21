@@ -44,7 +44,7 @@ public class UIUtils {
 
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 
-		alert.setView(editText);
+		
 
 		alert.setPositiveButton(R.string.ok, new OnClickListener() {
 
@@ -64,7 +64,9 @@ public class UIUtils {
 			}
 		});
 
-		alert.show();
+		AlertDialog ad = alert.create();
+		ad.setView(editText, 0, 0, 0, 0);
+		ad.show();
 	}
 
 	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText,
@@ -187,7 +189,7 @@ public class UIUtils {
 		tv.setText(Html.fromHtml(html));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
-	
+
 	public static void setHtml(Context context, TextView tv, Spanned html) {
 		tv.setText(Html.toHtml(html));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
@@ -205,19 +207,19 @@ public class UIUtils {
 		Spannable s1 = new SpannableString(text);
 		s1.setSpan(new ForegroundColorSpan(color), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		return s1;
-		
+
 	}
-	
+
 	public static void setHelpLinks(Context context, View view) {
-		TextView tvBackupWarning = (TextView) view.findViewById(R.id.backupIdentitiesWarning);		
+		TextView tvBackupWarning = (TextView) view.findViewById(R.id.backupIdentitiesWarning);
 		Spannable s1 = new SpannableString(context.getString(R.string.help_backupIdentities1));
-	    s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-	    
-	    tvBackupWarning.setText(s1);
-	    
-	    TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
+		s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		tvBackupWarning.setText(s1);
+
+		TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
 		UIUtils.setHtml(context, tvWelcome, R.string.welcome_to_surespot);
-	
+
 	}
 
 }
