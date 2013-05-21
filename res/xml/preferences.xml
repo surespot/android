@@ -13,21 +13,21 @@
     <PreferenceCategory android:title="@string/notifications_title" >
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="@string/pref_notifications_enabled"
+            android:key="pref_notifications_enabled"
             android:title="@string/notifications_enabled" />
         <CheckBoxPreference
             android:defaultValue="true"
-            android:dependency="@string/pref_notifications_enabled"
+            android:dependency="pref_notifications_enabled"
             android:key="pref_notifications_sound"
             android:title="@string/notifications_sound" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:dependency="pref_notifications_enabled"
-            android:key="@string/pref_notifications_vibration"
+            android:key="pref_notifications_vibration"
             android:title="@string/notifications_vibration" />
         <CheckBoxPreference
             android:defaultValue="true"
-            android:dependency="@string/pref_notifications_enabled"
+            android:dependency="pref_notifications_enabled"
             android:key="pref_notifications_led"
             android:title="@string/notifications_led" />
     </PreferenceCategory>
@@ -61,10 +61,9 @@
             </intent>
         </Preference>
         <Preference
+            android:key="pref_import_identity"
             android:summary="@string/pref_summary_import_identity"
-            android:title="@string/import_identity_label" >
-            <intent android:action="com.twofours.surespot.identity.ImportIdentityActivity" >
-            </intent>
+            android:title="@string/import_identity_label" >            
         </Preference>
         <Preference
             android:summary="@string/pref_summary_delete_identity"

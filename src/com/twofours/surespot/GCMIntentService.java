@@ -169,7 +169,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		// get shared prefs
 		SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
-		if (!pm.getBoolean(getString(R.string.pref_notifications_enabled), true)) {
+		if (!pm.getBoolean("pref_notifications_enabled", true)) {
 			return;
 		}
 
@@ -202,13 +202,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		Notification notification = builder.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
-		if (pm.getBoolean(getString(R.string.pref_notifications_led), true)) {
+		if (pm.getBoolean("pref_notifications_led", true)) {
 			notification.defaults |= Notification.DEFAULT_LIGHTS;
 		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_sound), true)) {
+		if (pm.getBoolean("pref_notifications_sound", true)) {
 			notification.defaults |= Notification.DEFAULT_SOUND;
 		}
-		if (pm.getBoolean(getString(R.string.pref_notifications_vibration), true)) {
+		if (pm.getBoolean("pref_notifications_vibration", true)) {
 			notification.defaults |= Notification.DEFAULT_VIBRATE;
 		}
 

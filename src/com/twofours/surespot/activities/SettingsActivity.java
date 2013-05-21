@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -16,9 +17,11 @@ import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.identity.ImportIdentityActivity;
 import com.twofours.surespot.ui.UIUtils;
 
 public class SettingsActivity extends SherlockPreferenceActivity {
@@ -46,11 +49,11 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			addPreferencesFromResource(R.xml.preferences);
 			Utils.configureActionBar(this, getString(R.string.settings), user, true);
 
-			prefMgr.findPreference(getString(R.string.pref_notifications_enabled)).setOnPreferenceClickListener(onPreferenceClickListener);
-			prefMgr.findPreference(getString(R.string.pref_notifications_sound)).setOnPreferenceClickListener(onPreferenceClickListener);
-			prefMgr.findPreference(getString(R.string.pref_notifications_vibration))
+			prefMgr.findPreference("pref_notifications_enabled").setOnPreferenceClickListener(onPreferenceClickListener);
+			prefMgr.findPreference("pref_notifications_sound").setOnPreferenceClickListener(onPreferenceClickListener);
+			prefMgr.findPreference("pref_notifications_vibration")
 					.setOnPreferenceClickListener(onPreferenceClickListener);
-			prefMgr.findPreference(getString(R.string.pref_notifications_led)).setOnPreferenceClickListener(onPreferenceClickListener);
+			prefMgr.findPreference("pref_notifications_led").setOnPreferenceClickListener(onPreferenceClickListener);
 
 			// prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			//
@@ -80,7 +83,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					UIUtils.setHelpLinks(SettingsActivity.this, view);
 					ad.setView(view, 0, 0, 0, 0);
 
-										ad.show();
+					ad.show();
 
 					return true;
 				}
@@ -91,6 +94,21 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
 					SurespotLog.setCrashReporting(((CheckBoxPreference) preference).isChecked());
+					return true;
+				}
+			});
+
+			prefMgr.findPreference("pref_import_identity").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					if (IdentityController.getIdentityCount(SettingsActivity.this) < SurespotConstants.MAX_IDENTITIES) {
+						Intent intent = new Intent(SettingsActivity.this, ImportIdentityActivity.class);
+						startActivity(intent);
+					}
+					else {
+						Utils.makeLongToast(SettingsActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
+					}					
 					return true;
 				}
 			});
