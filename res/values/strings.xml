@@ -214,7 +214,7 @@
     <string name="restore">restore</string>
     <string name="restore_discovered_identities_location">Discovered the identities below in:\n\n\t%s\n\n click on a name to restore.</string>
     <string name="restore_identities_none_discovered">No surespot identity (*.ssi) files discovered in\n\n\t%s\n\nplease copy your identity file(s) there. (Note: this may not be the SD card, it could be the device\'s internal storage).</string>
-    <string name="restore_identity_already_exists">not importing identity as it already exists</string>
+    <string name="restore_identity_already_exists">not restoring identity as it already exists</string>
     <string name="restore_identity">restore %s identity</string>
     <string name="assign">assign</string>
     <string name="could_not_load_image">could not load image</string>
