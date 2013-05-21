@@ -5,18 +5,13 @@ import java.util.Timer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
@@ -45,16 +40,8 @@ public class FriendFragment extends SherlockFragment {
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
 		mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
-		
-		TextView tvBackupWarning = (TextView) view.findViewById(R.id.backupIdentitiesWarning);		
-		Spannable s1 = new SpannableString(getString(R.string.help_backupIdentities1));
-	    s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-	    
-	    tvBackupWarning.setText(s1);
-	    
-	    TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
-		UIUtils.setHtml(getActivity(), tvWelcome, R.string.welcome_to_surespot);
-		
+
+		UIUtils.setHelpLinks(getActivity(), view);
 
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
@@ -81,7 +68,7 @@ public class FriendFragment extends SherlockFragment {
 							mTimer = null;
 						}
 
-						SurespotLog.v(TAG, "tearing progress down");						
+						SurespotLog.v(TAG, "tearing progress down");
 						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
 					}
 				}
@@ -146,8 +133,9 @@ public class FriendFragment extends SherlockFragment {
 					SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
-								getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+						UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation), getMainActivity()
+								.getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
+								new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											activity.getChatController().deleteMessages(friend);
@@ -162,16 +150,19 @@ public class FriendFragment extends SherlockFragment {
 				}
 				else {
 					if (selection.equals(getString(R.string.menu_delete_friend))) {
-						UIUtils.createAndShowConfirmationDialog(activity, getMainActivity().getString(R.string.delete_friend_confirmation, friend.getName()), getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
-							public void handleResponse(Boolean result) {
-								if (result) {
-									activity.getChatController().deleteFriend(friend);
-								}
-								else {
-									dialogi.cancel();
-								}
-							};
-						});
+						UIUtils.createAndShowConfirmationDialog(activity,
+								getMainActivity().getString(R.string.delete_friend_confirmation, friend.getName()), getMainActivity()
+										.getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
+								new IAsyncCallback<Boolean>() {
+									public void handleResponse(Boolean result) {
+										if (result) {
+											activity.getChatController().deleteFriend(friend);
+										}
+										else {
+											dialogi.cancel();
+										}
+									};
+								});
 					}
 				}
 			}

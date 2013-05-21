@@ -1,12 +1,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/pref_title_about" >
+    <PreferenceCategory android:title="@string/pref_title_general" >
         <Preference android:title="@string/pref_title_about_surespot" >
             <intent android:action="com.twofours.surespot.activities.AboutActivity" >
             </intent>
         </Preference>
+        <Preference
+            android:key="pref_help"
+            android:title="@string/pref_title_help" >
+        </Preference>
     </PreferenceCategory>
-  
     <PreferenceCategory android:title="@string/notifications_title" >
         <CheckBoxPreference
             android:defaultValue="true"
@@ -79,8 +82,8 @@
     <PreferenceCategory android:title="@string/pref_title_options" >
         <CheckBoxPreference
             android:defaultValue="false"
-            android:summary="@string/pref_summary_alternate_sms_delimiter"
             android:key="pref_alternate_text_delimiter"
+            android:summary="@string/pref_summary_alternate_sms_delimiter"
             android:title="@string/pref_title_alternate_sms_invite_to" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_title_debug" >

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
 import android.text.Html;
@@ -205,6 +206,18 @@ public class UIUtils {
 		s1.setSpan(new ForegroundColorSpan(color), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		return s1;
 		
+	}
+	
+	public static void setHelpLinks(Context context, View view) {
+		TextView tvBackupWarning = (TextView) view.findViewById(R.id.backupIdentitiesWarning);		
+		Spannable s1 = new SpannableString(context.getString(R.string.help_backupIdentities1));
+	    s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+	    
+	    tvBackupWarning.setText(s1);
+	    
+	    TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
+		UIUtils.setHtml(context, tvWelcome, R.string.welcome_to_surespot);
+	
 	}
 
 }
