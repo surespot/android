@@ -3,6 +3,9 @@ package com.twofours.surespot.identity;
 import java.io.File;
 import java.util.List;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -16,14 +19,21 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.common.AccountPicker;
+import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 public class ExportIdentityActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
+	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
+	private GoogleAccountManager mAccountManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +85,13 @@ public class ExportIdentityActivity extends SherlockActivity {
 			public void onClick(View v) {
 				// TODO progress
 				final String user = (String) spinner.getSelectedItem();
-				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
-						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
+				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user), getString(R.string.enter_password_for, user),
+						new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
 									exportIdentity(user, result);
-								}
-								else {
+								} else {
 									Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
 								}
 							}
@@ -90,6 +99,32 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			}
 		});
+
+		mAccountManager = new GoogleAccountManager(this);
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, false, null, null, null, null);
+		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+	}
+
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT:
+			if (data != null) {
+
+				SurespotLog.w("Preferences", "SELECTED ACCOUNT WITH EXTRA: %s", data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+				Bundle b = data.getExtras();
+
+				String accountName = b.getString(AccountManager.KEY_ACCOUNT_NAME);
+
+				SurespotLog.d("Preferences", "Selected account: " + accountName);
+				if (accountName != null && accountName.length() > 0) {
+					Account account = mAccountManager.getAccountByName(accountName);
+				//	setAccount(account);
+				}
+			} else {
+				//mState = STATE_INITIAL;
+			}
+			break;
+		}
 	}
 
 	private void exportIdentity(String user, String password) {
@@ -98,8 +133,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			public void handleResponse(String response) {
 				if (response == null) {
 					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
-				}
-				else {
+				} else {
 					Utils.makeLongToast(ExportIdentityActivity.this, response);
 				}
 

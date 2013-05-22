@@ -67,6 +67,14 @@
             android:text="@string/export_sd"
             android:textSize="16dp" >
         </Button>
+        
+          <Button
+            android:id="@+id/bBackupDrive"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/backup_drive"
+            android:textSize="16dp" >
+        </Button>
     </LinearLayout>
 
 </ScrollView>

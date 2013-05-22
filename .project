@@ -3,7 +3,12 @@
 	<name>surespot</name>
 	<comment></comment>
 	<projects>
-		<project>library</project>
+		<project>actionbarsherlock</project>
+		<project>android-async-http</project>
+		<project>common</project>
+		<project>ImageViewTouch</project>
+		<project>SSLWebSocket</project>
+		<project>viewpagerindicator</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

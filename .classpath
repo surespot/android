@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="lib" path="libs/gcm.jar"/>
 	<classpathentry kind="lib" path="libs/android-support-v4.jar" sourcepath="/home/adam/devtools/adt-bundle-linux-x86_64/sdk/sources/android-17"/>
 	<classpathentry kind="lib" path="libs/sc-light-jdk15on-1.47.0.3-SNAPSHOT.jar" sourcepath="/home/adam/dev/surespot/libs/android/github/forks/spongycastle"/>
 	<classpathentry kind="lib" path="libs/scprov-jdk15on-1.47.0.3-SNAPSHOT.jar" sourcepath="/home/adam/dev/surespot/libs/android/github/forks/spongycastle"/>
 	<classpathentry kind="lib" path="libs/guava-14.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/google-play-services.jar"/>
+	<classpathentry kind="lib" path="/android-async-http/libs/httpclientandroidlib-1.1.1.madman.jar" sourcepath="/home/adam/dev/surespot/libs/android/google/adam-httpclientandroidlib/script"/>
+	<classpathentry kind="lib" path="/common/libs/acra-4.4.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/actionbarsherlock"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-async-http"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SSLWebSocket"/>
+	<classpathentry kind="con" path="com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/drive-v2r75lv1.14.2-beta"/>
 	<classpathentry excluding="com/twofours/surespot/activities/StartupActivity.java|com/twofours/surespot/chat/ChatActivity.java|com/twofours/surespot/friends/FriendActivity.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin/classes"/>

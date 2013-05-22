@@ -289,4 +289,5 @@
     <string name="delete_identity">delete identity</string>
     <string name="surespot_help">surespot help</string>
 	<string name="next">next</string>
+	<string name="backup_drive">backup to google drive</string>
 </resources>

@@ -67,7 +67,7 @@ public class IdentityBackupAgent extends BackupAgent {
 				}
 			}
 			else {
-				// delete the backup if there is one
+				// delete the com.twofours.surespot.backup if there is one
 				deletedNames.add(name);
 			}
 		}
@@ -84,11 +84,11 @@ public class IdentityBackupAgent extends BackupAgent {
 				FileInputStream instream = new FileInputStream(oldState.getFileDescriptor());
 
 				try {
-					// Get the checksum from the last backup
+					// Get the checksum from the last com.twofours.surespot.backup
 					byte[] lastChecksum = Utils.inputStreamToBytes(instream);
 
 					if (Arrays.areEqual(lastChecksum, currentChecksum)) {
-						SurespotLog.v(TAG, "won't backup identities because checksum has not changed");
+						SurespotLog.v(TAG, "won't com.twofours.surespot.backup identities because checksum has not changed");
 
 						// Don't back up because the checksum hasn't changed
 						backup = false;
@@ -102,7 +102,7 @@ public class IdentityBackupAgent extends BackupAgent {
 					}
 				}
 				catch (IOException e) {
-					// Unable to read state file... be safe and do a backup
+					// Unable to read state file... be safe and do a com.twofours.surespot.backup
 				}
 
 			}
@@ -130,7 +130,7 @@ public class IdentityBackupAgent extends BackupAgent {
 						data.writeEntityHeader("identity:" + name, len);
 						data.writeEntityData(buffer, len);
 					}
-					// always backup shared prefs
+					// always com.twofours.surespot.backup shared prefs
 					String filename = this.getApplicationInfo().dataDir + File.separator + "shared_prefs" + File.separator + name + ".xml";
 					SurespotLog.v(TAG, "backing up shared prefs: " + filename);
 					FileInputStream fis = new FileInputStream(filename);
@@ -153,19 +153,19 @@ public class IdentityBackupAgent extends BackupAgent {
 
 			while (iterator.hasNext()) {
 				String name = iterator.next();
-				SurespotLog.v(TAG, "deleting identity backup for: %s", name);
+				SurespotLog.v(TAG, "deleting identity com.twofours.surespot.backup for: %s", name);
 
 				synchronized (IdentityController.IDENTITY_FILE_LOCK) {
-					// delete identity backup
+					// delete identity com.twofours.surespot.backup
 					data.writeEntityHeader("identity:" + name, -1);
 					String filename = FileUtils.getIdentityDir(this) + File.separator + name
 							+ IdentityController.IDENTITY_DELETED_EXTENSION;
 					new File(filename).delete();
 
-					// delete shared prefs backup
+					// delete shared prefs com.twofours.surespot.backup
 					data.writeEntityHeader("sharedPref:" + name, -1);
 					filename = this.getApplicationInfo().dataDir + File.separator + "shared_prefs" + File.separator + name + ".xml";
-					SurespotLog.v(TAG, "deleting shared prefs backup for: %s", name);
+					SurespotLog.v(TAG, "deleting shared prefs com.twofours.surespot.backup for: %s", name);
 					new File(filename).delete();
 				}
 			}

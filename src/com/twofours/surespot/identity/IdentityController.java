@@ -144,9 +144,9 @@ public class IdentityController {
 				FileUtils.writeFile(identityFile, identityBytes);
 			}
 
-			// tell backup manager the data has changed
+			// tell com.twofours.surespot.backup manager the data has changed
 			if (backupContext != null) {
-				SurespotLog.v(TAG, "telling backup manager data changed");
+				SurespotLog.v(TAG, "telling com.twofours.surespot.backup manager data changed");
 				SurespotApplication.mBackupManager.dataChanged();
 			}
 			return identityFile;
@@ -247,7 +247,7 @@ public class IdentityController {
 			file = new File(identityFilename);
 			file.delete();
 
-			// create deleted file so we can remove the backup if there is one
+			// create deleted file so we can remove the com.twofours.surespot.backup if there is one
 			String deletedFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_DELETED_EXTENSION;
 			try {
 				new File(deletedFilename).createNewFile();
