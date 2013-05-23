@@ -302,6 +302,8 @@
 	<string name="could_not_list_identities_from_google_drive">could not get list of identities from google drive</string>
 	<string name="no_google_account_selected">no google account selected</string>
 	<string name="select_google_drive_account">select Google account</string>
-	<string name="re_add_google_account">Unfortunately you will need to remove and re-add the google account for this to work.</string>
+	<string name="re_add_google_account">Unfortunately the Google token is no longer valid and you will need to remove and re-add your Google account via device settings.</string>
+	<string name="progress_restoring_identity">restoring identity</string>
+	<string name="progress_loading_identities">loading identities</string>
 	
 </resources>

@@ -44,6 +44,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.IdentityOperationResult;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.SingleProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
 public class ImportIdentityActivity extends SherlockActivity {
@@ -54,6 +55,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 	private boolean mShowingLocal;
 	private DriveHelper mDriveHelper;
 	private ListView mDriveListview;
+	private SingleProgressDialog mSpd;
+	private SingleProgressDialog mSpdLoadIdentities;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +70,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 		rbRestoreLocal.setTag("local");
 		rbRestoreLocal.setChecked(true);
 		mShowingLocal = true;
-
+		mSpdLoadIdentities = new SingleProgressDialog(ImportIdentityActivity.this, getString(R.string.progress_loading_identities), 0);
+		
 		RadioButton rbRestoreDrive = (RadioButton) findViewById(R.id.rbRestoreDrive);
 		rbRestoreDrive.setTag("drive");
 
@@ -86,18 +90,19 @@ public class ImportIdentityActivity extends SherlockActivity {
 							switcher.showNext();
 							mShowingLocal = false;
 							if (mDriveHelper.getDriveAccount() != null) {
-
-								new AsyncTask<Void, Void, Void>() {
-									@Override
-									protected Void doInBackground(Void... params) {
-										Drive drive = mDriveHelper.getDriveService();
-										if (drive != null) {
+								Drive drive = mDriveHelper.getDriveService();
+								if (drive != null) {									
+									mSpdLoadIdentities.show();
+									new AsyncTask<Void, Void, Void>() {
+										@Override
+										protected Void doInBackground(Void... params) {
 											populateDriveIdentities(true);
-										}
-										return null;
-									}
 
-								}.execute();
+											return null;
+										}
+
+									}.execute();
+								}
 							} else {
 								Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
 							}
@@ -129,9 +134,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				if (mDriveListview != null) {
-					mDriveListview.setAdapter(null);
-				}
 				chooseAccount();
 			}
 		});
@@ -296,7 +298,15 @@ public class ImportIdentityActivity extends SherlockActivity {
 			// was trying to figure out how to test this
 			// seems like the only way around this is to remove and re-add android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
-			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
+			this.runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.re_add_google_account));
+
+				}
+			});
+
 			return;
 		}
 
@@ -312,6 +322,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			@Override
 			public void run() {
 
+				mSpdLoadIdentities.hide();
 				mDriveListview.setAdapter(adapter);
 				mDriveListview.setOnItemClickListener(new OnItemClickListener() {
 
@@ -340,6 +351,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 									@Override
 									public void handleResponse(final String password) {
 										if (!TextUtils.isEmpty(password)) {
+											if (mSpd == null) {
+												mSpd = new SingleProgressDialog(ImportIdentityActivity.this, getString(R.string.progress_restoring_identity), 0);
+											}
+											mSpd.show();
+
 											final String url = map.get("url");
 
 											new AsyncTask<Void, Void, Void>() {
@@ -358,6 +374,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 																		@Override
 																		public void run() {
+																			mSpd.hide();
 																			Utils.makeLongToast(ImportIdentityActivity.this,
 																					user + " " + response.getResultText());
 
@@ -454,20 +471,27 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			}
 
-		} catch (UserRecoverableAuthIOException e) {
+		} catch (UserRecoverableAuthIOException e) {			
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		} catch (IOException e) {
+		} catch (IOException e) {			
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-		}			catch (SecurityException e) {
-				SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
-				// when key is revoked on server this happens...should return userrecoverable it seems
-				// was trying to figure out how to test this
-				// seems like the only way around this is to remove and re-add android account:
-				// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
-				Utils.makeLongToast(this, getString(R.string.re_add_google_account));
+		} catch (SecurityException e) {
+			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
+			// when key is revoked on server this happens...should return userrecoverable it seems
+			// was trying to figure out how to test this
+			// seems like the only way around this is to remove and re-add android account:
+			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
+			this.runOnUiThread(new Runnable() {
 
-			}
+				@Override
+				public void run() {
+					Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.re_add_google_account));
+
+				}
+			});
+
+		}
 
 		return identityDirId;
 	}
@@ -476,7 +500,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT:
-			if (data != null) {
+
+			if (resultCode == Activity.RESULT_OK && data != null) {
 
 				SurespotLog.w("Preferences", "SELECTED ACCOUNT WITH EXTRA: %s", data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
 				Bundle b = data.getExtras();
@@ -488,7 +513,10 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 					mDriveHelper.setDriveAccount(accountName);
 					mAccountNameDisplay.setText(accountName);
-
+					if (mDriveListview != null) {
+						mDriveListview.setAdapter(null);
+					}
+					mSpdLoadIdentities.show();
 					new AsyncTask<Void, Void, Void>() {
 						@Override
 						protected Void doInBackground(Void... params) {
@@ -503,6 +531,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		case SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH:
 			if (resultCode == Activity.RESULT_OK) {
+				mSpdLoadIdentities.show();
 				new AsyncTask<Void, Void, Void>() {
 
 					@Override
