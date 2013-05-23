@@ -16,12 +16,11 @@ import android.view.View;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.backup.ImportIdentityActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.identity.ImportIdentityActivity;
 import com.twofours.surespot.ui.UIUtils;
 
 public class SettingsActivity extends SherlockPreferenceActivity {
@@ -35,12 +34,12 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				SurespotApplication.mBackupManager.dataChanged();
+				//SurespotApplication.mBackupManager.dataChanged();
 				return true;
 			}
 		};
 
-		// TODO put in fragment
+		// TODO put in fragment0		
 		PreferenceManager prefMgr = getPreferenceManager();
 		String user = IdentityController.getLoggedInUser();
 		if (user != null) {

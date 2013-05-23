@@ -59,24 +59,27 @@ public class IdentityController {
 			Utils.putSharedPrefsString(context, "referrer", null);
 			SurespotApplication.getCachingService().login(identity, cookie);
 
-			// set logging and crash reporting based on shared prefs for the user
+			// set logging and crash reporting based on shared prefs for the
+			// user
 			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
 
 			// PROD TODO set to false on release
-			// boolean prefLogging = sp.getBoolean("pref_logging", SurespotConstants.LOGGING);
-			// SurespotLog.v(TAG, "setting logging based on preference: %b", prefLogging);
+			// boolean prefLogging = sp.getBoolean("pref_logging",
+			// SurespotConstants.LOGGING);
+			// SurespotLog.v(TAG, "setting logging based on preference: %b",
+			// prefLogging);
 
 			// SurespotLog.setLogging(prefLogging);
 			SurespotLog.setCrashReporting(sp.getBoolean("pref_crash_reporting", SurespotConstants.CRASH_REPORTING));
 
-			// you would think changing the shared prefs name would update the internal state but it doesn't
+			// you would think changing the shared prefs name would update the
+			// internal state but it doesn't
 			// ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
 			// ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
 			//
 			// boolean enableACRA = sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false);
 			// ACRA.getErrorReporter().setEnabled(enableACRA);
-		}
-		else {
+		} else {
 			SurespotLog.w(TAG, "getIdentity null");
 		}
 	}
@@ -136,8 +139,7 @@ public class IdentityController {
 				SurespotLog.v(TAG, "saving identity: %s, salt: %s", identityFile, identity.getSalt());
 
 				if (!FileUtils.ensureDir(identityDir)) {
-					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir),
-							"Could not create identity dir: %s", identityDir);
+					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir), "Could not create identity dir: %s", identityDir);
 					return null;
 				}
 
@@ -147,7 +149,7 @@ public class IdentityController {
 			// tell com.twofours.surespot.backup manager the data has changed
 			if (backupContext != null) {
 				SurespotLog.v(TAG, "telling com.twofours.surespot.backup manager data changed");
-				SurespotApplication.mBackupManager.dataChanged();
+				// SurespotApplication.mBackupManager.dataChanged();
 			}
 			return identityFile;
 		}
@@ -158,8 +160,7 @@ public class IdentityController {
 
 		catch (FileNotFoundException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		return null;
@@ -191,12 +192,10 @@ public class IdentityController {
 
 		if (exists && !overwrite) {
 			return false;
-		}
-		else {
+		} else {
 			if (exists) {
 				return identityFile.isFile() && identityFile.canWrite();
-			}
-			else {
+			} else {
 
 				try {
 					// make sure we'll have the space to write the identity file
@@ -205,8 +204,7 @@ public class IdentityController {
 					fos.close();
 					identityFile.delete();
 					return true;
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					return false;
 				}
 			}
@@ -247,18 +245,18 @@ public class IdentityController {
 			file = new File(identityFilename);
 			file.delete();
 
-			// create deleted file so we can remove the com.twofours.surespot.backup if there is one
+			// create deleted file so we can remove the
+			// com.twofours.surespot.backup if there is one
 			String deletedFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_DELETED_EXTENSION;
 			try {
 				new File(deletedFilename).createNewFile();
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				SurespotLog.e(TAG, e, "could not create deleted identity file: %s", deletedFilename);
 			}
 
 		}
 
-		SurespotApplication.mBackupManager.dataChanged();
+		// SurespotApplication.mBackupManager.dataChanged();
 
 		if (isLoggedIn) {
 			UIUtils.launchMainActivityDeleted(context);
@@ -312,8 +310,7 @@ public class IdentityController {
 
 			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", username, salt);
 			if (!name.equals(username)) {
-				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username),
-						"internal identity did not match");
+				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username), "internal identity did not match");
 				return null;
 			}
 
@@ -327,18 +324,14 @@ public class IdentityController {
 				String sprivDH = json.getString("dhPriv");
 				String spubECDSA = json.getString("dsaPub");
 				String sprivECDSA = json.getString("dsaPriv");
-				si.addKeyPairs(
-						version,
-						new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH), EncryptionController.recreatePrivateKey("ECDH",
-								sprivDH)),
-						new KeyPair(EncryptionController.recreatePublicKey("ECDSA", spubECDSA), EncryptionController.recreatePrivateKey(
-								"ECDSA", sprivECDSA)));
+				si.addKeyPairs(version,
+						new KeyPair(EncryptionController.recreatePublicKey("ECDH", spubDH), EncryptionController.recreatePrivateKey("ECDH", sprivDH)),
+						new KeyPair(EncryptionController.recreatePublicKey("ECDSA", spubECDSA), EncryptionController.recreatePrivateKey("ECDSA", sprivECDSA)));
 
 			}
 
 			return si;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			SurespotLog.w(TAG, e, "loadIdentity");
 		}
 
@@ -357,32 +350,27 @@ public class IdentityController {
 			if (networkController == null) {
 				networkController = new NetworkController(context, null);
 			}
-			networkController.validate(username, dpassword,
-					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword), new AsyncHttpResponseHandler() {
+			networkController.validate(username, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword),
+					new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 
 							// should never happen
-							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password
-									+ CACHE_IDENTITY_ID);
+							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
 							if (existingIdentity != null) {
 								int importVersion = Integer.parseInt(identity.getLatestVersion());
 								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
 								if (importVersion <= existingVersion) {
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.newer_identity_exists),
-											false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.newer_identity_exists), false));
 									return;
 								}
 							}
 
 							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
-								callback.handleResponse(new IdentityOperationResult(context
-										.getString(R.string.identity_imported_successfully), true));
-							}
-							else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity),
-										false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
+							} else {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
 							}
 						}
 
@@ -391,11 +379,11 @@ public class IdentityController {
 
 							if (error instanceof HttpResponseException) {
 								int statusCode = ((HttpResponseException) error).getStatusCode();
-								// would use 401 but we're intercepting those and I don't feel like special casing it
+								// would use 401 but we're intercepting those
+								// and I don't feel like special casing it
 								switch (statusCode) {
 								case 403:
-									callback.handleResponse(new IdentityOperationResult(context
-											.getString(R.string.incorrect_password_or_key), false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.incorrect_password_or_key), false));
 									break;
 								case 404:
 									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.no_such_user), false));
@@ -403,26 +391,21 @@ public class IdentityController {
 
 								default:
 									SurespotLog.w(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context
-											.getString(R.string.could_not_import_identity), false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
 								}
-							}
-							else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity),
-										false));
+							} else {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
 							}
 						}
 					});
 
-		}
-		else {
+		} else {
 			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
 		}
 
 	}
 
-	public static void exportIdentity(final Context context, final String username, final String password,
-			final IAsyncCallback<String> callback) {
+	public static void exportIdentity(final Context context, final String username, final String password, final IAsyncCallback<String> callback) {
 		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null) {
 			callback.handleResponse(null);
@@ -439,15 +422,15 @@ public class IdentityController {
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
 							String path = saveIdentity(null, exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
-							callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, username,
-									path));
+							callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, username, path));
 						}
 
 						public void onFailure(Throwable error) {
 
 							if (error instanceof HttpResponseException) {
 								int statusCode = ((HttpResponseException) error).getStatusCode();
-								// would use 401 but we're intercepting those and I don't feel like special casing it
+								// would use 401 but we're intercepting those
+								// and I don't feel like special casing it
 								switch (statusCode) {
 								case 403:
 									callback.handleResponse(context.getString(R.string.incorrect_password_or_key));
@@ -460,14 +443,12 @@ public class IdentityController {
 									SurespotLog.w(TAG, error, "exportIdentity");
 									callback.handleResponse(null);
 								}
-							}
-							else {
+							} else {
 								callback.handleResponse(null);
 							}
 						}
 					});
-		}
-		else {
+		} else {
 			callback.handleResponse(null);
 		}
 
@@ -477,8 +458,7 @@ public class IdentityController {
 		try {
 			String dir = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username;
 			if (!FileUtils.ensureDir(dir)) {
-				SurespotLog.e(TAG, new RuntimeException("Could not create public key pair dir: %s" + dir),
-						"Could not create public key pair dir: %s", dir);
+				SurespotLog.e(TAG, new RuntimeException("Could not create public key pair dir: %s" + dir), "Could not create public key pair dir: %s", dir);
 				return null;
 			}
 
@@ -488,8 +468,7 @@ public class IdentityController {
 			FileUtils.writeFile(pkFile, keyPair);
 
 			return pkFile;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		return null;
@@ -525,8 +504,7 @@ public class IdentityController {
 				savePublicKeyPair(username, version, json.toString());
 				SurespotLog.v(TAG, "loaded public keys from server");
 				return new PublicKeys(version, dhPub, dsaPub);
-			}
-			catch (JSONException e) {
+			} catch (JSONException e) {
 				SurespotLog.w(TAG, e, "recreatePublicKeyPair");
 			}
 		}
@@ -548,55 +526,28 @@ public class IdentityController {
 			if (!dhVerify) {
 				// TODO inform user
 				// alert alert
-				SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."),
-						"could not verify DH key against server signature");
+				SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."), "could not verify DH key against server signature");
 				return null;
-			}
-			else {
+			} else {
 				SurespotLog.i(TAG, "DH key successfully verified");
 			}
 
 			boolean dsaVerify = EncryptionController.verifyPublicKey(sSigECDSA, spubECDSA);
 			if (!dsaVerify) {
 				// alert alert
-				SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."),
-						"could not verify DSA key against server signature");
+				SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."), "could not verify DSA key against server signature");
 				return null;
-			}
-			else {
+			} else {
 				SurespotLog.i(TAG, "DSA key successfully verified");
 			}
 
 			return json;
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			SurespotLog.w(TAG, e, "recreatePublicIdentity");
 		}
 		return null;
 	}
-
-	public static String[] getIdentityFiles(Context context) {
-		String dir = FileUtils.getIdentityDir(context);
-
-		File[] files = new File(dir).listFiles(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String filename) {
-				return filename.endsWith(IDENTITY_EXTENSION);
-			}
-		});
-
-		if (files != null) {
-			String[] identityFiles = new String[files.length];
-			for (int i = 0; i < files.length; i++) {
-				identityFiles[i] = FileUtils.IDENTITIES_DIR + File.separator + files[i].getName();
-			}
-			return identityFiles;
-		}
-
-		return null;
-
-	}
+	
 
 	public static List<String> getIdentityNames(Context context, String dir) {
 
@@ -641,12 +592,21 @@ public class IdentityController {
 
 		if (files != null) {
 			for (File f : files) {
-				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_DELETED_EXTENSION.length()));
+				identityNames.add(getIdentityNameFromFile(f));
 			}
 		}
 
 		return identityNames;
 	}
+	
+	public static String getIdentityNameFromFile(File file) {
+		return getIdentityNameFromFilename(file.getName());
+	}
+	
+	public static String getIdentityNameFromFilename(String filename) {
+		return filename.substring(0, filename.length() - IDENTITY_DELETED_EXTENSION.length());
+	}
+
 
 	public static synchronized int getIdentityCount(Context context) {
 		return getIdentityNames(context, FileUtils.getIdentityDir(context)).size();
@@ -654,6 +614,19 @@ public class IdentityController {
 
 	public static List<String> getIdentityNames(Context context) {
 		return getIdentityNames(context, FileUtils.getIdentityDir(context));
+	}
+
+	public static File[] getIdentityFiles(Context context, String dir) {		
+		File[] files = new File(dir).listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String filename) {
+				return filename.endsWith(IDENTITY_EXTENSION);
+			}
+		});
+
+		return files;
+
 	}
 
 	public static void userLoggedIn(Context context, SurespotIdentity identity, Cookie cookie) {
@@ -692,8 +665,7 @@ public class IdentityController {
 			return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
 					EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")));
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			SurespotLog.w(TAG, "loadPublicKeyPair", e);
 		}
 		return null;
@@ -717,8 +689,7 @@ public class IdentityController {
 		if (service != null) {
 			return service.getLoggedInUser();
 
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -760,7 +731,8 @@ public class IdentityController {
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
 		String idFile = saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
-		// big problems if we can't save it, but shouldn't happen as we create the file first
+		// big problems if we can't save it, but shouldn't happen as we create
+		// the file first
 		if (idFile == null) {
 			// TODO give user other options to save it
 			SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
@@ -775,7 +747,8 @@ public class IdentityController {
 
 	public static void updateLatestVersion(Context context, String username, String version) {
 		// see if we are the user that's been revoked
-		// if we have the latest version locally, if we don't then this user has been revoked from a different device
+		// if we have the latest version locally, if we don't then this user has
+		// been revoked from a different device
 		// and should not be used on this device anymore
 		if (username.equals(getLoggedInUser()) && version.compareTo(getOurLatestVersion()) > 0) {
 			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
@@ -791,10 +764,10 @@ public class IdentityController {
 			launchLoginActivity(context);
 
 			// TODO tell user?
-			// Utils.makeLongToast(context, "identity: " + username + " revoked");
+			// Utils.makeLongToast(context, "identity: " + username +
+			// " revoked");
 
-		}
-		else {
+		} else {
 			SurespotApplication.getCachingService().updateLatestVersion(username, version);
 		}
 

@@ -6,19 +6,91 @@
     android:padding="10dp"
     tools:context=".ImportIdentityActivity" >
 
-    
-    
-    <TextView
-        android:id="@+id/foundText"
-        android:layout_width="wrap_content"
+    <RadioGroup
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:textSize="16dp" />
+        android:orientation="vertical" >
 
-    <ListView
-        android:id="@+id/lvIdentities"
+        <RadioButton
+            android:id="@+id/rbRestoreLocal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/restore_local" />
+
+        <RadioButton
+            android:id="@+id/rbRestoreDrive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/restore_drive" />
+    </RadioGroup>
+
+    <ViewSwitcher
+        android:id="@+id/restoreViewSwitcher"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-    </ListView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/restore_local_location_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/restoreLocalLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/lvLocalIdentities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+            </ListView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/restore_drive_account_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/restoreDriveAccount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/lvDriveIdentities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+            </ListView>
+        </LinearLayout>
+    </ViewSwitcher>
 
 </LinearLayout>

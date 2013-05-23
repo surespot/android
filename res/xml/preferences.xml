@@ -51,13 +51,13 @@
         <Preference
             android:summary="@string/pref_summary_identity_auto_backup"
             android:title="@string/pref_title_identity_auto_backup" >
-            <intent android:action="com.twofours.surespot.activities.AutoBackupActivity" >
+            <intent android:action="com.twofours.surespot.backup.GoogleDriveBackupActivity" >
             </intent>
         </Preference>
         <Preference
             android:summary="@string/pref_summary_export_identity"
             android:title="@string/export_identity_label" >
-            <intent android:action="com.twofours.surespot.identity.ExportIdentityActivity" >
+            <intent android:action="com.twofours.surespot.backup.ExportIdentityActivity" >
             </intent>
         </Preference>
         <Preference

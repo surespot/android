@@ -292,4 +292,12 @@
 	<string name="backup_drive">backup to google drive</string>
 	<string name="could_not_backup_identity_to_google_drive">Could not backup identity to google drive</string>
 	<string name="identity_successfully_backed_up_to_google_drive">identity successfully backed up to google drive</string>
+	<string name="google_drive_account_label">account:</string>
+	<string name="need_google_drive_account">please select a google  account from the settings menu</string>
+	<string name="need_google_drive_enabled">please enable google drive backup from the settings menu</string>
+	<string name="restore_local">restore from device</string>
+	<string name="restore_drive">restore from drive</string>
+	<string name="restore_drive_account_label">account:</string>
+	<string name="restore_local_location_label">location:</string>
+	<string name="could_not_list_identities_from_google_drive">could not get list of identities from google drive</string>
 </resources>

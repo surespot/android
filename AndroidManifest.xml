@@ -34,16 +34,9 @@
 
     <application
         android:name="com.twofours.surespot.SurespotApplication"
-        android:allowBackup="true"
-        android:backupAgent="com.twofours.surespot.identity.IdentityBackupAgent"
         android:icon="@drawable/surespotlauncher"
         android:label="surespot"
-        android:restoreAnyVersion="true"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar" >
-        <meta-data
-            android:name="com.google.android.backup.api_key"
-            android:value="AEdPqrEAAAAIfhPGGcOOEJzHP0ssWg_ZRBMITC3JjpZ93TpymQ" />
-
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -132,20 +125,18 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
         </activity>
-        <activity
-            android:name="com.twofours.surespot.identity.ExportIdentityActivity"
-            >
+        <activity android:name="com.twofours.surespot.backup.ExportIdentityActivity" >
             <intent-filter>
-                <action android:name="com.twofours.surespot.identity.ExportIdentityActivity" />
+                <action android:name="com.twofours.surespot.backup.ExportIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.twofours.surespot.identity.ImportIdentityActivity"
+            android:name="com.twofours.surespot.backup.ImportIdentityActivity"
             android:noHistory="true" >
             <intent-filter>
-                <action android:name="com.twofours.surespot.identity.ImportIdentityActivity" />
+                <action android:name="com.twofours.surespot.backup.ImportIdentityActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -204,10 +195,10 @@
             android:noHistory="true"
             android:theme="@android:style/Theme.Dialog" />
         <activity
-            android:name="com.twofours.surespot.activities.AutoBackupActivity"
+            android:name="com.twofours.surespot.backup.GoogleDriveBackupActivity"
             android:label="@string/title_activity_auto_backup" >
             <intent-filter>
-                <action android:name="com.twofours.surespot.activities.AutoBackupActivity" />
+                <action android:name="com.twofours.surespot.backup.GoogleDriveBackupActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
