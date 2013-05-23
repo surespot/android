@@ -53,6 +53,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	private TextView mAccountNameDisplay;
 	private boolean mShowingLocal;
 	private DriveHelper mDriveHelper;
+	private ListView mDriveListview;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +129,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-
+				if (mDriveListview != null) {
+					mDriveListview.setAdapter(null);
+				}
 				chooseAccount();
 			}
 		});
@@ -290,7 +293,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		SurespotLog.v(TAG, "loaded %d identities from google drive", items.size());
 
-		final ListView lvIdentities = (ListView) findViewById(R.id.lvDriveIdentities);
+		mDriveListview = (ListView) findViewById(R.id.lvDriveIdentities);
 
 		final SimpleAdapter adapter = new SimpleAdapter(this, items, R.layout.identity_item, new String[] { "name", "date" }, new int[] {
 				R.id.identityBackupName, R.id.identityBackupDate });
@@ -300,8 +303,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			@Override
 			public void run() {
 
-				lvIdentities.setAdapter(adapter);
-				lvIdentities.setOnItemClickListener(new OnItemClickListener() {
+				mDriveListview.setAdapter(adapter);
+				mDriveListview.setOnItemClickListener(new OnItemClickListener() {
 
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {

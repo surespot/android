@@ -75,6 +75,7 @@ public class DriveHelper {
 
 		}
 		mAccount = getAccountManager().getAccountByName(name);
+		mService = null;
 	}
 
 	public GoogleAccountManager getAccountManager() {
