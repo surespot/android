@@ -57,7 +57,7 @@ public class UIUtils {
 	public static void passwordDialog(Context context, String title, String message, final IAsyncCallback<String> callback) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(context);
 		alert.setTitle(title);
-		alert.setMessage(message);
+		alert.setMessage(message);		
 		final EditText editText = new EditText(context);
 		editText.setImeActionLabel(context.getString(R.string.done), EditorInfo.IME_ACTION_DONE);
 		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -84,6 +84,7 @@ public class UIUtils {
 		});
 
 		AlertDialog ad = alert.create();
+		ad.setCanceledOnTouchOutside(false);		
 		ad.setView(editText, 0, 0, 0, 0);
 		ad.show();
 	}
@@ -361,7 +362,6 @@ public class UIUtils {
 		tvQrInviteText.setText(TextUtils.concat(activity.getString(R.string.qr_pre_username_help), " ", s1, " ",
 				activity.getString(R.string.qr_post_username_help)));
 
-		// URL imageUri;
 
 		Bitmap bitmap;
 		try {
@@ -369,8 +369,6 @@ public class UIUtils {
 			ivQr.setImageBitmap(bitmap);
 		}
 		catch (WriterException e) {
-			// TODO Auto-generated catch block
-
 			SurespotLog.w(TAG, e, "generate invite QR");
 			return;
 
