@@ -291,7 +291,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			return;
 
 		} catch (SecurityException e) {
-			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
+			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return userrecoverable it seems
 			// was trying to figure out how to test this
 			// seems like the only way around this is to remove and re-add android account:
@@ -459,15 +459,15 @@ public class ImportIdentityActivity extends SherlockActivity {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-		} catch (SecurityException e) {
-			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
-			// when key is revoked on server this happens...should return userrecoverable it seems
-			// was trying to figure out how to test this
-			// seems like the only way around this is to remove and re-add android account:
-			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
-			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
+		}			catch (SecurityException e) {
+				SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
+				// when key is revoked on server this happens...should return userrecoverable it seems
+				// was trying to figure out how to test this
+				// seems like the only way around this is to remove and re-add android account:
+				// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
+				Utils.makeLongToast(this, getString(R.string.re_add_google_account));
 
-		}
+			}
 
 		return identityDirId;
 	}

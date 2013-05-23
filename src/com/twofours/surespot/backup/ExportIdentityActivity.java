@@ -330,8 +330,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			// was trying to figure out how to test this
 			// seems like the only way around this is to remove and re-add android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
-			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
-
+			Utils.makeLongToast(this, getString(R.string.re_add_google_account));		
 		}
 		return identityDirId;
 
@@ -388,7 +387,6 @@ public class ExportIdentityActivity extends SherlockActivity {
 			// seems like the only way around this is to remove and re-add android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
 			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
-
 		}
 		return false;
 	}
