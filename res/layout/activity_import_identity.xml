@@ -82,7 +82,15 @@
                     android:id="@+id/restoreDriveAccount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp" />
+                    android:textSize="16sp" 
+                    android:text="@string/no_google_account_selected"/>
+
+                <Button
+                    android:id="@+id/bSelectDriveAccount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" 
+                    android:text="@string/select_google_drive_account">
+                </Button>
             </LinearLayout>
 
             <ListView

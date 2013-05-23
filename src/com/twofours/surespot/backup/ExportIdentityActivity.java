@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -21,6 +24,8 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.services.drive.Drive;
@@ -35,12 +40,17 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.ui.UIUtils;
 
 public class ExportIdentityActivity extends SherlockActivity {
 	private static final String TAG = "ExportIdentityActivity";
 	private List<String> mIdentityNames;
 	private DriveHelper mDriveHelper;
+	private Spinner mSpinner;
+	public static String DRIVE_IDENTITY_FOLDER = "surespot identities";
+	private TextView mAccountNameDisplay;
+	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +64,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
 
 		final TextView tvPath = (TextView) findViewById(R.id.identityBackupPath);
-		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
+		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
 
 		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
@@ -64,9 +74,9 @@ public class ExportIdentityActivity extends SherlockActivity {
 			adapter.add(name);
 		}
 
-		spinner.setAdapter(adapter);
-		spinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
-		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+		mSpinner.setAdapter(adapter);
+		mSpinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
+		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -91,7 +101,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				// TODO progress
-				final String user = (String) spinner.getSelectedItem();
+				final String user = (String) mSpinner.getSelectedItem();
 				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user), getString(R.string.enter_password_for, user),
 						new IAsyncCallback<String>() {
 							@Override
@@ -107,8 +117,6 @@ public class ExportIdentityActivity extends SherlockActivity {
 			}
 		});
 
-		
-		
 		mDriveHelper = new DriveHelper(this);
 		Button exportToGoogleDriveButton = (Button) findViewById(R.id.bBackupDrive);
 
@@ -116,25 +124,29 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				if (mDriveHelper.getDriveService() != null) {
-					new AsyncTask<Void, Void, Void>() {
-
-						@Override
-						protected Void doInBackground(Void... params) {
-							Drive drive = mDriveHelper.getDriveService();
-							if (drive != null) {
-
-								backupIdentityDrive(true);
-							}
-							return null;
-
-						}
-
-					}.execute();
+				if (mDriveHelper.getDriveAccount() != null) {
+					if (mDriveHelper.getDriveService() != null) {
+						backupIdentityDrive(true);
+					}
+				} else {
+					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.select_google_drive_account));
 				}
 			}
 		});
 
+		mAccountNameDisplay = (TextView) findViewById(R.id.exportDriveAccount);
+		String account = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).getString("pref_google_drive_account", "");
+		mAccountNameDisplay.setText(account);
+
+		Button chooseAccountButton = (Button) findViewById(R.id.bSelectDriveAccount);
+		chooseAccountButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+				chooseAccount();
+			}
+		});
 	}
 
 	// //////// Local
@@ -153,65 +165,130 @@ public class ExportIdentityActivity extends SherlockActivity {
 	}
 
 	// //////// DRIVE
+
+	private void chooseAccount() {		
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, true, null, null, null, null);
+		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+	}
+
+	private void removeAccount() {
+		SharedPreferences.Editor editor = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).edit();
+		editor.remove("pref_google_drive_account");
+		editor.commit();
+
+		mAccountNameDisplay.setText(R.string.no_google_account_selected);
+
+	}
+
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
+		case SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT:
+			if (data != null) {
+
+				SurespotLog.w("Preferences", "SELECTED ACCOUNT WITH EXTRA: %s", data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+				Bundle b = data.getExtras();
+
+				String accountName = b.getString(AccountManager.KEY_ACCOUNT_NAME);
+
+				SurespotLog.d("Preferences", "Selected account: " + accountName);
+				if (accountName != null && accountName.length() > 0) {
+
+					mDriveHelper.setDriveAccount(accountName);
+					mAccountNameDisplay.setText(accountName);
+				}
+			}
+			break;
+
 		case SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH:
 			if (resultCode == Activity.RESULT_OK) {
-				new AsyncTask<Void, Void, Void>() {
+				Drive drive = mDriveHelper.getDriveService();
+				if (drive != null) {
+					backupIdentityDrive(false);
 
-					@Override
-					protected Void doInBackground(Void... params) {
-						Drive drive = mDriveHelper.getDriveService();
-						if (drive != null) {
-							backupIdentityDrive(false);
-
-						}
-						return null;
-
-					}
-
-					protected void onPostExecute(Void result) {
-
-					};
-
-				}.execute();
-
+				}
 			} else {
 
 			}
 		}
 	}
 
-	private void backupIdentityDrive(boolean firstAttempt) {
-		String identityDirId = ensureDriveIdentityDirectory();
-		if (identityDirId == null) {
-			if (!firstAttempt) {
+	private void backupIdentityDrive(final boolean firstAttempt) {
 
-				this.runOnUiThread(new Runnable() {
-
-					@Override
-					public void run() {
-						Utils.makeToast(ExportIdentityActivity.this, getString(R.string.could_not_backup_identity_to_google_drive));
-					}
-				});
-			}
-			return;
-		}
-
-		SurespotLog.d(TAG, "identity file id: %s", identityDirId);
-		final boolean backedUp = updateIdentityDriveFile(identityDirId, "cherie", "helloooooo");
-
-		this.runOnUiThread(new Runnable() {
+		new AsyncTask<Void, Void, String>() {
 
 			@Override
-			public void run() {
-				if (!backedUp) {
-					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.could_not_backup_identity_to_google_drive));
-				} else {
-					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.identity_successfully_backed_up_to_google_drive));
-				}
+			protected String doInBackground(Void... params) {
+
+				return ensureDriveIdentityDirectory();
+
 			}
-		});
+
+			protected void onPostExecute(final String identityDirId) {
+				if (identityDirId == null) {
+					if (!firstAttempt) {
+						Utils.makeToast(ExportIdentityActivity.this, getString(R.string.could_not_backup_identity_to_google_drive));
+					}
+					return;
+				}
+
+				SurespotLog.d(TAG, "identity file id: %s", identityDirId);
+				final String user = (String) mSpinner.getSelectedItem();
+				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user), getString(R.string.enter_password_for, user),
+						new IAsyncCallback<String>() {
+							@Override
+							public void handleResponse(final String password) {
+								if (!TextUtils.isEmpty(password)) {
+
+									IdentityController.getExportIdentity(ExportIdentityActivity.this, user, password,
+											new IAsyncCallbackTuple<byte[], String>() {
+
+												@Override
+												public void handleResponse(byte[] identityData, final String message) {
+													if (identityData == null) {
+
+														ExportIdentityActivity.this.runOnUiThread(new Runnable() {
+
+															@Override
+															public void run() {
+																Utils.makeToast(ExportIdentityActivity.this,
+																		message == null ? getString(R.string.could_not_backup_identity_to_google_drive)
+																				: message);
+
+															}
+														});
+
+														return;
+													}
+
+													final boolean backedUp = updateIdentityDriveFile(identityDirId, user, identityData);
+
+													ExportIdentityActivity.this.runOnUiThread(new Runnable() {
+
+														@Override
+														public void run() {
+
+															if (!backedUp) {
+																Utils.makeToast(ExportIdentityActivity.this,
+																		getString(R.string.could_not_backup_identity_to_google_drive));
+															} else {
+																Utils.makeToast(ExportIdentityActivity.this,
+																		getString(R.string.identity_successfully_backed_up_to_google_drive));
+															}
+														}
+													});
+
+												}
+											});
+
+								} else {
+									Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
+								}
+							}
+						});
+
+			};
+
+		}.execute();
 
 	}
 
@@ -220,7 +297,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 		try {
 			// see if identities directory exists
 
-			FileList identityDir = mDriveHelper.getDriveService().files().list().setQ("title = 'identities' and trashed = false").execute();
+			FileList identityDir = mDriveHelper.getDriveService().files().list()
+					.setQ("title = '" + GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
 			List<com.google.api.services.drive.model.File> items = identityDir.getItems();
 
 			if (items.size() > 0) {
@@ -233,7 +311,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			}
 			if (identityDirId == null) {
 				com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-				file.setTitle("identities");
+				file.setTitle(GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER);
 				file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
 				com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file).execute();
@@ -250,8 +328,10 @@ public class ExportIdentityActivity extends SherlockActivity {
 		return identityDirId;
 	}
 
-	public boolean updateIdentityDriveFile(String idDirId, String username, String encryptedIdentity) {
+	public boolean updateIdentityDriveFile(String idDirId, String username, byte[] identityData) {
 		try {
+			// get the encrypted identity data
+
 			String filename = username + IdentityController.IDENTITY_EXTENSION;
 
 			// see if identity exists
@@ -263,8 +343,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 				file = mDriveHelper.getDriveService().files().get(idFile.getId()).execute();
 				if (file != null && !file.getLabels().getTrashed()) {
 					SurespotLog.d(TAG, "updateIdentityDriveFile, updating existing identity file: %s", filename);
-					ByteArrayContent content = new ByteArrayContent("text/plain", "your mama".getBytes());
-					mDriveHelper.getDriveService().files().update(file.getId(), file, content).setNewRevision(false).execute();
+					ByteArrayContent content = new ByteArrayContent("application/octet-stream", identityData);
+					mDriveHelper.getDriveService().files().update(file.getId(), file, content).execute();
 					return true;
 				}
 
@@ -283,15 +363,14 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			file.setMimeType(SurespotConstants.MimeTypes.TEXT);
 
-			ByteArrayContent content = new ByteArrayContent("text/plain", encryptedIdentity.getBytes());
+			ByteArrayContent content = new ByteArrayContent("application/octet-stream", identityData);
 
 			com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file, content).execute();
 			return true;
 
 		} catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		} 
-		catch (IOException e) {
+		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "updateIdentityDriveFile");
 		}
 		return false;
@@ -329,8 +408,6 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 		return idFile;
 	}
-
-	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

@@ -300,4 +300,7 @@
 	<string name="restore_drive_account_label">account:</string>
 	<string name="restore_local_location_label">location:</string>
 	<string name="could_not_list_identities_from_google_drive">could not get list of identities from google drive</string>
+	<string name="no_google_account_selected">no google account selected</string>
+	<string name="select_google_drive_account">select Google account</string>
+	
 </resources>

@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
@@ -38,6 +39,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.ui.UIUtils;
@@ -105,6 +107,44 @@ public class IdentityController {
 
 	private static synchronized String saveIdentity(Context backupContext, String identityDir, SurespotIdentity identity, String password) {
 		String filename = identity.getUsername() + IDENTITY_EXTENSION;
+
+		byte[] identityBytes = encryptIdentity(identity, password);
+
+		if (identityBytes == null) {
+			return null;
+		}
+
+		String identityFile = identityDir + File.separator + filename;
+		try {
+			synchronized (IDENTITY_FILE_LOCK) {
+
+				SurespotLog.v(TAG, "saving identity: %s, salt: %s", identityFile, identity.getSalt());
+
+				if (!FileUtils.ensureDir(identityDir)) {
+					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir), "Could not create identity dir: %s", identityDir);
+					return null;
+				}
+
+				FileUtils.writeFile(identityFile, identityBytes);
+			}
+
+			// tell com.twofours.surespot.backup manager the data has changed
+			if (backupContext != null) {
+				SurespotLog.v(TAG, "telling com.twofours.surespot.backup manager data changed");
+				// SurespotApplication.mBackupManager.dataChanged();
+			}
+			return identityFile;
+		}
+
+		catch (FileNotFoundException e) {
+			SurespotLog.w(TAG, e, "saveIdentity");
+		} catch (IOException e) {
+			SurespotLog.w(TAG, e, "saveIdentity");
+		}
+		return null;
+	}
+
+	private static byte[] encryptIdentity(SurespotIdentity identity, String password) {
 		JSONObject json = new JSONObject();
 		try {
 			json.put("username", identity.getUsername());
@@ -127,43 +167,73 @@ public class IdentityController {
 			json.put("keys", keys);
 
 			byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
-
-			if (identityBytes == null) {
-				return null;
-			}
-
-			String identityFile = identityDir + File.separator + filename;
-
-			synchronized (IDENTITY_FILE_LOCK) {
-
-				SurespotLog.v(TAG, "saving identity: %s, salt: %s", identityFile, identity.getSalt());
-
-				if (!FileUtils.ensureDir(identityDir)) {
-					SurespotLog.e(TAG, new RuntimeException("Could not create identity dir: " + identityDir), "Could not create identity dir: %s", identityDir);
-					return null;
-				}
-
-				FileUtils.writeFile(identityFile, identityBytes);
-			}
-
-			// tell com.twofours.surespot.backup manager the data has changed
-			if (backupContext != null) {
-				SurespotLog.v(TAG, "telling com.twofours.surespot.backup manager data changed");
-				// SurespotApplication.mBackupManager.dataChanged();
-			}
-			return identityFile;
+			return identityBytes;
 		}
 
 		catch (JSONException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
 		}
-
-		catch (FileNotFoundException e) {
-			SurespotLog.w(TAG, e, "saveIdentity");
-		} catch (IOException e) {
-			SurespotLog.w(TAG, e, "saveIdentity");
-		}
 		return null;
+	}
+
+	public static void getExportIdentity(final Context context, final String username, final String password, final IAsyncCallbackTuple<byte[], String> callback) {
+
+		new AsyncTask<Void, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+
+				final SurespotIdentity identity = getIdentity(context, username, password);
+				if (identity == null) {
+					callback.handleResponse(null, null);
+				}
+
+				final File exportDir = FileUtils.getIdentityExportDir();
+				if (FileUtils.ensureDir(exportDir.getPath())) {
+					byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+
+					String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
+					// do OOB verification
+					MainActivity.getNetworkController().validate(username, dPassword,
+							EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
+								public void onSuccess(int statusCode, String content) {
+
+									callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
+								}
+
+								public void onFailure(Throwable error) {
+
+									if (error instanceof HttpResponseException) {
+										int statusCode = ((HttpResponseException) error).getStatusCode();
+										// would use 401 but we're intercepting
+										// those
+										// and I don't feel like special casing
+										// it
+										switch (statusCode) {
+										case 403:
+											callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
+											break;
+										case 404:
+											callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
+											break;
+
+										default:
+											SurespotLog.w(TAG, error, "exportIdentity");
+											callback.handleResponse(null, null);
+										}
+									} else {
+										callback.handleResponse(null, null);
+									}
+								}
+							});
+				} else {
+					callback.handleResponse(null, null);
+				}
+				return null;
+			}
+
+		}.execute();
+
 	}
 
 	public static boolean identityFileExists(Context context, String username) {
@@ -298,12 +368,26 @@ public class IdentityController {
 
 			}
 
-			String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
-
-			if (identity == null) {
-				SurespotLog.w(TAG, "could not decrypt identity: %s", username);
-				return null;
+			if (idBytes != null) {
+				return decryptIdentity(idBytes, username, password);
 			}
+
+		} catch (Exception e) {
+			SurespotLog.w(TAG, e, "loadIdentity");
+		}
+
+		return null;
+	}
+
+	private static SurespotIdentity decryptIdentity(byte[] idBytes, String username, String password) {
+		String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
+
+		if (identity == null) {
+			SurespotLog.w(TAG, "could not decrypt identity: %s", username);
+			return null;
+		}
+
+		try {
 			JSONObject jsonIdentity = new JSONObject(identity);
 			String name = jsonIdentity.getString("username");
 			String salt = jsonIdentity.getString("salt");
@@ -331,16 +415,82 @@ public class IdentityController {
 			}
 
 			return si;
-		} catch (Exception e) {
-			SurespotLog.w(TAG, e, "loadIdentity");
+		} catch (JSONException e) {
 		}
-
 		return null;
+
 	}
 
 	public static void importIdentity(final Context context, File exportDir, final String username, final String password,
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
+		if (identity != null) {
+
+			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
+
+			NetworkController networkController = MainActivity.getNetworkController();
+			if (networkController == null) {
+				networkController = new NetworkController(context, null);
+			}
+			networkController.validate(username, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword),
+					new AsyncHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, String content) {
+
+							// should never happen
+							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+							if (existingIdentity != null) {
+								int importVersion = Integer.parseInt(identity.getLatestVersion());
+								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
+								if (importVersion <= existingVersion) {
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.newer_identity_exists), false));
+									return;
+								}
+							}
+
+							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+							if (file != null) {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
+							} else {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+							}
+						}
+
+						@Override
+						public void onFailure(Throwable error) {
+
+							if (error instanceof HttpResponseException) {
+								int statusCode = ((HttpResponseException) error).getStatusCode();
+								// would use 401 but we're intercepting those
+								// and I don't feel like special casing it
+								switch (statusCode) {
+								case 403:
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.incorrect_password_or_key), false));
+									break;
+								case 404:
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.no_such_user), false));
+									break;
+
+								default:
+									SurespotLog.w(TAG, error, "importIdentity");
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+								}
+							} else {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+							}
+						}
+					});
+
+		} else {
+			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+		}
+
+	}
+
+	public static void importIdentityBytes(final Context context, final String username, final String password, byte[] identityBytes,
+			final IAsyncCallback<IdentityOperationResult> callback) {
+		final SurespotIdentity identity = decryptIdentity(identityBytes, username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 
 			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
@@ -547,7 +697,6 @@ public class IdentityController {
 		}
 		return null;
 	}
-	
 
 	public static List<String> getIdentityNames(Context context, String dir) {
 
@@ -598,15 +747,14 @@ public class IdentityController {
 
 		return identityNames;
 	}
-	
+
 	public static String getIdentityNameFromFile(File file) {
 		return getIdentityNameFromFilename(file.getName());
 	}
-	
+
 	public static String getIdentityNameFromFilename(String filename) {
 		return filename.substring(0, filename.length() - IDENTITY_DELETED_EXTENSION.length());
 	}
-
 
 	public static synchronized int getIdentityCount(Context context) {
 		return getIdentityNames(context, FileUtils.getIdentityDir(context)).size();
@@ -616,7 +764,7 @@ public class IdentityController {
 		return getIdentityNames(context, FileUtils.getIdentityDir(context));
 	}
 
-	public static File[] getIdentityFiles(Context context, String dir) {		
+	public static File[] getIdentityFiles(Context context, String dir) {
 		File[] files = new File(dir).listFiles(new FilenameFilter() {
 
 			@Override

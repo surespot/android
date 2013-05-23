@@ -132,9 +132,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.twofours.surespot.backup.ImportIdentityActivity"
-            android:noHistory="true" >
+        <activity android:name="com.twofours.surespot.backup.ImportIdentityActivity" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.backup.ImportIdentityActivity" />
 
@@ -193,16 +191,7 @@
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
             android:noHistory="true"
-            android:theme="@android:style/Theme.Dialog" />
-        <activity
-            android:name="com.twofours.surespot.backup.GoogleDriveBackupActivity"
-            android:label="@string/title_activity_auto_backup" >
-            <intent-filter>
-                <action android:name="com.twofours.surespot.backup.GoogleDriveBackupActivity" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+            android:theme="@android:style/Theme.Dialog" />        
         <activity
             android:name="com.twofours.surespot.activities.AboutActivity"
             android:label="@string/title_activity_about" >

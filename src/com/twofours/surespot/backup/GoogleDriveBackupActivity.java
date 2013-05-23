@@ -32,8 +32,10 @@ import com.twofours.surespot.ui.UIUtils;
 
 public class GoogleDriveBackupActivity extends SherlockActivity {
 	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
+	public static String DRIVE_IDENTITY_FOLDER = "surespot identities";
 	private TextView mAccountNameDisplay;
 	private GoogleAccountManager mAccountManager;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +110,7 @@ public class GoogleDriveBackupActivity extends SherlockActivity {
 		editor.remove("pref_google_drive_account");
 		editor.commit();
 
-		mAccountNameDisplay.setText("");
+		mAccountNameDisplay.setText(R.string.no_google_account_selected);
 
 	}
 

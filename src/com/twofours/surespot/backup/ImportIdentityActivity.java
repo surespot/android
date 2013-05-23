@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
@@ -26,6 +28,7 @@ import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
@@ -47,8 +50,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	private static final String TAG = null;
 	private boolean mSignup;
 
-	private Account mAccount;
-
+	private TextView mAccountNameDisplay;
 	private boolean mShowingLocal;
 	private DriveHelper mDriveHelper;
 
@@ -82,9 +84,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 							switcher.showNext();
 							mShowingLocal = false;
-							if (setupDrive() != null) {
-								TextView tvDriveAccount = (TextView) findViewById(R.id.restoreDriveAccount);
-								tvDriveAccount.setText(mDriveHelper.getDriveAccount().name);
+							if (mDriveHelper.getDriveAccount() != null) {
 
 								new AsyncTask<Void, Void, Void>() {
 									@Override
@@ -97,6 +97,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 									}
 
 								}.execute();
+							} else {
+								Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
 							}
 						}
 					} else {
@@ -114,6 +116,22 @@ public class ImportIdentityActivity extends SherlockActivity {
 		rbRestoreLocal.setOnClickListener(rbClickListener);
 
 		setupLocal();
+
+		mDriveHelper = new DriveHelper(this);
+		Account account = mDriveHelper.getDriveAccount();
+
+		mAccountNameDisplay = (TextView) findViewById(R.id.restoreDriveAccount);
+		mAccountNameDisplay.setText(account == null ? "" : account.name);
+
+		Button chooseAccountButton = (Button) findViewById(R.id.bSelectDriveAccount);
+		chooseAccountButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+				chooseAccount();
+			}
+		});
 	}
 
 	private void setupLocal() {
@@ -208,14 +226,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 	}
 
-	private Drive setupDrive() {
-		mDriveHelper = new DriveHelper(this);
-		if (mDriveHelper.getDriveService() != null) {
-			return mDriveHelper.getDriveService();
-		}
-		return null;
-	}
-
 	private void populateDriveIdentities(boolean firstAttempt) {
 
 		String identityDirId = ensureDriveIdentityDirectory();
@@ -254,8 +264,10 @@ public class ImportIdentityActivity extends SherlockActivity {
 					String date = DateFormat.getDateFormat(this).format(lastModTime.getValue()) + " "
 							+ DateFormat.getTimeFormat(this).format(lastModTime.getValue());
 					HashMap<String, String> map = new HashMap<String, String>();
-					map.put("name", IdentityController.getIdentityNameFromFilename(file.getTitle()));
+					String name = IdentityController.getIdentityNameFromFilename(file.getTitle());
+					map.put("name", name);
 					map.put("date", date);
+					map.put("url", file.getDownloadUrl());
 					items.add(map);
 				}
 			}
@@ -275,7 +287,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			return;
 		}
-		
+
 		SurespotLog.v(TAG, "loaded %d identities from google drive", items.size());
 
 		final ListView lvIdentities = (ListView) findViewById(R.id.lvDriveIdentities);
@@ -292,9 +304,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 				lvIdentities.setOnItemClickListener(new OnItemClickListener() {
 
 					@Override
-					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+					public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 						@SuppressWarnings("unchecked")
-						Map<String, String> map = (Map<String, String>) adapter.getItem(position);
+						final Map<String, String> map = (Map<String, String>) adapter.getItem(position);
 
 						final String user = map.get("name");
 
@@ -314,42 +326,55 @@ public class ImportIdentityActivity extends SherlockActivity {
 						UIUtils.passwordDialog(ImportIdentityActivity.this, getString(R.string.restore_identity, user),
 								getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 									@Override
-									public void handleResponse(String result) {
-										if (!TextUtils.isEmpty(result)) {
-											// IdentityController.importIdentity(ImportIdentityActivity.this,
-											// exportDir, user, result,
-											// new
-											// IAsyncCallback<IdentityOperationResult>()
-											// {
-											//
-											// @Override
-											// public void
-											// handleResponse(IdentityOperationResult
-											// response) {
-											//
-											// Utils.makeLongToast(ImportIdentityActivity.this,
-											// user + " " +
-											// response.getResultText());
-											//
-											// if (response.getResultSuccess())
-											// {
-											// // if launched from
-											// // signup and successful
-											// // import, go to login
-											// // screen
-											// if (mSignup) {
-											// IdentityController.logout();
-											// Intent intent = new
-											// Intent(ImportIdentityActivity.this,
-											// MainActivity.class);
-											// intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-											// startActivity(intent);
-											// }
-											// }
-											//
-											// }
-											//
-											// });
+									public void handleResponse(final String password) {
+										if (!TextUtils.isEmpty(password)) {
+											final String url = map.get("url");
+
+											new AsyncTask<Void, Void, Void>() {
+
+												@Override
+												protected Void doInBackground(Void... params) {
+													byte[] identityBytes = mDriveHelper.getFileContent(url);
+
+													IdentityController.importIdentityBytes(ImportIdentityActivity.this, user, password, identityBytes,
+															new IAsyncCallback<IdentityOperationResult>() {
+
+																@Override
+																public void handleResponse(final IdentityOperationResult response) {
+
+																	ImportIdentityActivity.this.runOnUiThread(new Runnable() {
+
+																		@Override
+																		public void run() {
+																			Utils.makeLongToast(ImportIdentityActivity.this,
+																					user + " " + response.getResultText());
+
+																			if (response.getResultSuccess()) {
+																				// if launched
+																				// from
+																				// signup and
+																				// successful
+																				// import, go to
+																				// login
+																				// screen
+																				if (mSignup) {
+																					IdentityController.logout();
+																					Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
+																					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+																					startActivity(intent);
+																				}
+																			}
+
+																		}
+																	});
+
+																}
+
+															});
+													return null;
+												}
+
+											}.execute();
 
 										} else {
 											Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
@@ -393,7 +418,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 		try {
 			// see if identities directory exists
 
-			FileList identityDir = mDriveHelper.getDriveService().files().list().setQ("title = 'identities' and trashed = false").execute();
+			FileList identityDir = mDriveHelper.getDriveService().files().list()
+					.setQ("title = '" + GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
 			List<com.google.api.services.drive.model.File> items = identityDir.getItems();
 
 			if (items.size() > 0) {
@@ -406,7 +432,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 			if (identityDirId == null) {
 				com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-				file.setTitle("identities");
+				file.setTitle(GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER);
 				file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
 				com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file).execute();
@@ -426,6 +452,32 @@ public class ImportIdentityActivity extends SherlockActivity {
 	// //////// DRIVE
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
+		case SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT:
+			if (data != null) {
+
+				SurespotLog.w("Preferences", "SELECTED ACCOUNT WITH EXTRA: %s", data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
+				Bundle b = data.getExtras();
+
+				String accountName = b.getString(AccountManager.KEY_ACCOUNT_NAME);
+
+				SurespotLog.d("Preferences", "Selected account: " + accountName);
+				if (accountName != null && accountName.length() > 0) {
+
+					mDriveHelper.setDriveAccount(accountName);
+					mAccountNameDisplay.setText(accountName);
+
+					new AsyncTask<Void, Void, Void>() {
+						@Override
+						protected Void doInBackground(Void... params) {
+							populateDriveIdentities(true);
+							return null;
+						}
+
+					}.execute();
+				}
+			}
+			break;
+
 		case SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH:
 			if (resultCode == Activity.RESULT_OK) {
 				new AsyncTask<Void, Void, Void>() {
@@ -447,4 +499,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 		}
 	}
+
+	private void chooseAccount() {
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, GoogleDriveBackupActivity.ACCOUNT_TYPE, true, null, null, null, null);
+		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+
+	}
+
 }
