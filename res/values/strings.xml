@@ -290,4 +290,6 @@
     <string name="surespot_help">surespot help</string>
 	<string name="next">next</string>
 	<string name="backup_drive">backup to google drive</string>
+	<string name="could_not_backup_identity_to_google_drive">Could not backup identity to google drive</string>
+	<string name="identity_successfully_backed_up_to_google_drive">identity successfully backed up to google drive</string>
 </resources>
