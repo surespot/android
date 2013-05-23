@@ -40,6 +40,7 @@ public class DriveHelper {
 				GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, DriveScopes.DRIVE);
 				credential.setSelectedAccountName(mAccount.name);
 				mService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).build();
+				
 			}
 
 		}

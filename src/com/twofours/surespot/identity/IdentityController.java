@@ -356,7 +356,7 @@ public class IdentityController {
 		File idFile = new File(identityFilename);
 
 		if (!idFile.canRead()) {
-			SurespotLog.e(TAG, new IOException("Could not load identity file: " + identityFilename), "Could not load identity.");
+			SurespotLog.w(TAG, new IOException("Could not load identity file: " + identityFilename), "Could not load identity.");
 			return null;
 		}
 

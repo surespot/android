@@ -166,7 +166,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 	// //////// DRIVE
 
-	private void chooseAccount() {		
+	private void chooseAccount() {
 		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, true, null, null, null, null);
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
 	}
@@ -324,8 +324,17 @@ public class ExportIdentityActivity extends SherlockActivity {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
+		} catch (SecurityException e) {
+			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
+			// when key is revoked on server this happens...should return userrecoverable it seems
+			// was trying to figure out how to test this
+			// seems like the only way around this is to remove and re-add android account:
+			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
+			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
+
 		}
 		return identityDirId;
+
 	}
 
 	public boolean updateIdentityDriveFile(String idDirId, String username, byte[] identityData) {
@@ -372,6 +381,14 @@ public class ExportIdentityActivity extends SherlockActivity {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "updateIdentityDriveFile");
+		} catch (SecurityException e) {
+			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
+			// when key is revoked on server this happens...should return userrecoverable it seems
+			// was trying to figure out how to test this
+			// seems like the only way around this is to remove and re-add android account:
+			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
+			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
+
 		}
 		return false;
 	}
