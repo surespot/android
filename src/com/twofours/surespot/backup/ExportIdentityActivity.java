@@ -41,6 +41,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
+import com.twofours.surespot.ui.SingleProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
 public class ExportIdentityActivity extends SherlockActivity {
@@ -51,6 +52,9 @@ public class ExportIdentityActivity extends SherlockActivity {
 	public static String DRIVE_IDENTITY_FOLDER = "surespot identities";
 	private TextView mAccountNameDisplay;
 	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
+	private SingleProgressDialog mSpd;
+	private SingleProgressDialog mSpdBackupDir;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -213,7 +217,10 @@ public class ExportIdentityActivity extends SherlockActivity {
 	}
 
 	private void backupIdentityDrive(final boolean firstAttempt) {
-
+		if (mSpdBackupDir == null) {
+			mSpdBackupDir = new SingleProgressDialog(this, getString(R.string.progress_drive_dir_check), 1000);
+		}
+		mSpdBackupDir.show();
 		new AsyncTask<Void, Void, String>() {
 
 			@Override
@@ -224,6 +231,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			}
 
 			protected void onPostExecute(final String identityDirId) {
+				mSpdBackupDir.hide();
 				if (identityDirId == null) {
 					if (!firstAttempt) {
 						Utils.makeToast(ExportIdentityActivity.this, getString(R.string.could_not_backup_identity_to_google_drive));
@@ -238,18 +246,25 @@ public class ExportIdentityActivity extends SherlockActivity {
 							@Override
 							public void handleResponse(final String password) {
 								if (!TextUtils.isEmpty(password)) {
+									if (mSpd == null) {
+										mSpd = new SingleProgressDialog(ExportIdentityActivity.this, getString(R.string.progress_backup_identity_drive), 0);
+									}
+
+									mSpd.show();
 
 									IdentityController.getExportIdentity(ExportIdentityActivity.this, user, password,
 											new IAsyncCallbackTuple<byte[], String>() {
 
 												@Override
 												public void handleResponse(byte[] identityData, final String message) {
+
 													if (identityData == null) {
 
 														ExportIdentityActivity.this.runOnUiThread(new Runnable() {
 
 															@Override
 															public void run() {
+																mSpd.hide();
 																Utils.makeToast(ExportIdentityActivity.this,
 																		message == null ? getString(R.string.could_not_backup_identity_to_google_drive)
 																				: message);
@@ -266,7 +281,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 														@Override
 														public void run() {
-
+															mSpd.hide();
 															if (!backedUp) {
 																Utils.makeToast(ExportIdentityActivity.this,
 																		getString(R.string.could_not_backup_identity_to_google_drive));
@@ -330,7 +345,15 @@ public class ExportIdentityActivity extends SherlockActivity {
 			// was trying to figure out how to test this
 			// seems like the only way around this is to remove and re-add android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
-			Utils.makeLongToast(this, getString(R.string.re_add_google_account));		
+			this.runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(ExportIdentityActivity.this, getString(R.string.re_add_google_account));
+
+				}
+			});
+
 		}
 		return identityDirId;
 
@@ -386,7 +409,15 @@ public class ExportIdentityActivity extends SherlockActivity {
 			// was trying to figure out how to test this
 			// seems like the only way around this is to remove and re-add android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
-			Utils.makeLongToast(this, getString(R.string.re_add_google_account));
+			this.runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(ExportIdentityActivity.this, getString(R.string.re_add_google_account));
+
+				}
+			});
+
 		}
 		return false;
 	}

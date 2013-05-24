@@ -305,5 +305,7 @@
 	<string name="re_add_google_account">Unfortunately the Google token is no longer valid and you will need to remove and re-add your Google account via device settings.</string>
 	<string name="progress_restoring_identity">restoring identity</string>
 	<string name="progress_loading_identities">loading identities</string>
+	<string name="progress_backup_identity_drive">backing up identity</string>
+	<string name="progress_drive_dir_check">checking for surespot identities folder</string>
 	
 </resources>
