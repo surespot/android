@@ -245,7 +245,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 											}.execute();
 										}
 									} else {
-										//Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
+										// Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
 										chooseAccount();
 									}
 								}
@@ -297,15 +297,17 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 
-		for (File file : files) {
-			long lastModTime = file.lastModified();
-			String date = DateFormat.getDateFormat(MainActivity.getContext()).format(lastModTime) + " "
-					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(lastModTime);
+		if (files != null) {
+			for (File file : files) {
+				long lastModTime = file.lastModified();
+				String date = DateFormat.getDateFormat(MainActivity.getContext()).format(lastModTime) + " "
+						+ DateFormat.getTimeFormat(MainActivity.getContext()).format(lastModTime);
 
-			HashMap<String, String> map = new HashMap<String, String>();
-			map.put("name", IdentityController.getIdentityNameFromFile(file));
-			map.put("date", date);
-			items.add(map);
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put("name", IdentityController.getIdentityNameFromFile(file));
+				map.put("date", date);
+				items.add(map);
+			}
 		}
 
 		final SimpleAdapter adapter = new SimpleAdapter(this, items, R.layout.identity_item, new String[] { "name", "date" }, new int[] {
@@ -396,17 +398,17 @@ public class ImportIdentityActivity extends SherlockActivity {
 				}
 			});
 		}
-		
+
 		if (mDriveHelper.getDriveAccount() == null) {
 			chooseAccount();
-//			this.runOnUiThread(new Runnable() {
-//
-//				@Override
-//				public void run() {
-//					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
-//
-//				}
-//			});
+			// this.runOnUiThread(new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			// Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
+			//
+			// }
+			// });
 			return;
 		}
 
@@ -490,8 +492,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 		});
 
-	
-
 	}
 
 	private void populateDriveIdentities(boolean firstAttempt) {
@@ -519,7 +519,14 @@ public class ImportIdentityActivity extends SherlockActivity {
 			List<ChildReference> refs = fileList.getItems();
 
 			if (refs.size() == 0) {
-				// TODO tear progress down
+				SurespotLog.v(TAG, "no identities found on google drive");
+				this.runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						mSpdLoadIdentities.hide();
+					}
+				});
 				return;
 			}
 			for (ChildReference ref : refs) {
