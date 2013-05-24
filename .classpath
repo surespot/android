@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="libs/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/google-play-services.jar"/>
 	<classpathentry kind="lib" path="/android-async-http/libs/httpclientandroidlib-1.1.1.madman.jar" sourcepath="/home/adam/dev/surespot/libs/android/google/adam-httpclientandroidlib/script"/>
-	<classpathentry kind="lib" path="/common/libs/acra-4.4.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/actionbarsherlock"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-async-http"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>

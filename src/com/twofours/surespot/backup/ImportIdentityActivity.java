@@ -93,7 +93,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		Account account = mDriveHelper.getDriveAccount();
 
 		mAccountNameDisplay = (TextView) findViewById(R.id.restoreDriveAccount);
-		mAccountNameDisplay.setText(account == null ? "" : account.name);
+		mAccountNameDisplay.setText(account == null ? getString(R.string.no_google_account_selected) : account.name);
 
 		Button chooseAccountButton = (Button) findViewById(R.id.bSelectDriveAccount);
 		chooseAccountButton.setOnClickListener(new OnClickListener() {
@@ -104,7 +104,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 		});
 
-		mDriveListview = (ListView) findViewById(R.id.lvDriveIdentities);
+		mDriveListview = (ListView) findViewById(R.id.lvDriveIdentities);		
+		mDriveListview.setEmptyView(findViewById(R.id.no_drive_identities));
+		
 		mDriveListview.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -226,6 +228,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 						if (view.getTag().equals("drive")) {
 							if (mShowingLocal) {
 
+								mDriveListview.setAdapter(null);
 								mSwitcher.showNext();
 								mShowingLocal = false;
 
@@ -245,7 +248,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 											}.execute();
 										}
 									} else {
-										// Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
 										chooseAccount();
 									}
 								}
@@ -288,6 +290,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	private void setupLocal() {
 
 		ListView lvIdentities = (ListView) findViewById(R.id.lvLocalIdentities);
+		lvIdentities.setEmptyView(findViewById(R.id.no_local_identities));
 
 		List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
 
@@ -400,15 +403,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 
 		if (mDriveHelper.getDriveAccount() == null) {
-			chooseAccount();
-			// this.runOnUiThread(new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			// Utils.makeToast(ImportIdentityActivity.this, getString(R.string.select_google_drive_account));
-			//
-			// }
-			// });
+			chooseAccount();		
 			return;
 		}
 

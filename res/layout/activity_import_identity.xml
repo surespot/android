@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="10dp"
     tools:context=".ImportIdentityActivity" >
 
     <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
         android:orientation="vertical" >
 
         <RadioButton
@@ -22,6 +22,7 @@
             android:id="@+id/rbRestoreDrive"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:text="@string/restore_drive" />
     </RadioGroup>
 
@@ -35,30 +36,59 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:text="@string/restore_local_location_label" />
+
+            <TextView
+                android:id="@+id/restoreLocalLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginBottom="10dp"
+                android:textSize="16sp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
                 android:orientation="horizontal" >
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/restore_local_location_label"
-                    android:textSize="16sp" />
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/identity_name" />
 
                 <TextView
-                    android:id="@+id/restoreLocalLocation"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp" />
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/last_modified" />
             </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dip"
+                android:background="#aaa" />
 
             <ListView
                 android:id="@+id/lvLocalIdentities"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
             </ListView>
+
+            <TextView
+                android:id="@+id/no_local_identities"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:text="@string/no_local_identities"
+                android:visibility="gone" />
         </LinearLayout>
 
         <LinearLayout
@@ -73,31 +103,71 @@
                 android:orientation="horizontal" >
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/restoreDriveAccount"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/restore_drive_account_label"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/no_google_account_selected"
                     android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/restoreDriveAccount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp" 
-                    android:text="@string/no_google_account_selected"/>
+                <View
+                    android:id="@+id/vertical_divider"
+                    android:layout_width="1px"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="#aaa" />
 
                 <Button
                     android:id="@+id/bSelectDriveAccount"
+                    style="@style/Widget.Sherlock.ActionButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" 
-                    android:text="@string/select_google_drive_account">
+                    android:layout_height="wrap_content"
+                    android:text="@string/select_google_drive_account" >
                 </Button>
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/identity_name" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/last_backed_up" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dip"
+                android:background="#aaa" />
 
             <ListView
                 android:id="@+id/lvDriveIdentities"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="0dp"
+                android:layout_weight="1" >
             </ListView>
+
+            <TextView
+                android:id="@+id/no_drive_identities"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:text="@string/no_drive_identities"
+                android:visibility="gone" />
         </LinearLayout>
     </ViewSwitcher>
 
