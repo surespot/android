@@ -49,7 +49,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
 	private DriveHelper mDriveHelper;
 	private Spinner mSpinner;
-	public static String DRIVE_IDENTITY_FOLDER = "surespot identities";
+	
 	private TextView mAccountNameDisplay;
 	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 	private SingleProgressDialog mSpd;
@@ -392,7 +392,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			file.setParents(parent);
 			file.setTitle(filename);
 
-			file.setMimeType(SurespotConstants.MimeTypes.TEXT);
+			file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
 
 			ByteArrayContent content = new ByteArrayContent("application/octet-stream", identityData);
 
