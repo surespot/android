@@ -113,7 +113,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
 									exportIdentity(user, result);
-								} else {
+								}
+								else {
 									Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
 								}
 							}
@@ -133,7 +134,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 					if (mDriveHelper.getDriveService() != null) {
 						backupIdentityDrive(true);
 					}
-				} else {
+				}
+				else {
 					chooseAccount();
 				}
 			}
@@ -161,7 +163,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 			public void handleResponse(String response) {
 				if (response == null) {
 					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
-				} else {
+				}
+				else {
 					Utils.makeLongToast(ExportIdentityActivity.this, response);
 				}
 
@@ -211,7 +214,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 					backupIdentityDrive(false);
 
 				}
-			} else {
+			}
+			else {
 
 			}
 		}
@@ -286,7 +290,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 															if (!backedUp) {
 																Utils.makeToast(ExportIdentityActivity.this,
 																		getString(R.string.could_not_backup_identity_to_google_drive));
-															} else {
+															}
+															else {
 																Utils.makeToast(ExportIdentityActivity.this,
 																		getString(R.string.identity_successfully_backed_up_to_google_drive));
 															}
@@ -296,7 +301,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 												}
 											});
 
-								} else {
+								}
+								else {
 									Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
 								}
 							}
@@ -336,11 +342,14 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 			}
 
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return userrecoverable it seems
 			// was trying to figure out how to test this
@@ -400,11 +409,14 @@ public class ExportIdentityActivity extends SherlockActivity {
 			com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file, content).execute();
 			return true;
 
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "updateIdentityDriveFile");
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return userrecoverable it seems
 			// was trying to figure out how to test this
@@ -440,7 +452,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 			// identityDirId = file.getId();
 			// }
 			// }
-		} else {
+		}
+		else {
 			if (items.size() > 1) {
 				// delete all but one identity...should never happen
 				SurespotLog.w(TAG, "$d identities with the same filename found on google drive: %s", items.size(), username);
@@ -472,15 +485,19 @@ public class ExportIdentityActivity extends SherlockActivity {
 			return true;
 		case R.id.menu_help:
 			View view = LayoutInflater.from(this).inflate(R.layout.dialog_help_backup, null);
-			TextView tvBlurb = (TextView) view.findViewById(R.id.tvHelpManualBackup);
-			UIUtils.setHtml(this, tvBlurb, R.string.help_backup_what);
 
-			TextView t1 = (TextView) view.findViewById(R.id.helpAutoBackup1);
+			TextView tv = (TextView) view.findViewById(R.id.helpBackup1);
+			UIUtils.setHtml(this, tv, R.string.help_backup_what);
+
+			TextView t1 = (TextView) view.findViewById(R.id.helpBackup2);
 			t1.setText(Html.fromHtml(getString(R.string.help_backup_local)));
 			t1.setMovementMethod(LinkMovementMethod.getInstance());
 
-			TextView t2 = (TextView) view.findViewById(R.id.helpAutoBackup2);
-			UIUtils.setHtml(this, t2, R.string.help_backup2);
+			TextView t2 = (TextView) view.findViewById(R.id.helpBackup3);
+			UIUtils.setHtml(this, t2, R.string.help_backup_drive1);
+
+			t2 = (TextView) view.findViewById(R.id.helpBackup4);
+			t2.setText(R.string.help_backup_drive2);
 
 			UIUtils.showHelpDialog(this, R.string.surespot_help, view);
 			return true;
