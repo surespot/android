@@ -12,13 +12,13 @@
                 android:icon="@drawable/ic_menu_add"
                 android:orderInCategory="100"
                 android:title="@string/create_identity_label"
-                android:titleCondensed="create"/>
+                android:titleCondensed="@string/create"/>
             <item
                 android:id="@+id/menu_import_identities_bar"
                 android:icon="@drawable/ic_menu_archive"
                 android:orderInCategory="200"
                 android:title="@string/import_identities"
-                android:titleCondensed="import"/>
+                android:titleCondensed="@string/menu_import"/>
             <item
                 android:id="@+id/clear_local_cache_bar"
                 android:icon="@drawable/ic_menu_delete"

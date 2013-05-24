@@ -10,9 +10,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -23,6 +29,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
@@ -49,20 +57,16 @@ public class ExportIdentityActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
 	private DriveHelper mDriveHelper;
 	private Spinner mSpinner;
-	
+
 	private TextView mAccountNameDisplay;
 	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 	private SingleProgressDialog mSpd;
 	private SingleProgressDialog mSpdBackupDir;
-	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_export_identity);
-
-		TextView tvBlurb = (TextView) findViewById(R.id.tvHelpManualBackup);
-		UIUtils.setHtml(this, tvBlurb, R.string.help_manual_backup);
 
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.backup), true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
@@ -133,7 +137,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 						backupIdentityDrive(true);
 					}
 				} else {
-					Utils.makeToast(ExportIdentityActivity.this, getString(R.string.select_google_drive_account));
+					chooseAccount();
 				}
 			}
 		});
@@ -456,12 +460,37 @@ public class ExportIdentityActivity extends SherlockActivity {
 	}
 
 	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.menu_help, menu);
+		return true;
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
 
 			return true;
+		case R.id.menu_help:
+			View view = LayoutInflater.from(this).inflate(R.layout.dialog_help_backup, null);
+			TextView tvBlurb = (TextView) view.findViewById(R.id.tvHelpManualBackup);
+			UIUtils.setHtml(this, tvBlurb, R.string.help_manual_backup);
+
+			TextView t1 = (TextView) view.findViewById(R.id.helpAutoBackup1);
+			Spanned pre = Html.fromHtml(getString(R.string.help_auto_backup_warning_pre));
+			Spannable warning = UIUtils.createColoredSpannable(getString(R.string.help_auto_backup_warning), Color.RED);
+
+			t1.setText(TextUtils.concat(pre, " ", warning));
+			t1.setMovementMethod(LinkMovementMethod.getInstance());
+
+			TextView t2 = (TextView) view.findViewById(R.id.helpAutoBackup2);
+			UIUtils.setHtml(this, t2, R.string.help_auto_backup2);
+
+			UIUtils.showHelpDialog(this, R.string.surespot_help, view);
+			return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

@@ -90,8 +90,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 					intent.putExtra("type", mSelectedType);
 					startActivity(intent);
 
-				}
-				else {
+				} else {
 					UIUtils.sendInvitation(ExternalInviteActivity.this, MainActivity.getNetworkController(), mSelectedType, null, false);
 				}
 
@@ -105,7 +104,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		tvInviteText.setMovementMethod(LinkMovementMethod.getInstance());
 		String inviteText = getString(R.string.invite_text);
 		tvInviteText.setText(setClickHereListener(inviteText), BufferType.SPANNABLE);
-		
+
 		ImageView qrButton = (ImageView) findViewById(R.id.bQR);
 		qrButton.setOnClickListener(new View.OnClickListener() {
 
@@ -114,8 +113,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 				UIUtils.showQRDialog(ExternalInviteActivity.this);
 			}
 		});
-
-
 
 	}
 
@@ -126,7 +123,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		case SHARE_SMS:
 			mbInvite.setText(R.string.next);
 			break;
-		
+
 		case SHARE_SOCIAL:
 			mbInvite.setText(R.string.invite);
 			break;
@@ -150,8 +147,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 				@Override
 				public void onClick(View widget) {
-					SharedPreferences sp = ExternalInviteActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(),
-							Context.MODE_PRIVATE);
+					SharedPreferences sp = ExternalInviteActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean altDelimiter = sp.getBoolean("pref_alternate_text_delimiter", false);
 
 					Editor editor = sp.edit();
@@ -175,6 +171,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		case android.R.id.home:
 			finish();
 			return true;
+		
 		default:
 			return super.onOptionsItemSelected(item);
 		}

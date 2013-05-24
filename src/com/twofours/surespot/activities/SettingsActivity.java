@@ -1,9 +1,5 @@
 package com.twofours.surespot.activities;
 
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -34,12 +30,12 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				//SurespotApplication.mBackupManager.dataChanged();
+				// SurespotApplication.mBackupManager.dataChanged();
 				return true;
 			}
 		};
 
-		// TODO put in fragment0		
+		// TODO put in fragment0
 		PreferenceManager prefMgr = getPreferenceManager();
 		String user = IdentityController.getLoggedInUser();
 		if (user != null) {
@@ -50,8 +46,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 			prefMgr.findPreference("pref_notifications_enabled").setOnPreferenceClickListener(onPreferenceClickListener);
 			prefMgr.findPreference("pref_notifications_sound").setOnPreferenceClickListener(onPreferenceClickListener);
-			prefMgr.findPreference("pref_notifications_vibration")
-					.setOnPreferenceClickListener(onPreferenceClickListener);
+			prefMgr.findPreference("pref_notifications_vibration").setOnPreferenceClickListener(onPreferenceClickListener);
 			prefMgr.findPreference("pref_notifications_led").setOnPreferenceClickListener(onPreferenceClickListener);
 
 			// prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -67,23 +62,9 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
-					// show help dialog
-					AlertDialog.Builder b = new Builder(SettingsActivity.this);
-					b.setIcon(R.drawable.surespot_logo).setTitle(getString(R.string.surespot_help));
-					b.setPositiveButton(R.string.ok, new OnClickListener() {
-
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-						}
-					});
-
-					AlertDialog ad = b.create();
 					View view = LayoutInflater.from(SettingsActivity.this).inflate(R.layout.dialog_help, null);
 					UIUtils.setHelpLinks(SettingsActivity.this, view);
-					ad.setView(view, 0, 0, 0, 0);
-
-					ad.show();
-
+					UIUtils.showHelpDialog(SettingsActivity.this, R.string.surespot_help, view);
 					return true;
 				}
 			});
@@ -104,10 +85,9 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					if (IdentityController.getIdentityCount(SettingsActivity.this) < SurespotConstants.MAX_IDENTITIES) {
 						Intent intent = new Intent(SettingsActivity.this, ImportIdentityActivity.class);
 						startActivity(intent);
-					}
-					else {
+					} else {
 						Utils.makeLongToast(SettingsActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
-					}					
+					}
 					return true;
 				}
 			});

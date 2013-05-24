@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -378,5 +379,22 @@ public class UIUtils {
 		AlertDialog dialog = builder.create();
 		dialog.setView(dialogLayout, 0, 0, 0, 0);
 		dialog.show();
+	}
+	
+	public static void showHelpDialog(Activity activity, int titleStringId, View view) {
+		// show help dialog
+		AlertDialog.Builder b = new Builder(activity);
+		b.setIcon(R.drawable.surespot_logo).setTitle(activity.getString(titleStringId));
+		b.setPositiveButton(R.string.ok, new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+			}
+		});
+
+		AlertDialog ad = b.create();		
+		ad.setView(view, 0, 0, 0, 0);
+		ad.show();
+
 	}
 }

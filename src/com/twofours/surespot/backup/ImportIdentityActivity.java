@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -27,6 +28,8 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -593,18 +596,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			finish();
 
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-
-	}
 
 	private ChildList getIdentityFiles(String identityDirId) {
 		ChildList identityFileList = null;
@@ -742,5 +734,29 @@ public class ImportIdentityActivity extends SherlockActivity {
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
 
 	}
+	
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.menu_help, menu);		
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+
+			return true;
+		case R.id.menu_help:
+			View view = LayoutInflater.from(this).inflate(R.layout.dialog_help_restore, null);			
+			UIUtils.showHelpDialog(this, R.string.surespot_help, view);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+
+	}
 }

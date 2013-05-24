@@ -5,7 +5,7 @@
         android:id="@+id/menu_import_identities"
         android:icon="@drawable/ic_menu_archive"
         android:orderInCategory="200"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always"
         android:title="@string/import_identities"/>
 
     

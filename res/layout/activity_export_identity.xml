@@ -10,11 +10,6 @@
         android:padding="10dp"
         tools:context=".ExportIdentityActivity" >
 
-        <TextView
-            android:id="@+id/tvHelpManualBackup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -73,13 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:orientation="horizontal" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/restore_drive_account_label"
-                android:textSize="16sp" />
-
+            
             <TextView
                 android:id="@+id/exportDriveAccount"
                 android:layout_width="wrap_content"

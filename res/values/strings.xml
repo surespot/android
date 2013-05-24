@@ -312,5 +312,7 @@
 	<string name="identity_name">identity name</string>
 	<string name="last_backed_up">last backed up</string>
 	<string name="last_modified">last modified</string>
+	<string name="help">help</string>
+	<string name="menu_import">import</string>
 	
 </resources>

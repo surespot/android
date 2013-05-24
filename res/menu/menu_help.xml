@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_help"
+        android:icon="@android:drawable/ic_menu_help"
+        android:showAsAction="always"
+        android:title="@string/help"
+        android:titleCondensed="@string/help"/>
+
+</menu>
