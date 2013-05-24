@@ -68,7 +68,7 @@ public class DriveHelper {
 			String username = IdentityController.getLoggedInUser();
 			if (!TextUtils.isEmpty(username)) {
 
-				SharedPreferences.Editor editor = mContext.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).edit();
+				SharedPreferences.Editor editor = mContext.getSharedPreferences(username, Context.MODE_PRIVATE).edit();
 				editor.putString("pref_google_drive_account", name);
 				editor.commit();
 			} else {
