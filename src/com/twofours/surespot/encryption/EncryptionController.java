@@ -49,6 +49,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class EncryptionController {
+	private static final int PBKDF_ROUNDS = 10000;
 	private static final int BUFFER_SIZE = 1024;
 	private static final String TAG = "EncryptionController";
 	private static final int AES_KEY_LENGTH = 32;
@@ -544,7 +545,7 @@ public class EncryptionController {
 	}
 	
 	public static byte[][] derive(String password) {
-		int iterationCount = 1000;
+		int iterationCount = PBKDF_ROUNDS;
 		int saltLength = SALT_LENGTH;
 		int keyLength = AES_KEY_LENGTH*8;
 
@@ -565,7 +566,7 @@ public class EncryptionController {
 	}
 
 	public static byte[] derive(String password, byte[] salt) {
-		int iterationCount = 1000;
+		int iterationCount = PBKDF_ROUNDS;
 		int keyLength = AES_KEY_LENGTH*8;
 		
 		byte[] keyBytes = null;
