@@ -203,8 +203,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			SurespotLog.v(TAG, "starting signup activity");
 			Intent newIntent = new Intent(this, SignupActivity.class);
+			newIntent.putExtra("autoinviteuri", intent.getData());
+			newIntent.setAction(intent.getAction());
+			newIntent.setType(intent.getType());
+
+			Bundle extras = intent.getExtras();
+			if (extras != null) {
+				newIntent.putExtras(extras);
+			}
+
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(newIntent);
+
 			finish();
 		}
 		else {
@@ -225,11 +235,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				newIntent.putExtra("autoinviteuri", intent.getData());
 				newIntent.setAction(intent.getAction());
 				newIntent.setType(intent.getType());
-				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
 				Bundle extras = intent.getExtras();
 				if (extras != null) {
 					newIntent.putExtras(extras);
 				}
+
+				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
 				startActivity(newIntent);
 				finish();
@@ -350,8 +362,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// set the emoji view to the keyboard height
 			mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
 
-			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView
-					.getRootView().getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
+			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
+					.getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
 		}
 	}
 
@@ -461,8 +473,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		});
 
 		mEtInvite = (EditText) findViewById(R.id.etInvite);
-		mEtInvite.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
-				new LetterOrDigitInputFilter() });
+		mEtInvite.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
 		mEtInvite.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -529,8 +540,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		// if we're coming from an invite notification, or we need to send to someone
 		// then display friends
-		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
-				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
+		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
 			SurespotLog.v(TAG, "started from invite");
 			mSet = true;
 			Utils.clearIntent(intent);
@@ -612,16 +622,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false,
-							new IAsyncCallback<Boolean>() {
-								@Override
-								public void handleResponse(Boolean result) {
-									if (!result) {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
+						@Override
+						public void handleResponse(Boolean result) {
+							if (!result) {
 
-										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-									}
-								}
-							});
+								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+							}
+						}
+					});
 				}
 			}
 			break;
@@ -642,19 +651,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to,
-							new IAsyncCallbackTriplet<String, String, String>() {
-								@Override
-								public void handleResponse(String url, String version, String iv) {
-									if (url == null) {
-										Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
-									}
-									else {
-										mChatController.setImageUrl(to, url, version, iv);
+					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
+						@Override
+						public void handleResponse(String url, String version, String iv) {
+							if (url == null) {
+								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
+							}
+							else {
+								mChatController.setImageUrl(to, url, version, iv);
 
-									}
-								}
-							});
+							}
+						}
+					});
 
 				}
 
@@ -827,9 +835,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 			boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 			if (confirm) {
-				UIUtils.createAndShowConfirmationDialog(this, getString(R.string.delete_all_confirmation),
-						getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
-						new IAsyncCallback<Boolean>() {
+				UIUtils.createAndShowConfirmationDialog(this, getString(R.string.delete_all_confirmation), getString(R.string.delete_all_title),
+						getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 							public void handleResponse(Boolean result) {
 								if (result) {
 									mChatController.deleteMessages(currentChat);
@@ -923,13 +930,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (Environment.MEDIA_MOUNTED.equals(state)) {
 			mExternalStorageAvailable = mExternalStorageWriteable = true;
 		}
-		else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-			mExternalStorageAvailable = true;
-			mExternalStorageWriteable = false;
-		}
-		else {
-			mExternalStorageAvailable = mExternalStorageWriteable = false;
-		}
+		else
+			if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+				mExternalStorageAvailable = true;
+				mExternalStorageWriteable = false;
+			}
+			else {
+				mExternalStorageAvailable = mExternalStorageWriteable = false;
+			}
 		handleExternalStorageState(mExternalStorageAvailable, mExternalStorageWriteable);
 	}
 
@@ -1139,8 +1147,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
 
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(),
-							true, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(), true,
+							new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(final Boolean result) {
@@ -1149,14 +1157,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 									if (!result) {
 
 										Runnable runnable = new Runnable() {
-											
+
 											@Override
 											public void run() {
 												Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-												
+
 											}
 										};
-										
+
 										getMainHandler().post(runnable);
 
 									}

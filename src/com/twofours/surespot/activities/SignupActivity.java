@@ -67,11 +67,9 @@ public class SignupActivity extends SherlockActivity {
 		Spannable suggestion1 = new SpannableString(getString(R.string.enter_username_and_password));
 		Spannable suggestion2 = new SpannableString(getString(R.string.usernames_case_sensitive));
 		suggestion2.setSpan(new ForegroundColorSpan(Color.RED), 0, suggestion2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		Spannable suggestion3 = new SpannableString(
-				getString(R.string.aware_username_password));
+		Spannable suggestion3 = new SpannableString(getString(R.string.aware_username_password));
 
-		Spannable warning = new SpannableString(
-				getString(R.string.warning_password_reset));
+		Spannable warning = new SpannableString(getString(R.string.warning_password_reset));
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
@@ -84,8 +82,7 @@ public class SignupActivity extends SherlockActivity {
 		mMpd = new MultiProgressDialog(this, getString(R.string.create_user_progress), 250);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH),
-				new LetterOrDigitInputFilter() });
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
 
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
@@ -183,8 +180,7 @@ public class SignupActivity extends SherlockActivity {
 					pwText.setText("");
 					userText.requestFocus();
 					mMpd.decrProgress();
-				}
-				else {
+				} else {
 					// make sure we can create the file
 					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
 						Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
@@ -222,8 +218,7 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicECDSA = result[1];
 										String signature = result[2];
 
-										String referrers = Utils.getSharedPrefsString(SignupActivity.this,
-												SurespotConstants.PrefNames.REFERRERS);
+										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
 										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
 												new CookieResponseHandler() {
@@ -242,20 +237,26 @@ public class SignupActivity extends SherlockActivity {
 
 																@Override
 																protected Void doInBackground(Void... params) {
-																	Utils.putSharedPrefsString(SignupActivity.this,
-																			SurespotConstants.PrefNames.REFERRERS, null);
-																	IdentityController.createIdentity(SignupActivity.this, username,
-																			password, salt, keyPair[0], keyPair[1], cookie);
+																	Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
+																	IdentityController.createIdentity(SignupActivity.this, username, password, salt,
+																			keyPair[0], keyPair[1], cookie);
 																	return null;
 																}
 
 																protected void onPostExecute(Void result) {
 
 																	// SurespotApplication.getUserData().setUsername(username);
-																	Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-																			| Intent.FLAG_ACTIVITY_NEW_TASK);
-																	startActivity(intent);
+																	Intent newIntent = new Intent(SignupActivity.this, MainActivity.class);
+																	Intent intent = getIntent();
+																	newIntent.setAction(intent.getAction());
+																	newIntent.setType(intent.getType());
+																	Bundle extras = intent.getExtras();
+																	if (extras != null) {
+																		newIntent.putExtras(extras);
+																	}
+																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+																	startActivity(newIntent);
+																	Utils.clearIntent(intent);
 																	mMpd.decrProgress();
 																	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 																	imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
@@ -263,8 +264,7 @@ public class SignupActivity extends SherlockActivity {
 																};
 															}.execute();
 
-														}
-														else {
+														} else {
 															SurespotLog.w(TAG, "201 not returned on user create.");
 															confirmPwText.setText("");
 															pwText.setText("");
@@ -282,32 +282,26 @@ public class SignupActivity extends SherlockActivity {
 
 															switch (statusCode) {
 															case 429:
-																Utils.makeToast(SignupActivity.this,
-																		getString(R.string.user_creation_throttled));
+																Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
 																userText.setText("");
 																userText.requestFocus();
 																break;
 
 															case 409:
-																Utils.makeToast(SignupActivity.this,
-																		getString(R.string.username_exists));
+																Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
 																userText.setText("");
 																userText.requestFocus();
 																break;
 															case 403:
 																// future use
-																Utils.makeToast(SignupActivity.this,
-																		getString(R.string.signup_update));
+																Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
 																break;
 															default:
-																Utils.makeToast(SignupActivity.this,
-																		getString(R.string.could_not_create_user));
+																Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 															}
 
-														}
-														else {
-															Utils.makeToast(SignupActivity.this,
-																	getString(R.string.could_not_create_user));
+														} else {
+															Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 														}
 														confirmPwText.setText("");
 														pwText.setText("");
@@ -341,8 +335,7 @@ public class SignupActivity extends SherlockActivity {
 					default:
 						Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 					}
-				}
-				else {
+				} else {
 					Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 				}
 

@@ -208,7 +208,7 @@ public class LoginActivity extends SherlockActivity {
 				}
 
 				protected void onPostExecute(final IdSig idSig) {
-					if (idSig != null) {
+					if (idSig != null) {         
 
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);
 						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
@@ -243,6 +243,7 @@ public class LoginActivity extends SherlockActivity {
 								}
 
 								Utils.logIntent(TAG, newIntent);
+								Utils.clearIntent(intent);
 
 								startActivity(newIntent);
 								InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
