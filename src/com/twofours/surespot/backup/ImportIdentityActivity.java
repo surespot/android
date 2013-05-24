@@ -3,9 +3,11 @@ package com.twofours.surespot.backup;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -86,7 +88,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			// Get the Drive file ID.
 			mFileId = intent.getStringExtra(EXTRA_FILE_ID);
 			mMode = MODE_DRIVE;
-		} else {
+		}
+		else {
 			mMode = MODE_NORMAL;
 
 		}
@@ -197,7 +200,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 									}.execute();
 
-								} else {
+								}
+								else {
 									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 							}
@@ -249,13 +253,15 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 											}.execute();
 										}
-									} else {
+									}
+									else {
 										chooseAccount();
 									}
 								}
 
 							}
-						} else {
+						}
+						else {
 							if (!mShowingLocal) {
 								mSwitcher.showPrevious();
 								mShowingLocal = true;
@@ -270,7 +276,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			rbRestoreLocal.setOnClickListener(rbClickListener);
 			setupLocal();
 
-		} else {
+		}
+		else {
 			rbRestoreLocal.setVisibility(View.GONE);
 			rbRestoreDrive.setChecked(true);
 			mSwitcher.showNext();
@@ -303,7 +310,17 @@ public class ImportIdentityActivity extends SherlockActivity {
 		TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 
 		if (files != null) {
+			TreeMap<Long, File> sortedFiles = new TreeMap<Long, File>(new Comparator<Long>() {
+				public int compare(Long o1, Long o2) {
+					return o2.compareTo(o1);
+				}
+			});
+
 			for (File file : files) {
+				sortedFiles.put(file.lastModified(), file);
+			}
+
+			for (File file : sortedFiles.values()) {
 				long lastModTime = file.lastModified();
 				String date = DateFormat.getDateFormat(MainActivity.getContext()).format(lastModTime) + " "
 						+ DateFormat.getTimeFormat(MainActivity.getContext()).format(lastModTime);
@@ -377,7 +394,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 												}
 											});
-								} else {
+								}
+								else {
 									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 
@@ -425,7 +443,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 				map.put("date", date);
 				map.put("url", file.getDownloadUrl());
 				items.add(map);
-			} else {
+			}
+			else {
 				SurespotLog.w(TAG, "could not retrieve identity from google drive");
 				this.runOnUiThread(new Runnable() {
 
@@ -439,10 +458,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 				return;
 			}
 
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 			return;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
 			this.runOnUiThread(new Runnable() {
 
@@ -455,7 +476,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			finish();
 			return;
 
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return userrecoverable it seems
 			// was trying to figure out how to test this
@@ -516,7 +538,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			List<ChildReference> refs = fileList.getItems();
 
 			if (refs.size() == 0) {
-				SurespotLog.v(TAG, "no identities found on google drive");
+				SurespotLog.v(TAG, "no identity backup files found on google drive");
 				this.runOnUiThread(new Runnable() {
 
 					@Override
@@ -526,13 +548,25 @@ public class ImportIdentityActivity extends SherlockActivity {
 				});
 				return;
 			}
-			for (ChildReference ref : refs) {
-				com.google.api.services.drive.model.File file = mDriveHelper.getDriveService().files().get(ref.getId()).execute();
 
-				if (!file.getLabels().getTrashed()) {
+			if (refs.size() > 0) {
+				TreeMap<Long, com.google.api.services.drive.model.File> sortedFiles = new TreeMap<Long, com.google.api.services.drive.model.File>(
+						new Comparator<Long>() {
+							public int compare(Long o1, Long o2) {
+								return o2.compareTo(o1);
+							}
+						});
+				for (ChildReference ref : refs) {
+					com.google.api.services.drive.model.File file = mDriveHelper.getDriveService().files().get(ref.getId()).execute();
 
+					if (!file.getLabels().getTrashed()) {
+						DateTime lastModTime = file.getModifiedDate();
+						sortedFiles.put(lastModTime.getValue(), file);
+					}
+				}
+
+				for (com.google.api.services.drive.model.File file : sortedFiles.values()) {
 					DateTime lastModTime = file.getModifiedDate();
-
 					String date = DateFormat.getDateFormat(this).format(lastModTime.getValue()) + " "
 							+ DateFormat.getTimeFormat(this).format(lastModTime.getValue());
 					HashMap<String, String> map = new HashMap<String, String>();
@@ -542,12 +576,14 @@ public class ImportIdentityActivity extends SherlockActivity {
 					map.put("url", file.getDownloadUrl());
 					items.add(map);
 				}
-			}
 
-		} catch (UserRecoverableAuthIOException e) {
+			}
+		}
+		catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 			return;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identities from google drive");
 			this.runOnUiThread(new Runnable() {
 
@@ -559,7 +595,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			return;
 
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return userrecoverable it seems
 			// was trying to figure out how to test this
@@ -599,7 +636,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 		ChildList identityFileList = null;
 		try {
 			identityFileList = mDriveHelper.getDriveService().children().list(identityDirId).execute();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "getIdentityFiles");
 		}
 		return identityFileList;
@@ -634,12 +672,15 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			}
 
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return userrecoverable it seems
 			// was trying to figure out how to test this
@@ -687,7 +728,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 						protected Void doInBackground(Void... params) {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(true);
-							} else {
+							}
+							else {
 								restoreExternal(true);
 							}
 							return null;
@@ -711,7 +753,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 						if (drive != null) {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(false);
-							} else {
+							}
+							else {
 								restoreExternal(false);
 							}
 						}
@@ -720,7 +763,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 					}
 				}.execute();
 
-			} else {
+			}
+			else {
 
 			}
 		}
@@ -736,7 +780,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
-			return true;		
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
