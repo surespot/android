@@ -148,6 +148,7 @@
             <intent-filter>
                 <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
                 <data android:mimeType="application/ssi" />
+                 <data android:mimeType="application/vnd.google-apps.drive-sdk.428168563991" />
             </intent-filter>
         </activity>
         <activity
