@@ -89,8 +89,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 					SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
 					mIabHelper.queryInventoryAsync(mGotInventoryListener);
-				}
-				else {
+				} else {
 					hideProgress();
 					SurespotLog.v(TAG, "already queried");
 				}
@@ -137,8 +136,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 						hideProgress();
 					}
 				});
-			}
-			else {
+			} else {
 				SurespotLog.d(TAG, "no purchases to consume");
 				hideProgress();
 			}
@@ -175,8 +173,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 					}
 				});
 			}
-		}
-		catch (IllegalStateException ise) {
+		} catch (IllegalStateException ise) {
 			hideProgress();
 			Utils.makeToast(this, getString(R.string.billing_purchase_error));
 			SurespotLog.v(TAG, ise, "onPurchase error");
@@ -193,8 +190,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 			// perform any handling of activity results not related to in-app
 			// billing...
 			super.onActivityResult(requestCode, resultCode, data);
-		}
-		else {
+		} else {
 			SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
 		}
 	}
@@ -224,8 +220,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		// Start your favorite browser
 		Intent viewIntent = new Intent(Intent.ACTION_VIEW, payPalUri);
-		startActivity(viewIntent);
-		finish();
+		startActivity(viewIntent);		
 	}
 
 	public void onPaypalEmail(View arg0) {
@@ -237,7 +232,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
-		toEmails.add(getString(R.string.none));
+		toEmails.add(getString(R.string.let_me_select));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.pwyl_send_to_dialog_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
@@ -247,10 +242,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				String choice = toEmails.get(which);
 				String email = "";
-				if (choice.equals(getString(R.string.none))) {
-					return;
-				}
-				else {
+				if (!choice.equals(getString(R.string.let_me_select))) {
 					email = choice;
 				}
 
@@ -263,8 +255,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
 				intent.putExtra(Intent.EXTRA_TEXT, body);
-				startActivity(intent);
-				finish();
+				startActivity(intent);				
 			}
 
 		});
@@ -288,13 +279,14 @@ public class BillingActivity extends SherlockFragmentActivity {
 		SurespotLog.d(TAG, "sending email with bitcoin");
 
 		final String subject = getString(R.string.billing_bitcoin_email_subject);
-		final String body = getString(R.string.billing_bitcoin_email_body_address, bitcoinAddy) + "\n\n"
+		final String body = getString(R.string.billing_bitcoin_email_body_address, bitcoinAddy)
+				+ "\n\n"
 				+ getString(R.string.billing_bitcoin_email_body_qr, "https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A" + bitcoinAddy
-				+ "&choe=UTF-8&chs=300x300");
+						+ "&choe=UTF-8&chs=300x300");
 
 		final ArrayList<String> toEmails = Utils.getToEmails(this);
 
-		toEmails.add(getString(R.string.none));
+		toEmails.add(getString(R.string.let_me_select));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.pwyl_send_to_dialog_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
@@ -304,10 +296,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				String choice = toEmails.get(which);
 				String email = "";
-				if (choice.equals(getString(R.string.none))) {
-					return;
-				}
-				else {							
+				if (!choice.equals(getString(R.string.let_me_select))) {
 					email = choice;
 				}
 
@@ -320,8 +309,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
 				intent.putExtra(Intent.EXTRA_TEXT, body);
-				startActivity(intent);
-				finish();
+				startActivity(intent);				
 			}
 
 		});
@@ -337,9 +325,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		try {
 			startActivity(intent);
-			finish();
-		}
-		catch (ActivityNotFoundException anfe) {
+		} catch (ActivityNotFoundException anfe) {
 			Utils.makeToast(this, getString(R.string.could_not_open_bitcoin_wallet));
 		}
 
@@ -359,8 +345,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		if (mIabHelper != null && mQueried) {
 			try {
 				mIabHelper.dispose();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 			}
 		}
 
@@ -380,8 +365,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 			a.setDuration(1000);
 			mHomeImageView.clearAnimation();
 			mHomeImageView.startAnimation(a);
-		}
-		else {
+		} else {
 			mHomeImageView.clearAnimation();
 		}
 

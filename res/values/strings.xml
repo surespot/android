@@ -304,6 +304,7 @@
 	<string name="help">help</string>
 	<string name="menu_import">import</string>
 	<string name="backup_device">BACKUP IDENTITY TO DEVICE STORAGE</string>
-	<string name="backup_drive">BACKUP IDENTITY TO GOOGLE DRIVE</string> 
+	<string name="backup_drive">BACKUP IDENTITY TO GOOGLE DRIVE</string>
+	<string name="let_me_select">let me select</string>  
 	
 </resources>
