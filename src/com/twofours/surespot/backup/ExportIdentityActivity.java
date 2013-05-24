@@ -142,7 +142,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 		});
 
 		mAccountNameDisplay = (TextView) findViewById(R.id.exportDriveAccount);
-		String account = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).getString("pref_google_drive_account", "");
+		String account = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).getString("pref_google_drive_account", getString(R.string.no_google_account_selected));
 		mAccountNameDisplay.setText(account);
 
 		Button chooseAccountButton = (Button) findViewById(R.id.bSelectDriveAccount);
