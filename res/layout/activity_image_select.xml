@@ -21,19 +21,31 @@
 
         <Button
             android:id="@+id/cancel"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/cancel" >
+            android:text="@string/cancel"
+            android:textColor="@color/surespotBlue" >
         </Button>
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            
+            android:background="#aaa" />
 
         <Button
             android:id="@+id/send"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:enabled="false"
-            android:text="@string/send" >
+            android:text="@string/send"
+            android:textColor="@color/surespotBlue" >
         </Button>
     </LinearLayout>
 

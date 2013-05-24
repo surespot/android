@@ -12,19 +12,33 @@
 
     <Button
         android:id="@+id/bSelectNone"
+        style="@style/Widget.Sherlock.ActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:text="@string/select_none" />
+        android:text="@string/select_none"
+        android:textColor="@color/surespotBlue" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@id/bSelectNone"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_toRightOf="@id/bSelectNone"
+        android:background="#aaa" />
 
     <Button
         android:id="@+id/bSelectAll"
+        style="@style/Widget.Sherlock.ActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/bSelectNone"
-        android:text="@string/select_all" />
+        android:text="@string/select_all"
+        android:textColor="@color/surespotBlue" />
 
     <Button
         android:id="@+id/bSelectContacts"

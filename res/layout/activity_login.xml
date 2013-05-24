@@ -45,10 +45,18 @@
             style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
             android:layout_marginTop="10dip"
-            android:text="@string/login" />
+            android:text="@string/login"
+            android:textColor="@color/surespotBlue" />
 
-        
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:background="#aaa" />
     </LinearLayout>
 
 </ScrollView>

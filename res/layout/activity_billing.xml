@@ -31,39 +31,100 @@
             android:id="@+id/inAppButtons1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="horizontal" >
 
-            <Button
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:onClick="onPurchase"
-                android:tag="1"
-                android:text="$1" />
+                android:orientation="vertical" >
 
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:onClick="onPurchase"
-                android:tag="2"
-                android:text="$2" />
+                <Button
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="1"
+                    android:text="$1"
+                    android:textColor="@color/surespotBlue" />
 
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:onClick="onPurchase"
-                android:tag="5"
-                android:text="$5" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
 
-            <Button
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:onClick="onPurchase"
-                android:tag="10"
-                android:text="$10" />
+                android:orientation="vertical" >
+
+                <Button
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="2"
+                    android:text="$2"
+                    android:textColor="@color/surespotBlue" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" >
+
+                <Button
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="5"
+                    android:text="$5"
+                    android:textColor="@color/surespotBlue" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical" >
+
+                <Button
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="10"
+                    android:text="$10"
+                    android:textColor="@color/surespotBlue" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -72,29 +133,75 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
-            <Button
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:onClick="onPurchase"
-                android:tag="20"
-                android:text="$20" />
+                android:orientation="vertical" >
 
-            <Button
+                <Button
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="20"
+                    android:text="$20"
+                    android:textColor="@color/surespotBlue" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:onClick="onPurchase"
-                android:tag="50"
-                android:text="$50" />
+                android:orientation="vertical" >
 
-            <Button
+                <Button
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="50"
+                    android:text="$50"
+                    android:textColor="@color/surespotBlue" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
-                android:onClick="onPurchase"
-                android:tag="100"
-                android:text="$100" />
+                android:orientation="vertical" >
+
+                <Button
+                    
+                    style="@style/Widget.Sherlock.ActionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onPurchase"
+                    android:tag="100"
+                    android:text="$100"
+                    android:textColor="@color/surespotBlue" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="#aaa" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
@@ -108,16 +215,38 @@
         </TextView>
 
         <Button
+            android:textColor="@color/surespotBlue"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:onClick="onPaypalBrowser"
             android:text="@string/open_link_in_browser" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="#aaa" />
+
         <Button
+            android:textColor="@color/surespotBlue"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:onClick="onPaypalEmail"
             android:text="@string/send_link_in_email" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="#aaa" />
 
         <TextView
             android:layout_width="match_parent"
@@ -138,22 +267,55 @@
         </TextView>
 
         <Button
+            android:textColor="@color/surespotBlue"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:onClick="onBitcoinClipboard"
             android:text="@string/copy_address_to_clipboard" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="#aaa" />
+
         <Button
+            android:textColor="@color/surespotBlue"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:onClick="onBitcoinEmail"
             android:text="@string/send_address_and_qr_code_in_email" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="#aaa" />
+
         <Button
+            android:textColor="@color/surespotBlue"
+            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:onClick="onBitcoinWallet"
             android:text="@string/open_bitcoin_wallet" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="#aaa" />
     </LinearLayout>
 
 </ScrollView>
