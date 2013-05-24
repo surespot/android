@@ -78,14 +78,8 @@ public class ContactPickerActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-
-				ArrayList<String> selectedContacts = getSelectedContactData();
-				if (selectedContacts != null && selectedContacts.size() > 0) {
-					UIUtils.sendInvitation(ContactPickerActivity.this, MainActivity.getNetworkController(), mSelectedType, selectedContacts, true);
-				}
-				else {
-					Utils.makeToast(ContactPickerActivity.this, getString(R.string.no_contact_data_selected_or_entered));
-				}
+				ArrayList<String> selectedContacts = getSelectedContactData();				
+				UIUtils.sendInvitation(ContactPickerActivity.this, MainActivity.getNetworkController(), mSelectedType, selectedContacts, true);				
 			}
 		});
 

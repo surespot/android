@@ -323,6 +323,7 @@ public class UIUtils {
 
 		}
 		catch (ActivityNotFoundException e) {
+			progressDialog.hide();
 			Utils.makeToast(context, context.getString(R.string.invite_no_application_found));
 		}
 	}
