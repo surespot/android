@@ -282,8 +282,7 @@ public class ChatFragment extends SherlockFragment {
 						SurespotLog.v(TAG, "onPause lastVisiblePosition: %d", lastVisiblePosition);
 						SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);
 						if (lastVisiblePosition == mListView.getCount() - 1) {
-
-							SurespotLog.v(TAG, "saving selected item: %d", -1);
+							SurespotLog.v(TAG, "we are scrolled to bottom - saving selected item: %d", -1);
 							friend.setSelectedItem(-1);
 							friend.setSelectedTop(0);
 
