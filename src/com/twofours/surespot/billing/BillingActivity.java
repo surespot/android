@@ -240,7 +240,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		toEmails.add(getString(R.string.none));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.send_to_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
+		builder.setTitle(R.string.pwyl_send_to_dialog_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -297,7 +297,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		toEmails.add(getString(R.string.none));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.send_to_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
+		builder.setTitle(R.string.pwyl_send_to_dialog_title).setItems(toEmails.toArray(new String[toEmails.size()]), new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {

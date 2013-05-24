@@ -10,12 +10,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.Spannable;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -317,7 +314,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			// see if identities directory exists
 
 			FileList identityDir = mDriveHelper.getDriveService().files().list()
-					.setQ("title = '" + GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
+					.setQ("title = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
 			List<com.google.api.services.drive.model.File> items = identityDir.getItems();
 
 			if (items.size() > 0) {
@@ -330,7 +327,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			}
 			if (identityDirId == null) {
 				com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-				file.setTitle(GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER);
+				file.setTitle(SurespotConstants.DRIVE_IDENTITY_FOLDER);
 				file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
 				com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file).execute();
@@ -476,17 +473,14 @@ public class ExportIdentityActivity extends SherlockActivity {
 		case R.id.menu_help:
 			View view = LayoutInflater.from(this).inflate(R.layout.dialog_help_backup, null);
 			TextView tvBlurb = (TextView) view.findViewById(R.id.tvHelpManualBackup);
-			UIUtils.setHtml(this, tvBlurb, R.string.help_manual_backup);
+			UIUtils.setHtml(this, tvBlurb, R.string.help_backup_what);
 
 			TextView t1 = (TextView) view.findViewById(R.id.helpAutoBackup1);
-			Spanned pre = Html.fromHtml(getString(R.string.help_auto_backup_warning_pre));
-			Spannable warning = UIUtils.createColoredSpannable(getString(R.string.help_auto_backup_warning), Color.RED);
-
-			t1.setText(TextUtils.concat(pre, " ", warning));
+			t1.setText(Html.fromHtml(getString(R.string.help_backup_local)));
 			t1.setMovementMethod(LinkMovementMethod.getInstance());
 
 			TextView t2 = (TextView) view.findViewById(R.id.helpAutoBackup2);
-			UIUtils.setHtml(this, t2, R.string.help_auto_backup2);
+			UIUtils.setHtml(this, t2, R.string.help_backup2);
 
 			UIUtils.showHelpDialog(this, R.string.surespot_help, view);
 			return true;

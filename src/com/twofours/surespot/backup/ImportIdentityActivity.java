@@ -15,7 +15,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -28,9 +27,8 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.util.DateTime;
@@ -60,6 +58,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	private ListView mDriveListview;
 	private SingleProgressDialog mSpd;
 	private SingleProgressDialog mSpdLoadIdentities;
+	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 	private static final String ACTION_DRIVE_OPEN = "com.google.android.apps.drive.DRIVE_OPEN";
 	private static final String EXTRA_FILE_ID = "resourceId";
 	private String mFileId;
@@ -107,9 +106,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 		});
 
-		mDriveListview = (ListView) findViewById(R.id.lvDriveIdentities);		
+		mDriveListview = (ListView) findViewById(R.id.lvDriveIdentities);
 		mDriveListview.setEmptyView(findViewById(R.id.no_drive_identities));
-		
+
 		mDriveListview.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -406,7 +405,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 
 		if (mDriveHelper.getDriveAccount() == null) {
-			chooseAccount();		
+			chooseAccount();
 			return;
 		}
 
@@ -596,8 +595,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 	}
 
-
-
 	private ChildList getIdentityFiles(String identityDirId) {
 		ChildList identityFileList = null;
 		try {
@@ -614,7 +611,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			// see if identities directory exists
 
 			FileList identityDir = mDriveHelper.getDriveService().files().list()
-					.setQ("title = '" + GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
+					.setQ("title = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
 			List<com.google.api.services.drive.model.File> items = identityDir.getItems();
 
 			if (items.size() > 0) {
@@ -628,7 +625,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 			if (identityDirId == null) {
 				com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-				file.setTitle(GoogleDriveBackupActivity.DRIVE_IDENTITY_FOLDER);
+				file.setTitle(SurespotConstants.DRIVE_IDENTITY_FOLDER);
 				file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
 				com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file).execute();
@@ -730,17 +727,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 	}
 
 	private void chooseAccount() {
-		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, GoogleDriveBackupActivity.ACCOUNT_TYPE, true, null, null, null, null);
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, true, null, null, null, null);
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
-
-	}
-	
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.menu_help, menu);		
-		return true;
 	}
 
 	@Override
@@ -748,12 +736,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
-
-			return true;
-		case R.id.menu_help:
-			View view = LayoutInflater.from(this).inflate(R.layout.dialog_help_restore, null);			
-			UIUtils.showHelpDialog(this, R.string.surespot_help, view);
-			return true;
+			return true;		
 		default:
 			return super.onOptionsItemSelected(item);
 		}
