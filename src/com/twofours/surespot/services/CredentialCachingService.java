@@ -15,6 +15,7 @@ import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
@@ -61,11 +62,8 @@ public class CredentialCachingService extends Service {
 				String latestVersion = getLatestVersionIfPresent(key.getUsername());
 
 				if (latestVersion == null || version.compareTo(latestVersion) > 0) {
-					SurespotLog
-							.v(TAG, "keyPairCacheLoader setting latestVersion, username: " + key.getUsername() + ", version: " + version);
-					synchronized (this) {
-						mLatestVersions.put(key.getUsername(), version);
-					}
+					SurespotLog.v(TAG, "keyPairCacheLoader setting latestVersion, username: %s, version: %s", key.getUsername(), version);
+					mLatestVersions.put(key.getUsername(), version);
 				}
 
 				return keys;
@@ -75,14 +73,22 @@ public class CredentialCachingService extends Service {
 		CacheLoader<SharedSecretKey, byte[]> secretCacheLoader = new CacheLoader<SharedSecretKey, byte[]>() {
 			@Override
 			public byte[] load(SharedSecretKey key) throws Exception {
-				SurespotLog.v(TAG, "loadSharedSecret, ourVersion: " + key.getOurVersion() + ", theirUsername: " + key.getTheirUsername()
-						+ ", theirVersion: " + key.getTheirVersion());
+				SurespotLog.v(TAG, "secretCacheLoader, ourVersion: %s, theirUsername: %s, theirVersion: %s", key.getOurVersion(), key.getTheirUsername(),
+						key.getTheirVersion());
 
-				PublicKey publicKey = mPublicIdentities.get(
-						new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
+				try {
+					PublicKey publicKey = mPublicIdentities.get(new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
+					return EncryptionController.generateSharedSecretSync(IdentityController.getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion())
+							.getPrivate(), publicKey);
+				}
+				catch (InvalidCacheLoadException e) {
+					SurespotLog.w(TAG, e, "secretCacheLoader");
+				}
+				catch (ExecutionException e) {
+					SurespotLog.w(TAG, e, "secretCacheLoader");
+				}
 
-				return EncryptionController.generateSharedSecretSync(
-						IdentityController.getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion()).getPrivate(), publicKey);
+				return null;
 			}
 		};
 
@@ -91,7 +97,7 @@ public class CredentialCachingService extends Service {
 			public String load(String key) throws Exception {
 
 				String version = MainActivity.getNetworkController().getKeyVersionSync(key);
-				SurespotLog.v(TAG, "versionCacheLoader: retrieved keyversion from server for username: " + key + ", version: " + version);
+				SurespotLog.v(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", key, version);
 				return version;
 			}
 		};
@@ -103,12 +109,11 @@ public class CredentialCachingService extends Service {
 	}
 
 	public synchronized void login(SurespotIdentity identity, Cookie cookie) {
-		SurespotLog.v(TAG, "Logging in: " + identity.getUsername());
+		SurespotLog.v(TAG, "Logging in: %s", identity.getUsername());
 		mLoggedInUser = identity.getUsername();
 		this.mCookies.put(identity.getUsername(), cookie);
 		updateIdentity(identity);
 	}
-	
 
 	public void updateIdentity(SurespotIdentity identity) {
 		this.mIdentities.put(identity.getUsername(), identity);
@@ -118,12 +123,11 @@ public class CredentialCachingService extends Service {
 		while (iterator.hasNext()) {
 			PrivateKeyPairs pkp = iterator.next();
 			String version = pkp.getVersion();
-			this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)), new PublicKeys(version,
-					identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic()));
+			this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)),
+					new PublicKeys(version, identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic()));
 		}
-		
-	}
 
+	}
 
 	public String getLoggedInUser() {
 		return mLoggedInUser;
@@ -137,12 +141,13 @@ public class CredentialCachingService extends Service {
 		if (getLoggedInUser() != null) {
 			// get the cache for this user
 			try {
-				return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername,
-						theirVersion)));
+				return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername, theirVersion)));
+			}
+			catch (InvalidCacheLoadException e) {
+				SurespotLog.w(TAG, e, "getSharedSecret");
 			}
 			catch (ExecutionException e) {
-				SurespotLog.w(TAG, "getSharedSecret: " + e.getMessage());
-				return null;
+				SurespotLog.w(TAG, e, "getSharedSecret");
 			}
 		}
 		return null;
@@ -162,14 +167,14 @@ public class CredentialCachingService extends Service {
 
 		for (PublicKeyPairKey key : mPublicIdentities.asMap().keySet()) {
 			if (key.getUsername().equals(username)) {
-				SurespotLog.v(TAG, "invalidating public key cache entry for: " + username);
+				SurespotLog.v(TAG, "invalidating public key cache entry for: %s", username);
 				mPublicIdentities.invalidate(key);
 			}
 		}
 
 		for (SharedSecretKey key : mSharedSecrets.asMap().keySet()) {
 			if (key.getTheirUsername().equals(username)) {
-				SurespotLog.v(TAG, "invalidating shared secret cache entry for: " + username);
+				SurespotLog.v(TAG, "invalidating shared secret cache entry for: %s", username);
 				mSharedSecrets.invalidate(key);
 			}
 		}
@@ -186,21 +191,19 @@ public class CredentialCachingService extends Service {
 	public synchronized void clearIdentityData(String username, boolean fully) {
 		mCookies.remove(username);
 		mIdentities.remove(username);
-		
+
 		if (fully) {
 			for (SharedSecretKey key : mSharedSecrets.asMap().keySet()) {
 				if (key.getOurUsername().equals(username)) {
 					mSharedSecrets.invalidate(key);
 				}
 			}
-		}		
+		}
 	}
-	
-	
 
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
-			SurespotLog.v(TAG, "Logging out: " + mLoggedInUser);
+			SurespotLog.v(TAG, "Logging out: %s", mLoggedInUser);
 			clearIdentityData(mLoggedInUser, false);
 			mLoggedInUser = null;
 		}
@@ -216,7 +219,7 @@ public class CredentialCachingService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		return START_STICKY;
 
-	} 
+	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -244,12 +247,15 @@ public class CredentialCachingService extends Service {
 		try {
 			if (getLoggedInUser() != null) {
 				String version = mLatestVersions.get(username);
-				SurespotLog.v(TAG, "getLatestVersion, username: " + username + ", version: " + version);
+				SurespotLog.v(TAG, "getLatestVersion, username: %s, version: %s", username, version);
 				return version;
 			}
 		}
+		catch (InvalidCacheLoadException e) {
+			SurespotLog.w(TAG, e, "getLatestVersion");
+		}
 		catch (ExecutionException e) {
-			SurespotLog.w(TAG, "getLatestVersion", e);
+			SurespotLog.w(TAG, e, "getLatestVersion");
 		}
 		return null;
 	}
@@ -292,27 +298,21 @@ public class CredentialCachingService extends Service {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof VersionMap))
-				return false;
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (!(obj instanceof VersionMap)) return false;
 			VersionMap other = (VersionMap) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
+			if (!getOuterType().equals(other.getOuterType())) return false;
 			if (mUsername == null) {
-				if (other.mUsername != null)
-					return false;
+				if (other.mUsername != null) return false;
 			}
-			else if (!mUsername.equals(other.mUsername))
-				return false;
+			else
+				if (!mUsername.equals(other.mUsername)) return false;
 			if (mVersion == null) {
-				if (other.mVersion != null)
-					return false;
+				if (other.mVersion != null) return false;
 			}
-			else if (!mVersion.equals(other.mVersion))
-				return false;
+			else
+				if (!mVersion.equals(other.mVersion)) return false;
 			return true;
 		}
 
@@ -348,21 +348,16 @@ public class CredentialCachingService extends Service {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof PublicKeyPairKey))
-				return false;
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (!(obj instanceof PublicKeyPairKey)) return false;
 			PublicKeyPairKey other = (PublicKeyPairKey) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
+			if (!getOuterType().equals(other.getOuterType())) return false;
 			if (mVersionMap == null) {
-				if (other.mVersionMap != null)
-					return false;
+				if (other.mVersionMap != null) return false;
 			}
-			else if (!mVersionMap.equals(other.mVersionMap))
-				return false;
+			else
+				if (!mVersionMap.equals(other.mVersionMap)) return false;
 			return true;
 		}
 
@@ -409,27 +404,21 @@ public class CredentialCachingService extends Service {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof SharedSecretKey))
-				return false;
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (!(obj instanceof SharedSecretKey)) return false;
 			SharedSecretKey other = (SharedSecretKey) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
+			if (!getOuterType().equals(other.getOuterType())) return false;
 			if (mOurVersionMap == null) {
-				if (other.mOurVersionMap != null)
-					return false;
+				if (other.mOurVersionMap != null) return false;
 			}
-			else if (!mOurVersionMap.equals(other.mOurVersionMap))
-				return false;
+			else
+				if (!mOurVersionMap.equals(other.mOurVersionMap)) return false;
 			if (mTheirVersionMap == null) {
-				if (other.mTheirVersionMap != null)
-					return false;
+				if (other.mTheirVersionMap != null) return false;
 			}
-			else if (!mTheirVersionMap.equals(other.mTheirVersionMap))
-				return false;
+			else
+				if (!mTheirVersionMap.equals(other.mTheirVersionMap)) return false;
 			return true;
 		}
 
