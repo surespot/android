@@ -71,7 +71,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.backup), true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
 
-		final TextView tvPath = (TextView) findViewById(R.id.identityBackupPath);
+		final TextView tvPath = (TextView) findViewById(R.id.backupLocalLocation);
 		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
 
 		final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);

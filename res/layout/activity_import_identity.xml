@@ -6,6 +6,7 @@
     tools:context=".ImportIdentityActivity" >
 
     <RadioGroup
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
@@ -16,6 +17,7 @@
             android:id="@+id/rbRestoreLocal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            
             android:text="@string/restore_local" />
 
         <RadioButton
@@ -23,8 +25,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            
             android:text="@string/restore_drive" />
     </RadioGroup>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:background="#aaa" />
 
     <ViewSwitcher
         android:id="@+id/restoreViewSwitcher"
@@ -36,23 +47,26 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-            <TextView
+       <!--      <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
+                android:layout_gravity="center"
                 android:text="@string/restore_local_location_label" />
+ -->
 
             <TextView
                 android:id="@+id/restoreLocalLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginBottom="10dp"
-                android:textSize="16sp" />
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="16dp"
+                android:gravity="center" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:orientation="horizontal" >
 
                 <TextView
@@ -73,6 +87,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dip"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:background="#aaa" />
 
             <ListView
@@ -124,7 +140,8 @@
                     style="@style/Widget.Sherlock.ActionButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/select_google_drive_account" >
+                    android:text="@string/select_google_drive_account"
+                    android:textColor="@color/surespotBlue" >
                 </Button>
             </LinearLayout>
 
@@ -151,6 +168,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dip"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:background="#aaa" />
 
             <ListView

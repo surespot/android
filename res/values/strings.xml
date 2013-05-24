@@ -11,7 +11,7 @@
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
-    <string name="export_sd">backup to local storage</string>
+    <string name="export_sd">Execute Local Storage Backup</string>
     <string name="import_sd">restore from local storage</string>
     <string name="title_activity_chat">chat</string>
     <string name="title_activity_image_view">image view</string>
@@ -289,7 +289,7 @@
     <string name="delete_identity">delete identity</string>
     <string name="surespot_help">surespot help</string>
 	<string name="next">next</string>
-	<string name="backup_drive">Backup to Google Drive</string>
+	<string name="backup_drive_button">Execute Google Drive Backup</string>
 	<string name="could_not_backup_identity_to_google_drive">Could not backup identity to google drive</string>
 	<string name="identity_successfully_backed_up_to_google_drive">identity successfully backed up to Google Drive</string>
 	<string name="google_drive_account_label">Using Google Account:</string>
@@ -298,7 +298,8 @@
 	<string name="restore_local">Restore from Device Storage</string>
 	<string name="restore_drive">Restore from Google Drive</string>
 	<!-- <string name="restore_drive_account_label">Google Drive account:</string> -->
-	<string name="restore_local_location_label">Restoring from local device, location:</string>
+	<string name="restore_local_location_label">restore location</string>
+	<string name="backup_local_location_label">backup location</string>
 	<string name="could_not_list_identities_from_google_drive">could not get list of identities from google drive</string>
 	<string name="no_google_account_selected">no google account selected</string>
 	<string name="select_google_drive_account">select</string>
@@ -314,5 +315,7 @@
 	<string name="last_modified">last modified</string>
 	<string name="help">help</string>
 	<string name="menu_import">import</string>
+	<string name="backup_device">BACKUP IDENTITY TO DEVICE STORAGE</string>
+	<string name="backup_drive">BACKUP IDENTITY TO GOOGLE DRIVE</string> 
 	
 </resources>
