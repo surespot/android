@@ -241,13 +241,6 @@
             android:onClick="onPaypalEmail"
             android:text="@string/send_link_in_email" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1px"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:background="#aaa" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -310,12 +303,6 @@
             android:onClick="onBitcoinWallet"
             android:text="@string/open_bitcoin_wallet" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1px"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:background="#aaa" />
     </LinearLayout>
 
 </ScrollView>
