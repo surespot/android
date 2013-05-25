@@ -103,6 +103,7 @@
             <TextView
                 android:id="@+id/exportDriveAccount"
                 android:layout_width="0dp"
+                android:maxLines="1"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
