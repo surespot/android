@@ -33,6 +33,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.ChildList;
@@ -88,15 +89,14 @@ public class ImportIdentityActivity extends SherlockActivity {
 			// Get the Drive file ID.
 			mFileId = intent.getStringExtra(EXTRA_FILE_ID);
 			mMode = MODE_DRIVE;
-		}
-		else {
+		} else {
 			mMode = MODE_NORMAL;
 
 		}
 
-		mDriveHelper = new DriveHelper(this);
-		Account account = mDriveHelper.getDriveAccount();
+		mDriveHelper = new DriveHelper(this, mMode == MODE_NORMAL);
 
+		Account account = mDriveHelper.getDriveAccount();
 		mAccountNameDisplay = (TextView) findViewById(R.id.restoreDriveAccount);
 		mAccountNameDisplay.setText(account == null ? getString(R.string.no_google_account_selected) : account.name);
 
@@ -173,16 +173,23 @@ public class ImportIdentityActivity extends SherlockActivity {
 																	Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
 
 																	if (response.getResultSuccess()) {
-																		// if launched
+																		// if
+																		// launched
 																		// from
-																		// signup and
+																		// signup
+																		// and
 																		// successful
-																		// import, go to
+																		// import,
+																		// go
+																		// to
 																		// login
 																		// screen
 																		if (mSignup || mMode == MODE_DRIVE) {
-																			IdentityController.logout();
+																			if (IdentityController.hasLoggedInUser()) {
+																				IdentityController.logout();
+																			}
 																			Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
+																			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, user);
 																			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 																			startActivity(intent);
 																			finish();
@@ -200,8 +207,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 									}.execute();
 
-								}
-								else {
+								} else {
 									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 							}
@@ -253,15 +259,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 											}.execute();
 										}
-									}
-									else {
+									} else {
 										chooseAccount();
 									}
 								}
 
 							}
-						}
-						else {
+						} else {
 							if (!mShowingLocal) {
 								mSwitcher.showPrevious();
 								mShowingLocal = true;
@@ -276,8 +280,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			rbRestoreLocal.setOnClickListener(rbClickListener);
 			setupLocal();
 
-		}
-		else {
+		} else {
 			rbRestoreLocal.setVisibility(View.GONE);
 			rbRestoreDrive.setChecked(true);
 			mSwitcher.showNext();
@@ -379,9 +382,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 													Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
 
 													if (response.getResultSuccess()) {
-														// if launched from
-														// signup and successful
-														// import, go to login
+														// if launched
+														// from
+														// signup and
+														// successful
+														// import, go to
+														// login
 														// screen
 														if (mSignup) {
 															IdentityController.logout();
@@ -394,8 +400,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 												}
 											});
-								}
-								else {
+								} else {
 									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 
@@ -443,8 +448,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 				map.put("date", date);
 				map.put("url", file.getDownloadUrl());
 				items.add(map);
-			}
-			else {
+			} else {
 				SurespotLog.w(TAG, "could not retrieve identity from google drive");
 				this.runOnUiThread(new Runnable() {
 
@@ -458,13 +462,28 @@ public class ImportIdentityActivity extends SherlockActivity {
 				return;
 			}
 
-		}
-		catch (UserRecoverableAuthIOException e) {
+		} catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 			return;
-		}
-		catch (IOException e) {
+
+		} catch (GoogleJsonResponseException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
+
+			// if they're restoring from drive, selecting different account in
+			// surespot will cause 404
+			if (e.getStatusCode() == 404 && mMode == MODE_DRIVE) {
+				this.runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.could_not_import_identity_drive_404));
+					}
+				});
+
+			}
+		} catch (IOException e) {
+			SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
+
 			this.runOnUiThread(new Runnable() {
 
 				@Override
@@ -476,12 +495,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 			finish();
 			return;
 
-		}
-		catch (SecurityException e) {
+		} catch (SecurityException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-			// when key is revoked on server this happens...should return userrecoverable it seems
+			// when key is revoked on server this happens...should return
+			// userrecoverable it seems
 			// was trying to figure out how to test this
-			// seems like the only way around this is to remove and re-add android account:
+			// seems like the only way around this is to remove and re-add
+			// android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
 			this.runOnUiThread(new Runnable() {
 
@@ -578,12 +598,10 @@ public class ImportIdentityActivity extends SherlockActivity {
 				}
 
 			}
-		}
-		catch (UserRecoverableAuthIOException e) {
+		} catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 			return;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identities from google drive");
 			this.runOnUiThread(new Runnable() {
 
@@ -595,12 +613,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			return;
 
-		}
-		catch (SecurityException e) {
+		} catch (SecurityException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-			// when key is revoked on server this happens...should return userrecoverable it seems
+			// when key is revoked on server this happens...should return
+			// userrecoverable it seems
 			// was trying to figure out how to test this
-			// seems like the only way around this is to remove and re-add android account:
+			// seems like the only way around this is to remove and re-add
+			// android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
 			this.runOnUiThread(new Runnable() {
 
@@ -636,8 +655,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		ChildList identityFileList = null;
 		try {
 			identityFileList = mDriveHelper.getDriveService().children().list(identityDirId).execute();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "getIdentityFiles");
 		}
 		return identityFileList;
@@ -672,19 +690,18 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			}
 
-		}
-		catch (UserRecoverableAuthIOException e) {
+		} catch (UserRecoverableAuthIOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-		}
-		catch (SecurityException e) {
+		} catch (SecurityException e) {
 			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
-			// when key is revoked on server this happens...should return userrecoverable it seems
+			// when key is revoked on server this happens...should return
+			// userrecoverable it seems
 			// was trying to figure out how to test this
-			// seems like the only way around this is to remove and re-add android account:
+			// seems like the only way around this is to remove and re-add
+			// android account:
 			// http://stackoverflow.com/questions/5805657/revoke-account-permission-for-an-app
 			this.runOnUiThread(new Runnable() {
 
@@ -728,8 +745,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 						protected Void doInBackground(Void... params) {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(true);
-							}
-							else {
+							} else {
 								restoreExternal(true);
 							}
 							return null;
@@ -753,8 +769,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 						if (drive != null) {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(false);
-							}
-							else {
+							} else {
 								restoreExternal(false);
 							}
 						}
@@ -763,15 +778,19 @@ public class ImportIdentityActivity extends SherlockActivity {
 					}
 				}.execute();
 
-			}
-			else {
+			} else {
 
 			}
 		}
 	}
 
 	private void chooseAccount() {
-		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, true, null, null, null, null);
+		String descriptionText = null;
+		if (mMode == MODE_DRIVE) {
+			descriptionText = getString(R.string.pick_same_drive_account);
+		}
+
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, mMode == MODE_DRIVE, descriptionText, null, null, null);
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
 	}
 

@@ -27,9 +27,11 @@ public class DriveHelper {
 	private Drive mService;
 	private Context mContext;
 	private Account mAccount;
+	private boolean mUseStoredAccount;
 
-	public DriveHelper(Context context) {
+	public DriveHelper(Context context, boolean useStoredAccount) {
 		mContext = context;
+		mUseStoredAccount = useStoredAccount;
 	}
 
 	public Drive getDriveService() {
@@ -50,7 +52,7 @@ public class DriveHelper {
 	}
 
 	public Account getDriveAccount() {
-		if (mAccount == null) {
+		if (mAccount == null && mUseStoredAccount) {
 			SharedPreferences sp = mContext.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 
 			String accountName = sp.getString("pref_google_drive_account", null);

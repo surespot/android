@@ -789,7 +789,10 @@ public class IdentityController {
 		if (MainActivity.getNetworkController() != null) {
 			MainActivity.getNetworkController().logout();
 		}
-		SurespotApplication.getCachingService().logout();
+		CredentialCachingService cache = SurespotApplication.getCachingService();
+		if (cache != null) {
+			cache.logout();
+		}
 	}
 
 	private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
