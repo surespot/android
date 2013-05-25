@@ -49,7 +49,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class EncryptionController {
-	private static final int PBKDF_ROUNDS = 10000;
+	private static final int PBKDF_ROUNDS = 1000;
 	private static final int BUFFER_SIZE = 1024;
 	private static final String TAG = "EncryptionController";
 	private static final int AES_KEY_LENGTH = 32;
