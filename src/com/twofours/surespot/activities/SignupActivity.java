@@ -73,7 +73,7 @@ public class SignupActivity extends SherlockActivity {
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		tvSignupHelp.setText(TextUtils.concat(suggestion1, suggestion2, " ", suggestion3, " ", warning));
+		tvSignupHelp.setText(TextUtils.concat(suggestion1, " ", suggestion2, " ", suggestion3, " ", warning));
 
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
