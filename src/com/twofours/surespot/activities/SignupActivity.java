@@ -375,6 +375,14 @@ public class SignupActivity extends SherlockActivity {
 			intent.putExtra("signup", true);
 			startActivity(intent);
 			return true;
+			
+		case R.id.menu_about:
+			Intent abIntent = new Intent(this, AboutActivity.class);
+			abIntent.putExtra("signup", true);
+			startActivity(abIntent);
+			return true;
+			
+			
 		default:
 			return super.onOptionsItemSelected(item);
 		}

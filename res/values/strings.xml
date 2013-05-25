@@ -139,9 +139,9 @@
     <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity again after the operation completes successfully.</string>
     <string name="create_new_keys_for">create new keys for %s</string>
     <string name="enter_password_for">enter surespot password for %s</string>
-    <string name="enter_username_and_password">Please enter a username and password, or click the folder icon to restore an identity.</string>
+    <string name="enter_username_and_password">Please enter a username and password, or restore an identity from the menu.</string>
     <string name="usernames_case_sensitive">Usernames are case sensitive</string>
-    <string name="aware_username_password">so please be aware of this when sharing them with others. The password should be at least 8 characters long and contain funky characters in weird places.</string>
+    <string name="aware_username_password">so be aware of this when sharing them with others. The password should be at least 8 characters long and contain funky characters in weird places.</string>
     <string name="warning_password_reset">WARNING: There is no password reset functionality in surespot so make sure you remember it!</string>
     <string name="create_user_progress">creating a user and generating key pairs</string>
     <string name="create">create</string>
@@ -305,4 +305,5 @@
 	<string name="let_me_select">let me select</string>  
 	<string name="could_not_import_identity_drive_404">Could not load identity - please make sure you selected the same Google account that you were using in Google Drive.</string>  
 	<string name="pick_same_drive_account">Please pick the same account that you were using in Google Drive:</string>	
+	<string name="about">about...</string>
 </resources>
