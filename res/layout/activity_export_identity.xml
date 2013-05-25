@@ -109,6 +109,7 @@
                 android:layout_marginRight="20dp"
                 android:layout_weight="1"
                 android:gravity="center"
+                android:ellipsize="end"
                 android:text="@string/no_google_account_selected"
                 android:textSize="16sp" />
 

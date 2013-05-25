@@ -6,18 +6,17 @@
     tools:context=".ImportIdentityActivity" >
 
     <RadioGroup
-        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
+        android:gravity="center_horizontal"
         android:orientation="vertical" >
 
         <RadioButton
             android:id="@+id/rbRestoreLocal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            
             android:text="@string/restore_local" />
 
         <RadioButton
@@ -25,7 +24,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            
             android:text="@string/restore_drive" />
     </RadioGroup>
 
@@ -47,13 +45,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-       <!--      <TextView
+            <!--
+                 <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_gravity="center"
                 android:text="@string/restore_local_location_label" />
- -->
+            -->
 
             <TextView
                 android:id="@+id/restoreLocalLocation"
@@ -155,6 +154,7 @@
                     android:layout_height="30dp"
                     android:layout_weight="1"
                     android:gravity="center"
+                    android:paddingRight="5dp"
                     android:text="@string/identity_name" />
 
                 <TextView
@@ -162,6 +162,7 @@
                     android:layout_height="30dp"
                     android:layout_weight="1"
                     android:gravity="center"
+                    android:paddingLeft="5dp"
                     android:text="@string/last_backed_up" />
             </LinearLayout>
 

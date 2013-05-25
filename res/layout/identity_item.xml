@@ -9,13 +9,17 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_weight="1"
-        android:gravity="center" />
+        android:paddingRight="5dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1" />
 
     <TextView
         android:id="@+id/identityBackupDate"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_weight="1"
+        android:paddingLeft="5dp"
         android:gravity="center" />
 
 </LinearLayout>
