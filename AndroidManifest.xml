@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
     android:versionCode="21"
-    android:versionName="0b673f0" >
+    android:versionName="e5d0c6d" >
 
     <uses-sdk
         android:minSdkVersion="8"
