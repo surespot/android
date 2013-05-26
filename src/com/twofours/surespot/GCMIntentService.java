@@ -36,6 +36,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 	private static final String TAG = "GCMIntentService";
 	public static final String SENDER_ID = "428168563991";
 	private PowerManager mPm;
+	NotificationCompat.Builder mBuilder;
+	NotificationManager mNotificationManager;
 
 	public GCMIntentService() {
 		super(SENDER_ID);
@@ -47,6 +49,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 	public void onCreate() {
 		super.onCreate();
 		mPm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+		mBuilder = new NotificationCompat.Builder(this);
+		mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	@Override
@@ -75,8 +80,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 						return "failed";
 					}
 				};
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				// TODO tell user shit is fucked
 				// get shared prefs
 				SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
@@ -100,8 +104,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
 
 			}
-		}
-		else {
+		} else {
 			SurespotLog.v(TAG, "Can't save GCM id on surespot server as user is not logged in.");
 		}
 	}
@@ -140,8 +143,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 			boolean tabOpenToUser = from.equals(ChatController.getCurrentChat());
 			boolean paused = ChatController.isPaused();
 
-			SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused,
-					hasLoggedInUser, sameUser, tabOpenToUser);
+			SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
+					sameUser, tabOpenToUser);
 
 			if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && !paused) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
@@ -151,16 +154,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 			String spot = ChatUtils.getSpot(from, to);
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_message, to, from), spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-		}
-		else {
+		} else {
 			if (type.equals("invite")) {
 				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
 						context.getString(R.string.notification_invite, to, from), from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-			}
-			else {
+			} else {
 				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
-						context.getString(R.string.notification_invite_accept, to, from), to,
-						IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+						context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 			}
 		}
 	}
@@ -175,9 +175,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		int icon = R.drawable.surespot_logo;
 
-		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(title)
-				.setContentText(message);
+		//need to use same builder for only alert once to work:
+		//http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
+		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(true).setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
 		Intent mainIntent = null;
@@ -198,10 +198,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
-		builder.setContentIntent(resultPendingIntent);
+		mBuilder.setContentIntent(resultPendingIntent);
 
-		Notification notification = builder.build();
-		notification.flags = Notification.FLAG_AUTO_CANCEL;
+		Notification notification = mBuilder.build();
+
 		if (pm.getBoolean("pref_notifications_led", true)) {
 			notification.defaults |= Notification.DEFAULT_LIGHTS;
 		}
@@ -212,6 +212,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 			notification.defaults |= Notification.DEFAULT_VIBRATE;
 		}
 
-		notificationManager.notify(tag, id, notification);
+		mNotificationManager.notify(tag, id, notification);
 	}
 }
