@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
     android:versionCode="21"
-    android:versionName="ce64db2" >
+    android:versionName="0b673f0" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -133,11 +133,11 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.backup.ImportIdentityActivity"
-            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:exported="true" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.backup.ImportIdentityActivity" />
-
+            
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
