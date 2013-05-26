@@ -161,7 +161,11 @@ public class ChatFragment extends SherlockFragment {
 				boolean hint = getUserVisibleHint();
 				// SurespotLog.v(TAG, "hint: " + hint);
 				if (hint) {
-					ChatController chatController = getMainActivity().getChatController();
+					MainActivity mainActivity = getMainActivity();
+					if (mainActivity == null) {
+						return;
+					}
+					ChatController chatController = mainActivity.getChatController();
 					if (chatController == null) {
 						return;
 					}
