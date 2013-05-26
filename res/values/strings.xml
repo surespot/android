@@ -34,7 +34,7 @@
     <string name="notifications_sound">sound</string>
     <string name="notifications_led">led</string>
     <string name="notifications_enabled">enabled</string>
-    <string name="camera_init">initializing camera"</string>
+    <string name="camera_init">initializing camera</string>
     <string name="uploading_image">uploading image</string>
     <string name="could_not_upload_image">could not upload image</string>
     <string name="image_successfully_uploaded">image successfully uploaded</string>
@@ -44,11 +44,11 @@
     <string name="logout">logout</string>
     <string name="settings">settings</string>
     <string name="welcome_to_surespot"><![CDATA["Welcome to surespot! Data sent using this app is <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> encrypted with <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">symmetric-key</a> encryption (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) using keys created with 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
-    <string name="no_friends">No friends...yet. Invite surespot users by entering their username and touching "invite".</string>
-    <string name="invite_contacts">Use the "invite contacts" menu option to invite users via email, text message, or other applications.</string>
+    <string name="no_friends">"No friends...yet. Invite surespot users by entering their username below and touching 'invite'."</string>
+    <string name="invite_contacts">"Use the 'invite contacts' menu option to invite users via QR code, email, text message, or other applications."</string>
     <string name="navigate_between_chat_tabs">Navigate between tabs by swiping.</string>
-    <string name="help_shortPress">Touch "home" to go to the home tab.</string>
-    <string name="help_longPress">Hold "home" to close the chat tab.</string>
+    <string name="help_shortPress">"Touch 'home' to go to the home tab."</string>
+    <string name="help_longPress">"Hold 'home' to close the chat tab."</string>
     <string name="help_holdmessage">Hold on a message for message options.</string>
     <string name="help_holdfriend">Hold on a friend for friend options.</string>
     <string name="help_imageZoom">Zoom images by touching the image.</string>
