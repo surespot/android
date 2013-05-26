@@ -208,11 +208,13 @@ public class UIUtils {
 
 	public static void setHtml(Context context, TextView tv, String html) {
 		tv.setText(Html.fromHtml(html));
+		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
 	public static void setHtml(Context context, TextView tv, Spanned html) {
 		tv.setText(Html.toHtml(html));
+		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
