@@ -204,18 +204,19 @@ public class UIUtils {
 	public static void setHtml(Context context, TextView tv, int stringId) {
 		tv.setText(Html.fromHtml(context.getString(stringId)));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
+		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 	}
 
 	public static void setHtml(Context context, TextView tv, String html) {
-		tv.setText(Html.fromHtml(html));
-		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
+		tv.setText(Html.fromHtml(html));		
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
+		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 	}
 
 	public static void setHtml(Context context, TextView tv, Spanned html) {
-		tv.setText(Html.toHtml(html));
-		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
+		tv.setText(Html.toHtml(html));	
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
+		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 	}
 
 	public static void disableImmediateChildren(ViewGroup layout) {
