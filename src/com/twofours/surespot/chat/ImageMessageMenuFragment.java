@@ -58,8 +58,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					return;
 				}
 			}
-		}
-		else {
+		} else {
 			mActivity = null;
 			mMessage.deleteObserver(mMessageObserver);
 			mMessage = null;
@@ -125,17 +124,21 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 						@Override
 						protected Boolean doInBackground(Void... params) {
 							try {
+								if (!mMessage.getDeleted()) {
+									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
+									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-								File galleryFile = FileUtils.createGalleryImageFile(".jpg");
-								FileOutputStream fos = new FileOutputStream(galleryFile);
-								InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity, mMessage.getData());
+									InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity, mMessage.getData());
 
-								EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(),
-										mMessage.getTheirVersion(), mMessage.getIv(), new BufferedInputStream(imageStream), fos);
+									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
+											mMessage.getIv(), new BufferedInputStream(imageStream), fos);
 
-								FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
-								return true;
-
+									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
+									return true;
+								}
+								else {
+									return false;
+								}								
 							}
 
 							catch (IOException e) {
@@ -150,8 +153,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 								if (result) {
 
 									Utils.makeToast(mActivity, mActivity.getString(R.string.image_saved_to_gallery));
-								}
-								else {
+								} else {
 									Utils.makeToast(mActivity, mActivity.getString(R.string.error_saving_image_to_gallery));
 								}
 							}
@@ -166,19 +168,16 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
 						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
-								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel),
-								new IAsyncCallback<Boolean>() {
+								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											mActivity.getChatController().deleteMessage(mMessage);
-										}
-										else {
+										} else {
 											dialogi.cancel();
 										}
 									};
 								});
-					}
-					else {
+					} else {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
 

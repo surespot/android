@@ -29,7 +29,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private String mToVersion;
 
 	private String mFromVersion;
-	private boolean mDeletedTo;
+	private boolean mDeleted;
 	private boolean mShareable;
 
 	private boolean mLoaded;
@@ -137,7 +137,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
-		chatMessage.setDeletedTo(jsonMessage.optBoolean("deletedTo", false));
+		//chatMessage.setDeleted(jsonMessage.optBoolean("deletedTo", false));
 		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
 
 		Integer id = jsonMessage.optInt("id");
@@ -179,7 +179,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("iv", this.getIv());
 			message.put("data", this.getData());
 			message.put("mimeType", this.getMimeType());
-			message.put("deletedTo", this.getDeletedTo());
+		//	message.put("deletedTo", this.getDeletedTo());
 			message.put("shareable", this.isShareable());
 
 			if (this.getErrorStatus() > 0) {
@@ -315,12 +315,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		mFromVersion = fromVersion;
 	}
 
-	public boolean getDeletedTo() {
-		return mDeletedTo;
+	public boolean getDeleted() {
+		return mDeleted;
 	}
 
-	public void setDeletedTo(Boolean deletedTo) {
-		mDeletedTo = deletedTo;
+	public void setDeleted(Boolean deleted) {
+		mDeleted = deleted;
 	}
 
 	public boolean isShareable() {
@@ -378,7 +378,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\tdata: " + getData() + "\n");
 		sb.append("\tplainData: " + getPlainData() + "\n");
 		sb.append("\tmimeType: " + getMimeType() + "\n");
-		sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
+	//sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
 		sb.append("\tshareable: " + isShareable() + "\n");
 		sb.append("\terrorStatus: " + getErrorStatus() + "\n");
 		sb.append("\tresendId: " + getResendId() + "\n");

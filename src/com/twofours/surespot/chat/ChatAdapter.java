@@ -88,8 +88,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	// update the id and sent status of the message once we received
-	private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort)
-			throws SurespotMessageSequenceException {
+	private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) throws SurespotMessageSequenceException {
 
 		// SurespotLog.v(TAG, "addMessage, could not find message");
 
@@ -185,13 +184,12 @@ public class ChatAdapter extends BaseAdapter {
 		SurespotMessage message = mMessages.get(position);
 		return getTypeForMessage(message);
 	}
-	
+
 	public int getTypeForMessage(SurespotMessage message) {
 		String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
-		}
-		else {
+		} else {
 			return TYPE_US;
 		}
 	}
@@ -219,32 +217,30 @@ public class ChatAdapter extends BaseAdapter {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
 		final int type = getItemViewType(position);
 		ChatMessageViewHolder chatMessageViewHolder = null;
-				
-		//check type again based on http://stackoverflow.com/questions/12018997/why-does-getview-return-wrong-convertview-objects-on-separatedlistadapter
-		//and NPE I was getting that would only happen with wrong type
-	
+
+		// check type again based on http://stackoverflow.com/questions/12018997/why-does-getview-return-wrong-convertview-objects-on-separatedlistadapter
+		// and NPE I was getting that would only happen with wrong type
+
 		if (convertView != null) {
 			ChatMessageViewHolder currentViewHolder = (ChatMessageViewHolder) convertView.getTag();
 			if (currentViewHolder.type != type) {
 				SurespotLog.v(TAG, "types do not match, creating new view for the row");
 				convertView = null;
-			}
-			else {
+			} else {
 				chatMessageViewHolder = currentViewHolder;
 			}
-		}			
-		
+		}
 
 		if (convertView == null) {
 			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			chatMessageViewHolder = new ChatMessageViewHolder();
 			chatMessageViewHolder.type = type;
-			
+
 			switch (type) {
 			case TYPE_US:
 				convertView = inflater.inflate(R.layout.message_list_item_us, parent, false);
 				chatMessageViewHolder.vMessageSending = convertView.findViewById(R.id.messageSending);
-				chatMessageViewHolder.vMessageSent = convertView.findViewById(R.id.messageSent);			
+				chatMessageViewHolder.vMessageSent = convertView.findViewById(R.id.messageSent);
 				break;
 			case TYPE_THEM:
 				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
@@ -268,31 +264,27 @@ public class ChatAdapter extends BaseAdapter {
 
 			convertView.setTag(chatMessageViewHolder);
 		}
-	
+
 		final SurespotMessage item = (SurespotMessage) getItem(position);
-	
+
 		if (item.getErrorStatus() > 0) {
 			UIUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
-		}
-		else {
+		} else {
 
 			if (item.getId() == null) {
 
 				chatMessageViewHolder.tvTime.setText(R.string.message_sending);
 				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
-			}
-			else {
+			} else {
 
 				if (item.getPlainData() == null) {
 					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
-				}
-				else {
+				} else {
 
 					if (item.getDateTime() != null) {
-						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(item.getDateTime())
-								+ " " + DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));
-					}
-					else {
+						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(item.getDateTime()) + " "
+								+ DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));
+					} else {
 						chatMessageViewHolder.tvTime.setText("");
 						SurespotLog.v(TAG, "getView, item: %s", item);
 					}
@@ -309,15 +301,13 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.getPlainData() != null) {
 				chatMessageViewHolder.tvText.clearAnimation();
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
-			}
-			else {
+			} else {
 				chatMessageViewHolder.tvText.setText("");
 				mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
 			chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-		}
-		else {
+		} else {
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
@@ -329,8 +319,7 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.isShareable()) {
 				chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 				chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
-			}
-			else {
+			} else {
 				chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
 				chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 			}
@@ -406,6 +395,7 @@ public class ChatAdapter extends BaseAdapter {
 
 			if (message.getIv().equals(iv)) {
 				iterator.remove();
+				message.setDeleted(true);
 				notifyDataSetChanged();
 				return message;
 			}
@@ -422,6 +412,7 @@ public class ChatAdapter extends BaseAdapter {
 			Integer localId = message.getId();
 			if (localId != null && localId.equals(id)) {
 				SurespotLog.v(TAG, "deleting message");
+				message.setDeleted(true);
 				iterator.remove();
 				notifyDataSetChanged();
 				return message;
@@ -472,6 +463,7 @@ public class ChatAdapter extends BaseAdapter {
 			SurespotMessage message = iterator.next();
 
 			if (message.getId() == null || (message.getId() != null && message.getId() <= utaiMessageId)) {
+				message.setDeleted(true);
 				iterator.remove();
 			}
 		}
@@ -482,8 +474,8 @@ public class ChatAdapter extends BaseAdapter {
 			SurespotMessage message = iterator.next();
 
 			// if it's not our message, delete it
-			if (message.getId() != null && message.getId() <= utaiMessageId
-					&& !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+			if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+				message.setDeleted(true);
 				iterator.remove();
 			}
 		}
@@ -495,11 +487,11 @@ public class ChatAdapter extends BaseAdapter {
 		}
 	}
 
-	//the first time we load the listview doesn't know 
-	//where to scroll because the items change size
-	//so we keep track of which messages we're loading
-	//so we know when they're done, and when they are
-	//we can scroll to where we need to be
+	// the first time we load the listview doesn't know
+	// where to scroll because the items change size
+	// so we keep track of which messages we're loading
+	// so we know when they're done, and when they are
+	// we can scroll to where we need to be
 	public void checkLoaded() {
 		if (!mLoaded) {
 			for (SurespotMessage message : mMessages) {
