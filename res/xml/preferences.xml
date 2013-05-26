@@ -47,7 +47,7 @@
         <Preference android:title="@string/pref_title_change_password" >
             <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity" >
             </intent>
-        </Preference>      
+        </Preference>
         <Preference
             android:summary="@string/pref_summary_export_identity"
             android:title="@string/export_identity_label" >
@@ -57,7 +57,9 @@
         <Preference
             android:key="pref_import_identity"
             android:summary="@string/pref_summary_import_identity"
-            android:title="@string/import_identity_label" >            
+            android:title="@string/import_identity_label" >
+            <intent android:action="com.twofours.surespot.backup.ImportIdentityActivity" >
+            </intent>
         </Preference>
         <Preference
             android:summary="@string/pref_summary_delete_identity"

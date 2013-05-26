@@ -116,6 +116,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+				if (IdentityController.getIdentityCount(ImportIdentityActivity.this) >= SurespotConstants.MAX_IDENTITIES) {					
+					Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
+					return;
+				}		
+				
 				@SuppressWarnings("unchecked")
 				final Map<String, String> map = (Map<String, String>) mDriveAdapter.getItem(position);
 
@@ -345,6 +350,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				if (IdentityController.getIdentityCount(ImportIdentityActivity.this) >= SurespotConstants.MAX_IDENTITIES) {					
+					Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
+					return;
+				}
+								
 				@SuppressWarnings("unchecked")
 				Map<String, String> map = (Map<String, String>) adapter.getItem(position);
 

@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -12,8 +11,6 @@ import android.view.View;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
-import com.twofours.surespot.backup.ImportIdentityActivity;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
@@ -78,19 +75,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				}
 			});
 
-			prefMgr.findPreference("pref_import_identity").setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					if (IdentityController.getIdentityCount(SettingsActivity.this) < SurespotConstants.MAX_IDENTITIES) {
-						Intent intent = new Intent(SettingsActivity.this, ImportIdentityActivity.class);
-						startActivity(intent);
-					} else {
-						Utils.makeLongToast(SettingsActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
-					}
-					return true;
-				}
-			});
 		}
 	}
 
