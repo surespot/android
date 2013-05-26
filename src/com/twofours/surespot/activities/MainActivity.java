@@ -133,8 +133,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(newIntent);
 				finish();
-			}
-			else {
+			} else {
 
 				SurespotLog.v(TAG, "I was deleted and there are different users so starting login activity.");
 				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
@@ -142,6 +141,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				startActivity(newIntent);
 				finish();
 			}
+		} else {
+			processIntent(intent);
 		}
 
 	}
@@ -197,6 +198,70 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		};
 
+		if (!processIntent(intent)) {
+			// we're loading so build the ui
+			setContentView(R.layout.activity_main);
+
+			mHomeImageView = (ImageView) findViewById(android.R.id.home);
+			if (mHomeImageView == null) {
+				mHomeImageView = (ImageView) findViewById(R.id.abs__home);
+			}
+
+			setHomeProgress(true);
+
+			SurespotLog.v(TAG, "binding cache service");
+			Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+			bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+			// create the chat controller here if we know we're not going to need to login
+			// so that if we come back from a restart (for example a rotation), the automatically
+			// created fragments have a chat controller instance
+
+			mMainHandler = new Handler(getMainLooper());
+			mNetworkController = new NetworkController(MainActivity.this, m401Handler);
+
+			mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler,
+					new IAsyncCallback<Boolean>() {
+						@Override
+						public void handleResponse(Boolean inProgress) {
+							setHomeProgress(inProgress);
+						}
+					}, new IAsyncCallback<Void>() {
+
+						@Override
+						public void handleResponse(Void result) {
+							handleSendIntent();
+
+						}
+					}, new IAsyncCallback<Friend>() {
+
+						@Override
+						public void handleResponse(Friend result) {
+							handleTabChange(result);
+
+						}
+					});
+
+			mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
+			mActivityLayout.setOnSoftKeyboardListener(this);
+			mActivityLayout.setMainActivity(this);
+
+			final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
+
+			mKeyboardStateHandler = new KeyboardStateHandler();
+			mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
+
+			String autoInviteUser = getAutoInviteUser(intent);
+			if (autoInviteUser != null) {
+				SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);
+			}
+
+			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteUser);
+			setupChatControls();
+		}
+
+	}
+
+	private boolean processIntent(Intent intent) {
 		// if we have any users or we don't need to create a user, figure out if we need to login
 		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
 			// otherwise show the signup activity
@@ -216,9 +281,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			startActivity(newIntent);
 
 			finish();
-		}
-		else {
-			if (needsLogin()) {
+			return true;
+		} else {
+			if (needsLogin(intent)) {
 				SurespotLog.v(TAG, "need a (different) user, logging out");
 
 				if (mCredentialCachingService != null) {
@@ -245,69 +310,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				startActivity(newIntent);
 				finish();
+				return true;
 
-			}
-			else {
-				// we're loading so build the ui
-				setContentView(R.layout.activity_main);
-
-				mHomeImageView = (ImageView) findViewById(android.R.id.home);
-				if (mHomeImageView == null) {
-					mHomeImageView = (ImageView) findViewById(R.id.abs__home);
-				}
-
-				setHomeProgress(true);
-
-				SurespotLog.v(TAG, "binding cache service");
-				Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-				bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-				// create the chat controller here if we know we're not going to need to login
-				// so that if we come back from a restart (for example a rotation), the automatically
-				// created fragments have a chat controller instance
-
-				mMainHandler = new Handler(getMainLooper());
-				mNetworkController = new NetworkController(MainActivity.this, m401Handler);
-
-				mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler,
-						new IAsyncCallback<Boolean>() {
-							@Override
-							public void handleResponse(Boolean inProgress) {
-								setHomeProgress(inProgress);
-							}
-						}, new IAsyncCallback<Void>() {
-
-							@Override
-							public void handleResponse(Void result) {
-								handleSendIntent();
-
-							}
-						}, new IAsyncCallback<Friend>() {
-
-							@Override
-							public void handleResponse(Friend result) {
-								handleTabChange(result);
-
-							}
-						});
-
-				mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
-				mActivityLayout.setOnSoftKeyboardListener(this);
-				mActivityLayout.setMainActivity(this);
-
-				final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
-
-				mKeyboardStateHandler = new KeyboardStateHandler();
-				mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
-
-				String autoInviteUser = getAutoInviteUser(intent);
-				if (autoInviteUser != null) {
-					SurespotLog.v(TAG, "auto inviting user: %s", autoInviteUser);
-				}
-
-				mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteUser);
-				setupChatControls();
 			}
 		}
+
+		return false;
 	}
 
 	private String getAutoInviteUser(Intent intent) {
@@ -335,8 +343,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (segments.size() > 1) {
 					if (dataUri) {
 						intent.setData(null);
-					}
-					else {
+					} else {
 						intent.removeExtra("autoinviteurl");
 					}
 
@@ -376,13 +383,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (mCurrentFriend != null) {
 					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
 						sendMessage();
-					}
-					else {
+					} else {
 						// go to friends
 						mChatController.setCurrentChat(null);
 					}
-				}
-				else {
+				} else {
 					inviteFriend();
 				}
 			}
@@ -464,8 +469,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					mShowEmoji = false;
 					return true;
-				}
-				else {
+				} else {
 					return false;
 				}
 
@@ -490,10 +494,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		});
 	}
 
-	private boolean needsLogin() {
+	private boolean needsLogin(Intent intent) {
 		String user = IdentityController.getLoggedInUser();
 
-		Intent intent = getIntent();
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
@@ -656,8 +659,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						public void handleResponse(String url, String version, String iv) {
 							if (url == null) {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
-							}
-							else {
+							} else {
 								mChatController.setImageUrl(to, url, version, iv);
 
 							}
@@ -688,8 +690,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (hasCamera()) {
 			mMenuItems.add(captureItem);
 			captureItem.setEnabled(FileUtils.isExternalStorageMounted());
-		}
-		else {
+		} else {
 			SurespotLog.v(TAG, "hiding capture image menu option");
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
 		}
@@ -711,8 +712,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean hasCamera() {
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
 			return Camera.getNumberOfCameras() > 0;
-		}
-		else {
+		} else {
 			PackageManager pm = this.getPackageManager();
 			return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
 		}
@@ -843,8 +843,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								}
 							};
 						});
-			}
-			else {
+			} else {
 				mChatController.deleteMessages(currentChat);
 			}
 
@@ -929,15 +928,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.v(TAG, "updateExternalStorageState:  " + state);
 		if (Environment.MEDIA_MOUNTED.equals(state)) {
 			mExternalStorageAvailable = mExternalStorageWriteable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+			mExternalStorageAvailable = true;
+			mExternalStorageWriteable = false;
+		} else {
+			mExternalStorageAvailable = mExternalStorageWriteable = false;
 		}
-		else
-			if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-				mExternalStorageAvailable = true;
-				mExternalStorageWriteable = false;
-			}
-			else {
-				mExternalStorageAvailable = mExternalStorageWriteable = false;
-			}
 		handleExternalStorageState(mExternalStorageAvailable, mExternalStorageWriteable);
 	}
 
@@ -1011,8 +1007,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			a.setDuration(1000);
 			mHomeImageView.clearAnimation();
 			mHomeImageView.startAnimation(a);
-		}
-		else {
+		} else {
 			mHomeImageView.clearAnimation();
 		}
 	}
@@ -1055,8 +1050,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// mEmojiView.setVisibility(View.VISIBLE);
 			hideSoftKeyboard();
 			mKeyboardWasOpen = true;
-		}
-		else {
+		} else {
 
 			int visibility = mEmojiView.getVisibility();
 			if (visibility == View.VISIBLE) {
@@ -1066,15 +1060,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					SurespotLog.v(TAG, "keyboardState,  showing keyboard");
 					showSoftKeyboard(mEtMessage);
 					mKeyboardWasOpen = false;
-				}
-				else {
+				} else {
 					mEmojiView.setVisibility(View.GONE);
 				}
 
 				mShowEmoji = false;
 				//
-			}
-			else {
+			} else {
 				// if we don't have a height, get it
 				// if (mEmojiHeight == 0) {
 				//
@@ -1206,8 +1198,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEmojiView.setVisibility(View.GONE);
 			mShowEmoji = false;
 			handled = true;
-		}
-		else {
+		} else {
 
 			if (mEmojiView.getVisibility() == View.VISIBLE) {
 				mEmojiView.setVisibility(View.GONE);
@@ -1234,8 +1225,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mEmojiView.setVisibility(View.VISIBLE);
-		}
-		else {
+		} else {
 			mEmojiView.setVisibility(View.GONE);
 		}
 
@@ -1260,8 +1250,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					TextKeyListener.clear(mEtInvite.getText());
 					if (mChatController.getFriendAdapter().addFriendInvited(friend)) {
 						Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
-					}
-					else {
+					} else {
 						Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
 					}
 
@@ -1287,8 +1276,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
 							Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 						}
-					}
-					else {
+					} else {
 						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
 						Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 					}
@@ -1300,16 +1288,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private void setButtonText() {
 		if (mCurrentFriend == null) {
 			mSendButton.setText(R.string.invite);
-		}
-		else {
+		} else {
 			if (mCurrentFriend.isDeleted()) {
 				mSendButton.setText(R.string.home);
-			}
-			else {
+			} else {
 				if (mEtMessage.getText().length() > 0) {
 					mSendButton.setText(R.string.send);
-				}
-				else {
+				} else {
 					mSendButton.setText(R.string.home);
 				}
 			}
@@ -1328,16 +1313,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mQRButton.setVisibility(View.VISIBLE);
 			mEtInvite.requestFocus();
 
-		}
-		else {
+		} else {
 			if (friend.isDeleted()) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
 				mEmojiView.setVisibility(View.GONE);
 				hideSoftKeyboard();
 				mShowEmoji = false;
-			}
-			else {
+			} else {
 				mEtMessage.setVisibility(View.VISIBLE);
 				mEmojiButton.setVisibility(View.VISIBLE);
 			}
