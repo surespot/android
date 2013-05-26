@@ -142,7 +142,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				finish();
 			}
 		} else {
-			processIntent(intent);
+			if (!processIntent(intent)) {
+				launch(intent);
+			}
 		}
 
 	}
@@ -519,7 +521,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			CredentialCachingBinder binder = (CredentialCachingBinder) service;
 			mCredentialCachingService = binder.getService();
 			mCacheServiceBound = true;
-			launch();
+			launch(getIntent());
 		}
 
 		@Override
@@ -528,10 +530,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	};
 
-	private void launch() {
-		SurespotLog.v(TAG, "launch, mChatController: " + mChatController);
+	private void launch(Intent intent) {
+		// SurespotLog.v(TAG, "launch, mChatController: " + mChatController);
 
-		Intent intent = getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
