@@ -453,7 +453,7 @@ public class IdentityController {
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 							}
 						}
 
@@ -474,16 +474,16 @@ public class IdentityController {
 
 								default:
 									SurespotLog.w(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 								}
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 							}
 						}
 					});
 
 		} else {
-			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 		}
 
 	}
@@ -520,7 +520,7 @@ public class IdentityController {
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 							}
 						}
 
@@ -541,16 +541,16 @@ public class IdentityController {
 
 								default:
 									SurespotLog.w(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 								}
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 							}
 						}
 					});
 
 		} else {
-			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_import_identity), false));
+			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 		}
 
 	}

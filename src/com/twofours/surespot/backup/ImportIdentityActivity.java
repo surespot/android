@@ -139,7 +139,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 				// before we
 				// start
 				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user, false)) {
-					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_import_identity));
+					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_restore_identity_name, user));
 					if (mMode == MODE_DRIVE) {
 						finish();
 					}
@@ -175,7 +175,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 																@Override
 																public void run() {
 																	mSpd.hide();
-																	Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
+																	Utils.makeLongToast(ImportIdentityActivity.this, response.getResultText());
 
 																	if (response.getResultSuccess()) {
 																		// if
@@ -389,7 +389,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 												@Override
 												public void handleResponse(IdentityOperationResult response) {
 
-													Utils.makeLongToast(ImportIdentityActivity.this, user + " " + response.getResultText());
+													Utils.makeLongToast(ImportIdentityActivity.this, response.getResultText());
 
 													if (response.getResultSuccess()) {
 														// if launched
