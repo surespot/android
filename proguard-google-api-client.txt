@@ -17,13 +17,3 @@
 # Needed by google-api-client-android when linking against an older platform version
 
 -dontwarn com.google.api.client.googleapis.extensions.android.**
-
--dontwarn sun.misc.Unsafe
--dontwarn org.spongycastle.x509.util.LDAPStoreHelper
--dontwarn org.spongycastle.jce.provider.X509LDAPCertStoreSpi
--dontwarn com.google.android.gms.auth.GoogleAuthUtil
--dontwarn com.google.android.gms.common.GooglePlayServicesUtil
--dontwarn com.google.android.gms.internal.aa
--dontwarn com.google.android.gms.maps.GoogleMapOptions
--dontwarn com.google.android.gms.maps.model.CameraPosition
--dontwarn com.google.common.util.concurrent.ServiceManager

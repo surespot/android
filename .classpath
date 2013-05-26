@@ -16,8 +16,8 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SSLWebSocket"/>
-	<classpathentry kind="con" path="com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/drive-v2r75lv1.14.2-beta"/>
 	<classpathentry excluding="com/twofours/surespot/activities/StartupActivity.java|com/twofours/surespot/chat/ChatActivity.java|com/twofours/surespot/friends/FriendActivity.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="con" path="com.google.gdt.eclipse.managedapis.MANAGED_API_CONTAINER/drive-v2r76lv1.14.2-beta"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
