@@ -48,10 +48,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_marginTop="10dp"
-                android:gravity="center" />
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp" />
         </LinearLayout>
 
         <TextView
@@ -103,13 +102,13 @@
             <TextView
                 android:id="@+id/exportDriveAccount"
                 android:layout_width="0dp"
-                android:maxLines="1"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_weight="1"
-                android:gravity="center"
                 android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
                 android:text="@string/no_google_account_selected"
                 android:textSize="16sp" />
 

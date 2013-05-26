@@ -105,7 +105,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				chooseAccount();
+				chooseAccount(true);
 			}
 		});
 
@@ -260,7 +260,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 											}.execute();
 										}
 									} else {
-										chooseAccount();
+										chooseAccount(false);
 									}
 								}
 
@@ -428,7 +428,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 
 		if (mDriveHelper.getDriveAccount() == null) {
-			chooseAccount();
+			chooseAccount(false);
 			return;
 		}
 
@@ -784,13 +784,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 	}
 
-	private void chooseAccount() {
+	private void chooseAccount(boolean ask) {
 		String descriptionText = null;
 		if (mMode == MODE_DRIVE) {
 			descriptionText = getString(R.string.pick_same_drive_account);
 		}
 
-		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, mMode == MODE_DRIVE, descriptionText, null, null, null);
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask || mMode == MODE_DRIVE, descriptionText, null, null, null);
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
 	}
 

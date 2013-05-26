@@ -136,7 +136,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 					}
 				}
 				else {
-					chooseAccount();
+					chooseAccount(false);
 				}
 			}
 		});
@@ -151,7 +151,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 
-				chooseAccount();
+				chooseAccount(true);
 			}
 		});
 	}
@@ -174,8 +174,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 	// //////// DRIVE
 
-	private void chooseAccount() {
-		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, true, null, null, null, null);
+	private void chooseAccount(boolean ask) {
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask, null, null, null, null);
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
 	}
 
