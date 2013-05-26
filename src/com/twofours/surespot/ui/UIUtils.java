@@ -58,7 +58,7 @@ public class UIUtils {
 	public static void passwordDialog(Context context, String title, String message, final IAsyncCallback<String> callback) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(context);
 		alert.setTitle(title);
-		alert.setMessage(message);		
+		alert.setMessage(message);
 		final EditText editText = new EditText(context);
 		editText.setImeActionLabel(context.getString(R.string.done), EditorInfo.IME_ACTION_DONE);
 		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -85,13 +85,13 @@ public class UIUtils {
 		});
 
 		AlertDialog ad = alert.create();
-		ad.setCanceledOnTouchOutside(false);		
+		ad.setCanceledOnTouchOutside(false);
 		ad.setView(editText, 0, 0, 0, 0);
 		ad.show();
 	}
 
-	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText,
-			String negativeButtonText, final IAsyncCallback<Boolean> callback) {
+	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText, String negativeButtonText,
+			final IAsyncCallback<Boolean> callback) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		builder.setMessage(message).setTitle(title).setPositiveButton(positiveButtonText, new OnClickListener() {
 
@@ -132,8 +132,7 @@ public class UIUtils {
 		case 500:
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 				statusText = context.getString(R.string.error_message_generic);
-			}
-			else {
+			} else {
 				statusText = context.getString(R.string.error_message_resend);
 			}
 
@@ -152,8 +151,7 @@ public class UIUtils {
 		// more messages than minimum meaning we've loaded some
 		if (currentPos < SurespotConstants.SAVE_MESSAGE_BUFFER) {
 			return currentPos;
-		}
-		else {
+		} else {
 			return SurespotConstants.SAVE_MESSAGE_BUFFER;
 		}
 		// saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
@@ -193,8 +191,7 @@ public class UIUtils {
 		Display d = a.getWindowManager().getDefaultDisplay();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			d.getSize(size);
-		}
-		else {
+		} else {
 			size.x = d.getWidth();
 			size.y = d.getHeight();
 		}
@@ -208,13 +205,13 @@ public class UIUtils {
 	}
 
 	public static void setHtml(Context context, TextView tv, String html) {
-		tv.setText(Html.fromHtml(html));		
+		tv.setText(Html.fromHtml(html));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 	}
 
 	public static void setHtml(Context context, TextView tv, Spanned html) {
-		tv.setText(Html.toHtml(html));	
+		tv.setText(Html.toHtml(html));
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 		tv.setLinkTextColor(context.getResources().getColor(R.color.surespotBlue));
 	}
@@ -246,8 +243,8 @@ public class UIUtils {
 
 	}
 
-	public static void sendInvitation(final Activity context, NetworkController networkController, final int type,
-			final List<String> contacts, final boolean finish) {
+	public static void sendInvitation(final Activity context, NetworkController networkController, final int type, final List<String> contacts,
+			final boolean finish) {
 		final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), type, true);
 		SurespotLog.v(TAG, "auto invite url length %d:, url: %s ", longUrl.length(), longUrl);
 
@@ -259,8 +256,7 @@ public class UIUtils {
 				String sUrl = response.optString("id", null);
 				if (!TextUtils.isEmpty(sUrl)) {
 					launchInviteApp(context, progressDialog, type, sUrl, contacts, finish);
-				}
-				else {
+				} else {
 					launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
 				}
 			};
@@ -269,15 +265,20 @@ public class UIUtils {
 				SurespotLog.v(TAG, e, "getShortUrl, error: " + errorResponse.toString());
 				launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
 			};
+
+			@Override
+			public void onFailure(Throwable error, String content) {
+				SurespotLog.v(TAG, error, "getShortUrl, content: " + content);
+				launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
+			}
 		});
 
 	}
 
-	private static void launchInviteApp(Activity context, SingleProgressDialog progressDialog, int type, String shortUrl,
-			List<String> contacts, boolean finish) {
+	private static void launchInviteApp(Activity context, SingleProgressDialog progressDialog, int type, String url, List<String> contacts, boolean finish) {
 		try {
 			Intent intent = null;
-			String message = context.getString(R.string.external_invite_message) + shortUrl;
+			String message = context.getString(R.string.external_invite_message, url);
 			switch (type) {
 
 			case ExternalInviteActivity.SHARE_EMAIL:
@@ -324,8 +325,7 @@ public class UIUtils {
 			}
 			progressDialog.hide();
 
-		}
-		catch (ActivityNotFoundException e) {
+		} catch (ActivityNotFoundException e) {
 			progressDialog.hide();
 			Utils.makeToast(context, context.getString(R.string.invite_no_application_found));
 		}
@@ -367,13 +367,11 @@ public class UIUtils {
 		tvQrInviteText.setText(TextUtils.concat(activity.getString(R.string.qr_pre_username_help), " ", s1, " ",
 				activity.getString(R.string.qr_post_username_help)));
 
-
 		Bitmap bitmap;
 		try {
 			bitmap = QRCodeEncoder.encodeAsBitmap(inviteUrl, 300);
 			ivQr.setImageBitmap(bitmap);
-		}
-		catch (WriterException e) {
+		} catch (WriterException e) {
 			SurespotLog.w(TAG, e, "generate invite QR");
 			return;
 
@@ -384,7 +382,7 @@ public class UIUtils {
 		dialog.setView(dialogLayout, 0, 0, 0, 0);
 		dialog.show();
 	}
-	
+
 	public static void showHelpDialog(Activity activity, int titleStringId, View view) {
 		// show help dialog
 		AlertDialog.Builder b = new Builder(activity);
@@ -396,7 +394,7 @@ public class UIUtils {
 			}
 		});
 
-		AlertDialog ad = b.create();		
+		AlertDialog ad = b.create();
 		ad.setView(view, 0, 0, 0, 0);
 		ad.show();
 
