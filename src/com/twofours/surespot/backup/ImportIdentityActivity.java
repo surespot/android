@@ -116,11 +116,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-				if (IdentityController.getIdentityCount(ImportIdentityActivity.this) >= SurespotConstants.MAX_IDENTITIES) {					
+				if (IdentityController.getIdentityCount(ImportIdentityActivity.this) >= SurespotConstants.MAX_IDENTITIES) {
 					Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
 					return;
-				}		
-				
+				}
+
 				@SuppressWarnings("unchecked")
 				final Map<String, String> map = (Map<String, String>) mDriveAdapter.getItem(position);
 
@@ -350,11 +350,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				if (IdentityController.getIdentityCount(ImportIdentityActivity.this) >= SurespotConstants.MAX_IDENTITIES) {					
+				if (IdentityController.getIdentityCount(ImportIdentityActivity.this) >= SurespotConstants.MAX_IDENTITIES) {
 					Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
 					return;
 				}
-								
+
 				@SuppressWarnings("unchecked")
 				Map<String, String> map = (Map<String, String>) adapter.getItem(position);
 
@@ -768,28 +768,39 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		case SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH:
 			if (resultCode == Activity.RESULT_OK) {
+				SurespotLog.v(TAG, "onActivityResult OK");
 				if (mMode == MODE_NORMAL) {
 					mSpdLoadIdentities.show();
 				}
-				new AsyncTask<Void, Void, Void>() {
+				new AsyncTask<Void, Void, Boolean>() {
 
 					@Override
-					protected Void doInBackground(Void... params) {
+					protected Boolean doInBackground(Void... params) {
 						Drive drive = mDriveHelper.getDriveService();
 						if (drive != null) {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(false);
+
 							} else {
 								restoreExternal(false);
 							}
+							return true;
 						}
-						return null;
+
+						return false;
 
 					}
+
+					protected void onPostExecute(Boolean result) {
+						if (!result) {
+							mSpdLoadIdentities.hide();
+						}
+					};
 				}.execute();
 
 			} else {
-
+				SurespotLog.v(TAG, "onActivityResult not OK");
+				mSpdLoadIdentities.hide();
 			}
 		}
 	}
@@ -800,7 +811,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			descriptionText = getString(R.string.pick_same_drive_account);
 		}
 
-		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask || mMode == MODE_DRIVE, descriptionText, null, null, null);
+		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask || mMode == MODE_DRIVE, descriptionText, null, null,
+				null);
 		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
 	}
 
