@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
-    android:versionCode="21"
-    android:versionName="e5d0c6d" >
+    android:versionCode="22"
+    android:versionName="46903df" >
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="8" />
+        android:targetSdkVersion="17" />
 
     <permission
         android:name="com.twofours.surespot.permission.C2D_MESSAGE"
