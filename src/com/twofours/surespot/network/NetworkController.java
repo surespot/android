@@ -112,8 +112,7 @@ public class NetworkController {
 					return null;
 				}
 			};
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			// TODO tell user shit is fucked
 			SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 			if (pm.getBoolean("pref_crash_reporting", false)) {
@@ -152,7 +151,6 @@ public class NetworkController {
 			}
 		};
 
-	
 		if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
 
 			mClient.setCookieStore(mCookieStore);
@@ -167,8 +165,8 @@ public class NetworkController {
 		}
 	}
 
-	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature,
-			String referrers, final CookieResponseHandler responseHandler) {
+	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers,
+			final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -201,8 +199,7 @@ public class NetworkController {
 				if (cookie == null) {
 					SurespotLog.w(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
-				}
-				else {
+				} else {
 					setUnauthorized(false);
 					// update shared prefs
 					if (gcmUpdated) {
@@ -233,8 +230,7 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
-	public void getDeleteToken(final String username, String password, String authSignature,
-			AsyncHttpResponseHandler asyncHttpResponseHandler) {
+	public void getDeleteToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -242,8 +238,7 @@ public class NetworkController {
 		post("/deletetoken", new RequestParams(params), asyncHttpResponseHandler);
 	}
 
-	public void getPasswordToken(final String username, String password, String authSignature,
-			AsyncHttpResponseHandler asyncHttpResponseHandler) {
+	public void getPasswordToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -259,12 +254,10 @@ public class NetworkController {
 			StringEntity entity = new StringEntity(params.toString());
 			entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			mClient.post(null, "https://www.googleapis.com/urlshortener/v1/url", entity, "application/json", responseHandler);
-		}
-		catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			SurespotLog.v(TAG, "getShortUrl", e);
 			responseHandler.onFailure(e, new JSONObject());
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			SurespotLog.v(TAG, "getShortUrl", e);
 			responseHandler.onFailure(e, new JSONObject());
 		}
@@ -275,8 +268,8 @@ public class NetworkController {
 		get("/autoinviteurl/" + medium, null, asyncHttpResponseHandler);
 	}
 
-	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature,
-			String tokenSignature, String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
+			String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -306,7 +299,7 @@ public class NetworkController {
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
-		
+
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
@@ -334,8 +327,7 @@ public class NetworkController {
 				if (cookie == null) {
 					SurespotLog.w(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
-				}
-				else {
+				} else {
 					setUnauthorized(false);
 					// update shared prefs
 					if (gcmUpdated) {
@@ -362,7 +354,7 @@ public class NetworkController {
 
 	public void getFriends(AsyncHttpResponseHandler responseHandler) {
 		get("/friends", null, responseHandler);
-	}	
+	}
 
 	public void getMessageData(String user, Integer messageId, Integer controlId, AsyncHttpResponseHandler responseHandler) {
 		int mId = messageId;
@@ -427,8 +419,7 @@ public class NetworkController {
 
 			params.put("gcmId", gcmIdReceived);
 			gcmUpdatedTemp = true;
-		}
-		else {
+		} else {
 			SurespotLog.v(TAG, "GCM does not need updating on server.");
 			return;
 		}
@@ -483,8 +474,7 @@ public class NetworkController {
 		try {
 			// this will puke on phone with no google account
 			GCMRegistrar.setRegisteredOnServer(context, false);
-		}
-		finally {
+		} finally {
 		}
 	}
 
@@ -509,8 +499,7 @@ public class NetworkController {
 				try {
 					response = mCachingHttpClient.execute(httppost);
 
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					SurespotLog.w(TAG, "createPostFile", e);
 				}
 				return response;
@@ -521,8 +510,7 @@ public class NetworkController {
 				if (response != null && response.getStatusLine().getStatusCode() == 200) {
 
 					callback.handleResponse(true);
-				}
-				else {
+				} else {
 					callback.handleResponse(false);
 				}
 
@@ -530,12 +518,12 @@ public class NetworkController {
 		}.execute();
 	}
 
-	public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv,
-			final InputStream fileInputStream, final IAsyncCallback<String> callback) {
-		new AsyncTask<Void, Void, HttpResponse>() {
+	public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv, final InputStream fileInputStream,
+			final IAsyncCallback<String> callback) {
+		new AsyncTask<Void, Void, String>() {
 
 			@Override
-			protected HttpResponse doInBackground(Void... params) {
+			protected String doInBackground(Void... params) {
 
 				SurespotLog.v(TAG, "posting file stream");
 
@@ -550,34 +538,27 @@ public class NetworkController {
 
 				try {
 					response = mCachingHttpClient.execute(httppost);
+					if (response != null && response.getStatusLine().getStatusCode() == 200) {
+						String url = Utils.inputStreamToString(response.getEntity().getContent());
+						return url;
+					}
+				} catch (IllegalStateException e) {
+					SurespotLog.w(TAG, e, "postFriendImageStream");
+
+				} catch (IOException e) {
+					SurespotLog.w(TAG, e, "postFriendImageStream");
 
 				}
+
 				catch (Exception e) {
 					SurespotLog.w(TAG, "createPostFile", e);
 				}
-				return response;
+				return null;
 
 			}
 
-			protected void onPostExecute(HttpResponse response) {
-				if (response != null && response.getStatusLine().getStatusCode() == 200) {
-					try {
-						String url = Utils.inputStreamToString(response.getEntity().getContent());
-						callback.handleResponse(url);
-					}
-					catch (IllegalStateException e) {
-						SurespotLog.w(TAG, e, "postFriendImageStream");
-						callback.handleResponse(null);
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "postFriendImageStream");
-						callback.handleResponse(null);
-					}
-
-				}
-				else {
-					callback.handleResponse(null);
-				}
+			protected void onPostExecute(String url) {
+				callback.handleResponse(url);
 
 			};
 		}.execute();
