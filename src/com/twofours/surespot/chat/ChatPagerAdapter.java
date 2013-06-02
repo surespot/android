@@ -1,12 +1,12 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
+import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.friends.FriendFragment;
@@ -110,8 +110,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 
 	}
 
-	private void sort() {
-		Collections.sort(mChatNames);
+	private synchronized void sort() {
+		
+		mChatNames  = new ArrayList<String>(Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(mChatNames));
 	}
 
 	public boolean containsChat(String username) {

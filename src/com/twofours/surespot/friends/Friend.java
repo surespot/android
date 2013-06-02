@@ -3,8 +3,9 @@ package com.twofours.surespot.friends;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.ui.AlphanumComparator;
 
 public class Friend implements Comparable<Friend> {
 	public static final int INVITER = 32;
@@ -25,8 +26,7 @@ public class Friend implements Comparable<Friend> {
 	private int mLastReceivedUserControlId;
 	private String mImageUrl;
 	private String mImageVersion;
-	private String mImageIv;
-	private static AlphanumComparator mComparator = new AlphanumComparator();
+	private String mImageIv;	
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
 	
@@ -266,7 +266,7 @@ public class Friend implements Comparable<Friend> {
 		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
 
 		if ((theirFlags == myFlags) || (theirFlags < CHAT_ACTIVE && myFlags < CHAT_ACTIVE)) {
-			return mComparator.compare(this.getName().toLowerCase(), another.getName().toLowerCase());
+			return ComparisonChain.start().compare(this.getName().toLowerCase(), another.getName().toLowerCase(), Ordering.natural()).result();										
 		}
 		else {
 			// sort by flag value
