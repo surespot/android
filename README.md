@@ -24,8 +24,7 @@ Localization
 If you would like to contribute/improve a translation:
 
  1. Visit our [Transifex project page](https://www.transifex.com/projects/p/surespot) and make an account if you don't have one already.
- 2. Go to the resources tab [AppStore.strings](https://www.transifex.net/projects/p/surespot/resource/appstorestrings/) &
- [Localizable.strings](https://www.transifex.net/projects/p/surespot/resource/strings/) to add a new language or improve an existing translation.
+ 2. Go to the resources tab [strings.xml](https://www.transifex.com/projects/p/surespot/resources/) to add a new language or improve an existing translation.
 
 
 
@@ -77,7 +76,7 @@ Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) This pro
    This product includes software (package org.acra.jraf.android.util.activitylifecyclecallbackscompat) developed at JRAF, Copyright (C) 2013 Benoit 'BoD' Lubek (BoD@JRAF.org), ASL 2.0.
 * [google guava](https://code.google.com/p/guava-libraries/) - Apache License 2.0
 * [httpclientandroidlib](https://code.google.com/p/httpclientandroidlib/) - Apache License 2.0
-* [alphanum algorithm](http://www.davekoelle.com/alphanum.html) - (c) 1997-2010 David Koelle LGPL License (https.//www.gnu.org/licenses/lpgl.html)
+* [ZXING](https://code.google.com/p/zxing) - Apache License 2.0
 * [PhantomOpenEmoji](https://github.com/Genshin/PhantomOpenEmoji) - Emoji by Genshin Souzou K.K. Phantom Creation Inc
 
 
