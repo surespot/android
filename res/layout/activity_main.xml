@@ -89,7 +89,7 @@
         </EditText>
     </FrameLayout>
 
-    <Button
+    <com.twofours.surespot.ui.TextScaleButton
         android:id="@+id/bSend"
         android:layout_width="70dp"
         android:layout_height="70dp"
@@ -98,6 +98,8 @@
         android:layout_alignWithParentIfMissing="true"
         android:layout_marginBottom="-10dp"
         android:layout_marginRight="-10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="20dp"        
         android:background="@drawable/send_button"
         android:text="@string/home"
         android:textColor="@android:color/black" />

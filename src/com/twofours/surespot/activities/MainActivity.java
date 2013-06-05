@@ -41,7 +41,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -76,6 +75,7 @@ import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
+import com.twofours.surespot.ui.TextScaleButton;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -102,7 +102,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private MainActivityLayout mActivityLayout;
 	private EditText mEtMessage;
 	private EditText mEtInvite;
-	private Button mSendButton;
+	private TextScaleButton mSendButton;
 	private GridView mEmojiView;
 	private boolean mKeyboardShowing;
 	private int mEmojiHeight;
@@ -377,7 +377,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void setupChatControls() {
-		mSendButton = (Button) findViewById(R.id.bSend);
+		mSendButton = (TextScaleButton) findViewById(R.id.bSend);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -1288,15 +1288,19 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setButtonText() {
 		if (mCurrentFriend == null) {
-			mSendButton.setText(R.string.invite);
+			mSendButton.setText(getString(R.string.invite));
+			mSendButton.invalidate();
 		} else {
 			if (mCurrentFriend.isDeleted()) {
-				mSendButton.setText(R.string.home);
+				mSendButton.setText(getString(R.string.home));
+				mSendButton.invalidate();
 			} else {
 				if (mEtMessage.getText().length() > 0) {
-					mSendButton.setText(R.string.send);
+					mSendButton.setText(getString(R.string.send));
+					mSendButton.invalidate();
 				} else {
-					mSendButton.setText(R.string.home);
+					mSendButton.setText(getString(R.string.home));
+					mSendButton.invalidate();
 				}
 			}
 
