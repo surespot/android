@@ -157,7 +157,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		} else {
 			if (type.equals("invite")) {
 				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
-						context.getString(R.string.notification_invite, to, from), from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+						context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			} else {
 				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
 						context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);

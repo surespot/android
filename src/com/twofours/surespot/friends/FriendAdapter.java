@@ -26,6 +26,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 
@@ -340,7 +341,7 @@ public class FriendAdapter extends BaseAdapter {
 							}
 						}
 					}
-					mNotificationManager.cancel(friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+					mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 					Collections.sort(mFriends);
 					notifyDataSetChanged();
 				}

@@ -1618,7 +1618,7 @@ public class ChatController {
 		} else {
 			mCurrentChat = null;
 			mViewPager.setCurrentItem(0, true);
-			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			mNotificationManager.cancel(loggedInUser + ":" + username, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 
 		}
