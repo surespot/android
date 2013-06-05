@@ -262,6 +262,10 @@ public class Friend implements Comparable<Friend> {
 		if (another.isMessageActivity()) {
 			theirFlags |= MESSAGE_ACTIVITY;
 		}
+		
+		//only compare flags for new message, invitation, or open tab
+		theirFlags = theirFlags & (CHAT_ACTIVE | MESSAGE_ACTIVITY | INVITER);
+		myFlags = myFlags & (CHAT_ACTIVE | MESSAGE_ACTIVITY | INVITER);
 
 		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
 

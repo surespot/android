@@ -176,7 +176,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				SurespotLog.v(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 					MainActivity.this.getNetworkController().setUnauthorized(true);
-					IdentityController.logout();
+					//IdentityController.logout();
 
 					SurespotLog.v(TAG, "Got 401, launching login intent.");
 					Intent intent = new Intent(MainActivity.this, LoginActivity.class);
