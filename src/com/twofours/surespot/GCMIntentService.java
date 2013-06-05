@@ -153,7 +153,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 			String spot = ChatUtils.getSpot(from, to);
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
-					context.getString(R.string.notification_message, to, from), spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+					context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 		} else {
 			if (type.equals("invite")) {
 				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),

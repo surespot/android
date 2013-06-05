@@ -1603,18 +1603,13 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 
 			// cancel associated notifications
-			mNotificationManager.cancel(ChatUtils.getSpot(loggedInUser, username), SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username), SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
 			if (wantedPosition != mViewPager.getCurrentItem()) {
 				mViewPager.setCurrentItem(wantedPosition, true);
 			}
-
-			// ChatFragment chatFragment = getChatFragment(username);
-			// if (chatFragment != null) {
-			// chatFragment.requestFocus();
-			// }
-			//
+			
 			if (mMode == MODE_SELECT) {
 				mSendIntentCallback.handleResponse(null);
 				setMode(MODE_NORMAL);
@@ -1627,7 +1622,7 @@ public class ChatController {
 			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 
 		}
-		// disable menu items
+		// set menu item enable state
 		enableMenuItems(friend);
 
 	}
