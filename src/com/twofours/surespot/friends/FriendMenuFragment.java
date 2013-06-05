@@ -2,6 +2,9 @@ package com.twofours.surespot.friends;
 
 import java.util.ArrayList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -10,6 +13,7 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 
 public class FriendMenuFragment extends SherlockDialogFragment {
@@ -27,9 +31,26 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
-
+		
+		if (savedInstanceState != null) {
+			try {
+				String sFriend = savedInstanceState.getString("friend");
+				if (sFriend != null) {
+					mFriend = Friend.toFriend(new JSONObject(sFriend));
+				}
+			} catch (JSONException e) {
+				SurespotLog.e(TAG, e, "could not create friend from saved instance state");
+				return null;
+			} 
+		}
+		
+		if (mFriend == null) {
+			SurespotLog.w(TAG, "there is no friend assigned");
+			return null;
+		}
+		
 		mItems = new ArrayList<String>(5);
-
+		
 		if (mFriend.isFriend()) {
 			if (mFriend.isChatActive()) {
 				mItems.add(getString(R.string.menu_close_tab));
@@ -65,5 +86,13 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle arg0) {	
+		super.onSaveInstanceState(arg0);		
+		arg0.putString("friend", mFriend.toJSONObject().toString());
+	}
+	
+	
 
 }
