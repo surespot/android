@@ -1028,7 +1028,6 @@ public class ChatController {
 						mFriendAdapter.notifyDataSetChanged();
 
 					}
-					
 
 					if (userActivity) {
 						friend.setLastReceivedUserControlId(message.getId());
@@ -1065,10 +1064,12 @@ public class ChatController {
 					}
 				} else {
 					if (message.getAction().equals("deleteAll")) {
-						if (controlFromMe) {
-							chatAdapter.deleteAllMessages(Integer.parseInt(message.getMoreData()));
-						} else {
-							chatAdapter.deleteTheirMessages(Integer.parseInt(message.getMoreData()));
+						if (message.getMoreData() != null) {
+							if (controlFromMe) {
+								chatAdapter.deleteAllMessages(Integer.parseInt(message.getMoreData()));
+							} else {
+								chatAdapter.deleteTheirMessages(Integer.parseInt(message.getMoreData()));
+							}
 						}
 					} else {
 						if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
@@ -1603,13 +1604,14 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 
 			// cancel associated notifications
-			mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username), SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
 			if (wantedPosition != mViewPager.getCurrentItem()) {
 				mViewPager.setCurrentItem(wantedPosition, true);
 			}
-			
+
 			if (mMode == MODE_SELECT) {
 				mSendIntentCallback.handleResponse(null);
 				setMode(MODE_NORMAL);
