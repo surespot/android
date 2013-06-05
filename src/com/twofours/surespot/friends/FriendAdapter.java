@@ -287,6 +287,8 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.statusLayout.setEnabled(false);
 			friendViewHolder.vgInvite.setVisibility(View.VISIBLE);
 			friendViewHolder.vgActivity.setVisibility(View.GONE);
+			friendViewHolder.friendActive.setVisibility(View.GONE);
+			friendViewHolder.friendInactive.setVisibility(View.VISIBLE);
 			convertView.setBackgroundColor(Color.WHITE);
 		}
 		else {
