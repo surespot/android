@@ -73,7 +73,7 @@
   <string name="title_activity_billing">BillingActivity</string>
   <string name="crash_toast_text">Zitat: \'Houston wir haben ein Problem\'</string>
   <string name="crash_dialog_title">surespot ist abgestürzt</string>
-  <string name="crash_dialog_text">Wir bedauern, dass ein unerwarteter Fehler aufgetreten ist. ⏎\n⏎\nBitte helfen Sie uns das Problem zu beheben, indem Sie mit \'OK\' einen Fehlerbericht an uns senden. Dieser enthält keine persönlich identifizierenden Informationen.</string>
+  <string name="crash_dialog_text">Wir bedauern, dass ein unerwarteter Fehler aufgetreten ist. \n\nBitte helfen Sie uns das Problem zu beheben, indem Sie mit \'OK\' einen Fehlerbericht an uns senden. Dieser enthält keine persönlich identifizierenden Informationen.</string>
   <string name="crash_dialog_comment_prompt">Falls Sie möchten, können Sie uns einen Kommentar über das Problem mitteilen:</string>
   <string name="crash_dialog_ok_toast">Danke!</string>
   <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie %s, um die Android App zu installieren und mich als Kontakt aufzunehmen.</string>
@@ -113,7 +113,7 @@
   <string name="login_progress">Anmeldevorgang läuft</string>
   <string name="login_check_password">Anmeldung nicht möglich, bitte überprüfen Sie Ihr Passwort.</string>
   <string name="login_try_again_later">Fehler bei der Anmeldung, bitte versuchen Sie es später.</string>
-  <string name="login_max_identities_reached">Entschuldigung, Sie haben bereits die maximale Anzahl an Profilen erstellt (%d).⏎\n⏎\nProfile können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
+  <string name="login_max_identities_reached">Entschuldigung, Sie haben bereits die maximale Anzahl an Profilen erstellt (%d).\n\nProfile können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
   <string name="local_cache_cleared">Lokaler Cache gelöscht</string>
   <string name="qr_pre_username_help">Um jemanden Einzuladen scannen Sie diesen QR Code</string>
   <string name="qr_post_username_help">Um die Kontaktanfrage zu erhalten muss die App surespot aus Google Play installiert werden</string>

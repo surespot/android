@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dip"
-            android:imeActionLabel="login"
+            android:imeActionLabel="@string/login"
             android:imeOptions="actionDone"
             android:inputType="textPassword|textNoSuggestions"
             android:singleLine="true" />
