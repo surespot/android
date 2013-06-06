@@ -159,7 +159,7 @@
   <string name="billing_bitcoin_copied_to_clipboard">%s in die Zwischenablage kopiert</string>
   <string name="billing_bitcoin_email_subject">Bitcoin Adresse zum unterstützen von surespot</string>
   <string name="billing_bitcoin_email_body_address">Vielen Dank für die Unterstützung von surespot! Anbei die Bitcoin Adresse: %s</string>
-  <string name="billing_bitcoin_email_body_qr">Der QR-Code kann hier eingesehen werden: % s</string>
+  <string name="billing_bitcoin_email_body_qr">Der QR-Code kann hier eingesehen werden: %s</string>
   <string name="could_not_open_bitcoin_wallet">Die Bitcoin Brieftasche konnte nicht geöffnet werden</string>
   <string name="message_sending">versenden...</string>
   <string name="message_loading_and_decrypting">laden und entschlüsseln...</string>
