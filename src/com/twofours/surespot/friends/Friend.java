@@ -155,7 +155,9 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public void setDeleted() {
-		mFlags = DELETED;
+		//preserve active flag #257
+		int active = mFlags & CHAT_ACTIVE;
+		mFlags = DELETED | active;
 		SurespotLog.v(TAG, "setDeleted, friend: %s", this);
 	}
 
