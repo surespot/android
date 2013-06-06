@@ -3,6 +3,7 @@
     android:id="@+id/friendItemLayout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@android:color/background_light"
     android:orientation="vertical" >
 
     <LinearLayout

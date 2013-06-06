@@ -7,7 +7,6 @@ import java.util.List;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -289,7 +288,6 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.vgActivity.setVisibility(View.GONE);
 			friendViewHolder.friendActive.setVisibility(View.GONE);
 			friendViewHolder.friendInactive.setVisibility(View.VISIBLE);
-			convertView.setBackgroundColor(Color.WHITE);
 		}
 		else {
 			friendViewHolder.statusLayout.setEnabled(true);
