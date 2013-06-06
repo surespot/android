@@ -27,7 +27,9 @@ If you would like to contribute/improve a translation:
  2. Go to the resources tab [strings.xml](https://www.transifex.com/projects/p/surespot/resources/) to add a new language or improve an existing translation.
 
 
+THANK YOU TO OUR CONTRIBUTORS:
 
+Jean Schmitt for the German translation
 
 License
 =========
