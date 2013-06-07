@@ -10,10 +10,14 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.widget.ImageButton;
 
+import com.twofours.surespot.common.SurespotLog;
+
 public class TextScaleButton extends ImageButton {
+	private static final String TAG = "TextScaleButton";
 	String mText = "";
 	Paint mTextPaint;
 
+	private static final int MAX_TEXT_SIZE=25;
 	int mViewWidth;
 	int mViewHeight;
 	int mTextBaseline;
@@ -74,7 +78,7 @@ public class TextScaleButton extends ImageButton {
 		Rect bounds = new Rect();
 		// ask the paint for the bounding rect if it were to draw this
 		
-		while (text_width > text_check_w) {
+		while (text_width > text_check_w && incr_text_size < MAX_TEXT_SIZE) {
 			mTextPaint.setTextSize(incr_text_size);// have this the same as your text size
 			mTextPaint.getTextBounds(mText, 0, mText.length(), bounds);
 
@@ -100,7 +104,9 @@ public class TextScaleButton extends ImageButton {
 		mViewWidth = w;
 		mViewHeight = h;
 
-		mTextPaint.setTextSize(getTextSize());
+		int textSize = getTextSize();
+		SurespotLog.v(TAG, "setting text size to: %d", textSize);
+		mTextPaint.setTextSize(textSize);
 
 	}
 

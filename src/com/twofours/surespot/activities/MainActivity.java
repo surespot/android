@@ -75,8 +75,8 @@ import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
-import com.twofours.surespot.ui.TextScaleButton;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
+import com.twofours.surespot.ui.TextScaleButton;
 import com.twofours.surespot.ui.UIUtils;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -590,6 +590,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.setCurrentChat(name);
 			}
 		}
+		
+		setButtonText();
 	}
 
 	@Override
