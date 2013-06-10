@@ -113,6 +113,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mShowEmoji = false;
 	boolean mKeyboardWasOpen = false;
 	private int mOrientation;
+	private boolean mKeyboardShowingOnChatTab;
+	private boolean mEmojiShowingOnChatTab;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -176,7 +178,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				SurespotLog.v(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 					MainActivity.this.getNetworkController().setUnauthorized(true);
-					//IdentityController.logout();
+					// IdentityController.logout();
 
 					SurespotLog.v(TAG, "Got 401, launching login intent.");
 					Intent intent = new Intent(MainActivity.this, LoginActivity.class);
@@ -590,7 +592,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatController.setCurrentChat(name);
 			}
 		}
-		
+
 		setButtonText();
 	}
 
@@ -1311,18 +1313,28 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void handleTabChange(Friend friend) {
-		// SurespotLog.v(TAG, "cursor position %d", mEtMessage.getSelectionStart());
+
+		SurespotLog.v(TAG, "handleTabChange, mCurrentFriend: %s, friend: %s, keyboard Showing: %b", mCurrentFriend, friend, mKeyboardShowing);
 		if (friend == null) {
 			mEmojiButton.setVisibility(View.GONE);
 			mEtMessage.setVisibility(View.GONE);
 			mEtInvite.setVisibility(View.VISIBLE);
 			mEmojiView.setVisibility(View.GONE);
-			mShowEmoji = false;
+
 			mQRButton.setVisibility(View.VISIBLE);
 			mEtInvite.requestFocus();
+
+			if (mCurrentFriend != null) {
+				SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
+				mEmojiShowingOnChatTab = mShowEmoji;
+				mKeyboardShowingOnChatTab = mKeyboardShowing;
+			}
+			mShowEmoji = false;
 			hideSoftKeyboard();
 
 		} else {
+			//
+
 			if (friend.isDeleted()) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
@@ -1332,6 +1344,30 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			} else {
 				mEtMessage.setVisibility(View.VISIBLE);
 				mEmojiButton.setVisibility(View.VISIBLE);
+
+				// if we moved back to chat tab from home hab show the keyboard if it was showing
+				if (mCurrentFriend == null) {
+					SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
+
+					if (mEmojiShowingOnChatTab) {
+						showEmoji();
+					}
+
+					else {
+						if (mKeyboardShowingOnChatTab) {
+							SurespotLog.v(TAG, "handleTabChange, showing soft keyboard");
+							Runnable runnable = new Runnable() {
+
+								@Override
+								public void run() {
+									showSoftKeyboard(mEtMessage);
+								}
+							};
+
+							mEtMessage.post(runnable);
+						}
+					}
+				}
 			}
 
 			mEtInvite.setVisibility(View.GONE);
