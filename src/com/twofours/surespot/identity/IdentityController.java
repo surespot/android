@@ -364,11 +364,12 @@ public class IdentityController {
 			byte[] idBytes = null;
 			synchronized (IDENTITY_FILE_LOCK) {
 
-				idBytes = FileUtils.readFile(identityFilename);
-
+				//might have copied old ungzipped drive identity file to sdcard so handle both
+				//RM#260				
+				idBytes = FileUtils.gunzipIfNecessary(FileUtils.readFileNoGzip(identityFilename));
 			}
 
-			if (idBytes != null) {
+			if (idBytes != null) {				
 				return decryptIdentity(idBytes, username, password);
 			}
 

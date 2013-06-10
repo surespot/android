@@ -1,6 +1,5 @@
 package com.twofours.surespot.backup;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.zip.GZIPInputStream;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -165,22 +163,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 										@Override
 										protected Void doInBackground(Void... params) {
 											byte[] identityBytes = mDriveHelper.getFileContent(url);
-
-											// see if it's gzipped - RM#260 doh
-											// TODO take this code out one day
-											if (FileUtils.isGzipCompressed(identityBytes)) {
-												SurespotLog.v(TAG, "identity gzipped, gunzipping");
-												ByteArrayInputStream in = new ByteArrayInputStream(identityBytes);
-												try {
-													GZIPInputStream gzin = new GZIPInputStream(in);
-													identityBytes = Utils.inputStreamToBytes(gzin);
-												} catch (IOException e) {
-													SurespotLog.w(TAG, e, "error gunzipping identity");
-												}
-
-											} else {
-												SurespotLog.v(TAG, "identity not gzipped, not gunzipping");
-											}
+											identityBytes = FileUtils.gunzipIfNecessary(identityBytes);
 
 											IdentityController.importIdentityBytes(ImportIdentityActivity.this, user, password, identityBytes,
 													new IAsyncCallback<IdentityOperationResult>() {
