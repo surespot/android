@@ -110,11 +110,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mEmojiButton;
 	private ImageView mQRButton;
 	private Friend mCurrentFriend;
-	private boolean mShowEmoji = false;
-	boolean mKeyboardWasOpen = false;
+	// private boolean mShowEmoji = false;
+	// boolean mKeyboardWasOpen = false;
 	private int mOrientation;
 	private boolean mKeyboardShowingOnChatTab;
-	private boolean mEmojiShowingOnChatTab;
+	private boolean mKeyboardShowingOnHomeTab;
+	private boolean mEmojiShowing;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -261,6 +262,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteUser);
 			setupChatControls();
+
+			if (savedInstanceState != null) {
+
+				mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
+				mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
+				if (mKeyboardShowing) {
+					showEmoji(false);
+					showSoftKeyboard();
+				} else {
+					showEmoji(mEmojiShowing);
+				}
+
+				SurespotLog.v(TAG, "loading from saved instance state, keyboardShowing: %b, emojiShowing: %b", mKeyboardShowing, mEmojiShowing);
+			}
+
 		}
 
 	}
@@ -418,7 +434,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public void onClick(View v) {
 
-				showEmoji();
+				toggleEmoji();
 			}
 		});
 
@@ -462,26 +478,49 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		TextWatcher tw = new ChatTextWatcher();
 		mEtMessage.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH) });
 		mEtMessage.addTextChangedListener(tw);
-		mEtMessage.setOnTouchListener(new OnTouchListener() {
+
+		OnTouchListener editTouchListener = new OnTouchListener() {
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 
-				if (!mKeyboardShowing) {
-					mEtMessage.requestFocus();
-					showSoftKeyboard(v);
+				SurespotLog.v(TAG, "onTouch event: %d", event.getAction());
 
-					mShowEmoji = false;
-					return true;
-				} else {
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+					if (!mKeyboardShowing) {
+
+						if (mEmojiShowing) {
+							SurespotLog.v(TAG, "hiding emoji");
+							showEmoji(false);
+						}
+
+						showSoftKeyboard();
+
+						v.requestFocus();
+						return true;
+					} else {
+						if (mCurrentFriend != null) {
+							SurespotLog.v(TAG, "toggling emoji");
+							toggleEmoji();
+							return true;
+						} else {
+							return false;
+						}
+					}
+				}
+				else {
 					return false;
 				}
 
 			}
-		});
+		};
+
+		mEtMessage.setOnTouchListener(editTouchListener);
 
 		mEtInvite = (EditText) findViewById(R.id.etInvite);
 		mEtInvite.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
+		mEtInvite.setOnTouchListener(editTouchListener);
+
 		mEtInvite.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -973,10 +1012,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
 		}
 
-		if (mKeyboardShowing) {
-			SurespotLog.v(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
-			outState.putBoolean("keyboardShowing", mKeyboardShowing);
-		}
+		// if (mKeyboardShowing) {
+		SurespotLog.v(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
+		outState.putBoolean("keyboardShowing", mKeyboardShowing);
+		// }
+
+		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing: %b", mEmojiShowing);
+		outState.putBoolean("emojiShowing", mEmojiShowing);
 
 		if (mInitialHeightOffset > 0) {
 			SurespotLog.v(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
@@ -1017,78 +1059,128 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-	public synchronized void hideSoftKeyboard() {
-		SurespotLog.v(TAG, "hideSoftkeyboard");
-		mKeyboardShowing = false;
-		mKeyboardWasOpen = false;
+	public synchronized void hideSoftKeyboard(final boolean showEmoji) {
 
-		mImm.hideSoftInputFromWindow(mEtMessage.getWindowToken(), 0, new ResultReceiver(null) {
+		SurespotLog.v(TAG, "hideSoftkeyboard");
+		View view = null;
+		if (mCurrentFriend == null) {
+			view = mEtInvite;
+		} else {
+			view = mEtMessage;
+		}
+
+		final View finalView = view;
+
+		mKeyboardShowing = false;
+		// mKeyboardWasOpen = false;
+
+		Runnable runnable = new Runnable() {
+
 			@Override
-			protected void onReceiveResult(int resultCode, Bundle resultData) {
-				if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
-					mKeyboardShowing = true;
-				}
+			public void run() {
+
+				mImm.hideSoftInputFromWindow(finalView.getWindowToken(), 0, new ResultReceiver(null) {
+					@Override
+					protected void onReceiveResult(int resultCode, Bundle resultData) {
+						if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+							mKeyboardShowing = true;
+
+						} else {
+							if (showEmoji) {
+								Runnable runnable = new Runnable() {
+
+									@Override
+									public void run() {
+										showEmoji(showEmoji);
+
+									}
+								};
+
+								MainActivity.this.runOnUiThread(runnable);
+							}
+						}
+					}
+				});
 			}
-		});
+		};
+
+		mEtMessage.post(runnable);
 	}
 
-	private synchronized void showSoftKeyboard(View view) {
+	private synchronized void showSoftKeyboard() {
 		SurespotLog.v(TAG, "showSoftkeyboard");
 		mKeyboardShowing = true;
-		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-		mImm.showSoftInput(view, 0, new ResultReceiver(null) {
+
+		View view = null;
+		if (mCurrentFriend == null) {
+			view = mEtInvite;
+		} else {
+			view = mEtMessage;
+		}
+
+		final View finalView = view;
+
+		Runnable runnable = new Runnable() {
+
 			@Override
-			protected void onReceiveResult(int resultCode, Bundle resultData) {
-				if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
-					mKeyboardShowing = false;
-				}
+			public void run() {
+				mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+				mImm.showSoftInput(finalView, 0, new ResultReceiver(null) {
+					@Override
+					protected void onReceiveResult(int resultCode, Bundle resultData) {
+						if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
+							mKeyboardShowing = false;
+						}
+					}
+				});
+
 			}
-		});
+		};
+
+		view.post(runnable);
+
 	}
 
-	private void showEmoji() {
-		SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
-		if (mKeyboardShowing) {
+	private void showEmoji(boolean showEmoji) {
 
-			SurespotLog.v(TAG, "keyboardState,  hidingKeyboard and showing emoji");
+		// SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
+		if (mKeyboardShowing && showEmoji) {
 
-			mShowEmoji = true;
-			// mEmojiView.setVisibility(View.VISIBLE);
-			hideSoftKeyboard();
-			mKeyboardWasOpen = true;
-		} else {
+			SurespotLog.v(TAG, "showEmoji,  hidingKeyboard and showing emoji");
 
-			int visibility = mEmojiView.getVisibility();
-			if (visibility == View.VISIBLE) {
-				SurespotLog.v(TAG, "keyboardState,  hiding emoji");
+			hideSoftKeyboard(false);
+			// mKeyboardWasOpen = true;
+		}
 
-				if (mKeyboardWasOpen) {
-					SurespotLog.v(TAG, "keyboardState,  showing keyboard");
-					showSoftKeyboard(mEtMessage);
-					mKeyboardWasOpen = false;
-				} else {
-					mEmojiView.setVisibility(View.GONE);
-				}
+		int visibility = mEmojiView.getVisibility();
+		if (showEmoji) {
 
-				mShowEmoji = false;
-				//
-			} else {
-				// if we don't have a height, get it
-				// if (mEmojiHeight == 0) {
-				//
-				// showSoftKeyboard(mEtMessage);
-				// hideSoftKeyboard();
-				// }
-				//
-
-				SurespotLog.v(TAG, "keyboardState,  showing emoji");
+			if (visibility != View.VISIBLE) {
+				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
 				mEmojiView.setVisibility(View.VISIBLE);
-				mShowEmoji = true;
 
+			}
+		} else {
+			if (visibility != View.GONE) {
+				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
+				mEmojiView.setVisibility(View.GONE);
 			}
 
 		}
+		mEmojiShowing = showEmoji;
 
+	}
+
+	private void toggleEmoji() {
+		if (mEmojiShowing) {
+			showEmoji(false);
+			if (mKeyboardShowing) {
+				showSoftKeyboard();
+			}
+
+		} else {
+			showEmoji(true);
+		}
 	}
 
 	class ChatTextWatcher implements TextWatcher {
@@ -1200,17 +1292,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.v(TAG, "backButtonPressed");
 		if (mKeyboardShowing) {
 
-			hideSoftKeyboard();
-			mEmojiView.setVisibility(View.GONE);
-			mShowEmoji = false;
+			hideSoftKeyboard(false);
 			handled = true;
-		} else {
+		}
 
-			if (mEmojiView.getVisibility() == View.VISIBLE) {
-				mEmojiView.setVisibility(View.GONE);
-				mShowEmoji = false;
-				handled = true;
-			}
+		if (mEmojiShowing) {
+			showEmoji(false);
+			handled = true;
 		}
 
 		return handled;
@@ -1219,21 +1307,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	public void onLayoutMeasure() {
 		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
-		if (mShowEmoji) {
+		if (mEmojiShowing) {
 
 			if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
 				mEmojiHeight = 200;
+
 			}
 
 			if (mEmojiHeight > 0) {
 				android.view.ViewGroup.LayoutParams layoutParams = mEmojiView.getLayoutParams();
 				layoutParams.height = mEmojiHeight;
+				mEmojiView.invalidate();
 			}
 
-			mEmojiView.setVisibility(View.VISIBLE);
-		} else {
-			mEmojiView.setVisibility(View.GONE);
 		}
+		// } else {
+		// mEmojiView.setVisibility(View.GONE);
+		// }
 
 	}
 
@@ -1313,70 +1403,84 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void handleTabChange(Friend friend) {
+		if (mCurrentFriend != friend) {
+			boolean showKeyboard = false;
+			boolean showEmoji = false;
 
-		SurespotLog.v(TAG, "handleTabChange, mCurrentFriend: %s, friend: %s, keyboard Showing: %b", mCurrentFriend, friend, mKeyboardShowing);
-		if (friend == null) {
-			mEmojiButton.setVisibility(View.GONE);
-			mEtMessage.setVisibility(View.GONE);
-			mEtInvite.setVisibility(View.VISIBLE);
-			mEmojiView.setVisibility(View.GONE);
-
-			mQRButton.setVisibility(View.VISIBLE);
-			mEtInvite.requestFocus();
-
-			if (mCurrentFriend != null) {
-				SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
-				mEmojiShowingOnChatTab = mShowEmoji;
-				mKeyboardShowingOnChatTab = mKeyboardShowing;
-			}
-			mShowEmoji = false;
-			hideSoftKeyboard();
-
-		} else {
-			//
-
-			if (friend.isDeleted()) {
+			SurespotLog.v(TAG, "handleTabChange, mCurrentFriend: %s, friend: %s, keyboard Showing: %b, emojiShowing: %b", mCurrentFriend, friend,
+					mKeyboardShowing, mEmojiShowing);
+			if (friend == null) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
+				mEtInvite.setVisibility(View.VISIBLE);
 				mEmojiView.setVisibility(View.GONE);
-				hideSoftKeyboard();
-				mShowEmoji = false;
+
+				mQRButton.setVisibility(View.VISIBLE);
+				mEtInvite.requestFocus();
+
+				SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
+				mKeyboardShowingOnChatTab = mKeyboardShowing;
+
+				if (mKeyboardShowingOnHomeTab) {
+					SurespotLog.v(TAG, "handleTabChange, showing soft keyboard");
+					showKeyboard = true;
+				}
+
+				showEmoji = false;
+
 			} else {
-				mEtMessage.setVisibility(View.VISIBLE);
-				mEmojiButton.setVisibility(View.VISIBLE);
 
-				// if we moved back to chat tab from home hab show the keyboard if it was showing
-				if (mCurrentFriend == null) {
-					SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
+				if (friend.isDeleted()) {
+					mEmojiButton.setVisibility(View.GONE);
+					mEtMessage.setVisibility(View.GONE);
+					// mEmojiView.setVisibility(View.GONE);
+					showEmoji(false);
+					hideSoftKeyboard(false);
+				} else {
+					mEtMessage.setVisibility(View.VISIBLE);
+					mEmojiButton.setVisibility(View.VISIBLE);
 
-					if (mEmojiShowingOnChatTab) {
-						showEmoji();
-					}
+					// if we moved back to chat tab from home hab show the keyboard if it was showing
+					if (mCurrentFriend == null) {
+						SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
+						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 
-					else {
 						if (mKeyboardShowingOnChatTab) {
 							SurespotLog.v(TAG, "handleTabChange, showing soft keyboard");
-							Runnable runnable = new Runnable() {
 
-								@Override
-								public void run() {
-									showSoftKeyboard(mEtMessage);
-								}
-							};
-
-							mEtMessage.post(runnable);
+							showKeyboard = true;
+						} else {
+							showEmoji = mEmojiShowing;
 						}
+
+					} else {
+						showKeyboard = mKeyboardShowing;
+						showEmoji = mEmojiShowing;
 					}
 				}
+
+				mEtInvite.setVisibility(View.GONE);
+				mQRButton.setVisibility(View.GONE);
+				mEtMessage.requestFocus();
 			}
 
-			mEtInvite.setVisibility(View.GONE);
-			mQRButton.setVisibility(View.GONE);
-			mEtMessage.requestFocus();
-		}
+			mCurrentFriend = friend;
+			setButtonText();
 
-		mCurrentFriend = friend;
-		setButtonText();
+			if (showKeyboard) {
+				if (mKeyboardShowing != showKeyboard) {
+					showSoftKeyboard();
+				}
+
+				showEmoji(false);
+			} else {
+				if (mKeyboardShowing != showKeyboard) {
+					hideSoftKeyboard(showEmoji);
+				} else {
+					showEmoji(showEmoji);
+				}
+			}
+		}
 
 	}
 }
