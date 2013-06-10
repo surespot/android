@@ -1604,8 +1604,6 @@ public class ChatController {
 			mChatPagerAdapter.addChatName(username);
 			friend.setChatActive(true);
 			friend.setLastViewedMessageId(friend.getAvailableMessageId());
-			mFriendAdapter.sort();
-			mFriendAdapter.notifyDataSetChanged();
 
 			// cancel associated notifications
 			mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username),
@@ -1626,8 +1624,11 @@ public class ChatController {
 			mViewPager.setCurrentItem(0, true);
 			mNotificationManager.cancel(loggedInUser + ":" + username, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
-
 		}
+
+		mFriendAdapter.sort();
+		mFriendAdapter.notifyDataSetChanged();
+
 		// set menu item enable state
 		enableMenuItems(friend);
 
