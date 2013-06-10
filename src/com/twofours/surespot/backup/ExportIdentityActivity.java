@@ -1,9 +1,11 @@
 package com.twofours.surespot.backup;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -371,8 +373,15 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 	public boolean updateIdentityDriveFile(String idDirId, String username, byte[] identityData) {
 		try {
-			// get the encrypted identity data
-
+			//gzip identity for consistency - fucked up on this, now have to add code to handle both (gzipped and not gzipped) on restore from google drive
+			//RM#260		
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			GZIPOutputStream gzout = new GZIPOutputStream(out);			
+			gzout.write(identityData);
+			gzout.close();			
+			byte[] gzIdData = out.toByteArray();
+			
+			ByteArrayContent content = new ByteArrayContent("application/octet-stream",gzIdData);			
 			String filename = username + IdentityController.IDENTITY_EXTENSION;
 
 			// see if identity exists
@@ -384,11 +393,9 @@ public class ExportIdentityActivity extends SherlockActivity {
 				file = mDriveHelper.getDriveService().files().get(idFile.getId()).execute();
 				if (file != null && !file.getLabels().getTrashed()) {
 					SurespotLog.d(TAG, "updateIdentityDriveFile, updating existing identity file: %s", filename);
-					ByteArrayContent content = new ByteArrayContent("application/octet-stream", identityData);
 					mDriveHelper.getDriveService().files().update(file.getId(), file, content).execute();
 					return true;
 				}
-
 			}
 
 			// create
@@ -400,12 +407,9 @@ public class ExportIdentityActivity extends SherlockActivity {
 			ArrayList<ParentReference> parent = new ArrayList<ParentReference>(1);
 			parent.add(pr);
 			file.setParents(parent);
-			file.setTitle(filename);
-
+			file.setTitle(filename);					
 			file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
-
-			ByteArrayContent content = new ByteArrayContent("application/octet-stream", identityData);
-
+								
 			com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file, content).execute();
 			return true;
 
