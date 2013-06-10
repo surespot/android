@@ -517,16 +517,16 @@ public class ChatController {
 	}
 
 	private void sendMessage(final SurespotMessage message) {
-		SurespotLog.v(TAG, "sendmessage adding message to ResendBuffer, text: " + message.getPlainData() + ", iv: " + message.getIv());
+		SurespotLog.v(TAG, "sendmessage adding message to ResendBuffer, text: %s, iv: %s", message.getPlainData(), message.getIv());
 
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
 			// TODO handle different mime types
-			SurespotLog.v(TAG, "sendmessage, socket: " + socket);
+			SurespotLog.v(TAG, "sendmessage, socket: %s", socket);
 			JSONObject json = message.toJSONObject();
-			SurespotLog.v(TAG, "sendmessage, json: " + json);
+			SurespotLog.v(TAG, "sendmessage, json: %s", json);
 			String s = json.toString();
-			SurespotLog.v(TAG, "sendmessage, message string: " + s);
+			SurespotLog.v(TAG, "sendmessage, message string: %s", s);
 
 			if (socket != null) {
 				socket.send(s);
@@ -1310,8 +1310,9 @@ public class ChatController {
 			// how many new messages total are there
 			int delta = availableId - lastViewedId;
 
-			// if all the new messages are mine then i've viewed them all
-			if (sentByMeCount == delta) {
+			// if the current chat is showing or
+			// all the new messages are mine then i've viewed them all
+			if (username.equals(mCurrentChat) || sentByMeCount == delta) {
 				friend.setLastViewedMessageId(availableId);
 			} else {
 				// set the last viewed id to the difference caused by their messages
