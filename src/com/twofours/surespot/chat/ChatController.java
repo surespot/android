@@ -1324,6 +1324,10 @@ public class ChatController {
 			chatAdapter.doneCheckingSequence();
 			mFriendAdapter.notifyDataSetChanged();
 
+			if (newMessage) {
+				scrollToEnd(username);
+			}
+
 		}
 
 		setProgress(username, false);
