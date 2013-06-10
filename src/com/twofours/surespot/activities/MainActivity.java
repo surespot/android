@@ -1018,6 +1018,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public synchronized void hideSoftKeyboard() {
 		SurespotLog.v(TAG, "hideSoftkeyboard");
 		mKeyboardShowing = false;
+		mKeyboardWasOpen = false;
 
 		mImm.hideSoftInputFromWindow(mEtMessage.getWindowToken(), 0, new ResultReceiver(null) {
 			@Override
@@ -1319,6 +1320,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mShowEmoji = false;
 			mQRButton.setVisibility(View.VISIBLE);
 			mEtInvite.requestFocus();
+			hideSoftKeyboard();
 
 		} else {
 			if (friend.isDeleted()) {
