@@ -1111,6 +1111,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			@Override
 			public void run() {
+
 				mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
 				mImm.showSoftInput(view, 0, new ResultReceiver(null) {
 					@Override
@@ -1118,6 +1119,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
 							mKeyboardShowing = false;
 						}
+
+						mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
 
 					}
 				});
@@ -1180,6 +1183,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEmojiView.setVisibility(View.GONE);
 			}
 
+		}
+
+		if (force) {
+			if (showEmoji) {
+				mEmojiButton.setImageResource(R.drawable.keyboard_icon);
+			} else {
+				mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
+			}
 		}
 
 		mEmojiShowing = showEmoji;
@@ -1308,6 +1319,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			handled = true;
 		}
 
+		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
 		return handled;
 	}
 
@@ -1433,9 +1445,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (mFriendHasBeenSet) {
 					if (!mCurrentFriend.isDeleted()) {
 						mKeyboardShowingOnChatTab = mKeyboardShowing;
-						mEmojiShowingOnChatTab = mEmojiShowing;						
+						mEmojiShowingOnChatTab = mEmojiShowing;
 					}
-					
+
 					showKeyboard = mKeyboardShowingOnHomeTab;
 				} else {
 					showKeyboard = mKeyboardShowing;
@@ -1449,12 +1461,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mEmojiButton.setVisibility(View.GONE);
 					mEtMessage.setVisibility(View.GONE);
 
-					// if we're coming from home tab
-					if (mCurrentFriend == null) {
-						mKeyboardShowingOnHomeTab = mKeyboardShowing;
-					} else {
-						mKeyboardShowingOnChatTab = mKeyboardShowing;
-						mEmojiShowingOnChatTab = mEmojiShowing;
+					if (mFriendHasBeenSet) {
+						// if we're coming from home tab
+						if (mCurrentFriend == null) {
+							mKeyboardShowingOnHomeTab = mKeyboardShowing;
+						} else {
+							if (!mCurrentFriend.isDeleted()) {
+								mKeyboardShowingOnChatTab = mKeyboardShowing;
+								mEmojiShowingOnChatTab = mEmojiShowing;
+							}
+						}
 					}
 
 					showKeyboard = false;
@@ -1465,16 +1481,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mEmojiButton.setVisibility(View.VISIBLE);
 
 					// if we moved back to chat tab from home hab show the keyboard if it was showing
-					if (mCurrentFriend == null || mCurrentFriend.isDeleted() && mFriendHasBeenSet) {
+					if ((mCurrentFriend == null || mCurrentFriend.isDeleted()) && mFriendHasBeenSet) {
 						SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
 						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 						showKeyboard = mKeyboardShowingOnChatTab;
 						showEmoji = mEmojiShowingOnChatTab;
-					} else {
-						showKeyboard = mKeyboardShowing;
-						showEmoji = mEmojiShowing;
-					}
-
+					} 
 				}
 
 				mEtInvite.setVisibility(View.GONE);
@@ -1528,4 +1540,5 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mFriendHasBeenSet = true;
 	}
+
 }
