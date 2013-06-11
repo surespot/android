@@ -111,8 +111,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mEmojiButton;
 	private ImageView mQRButton;
 	private Friend mCurrentFriend;
-	private boolean mShowEmoji = false;
-	// boolean mKeyboardWasOpen = false;
 	private int mOrientation;
 	private boolean mKeyboardShowingOnChatTab;
 	private boolean mKeyboardShowingOnHomeTab;
@@ -1185,7 +1183,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		mEmojiShowing = showEmoji;
-
 	}
 
 	private void toggleEmoji() {
@@ -1411,6 +1408,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
+	// this isn't brittle...NOT
 	private void handleTabChange(Friend friend) {
 		if (mCurrentFriend != friend) {
 
@@ -1444,12 +1442,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			} else {
 
 				if (friend.isDeleted()) {
-					if (mCurrentFriend == null) {
-						mKeyboardShowingOnHomeTab = mKeyboardShowing;
-					}
 
 					mEmojiButton.setVisibility(View.GONE);
 					mEtMessage.setVisibility(View.GONE);
+
+					// if we're coming from home tab
+					if (mCurrentFriend == null) {
+						mKeyboardShowingOnHomeTab = mKeyboardShowing;
+					} else {
+						mKeyboardShowingOnChatTab = mKeyboardShowing;
+						mEmojiShowingOnChatTab = mEmojiShowing;
+					}
+
 					showKeyboard = false;
 					showEmoji = false;
 
@@ -1458,7 +1462,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mEmojiButton.setVisibility(View.VISIBLE);
 
 					// if we moved back to chat tab from home hab show the keyboard if it was showing
-					if (mCurrentFriend == null && mFriendHasBeenSet) {
+					if (mCurrentFriend == null || mCurrentFriend.isDeleted() && mFriendHasBeenSet) {
 						SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
 						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 						showKeyboard = mKeyboardShowingOnChatTab;
