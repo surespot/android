@@ -484,7 +484,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		OnTouchListener editTouchListener = new OnTouchListener() {
 
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {			
+			public boolean onTouch(View v, MotionEvent event) {
 				if (!mKeyboardShowing) {
 					showSoftKeyboard(v);
 					return true;
@@ -1103,7 +1103,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		Runnable runnable = new Runnable() {
 
 			@Override
-			public void run() {						
+			public void run() {
 				mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
 				mImm.restartInput(view);
 				mImm.showSoftInput(view, 0, new ResultReceiver(null) {
@@ -1113,11 +1113,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							mKeyboardShowing = false;
 						}
 
-						
 					}
 				});
-				
-				//setEmojiIcon(true);
+
+				// setEmojiIcon(true);
 			}
 		};
 		view.post(runnable);
@@ -1413,145 +1412,141 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	// this isn't brittle...NOT
 	private void handleTabChange(Friend friend) {
-		if (mCurrentFriend != friend) {
 
-			boolean showKeyboard = false;
-			boolean showEmoji = false;
-			SurespotLog
-					.v(TAG,
-							"handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
-							mFriendHasBeenSet, mCurrentFriend == null, mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab,
-							mEmojiShowingOnChatTab);
+		boolean showKeyboard = false;
+		boolean showEmoji = false;
+		SurespotLog
+				.v(TAG,
+						"handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
+						mFriendHasBeenSet, mCurrentFriend == null, mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab,
+						mEmojiShowingOnChatTab);
 
-			if (friend == null) {
+		if (friend == null) {
+			mEmojiButton.setVisibility(View.GONE);
+			mEtMessage.setVisibility(View.GONE);
+			mEtInvite.setVisibility(View.VISIBLE);
+			mEmojiView.setVisibility(View.GONE);
+
+			mQRButton.setVisibility(View.VISIBLE);
+			mEtInvite.requestFocus();
+
+			SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
+			if (mFriendHasBeenSet) {
+				if (mCurrentFriend != null && !mCurrentFriend.isDeleted()) {
+					mKeyboardShowingOnChatTab = mKeyboardShowing;
+					mEmojiShowingOnChatTab = mEmojiShowing;
+				}
+				showKeyboard = mKeyboardShowingOnHomeTab;
+
+			} else {
+				showKeyboard = mKeyboardShowing;
+			}
+			showEmoji = false;
+
+		} else {
+
+			if (friend.isDeleted()) {
+
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
-				mEtInvite.setVisibility(View.VISIBLE);
-				mEmojiView.setVisibility(View.GONE);
 
-				mQRButton.setVisibility(View.VISIBLE);
-				mEtInvite.requestFocus();
-
-				SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
 				if (mFriendHasBeenSet) {
-					if (!mCurrentFriend.isDeleted()) {
-						mKeyboardShowingOnChatTab = mKeyboardShowing;
-						mEmojiShowingOnChatTab = mEmojiShowing;
+					// if we're coming from home tab
+					if (mCurrentFriend == null) {
+						mKeyboardShowingOnHomeTab = mKeyboardShowing;
+					} else {
+						if (!mCurrentFriend.isDeleted()) {
+							mKeyboardShowingOnChatTab = mKeyboardShowing;
+							mEmojiShowingOnChatTab = mEmojiShowing;
+						}
 					}
-
-					showKeyboard = mKeyboardShowingOnHomeTab;
-				} else {
-					showKeyboard = mKeyboardShowing;
 				}
+
+				showKeyboard = false;
 				showEmoji = false;
 
 			} else {
+				mEtMessage.setVisibility(View.VISIBLE);
+				mEmojiButton.setVisibility(View.VISIBLE);
 
-				if (friend.isDeleted()) {
+				// if we moved back to chat tab from home hab show the keyboard if it was showing
+				if ((mCurrentFriend == null || mCurrentFriend.isDeleted()) && mFriendHasBeenSet) {
+					SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
 
-					mEmojiButton.setVisibility(View.GONE);
-					mEtMessage.setVisibility(View.GONE);
+					showKeyboard = mKeyboardShowingOnChatTab;
+					showEmoji = mEmojiShowingOnChatTab;
 
-					if (mFriendHasBeenSet) {
-						// if we're coming from home tab
-						if (mCurrentFriend == null) {
-							mKeyboardShowingOnHomeTab = mKeyboardShowing;
-						} else {
-							if (!mCurrentFriend.isDeleted()) {
-								mKeyboardShowingOnChatTab = mKeyboardShowing;
-								mEmojiShowingOnChatTab = mEmojiShowing;
-							}
-						}
+					if (mCurrentFriend != null && !mCurrentFriend.isDeleted()) {
+						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 					}
-
-					showKeyboard = false;
-					showEmoji = false;
 
 				} else {
-					mEtMessage.setVisibility(View.VISIBLE);
-					mEmojiButton.setVisibility(View.VISIBLE);
-
-					// if we moved back to chat tab from home hab show the keyboard if it was showing
-					if ((mCurrentFriend == null || mCurrentFriend.isDeleted()) && mFriendHasBeenSet) {
-						SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
-						mKeyboardShowingOnHomeTab = mKeyboardShowing;
-						showKeyboard = mKeyboardShowingOnChatTab;
-						showEmoji = mEmojiShowingOnChatTab;
-					} else {
-						showKeyboard = mKeyboardShowing;
-						showEmoji = mEmojiShowing;
-					}
+					showKeyboard = mKeyboardShowing;
+					showEmoji = mEmojiShowing;
 				}
-
-				mEtInvite.setVisibility(View.GONE);
-				mQRButton.setVisibility(View.GONE);
-				mEtMessage.requestFocus();
 			}
 
-			// if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
-			mCurrentFriend = friend;
-			if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
-				if (friend == null) {
-					if (mEmojiShowing) {
+			mEtInvite.setVisibility(View.GONE);
+			mQRButton.setVisibility(View.GONE);
+			mEtMessage.requestFocus();
+		}
 
-						showSoftKeyboardThenHideEmoji(mEtInvite);
+		// if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
+		mCurrentFriend = friend;
+		if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
+			if (friend == null) {
+				if (mEmojiShowing) {
 
-					}
+					showSoftKeyboardThenHideEmoji(mEtInvite);
 
-					else {
-						hideSoftKeyboard(mEtMessage);
+				}
 
-					}
-				} else {
-					if (mEmojiShowing) {
-						showSoftKeyboard(mEtMessage);
-						showEmoji(false, true);
-					} else {
-						showEmoji(true, true);
-						hideSoftKeyboard(mEtInvite);
-					}
+				else {
+					hideSoftKeyboard(mEtMessage);
+
 				}
 			} else {
-				if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
-					showSoftKeyboard();
+				if (mEmojiShowing) {
+					showSoftKeyboard(mEtMessage);
+					showEmoji(false, true);
 				} else {
-
-					if (mKeyboardShowing != showKeyboard) {
-						showEmoji(showEmoji, true);
-						hideSoftKeyboard();
-					} else {
-						showEmoji(showEmoji, true);
-					}
+					showEmoji(true, true);
+					hideSoftKeyboard(mEtInvite);
 				}
 			}
+		} else {
+			if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
+				showSoftKeyboard();
+			} else {
 
-			if (friend == null || !friend.isDeleted()) {
-				mKeyboardShowing = showKeyboard;
+				if (mKeyboardShowing != showKeyboard) {
+					showEmoji(showEmoji, true);
+					hideSoftKeyboard();
+				} else {
+					showEmoji(showEmoji, true);
+				}
 			}
-
-			setButtonText();
 		}
+
+		if (friend == null || !friend.isDeleted()) {
+			mKeyboardShowing = showKeyboard;
+		}
+
+		setButtonText();
 
 		mFriendHasBeenSet = true;
 	}
 
 	private void setEmojiIcon(final boolean keyboardShowing) {
-//		Runnable runnable = new Runnable() {
-//
-//			@Override
-//			public void run() {
-				if (keyboardShowing) {
-					if (mEmojiResourceId < 0) {
-						mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
-					}
-					mEmojiButton.setImageResource(mEmojiResourceId);
-				} else {
-					mEmojiButton.setImageResource(R.drawable.keyboard_icon);
-				}
 
-//			}
-//		};
-//
-//		mEmojiButton.post(runnable);
+		if (keyboardShowing) {
+			if (mEmojiResourceId < 0) {
+				mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
+			}
+			mEmojiButton.setImageResource(mEmojiResourceId);
+		} else {
+			mEmojiButton.setImageResource(R.drawable.keyboard_icon);
+		}
+
 	}
 }
