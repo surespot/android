@@ -43,16 +43,16 @@
   <string name="assign_image">Bild zuordnen</string>
   <string name="logout">Abmelden</string>
   <string name="settings">Einstellungen</string>
-  <string formatted="false" name="welcome_to_surespot"><![CDATA["Willkommen bei surespot! Der Mitteilungs- und Datenversand mit dieser App ist mit einem <a href="https://de.wikipedia.org/wiki/Symmetrisches_Kryptosystem">symetrischem</a> Verschlüsselungssystem <a href="https://de.wikipedia.org/wiki/Ende-zu-Ende-Verschl%C3%BCsselung">Ende-zu-Ende</a> verschlüsselt. Es werden (<a href="https://de.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) Schlüsselpaare mit 521 bit <a href="https://de.wikipedia.org/wiki/Elliptic_Curve_Diffie-Hellman">ECDH Schlüsselaustausch</a> verwendet."]]></string>
+  <string formatted="false" name="welcome_to_surespot"><![CDATA["Willkommen bei surespot! Der Mitteilungs- und Datenversand mit dieser App ist mit einem <a href="https://de.wikipedia.org/wiki/Symmetrisches_Kryptosystem">symetrischem </a> Verschlüsselungssystem <a href="https://de.wikipedia.org/wiki/Ende-zu-Ende-Verschl%C3%BCsselung">Ende-zu-Ende</a> verschlüsselt. Es werden (<a href="https://de.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) Schlüsselpaare mit 521 bit <a href="https://de.wikipedia.org/wiki/Elliptic_Curve_Diffie-Hellman">ECDH Schlüsselaustausch</a> verwendet."]]></string>
   <string name="no_friends">Bisher noch keine Kontakte... Lade Sie weitere surespot Nutzer ein indem Sie deren Benutzernamen eingeben und die Schaltfläche \'Einladen\' verwenden.</string>
-  <string name="help_invite">Laden Sie weitere surespot Nutzer ein indem Sie deren Benutzernamen auf dem \'Home\'-Tab eingeben und die Schaltfläche \'Einladen\' verwenden.</string>
-  <string name="invite_contacts">Verwenden Sie die \'Kontakte einladen\' Menü-Option, um Benutzer per QR-Code, E-Mail, SMS oder einer andere Anwendungen einzuladen.</string>
+  <string name="help_invite">Laden Sie weitere surespot-Nutzer ein indem Sie deren Benutzernamen auf dem \'Home\'-Tab eingeben und die Schaltfläche \'Einladen\' verwenden.</string>
+  <string name="invite_contacts">Verwenden Sie die \'Kontakte einladen\' Menu-Option, um Benutzer per QR-Code, E-Mail, SMS oder einer anderen Anwendungen einzuladen.</string>
   <string name="navigate_between_chat_tabs">Wischen Sie über den Bildschirm um zwischen den Tabs zu wechseln.</string>
   <string name="help_shortPress">Berühren Sie \'Home\' um zum \'Home\'-Tab zu gelangen.</string>
-  <string name="help_longPress">Halten Sie \'Home\' gedrückt um den \'Chat\'-Tab zu schliessen.</string>
-  <string name="help_holdmessage">Halten Sie die Nachricht gedrückt um auf die Nachrichtenoptionen zu gelangen.</string>
-  <string name="help_holdfriend">Halten Sie einen Kontakt gedrückt um auf die Kontaktoptionen zu gelangen.</string>
-  <string name="help_imageZoom">Berühren sie das Bild um es zu vergrössern.</string>
+  <string name="help_longPress">Halten Sie \'Home\' gedrückt, um den \'Chat\'-Tab zu schließen.</string>
+  <string name="help_holdmessage">Halten Sie die Nachricht gedrückt, um auf die Nachrichtenoptionen zu gelangen.</string>
+  <string name="help_holdfriend">Halten Sie einen Kontakt gedrückt, um auf die Kontaktoptionen zu gelangen.</string>
+  <string name="help_imageZoom">Berühren sie das Bild, um es zu vergrößern.</string>
   <string name="incorrect_password_or_key">Falsches Passwort oder falscher Schlüssel</string>
   <string name="no_such_user">Nutzer nicht gefunden</string>
   <string name="roll_keys">Erzeuge neues Schlüsselpaar</string>
@@ -60,7 +60,7 @@
   <string name="regenerate_keys">Erzeuge neues Schlüsselpaar</string>
   <string name="could_not_create_new_keys">Schlüsselpaar konnte nicht erstellt werden</string>
   <string name="keys_created">Neues Schlüsselpaar erstellt, bitte exportieren Sie (ggf. nochmals) Ihr Profil</string>
-  <string name="close_tab">Tab schliessen</string>
+  <string name="close_tab">Tab schließen</string>
   <string name="action_settings">Einstellungen</string>
   <string name="no_messages">Keine Mitteilungen</string>
   <string name="home">Home</string>
@@ -76,21 +76,21 @@
   <string name="crash_dialog_text">Wir bedauern, dass ein unerwarteter Fehler aufgetreten ist. \n\nBitte helfen Sie uns das Problem zu beheben, indem Sie mit \'OK\' einen Fehlerbericht an uns senden. Dieser enthält keine persönlich identifizierenden Informationen.</string>
   <string name="crash_dialog_comment_prompt">Falls Sie möchten, können Sie uns einen Kommentar über das Problem mitteilen:</string>
   <string name="crash_dialog_ok_toast">Danke!</string>
-  <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie %s, um die Android App zu installieren und mich als Kontakt aufzunehmen.</string>
-  <string name="help_backupIdentities1">Falls Sie Ihr Handy verlieren oder die App deinstallieren und erneut installieren haben Sie keinen Zugriff mehr auf Ihre Profildaten. Sie werden nicht in der Lage sein sich anzumelden, falls Sie nicht zuvor Ihr Profil exportiert haben. Die surespot Verschlüsselungsschlüssel werden niemals auf unsere Server hochgeladen.</string>
-  <string name="help_backupIdentities2">Surespot kann sowohl auf Google Drive, als auch auf dem lokalen Datenträger, ein Profil exportieren. Diese Option kann im Menü \'Einstellungen\' gefunden werden.</string>
+  <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie %s, um die Android-App zu installieren und mich als Kontakt aufzunehmen.</string>
+  <string name="help_backupIdentities1">Falls Sie Ihr Handy verlieren oder die App deinstallieren und erneut installieren, haben Sie keinen Zugriff mehr auf Ihre Profildaten. Sie werden nicht in der Lage sein sich anzumelden, falls Sie nicht zuvor Ihr Profil exportiert haben. Die surespot-Verschlüsselungsschlüssel werden niemals auf unsere Server hochgeladen.</string>
+  <string name="help_backupIdentities2">Surespot kann sowohl auf Google Drive, als auch auf dem lokalen Datenträger ein Profil exportieren. Diese Option kann im Menü \'Einstellungen\' gefunden werden.</string>
   <string name="help_backup_what"><![CDATA["Hiermit exportieren Sie eine Kopie des ausgewählten Profils. Verschlüsselt mit <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> mit einem Schlüssel aus Ihrem Passwort durch eine abgeleitete<a href="https://de.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
-  <string name="help_backup_local">Für maximale Sicherheit empfehlen wir die das Backups auf dem lokalem Datenträger zu erstellen. Nach dem Export Ihrer Profil-Datei sollte diese auf ein sicheres externes Laufwerk kopiert werden, so dass es im Fall eines verloren oder gestohlen Gerätes bzw. der Deinstallieren der App wiederhergestellt werden kann.</string>
-  <string name="help_backup_drive1"><![CDATA["Falls Sie den Export Ihres Profils auf Google Drive ausgewählt haben, wird eine Kopie Ihrer <a href="https://de.wikipedia.org/wiki/Asymmetrisches_Kryptosystem">Privaten Schlüssel</a> auf den Google Drive Servern gespeichert. Sollte ein Dritter irgendwie Zugang zu den Google Drive Servern erhalten und versuchen Ihre Profil-Datei mittels <a href="https://de.wikipedia.org/wiki/Brute-Force">Brute-Force-Attake</a> zu entschlüsseln, vergessen Sie nicht, dass die <a href="https://de.wikipedia.org/wiki/Passwort">Stärke</a> Ihres Passworts will letztlich den Erfolg bestimmt."]]></string>
+  <string name="help_backup_local">Für maximale Sicherheit empfehlen wir, das Backup auf dem lokalem Datenträger zu erstellen. Nach dem Export Ihrer Profil-Datei sollte diese auf ein sicheres externes Laufwerk kopiert werden, so dass es im Fall eines verlorenen oder gestohlenen Gerätes bzw. der Deinstallation der App wiederhergestellt werden kann.</string>
+  <string name="help_backup_drive1"><![CDATA["Falls Sie den Export Ihres Profils auf Google Drive ausgewählt haben, wird eine Kopie Ihrer <a href="https://de.wikipedia.org/wiki/Asymmetrisches_Kryptosystem">Privaten Schlüssel</a> auf den Google Drive Servern gespeichert. Sollte ein Dritter irgendwie Zugang zu den Google-Drive-Servern erhalten und versuchen Ihre Profil-Datei mittels <a href="https://de.wikipedia.org/wiki/Brute-Force">Brute-Force-Attake</a> zu entschlüsseln, vergessen Sie nicht, dass die <a href="https://de.wikipedia.org/wiki/Passwort">Stärke</a> Ihres Passworts letztlich den Erfolg bestimmt."]]></string>
   <string name="help_backup_drive2">Ihre Profile werden auf Google Drive im Ordner \'surespot identity backups\' gespeichert. Profile können unter den Menü \'Einstellungen\', auch aus dem Google Drive, wiederhergestellt werden.</string>
-  <string name="pwyl_text"><![CDATA["surespot ist Werbe- and Datansammlungs frei.<br><br>Server und Speicher kosten Geld. Ihre Spende hilft dabei, dass surespot weiterhin kostenlos angeboten werden kann.<br><br>Wir werden einen Teil der Spenden an die <a href="https://www.eff.org/issues/privacy">EFF</a> weiterleiten, so dass Sie für alle unsere elektronischen Freiheiten kämpfen kann."]]></string>
-  <string name="help_messageHistory">Surespot verfügt über eine Historie von 1000 Mitteilungen. Wenn Sie 1000 Mitteilungen erreichen, wird Ihre älteste Nachricht gelöscht, so dass immer nur 1000 (verschlüsselte) Nachrichten auf dem Server gespeichert sind. Natürlich können einzelne oder alle Ihre Mitteilungen jederzeit von Ihnen gelöschen werden.</string>
+  <string name="pwyl_text"><![CDATA["surespot ist frei von Werbung und Datensammlung.<br><br>Server und Speicher kosten Geld. Ihre Spende hilft dabei, dass surespot weiterhin kostenlos angeboten werden kann.<br><br>Wir werden einen Teil der Spenden an die <a href="https://www.eff.org/issues/privacy">EFF</a> weiterleiten, so dass sie für alle unsere elektronischen Freiheiten kämpfen kann."]]></string>
+  <string name="help_messageHistory">Surespot verfügt über eine Historie von 1000 Mitteilungen. Wenn Sie 1000 Mitteilungen erreichen, wird Ihre älteste Nachricht gelöscht, so dass immer nur 1000 (verschlüsselte) Nachrichten auf dem Server gespeichert sind. Natürlich können einzelne oder alle Ihre Mitteilungen jederzeit von Ihnen gelöscht werden.</string>
   <string name="title_activity_about">Über surespot</string>
   <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
-  <string name="about_website"><![CDATA["Bitte besuchen Sie die surespot Webseite <a href="https://www.surespot.me">https://www.surespot.me</a> für weiter Informationen, einschliesslich der <a href="https://www.surespot.me/documents/surespot_terms_of_service_5-7-13.html">AGB</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy_5-7-13.html">des Datenschutzes</a>, und der <a href="https://www.surespot.me/documents/threat.html">Daten- und Sicherheitsbewertung</a>."]]></string>
-  <string name="about_opensource"><![CDATA["Surespot is 100% open source und begrüsst ihre Mitarbeit - sehen Sie sich den Quellcode auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> an."]]></string>
-  <string name="about_tech"><![CDATA["Für einen mehr technischen Überblick wie surespot funktioniert bitte klicken Sie <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a>."]]></string>
-  <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine Email an <a href="mailto:support@2fours.com">support@2fours.com</a> schreiben.]]></string>
+  <string name="about_website"><![CDATA["Bitte besuchen Sie die surespot-Webseite <a href="https://www.surespot.me">https://www.surespot.me</a> für weiter Informationen, einschließlich der <a href="https://www.surespot.me/documents/surespot_terms_of_service_5-7-13.html">AGB</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy_5-7-13.html">des Datenschutzes</a>, und der <a href="https://www.surespot.me/documents/threat.html">Daten- und Sicherheitsbewertung</a>."]]></string>
+  <string name="about_opensource"><![CDATA["Surespot is 100% Open Source und begrüßt ihre Mitarbeit - sehen Sie sich den Quellcode auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> an."]]></string>
+  <string name="about_tech"><![CDATA["Für einen mehr technischen Überblick darüber, wie surespot funktioniert,  klicken Sie bitte <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a>."]]></string>
+  <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine E-Mail an <a href="mailto:support@2fours.com">support@2fours.com</a> schreiben.]]></string>
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: neue Mitteilung von %2$s</string>
   <string name="notification_invite">%1$s: Kontakt einladen %2$s</string>
@@ -102,10 +102,10 @@
   <string name="invite">Einladen</string>
   <string name="no_contact_data_selected_or_entered">Kein Kontakt ausgewählt oder eingegeben</string>
   <string name="toggled_sms_contact_population_mechanism">SMS Kontakt-Auswahl-Mechanismus umgeschaltet </string>
-  <string name="invitation_email_subject">Einladung via surespot mit mir privat zu chatten</string>
-  <string name="invite_no_application_found">Keine Anwendung gefunden um die Einladung zu versenden.</string>
+  <string name="invitation_email_subject">Einladung zum privaten Chat via surespot</string>
+  <string name="invite_no_application_found">Keine Anwendung gefunden, um die Einladung zu versenden.</string>
   <string name="invite_progress_text">Einladung erstellen</string>
-  <string name="email">Email</string>
+  <string name="email">E-Mail</string>
   <string name="sms">SMS</string>
   <string name="social">Soziales Netzwerk</string>
   <string name="unknown">Unbekannt</string>
@@ -115,7 +115,7 @@
   <string name="login_try_again_later">Fehler bei der Anmeldung, bitte versuchen Sie es später.</string>
   <string name="login_max_identities_reached">Entschuldigung, Sie haben bereits die maximale Anzahl an Profilen erstellt (%d).\n\nProfile können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
   <string name="local_cache_cleared">Lokaler Cache gelöscht</string>
-  <string name="qr_pre_username_help">Um jemanden Einzuladen scannen Sie diesen QR Code</string>
+  <string name="qr_pre_username_help">Um jemanden einzuladen, scannen Sie diesen QR Code</string>
   <string name="qr_post_username_help">Um die Kontaktanfrage zu erhalten muss die App surespot aus Google Play installiert werden</string>
   <string name="send">senden</string>
   <string name="main_action_bar_right">Empfänger auswählen</string>
