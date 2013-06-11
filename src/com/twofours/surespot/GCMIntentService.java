@@ -200,11 +200,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		mBuilder.setContentIntent(resultPendingIntent);
 
-		Notification notification = mBuilder.build();
+		
 
 		if (pm.getBoolean("pref_notifications_led", true)) {
-			notification.defaults |= Notification.DEFAULT_LIGHTS;
-		}
+			
+			mBuilder.setDefaults(Notification.FLAG_SHOW_LIGHTS);
+			mBuilder.setLights(0xff0000FF, 500, 1000);
+		}		
+		
+		Notification notification = mBuilder.build();
 		if (pm.getBoolean("pref_notifications_sound", true)) {
 			notification.defaults |= Notification.DEFAULT_SOUND;
 		}
