@@ -484,10 +484,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		OnTouchListener editTouchListener = new OnTouchListener() {
 
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-
-				SurespotLog.v(TAG, "onTouch event: %d", event.getAction());
-
+			public boolean onTouch(View v, MotionEvent event) {			
 				if (!mKeyboardShowing) {
 					showSoftKeyboard(v);
 					return true;
@@ -1106,9 +1103,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		Runnable runnable = new Runnable() {
 
 			@Override
-			public void run() {
-
+			public void run() {						
 				mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+				mImm.restartInput(view);
 				mImm.showSoftInput(view, 0, new ResultReceiver(null) {
 					@Override
 					protected void onReceiveResult(int resultCode, Bundle resultData) {
