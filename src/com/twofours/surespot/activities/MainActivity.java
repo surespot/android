@@ -1005,8 +1005,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing: %b", mEmojiShowing);
 		outState.putBoolean("emojiShowing", mEmojiShowing);
 
-		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing on chat tab: %b", mEmojiShowingOnChatTab);
-		outState.putBoolean("emojiShowingChat", mEmojiShowingOnChatTab);
+		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing on chat tab: %b", mEmojiShowing);
+		outState.putBoolean("emojiShowingChat", mEmojiShowing);
 
 		SurespotLog.v(TAG, "onSaveInstanceState saving keyboard showing in chat tab: %b", mKeyboardShowingOnChatTab);
 		outState.putBoolean("keyboardShowingChat", mKeyboardShowingOnChatTab);
