@@ -118,6 +118,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mKeyboardShowingOnHomeTab;
 	private boolean mEmojiShowingOnChatTab;
 	private boolean mEmojiShowing;
+	private boolean mFriendHasBeenSet;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -269,11 +270,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
 				mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
-				mEmojiShowingOnChatTab =  savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);			
+				mEmojiShowingOnChatTab = savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);
 				mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
 				mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
 
-				SurespotLog.v(TAG, "loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b", mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
+				SurespotLog
+						.v(TAG,
+								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
+								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
 			}
 
 		}
@@ -495,7 +499,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					}
 				}
 
-				return false;		
+				return false;
 
 			}
 		};
@@ -997,23 +1001,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
 		}
 
-
 		SurespotLog.v(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
 		outState.putBoolean("keyboardShowing", mKeyboardShowing);
 
 		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing: %b", mEmojiShowing);
 		outState.putBoolean("emojiShowing", mEmojiShowing);
-		
+
 		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing on chat tab: %b", mEmojiShowingOnChatTab);
 		outState.putBoolean("emojiShowingChat", mEmojiShowingOnChatTab);
 
 		SurespotLog.v(TAG, "onSaveInstanceState saving keyboard showing in chat tab: %b", mKeyboardShowingOnChatTab);
 		outState.putBoolean("keyboardShowingChat", mKeyboardShowingOnChatTab);
 
-		
 		SurespotLog.v(TAG, "onSaveInstanceState saving keybard showing in home tab: %b", mKeyboardShowingOnHomeTab);
 		outState.putBoolean("keyboardShowingHome", mKeyboardShowingOnHomeTab);
-
 
 		if (mInitialHeightOffset > 0) {
 			SurespotLog.v(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
@@ -1457,18 +1458,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mEtInvite.requestFocus();
 
 				SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
-				mKeyboardShowingOnChatTab = mKeyboardShowing;
-				mEmojiShowingOnChatTab = mEmojiShowing;
-				showKeyboard = mKeyboardShowingOnHomeTab;
+				if (mFriendHasBeenSet) {
+					mKeyboardShowingOnChatTab = mKeyboardShowing;
+					mEmojiShowingOnChatTab = mEmojiShowing;
+					showKeyboard = mKeyboardShowingOnHomeTab;
+				}
+				else {
+					showKeyboard = mKeyboardShowing;
+				}
 				showEmoji = false;
 
 			} else {
 
 				if (friend.isDeleted()) {
-					if (mCurrentFriend == null) {					
-						mKeyboardShowingOnHomeTab = mKeyboardShowing;					
+					if (mCurrentFriend == null) {
+						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 					}
-					
+
 					mEmojiButton.setVisibility(View.GONE);
 					mEtMessage.setVisibility(View.GONE);
 					showKeyboard = false;
@@ -1479,18 +1485,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mEmojiButton.setVisibility(View.VISIBLE);
 
 					// if we moved back to chat tab from home hab show the keyboard if it was showing
-					if (mCurrentFriend == null) {
+					if (mCurrentFriend == null && mFriendHasBeenSet) {
 						SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
 						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 						showKeyboard = mKeyboardShowingOnChatTab;
 						showEmoji = mEmojiShowingOnChatTab;
-						
 					} else {
 						showKeyboard = mKeyboardShowing;
 						showEmoji = mEmojiShowing;
 					}
 
-					
 				}
 
 				mEtInvite.setVisibility(View.GONE);
@@ -1517,6 +1521,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mKeyboardShowing = showKeyboard;
 			}
 		}
+		
+		mFriendHasBeenSet = true;
 
 	}
 }
