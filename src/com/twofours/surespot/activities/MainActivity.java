@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -490,8 +491,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				if (event.getAction() == MotionEvent.ACTION_UP) {
 					if (!mKeyboardShowing) {
-						showSoftKeyboard();
 						v.requestFocus();
+						showSoftKeyboard();
+
 						return true;
 					}
 				}
@@ -1065,18 +1067,24 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		hideSoftKeyboard(view);
 	}
 
-	private synchronized void hideSoftKeyboard(View view) {
+	private synchronized void hideSoftKeyboard(final View view) {
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+		Runnable runnable = new Runnable() {
 
-		mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
 			@Override
-			protected void onReceiveResult(int resultCode, Bundle resultData) {
-				if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
-					mKeyboardShowing = true;
+			public void run() {
+				mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
+					@Override
+					protected void onReceiveResult(int resultCode, Bundle resultData) {
+						if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+							mKeyboardShowing = true;
 
-				}
+						}
+					}
+				});
 			}
-		});
-
+		};
+		view.post(runnable);
 	}
 
 	private synchronized void showSoftKeyboard() {
@@ -1095,6 +1103,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private synchronized void showSoftKeyboard(final View view) {
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 		Runnable runnable = new Runnable() {
 
 			@Override
@@ -1105,6 +1114,40 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					protected void onReceiveResult(int resultCode, Bundle resultData) {
 						if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
 							mKeyboardShowing = false;
+						}
+
+					}
+				});
+			}
+		};
+		view.post(runnable);
+	}
+	
+	private synchronized void showSoftKeyboard(final View view, boolean showEmoji) {
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+				mImm.showSoftInput(view, 0, new ResultReceiver(null) {
+					@Override
+					protected void onReceiveResult(int resultCode, Bundle resultData) {
+						if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
+							mKeyboardShowing = false;
+						}
+						else {
+							Runnable runnable = new Runnable() {
+								
+								@Override
+								public void run() {
+									showEmoji(false, true);
+									
+								}
+							};
+							
+							view.post(runnable);
+							
 						}
 
 					}
@@ -1127,17 +1170,29 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		int visibility = mEmojiView.getVisibility();
 		if (showEmoji) {
+			
+//			new AsyncTask<Void, Void, Void> () {
+//				protected Void doInBackground(Void... params) {
+					MainActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+//					return null;
+//				};
+//			
+//				
+//			}.execute();
+			
 			// mShowEmoji = true;
 			if (visibility != View.VISIBLE && force) {
 				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
 
+				
 				mEmojiView.setVisibility(View.VISIBLE);
 
 			}
 		} else {
 			// mShowEmoji = false;
-			if (force && visibility != View.GONE) {
+			if (visibility != View.GONE && force) {
 				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 				mEmojiView.setVisibility(View.GONE);
 			}
 
@@ -1286,6 +1341,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	public void onLayoutMeasure() {
+		if (mTabSwitching)
+			return;
 		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
 		if (mEmojiShowing) {
 
@@ -1379,13 +1436,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
+	private boolean mTabSwitching = false;
+
 	private void handleTabChange(Friend friend) {
+		mTabSwitching = true;
 		if (mCurrentFriend != friend) {
+
 			boolean showKeyboard = false;
 			boolean showEmoji = false;
+			SurespotLog
+					.v(TAG,
+							"handleTabChange, currentFriend is null: %b, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
+							mCurrentFriend == null, mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab,
+							mEmojiShowingOnChatTab);
 
-			SurespotLog.v(TAG, "handleTabChange, mCurrentFriend: %s, friend: %s, keyboard showing: %b, emojiShowing: %b", mCurrentFriend, friend,
-					mKeyboardShowing, mEmojiShowing);
 			if (friend == null) {
 				mEmojiButton.setVisibility(View.GONE);
 				mEtMessage.setVisibility(View.GONE);
@@ -1442,7 +1506,37 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
 			mCurrentFriend = friend;
 			if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
-				toggleEmoji();
+				if (friend == null) {
+					if (mEmojiShowing) {
+
+						mTabSwitching = false;
+//						showSoftKeyboard(mEtMessage);
+				//		showEmoji(false, true);
+						showSoftKeyboard(mEtInvite, false);
+
+						//toggleEmoji();
+					}
+
+					else {
+						mTabSwitching = false;
+						// showEmoji(true, false);
+						hideSoftKeyboard(mEtMessage);
+
+					}
+				} else {
+					if (mEmojiShowing) {
+						showSoftKeyboard(mEtMessage);
+						showEmoji(false, false);
+						mTabSwitching = false;
+
+					} else {
+						showEmoji(true, false);
+						mTabSwitching = false;
+						hideSoftKeyboard(mEtInvite);
+
+					}
+				}
+
 			}
 
 			else {
@@ -1453,6 +1547,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					if (mKeyboardShowing != showKeyboard) {
 						showEmoji(showEmoji, false);
+						mTabSwitching = false;
 						hideSoftKeyboard();
 					} else {
 						showEmoji(showEmoji, true);
@@ -1460,8 +1555,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				}
 			}
-
-			
 
 			if (friend == null || !friend.isDeleted()) {
 				mKeyboardShowing = showKeyboard;
@@ -1471,6 +1564,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		mFriendHasBeenSet = true;
+		mTabSwitching = false;
 
 	}
 }
