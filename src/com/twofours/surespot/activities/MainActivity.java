@@ -488,14 +488,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				SurespotLog.v(TAG, "onTouch event: %d", event.getAction());
 
-				if (event.getAction() == MotionEvent.ACTION_UP) {
-					if (!mKeyboardShowing) {
-						v.requestFocus();
-
-						showSoftKeyboard(v);
-
-						return true;
-					}
+				if (!mKeyboardShowing) {
+					showSoftKeyboard(v);
+					return true;
 				}
 
 				return false;
@@ -1481,8 +1476,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 						showKeyboard = mKeyboardShowingOnChatTab;
 						showEmoji = mEmojiShowingOnChatTab;
-					}
-					else {
+					} else {
 						showKeyboard = mKeyboardShowing;
 						showEmoji = mEmojiShowing;
 					}
@@ -1540,14 +1534,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mFriendHasBeenSet = true;
 	}
 
-	private void setEmojiIcon(boolean keyboardShowing) {
-		if (keyboardShowing) {
-			if (mEmojiResourceId < 0) {
-				mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
+	private void setEmojiIcon(final boolean keyboardShowing) {
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				if (keyboardShowing) {
+					if (mEmojiResourceId < 0) {
+						mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
+					}
+					mEmojiButton.setImageResource(mEmojiResourceId);
+				} else {
+					mEmojiButton.setImageResource(R.drawable.keyboard_icon);
+				}
+
 			}
-			mEmojiButton.setImageResource(mEmojiResourceId);
-		} else {
-			mEmojiButton.setImageResource(R.drawable.keyboard_icon);
-		}
+		};
+
+		mEmojiButton.post(runnable);
 	}
 }
