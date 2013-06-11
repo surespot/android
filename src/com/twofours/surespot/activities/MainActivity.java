@@ -117,6 +117,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mEmojiShowingOnChatTab;
 	private boolean mEmojiShowing;
 	private boolean mFriendHasBeenSet;
+	private int mEmojiResourceId = -1;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -439,7 +440,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
-		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
+		setEmojiIcon(true);
 
 		mQRButton = (ImageView) findViewById(R.id.bQR);
 		mQRButton.setOnClickListener(new View.OnClickListener() {
@@ -1120,8 +1121,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							mKeyboardShowing = false;
 						}
 
-						mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
-
+						setEmojiIcon(true);
 					}
 				});
 			}
@@ -1186,11 +1186,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (force) {
-			if (showEmoji) {
-				mEmojiButton.setImageResource(R.drawable.keyboard_icon);
-			} else {
-				mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
-			}
+			setEmojiIcon(!showEmoji);
 		}
 
 		mEmojiShowing = showEmoji;
@@ -1319,7 +1315,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			handled = true;
 		}
 
-		mEmojiButton.setImageResource(EmojiParser.getInstance().getRandomEmojiResource());
 		return handled;
 	}
 
@@ -1428,8 +1423,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			boolean showEmoji = false;
 			SurespotLog
 					.v(TAG,
-							"handleTabChange, currentFriend is null: %b, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
-							mCurrentFriend == null, mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab,
+							"handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
+							mFriendHasBeenSet, mCurrentFriend == null, mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab,
 							mEmojiShowingOnChatTab);
 
 			if (friend == null) {
@@ -1486,7 +1481,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						mKeyboardShowingOnHomeTab = mKeyboardShowing;
 						showKeyboard = mKeyboardShowingOnChatTab;
 						showEmoji = mEmojiShowingOnChatTab;
-					} 
+					}
+					else {
+						showKeyboard = mKeyboardShowing;
+						showEmoji = mEmojiShowing;
+					}
 				}
 
 				mEtInvite.setVisibility(View.GONE);
@@ -1541,4 +1540,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mFriendHasBeenSet = true;
 	}
 
+	private void setEmojiIcon(boolean keyboardShowing) {
+		if (keyboardShowing) {
+			if (mEmojiResourceId < 0) {
+				mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
+			}
+			mEmojiButton.setImageResource(mEmojiResourceId);
+		} else {
+			mEmojiButton.setImageResource(R.drawable.keyboard_icon);
+		}
+	}
 }
