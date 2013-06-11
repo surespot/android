@@ -1431,8 +1431,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
 				if (mFriendHasBeenSet) {
-					mKeyboardShowingOnChatTab = mKeyboardShowing;
-					mEmojiShowingOnChatTab = mEmojiShowing;
+					if (!mCurrentFriend.isDeleted()) {
+						mKeyboardShowingOnChatTab = mKeyboardShowing;
+						mEmojiShowingOnChatTab = mEmojiShowing;						
+					}
+					
 					showKeyboard = mKeyboardShowingOnHomeTab;
 				} else {
 					showKeyboard = mKeyboardShowing;
