@@ -493,7 +493,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					if (!mKeyboardShowing) {
 						v.requestFocus();
 
-						showSoftKeyboard(v, false, true);
+						showSoftKeyboard(v);
 
 						return true;
 					}
@@ -1065,7 +1065,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			view = mEtMessage;
 		}
 
-		
 		hideSoftKeyboard(view);
 	}
 
@@ -1129,10 +1128,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		view.post(runnable);
 	}
 
-	private synchronized void showSoftKeyboard(final View view, final boolean showEmoji, final boolean force) {
-	//	mShowEmoji = !force;
+	private synchronized void showSoftKeyboardThenHideEmoji(final View view) {
 		mKeyboardShowing = true;
-		//mEmojiShowing = false;
 
 		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 		Runnable runnable = new Runnable() {
@@ -1150,7 +1147,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 								@Override
 								public void run() {
-									showEmoji(showEmoji, true);
+									showEmoji(false, false);
 
 								}
 							};
@@ -1167,7 +1164,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private synchronized void showEmoji(boolean showEmoji, boolean force) {
-	//	mShowEmoji = !force;
 		int visibility = mEmojiView.getVisibility();
 		if (showEmoji) {
 
@@ -1194,19 +1190,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void toggleEmoji() {
 		if (mEmojiShowing) {
-
-			// showEmoji(false, true);
-
-			showSoftKeyboard(mEtMessage, false, true);
+			showSoftKeyboard(mEtMessage);
 		} else {
+
+			showEmoji(true, true);
 			if (mKeyboardShowing) {
-
-				showEmoji(true, true);
 				hideSoftKeyboard();
-			} else {
-				showEmoji(true, true);
 			}
-
 		}
 	}
 
@@ -1286,10 +1276,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 									}
 
-									// scrollToEnd();
 								}
 							});
-					// }
 				}
 
 				else {
@@ -1306,12 +1294,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private void sendMessage() {
 		final String message = mEtMessage.getText().toString();
 		mChatController.sendMessage(message, SurespotConstants.MimeTypes.TEXT);
-
-		//
 		TextKeyListener.clear(mEtMessage.getText());
-
-		// scroll to end
-		// scrollToEnd();
 	}
 
 	public boolean backButtonPressed() {
@@ -1333,8 +1316,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	public void onLayoutMeasure() {
-		// if (mTabSwitching)
-		// return;
 		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
 		if (mEmojiShowing) {
 
@@ -1347,15 +1328,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				layoutParams.height = mEmojiHeight;
 			}
 
-			//if (mShowEmoji) {
-				mEmojiView.setVisibility(View.VISIBLE);				
-	//}
+			mEmojiView.setVisibility(View.VISIBLE);
 		}
 
 		else {
-	//		if (mShowEmoji) {
-				mEmojiView.setVisibility(View.GONE);
-			//}
+			mEmojiView.setVisibility(View.GONE);
 		}
 	}
 
@@ -1435,7 +1412,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void handleTabChange(Friend friend) {
-		// mTabSwitching = true;
 		if (mCurrentFriend != friend) {
 
 			boolean showKeyboard = false;
@@ -1505,14 +1481,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (friend == null) {
 					if (mEmojiShowing) {
 
-						// mTabSwitching = false;
-						//showEmoji(false, false);
-						showSoftKeyboard(mEtInvite, false, false);
-						
+						showSoftKeyboardThenHideEmoji(mEtInvite);
+
 					}
 
 					else {
-						// mTabSwitching = false;
 						hideSoftKeyboard(mEtMessage);
 
 					}
@@ -1520,32 +1493,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					if (mEmojiShowing) {
 						showSoftKeyboard(mEtMessage);
 						showEmoji(false, true);
-						// mTabSwitching = false;
-
 					} else {
 						showEmoji(true, true);
-						// mTabSwitching = false;
 						hideSoftKeyboard(mEtInvite);
-
 					}
 				}
-
-			}
-
-			else {
-
+			} else {
 				if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
 					showSoftKeyboard();
 				} else {
 
 					if (mKeyboardShowing != showKeyboard) {
 						showEmoji(showEmoji, true);
-						// mTabSwitching = false;
 						hideSoftKeyboard();
 					} else {
 						showEmoji(showEmoji, true);
 					}
-
 				}
 			}
 
@@ -1557,7 +1520,5 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		mFriendHasBeenSet = true;
-		// mTabSwitching = false;
-
 	}
 }
