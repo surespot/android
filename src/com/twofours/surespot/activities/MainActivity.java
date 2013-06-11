@@ -1116,9 +1116,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							mKeyboardShowing = false;
 						}
 
-						setEmojiIcon(true);
+						
 					}
 				});
+				
+				//setEmojiIcon(true);
 			}
 		};
 		view.post(runnable);
@@ -1328,10 +1330,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mEmojiView.setVisibility(View.VISIBLE);
+			setEmojiIcon(false);
 		}
 
 		else {
 			mEmojiView.setVisibility(View.GONE);
+			setEmojiIcon(true);
 		}
 	}
 
@@ -1535,10 +1539,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void setEmojiIcon(final boolean keyboardShowing) {
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
+//		Runnable runnable = new Runnable() {
+//
+//			@Override
+//			public void run() {
 				if (keyboardShowing) {
 					if (mEmojiResourceId < 0) {
 						mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
@@ -1548,9 +1552,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mEmojiButton.setImageResource(R.drawable.keyboard_icon);
 				}
 
-			}
-		};
-
-		mEmojiButton.post(runnable);
+//			}
+//		};
+//
+//		mEmojiButton.post(runnable);
 	}
 }
