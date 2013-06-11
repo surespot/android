@@ -111,7 +111,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mEmojiButton;
 	private ImageView mQRButton;
 	private Friend mCurrentFriend;
-	// private boolean mShowEmoji = false;
+//	private boolean mShowEmoji = false;
 	// boolean mKeyboardWasOpen = false;
 	private int mOrientation;
 	private boolean mKeyboardShowingOnChatTab;
@@ -1076,22 +1076,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
 					mKeyboardShowing = true;
 
-				} else {
-					if (callShowEmoji) {
-						Runnable runnable = new Runnable() {
-
-							@Override
-							public void run() {
-								showEmoji(showEmoji);
-
-							}
-						};
-
-						finalView.post(runnable);
-					}
 				}
 			}
 		});
+
+		if (callShowEmoji) {
+			showEmoji(showEmoji, false);
+
+		}
 
 	}
 
@@ -1119,7 +1111,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 						@Override
 						public void run() {
-							showEmoji(showEmoji);
+							showEmoji(showEmoji, false);
 							// latch.countDown();
 
 						}
@@ -1152,7 +1144,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 											@Override
 											public void run() {
-												showEmoji(showEmoji);
+												showEmoji(showEmoji, false);
 
 											}
 										};
@@ -1176,7 +1168,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
-	private synchronized void showEmoji(boolean showEmoji) {
+	private synchronized void showEmoji(boolean showEmoji, boolean force) {
 
 		// SurespotLog.v(TAG, "keyboardState,  showing: %b", mKeyboardShowing);
 		if (mKeyboardShowing && showEmoji) {
@@ -1189,19 +1181,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		int visibility = mEmojiView.getVisibility();
 		if (showEmoji) {
-
-			if (visibility != View.VISIBLE) {
+	//		mShowEmoji = true;
+			if (visibility != View.VISIBLE && force) {
 				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
+				
 				mEmojiView.setVisibility(View.VISIBLE);
 
 			}
 		} else {
-			if (visibility != View.GONE) {
+		//	mShowEmoji = false;
+			if (force && visibility != View.GONE) {
 				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
 				mEmojiView.setVisibility(View.GONE);
 			}
 
 		}
+	//	mShowEmoji = showEmoji;
+		 
 		mEmojiShowing = showEmoji;
 
 	}
@@ -1215,9 +1211,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		} else {
 			if (mKeyboardShowing) {
-				hideSoftKeyboard(false, true);
+				hideSoftKeyboard(true, true);
+			} else {
+				showEmoji(true, true);
 			}
-			showEmoji(true);
 
 		}
 	}
@@ -1336,7 +1333,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (mEmojiShowing) {
-			showEmoji(false);
+			showEmoji(false, true);
 			handled = true;
 		}
 
@@ -1350,20 +1347,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
 				mEmojiHeight = 200;
-
 			}
 
 			if (mEmojiHeight > 0) {
 				android.view.ViewGroup.LayoutParams layoutParams = mEmojiView.getLayoutParams();
 				layoutParams.height = mEmojiHeight;
-				mEmojiView.invalidate();
 			}
 
+			mEmojiView.setVisibility(View.VISIBLE);
+		} else {
+			mEmojiView.setVisibility(View.GONE);
 		}
-		// } else {
-		// mEmojiView.setVisibility(View.GONE);
-		// }
-
 	}
 
 	private void inviteFriend() {
@@ -1462,8 +1456,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mKeyboardShowingOnChatTab = mKeyboardShowing;
 					mEmojiShowingOnChatTab = mEmojiShowing;
 					showKeyboard = mKeyboardShowingOnHomeTab;
-				}
-				else {
+				} else {
 					showKeyboard = mKeyboardShowing;
 				}
 				showEmoji = false;
@@ -1513,7 +1506,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (mKeyboardShowing != showKeyboard) {
 					hideSoftKeyboard(true, showEmoji);
 				} else {
-					showEmoji(showEmoji);
+					showEmoji(showEmoji, true);
 				}
 			}
 
@@ -1521,7 +1514,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mKeyboardShowing = showKeyboard;
 			}
 		}
-		
+
 		mFriendHasBeenSet = true;
 
 	}
