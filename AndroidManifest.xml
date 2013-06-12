@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
-    android:versionCode="25"
-    android:versionName="26ad170" >
+    android:versionCode="26"
+    android:versionName="86fbea0" >
 
     <uses-sdk
         android:minSdkVersion="8"
