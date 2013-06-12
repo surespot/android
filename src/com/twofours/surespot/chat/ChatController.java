@@ -1297,8 +1297,6 @@ public class ChatController {
 			return;
 		}
 
-		boolean newMessage = false;
-
 		if (lastMessage != null) {
 			Friend friend = mFriendAdapter.getFriend(username);
 
@@ -1318,17 +1316,13 @@ public class ChatController {
 				// set the last viewed id to the difference caused by their messages
 				friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
 			}
-			newMessage = friend.isMessageActivity();
-
+			
 			chatAdapter.sort();
 			chatAdapter.notifyDataSetChanged();
 			chatAdapter.doneCheckingSequence();
 			mFriendAdapter.notifyDataSetChanged();
 
-			if (newMessage) {
-				scrollToEnd(username);
-			}
-
+			scrollToEnd(username);
 		}
 
 		setProgress(username, false);
