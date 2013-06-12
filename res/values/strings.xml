@@ -307,5 +307,6 @@
 	<string name="let_me_select">let me select</string>  
 	<string name="could_not_import_identity_drive_404">Could not load identity - please make sure you selected the same Google account that you were using in Google Drive.</string>  
 	<string name="pick_same_drive_account">Please pick the same account that you were using in Google Drive:</string>	
-	<string name="about">about...</string>
+	<string name="about">about...</string>	
+	<string name="unauthorized">unauthorized</string>
 </resources>

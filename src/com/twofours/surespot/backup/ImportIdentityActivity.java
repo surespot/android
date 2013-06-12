@@ -190,10 +190,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 																		// to
 																		// login
 																		// screen
-																		if (mSignup || mMode == MODE_DRIVE) {
-																			if (IdentityController.hasLoggedInUser()) {
-																				IdentityController.logout();
-																			}
+																		if (mSignup || mMode == MODE_DRIVE) {																			
+																			IdentityController.logout();
+																			
 																			Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 																			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, user);
 																			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -400,8 +399,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 														// import, go to
 														// login
 														// screen
-														if (mSignup) {
+														if (mSignup) {															
 															IdentityController.logout();
+															
 															Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 															intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 															startActivity(intent);

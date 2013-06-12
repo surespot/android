@@ -39,6 +39,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
+import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -141,7 +142,7 @@ public class NetworkController {
 								mSyncClient.cancelRequests(mContext, true);
 
 								if (m401Handler != null) {
-									m401Handler.handleResponse("unauthorized");
+									m401Handler.handleResponse(mContext.getString(R.string.unauthorized));
 								}
 
 							}

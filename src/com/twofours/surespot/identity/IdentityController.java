@@ -364,12 +364,12 @@ public class IdentityController {
 			byte[] idBytes = null;
 			synchronized (IDENTITY_FILE_LOCK) {
 
-				//might have copied old ungzipped drive identity file to sdcard so handle both
-				//RM#260				
+				// might have copied old ungzipped drive identity file to sdcard so handle both
+				// RM#260
 				idBytes = FileUtils.gunzipIfNecessary(FileUtils.readFileNoGzip(identityFilename));
 			}
 
-			if (idBytes != null) {				
+			if (idBytes != null) {
 				return decryptIdentity(idBytes, username, password);
 			}
 
@@ -454,7 +454,8 @@ public class IdentityController {
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+										false));
 							}
 						}
 
@@ -475,10 +476,12 @@ public class IdentityController {
 
 								default:
 									SurespotLog.w(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+											false));
 								}
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+										false));
 							}
 						}
 					});
@@ -521,7 +524,8 @@ public class IdentityController {
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+										false));
 							}
 						}
 
@@ -542,10 +546,12 @@ public class IdentityController {
 
 								default:
 									SurespotLog.w(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+											false));
 								}
 							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+										false));
 							}
 						}
 					});
@@ -782,17 +788,15 @@ public class IdentityController {
 		setLoggedInUser(context, identity, cookie);
 	}
 
-	public static void logout() {
-		// ChatController chatController = MainActivity.getChatController();
-		// if (chatController != null) {
-		// chatController.logout();
-		// }
-		if (MainActivity.getNetworkController() != null) {
-			MainActivity.getNetworkController().logout();
-		}
-		CredentialCachingService cache = SurespotApplication.getCachingService();
-		if (cache != null) {
-			cache.logout();
+	public static void logout() {		
+		if (hasLoggedInUser()) {
+			if (MainActivity.getNetworkController() != null) {
+				MainActivity.getNetworkController().logout();
+			}
+			CredentialCachingService cache = SurespotApplication.getCachingService();
+			if (cache != null) {
+				cache.logout();
+			}
 		}
 	}
 
