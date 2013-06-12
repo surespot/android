@@ -205,7 +205,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		if (pm.getBoolean("pref_notifications_led", true)) {
 			
 			mBuilder.setDefaults(Notification.FLAG_SHOW_LIGHTS);
-			mBuilder.setLights(0xff0000FF, 500, 1000);
+			mBuilder.setLights(0xff0000FF, 500, 5000);
 		}		
 		
 		Notification notification = mBuilder.build();
