@@ -22,6 +22,7 @@ import java.util.Random;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ImageSpan;
 
 import com.twofours.surespot.R;
@@ -244,7 +245,7 @@ public class EmojiParser {
 	 * @return A CharSequence annotated with ImageSpans covering any recognized emoticons.
 	 */
 	public CharSequence addEmojiSpans(String text) {
-		if (text == null) {
+		if (TextUtils.isEmpty(text)) {
 			return null;
 		}
 
