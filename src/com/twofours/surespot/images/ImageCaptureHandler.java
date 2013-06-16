@@ -31,7 +31,7 @@ public class ImageCaptureHandler implements Parcelable {
 		return mTo;
 	}
 
-	public ImageCaptureHandler(Parcel in) {
+	private ImageCaptureHandler(Parcel in) {
 		mCurrentPhotoPath = in.readString();
 		mTo = in.readString();
 	}
@@ -50,9 +50,8 @@ public class ImageCaptureHandler implements Parcelable {
 			mCurrentPhotoPath = f.getAbsolutePath();
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 
-			activity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);			
-		}
-		catch (Exception e) {
+			activity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
+		} catch (Exception e) {
 			SurespotLog.w(TAG, "capture", e);
 		}
 
@@ -60,8 +59,8 @@ public class ImageCaptureHandler implements Parcelable {
 
 	public void handleResult(final MainActivity activity) {
 		activity.getChatController().scrollToEnd(mTo);
-		ChatUtils.uploadPictureMessageAsync(activity, activity.getChatController(), activity.getNetworkController(),
-				Uri.fromFile(new File(mCurrentPhotoPath)), mTo, true, new IAsyncCallback<Boolean>() {
+		ChatUtils.uploadPictureMessageAsync(activity, activity.getChatController(), activity.getNetworkController(), Uri.fromFile(new File(mCurrentPhotoPath)),
+				mTo, true, new IAsyncCallback<Boolean>() {
 					@Override
 					public void handleResponse(Boolean result) {
 						if (!result) {
@@ -84,5 +83,15 @@ public class ImageCaptureHandler implements Parcelable {
 		dest.writeString(mTo);
 
 	}
+
+	public static final Parcelable.Creator<ImageCaptureHandler> CREATOR = new Parcelable.Creator<ImageCaptureHandler>() {
+		public ImageCaptureHandler createFromParcel(Parcel in) {
+			return new ImageCaptureHandler(in);
+		}
+
+		public ImageCaptureHandler[] newArray(int size) {
+			return new ImageCaptureHandler[size];
+		}
+	};
 
 }
