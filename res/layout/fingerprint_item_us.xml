@@ -7,6 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
         android:orientation="horizontal" >
 
         <TextView
@@ -14,14 +15,15 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:paddingRight="5dp"
-            android:text="version: " />
+            android:text="version"
+            android:textSize="11sp" />
 
         <TextView
             android:id="@+id/keyVersion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:paddingRight="5dp" />
+            android:textSize="11sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -31,42 +33,65 @@
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
             android:orientation="vertical" >
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingLeft="5dp"
-                android:text="DH" />
+                android:gravity="center"
+                android:text="DH"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
-            <com.twofours.surespot.ui.ExpandableHeightGridView
-                android:id="@+id/dhFingerprint"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:numColumns="4"
-                android:paddingLeft="5dp" />
+                android:gravity="center" >
+
+                <com.twofours.surespot.ui.ExpandableHeightGridView
+                    android:id="@+id/dhFingerprint"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:columnWidth="20dp"
+                    android:gravity="center"
+                    android:numColumns="4"
+                    android:stretchMode="none" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginRight="20dp"
             android:layout_weight="1"
             android:orientation="vertical" >
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingLeft="5dp"
-                android:text="DSA" />
+                android:gravity="center"
+                android:text="DSA"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
-            <com.twofours.surespot.ui.ExpandableHeightGridView
-                android:id="@+id/dsaFingerprint"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:numColumns="4"
-                android:paddingLeft="5dp" />
+                android:gravity="center" >
+
+                <com.twofours.surespot.ui.ExpandableHeightGridView
+                    android:id="@+id/dsaFingerprint"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:columnWidth="20dp"
+                    android:gravity="center"
+                    android:numColumns="4"
+                    android:stretchMode="none" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

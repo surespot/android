@@ -14,23 +14,29 @@
             android:id="@+id/aFingerprintsLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp" >
+            android:layout_marginLeft="5dp"
+            android:textSize="12sp"
+            android:textStyle="bold" >
         </TextView>
 
         <com.twofours.surespot.ui.ExpandableHeightListView
             android:id="@+id/aFingerprints"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content" 
+            android:layout_marginBottom="10dp">
         </com.twofours.surespot.ui.ExpandableHeightListView>
 
         <TextView
             android:id="@+id/bFingerprintsLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp" >
+            android:layout_marginLeft="5dp"
+            android:textSize="12sp"
+            android:textStyle="bold" >
         </TextView>
 
         <com.twofours.surespot.ui.ExpandableHeightListView
+            android:layout_marginBottom="10dp"
             android:id="@+id/bFingerprints"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >

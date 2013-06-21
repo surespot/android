@@ -68,7 +68,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 			myItems.add(map);
 
 		}
-		
+
 		Collections.sort(myItems, new Comparator<HashMap<String, String>>() {
 			@Override
 			public int compare(HashMap<String, String> lhs, HashMap<String, String> rhs) {
@@ -100,7 +100,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 						map.put("DHFingerprint", Utils.md5(new String(encodedDHPubKey)));
 						map.put("DSAFingerprint", Utils.md5(new String(encodedDSAPubKey)));
 						items.add(map);
-						
+
 						Collections.sort(items, new Comparator<HashMap<String, String>>() {
 							@Override
 							public int compare(HashMap<String, String> lhs, HashMap<String, String> rhs) {
@@ -115,7 +115,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 			protected void onPostExecute(List<HashMap<String, String>> theirItems) {
 
-				KeyFingerprintAdapter myAdapter = new KeyFingerprintAdapter(getActivity(),  R.layout.fingerprint_item_us, myItems);
+				KeyFingerprintAdapter myAdapter = new KeyFingerprintAdapter(getActivity(), R.layout.fingerprint_item_us, myItems);
 				KeyFingerprintAdapter theirAdapter = new KeyFingerprintAdapter(getActivity(), R.layout.fingerprint_item_them, theirItems);
 
 				// order alphabetically to make comparison easier as it will be showing in the same order on both devices
@@ -138,18 +138,19 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 		}.execute();
 
-		getDialog().setTitle("key fingerprints");
+		getDialog().setTitle("public key fingerprints");
+		
 
 		TextView tvALabel = (TextView) v.findViewById(R.id.aFingerprintsLabel);
 		TextView tvBLabel = (TextView) v.findViewById(R.id.bFingerprintsLabel);
 
 		if (meFirst) {
-			tvALabel.setText(identity.getUsername() + "'s fingerprints");
-			tvBLabel.setText(mUsername + "'s fingerprints");
+			tvALabel.setText(identity.getUsername().toUpperCase());
+			tvBLabel.setText(mUsername.toUpperCase());
 		}
 		else {
-			tvALabel.setText(mUsername + "'s fingerprints");
-			tvBLabel.setText(identity.getUsername() + "'s fingerprints");
+			tvALabel.setText(mUsername.toUpperCase());
+			tvBLabel.setText(identity.getUsername().toUpperCase());
 
 		}
 

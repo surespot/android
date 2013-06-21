@@ -22,7 +22,7 @@ public class KeyFingerprintAdapter extends BaseAdapter {
 	int mLayoutId;
 	Context mContext;
 
-	public KeyFingerprintAdapter(Context context, int layoutId, List<HashMap<String, String>> myItems) {		
+	public KeyFingerprintAdapter(Context context, int layoutId, List<HashMap<String, String>> myItems) {
 		mContext = context;
 		mLayoutId = layoutId;
 		mItems = myItems;
@@ -46,7 +46,7 @@ public class KeyFingerprintAdapter extends BaseAdapter {
 		TextView tvVersion = (TextView) view.findViewById(R.id.keyVersion);
 		TextView tvTime = (TextView) view.findViewById(R.id.lastVerifiedDate);
 		ExpandableHeightGridView gvDH = (ExpandableHeightGridView) view.findViewById(R.id.dhFingerprint);
-		
+
 		ExpandableHeightGridView gvDSA = (ExpandableHeightGridView) view.findViewById(R.id.dsaFingerprint);
 
 		tvVersion.setText(items.get("version"));
@@ -55,14 +55,13 @@ public class KeyFingerprintAdapter extends BaseAdapter {
 			tvTime.setText(items.get("lastVerified"));
 		}
 
-		ArrayAdapter<String> dhAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, UIUtils.getFingerprintArray(items
-				.get("DHFingerprint")));
+		ArrayAdapter<String> dhAdapter = new ArrayAdapter<String>(mContext, R.layout.fingerprint_cell, UIUtils.getFingerprintArray(items.get("DHFingerprint")));
 
 		gvDH.setAdapter(dhAdapter);
 		gvDH.setExpanded(true);
 
-		ArrayAdapter<String> dsaAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_list_item_1, UIUtils.getFingerprintArray(items
-				.get("DSAFingerprint")));
+		ArrayAdapter<String> dsaAdapter = new ArrayAdapter<String>(mContext, R.layout.fingerprint_cell,
+				UIUtils.getFingerprintArray(items.get("DSAFingerprint")));
 
 		gvDSA.setAdapter(dsaAdapter);
 		gvDSA.setExpanded(true);
@@ -83,7 +82,7 @@ public class KeyFingerprintAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		
+
 		return position;
 	}
 }
