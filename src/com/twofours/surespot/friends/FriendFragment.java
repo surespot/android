@@ -127,42 +127,47 @@ public class FriendFragment extends SherlockFragment {
 				activity.uploadFriendImage(friend.getName());
 			}
 			else {
-
-				if (selection.equals(getString(R.string.menu_delete_all_messages))) {
-
-					SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-					boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
-					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation), getMainActivity()
-								.getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
-								new IAsyncCallback<Boolean>() {
-									public void handleResponse(Boolean result) {
-										if (result) {
-											activity.getChatController().deleteMessages(friend);
-										}
-
-									};
-								});
-					}
-					else {
-						activity.getChatController().deleteMessages(friend);
-					}
+				if (selection.equals(getString(R.string.verify_key_fingerprints))) {
+					UIUtils.showKeyFingerprintsDialog(activity, friend.getName());
 				}
 				else {
-					if (selection.equals(getString(R.string.menu_delete_friend))) {
-						UIUtils.createAndShowConfirmationDialog(activity,
-								getMainActivity().getString(R.string.delete_friend_confirmation, friend.getName()), getMainActivity()
-										.getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
-								new IAsyncCallback<Boolean>() {
-									public void handleResponse(Boolean result) {
-										if (result) {
-											activity.getChatController().deleteFriend(friend);
-										}
-										else {
-											dialogi.cancel();
-										}
-									};
-								});
+
+					if (selection.equals(getString(R.string.menu_delete_all_messages))) {
+
+						SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+						boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+						if (confirm) {
+							UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
+									getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
+									new IAsyncCallback<Boolean>() {
+										public void handleResponse(Boolean result) {
+											if (result) {
+												activity.getChatController().deleteMessages(friend);
+											}
+
+										};
+									});
+						}
+						else {
+							activity.getChatController().deleteMessages(friend);
+						}
+					}
+					else {
+						if (selection.equals(getString(R.string.menu_delete_friend))) {
+							UIUtils.createAndShowConfirmationDialog(activity, getMainActivity()
+									.getString(R.string.delete_friend_confirmation, friend.getName()),
+									getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
+									new IAsyncCallback<Boolean>() {
+										public void handleResponse(Boolean result) {
+											if (result) {
+												activity.getChatController().deleteFriend(friend);
+											}
+											else {
+												dialogi.cancel();
+											}
+										};
+									});
+						}
 					}
 				}
 			}

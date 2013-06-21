@@ -124,7 +124,7 @@ public class CredentialCachingService extends Service {
 			PrivateKeyPairs pkp = iterator.next();
 			String version = pkp.getVersion();
 			this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)),
-					new PublicKeys(version, identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic()));
+					new PublicKeys(version, identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic(), 0));
 		}
 
 	}

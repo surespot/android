@@ -56,6 +56,7 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 				mItems.add(getString(R.string.menu_close_tab));
 			}
 			mItems.add(getString(R.string.menu_assign_image));
+			mItems.add(getString(R.string.verify_key_fingerprints));
 			mItems.add(getString(R.string.menu_delete_all_messages));
 		}
 		if (!mFriend.isInviter()) {

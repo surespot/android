@@ -1,5 +1,6 @@
 package com.twofours.surespot.ui;
 
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -26,6 +27,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.Display;
@@ -46,6 +48,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.identity.KeyFingerprintDialogFragment;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.qr.QRCodeEncoder;
@@ -132,7 +135,8 @@ public class UIUtils {
 		case 500:
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 				statusText = context.getString(R.string.error_message_generic);
-			} else {
+			}
+			else {
 				statusText = context.getString(R.string.error_message_resend);
 			}
 
@@ -151,7 +155,8 @@ public class UIUtils {
 		// more messages than minimum meaning we've loaded some
 		if (currentPos < SurespotConstants.SAVE_MESSAGE_BUFFER) {
 			return currentPos;
-		} else {
+		}
+		else {
 			return SurespotConstants.SAVE_MESSAGE_BUFFER;
 		}
 		// saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
@@ -191,7 +196,8 @@ public class UIUtils {
 		Display d = a.getWindowManager().getDefaultDisplay();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			d.getSize(size);
-		} else {
+		}
+		else {
 			size.x = d.getWidth();
 			size.y = d.getHeight();
 		}
@@ -256,7 +262,8 @@ public class UIUtils {
 				String sUrl = response.optString("id", null);
 				if (!TextUtils.isEmpty(sUrl)) {
 					launchInviteApp(context, progressDialog, type, sUrl, contacts, finish);
-				} else {
+				}
+				else {
 					launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
 				}
 			};
@@ -325,7 +332,8 @@ public class UIUtils {
 			}
 			progressDialog.hide();
 
-		} catch (ActivityNotFoundException e) {
+		}
+		catch (ActivityNotFoundException e) {
 			progressDialog.hide();
 			Utils.makeToast(context, context.getString(R.string.invite_no_application_found));
 		}
@@ -371,7 +379,8 @@ public class UIUtils {
 		try {
 			bitmap = QRCodeEncoder.encodeAsBitmap(inviteUrl, 300);
 			ivQr.setImageBitmap(bitmap);
-		} catch (WriterException e) {
+		}
+		catch (WriterException e) {
 			SurespotLog.w(TAG, e, "generate invite QR");
 			return;
 
@@ -398,5 +407,32 @@ public class UIUtils {
 		ad.setView(view, 0, 0, 0, 0);
 		ad.show();
 
+	}
+
+	public static void showKeyFingerprintsDialog(MainActivity activity, String name) {
+
+		// Create the fragment and show it as a dialog.
+		KeyFingerprintDialogFragment newFragment = KeyFingerprintDialogFragment.newInstance(name);
+		newFragment.show(activity.getSupportFragmentManager(), "dialog");
+
+	}
+
+	public static String getFormattedDate(Context context, Date date) {
+		return DateFormat.getDateFormat(context).format(date) + " " + DateFormat.getTimeFormat(context).format(date);
+	}
+
+	public static String[] getFingerprintArray(String fingerprint) {
+		SurespotLog.v(TAG, "getFingerprintArray: %s", fingerprint);
+		String[] fp = new String[16];
+
+		if (fingerprint.length() == 31) {
+			fingerprint = "0" + fingerprint;
+		}
+
+		for (int i = 0; i < 16; i++) {
+			fp[i] = fingerprint.substring(i*2, i*2 + 2);
+		}
+
+		return fp;
 	}
 }

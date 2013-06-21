@@ -11,6 +11,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -660,7 +661,7 @@ public class IdentityController {
 
 				savePublicKeyPair(username, version, json.toString());
 				SurespotLog.v(TAG, "loaded public keys from server");
-				return new PublicKeys(version, dhPub, dsaPub);
+				return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
 			} catch (JSONException e) {
 				SurespotLog.w(TAG, e, "recreatePublicKeyPair");
 			}
@@ -811,6 +812,8 @@ public class IdentityController {
 			SurespotLog.v(TAG, "Could not load public key pair file: %s", pkFilename);
 			return null;
 		}
+		
+		long lastModified = pkFile.lastModified();
 
 		try {
 
@@ -819,7 +822,7 @@ public class IdentityController {
 			JSONObject pkpJSON = new JSONObject(new String(pkBytes));
 
 			return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
-					EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")));
+					EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")), lastModified);
 
 		} catch (Exception e) {
 			SurespotLog.w(TAG, "loadPublicKeyPair", e);

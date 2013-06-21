@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/abs__background_holo_light"
+        android:gravity="center"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/aFingerprintsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp" >
+        </TextView>
+
+        <com.twofours.surespot.ui.ExpandableHeightListView
+            android:id="@+id/aFingerprints"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+        </com.twofours.surespot.ui.ExpandableHeightListView>
+
+        <TextView
+            android:id="@+id/bFingerprintsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp" >
+        </TextView>
+
+        <com.twofours.surespot.ui.ExpandableHeightListView
+            android:id="@+id/bFingerprints"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+        </com.twofours.surespot.ui.ExpandableHeightListView>
+    </LinearLayout>
+
+</ScrollView>
