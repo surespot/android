@@ -34,7 +34,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	private boolean mLoaded;
 	private boolean mLoading;
-
+	private boolean mGcm;
+	
 	public String getFrom() {
 		return mFrom;
 	}
@@ -137,8 +138,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		chatMessage.setMimeType(jsonMessage.getString("mimeType"));
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
-		//chatMessage.setDeleted(jsonMessage.optBoolean("deletedTo", false));
 		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
+		chatMessage.setGcm(jsonMessage.optBoolean("gcm",false));
 
 		Integer id = jsonMessage.optInt("id");
 		if (id > 0) {
@@ -179,9 +180,9 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("iv", this.getIv());
 			message.put("data", this.getData());
 			message.put("mimeType", this.getMimeType());
-		//	message.put("deletedTo", this.getDeletedTo());
 			message.put("shareable", this.isShareable());
-
+			message.put("gcm", this.isGcm());
+			
 			if (this.getErrorStatus() > 0) {
 				message.put("errorStatus", this.getErrorStatus());
 			}
@@ -200,6 +201,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			if (this.getHeight() > 0) {
 				message.put("height", this.getHeight());
 			}
+			
+			
 
 			return message;
 		}
@@ -281,6 +284,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public void setLoading(boolean loading) {
 		mLoading = loading;
+	}
+	
+	public boolean isGcm() {
+		return mGcm;
+	}
+
+	public void setGcm(boolean gcm) {
+		mGcm = gcm;
 	}
 
 	public Integer getHeight() {
@@ -384,6 +395,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\tresendId: " + getResendId() + "\n");
 		sb.append("\tdatetime: " + getDateTime() + "\n");
 		sb.append("\theight: " + getHeight() + "\n");
+		sb.append("\tgcm: " + isGcm() + "\n");
 
 		return sb.toString();
 	}
