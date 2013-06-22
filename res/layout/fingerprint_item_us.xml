@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -15,7 +16,7 @@
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:paddingRight="5dp"
-            android:text="version"
+            android:text="@string/version"
             android:textSize="11sp" />
 
         <TextView

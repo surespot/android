@@ -43,6 +43,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		//
 		super.onCreate(savedInstanceState);
+		setStyle(STYLE_NO_TITLE, 0);
 		mUsername = getArguments().getString("username");
 	}
 
@@ -51,6 +52,15 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 		final View v = inflater.inflate(R.layout.fingerprint_layout, container, false);
 
 		// generate fingerprints for my public keys
+		View loadingA = v.findViewById(R.id.loadingA);
+		View loadingB = v.findViewById(R.id.loadingB);
+		final ExpandableHeightListView lvA = (ExpandableHeightListView) v.findViewById(R.id.aFingerprints);
+		lvA.setExpanded(true);
+		lvA.setEmptyView(loadingA);
+		final ExpandableHeightListView lvB = (ExpandableHeightListView) v.findViewById(R.id.bFingerprints);
+		lvB.setExpanded(true);
+		lvB.setEmptyView(loadingB);
+
 
 		final List<HashMap<String, String>> myItems = new ArrayList<HashMap<String, String>>();
 		final SurespotIdentity identity = IdentityController.getIdentity();
@@ -77,6 +87,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 		});
 
 		// generate fingerprints for their public keys
+		
 
 		// do this in background as may have to call network
 		new AsyncTask<Void, Void, List<HashMap<String, String>>>() {
@@ -120,11 +131,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 				// order alphabetically to make comparison easier as it will be showing in the same order on both devices
 
-				ExpandableHeightListView lvA = (ExpandableHeightListView) v.findViewById(R.id.aFingerprints);
-				lvA.setExpanded(true);
-				ExpandableHeightListView lvB = (ExpandableHeightListView) v.findViewById(R.id.bFingerprints);
-				lvB.setExpanded(true);
-
+				
 				if (meFirst) {
 					lvA.setAdapter(myAdapter);
 					lvB.setAdapter(theirAdapter);
@@ -137,9 +144,6 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 			};
 
 		}.execute();
-
-		getDialog().setTitle("public key fingerprints");
-		
 
 		TextView tvALabel = (TextView) v.findViewById(R.id.aFingerprintsLabel);
 		TextView tvBLabel = (TextView) v.findViewById(R.id.bFingerprintsLabel);

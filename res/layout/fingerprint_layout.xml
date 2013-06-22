@@ -11,6 +11,19 @@
         android:orientation="vertical" >
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="@string/public_key_fingerprints"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:textColor="@color/surespotBlue" >
+        </TextView>
+
+        <TextView
             android:id="@+id/aFingerprintsLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,9 +35,20 @@
         <com.twofours.surespot.ui.ExpandableHeightListView
             android:id="@+id/aFingerprints"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" 
-            android:layout_marginBottom="10dp">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp" >
         </com.twofours.surespot.ui.ExpandableHeightListView>
+
+        <TextView
+            android:id="@+id/loadingA"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="@string/loading"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" >
+        </TextView>
 
         <TextView
             android:id="@+id/bFingerprintsLabel"
@@ -36,11 +60,22 @@
         </TextView>
 
         <com.twofours.surespot.ui.ExpandableHeightListView
-            android:layout_marginBottom="10dp"
             android:id="@+id/bFingerprints"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp" >
         </com.twofours.surespot.ui.ExpandableHeightListView>
+
+        <TextView
+            android:id="@+id/loadingB"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="@string/loading"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" >
+        </TextView>
     </LinearLayout>
 
 </ScrollView>

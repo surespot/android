@@ -80,12 +80,10 @@
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click %s to install the android app and invite me as a friend."</string>
     <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
     <string name="help_backupIdentities2">"Surespot has both Google Drive and Device Storage based identity backup mechanisms that can be found on the settings menu."</string>
-    
     <string name="help_backup_what"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
-    <string name="help_backup_local">"For maximum security we recommend using Device Storage backup. Once backed up, the identity file should then be copied from your device to a secure backup location so that it can be restored in the case of app uninstall or 'clear data', a lost or stolen device, or other data loss."</string>       
+    <string name="help_backup_local">"For maximum security we recommend using Device Storage backup. Once backed up, the identity file should then be copied from your device to a secure backup location so that it can be restored in the case of app uninstall or 'clear data', a lost or stolen device, or other data loss."</string>
     <string name="help_backup_drive1"><![CDATA["If you elect to backup your identity on Google Drive you will be storing a copy of your <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">private keys</a> on Google Drive servers. Should a third party somehow gain access to the Google Drive servers and attempt to decrypt your identity file by <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute force attack</a>, be aware that the <a href="https://en.wikipedia.org/wiki/Password_strength">strength</a> of your password will ultimately determine their success."]]></string>
     <string name="help_backup_drive2">"Your identities will be stored on Google Drive in the folder 'surespot identity backups'. Identities can be restored from the 'restore identity' settings menu in surespot, and also from within the Google Drive Android app."</string>
-    
     <string name="pwyl_text"><![CDATA["Surespot is ad and data mining free.<br><br>Servers and storage cost money; your donations ensure that we do not have to charge for surespot.<br><br>We will donate a percentage to the <a href="https://www.eff.org/issues/privacy">EFF</a> that they may continue to fight for all of our electronic freedoms."]]></string>
     <string name="help_messageHistory">Surespot has a 1000 message history. Once you reach 1000 messages your oldest message will be deleted so you will only ever have 1000 (encrypted) messages stored on the server. Of course you can delete any and all of your messages at any time.</string>
     <string name="title_activity_about">about surespot</string>
@@ -94,7 +92,6 @@
     <string name="about_opensource"><![CDATA["Surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>."]]></string>
     <string name="about_tech"><![CDATA["For a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>."]]></string>
     <string name="about_support"><![CDATA["For questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
-    
     <string name="notification_title">surespot</string>
     <string name="notification_message">"%1$s: new message from %2$s"</string>
     <string name="notification_invite">"%1$s: friend invite from %2$s"</string>
@@ -102,13 +99,13 @@
     <string name="about_version">"version: %s"</string>
     <string name="surespot">surespot</string>
     <string name="about_action_bar_right">about</string>
-    <string name="identity">identity</string>    
+    <string name="identity">identity</string>
     <string name="invite">invite</string>
     <string name="no_contact_data_selected_or_entered">no contact data selected or entered</string>
     <string name="toggled_sms_contact_population_mechanism">toggled sms contact population mechanism</string>
     <string name="invitation_email_subject">Invitation to chat with me privately via surespot</string>
     <string name="invite_no_application_found">No application found to handle invite.</string>
-    <string name="invite_progress_text">creating invitation</string>    
+    <string name="invite_progress_text">creating invitation</string>
     <string name="email">email</string>
     <string name="sms">sms</string>
     <string name="social">social</string>
@@ -221,7 +218,7 @@
     <string name="error_message_resend">sending failed - long press to resend</string>
     <string name="via_google_play_in_app_purchase">VIA GOOGLE PLAY IN APP PURCHASE</string>
     <string name="via_paypal">VIA PAYPAL</string>
-    <string name="pwyl_send_to_dialog_title">send to?</string>    
+    <string name="pwyl_send_to_dialog_title">send to?</string>
     <string name="open_link_in_browser">open link in browser</string>
     <string name="send_link_in_email">email link to yourself</string>
     <string name="via_bitcoin">VIA BITCOIN</string>
@@ -239,8 +236,8 @@
     <string name="identity_colon">identity:</string>
     <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your ROM.</string>
     <string name="invite_others">Invite others to communicate with you privately via surespot by sharing an auto-invite link with them.</string>
-    <string name="invite_reassurance">Your contact information is not stored, uploaded, or used anywhere other than in this capacity.</string>     
-    <string name="invite_via_email">invite via email</string>    
+    <string name="invite_reassurance">Your contact information is not stored, uploaded, or used anywhere other than in this capacity.</string>
+    <string name="invite_via_email">invite via email</string>
     <string name="invite_via_text_message">invite via text message</string>
     <string name="invite_via_other_application">invite via other application</string>
     <string name="click_to_select_email_contacts">"Touch 'next' to select email addresses and launch your email app."</string>
@@ -281,33 +278,38 @@
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
     <string name="surespot_help">surespot help</string>
-	<string name="next">next</string>
-	<string name="backup_drive_button">Execute Google Drive Backup</string>
-	<string name="could_not_backup_identity_to_google_drive">Could not backup identity to Google Drive</string>
-	<string name="identity_successfully_backed_up_to_google_drive">Identity successfully backed up to Google Drive</string>
-	<string name="restore_local">Restore from Device Storage</string>
-	<string name="restore_drive">Restore from Google Drive</string>
-	<string name="could_not_list_identities_from_google_drive">could not get list of identities from Google Drive</string>
-	<string name="no_google_account_selected">No Google account selected</string>
-	<string name="select_google_drive_account">select</string>
-	<string name="re_add_google_account">Unfortunately the Google token is no longer valid and you will need to remove and re-add your Google account via device settings.</string>
-	<string name="progress_restoring_identity">restoring identity</string>
-	<string name="progress_loading_identities">loading identity backups</string>
-	<string name="progress_backup_identity_drive">backing up identity</string>
-	<string name="progress_drive_dir_check">checking for surespot identities folder</string>
-	<string name="no_drive_identities">No identity backups loaded from Google Drive.</string>
-	<string name="no_local_identities">No identity backups found on Device Storage.</string>
-	<string name="identity_name">identity name</string>
-	<string name="last_backed_up">last backed up</string>
-	<string name="last_modified">last modified</string>
-	<string name="help">help</string>
-	<string name="menu_import">import</string>
-	<string name="backup_device">BACKUP IDENTITY TO DEVICE STORAGE</string>
-	<string name="backup_drive">BACKUP IDENTITY TO GOOGLE DRIVE</string>
-	<string name="let_me_select">let me select</string>  
-	<string name="could_not_import_identity_drive_404">Could not load identity - please make sure you selected the same Google account that you were using in Google Drive.</string>  
-	<string name="pick_same_drive_account">Please pick the same account that you were using in Google Drive:</string>	
-	<string name="about">about...</string>	
-	<string name="unauthorized">unauthorized</string>	
-	<string name="verify_key_fingerprints">verify key fingerprints</string>
+    <string name="next">next</string>
+    <string name="backup_drive_button">Execute Google Drive Backup</string>
+    <string name="could_not_backup_identity_to_google_drive">Could not backup identity to Google Drive</string>
+    <string name="identity_successfully_backed_up_to_google_drive">Identity successfully backed up to Google Drive</string>
+    <string name="restore_local">Restore from Device Storage</string>
+    <string name="restore_drive">Restore from Google Drive</string>
+    <string name="could_not_list_identities_from_google_drive">could not get list of identities from Google Drive</string>
+    <string name="no_google_account_selected">No Google account selected</string>
+    <string name="select_google_drive_account">select</string>
+    <string name="re_add_google_account">Unfortunately the Google token is no longer valid and you will need to remove and re-add your Google account via device settings.</string>
+    <string name="progress_restoring_identity">restoring identity</string>
+    <string name="progress_loading_identities">loading identity backups</string>
+    <string name="progress_backup_identity_drive">backing up identity</string>
+    <string name="progress_drive_dir_check">checking for surespot identities folder</string>
+    <string name="no_drive_identities">No identity backups loaded from Google Drive.</string>
+    <string name="no_local_identities">No identity backups found on Device Storage.</string>
+    <string name="identity_name">identity name</string>
+    <string name="last_backed_up">last backed up</string>
+    <string name="last_modified">last modified</string>
+    <string name="help">help</string>
+    <string name="menu_import">import</string>
+    <string name="backup_device">BACKUP IDENTITY TO DEVICE STORAGE</string>
+    <string name="backup_drive">BACKUP IDENTITY TO GOOGLE DRIVE</string>
+    <string name="let_me_select">let me select</string>
+    <string name="could_not_import_identity_drive_404">Could not load identity - please make sure you selected the same Google account that you were using in Google Drive.</string>
+    <string name="pick_same_drive_account">Please pick the same account that you were using in Google Drive:</string>
+    <string name="about">about...</string>
+    <string name="unauthorized">unauthorized</string>
+    <string name="verify_key_fingerprints">view key fingerprints</string>
+    <string name="received">received</string>
+    <string name="version">version</string>
+    <string name="public_key_fingerprints">public key fingerprints</string>
+    <string name="loading">loading...</string>
+
 </resources>

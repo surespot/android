@@ -31,33 +31,37 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
-		
+
 		if (savedInstanceState != null) {
 			try {
 				String sFriend = savedInstanceState.getString("friend");
 				if (sFriend != null) {
 					mFriend = Friend.toFriend(new JSONObject(sFriend));
 				}
-			} catch (JSONException e) {
+			}
+			catch (JSONException e) {
 				SurespotLog.e(TAG, e, "could not create friend from saved instance state");
 				return null;
-			} 
+			}
 		}
-		
+
 		if (mFriend == null) {
 			SurespotLog.w(TAG, "there is no friend assigned");
 			return null;
 		}
-		
+
 		mItems = new ArrayList<String>(5);
-		
+
 		if (mFriend.isFriend()) {
 			if (mFriend.isChatActive()) {
 				mItems.add(getString(R.string.menu_close_tab));
 			}
-			mItems.add(getString(R.string.menu_assign_image));
-			mItems.add(getString(R.string.verify_key_fingerprints));
+
 			mItems.add(getString(R.string.menu_delete_all_messages));
+			if (!mFriend.isDeleted()) {
+				mItems.add(getString(R.string.verify_key_fingerprints));
+				mItems.add(getString(R.string.menu_assign_image));
+			}
 		}
 		if (!mFriend.isInviter()) {
 			mItems.add(getString(R.string.menu_delete_friend));
@@ -87,13 +91,11 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
-	
+
 	@Override
-	public void onSaveInstanceState(Bundle arg0) {	
-		super.onSaveInstanceState(arg0);		
+	public void onSaveInstanceState(Bundle arg0) {
+		super.onSaveInstanceState(arg0);
 		arg0.putString("friend", mFriend.toJSONObject().toString());
 	}
-	
-	
 
 }
