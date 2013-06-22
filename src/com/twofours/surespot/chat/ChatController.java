@@ -178,7 +178,7 @@ public class ChatController {
 					return;
 				}
 
-				SurespotLog.w(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: $d", mRetries);
+				SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: $d", mRetries);
 
 				setOnWifi();
 				// kick off another task
@@ -199,7 +199,7 @@ public class ChatController {
 				}
 				else {
 					// TODO tell user
-					SurespotLog.w(TAG, "Socket.io reconnect retries exhausted, giving up.");
+					SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server));
 				}
 			}
