@@ -113,7 +113,8 @@ public class NetworkController {
 					return null;
 				}
 			};
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// TODO tell user shit is fucked
 			SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 			if (pm.getBoolean("pref_crash_reporting", false)) {
@@ -200,7 +201,8 @@ public class NetworkController {
 				if (cookie == null) {
 					SurespotLog.w(TAG, "did not get cookie from signup");
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
-				} else {
+				}
+				else {
 					setUnauthorized(false);
 					// update shared prefs
 					if (gcmUpdated) {
@@ -255,10 +257,12 @@ public class NetworkController {
 			StringEntity entity = new StringEntity(params.toString());
 			entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			mClient.post(null, "https://www.googleapis.com/urlshortener/v1/url", entity, "application/json", responseHandler);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch (UnsupportedEncodingException e) {
 			SurespotLog.v(TAG, "getShortUrl", e);
 			responseHandler.onFailure(e, new JSONObject());
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			SurespotLog.v(TAG, "getShortUrl", e);
 			responseHandler.onFailure(e, new JSONObject());
 		}
@@ -328,7 +332,8 @@ public class NetworkController {
 				if (cookie == null) {
 					SurespotLog.w(TAG, "Did not get cookie from login.");
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
-				} else {
+				}
+				else {
 					setUnauthorized(false);
 					// update shared prefs
 					if (gcmUpdated) {
@@ -391,9 +396,11 @@ public class NetworkController {
 	}
 
 	public void invite(String friendname, AsyncHttpResponseHandler responseHandler) {
-
 		post("/invite/" + friendname, null, responseHandler);
+	}
 
+	public void invite(String friendname, String source, AsyncHttpResponseHandler responseHandler) {
+		post("/invite/" + friendname + "/" + source, null, responseHandler);
 	}
 
 	public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
@@ -420,7 +427,8 @@ public class NetworkController {
 
 			params.put("gcmId", gcmIdReceived);
 			gcmUpdatedTemp = true;
-		} else {
+		}
+		else {
 			SurespotLog.v(TAG, "GCM does not need updating on server.");
 			return;
 		}
@@ -475,7 +483,8 @@ public class NetworkController {
 		try {
 			// this will puke on phone with no google account
 			GCMRegistrar.setRegisteredOnServer(context, false);
-		} finally {
+		}
+		finally {
 		}
 	}
 
@@ -500,7 +509,8 @@ public class NetworkController {
 				try {
 					response = mCachingHttpClient.execute(httppost);
 
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					SurespotLog.w(TAG, "createPostFile", e);
 				}
 				return response;
@@ -511,7 +521,8 @@ public class NetworkController {
 				if (response != null && response.getStatusLine().getStatusCode() == 200) {
 
 					callback.handleResponse(true);
-				} else {
+				}
+				else {
 					callback.handleResponse(false);
 				}
 
@@ -543,10 +554,12 @@ public class NetworkController {
 						String url = Utils.inputStreamToString(response.getEntity().getContent());
 						return url;
 					}
-				} catch (IllegalStateException e) {
+				}
+				catch (IllegalStateException e) {
 					SurespotLog.w(TAG, e, "postFriendImageStream");
 
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					SurespotLog.w(TAG, e, "postFriendImageStream");
 
 				}
