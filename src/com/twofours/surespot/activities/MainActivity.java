@@ -677,8 +677,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			break;
 		case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
 			if (resultCode == RESULT_OK) {
-				mImageCaptureHandler.handleResult(this);
-				mImageCaptureHandler = null;
+				if (mImageCaptureHandler != null) {
+					mImageCaptureHandler.handleResult(this);
+					mImageCaptureHandler = null;
+				}
 			}
 			break;
 
