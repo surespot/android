@@ -1002,6 +1002,7 @@ public class ChatController {
 				}
 			});
 		}
+
 		// else {
 		// if (username.equals(mCurrentChat)) {
 		// ChatFragment chatFragment = getChatFragment(username);
@@ -1559,6 +1560,8 @@ public class ChatController {
 			// getFriendsAndIds();
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+			clearMessageNotification(IdentityController.getLoggedInUser(), mCurrentChat);
 		}
 	}
 
@@ -1659,8 +1662,7 @@ public class ChatController {
 			friend.setLastViewedMessageId(friend.getAvailableMessageId());
 
 			// cancel associated notifications
-			mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username),
-					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			clearMessageNotification(loggedInUser, username);
 			int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
 			if (wantedPosition != mViewPager.getCurrentItem()) {
@@ -1686,6 +1688,13 @@ public class ChatController {
 		// set menu item enable state
 		enableMenuItems(friend);
 
+	}
+
+	private void clearMessageNotification(String loggedInUser, String username) {
+		if (!TextUtils.isEmpty(loggedInUser) && !TextUtils.isEmpty(username)) {
+			mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username),
+					SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+		}
 	}
 
 	private ChatFragment getChatFragment(String username) {
