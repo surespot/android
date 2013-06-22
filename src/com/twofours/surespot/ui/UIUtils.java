@@ -443,6 +443,7 @@ public class UIUtils {
 			// Create MD5 Hash
 			MessageDigest digest = null;
 			digest = java.security.MessageDigest.getInstance("MD5");		
+			digest.update(s);
 			byte[] messageDigest = digest.digest();
 
 			// Create Hex String
