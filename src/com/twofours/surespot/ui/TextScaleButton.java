@@ -17,7 +17,7 @@ public class TextScaleButton extends ImageButton {
 	String mText = "";
 	Paint mTextPaint;
 
-	private static final int MAX_TEXT_SIZE=25;
+	private static final int MAX_TEXT_SIZE=100;
 	int mViewWidth;
 	int mViewHeight;
 	int mTextBaseline;
@@ -90,7 +90,8 @@ public class TextScaleButton extends ImageButton {
 		int text_h = bounds.bottom - bounds.top;
 		mTextBaseline = bounds.bottom + ((mViewHeight - text_h) / 2);
 
-		return incr_text_size;
+		//round down to nearest 10
+		return incr_text_size/10*10;
 	}
 
 	/**
