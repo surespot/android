@@ -90,8 +90,8 @@ public class TextScaleButton extends ImageButton {
 		int text_h = bounds.bottom - bounds.top;
 		mTextBaseline = bounds.bottom + ((mViewHeight - text_h) / 2);
 
-		//round down to nearest 10
-		return incr_text_size/10*10;
+		//round down to nearest 2
+		return incr_text_size/4*4;
 	}
 
 	/**
