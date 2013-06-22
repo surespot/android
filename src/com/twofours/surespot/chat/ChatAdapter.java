@@ -70,7 +70,7 @@ public class ChatAdapter extends BaseAdapter {
 	public SurespotMessage getLastMessageWithId() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			SurespotMessage message = iterator.previous();
-			if (message.getId() != null && message.getId() > 0) {
+			if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
 				return message;
 			}
 		}
@@ -80,7 +80,7 @@ public class ChatAdapter extends BaseAdapter {
 	public SurespotMessage getFirstMessageWithId() {
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext();) {
 			SurespotMessage message = iterator.next();
-			if (message.getId() != null && message.getId() > 0) {
+			if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
 				return message;
 			}
 		}
@@ -130,6 +130,8 @@ public class ChatAdapter extends BaseAdapter {
 			if (message.getData() != null) {
 				updateMessage.setData(message.getData());
 			}
+			updateMessage.setGcm(message.isGcm());
+			
 
 		}
 

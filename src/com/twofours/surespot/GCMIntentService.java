@@ -1,6 +1,7 @@
 package com.twofours.surespot;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotConstants.IntentFilters;
@@ -150,8 +152,23 @@ public class GCMIntentService extends GCMBaseIntentService {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
 			}
-
+			
+			
 			String spot = ChatUtils.getSpot(from, to);
+			
+			//add the message if it came in the GCM
+			String message = intent.getStringExtra("message");
+			if (message != null) {
+				ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(spot);
+				SurespotMessage sm = SurespotMessage.toSurespotMessage(message);
+				sm.setGcm(true);
+				if (sm != null) {
+					messages.add(sm);
+				}
+				SurespotApplication.getStateController().saveMessages(spot, messages, -1);
+			}
+
+			
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 		} else {
