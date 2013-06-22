@@ -47,6 +47,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -380,7 +381,7 @@ public class UIUtils {
 
 		Bitmap bitmap;
 		try {
-			bitmap = QRCodeEncoder.encodeAsBitmap(inviteUrl, 300);
+			bitmap = QRCodeEncoder.encodeAsBitmap(inviteUrl, SurespotConfiguration.getQRDisplaySize());
 			ivQr.setImageBitmap(bitmap);
 		}
 		catch (WriterException e) {

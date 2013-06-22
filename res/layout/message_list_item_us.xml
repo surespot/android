@@ -93,6 +93,7 @@
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2sp"
             android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
             android:visibility="gone" />
 
         <TextView

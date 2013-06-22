@@ -45,7 +45,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -117,7 +117,7 @@ public class MessageImageDownloader {
 		if (cancelPotentialDownload(imageView, message)) {
 			BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, message);
 			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
-					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
+					message.getHeight() == 0 ? SurespotConfiguration.getImageDisplayHeight() : message.getHeight());
 			imageView.setImageDrawable(downloadedDrawable);
 			message.setLoaded(false);
 			message.setLoading(true);
@@ -277,9 +277,10 @@ public class MessageImageDownloader {
 								}
 
 								imageView.setImageBitmap(finalBitmap);
-
+								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
 								if (mMessage.getHeight() == 0) {
-									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
+									//bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
+									//mMessage.setHeight(SurespotConfiguration.getImageDisplayHeight());
 									// SurespotLog.v(TAG,
 									// "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
 									// + ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
@@ -290,6 +291,7 @@ public class MessageImageDownloader {
 								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
 								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent())
 										.findViewById(R.id.messageImageNotShareable);
+								
 
 								if (mMessage.isShareable()) {
 									ivShareable.setVisibility(View.VISIBLE);

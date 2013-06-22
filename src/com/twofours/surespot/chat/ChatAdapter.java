@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
@@ -252,6 +253,8 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvTime = (TextView) convertView.findViewById(R.id.messageTime);
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
+			chatMessageViewHolder.imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+			
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 
