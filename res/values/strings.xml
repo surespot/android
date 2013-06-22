@@ -311,5 +311,6 @@
     <string name="version">version</string>
     <string name="public_key_fingerprints">public key fingerprints</string>
     <string name="loading">loading...</string>
+    <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
 
 </resources>

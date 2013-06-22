@@ -9,6 +9,7 @@ import java.util.zip.GZIPOutputStream;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -144,7 +145,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 		});
 
 		mAccountNameDisplay = (TextView) findViewById(R.id.exportDriveAccount);
-		String account = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).getString("pref_google_drive_account", getString(R.string.no_google_account_selected));
+		String account = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE).getString("pref_google_drive_account",
+				getString(R.string.no_google_account_selected));
 		mAccountNameDisplay.setText(account);
 
 		Button chooseAccountButton = (Button) findViewById(R.id.bSelectDriveAccount);
@@ -178,7 +180,16 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 	private void chooseAccount(boolean ask) {
 		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask, null, null, null, null);
-		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+
+		try {
+			startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+		}
+		catch (ActivityNotFoundException e) {
+			Utils.makeToast(ExportIdentityActivity.this, getString(R.string.device_does_not_support_google_drive));
+			SurespotLog.i(TAG, e, "chooseAccount");
+		}
+
+		
 	}
 
 	private void removeAccount() {
@@ -373,15 +384,15 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 	public boolean updateIdentityDriveFile(String idDirId, String username, byte[] identityData) {
 		try {
-			//gzip identity for consistency - fucked up on this, now have to add code to handle both (gzipped and not gzipped) on restore from google drive
-			//RM#260		
+			// gzip identity for consistency - fucked up on this, now have to add code to handle both (gzipped and not gzipped) on restore from google drive
+			// RM#260
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			GZIPOutputStream gzout = new GZIPOutputStream(out);			
+			GZIPOutputStream gzout = new GZIPOutputStream(out);
 			gzout.write(identityData);
-			gzout.close();			
+			gzout.close();
 			byte[] gzIdData = out.toByteArray();
-			
-			ByteArrayContent content = new ByteArrayContent("application/octet-stream",gzIdData);			
+
+			ByteArrayContent content = new ByteArrayContent("application/octet-stream", gzIdData);
 			String filename = username + IdentityController.IDENTITY_EXTENSION;
 
 			// see if identity exists
@@ -407,9 +418,9 @@ public class ExportIdentityActivity extends SherlockActivity {
 			ArrayList<ParentReference> parent = new ArrayList<ParentReference>(1);
 			parent.add(pr);
 			file.setParents(parent);
-			file.setTitle(filename);					
+			file.setTitle(filename);
 			file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
-								
+
 			com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file, content).execute();
 			return true;
 

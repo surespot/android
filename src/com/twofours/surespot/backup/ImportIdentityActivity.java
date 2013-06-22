@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -89,7 +90,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			// Get the Drive file ID.
 			mFileId = intent.getStringExtra(EXTRA_FILE_ID);
 			mMode = MODE_DRIVE;
-		} else {
+		}
+		else {
 			mMode = MODE_NORMAL;
 
 		}
@@ -190,9 +192,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 																		// to
 																		// login
 																		// screen
-																		if (mSignup || mMode == MODE_DRIVE) {																			
+																		if (mSignup || mMode == MODE_DRIVE) {
 																			IdentityController.logout();
-																			
+
 																			Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 																			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, user);
 																			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -212,7 +214,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 									}.execute();
 
-								} else {
+								}
+								else {
 									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 							}
@@ -264,13 +267,15 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 											}.execute();
 										}
-									} else {
+									}
+									else {
 										chooseAccount(false);
 									}
 								}
 
 							}
-						} else {
+						}
+						else {
 							if (!mShowingLocal) {
 								mSwitcher.showPrevious();
 								mShowingLocal = true;
@@ -285,7 +290,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			rbRestoreLocal.setOnClickListener(rbClickListener);
 			setupLocal();
 
-		} else {
+		}
+		else {
 			rbRestoreLocal.setVisibility(View.GONE);
 			rbRestoreDrive.setChecked(true);
 			mSwitcher.showNext();
@@ -399,9 +405,9 @@ public class ImportIdentityActivity extends SherlockActivity {
 														// import, go to
 														// login
 														// screen
-														if (mSignup) {															
+														if (mSignup) {
 															IdentityController.logout();
-															
+
 															Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 															intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 															startActivity(intent);
@@ -411,7 +417,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 												}
 											});
-								} else {
+								}
+								else {
 									Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
 								}
 
@@ -459,7 +466,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 				map.put("date", date);
 				map.put("url", file.getDownloadUrl());
 				items.add(map);
-			} else {
+			}
+			else {
 				SurespotLog.w(TAG, "could not retrieve identity from google drive");
 				this.runOnUiThread(new Runnable() {
 
@@ -473,11 +481,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 				return;
 			}
 
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 			return;
 
-		} catch (GoogleJsonResponseException e) {
+		}
+		catch (GoogleJsonResponseException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
 
 			// if they're restoring from drive, selecting different account in
@@ -492,7 +502,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 				});
 
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
 
 			this.runOnUiThread(new Runnable() {
@@ -506,7 +517,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 			finish();
 			return;
 
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return
 			// userrecoverable it seems
@@ -609,10 +621,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 				}
 
 			}
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
 			return;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "could not retrieve identities from google drive");
 			this.runOnUiThread(new Runnable() {
 
@@ -624,7 +638,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			return;
 
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return
 			// userrecoverable it seems
@@ -666,7 +681,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 		ChildList identityFileList = null;
 		try {
 			identityFileList = mDriveHelper.getDriveService().children().list(identityDirId).execute();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "getIdentityFiles");
 		}
 		return identityFileList;
@@ -701,12 +717,15 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			}
 
-		} catch (UserRecoverableAuthIOException e) {
+		}
+		catch (UserRecoverableAuthIOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
 			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-		} catch (SecurityException e) {
+		}
+		catch (SecurityException e) {
 			SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
 			// when key is revoked on server this happens...should return
 			// userrecoverable it seems
@@ -756,7 +775,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 						protected Void doInBackground(Void... params) {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(true);
-							} else {
+							}
+							else {
 								restoreExternal(true);
 							}
 							return null;
@@ -782,7 +802,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 							if (mMode == MODE_NORMAL) {
 								populateDriveIdentities(false);
 
-							} else {
+							}
+							else {
 								restoreExternal(false);
 							}
 							return true;
@@ -799,7 +820,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 					};
 				}.execute();
 
-			} else {
+			}
+			else {
 				SurespotLog.v(TAG, "onActivityResult not OK");
 				mSpdLoadIdentities.hide();
 			}
@@ -814,7 +836,14 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask || mMode == MODE_DRIVE, descriptionText, null, null,
 				null);
-		startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+		try {
+			startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
+		}
+		catch (ActivityNotFoundException e) {
+			Utils.makeToast(ImportIdentityActivity.this, getString(R.string.device_does_not_support_google_drive));
+			SurespotLog.i(TAG, e, "chooseAccount");
+		}
+
 	}
 
 	@Override
