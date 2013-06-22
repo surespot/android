@@ -35,7 +35,7 @@ public class SurespotApplication extends Application {
 	private static CredentialCachingService mCredentialCachingService;
 	private static StateController mStateController = null;
 
-	public static final int CORE_POOL_SIZE = 16;
+	public static final int CORE_POOL_SIZE = 20;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	public static final int KEEP_ALIVE = 1;
 
