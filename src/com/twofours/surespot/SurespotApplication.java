@@ -105,7 +105,7 @@ public class SurespotApplication extends Application {
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
-		mStateController = new StateController();
+		mStateController = new StateController(this);
 		try {
 			// device without GCM throws exception
 			GCMRegistrar.checkDevice(this);

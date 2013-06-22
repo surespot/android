@@ -34,10 +34,15 @@ public class StateController {
 	private static final String FRIENDS = "friends";
 	private static final String STATE_EXTENSION = ".sss";
 	private static final String TAG = "StateController";
+	private Context mContext;
 
 	public class FriendState {
 		public int userControlId;
 		public List<Friend> friends;
+	}
+	
+	public StateController(Context context) {
+		mContext = context;
 	}
 
 	public FriendState loadFriends() {
@@ -244,7 +249,7 @@ public class StateController {
 	private String getFilename(String user, String filename) {
 	
 		if (user != null) {
-			String dir = FileUtils.getStateDir(MainActivity.getContext()) + File.separator + user;
+			String dir = FileUtils.getStateDir(mContext) + File.separator + user;
 			if (FileUtils.ensureDir(dir)) {
 				return dir + File.separator + filename + STATE_EXTENSION;
 			}
