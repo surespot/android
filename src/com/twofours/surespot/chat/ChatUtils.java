@@ -189,8 +189,7 @@ public class ChatUtils {
 
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
 							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
-							message.setId(null);
-							message.setHeight(bitmap.getHeight());
+							message.setId(null);							
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {

@@ -627,8 +627,7 @@ public class ChatController {
 								SurespotLog.w(TAG, e, "handleMessage");
 							}
 
-							if (bitmap != null) {
-								message.setHeight(bitmap.getHeight());
+							if (bitmap != null) {								
 								MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
 							}
 						}
