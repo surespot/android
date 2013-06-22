@@ -19,13 +19,13 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.ui.ExpandableHeightListView;
 import com.twofours.surespot.ui.UIUtils;
 
 public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
+	private static final String TAG = "KeyFingerprintDialogFragment";
 	private String mUsername;
 
 	public static KeyFingerprintDialogFragment newInstance(String username) {
@@ -72,9 +72,9 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 			byte[] encodedDSAPubKey = pkp.getKeyPairDSA().getPublic().getEncoded();
 
 			HashMap<String, String> map = new HashMap<String, String>();
-			map.put("version", version);
-			map.put("DHFingerprint", Utils.md5(new String(encodedDHPubKey)));
-			map.put("DSAFingerprint", Utils.md5(new String(encodedDSAPubKey)));
+			map.put("version", version);			
+			map.put("DHFingerprint", UIUtils.md5(encodedDHPubKey));
+			map.put("DSAFingerprint", UIUtils.md5(encodedDSAPubKey));
 			myItems.add(map);
 
 		}
@@ -107,9 +107,9 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 						HashMap<String, String> map = new HashMap<String, String>();
 						map.put("version", sVer);
-						map.put("lastVerified", UIUtils.getFormattedDate(getActivity(), new Date(pubkeys.getLastModified())));
-						map.put("DHFingerprint", Utils.md5(new String(encodedDHPubKey)));
-						map.put("DSAFingerprint", Utils.md5(new String(encodedDSAPubKey)));
+						map.put("lastVerified", UIUtils.getFormattedDate(getActivity(), new Date(pubkeys.getLastModified())));																
+						map.put("DHFingerprint", UIUtils.md5(encodedDHPubKey));
+						map.put("DSAFingerprint", UIUtils.md5(encodedDSAPubKey));
 						items.add(map);
 
 						Collections.sort(items, new Comparator<HashMap<String, String>>() {

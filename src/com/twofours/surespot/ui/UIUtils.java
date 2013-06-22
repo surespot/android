@@ -1,9 +1,12 @@
 package com.twofours.surespot.ui;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 
 import org.json.JSONObject;
+import org.spongycastle.util.encoders.Hex;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -422,7 +425,6 @@ public class UIUtils {
 	}
 
 	public static String[] getFingerprintArray(String fingerprint) {
-		SurespotLog.v(TAG, "getFingerprintArray: %s", fingerprint);
 		String[] fp = new String[16];
 
 		if (fingerprint.length() == 31) {
@@ -430,9 +432,25 @@ public class UIUtils {
 		}
 
 		for (int i = 0; i < 16; i++) {
-			fp[i] = fingerprint.substring(i*2, i*2 + 2);
+			fp[i] = fingerprint.substring(i * 2, i * 2 + 2);
 		}
 
 		return fp;
+	}
+
+	public static String md5(byte[] s) {
+		try {
+			// Create MD5 Hash
+			MessageDigest digest = null;
+			digest = java.security.MessageDigest.getInstance("MD5");		
+			byte[] messageDigest = digest.digest();
+
+			// Create Hex String
+			return new String(Hex.encode(messageDigest));					
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.i(TAG, e, "md5");
+		}
+		return "";
 	}
 }
