@@ -172,9 +172,13 @@ public class StateController {
 		return messages;
 
 	}
-
+	
 	public synchronized void saveMessages(String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
-		String filename = getFilename(MESSAGES_PREFIX + spot);
+		saveMessages(IdentityController.getLoggedInUser(), spot, messages, currentScrollPosition);	
+	}
+	
+	public synchronized void saveMessages(String user, String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
+		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		if (filename != null) {
 			if (messages != null) {
 				int messagesSize = messages.size();
@@ -203,7 +207,11 @@ public class StateController {
 	}
 
 	public ArrayList<SurespotMessage> loadMessages(String spot) {
-		String filename = getFilename(MESSAGES_PREFIX + spot);
+		return loadMessages(IdentityController.getLoggedInUser(), spot);
+	}
+	
+	public ArrayList<SurespotMessage> loadMessages(String user, String spot) {
+		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		if (filename != null) {
 			String sMessages = null;
@@ -229,7 +237,12 @@ public class StateController {
 	}
 
 	private String getFilename(String filename) {
-		String user = IdentityController.getLoggedInUser();
+		String user = IdentityController.getLoggedInUser();	
+		return getFilename(user, filename);
+	}
+	
+	private String getFilename(String user, String filename) {
+	
 		if (user != null) {
 			String dir = FileUtils.getStateDir(MainActivity.getContext()) + File.separator + user;
 			if (FileUtils.ensureDir(dir)) {
