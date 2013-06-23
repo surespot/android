@@ -36,6 +36,7 @@ public class ChatFragment extends SherlockFragment {
 	private boolean mJustLoaded;
 	private ChatAdapter mChatAdapter;
 	private boolean mMessagesLoaded;
+	private boolean mHasEarlier = true;
 
 	public String getUsername() {
 		if (mUsername == null) {
@@ -154,8 +155,8 @@ public class ChatFragment extends SherlockFragment {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
-			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+		//	 SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
+		//	 + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
 
 			if (!mLoading) {
 				boolean hint = getUserVisibleHint();
@@ -170,8 +171,8 @@ public class ChatFragment extends SherlockFragment {
 						return;
 					}
 					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
-					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
-					if (chatController != null && hasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20) && totalItemCount > 29) {
+			//		SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
+					if (chatController != null && hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
 
 						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
 						// + ", visibleItemCount: " + visibleItemCount);
@@ -192,11 +193,12 @@ public class ChatFragment extends SherlockFragment {
 							// View v = mListView.getChildAt(0);
 							// mTop = (v == null) ? 0 : v.getTop();
 
-							getMainActivity().getChatController().loadEarlierMessages(mUsername, new IAsyncCallback<Void>() {
+							getMainActivity().getChatController().loadEarlierMessages(mUsername, new IAsyncCallback<Boolean>() {
 
 								@Override
-								public void handleResponse(Void nothing) {
+								public void handleResponse(Boolean loadedNew) {
 
+									
 									int selection = mListView.getFirstVisiblePosition();
 									// mSelection = firstVisibleItem;
 									View v = mListView.getChildAt(0);
@@ -220,8 +222,12 @@ public class ChatFragment extends SherlockFragment {
 									else {
 										mJustLoaded = false;
 										mLoading = false;
+									
 									}
-
+									
+									if (!loadedNew) {
+										mHasEarlier = false;
+									}
 								}
 							});
 						}

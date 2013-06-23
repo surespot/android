@@ -627,7 +627,7 @@ public class ChatController {
 								SurespotLog.w(TAG, e, "handleMessage");
 							}
 
-							if (bitmap != null) {								
+							if (bitmap != null) {
 								MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
 							}
 						}
@@ -764,7 +764,7 @@ public class ChatController {
 
 	// message handling shiznit
 
-	void loadEarlierMessages(final String username, final IAsyncCallback<Void> callback) {
+	void loadEarlierMessages(final String username, final IAsyncCallback<Boolean> callback) {
 
 		// mLoading = true;
 		// get the list of messages
@@ -814,7 +814,7 @@ public class ChatController {
 						}
 
 						// chatAdapter.setLoading(false);
-						callback.handleResponse(null);
+						callback.handleResponse(jsonArray.length() > 0);
 
 					}
 
@@ -822,13 +822,13 @@ public class ChatController {
 					public void onFailure(Throwable error, String content) {
 						SurespotLog.w(TAG, error, "%s: getEarlierMessages", username);
 						// chatAdapter.setLoading(false);
-						callback.handleResponse(null);
+						callback.handleResponse(false);
 					}
 				});
 			}
 			else {
 				SurespotLog.v(TAG, "%s: getEarlierMessages: no more messages.", username);
-				callback.handleResponse(null);
+				callback.handleResponse(false);
 				// ChatFragment.this.mNoEarlierMessages = true;
 			}
 
@@ -1420,11 +1420,16 @@ public class ChatController {
 		return lastControlId == null ? 0 : lastControlId;
 	}
 
-	public synchronized void loadMessages(String username) {
+	public synchronized void loadMessages(String username, boolean replace) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
+		if (replace) {
+			chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
+		}
+		else {
+			chatAdapter.addOrUpdateMessages(SurespotApplication.getStateController().loadMessages(spot));
+		}
 		// ChatFragment chatFragment = getChatFragment(username);
 	}
 
@@ -1557,10 +1562,10 @@ public class ChatController {
 
 			setProgress(null, true);
 			// getFriendsAndIds();
-			
-			//load chat messages from disk that may have been added by gcm
+
+			// load chat messages from disk that may have been added by gcm
 			for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
-				loadMessages(ca.getKey());
+				loadMessages(ca.getKey(), false);
 			}
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
@@ -1623,7 +1628,7 @@ public class ChatController {
 			mChatAdapters.put(username, chatAdapter);
 
 			// load savedmessages
-			loadMessages(username);
+			loadMessages(username, true);
 
 			LatestIdPair idPair = new LatestIdPair();
 			idPair.latestMessageId = getLatestMessageId(username);
@@ -1636,7 +1641,7 @@ public class ChatController {
 			getLatestMessagesAndControls(username);
 
 		}
-		
+
 		return chatAdapter;
 	}
 

@@ -131,8 +131,9 @@ public class ChatAdapter extends BaseAdapter {
 			if (message.getData() != null) {
 				updateMessage.setData(message.getData());
 			}
-			updateMessage.setGcm(message.isGcm());
-			
+			if (!message.isGcm()) {
+				updateMessage.setGcm(message.isGcm());
+			}
 
 		}
 
@@ -161,20 +162,22 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	// public void addMessages(ArrayList<SurespotMessage> messages) {
-	// if (messages.size() > 0) {
-	// mMessages.addAll(messages);
-	//
-	// // notifyDataSetChanged();
-	// }
-	// }
+	public void addOrUpdateMessages(ArrayList<SurespotMessage> messages) {
+		for (SurespotMessage message : messages) {
+			try {
+				addOrUpdateMessage(message, false, false);
+			}
+			catch (SurespotMessageSequenceException e) {
+				SurespotLog.i(TAG, e, "addOrUpdateMessage");
+			}
+		}
 
-	// thanks to http://www.sherif.mobi/2012/01/listview-with-ability-to-hide-rows.html
+		sort();
+	}
+
 	@Override
 	public int getCount() {
-
 		return mMessages.size();
-
 	}
 
 	@Override
@@ -192,7 +195,8 @@ public class ChatAdapter extends BaseAdapter {
 		String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
 		if (otherUser.equals(message.getFrom())) {
 			return TYPE_THEM;
-		} else {
+		}
+		else {
 			return TYPE_US;
 		}
 	}
@@ -229,7 +233,8 @@ public class ChatAdapter extends BaseAdapter {
 			if (currentViewHolder.type != type) {
 				SurespotLog.v(TAG, "types do not match, creating new view for the row");
 				convertView = null;
-			} else {
+			}
+			else {
 				chatMessageViewHolder = currentViewHolder;
 			}
 		}
@@ -254,7 +259,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			chatMessageViewHolder.imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-			
+
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 
@@ -274,22 +279,26 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (item.getErrorStatus() > 0) {
 			UIUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
-		} else {
+		}
+		else {
 
 			if (item.getId() == null) {
 
 				chatMessageViewHolder.tvTime.setText(R.string.message_sending);
 				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
-			} else {
+			}
+			else {
 
 				if (item.getPlainData() == null) {
 					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
-				} else {
+				}
+				else {
 
 					if (item.getDateTime() != null) {
 						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(item.getDateTime()) + " "
 								+ DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));
-					} else {
+					}
+					else {
 						chatMessageViewHolder.tvTime.setText("");
 						SurespotLog.v(TAG, "getView, item: %s", item);
 					}
@@ -306,13 +315,15 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.getPlainData() != null) {
 				chatMessageViewHolder.tvText.clearAnimation();
 				chatMessageViewHolder.tvText.setText(item.getPlainData());
-			} else {
+			}
+			else {
 				chatMessageViewHolder.tvText.setText("");
 				mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
 			}
 			chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-		} else {
+		}
+		else {
 			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.tvText.clearAnimation();
 			chatMessageViewHolder.tvText.setVisibility(View.GONE);
@@ -324,7 +335,8 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.isShareable()) {
 				chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 				chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
-			} else {
+			}
+			else {
 				chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
 				chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 			}
