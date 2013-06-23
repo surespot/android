@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:descendantFocusability="blocksDescendants"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -42,8 +41,9 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
                 android:gravity="center"
-                android:text="DH"
+                android:text="DH"                
                 android:textSize="10sp"
                 android:textStyle="bold" />
 
@@ -54,10 +54,11 @@
 
                 <com.twofours.surespot.ui.ExpandableHeightGridView
                     android:id="@+id/dhFingerprint"
-                    android:layout_width="80dp"
+                    android:layout_width="90dp"
                     android:layout_height="wrap_content"
                     android:columnWidth="20dp"
                     android:gravity="center"
+                    android:listSelector="@android:color/transparent"
                     android:numColumns="4"
                     android:stretchMode="none" />
             </LinearLayout>
@@ -74,8 +75,9 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
                 android:gravity="center"
-                android:text="DSA"
+                android:text="DSA"                
                 android:textSize="10sp"
                 android:textStyle="bold" />
 
@@ -86,10 +88,11 @@
 
                 <com.twofours.surespot.ui.ExpandableHeightGridView
                     android:id="@+id/dsaFingerprint"
-                    android:layout_width="80dp"
+                    android:layout_width="90dp"
                     android:layout_height="wrap_content"
                     android:columnWidth="20dp"
                     android:gravity="center"
+                    android:listSelector="@android:color/transparent"
                     android:numColumns="4"
                     android:stretchMode="none" />
             </LinearLayout>
