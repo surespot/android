@@ -24,7 +24,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private Integer mResendId;
 	private int mErrorStatus;
 	private String mMimeType;
-	private int mHeight;
 	private Date mDateTime;
 	private String mToVersion;
 
@@ -150,12 +149,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		if (errorStatus > 0) {
 			chatMessage.setErrorStatus(errorStatus);
 		}
-
-		Integer height = jsonMessage.optInt("height");
-		if (height > 0) {
-			chatMessage.setHeight(jsonMessage.optInt("height"));
-		}
-
+		
 		Integer resendId = jsonMessage.optInt("resendId");
 		if (resendId > 0) {
 			chatMessage.setResendId(resendId);
@@ -198,9 +192,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
-			if (this.getHeight() > 0) {
-				message.put("height", this.getHeight());
-			}
+			
 			
 			
 
@@ -221,7 +213,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		result = prime * result + ((mDateTime == null) ? 0 : mDateTime.hashCode());
 		result = prime * result + ((mFrom == null) ? 0 : mFrom.hashCode());
 		result = prime * result + ((mFromVersion == null) ? 0 : mFromVersion.hashCode());
-		result = prime * result + mHeight;
 		result = prime * result + ((mId == null) ? 0 : mId.hashCode());
 		result = prime * result + ((mIv == null) ? 0 : mIv.hashCode());
 		result = prime * result + ((mMimeType == null) ? 0 : mMimeType.hashCode());
@@ -292,15 +283,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public void setGcm(boolean gcm) {
 		mGcm = gcm;
-	}
-
-	public Integer getHeight() {
-		return mHeight;
-	}
-
-	public void setHeight(Integer mHeight) {
-		this.mHeight = mHeight;
-	}
+	}	
 
 	public Date getDateTime() {
 		return mDateTime;
@@ -394,7 +377,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\terrorStatus: " + getErrorStatus() + "\n");
 		sb.append("\tresendId: " + getResendId() + "\n");
 		sb.append("\tdatetime: " + getDateTime() + "\n");
-		sb.append("\theight: " + getHeight() + "\n");
 		sb.append("\tgcm: " + isGcm() + "\n");
 
 		return sb.toString();

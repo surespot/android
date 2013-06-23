@@ -627,8 +627,7 @@ public class ChatController {
 								SurespotLog.w(TAG, e, "handleMessage");
 							}
 
-							if (bitmap != null) {
-								message.setHeight(bitmap.getHeight());
+							if (bitmap != null) {								
 								MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
 							}
 						}
@@ -1421,7 +1420,7 @@ public class ChatController {
 		return lastControlId == null ? 0 : lastControlId;
 	}
 
-	private synchronized void loadMessages(String username) {
+	public synchronized void loadMessages(String username) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
 		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
@@ -1558,6 +1557,11 @@ public class ChatController {
 
 			setProgress(null, true);
 			// getFriendsAndIds();
+			
+			//load chat messages from disk that may have been added by gcm
+			for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
+				loadMessages(ca.getKey());
+			}
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -1632,6 +1636,7 @@ public class ChatController {
 			getLatestMessagesAndControls(username);
 
 		}
+		
 		return chatAdapter;
 	}
 

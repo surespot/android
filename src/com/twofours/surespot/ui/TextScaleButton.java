@@ -10,17 +10,16 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.widget.ImageButton;
 
-import com.twofours.surespot.common.SurespotLog;
-
 public class TextScaleButton extends ImageButton {
 	private static final String TAG = "TextScaleButton";
 	String mText = "";
 	Paint mTextPaint;
 
-	private static final int MAX_TEXT_SIZE=100;
+	
 	int mViewWidth;
 	int mViewHeight;
 	int mTextBaseline;
+	int mSize;
 
 	public TextScaleButton(Context context) {
 		super(context);
@@ -56,8 +55,9 @@ public class TextScaleButton extends ImageButton {
 		}
 	}
 
-	public void setText(CharSequence text) {
+	public void setText(CharSequence text, int size) {
 		mText = text.toString();
+		mSize = size;
 		onSizeChanged(getWidth(), getHeight(), getWidth(), getHeight());
 	}
 
@@ -70,29 +70,7 @@ public class TextScaleButton extends ImageButton {
 		mTextPaint.setAntiAlias(true);
 	}
 
-	int getTextSize() {
-		int incr_text_size = 1;
-		int text_width = mViewWidth - getPaddingLeft() - getPaddingRight();
-
-		int text_check_w = 0;
-		Rect bounds = new Rect();
-		// ask the paint for the bounding rect if it were to draw this
-		
-		while (text_width > text_check_w && incr_text_size < MAX_TEXT_SIZE) {
-			mTextPaint.setTextSize(incr_text_size);// have this the same as your text size
-			mTextPaint.getTextBounds(mText, 0, mText.length(), bounds);
-
-			text_check_w = bounds.width();
-			incr_text_size++;
-
-		}
-
-		int text_h = bounds.bottom - bounds.top;
-		mTextBaseline = bounds.bottom + ((mViewHeight - text_h) / 2);
-
-		//round down to nearest 2
-		return incr_text_size/4*4;
-	}
+	
 
 	/**
 	 * When the view size is changed, recalculate the paint settings to have the text on the fill the view area
@@ -105,9 +83,15 @@ public class TextScaleButton extends ImageButton {
 		mViewWidth = w;
 		mViewHeight = h;
 
-		int textSize = getTextSize();
-		SurespotLog.v(TAG, "setting text size to: %d", textSize);
-		mTextPaint.setTextSize(textSize);
+		Rect bounds = new Rect();
+		mTextPaint.setTextSize(mSize);// have this the same as your text size
+		mTextPaint.getTextBounds(mText, 0, mText.length(), bounds);
+
+		int text_h = bounds.bottom - bounds.top;
+		mTextBaseline = bounds.bottom + ((mViewHeight - text_h) / 2);
+
+		
+		mTextPaint.setTextSize(mSize);
 
 	}
 

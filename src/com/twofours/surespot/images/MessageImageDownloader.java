@@ -45,7 +45,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -70,8 +70,8 @@ public class MessageImageDownloader {
 	}
 
 	/**
-	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
-	 * in the cache and will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
+	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
+	 * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
 	 * 
 	 * @param url
 	 *            The URL of the image to download.
@@ -105,19 +105,17 @@ public class MessageImageDownloader {
 	}
 
 	/*
-	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not
-	 * clear. private void forceDownload(String url, ImageView view) { forceDownload(url, view, null); }
+	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear. private void
+	 * forceDownload(String url, ImageView view) { forceDownload(url, view, null); }
 	 */
 
 	/**
-	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not
-	 * clear.
+	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
 	 */
 	private void forceDownload(ImageView imageView, SurespotMessage message) {
 		if (cancelPotentialDownload(imageView, message)) {
 			BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, message);
-			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task,
-					message.getHeight() == 0 ? SurespotConstants.IMAGE_DISPLAY_HEIGHT : message.getHeight());
+			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task, SurespotConfiguration.getImageDisplayHeight());
 			imageView.setImageDrawable(downloadedDrawable);
 			message.setLoaded(false);
 			message.setLoading(true);
@@ -126,8 +124,8 @@ public class MessageImageDownloader {
 	}
 
 	/**
-	 * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if
-	 * the download in progress deals with the same url. The download is not stopped in that case.
+	 * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
+	 * progress deals with the same url. The download is not stopped in that case.
 	 */
 	private boolean cancelPotentialDownload(ImageView imageView, SurespotMessage message) {
 		BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
@@ -206,8 +204,8 @@ public class MessageImageDownloader {
 				try {
 					inputStream = new PipedInputStream(out);
 
-					EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
-							mMessage.getIv(), new BufferedInputStream(imageStream), out);
+					EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(),
+							new BufferedInputStream(imageStream), out);
 
 					if (mCancelled) {
 						inputStream.close();
@@ -277,19 +275,11 @@ public class MessageImageDownloader {
 								}
 
 								imageView.setImageBitmap(finalBitmap);
-
-								if (mMessage.getHeight() == 0) {
-									bitmapDownloaderTask.mMessage.setHeight(finalBitmap.getHeight());
-									// SurespotLog.v(TAG,
-									// "Setting message height from image, id: " + mMessage.getId() + " from: " + mMessage.getFrom()
-									// + ", to: " + mMessage.getTo() + ", height: " + finalBitmap.getHeight() + ", width: "
-									// + finalBitmap.getWidth());
-								}
-
+								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+								
 								TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
-								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent())
-										.findViewById(R.id.messageImageNotShareable);
+								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageNotShareable);
 
 								if (mMessage.isShareable()) {
 									ivShareable.setVisibility(View.VISIBLE);
@@ -361,8 +351,8 @@ public class MessageImageDownloader {
 	 * A fake Drawable that will be attached to the imageView while the download is in progress.
 	 * 
 	 * <p>
-	 * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure
-	 * that only the last started download process can bind its result, independently of the download finish order.
+	 * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure that only the last
+	 * started download process can bind its result, independently of the download finish order.
 	 * </p>
 	 */
 	public static class DownloadedDrawable extends ColorDrawable {

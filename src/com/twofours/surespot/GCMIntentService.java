@@ -159,13 +159,13 @@ public class GCMIntentService extends GCMBaseIntentService {
 			//add the message if it came in the GCM
 			String message = intent.getStringExtra("message");
 			if (message != null) {
-				ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(spot);
+				ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
 				SurespotMessage sm = SurespotMessage.toSurespotMessage(message);
 				sm.setGcm(true);
 				if (sm != null) {
 					messages.add(sm);
 				}
-				SurespotApplication.getStateController().saveMessages(spot, messages, -1);
+				SurespotApplication.getStateController().saveMessages(to, spot, messages, -1);
 			}
 
 			

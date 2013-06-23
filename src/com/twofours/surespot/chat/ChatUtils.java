@@ -36,6 +36,7 @@ import ch.boye.httpclientandroidlib.androidextra.Base64;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -188,8 +189,7 @@ public class ChatUtils {
 
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
 							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
-							message.setId(null);
-							message.setHeight(bitmap.getHeight());
+							message.setId(null);							
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
@@ -416,7 +416,7 @@ public class ChatUtils {
 		BitmapFactory.Options options = new Options();
 		decodeBounds(options, data);
 
-		int reqHeight = SurespotConstants.IMAGE_DISPLAY_HEIGHT;
+		int reqHeight = SurespotConfiguration.getImageDisplayHeight();
 		if (options.outHeight > reqHeight) {
 			options.inSampleSize = calculateInSampleSize(options, 0, reqHeight);
 			SurespotLog.v(TAG, "getSampledImage, inSampleSize: " + options.inSampleSize);
