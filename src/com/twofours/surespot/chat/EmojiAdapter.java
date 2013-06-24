@@ -17,7 +17,7 @@ public class EmojiAdapter extends BaseAdapter {
 	}
 
 	public int getCount() {
-		return EmojiParser.Emojis.getCount();
+		return EmojiParser.getCount();
 	}
 
 	public Object getItem(int position) {
@@ -42,7 +42,7 @@ public class EmojiAdapter extends BaseAdapter {
 			imageView = (ImageView) convertView;
 		}
 
-		imageView.setImageResource(EmojiParser.Emojis.getEmojiResource(position));
+		imageView.setImageResource(EmojiParser.getEmojiResource(position));
 		return imageView;
 	}
 

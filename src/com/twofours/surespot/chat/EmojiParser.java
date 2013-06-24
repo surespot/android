@@ -1,24 +1,10 @@
-/*
- * Copyright (C) 2009 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.twofours.surespot.chat;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -46,186 +32,40 @@ public class EmojiParser {
 	}
 
 	private final Context mContext;
-	private final String[] mEmojiChars;
+	private static final String[] mEmojiChars = { "1f604", "1F60A", "1F603", "263A", "1F609", "1F60D", "1F618", "1F61A", "1F601", "1F61C", "1F61D", "1F60F", "1F617",
+			"1F619", "1F606", "1F605", "1F635", "1F61B", "1F600", "1F610", "1F633", "1F60C", "1F612", "1F613", "1F614", "1F62E", "1F611", "1F615", "1F634",
+			"1F627", "1F62C", "1F626", "2764", "1F46B", "1F46A", "1F46C", "1F491", "1F46d", "1F311", "1F319", "1F317", "1F315", "1F312", "1F31C", "1F31E",
+			"1F308", "1F4A9", "1F42B", "1F414", "1F417", "1F40D", "1F40C", "1F40E", "1F428", "1F418", "1F699", "1F697", "1F355", "1F354", "1F359", "1F370" };
 
-	private final HashMap<String, Integer> mEmojiCharToRes;
-
-	private EmojiParser(Context context) {
-		mContext = context;
-		mEmojiChars = mContext.getResources().getStringArray(EMOJI_CHARS);
-		mEmojiCharToRes = buildEmojiCharToRes();
-		// mPattern = buildPattern();
-	}
-
-	static class Emojis {
-		private static final int[] sIconIds = { R.drawable.smile, R.drawable.grin, R.drawable.smiley, R.drawable.relaxed, R.drawable.wink,
-				R.drawable.heart_eyes, R.drawable.kissing_heart, R.drawable.kissing_closed_eyes, R.drawable.grinning,
-				R.drawable.stuck_out_tongue_winking_eye, R.drawable.stuck_out_tongue_closed_eyes, R.drawable.smirk, R.drawable.kissing,
-				R.drawable.kissing_smiling_eyes, R.drawable.laughing, R.drawable.sweat_smile, R.drawable.drunk,
-				R.drawable.stuck_out_tongue, R.drawable.satisfied, R.drawable.hushed, R.drawable.flushed, R.drawable.relieved,
-				R.drawable.unamused, R.drawable.sweat, R.drawable.worried, R.drawable.open_mouth, R.drawable.expressionless,
-				R.drawable.confused, R.drawable.sleeping, R.drawable.anguished, R.drawable.grimacing, R.drawable.frowning,
-				R.drawable.heart, R.drawable.couple_holding_hands, R.drawable.family, R.drawable.two_men_holding_hands,
-				R.drawable.couple_with_heart, R.drawable.two_women_holding_hands, R.drawable.new_moon, R.drawable.crescent_moon,
-				R.drawable.first_quarter_moon, R.drawable.full_moon, R.drawable.waxing_gibbous_moon, R.drawable.moon_with_face,
-				R.drawable.sun_with_face, R.drawable.rainbow_sky, R.drawable.poop, R.drawable.bactrian_camel, R.drawable.chicken,
-				R.drawable.boar, R.drawable.snake, R.drawable.snail, R.drawable.horse, R.drawable.koala, R.drawable.elephant,
-				R.drawable.rv, R.drawable.car, R.drawable.pizza, R.drawable.hamburger, R.drawable.rice_ball, R.drawable.cake,
-
-		};
-
-		public static int SMILING_FACE_WITH_OPEN_MOUTH_AND_SMILING_EYES = 0;
-		public static int GRINNING_FACE_WITH_SMILING_EYES = 1;
-		public static int SMILING_FACE_WITH_OPEN_MOUTH = 2;
-		public static int SMILING_FACE = 3;
-		public static int WINKING_FACE = 4;
-		public static int SMILING_FACE_WITH_HEART_SHAPED_EYES = 5;
-		public static int FACE_THROWING_A_KISS = 6;
-		public static int KISSING_FACE_WITH_CLOSE_EYES = 7;
-		public static int TOOTHY_FACE_WITH_SMILING_EYES = 8;
-		public static int FACE_WITH_STUCK_OUT_TONGUE_AND_WINKING_EYE = 9;
-		public static int FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES = 10;
-		public static int SMIRKING_FACE = 11;
-		public static int KISSING_FACE = 12;
-		public static int KISSING_FACE_WITH_SMILING_EYES = 13;
-		public static int SMILING_FACE_WITH_OPEN_MOUTH_AND_TIGHTLY_CLOSED_EYES = 14;
-		public static int SMILING_FACE_WITH_OPEN_MOUTH_AND_COLD_SWEAT = 15;
-		public static int DIZZY_FACE = 16;
-		public static int FACE_WITH_STUCK_OUT_TONGUE = 17;
-		public static int GRINNING_FACE = 18;
-		public static int NEUTRAL_FACE = 19;
-		public static int FLUSHED_FACE = 20;
-		public static int RELIEVED_FACE = 21;
-		public static int UNAMUSED_FACE = 22;
-		public static int FACE_WITH_COLD_SWEAT = 23;
-		public static int PENSIVE_FACE = 24;
-		public static int FACE_WITH_OPEN_MOUTH = 25;
-		public static int EXPRESSIONLESS_FACE = 26;
-		public static int CONFUSED_FACE = 27;
-		public static int SLEEPING_FACE = 28;
-		public static int ANGUISHED_FACE = 29;
-		public static int GRIMICING_FACE = 30;
-		public static int FROWNING_FACE_WITH_OPEN_MOUTH = 31;
-		public static int RED_HEART = 32;
-		public static int MAN_AND_WOMAN_HOLDING_HANDS = 33;
-		public static int FAMILY = 34;
-		public static int TWO_MEN_HOLDING_HANDS = 35;
-		public static int COUPLE_WITH_HEART = 36;
-		public static int TWO_WOMEN_HOLDING_HANDS = 37;
-		public static int NEW_MOON = 38;
-		public static int CRESCENT_MOON = 39;
-		public static int LAST_QUARTER_MOON_SYMBOL = 40;
-		public static int FULL_MOON_SYMBOL = 41;
-		public static int WAXING_CRESCENT_MOON_SYMBOL = 42;
-		public static int LAST_QUARTER_MOON_WITH_FACE = 43;
-		public static int SUN_WITH_FACE = 44;
-		public static int RAINBOW = 45;
-		public static int DOG_DIRT = 46;
-		public static int BACTRIAN_CAMEL = 47;
-		public static int CHICKEN = 48;
-		public static int BOAR = 49;
-		public static int SNAKE = 50;
-		public static int SNAIL = 51;
-		public static int HORSE = 52;
-		public static int KOALA = 53;
-		public static int ELEPHANT = 54;
-		public static int RECREATIONAL_VEHICLE = 55;
-		public static int AUTOMOBILE = 56;
-		public static int SLICE_OF_PIZZA = 57;
-		public static int HAMBURGER = 58;
-		public static int RICE_BALL = 59;
-		public static int SHORTCAKE = 60;
-
-		public static int getEmojiResource(int which) {
-			return sIconIds[which];
-		}
-
-		public static int getCount() {
-			return sIconIds.length;
-		}
-	}
-
-	// NOTE: if you change anything about this array, you must make the corresponding change in res/values/arrays.xml
-	public static final int[] EMOJI_RES_IDS = { Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_SMILING_EYES), // 0
-			Emojis.getEmojiResource(Emojis.GRINNING_FACE_WITH_SMILING_EYES), // 1
-			Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH), // 2
-			Emojis.getEmojiResource(Emojis.SMILING_FACE), // 3
-			Emojis.getEmojiResource(Emojis.WINKING_FACE), // 4
-			Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_HEART_SHAPED_EYES), // 5
-			Emojis.getEmojiResource(Emojis.FACE_THROWING_A_KISS), // 6
-			Emojis.getEmojiResource(Emojis.KISSING_FACE_WITH_CLOSE_EYES), // 7
-			Emojis.getEmojiResource(Emojis.TOOTHY_FACE_WITH_SMILING_EYES), // 8
-			Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE_AND_WINKING_EYE), // 9
-			Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES), // 10
-			Emojis.getEmojiResource(Emojis.SMIRKING_FACE), // 11
-			Emojis.getEmojiResource(Emojis.KISSING_FACE), // 12
-			Emojis.getEmojiResource(Emojis.KISSING_FACE_WITH_SMILING_EYES), // 13
-			Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_TIGHTLY_CLOSED_EYES), // 14
-			Emojis.getEmojiResource(Emojis.SMILING_FACE_WITH_OPEN_MOUTH_AND_COLD_SWEAT), // 15
-			Emojis.getEmojiResource(Emojis.DIZZY_FACE), // 16
-			Emojis.getEmojiResource(Emojis.FACE_WITH_STUCK_OUT_TONGUE), // 17
-			Emojis.getEmojiResource(Emojis.GRINNING_FACE), // 18
-			Emojis.getEmojiResource(Emojis.NEUTRAL_FACE), // 19
-			Emojis.getEmojiResource(Emojis.FLUSHED_FACE), // 20
-			Emojis.getEmojiResource(Emojis.RELIEVED_FACE), // 21
-			Emojis.getEmojiResource(Emojis.UNAMUSED_FACE), // 22
-			Emojis.getEmojiResource(Emojis.FACE_WITH_COLD_SWEAT), // 23
-			Emojis.getEmojiResource(Emojis.PENSIVE_FACE), // 24
-			Emojis.getEmojiResource(Emojis.FACE_WITH_OPEN_MOUTH), // 25
-			Emojis.getEmojiResource(Emojis.EXPRESSIONLESS_FACE), // 26
-			Emojis.getEmojiResource(Emojis.CONFUSED_FACE), // 27
-			Emojis.getEmojiResource(Emojis.SLEEPING_FACE), // 28
-			Emojis.getEmojiResource(Emojis.ANGUISHED_FACE), // 29
-			Emojis.getEmojiResource(Emojis.GRIMICING_FACE), // 30
-			Emojis.getEmojiResource(Emojis.FROWNING_FACE_WITH_OPEN_MOUTH), // 31
-			Emojis.getEmojiResource(Emojis.RED_HEART), // 32
-			Emojis.getEmojiResource(Emojis.MAN_AND_WOMAN_HOLDING_HANDS), // 33
-			Emojis.getEmojiResource(Emojis.FAMILY), // 34
-			Emojis.getEmojiResource(Emojis.TWO_MEN_HOLDING_HANDS), // 35
-			Emojis.getEmojiResource(Emojis.COUPLE_WITH_HEART), // 36
-			Emojis.getEmojiResource(Emojis.TWO_WOMEN_HOLDING_HANDS), // 37
-			Emojis.getEmojiResource(Emojis.NEW_MOON), // 38
-			Emojis.getEmojiResource(Emojis.CRESCENT_MOON), // 39
-			Emojis.getEmojiResource(Emojis.LAST_QUARTER_MOON_SYMBOL), // 40
-			Emojis.getEmojiResource(Emojis.FULL_MOON_SYMBOL), // 41
-			Emojis.getEmojiResource(Emojis.WAXING_CRESCENT_MOON_SYMBOL), // 42
-			Emojis.getEmojiResource(Emojis.LAST_QUARTER_MOON_WITH_FACE), // 43
-			Emojis.getEmojiResource(Emojis.SUN_WITH_FACE), // 44
-			Emojis.getEmojiResource(Emojis.RAINBOW), // 45
-			Emojis.getEmojiResource(Emojis.DOG_DIRT), // 46
-			Emojis.getEmojiResource(Emojis.BACTRIAN_CAMEL), // 47
-			Emojis.getEmojiResource(Emojis.CHICKEN), // 48
-			Emojis.getEmojiResource(Emojis.BOAR), // 49
-			Emojis.getEmojiResource(Emojis.SNAKE), // 50
-			Emojis.getEmojiResource(Emojis.SNAIL), // 51
-			Emojis.getEmojiResource(Emojis.HORSE), // 52
-			Emojis.getEmojiResource(Emojis.KOALA), // 53
-			Emojis.getEmojiResource(Emojis.ELEPHANT), // 54
-			Emojis.getEmojiResource(Emojis.RECREATIONAL_VEHICLE), // 55
-			Emojis.getEmojiResource(Emojis.AUTOMOBILE), // 56
-			Emojis.getEmojiResource(Emojis.SLICE_OF_PIZZA), // 57
-			Emojis.getEmojiResource(Emojis.HAMBURGER), // 58
-			Emojis.getEmojiResource(Emojis.RICE_BALL), // 59
-			Emojis.getEmojiResource(Emojis.SHORTCAKE), // 60
+	private static final int[] mEmojiRes = { R.drawable.smile, R.drawable.grin, R.drawable.smiley, R.drawable.relaxed, R.drawable.wink, R.drawable.heart_eyes,
+			R.drawable.kissing_heart, R.drawable.kissing_closed_eyes, R.drawable.grinning, R.drawable.stuck_out_tongue_winking_eye,
+			R.drawable.stuck_out_tongue_closed_eyes, R.drawable.smirk, R.drawable.kissing, R.drawable.kissing_smiling_eyes, R.drawable.laughing,
+			R.drawable.sweat_smile, R.drawable.drunk, R.drawable.stuck_out_tongue, R.drawable.satisfied, R.drawable.hushed, R.drawable.flushed,
+			R.drawable.relieved, R.drawable.unamused, R.drawable.sweat, R.drawable.worried, R.drawable.open_mouth, R.drawable.expressionless,
+			R.drawable.confused, R.drawable.sleeping, R.drawable.anguished, R.drawable.grimacing, R.drawable.frowning, R.drawable.heart,
+			R.drawable.couple_holding_hands, R.drawable.family, R.drawable.two_men_holding_hands, R.drawable.couple_with_heart,
+			R.drawable.two_women_holding_hands, R.drawable.new_moon, R.drawable.crescent_moon, R.drawable.first_quarter_moon, R.drawable.full_moon,
+			R.drawable.waxing_gibbous_moon, R.drawable.moon_with_face, R.drawable.sun_with_face, R.drawable.rainbow_sky, R.drawable.poop,
+			R.drawable.bactrian_camel, R.drawable.chicken, R.drawable.boar, R.drawable.snake, R.drawable.snail, R.drawable.horse, R.drawable.koala,
+			R.drawable.elephant, R.drawable.rv, R.drawable.car, R.drawable.pizza, R.drawable.hamburger, R.drawable.rice_ball, R.drawable.cake,
 
 	};
 
-	public static final int EMOJI_CHARS = R.array.emoji_unicode_char;
-	public static final int EMOJI_NAMES = R.array.emoji_names;
+	private HashMap<String, Integer> mCodepointToIndex;
 
-	private HashMap<String, Integer> buildEmojiCharToRes() {
-		if (EMOJI_RES_IDS.length != mEmojiChars.length) {
-			// Throw an exception if someone updated EMOJI_RES_IDS
-			// and failed to update arrays.xml
+	@SuppressLint("DefaultLocale")
+	private EmojiParser(Context context) {
+		if (mEmojiRes.length != mEmojiChars.length) {
 			throw new IllegalStateException("Emoji resource ID/text mismatch");
 		}
-
-		HashMap<String, Integer> emojiCharToRes = new HashMap<String, Integer>(mEmojiChars.length);
+				
+		mContext = context;
+		mCodepointToIndex = new HashMap<String, Integer>(mEmojiChars.length);
+		
+		
 		for (int i = 0; i < mEmojiChars.length; i++) {
-			emojiCharToRes.put(("\\u" + mEmojiChars[i]).toLowerCase(), EMOJI_RES_IDS[i]);
-		}
-
-		return emojiCharToRes;
+			mCodepointToIndex.put(("\\u" + mEmojiChars[i]).toLowerCase(), i);
+		}			
 	}
 
 	public CharSequence getEmojiChar(int position) {
@@ -233,7 +73,7 @@ public class EmojiParser {
 		int end = Character.charCount(codePoint);
 
 		SpannableStringBuilder builder = new SpannableStringBuilder(new String(Character.toChars(codePoint)));
-		builder.setSpan(new ImageSpan(mContext, EMOJI_RES_IDS[position]), 0, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		builder.setSpan(new ImageSpan(mContext, mEmojiRes[position]), 0, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		return builder;
 	}
 
@@ -262,7 +102,7 @@ public class EmojiParser {
 			if (cp.codePoint == 0x2764 || cp.codePoint == 0x263A || Character.isSupplementaryCodePoint(cp.codePoint)) {
 				String escapedUnicode = ChatUtils.unicodeEscaped(cp.codePoint);
 				suppCps.append(escapedUnicode + (i.hasNext() ? ", " : ""));
-				Integer resId = mEmojiCharToRes.get(escapedUnicode.toLowerCase());
+				Integer resId = mEmojiRes[getEmojiIndex(escapedUnicode)];
 
 				if (resId != null) {
 					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -278,7 +118,20 @@ public class EmojiParser {
 		return builder;
 	}
 
+	@SuppressLint("DefaultLocale")
+	private int getEmojiIndex(String codepoint) {
+		return mCodepointToIndex.get(codepoint.toLowerCase());		
+	}
+
 	public int getRandomEmojiResource() {
-		return Emojis.getEmojiResource(mRandom.nextInt(Emojis.getCount()));
+		return mEmojiRes[mRandom.nextInt(mEmojiRes.length)];
+	}
+	
+	public static int getEmojiResource(int which) {
+		return mEmojiRes[which];
+	}
+	
+	public static int getCount() {
+		return mEmojiChars.length;
 	}
 }
