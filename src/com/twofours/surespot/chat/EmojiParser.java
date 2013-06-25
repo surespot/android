@@ -86,7 +86,6 @@ public class EmojiParser {
 		addCharToResMapping("1F619", R.drawable.kissing_smiling_eyes);
 		addCharToResMapping("1F606", R.drawable.laughing);
 		addCharToResMapping("1F605", R.drawable.sweat_smile);
-		addCharToResMapping("1F635", R.drawable.drunk);
 		addCharToResMapping("1F61B", R.drawable.stuck_out_tongue);
 		addCharToResMapping("1F600", R.drawable.satisfied);
 		addCharToResMapping("1F610", R.drawable.hushed);
@@ -110,7 +109,7 @@ public class EmojiParser {
 		addCharToResMapping("1F46d", R.drawable.two_women_holding_hands);
 		addCharToResMapping("1F311", R.drawable.new_moon);
 		addCharToResMapping("1F319", R.drawable.crescent_moon);
-		addCharToResMapping("1F317", R.drawable.first_quarter_moon);
+		addCharToResMapping("1F313", R.drawable.first_quarter_moon);
 		addCharToResMapping("1F315", R.drawable.full_moon);
 		addCharToResMapping("1F312", R.drawable.waxing_gibbous_moon);
 		addCharToResMapping("1F31C", R.drawable.moon_with_face);
@@ -130,15 +129,144 @@ public class EmojiParser {
 		addCharToResMapping("1F355", R.drawable.pizza);
 		addCharToResMapping("1F354", R.drawable.hamburger);
 		addCharToResMapping("1F359", R.drawable.rice_ball);
-		addCharToResMapping("1F370", R.drawable.cake);
+		addCharToResMapping("2693", R.drawable.anchor);
+		addCharToResMapping("1F620", R.drawable.angry_face);
+		addCharToResMapping("1F632", R.drawable.astonished_face);
+		addCharToResMapping("1F37A", R.drawable.beer_mug);
+		addCharToResMapping("1F371", R.drawable.bento_box);
+		addCharToResMapping("1F413", R.drawable.bgok);
+		addCharToResMapping("1F421", R.drawable.blowfish);
+		addCharToResMapping("1F68F", R.drawable.bus_stop);
+		addCharToResMapping("1F335", R.drawable.cactus);
+		addCharToResMapping("1F639", R.drawable.cat_face_with_tears_of_joy);
+		addCharToResMapping("1F63C", R.drawable.cat_face_with_wry_smile);
+		addCharToResMapping("1F431", R.drawable.cat_face);
+		addCharToResMapping("2601", R.drawable.cloud);
+		addCharToResMapping("1F63F", R.drawable.crying_cat_face);
+		addCharToResMapping("1F622", R.drawable.crying_face);
+		addCharToResMapping("1F300", R.drawable.cyclone);
+		addCharToResMapping("1F625", R.drawable.disappointed_but_relieved_face);
+		addCharToResMapping("1F61E", R.drawable.disappointed_face);
+		addCharToResMapping("1F635", R.drawable.dizzy_face);
+		addCharToResMapping("1F436", R.drawable.dog_face);
+		addCharToResMapping("1F47D", R.drawable.extraterrestrial_alien);
+		addCharToResMapping("1F60B", R.drawable.face_savouring_delicious_food);
+		addCharToResMapping("1F624", R.drawable.face_with_look_of_triumph);
+		addCharToResMapping("1F637", R.drawable.face_with_medical_mask);
+		addCharToResMapping("1F645", R.drawable.face_with_no_good_gesture);
+		addCharToResMapping("1F646", R.drawable.face_with_ok_gesture);
+		addCharToResMapping("1F630", R.drawable.face_with_open_mouth_and_cold_sweat);
+		addCharToResMapping("1F602", R.drawable.face_with_tear_of_joy);		
+		addCharToResMapping("1F628", R.drawable.fearful_face);
+		addCharToResMapping("1F365", R.drawable.fish_cake_with_swirl_design);
+		addCharToResMapping("1F44A", R.drawable.fisted_hand_sign);
+		addCharToResMapping("1F438", R.drawable.frog_face);		
+		addCharToResMapping("1F47B", R.drawable.ghost);
+		addCharToResMapping("1F31F", R.drawable.glowing_star);
+		addCharToResMapping("1F638", R.drawable.grinning_cat_face_with_smiling_eyes);
+		addCharToResMapping("1F3B8", R.drawable.guitar);			
+		addCharToResMapping("1F64B", R.drawable.happy_person_raising_one_hand);
+		addCharToResMapping("1F423", R.drawable.hatching_chick);		
+		addCharToResMapping("1F649", R.drawable.hear_no_evil_monkey);	
+		addCharToResMapping("26A1", R.drawable.high_voltage_sign);			
+		addCharToResMapping("2615", R.drawable.hot_beverage);		
+		addCharToResMapping("1F383", R.drawable.jack_o_lantern);
+		
+		
+		addCharToResMapping("1F63D", R.drawable.kissing_cat_face_with_closed_eyes);
+		
+		addCharToResMapping("1F317", R.drawable.last_quarter_moon);
+		addCharToResMapping("1F62D", R.drawable.loudly_crying_face);
+		addCharToResMapping("1F370", R.drawable.love_hotel);
+		addCharToResMapping("1F370", R.drawable.mens_symbol);
+		addCharToResMapping("1F370", R.drawable.microphone);
+		addCharToResMapping("1F370", R.drawable.milky_way);
+		addCharToResMapping("1F370", R.drawable.monster);
+		addCharToResMapping("1F370", R.drawable.mount_fuji);
+		addCharToResMapping("1F370", R.drawable.ninja);
+		addCharToResMapping("1F370", R.drawable.no_one_under_eighteen_symbol);
+		addCharToResMapping("1F370", R.drawable.ocean_dive_view);
+		addCharToResMapping("1F370", R.drawable.octopus);
+		addCharToResMapping("1F638", R.drawable.palm_pre3);
+		addCharToResMapping("2693", R.drawable.paw_prints);
+		addCharToResMapping("1F620", R.drawable.pegasus_black);
+		addCharToResMapping("1F370", R.drawable.penguin_chick);
+		addCharToResMapping("1F632", R.drawable.penguin);
+		addCharToResMapping("1F37A", R.drawable.pensive_face);
+		addCharToResMapping("1F371", R.drawable.persevering_face);
+		addCharToResMapping("1F413", R.drawable.person_bowing_deeply);
+		addCharToResMapping("1F370", R.drawable.person_frowning);
+		addCharToResMapping("1F370", R.drawable.person_raising_both_hands_in_celebration);
+		addCharToResMapping("1F370", R.drawable.person_with_folded_hands);
+		addCharToResMapping("2693", R.drawable.person_with_pouting_face);
+		addCharToResMapping("1F620", R.drawable.pill);
+		addCharToResMapping("1F370", R.drawable.pouting_cat_face);
+		addCharToResMapping("1F370", R.drawable.pouting_face);
+		addCharToResMapping("1F370", R.drawable.puke_finger);
+		addCharToResMapping("1F370", R.drawable.quoll);
+		addCharToResMapping("1F370", R.drawable.rainbow_solid);
+		addCharToResMapping("1F370", R.drawable.rainbow);
+		addCharToResMapping("1F370", R.drawable.ruby);
+		addCharToResMapping("1F370", R.drawable.scuba_diver);
+		addCharToResMapping("1F638", R.drawable.see_no_evil_monkey);
+		addCharToResMapping("2693", R.drawable.ship);
+		addCharToResMapping("1F620", R.drawable.shit);
+		addCharToResMapping("1F370", R.drawable.shooting_star);
+		addCharToResMapping("1F632", R.drawable.skull);
+		addCharToResMapping("1F37A", R.drawable.smiling_cat_face_with_heart_shaped_eyes);
+		addCharToResMapping("1F371", R.drawable.smiling_cat_face_with_open_mouth);
+		addCharToResMapping("1F413", R.drawable.smiling_face);
+		addCharToResMapping("1F370", R.drawable.snowboarder);
+		addCharToResMapping("1F370", R.drawable.speak_no_evil_monkey);
+		addCharToResMapping("1F370", R.drawable.speech_balloon);
+		addCharToResMapping("2693", R.drawable.spouting_whale);
+		addCharToResMapping("1F620", R.drawable.sun);
+		addCharToResMapping("1F370", R.drawable.sunrise_over_mountains);
+		addCharToResMapping("1F370", R.drawable.tangerine);
+		addCharToResMapping("1F370", R.drawable.tennis_racquet_and_ball);
+		addCharToResMapping("1F370", R.drawable.thumbs_up_sign);
+		addCharToResMapping("1F370", R.drawable.tropical_drink);
+		addCharToResMapping("1F370", R.drawable.two_men_in_love);
+		addCharToResMapping("1F370", R.drawable.two_women_with_heart);
+		addCharToResMapping("1F370", R.drawable.victory_hand);
+		addCharToResMapping("1F620", R.drawable.video_game);
+		addCharToResMapping("1F370", R.drawable.weary_cat_face);
+		addCharToResMapping("1F370", R.drawable.weary_face);
+		addCharToResMapping("1F370", R.drawable.wheelchair);
+		addCharToResMapping("1F370", R.drawable.white_smiling_face);
+		addCharToResMapping("1F370", R.drawable.wink2);
+		addCharToResMapping("1F370", R.drawable.wolf_face);
+		
+		
+
+		// find char
+		addCharToResMapping("1F632", R.drawable.dancer);
+		addCharToResMapping("1F370", R.drawable.couple_in_love);
+		addCharToResMapping("1F370", R.drawable.circled_ideograph_secret);
+		addCharToResMapping("264B", R.drawable.cancer);
+		addCharToResMapping("1F370", R.drawable.blush);
+		addCharToResMapping("1F370", R.drawable.bowtie);
+		addCharToResMapping("1F370", R.drawable.apple_of_discord);
+		addCharToResMapping("1F635", R.drawable.drunk);
+		addCharToResMapping("1F370", R.drawable.family_daughters);
+		addCharToResMapping("1F370", R.drawable.gentleman_octopus);
+		addCharToResMapping("1F620", R.drawable.happijar);
+		addCharToResMapping("1F370", R.drawable.happy_fmc);
+		addCharToResMapping("1F370", R.drawable.jumping_spider_red);
+		addCharToResMapping("2693", R.drawable.jumping_spider);
+		addCharToResMapping("1F370", R.drawable.ksroom);
+		addCharToResMapping("1F370", R.drawable.lambda_chi_alpha);
+		
 
 	}
 
 	private void addCharToResMapping(String chars, int id) {
+		if (mEmojiChars.contains(chars)) {
+			throw new IllegalArgumentException("list already contains " + chars);
+		}
 		mEmojiChars.add(chars);
 		mEmojiRes.add(id);
 		mCodepointToIndex.put(("\\u" + chars).toLowerCase(), mEmojiCount++);
-
 	}
 
 	public CharSequence getEmojiChar(int position) {
