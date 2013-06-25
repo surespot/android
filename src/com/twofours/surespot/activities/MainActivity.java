@@ -1487,12 +1487,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							Utils.makeToast(MainActivity.this, getString(R.string.already_invited));
 							break;
 						default:
-							SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+							SurespotLog.i(TAG,  arg0, "inviteFriend: %s", content);
 							Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 						}
 					}
 					else {
-						SurespotLog.w(TAG, "inviteFriend: " + content, arg0);
+						SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
 						Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 					}
 				}

@@ -273,13 +273,13 @@ public class UIUtils {
 			};
 
 			public void onFailure(Throwable e, JSONObject errorResponse) {
-				SurespotLog.v(TAG, e, "getShortUrl, error: " + errorResponse.toString());
+				SurespotLog.i(TAG, e, "getShortUrl, error: %s", errorResponse);
 				launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
 			};
 
 			@Override
 			public void onFailure(Throwable error, String content) {
-				SurespotLog.v(TAG, error, "getShortUrl, content: " + content);
+				SurespotLog.i(TAG, error, "getShortUrl, content: %s", content);
 				launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
 			}
 		});

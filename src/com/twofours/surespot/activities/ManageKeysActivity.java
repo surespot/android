@@ -185,7 +185,7 @@ public class ManageKeysActivity extends SherlockActivity {
 
 										@Override
 										public void onFailure(Throwable error, String content) {
-											SurespotLog.w(TAG, "rollKeys", error);
+											SurespotLog.i(TAG, error, "rollKeys");
 											mMpd.decrProgress();
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 

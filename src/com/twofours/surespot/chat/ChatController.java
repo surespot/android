@@ -820,7 +820,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.w(TAG, error, "%s: getEarlierMessages", username);
+						SurespotLog.i(TAG, error, "%s: getEarlierMessages", username);
 						// chatAdapter.setLoading(false);
 						callback.handleResponse(false);
 					}
@@ -904,7 +904,7 @@ public class ChatController {
 			@Override
 			public void onFailure(Throwable error, String content) {
 				// setMessagesLoading(false);
-				SurespotLog.w(TAG, error, "loading latest messages failed");
+				SurespotLog.i(TAG, error, "loading latest messages failed");
 				Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
 				setProgress(null, false);
 			}
@@ -1846,7 +1846,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.w(TAG, error, "deleteMessage");
+						SurespotLog.i(TAG, error, "deleteMessage");
 						// MainActivity.getMainHandler().post(new Runnable() {
 						//
 						// @Override
@@ -1949,7 +1949,7 @@ public class ChatController {
 
 				@Override
 				public void onFailure(Throwable error, String content) {
-					SurespotLog.w(TAG, "deleteFriend", error);
+					SurespotLog.i(TAG, error, "deleteFriend");
 					setProgress("deleteFriend", false);
 					Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_friend));
 				}
@@ -1976,7 +1976,7 @@ public class ChatController {
 
 					@Override
 					public void onFailure(Throwable error, String content) {
-						SurespotLog.w(TAG, error, "toggleMessageShareable");
+						SurespotLog.i(TAG, error, "toggleMessageShareable");
 						setProgress("shareable", false);
 						Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
 
@@ -2066,7 +2066,7 @@ public class ChatController {
 					// if we didn't get a 401
 					if (!mNetworkController.isUnauthorized()) {
 						mFriendAdapter.setLoading(false);
-						SurespotLog.w(TAG, arg0, "getFriends: %s", content);
+						SurespotLog.i(TAG, arg0, "getFriends: %s", content);
 						setProgress(null, false);
 					}
 				}

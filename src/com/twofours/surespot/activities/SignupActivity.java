@@ -274,7 +274,7 @@ public class SignupActivity extends SherlockActivity {
 													}
 
 													public void onFailure(Throwable arg0, String arg1) {
-														SurespotLog.e(TAG, arg0, "signup: %s", arg1);
+														SurespotLog.i(TAG, arg0, "signup: %s", arg1);
 														mMpd.decrProgress();
 														if (arg0 instanceof HttpResponseException) {
 															HttpResponseException error = (HttpResponseException) arg0;
@@ -322,7 +322,7 @@ public class SignupActivity extends SherlockActivity {
 
 			@Override
 			public void onFailure(Throwable arg0, String content) {
-				SurespotLog.w(TAG, arg0, "userExists");
+				SurespotLog.i(TAG, arg0, "userExists");
 				mMpd.decrProgress();
 				if (arg0 instanceof HttpResponseException) {
 					HttpResponseException error = (HttpResponseException) arg0;

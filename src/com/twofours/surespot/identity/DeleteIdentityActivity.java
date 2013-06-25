@@ -136,7 +136,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 
 										@Override
 										public void onFailure(Throwable error, String content) {
-											SurespotLog.w(TAG, "deleteIdentity", error);
+											SurespotLog.i(TAG, error, "deleteIdentity");
 											mMpd.decrProgress();
 											Utils.makeLongToast(DeleteIdentityActivity.this, getString(R.string.could_not_delete_identity));
 

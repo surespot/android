@@ -175,7 +175,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 										@Override
 										public void onFailure(Throwable error, String content) {
-											SurespotLog.w(TAG, "changePassword", error);
+											SurespotLog.i(TAG, error, "changePassword");
 											mMpd.decrProgress();
 											resetFields();
 											Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));

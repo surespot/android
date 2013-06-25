@@ -219,7 +219,7 @@ public class IdentityController {
 											break;
 
 										default:
-											SurespotLog.w(TAG, error, "exportIdentity");
+											SurespotLog.i(TAG, error, "exportIdentity");
 											callback.handleResponse(null, null);
 										}
 									} else {
@@ -476,7 +476,7 @@ public class IdentityController {
 									break;
 
 								default:
-									SurespotLog.w(TAG, error, "importIdentity");
+									SurespotLog.i(TAG, error, "importIdentity");
 									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
 											false));
 								}
@@ -546,7 +546,7 @@ public class IdentityController {
 									break;
 
 								default:
-									SurespotLog.w(TAG, error, "importIdentity");
+									SurespotLog.i(TAG, error, "importIdentity");
 									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
 											false));
 								}
@@ -598,7 +598,7 @@ public class IdentityController {
 									break;
 
 								default:
-									SurespotLog.w(TAG, error, "exportIdentity");
+									SurespotLog.i(TAG, error, "exportIdentity");
 									callback.handleResponse(null);
 								}
 							} else {

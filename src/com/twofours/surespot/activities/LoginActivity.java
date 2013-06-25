@@ -254,7 +254,7 @@ public class LoginActivity extends SherlockActivity {
 
 							@Override
 							public void onFailure(Throwable arg0, String message) {
-								SurespotLog.w(TAG, arg0.toString(), arg0);
+								SurespotLog.i(TAG, arg0, message);
 
 								if (arg0 instanceof HttpResponseException) {
 									HttpResponseException error = (HttpResponseException) arg0;
