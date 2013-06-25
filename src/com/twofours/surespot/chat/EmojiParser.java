@@ -15,6 +15,7 @@ import android.text.style.ImageSpan;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils.CodePoint;
+import com.twofours.surespot.common.Utils;
 
 /**
  * A class for annotating a CharSequence with spans to convert textual emoticons to graphical ones.
@@ -34,33 +35,12 @@ public class EmojiParser {
 	}
 
 	private final Context mContext;
-	private final List<String> mEmojiChars;
-
-	// private static final String[] mEmojiChars = { "1f604", "1F60A", "1F603", "263A", "1F609", "1F60D", "1F618", "1F61A", "1F601", "1F61C", "1F61D", "1F60F",
-	// "1F617",
-	// "1F619", "1F606", "1F605", "1F635", "1F61B", "1F600", "1F610", "1F633", "1F60C", "1F612", "1F613", "1F614", "1F62E", "1F611", "1F615", "1F634",
-	// "1F627", "1F62C", "1F626", "2764", "1F46B", "1F46A", "1F46C", "1F491", "1F46d", "1F311", "1F319", "1F317", "1F315", "1F312", "1F31C", "1F31E",
-	// "1F308", "1F4A9", "1F42B", "1F414", "1F417", "1F40D", "1F40C", "1F40E", "1F428", "1F418", "1F699", "1F697", "1F355", "1F354", "1F359", "1F370" };
-
+	private final List<String> mEmojiChars;	
 	private final List<Integer> mEmojiRes;
-	private int mEmojiCount = 0;
-
-	// private static final int[] mEmojiRes = { R.drawable.smile, R.drawable.grin, R.drawable.smiley, R.drawable.relaxed, R.drawable.wink,
-	// R.drawable.heart_eyes,
-	// R.drawable.kissing_heart, R.drawable.kissing_closed_eyes, R.drawable.grinning, R.drawable.stuck_out_tongue_winking_eye,
-	// R.drawable.stuck_out_tongue_closed_eyes, R.drawable.smirk, R.drawable.kissing, R.drawable.kissing_smiling_eyes, R.drawable.laughing,
-	// R.drawable.sweat_smile, R.drawable.drunk, R.drawable.stuck_out_tongue, R.drawable.satisfied, R.drawable.hushed, R.drawable.flushed,
-	// R.drawable.relieved, R.drawable.unamused, R.drawable.sweat, R.drawable.worried, R.drawable.open_mouth, R.drawable.expressionless,
-	// R.drawable.confused, R.drawable.sleeping, R.drawable.anguished, R.drawable.grimacing, R.drawable.frowning, R.drawable.heart,
-	// R.drawable.couple_holding_hands, R.drawable.family, R.drawable.two_men_holding_hands, R.drawable.couple_with_heart,
-	// R.drawable.two_women_holding_hands, R.drawable.new_moon, R.drawable.crescent_moon, R.drawable.first_quarter_moon, R.drawable.full_moon,
-	// R.drawable.waxing_gibbous_moon, R.drawable.moon_with_face, R.drawable.sun_with_face, R.drawable.rainbow_sky, R.drawable.poop,
-	// R.drawable.bactrian_camel, R.drawable.chicken, R.drawable.boar, R.drawable.snake, R.drawable.snail, R.drawable.horse, R.drawable.koala,
-	// R.drawable.elephant, R.drawable.rv, R.drawable.car, R.drawable.pizza, R.drawable.hamburger, R.drawable.rice_ball, R.drawable.cake,
-	//
-	// };
-
+	private final HashMap<Integer, Object> mUncategorized;
 	private HashMap<String, Integer> mCodepointToIndex;
+	private int mEmojiCount = 0;
+	
 
 	@SuppressLint("DefaultLocale")
 	private EmojiParser(Context context) {
@@ -69,11 +49,13 @@ public class EmojiParser {
 		mCodepointToIndex = new HashMap<String, Integer>();
 		mEmojiChars = new ArrayList<String>();
 		mEmojiRes = new ArrayList<Integer>();
+		mUncategorized = new HashMap<Integer, Object>();
 
 		addCharToResMapping("1F604", R.drawable.smile);
 		addCharToResMapping("1F60A", R.drawable.grin);
 		addCharToResMapping("1F603", R.drawable.smiley);
 		addCharToResMapping("263A", R.drawable.relaxed);
+		mUncategorized.put(0x263A, null);
 		addCharToResMapping("1F609", R.drawable.wink);
 		addCharToResMapping("1F60D", R.drawable.heart_eyes);
 		addCharToResMapping("1F618", R.drawable.kissing_heart);
@@ -102,6 +84,7 @@ public class EmojiParser {
 		addCharToResMapping("1F62C", R.drawable.grimacing);
 		addCharToResMapping("1F626", R.drawable.frowning);
 		addCharToResMapping("2764", R.drawable.heart);
+		mUncategorized.put(0x2764, null);
 		addCharToResMapping("1F46B", R.drawable.couple_holding_hands);
 		addCharToResMapping("1F46A", R.drawable.family);
 		addCharToResMapping("1F46C", R.drawable.two_men_holding_hands);
@@ -130,6 +113,7 @@ public class EmojiParser {
 		addCharToResMapping("1F354", R.drawable.hamburger);
 		addCharToResMapping("1F359", R.drawable.rice_ball);
 		addCharToResMapping("2693", R.drawable.anchor);
+		mUncategorized.put(0x2693, null);
 		addCharToResMapping("1F620", R.drawable.angry_face);
 		addCharToResMapping("1F632", R.drawable.astonished_face);
 		addCharToResMapping("1F37A", R.drawable.beer_mug);
@@ -138,10 +122,12 @@ public class EmojiParser {
 		addCharToResMapping("1F421", R.drawable.blowfish);
 		addCharToResMapping("1F68F", R.drawable.bus_stop);
 		addCharToResMapping("1F335", R.drawable.cactus);
+		addCharToResMapping("1F370", R.drawable.cake);
 		addCharToResMapping("1F639", R.drawable.cat_face_with_tears_of_joy);
 		addCharToResMapping("1F63C", R.drawable.cat_face_with_wry_smile);
 		addCharToResMapping("1F431", R.drawable.cat_face);
 		addCharToResMapping("2601", R.drawable.cloud);
+		mUncategorized.put(0x2601, null);
 		addCharToResMapping("1F63F", R.drawable.crying_cat_face);
 		addCharToResMapping("1F622", R.drawable.crying_face);
 		addCharToResMapping("1F300", R.drawable.cyclone);
@@ -168,8 +154,10 @@ public class EmojiParser {
 		addCharToResMapping("1F64B", R.drawable.happy_person_raising_one_hand);
 		addCharToResMapping("1F423", R.drawable.hatching_chick);		
 		addCharToResMapping("1F649", R.drawable.hear_no_evil_monkey);	
-		addCharToResMapping("26A1", R.drawable.high_voltage_sign);			
-		addCharToResMapping("2615", R.drawable.hot_beverage);		
+		addCharToResMapping("26A1", R.drawable.high_voltage_sign);	
+		mUncategorized.put(0x26A1, null);
+		addCharToResMapping("2615", R.drawable.hot_beverage);
+		mUncategorized.put(0x2615, null);
 		addCharToResMapping("1F383", R.drawable.jack_o_lantern);
 		
 		
@@ -262,6 +250,7 @@ public class EmojiParser {
 
 	private void addCharToResMapping(String chars, int id) {
 		if (mEmojiChars.contains(chars)) {
+			Utils.makeLongToast(mContext, "Emoji list already contains " + chars);
 			throw new IllegalArgumentException("list already contains " + chars);
 		}
 		mEmojiChars.add(chars);
@@ -300,7 +289,7 @@ public class EmojiParser {
 
 			CodePoint cp = i.next();
 
-			if (cp.codePoint == 0x2764 || cp.codePoint == 0x263A || Character.isSupplementaryCodePoint(cp.codePoint)) {
+			if (mUncategorized.containsKey(cp.codePoint) || Character.isSupplementaryCodePoint(cp.codePoint)) {
 				String escapedUnicode = ChatUtils.unicodeEscaped(cp.codePoint);
 				suppCps.append(escapedUnicode + (i.hasNext() ? ", " : ""));
 				Integer resId = mEmojiRes.get(getEmojiIndex(escapedUnicode));
@@ -321,6 +310,7 @@ public class EmojiParser {
 
 	@SuppressLint("DefaultLocale")
 	private int getEmojiIndex(String codepoint) {
+		//SurespotLog.v(TAG,"getting index of codepoint: " + codepoint);
 		return mCodepointToIndex.get(codepoint.toLowerCase());
 	}
 
