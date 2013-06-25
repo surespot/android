@@ -28,6 +28,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.digests.SHA256Digest;
 import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
@@ -536,6 +537,9 @@ public class EncryptionController {
 
 			len += ccm.doFinal(buf, len);
 			return new String(buf);
+		}
+		catch (InvalidCipherTextException e) {
+			SurespotLog.i(TAG, e, "symmetricDecryptSyncPK");
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, e, "symmetricDecryptSyncPK");
