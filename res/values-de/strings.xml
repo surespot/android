@@ -304,4 +304,11 @@
   <string name="could_not_import_identity_drive_404">Konnte Profil nicht laden - bitte stellen Sie sicher, dass das gleiche Google-Konto ausgewählt ist wie bei Google Drive.</string>
   <string name="pick_same_drive_account">Bitte benutzten sie den gleichen Benutzernamen wie bei Google Drive:</string>
   <string name="about">Über...</string>
+  <string name="unauthorized">nicht autorisiert</string>
+  <string name="verify_key_fingerprints">Schlüssel ansehen</string>
+  <string name="received">empfangen</string>
+  <string name="version">Version</string>
+  <string name="public_key_fingerprints">öffentlicher Schlüssel</string>
+  <string name="loading">Laden...</string>
+  <string name="device_does_not_support_google_drive">Gerät nicht für Google Drive konfiguriert</string>
 </resources>
