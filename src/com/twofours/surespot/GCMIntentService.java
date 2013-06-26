@@ -82,7 +82,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 						return "failed";
 					}
 				};
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				// TODO tell user shit is fucked
 				// get shared prefs
 				SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
@@ -106,7 +107,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
 
 			}
-		} else {
+		}
+		else {
 			SurespotLog.v(TAG, "Can't save GCM id on surespot server as user is not logged in.");
 		}
 	}
@@ -152,11 +154,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
 			}
-			
-			
+
 			String spot = ChatUtils.getSpot(from, to);
-			
-			//add the message if it came in the GCM
+
+			// add the message if it came in the GCM
 			String message = intent.getStringExtra("message");
 			if (message != null) {
 				ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
@@ -168,14 +169,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 				SurespotApplication.getStateController().saveMessages(to, spot, messages, -1);
 			}
 
-			
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
-		} else {
+		}
+		else {
 			if (type.equals("invite")) {
 				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
 						context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-			} else {
+			}
+			else {
 				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
 						context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 			}
@@ -192,8 +194,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		int icon = R.drawable.surespot_logo;
 
-		//need to use same builder for only alert once to work:
-		//http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
+		// need to use same builder for only alert once to work:
+		// http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
 		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(true).setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 		// if we're logged in, go to the chat, otherwise go to login
@@ -216,23 +218,31 @@ public class GCMIntentService extends GCMBaseIntentService {
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
 
 		mBuilder.setContentIntent(resultPendingIntent);
+		int defaults = 0;
 
-		
+		boolean showLights = pm.getBoolean("pref_notifications_led", true);
+		boolean makeSound = pm.getBoolean("pref_notifications_sound", true);
+		boolean vibrate = pm.getBoolean("pref_notifications_vibration", true);
 
-		if (pm.getBoolean("pref_notifications_led", true)) {
-			
-			mBuilder.setDefaults(Notification.FLAG_SHOW_LIGHTS);
+		if (showLights) {
+			SurespotLog.v(TAG, "showing notification led");
 			mBuilder.setLights(0xff0000FF, 500, 5000);
-		}		
-		
-		Notification notification = mBuilder.build();
-		if (pm.getBoolean("pref_notifications_sound", true)) {
-			notification.defaults |= Notification.DEFAULT_SOUND;
 		}
-		if (pm.getBoolean("pref_notifications_vibration", true)) {
-			notification.defaults |= Notification.DEFAULT_VIBRATE;
+		else {
+			mBuilder.setLights(0xff0000FF, 0, 0);
 		}
 
-		mNotificationManager.notify(tag, id, notification);
+		if (makeSound) {
+			SurespotLog.v(TAG, "making notification sound");
+			defaults |= Notification.DEFAULT_SOUND;
+		}
+
+		if (vibrate) {
+			SurespotLog.v(TAG, "vibrating notification");
+			defaults |= Notification.DEFAULT_VIBRATE;
+		}
+
+		mBuilder.setDefaults(defaults);
+		mNotificationManager.notify(tag, id, mBuilder.build());
 	}
 }
