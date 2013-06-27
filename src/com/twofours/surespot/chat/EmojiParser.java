@@ -35,12 +35,11 @@ public class EmojiParser {
 	}
 
 	private final Context mContext;
-	private final List<String> mEmojiChars;	
+	private final List<String> mEmojiChars;
 	private final List<Integer> mEmojiRes;
 	private final HashMap<Integer, Object> mUncategorized;
 	private HashMap<String, Integer> mCodepointToIndex;
 	private int mEmojiCount = 0;
-	
 
 	@SuppressLint("DefaultLocale")
 	private EmojiParser(Context context) {
@@ -55,7 +54,7 @@ public class EmojiParser {
 		mUncategorized.put(0x2764, null);
 		addCharToResMapping("1F600", R.drawable.grin);
 		addCharToResMapping("1F601", R.drawable.grinning);
-		addCharToResMapping("1F602", R.drawable.face_with_tear_of_joy);	
+		addCharToResMapping("1F602", R.drawable.face_with_tear_of_joy);
 		addCharToResMapping("1F603", R.drawable.smiley);
 		addCharToResMapping("1F604", R.drawable.smile);
 		addCharToResMapping("1F605", R.drawable.sweat_smile);
@@ -89,7 +88,7 @@ public class EmojiParser {
 		addCharToResMapping("F0003", R.drawable.drunk);
 		addCharToResMapping("F0004", R.drawable.wink2);
 		addCharToResMapping("F0005", R.drawable.smiling_face);
-				
+
 		addCharToResMapping("1F620", R.drawable.angry_face);
 		addCharToResMapping("1F621", R.drawable.pouting_face);
 		addCharToResMapping("1F622", R.drawable.crying_face);
@@ -104,14 +103,14 @@ public class EmojiParser {
 		addCharToResMapping("1F62D", R.drawable.loudly_crying_face);
 		addCharToResMapping("1F62E", R.drawable.open_mouth);
 		addCharToResMapping("1F62F", R.drawable.hushed);
-		
+
 		addCharToResMapping("1F630", R.drawable.face_with_open_mouth_and_cold_sweat);
 		addCharToResMapping("1F632", R.drawable.astonished_face);
 		addCharToResMapping("1F633", R.drawable.flushed);
 		addCharToResMapping("1F634", R.drawable.sleeping);
 		addCharToResMapping("1F635", R.drawable.dizzy_face);
 		addCharToResMapping("1F637", R.drawable.face_with_medical_mask);
-			
+
 		addCharToResMapping("1F638", R.drawable.grinning_cat_face_with_smiling_eyes);
 		addCharToResMapping("1F639", R.drawable.cat_face_with_tears_of_joy);
 		addCharToResMapping("1F63A", R.drawable.smiling_cat_face_with_open_mouth);
@@ -125,7 +124,7 @@ public class EmojiParser {
 		addCharToResMapping("1F648", R.drawable.see_no_evil_monkey);
 		addCharToResMapping("1F649", R.drawable.hear_no_evil_monkey);
 		addCharToResMapping("1F64A", R.drawable.speak_no_evil_monkey);
-		
+
 		addCharToResMapping("1F645", R.drawable.face_with_no_good_gesture);
 		addCharToResMapping("1F646", R.drawable.face_with_ok_gesture);
 		addCharToResMapping("1F647", R.drawable.person_bowing_deeply);
@@ -136,7 +135,7 @@ public class EmojiParser {
 		addCharToResMapping("1F64F", R.drawable.person_with_folded_hands);
 		addCharToResMapping("F0000", R.drawable.dancer);
 		addCharToResMapping("F0007", R.drawable.ninja);
-					
+
 		addCharToResMapping("1F46A", R.drawable.family);
 		addCharToResMapping("1F46B", R.drawable.couple_holding_hands);
 		addCharToResMapping("1F491", R.drawable.couple_with_heart);
@@ -148,26 +147,26 @@ public class EmojiParser {
 		addCharToResMapping("F0016", R.drawable.two_women_in_love);
 		addCharToResMapping("F0010", R.drawable.two_women_with_heart);
 		addCharToResMapping("F0017", R.drawable.puke_finger);
-				
+
 		addCharToResMapping("1F34A", R.drawable.tangerine);
 		addCharToResMapping("1F354", R.drawable.hamburger);
 		addCharToResMapping("1F355", R.drawable.pizza);
 		addCharToResMapping("1F359", R.drawable.rice_ball);
-		
+
 		addCharToResMapping("1F365", R.drawable.fish_cake_with_swirl_design);
 		addCharToResMapping("1F370", R.drawable.cake);
 		addCharToResMapping("1F371", R.drawable.bento_box);
 		addCharToResMapping("1F379", R.drawable.tropical_drink);
 		addCharToResMapping("1F37A", R.drawable.beer_mug);
-			
+
 		addCharToResMapping("2615", R.drawable.hot_beverage);
 		mUncategorized.put(0x2615, null);
-		
+
 		addCharToResMapping("1F4A9", R.drawable.poop);
 		addCharToResMapping("1F40C", R.drawable.snail);
 		addCharToResMapping("1F40D", R.drawable.snake);
 		addCharToResMapping("1F40E", R.drawable.horse);
-		
+
 		addCharToResMapping("1F413", R.drawable.bgok);
 		addCharToResMapping("1F414", R.drawable.chicken);
 		addCharToResMapping("1F417", R.drawable.boar);
@@ -184,16 +183,16 @@ public class EmojiParser {
 		addCharToResMapping("1F431", R.drawable.cat_face);
 		addCharToResMapping("1F433", R.drawable.spouting_whale);
 		addCharToResMapping("1F436", R.drawable.dog_face);
-		addCharToResMapping("1F438", R.drawable.frog_face);	
+		addCharToResMapping("1F438", R.drawable.frog_face);
 		addCharToResMapping("1F43A", R.drawable.wolf_face);
 		addCharToResMapping("1F43E", R.drawable.paw_prints);
-		
+
 		addCharToResMapping("1F44A", R.drawable.fisted_hand_sign);
 		addCharToResMapping("1F44D", R.drawable.thumbs_up_sign);
 		addCharToResMapping("270C", R.drawable.victory_hand);
 		mUncategorized.put(0x270C, null);
 		addCharToResMapping("1F4AC", R.drawable.speech_balloon);
-				
+
 		addCharToResMapping("1F383", R.drawable.jack_o_lantern);
 		addCharToResMapping("1F47B", R.drawable.ghost);
 		addCharToResMapping("F0014", R.drawable.monster);
@@ -201,7 +200,7 @@ public class EmojiParser {
 		addCharToResMapping("1F48A", R.drawable.pill);
 		addCharToResMapping("1F480", R.drawable.skull);
 		addCharToResMapping("1F48E", R.drawable.ruby);
-		
+
 		addCharToResMapping("1F68F", R.drawable.bus_stop);
 		addCharToResMapping("F0006", R.drawable.happy_fmc);
 		addCharToResMapping("1F697", R.drawable.car);
@@ -217,14 +216,14 @@ public class EmojiParser {
 		addCharToResMapping("1F3BE", R.drawable.tennis_racquet_and_ball);
 		addCharToResMapping("1F3C2", R.drawable.snowboarder);
 		addCharToResMapping("1F3E9", R.drawable.love_hotel);
-		
+
 		addCharToResMapping("1F300", R.drawable.cyclone);
 		addCharToResMapping("1F304", R.drawable.sunrise_over_mountains);
 		addCharToResMapping("1F308", R.drawable.rainbow_solid);
 		addCharToResMapping("1F30C", R.drawable.milky_way);
 		addCharToResMapping("1F31F", R.drawable.glowing_star);
 		addCharToResMapping("1F320", R.drawable.shooting_star);
-		
+
 		addCharToResMapping("1F311", R.drawable.new_moon);
 		addCharToResMapping("1F314", R.drawable.waxing_gibbous_moon);
 		addCharToResMapping("1F313", R.drawable.first_quarter_moon);
@@ -233,14 +232,14 @@ public class EmojiParser {
 		addCharToResMapping("1F319", R.drawable.crescent_moon);
 		addCharToResMapping("1F31B", R.drawable.moon_with_face);
 		addCharToResMapping("1F31E", R.drawable.sun_with_face);
-			
+
 		addCharToResMapping("2600", R.drawable.sun);
 		mUncategorized.put(0x2600, null);
 		addCharToResMapping("2601", R.drawable.cloud);
 		mUncategorized.put(0x2601, null);
 		addCharToResMapping("1F5FB", R.drawable.mount_fuji);
 		addCharToResMapping("1F335", R.drawable.cactus);
-		addCharToResMapping("26A1", R.drawable.high_voltage_sign);	
+		addCharToResMapping("26A1", R.drawable.high_voltage_sign);
 		mUncategorized.put(0x26A1, null);
 		addCharToResMapping("1F6B9", R.drawable.mens_symbol);
 		addCharToResMapping("267F", R.drawable.wheelchair);
@@ -248,30 +247,27 @@ public class EmojiParser {
 		addCharToResMapping("1F51E", R.drawable.no_one_under_eighteen_symbol);
 		addCharToResMapping("264B", R.drawable.cancer);
 		mUncategorized.put(0x264B, null);
-	
-	
 
-//		// omitted
-//		addCharToResMapping("", R.drawable.rainbow_sky);
-//		addCharToResMapping("", R.drawable.Kagetsuki);
-//		addCharToResMapping("", R.drawable.giorgio);
-//		addCharToResMapping("", R.drawable.pistol);
-//		addCharToResMapping("", R.drawable.assault_rifle);
-//		addCharToResMapping("", R.drawable.circled_ideograph_secret);
-//		addCharToResMapping("", R.drawable.palm_pre3);		
-//		addCharToResMapping("", R.drawable.bowtie);
-//		addCharToResMapping("", R.drawable.apple_of_discord);
-//		addCharToResMapping("", R.drawable.family_daughters);
-//		addCharToResMapping("", R.drawable.happijar);
-//		addCharToResMapping("", R.drawable.jumping_spider_red);
-//		addCharToResMapping("", R.drawable.ksroom);
-//		addCharToResMapping("", R.drawable.cutting_lines);		
-//		addCharToResMapping("", R.drawable.lambda_chi_alpha);
-//		addCharToResMapping("", R.drawable.shit);
-//		addCharToResMapping("", R.drawable.rainbow);
-//		addCharToResMapping("", R.drawable.pegasus_black);
-//		addCharToResMapping("", R.drawable.penguin_chick);
-
+		// // omitted
+		// addCharToResMapping("", R.drawable.rainbow_sky);
+		// addCharToResMapping("", R.drawable.Kagetsuki);
+		// addCharToResMapping("", R.drawable.giorgio);
+		// addCharToResMapping("", R.drawable.pistol);
+		// addCharToResMapping("", R.drawable.assault_rifle);
+		// addCharToResMapping("", R.drawable.circled_ideograph_secret);
+		// addCharToResMapping("", R.drawable.palm_pre3);
+		// addCharToResMapping("", R.drawable.bowtie);
+		// addCharToResMapping("", R.drawable.apple_of_discord);
+		// addCharToResMapping("", R.drawable.family_daughters);
+		// addCharToResMapping("", R.drawable.happijar);
+		// addCharToResMapping("", R.drawable.jumping_spider_red);
+		// addCharToResMapping("", R.drawable.ksroom);
+		// addCharToResMapping("", R.drawable.cutting_lines);
+		// addCharToResMapping("", R.drawable.lambda_chi_alpha);
+		// addCharToResMapping("", R.drawable.shit);
+		// addCharToResMapping("", R.drawable.rainbow);
+		// addCharToResMapping("", R.drawable.pegasus_black);
+		// addCharToResMapping("", R.drawable.penguin_chick);
 
 	}
 
@@ -319,16 +315,14 @@ public class EmojiParser {
 			if (mUncategorized.containsKey(cp.codePoint) || Character.isSupplementaryCodePoint(cp.codePoint)) {
 				String escapedUnicode = ChatUtils.unicodeEscaped(cp.codePoint);
 				suppCps.append(escapedUnicode + (i.hasNext() ? ", " : ""));
-				Integer resId = mEmojiRes.get(getEmojiIndex(escapedUnicode));
 
-				if (resId != null) {
+				int index = getEmojiIndex(escapedUnicode);
+
+				if (index >= 0) {
+					Integer resId = mEmojiRes.get(index);
 					builder.setSpan(new ImageSpan(mContext, resId), cp.start, cp.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
-				else {
-					builder.replace(cp.start, cp.end, escapedUnicode);
-				}
 			}
-
 		}
 
 		// SurespotLog.v(TAG, "decrypted supp unicode chars: %s.", suppCps);
@@ -337,8 +331,9 @@ public class EmojiParser {
 
 	@SuppressLint("DefaultLocale")
 	private int getEmojiIndex(String codepoint) {
-		//SurespotLog.v(TAG,"getting index of codepoint: " + codepoint);
-		return mCodepointToIndex.get(codepoint.toLowerCase());
+		// SurespotLog.v(TAG,"getting index of codepoint: " + codepoint);
+		Integer index = mCodepointToIndex.get(codepoint.toLowerCase());
+		return (index == null ? -1 : index);
 	}
 
 	public int getRandomEmojiResource() {
