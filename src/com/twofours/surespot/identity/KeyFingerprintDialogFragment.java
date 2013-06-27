@@ -149,12 +149,12 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 		TextView tvBLabel = (TextView) v.findViewById(R.id.bFingerprintsLabel);
 
 		if (meFirst) {
-			tvALabel.setText(identity.getUsername().toUpperCase());
-			tvBLabel.setText(mUsername.toUpperCase());
+			tvALabel.setText(identity.getUsername());
+			tvBLabel.setText(mUsername);
 		}
 		else {
-			tvALabel.setText(mUsername.toUpperCase());
-			tvBLabel.setText(identity.getUsername().toUpperCase());
+			tvALabel.setText(mUsername);
+			tvBLabel.setText(identity.getUsername());
 
 		}
 
