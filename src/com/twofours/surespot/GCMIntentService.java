@@ -166,7 +166,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				if (sm != null) {
 					messages.add(sm);
 				}
-				SurespotApplication.getStateController().saveMessages(to, spot, messages, -1);
+				SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
 			}
 
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
