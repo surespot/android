@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.twofours.surespot"
-    android:versionCode="31"
-    android:versionName="c0ca96e" >
+    android:versionCode="32"
+    android:versionName="352fd12" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -185,17 +185,17 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.activities.ExternalInviteActivity"
-            android:label="@string/title_activity_external_invite"
+            android:label="@string/surespot"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.twofours.surespot.contacts.ContactPickerActivity"
-            android:label="@string/title_activity_contact_picker"
+            android:label="@string/surespot"
             android:noHistory="true" >
         </activity>
         <activity
             android:name="com.twofours.surespot.billing.BillingActivity"
-            android:label="@string/title_activity_billing" >
+            android:label="@string/surespot" >
             <intent-filter>
                 <action android:name="com.twofours.surespot.billing.BillingActivity" />
 
