@@ -1292,8 +1292,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		int visibility = mEmojiView.getVisibility();
 		if (showEmoji) {
 
-			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-			getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+			MainActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 			if (visibility != View.VISIBLE && force) {
 				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
@@ -1303,7 +1302,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		else {
 			if (visibility != View.GONE && force) {
 				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
-				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 				mEmojiView.setVisibility(View.GONE);
 			}
 		}
@@ -1318,14 +1317,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private void toggleEmoji() {
 		if (mEmojiShowing) {
 			showSoftKeyboard(mEtMessage);
-		}
-		else {
-
+		} else {					
+			showEmoji(true, true);
 			if (mKeyboardShowing) {
-				hideSoftKeyboardThenShowEmoji(mEtMessage);
-			}
-			else {
-				showEmoji(true, true);
+				hideSoftKeyboard();
 			}
 		}
 	}
