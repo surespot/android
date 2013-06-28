@@ -419,16 +419,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		}
 	}
-	
+
 	private void setupChatControls() {
 		mSendButton = (TextScaleButton) findViewById(R.id.bSend);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-
 				if (mCurrentFriend != null) {
 					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
-						sendMessage();
+						sendMessage(mCurrentFriend.getName());
 					}
 					else {
 						// go to friends
@@ -494,7 +493,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				if (mCurrentFriend != null) {
 					if (actionId == EditorInfo.IME_ACTION_SEND) {
-						sendMessage();
+						sendMessage(mCurrentFriend.getName());
 						handled = true;
 					}
 				}
@@ -1264,26 +1263,49 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		view.post(runnable);
 	}
 
+	private synchronized void hideSoftKeyboardThenShowEmoji(final View view) {
+		mKeyboardShowing = false;
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				showEmoji(true, true);
+				mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
+					@Override
+					protected void onReceiveResult(int resultCode, Bundle resultData) {
+						if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+							mKeyboardShowing = true;
+						}
+						else {
+							
+						}
+					}
+				});
+			}
+		};
+
+		view.post(runnable);
+	}
+
 	private synchronized void showEmoji(boolean showEmoji, boolean force) {
 		int visibility = mEmojiView.getVisibility();
 		if (showEmoji) {
 
-			MainActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 			if (visibility != View.VISIBLE && force) {
 				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
-
 				mEmojiView.setVisibility(View.VISIBLE);
-
 			}
 		}
 		else {
 			if (visibility != View.GONE && force) {
 				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
-				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 				mEmojiView.setVisibility(View.GONE);
 			}
-
 		}
 
 		if (force) {
@@ -1299,9 +1321,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		else {
 
-			showEmoji(true, true);
 			if (mKeyboardShowing) {
-				hideSoftKeyboard();
+				hideSoftKeyboardThenShowEmoji(mEtMessage);
+			}
+			else {
+				showEmoji(true, true);
 			}
 		}
 	}
@@ -1397,9 +1421,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-	private void sendMessage() {
+	private void sendMessage(String username) {
 		final String message = mEtMessage.getText().toString();
-		mChatController.sendMessage(message, SurespotConstants.MimeTypes.TEXT);
+		mChatController.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
 		TextKeyListener.clear(mEtMessage.getText());
 	}
 
@@ -1487,7 +1511,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							Utils.makeToast(MainActivity.this, getString(R.string.already_invited));
 							break;
 						default:
-							SurespotLog.i(TAG,  arg0, "inviteFriend: %s", content);
+							SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
 							Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 						}
 					}

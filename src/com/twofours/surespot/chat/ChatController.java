@@ -1715,15 +1715,15 @@ public class ChatController {
 		return chatFragment;
 	}
 
-	public void sendMessage(final String plainText, final String mimeType) {
+	public void sendMessage(final String username, final String plainText, final String mimeType) {
 		if (plainText.length() > 0) {
 
 			// display the message immediately
 			final byte[] iv = EncryptionController.getIv();
-			final ChatAdapter chatAdapter = mChatAdapters.get(mCurrentChat);
+			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			// build a message without the encryption values set as they could take a while
 
-			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mCurrentChat, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),
+			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),
 					new String(ChatUtils.base64EncodeNowrap(iv)));
 
 			try {
@@ -1742,9 +1742,9 @@ public class ChatController {
 				@Override
 				protected Boolean doInBackground(Void... arg0) {
 					String ourLatestVersion = IdentityController.getOurLatestVersion();
-					String theirLatestVersion = IdentityController.getTheirLatestVersion(mCurrentChat);
+					String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
 
-					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, mCurrentChat, theirLatestVersion, plainText, iv);
+					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
 
 					if (result != null) {
 						chatMessage.setData(result);
