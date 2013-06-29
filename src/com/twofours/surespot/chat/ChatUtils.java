@@ -133,14 +133,16 @@ public class ChatUtils {
 									try {
 										pos.close();
 										SurespotLog.v(TAG, "imageCompressed");
-									} catch (IOException e) {
+									}
+									catch (IOException e) {
 										SurespotLog.w(TAG, e, "error compressing image");
 									}
 								}
 							};
 							SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 						}
-					} else {
+					}
+					else {
 						dataStream = activity.getContentResolver().openInputStream(imageUri);
 					}
 
@@ -167,7 +169,8 @@ public class ChatUtils {
 								bos.close();
 
 							}
-						} else {
+						}
+						else {
 							// scale to display size
 							bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
 						}
@@ -189,7 +192,7 @@ public class ChatUtils {
 
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
 							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
-							message.setId(null);							
+							message.setId(null);
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
@@ -231,7 +234,8 @@ public class ChatUtils {
 								FileInputStream uploadStream;
 								try {
 									uploadStream = new FileInputStream(localImageFile);
-								} catch (FileNotFoundException e) {
+								}
+								catch (FileNotFoundException e) {
 									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 									callback.handleResponse(false);
 									return;
@@ -261,7 +265,8 @@ public class ChatUtils {
 
 						SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
 
-					} else {
+					}
+					else {
 						callback.handleResponse(false);
 					}
 				}
@@ -300,7 +305,8 @@ public class ChatUtils {
 						public void handleResponse(String uri) {
 							if (uri != null) {
 								callback.handleResponse(uri, ourVersion, iv);
-							} else {
+							}
+							else {
 								callback.handleResponse(null, null, null);
 							}
 						}
@@ -327,15 +333,18 @@ public class ChatUtils {
 				uploadStream = new FileInputStream(new File(new URI(message.getData())));
 			}
 			else {
-				callback.handleResponse(false);	
+				callback.handleResponse(false);
 			}
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 			callback.handleResponse(false);
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 			callback.handleResponse(false);
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 			callback.handleResponse(false);
 		}
@@ -364,13 +373,15 @@ public class ChatUtils {
 			// if we have a rotation use it otherwise look at the EXIF
 			if (rotate > -1) {
 				orientation = rotate;
-			} else {
+			}
+			else {
 				orientation = (int) rotationForImage(context, imageUri);
 			}
 			if (orientation == 90 || orientation == 270) {
 				rotatedWidth = options.outHeight;
 				rotatedHeight = options.outWidth;
-			} else {
+			}
+			else {
 				rotatedWidth = options.outWidth;
 				rotatedHeight = options.outHeight;
 			}
@@ -387,26 +398,31 @@ public class ChatUtils {
 				options.inSampleSize = (int) Math.round(maxRatio);
 				SurespotLog.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
 				srcBitmap = BitmapFactory.decodeStream(is, null, options);
-			} else {
+			}
+			else {
 				srcBitmap = BitmapFactory.decodeStream(is);
 			}
 
-			SurespotLog.v(TAG, "loaded width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
 			is.close();
+			if (srcBitmap != null) {
 
-			if (orientation > 0) {
-				Matrix matrix = new Matrix();
-				matrix.postRotate(orientation);
+				SurespotLog.v(TAG, "loaded width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+				
 
-				srcBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(), srcBitmap.getHeight(), matrix, true);
-				SurespotLog.v(TAG, "post rotated width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+				if (orientation > 0) {
+					Matrix matrix = new Matrix();
+					matrix.postRotate(orientation);
+
+					srcBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(), srcBitmap.getHeight(), matrix, true);
+					SurespotLog.v(TAG, "post rotated width: " + srcBitmap.getWidth() + ", height: " + srcBitmap.getHeight());
+				}
 			}
 
 			return srcBitmap;
 		}
 
 		catch (Exception e) {
-			SurespotLog.w(TAG, "decodeSampledBitmapFromUri", e);
+			SurespotLog.w(TAG, e, "decodeSampledBitmapFromUri");
 		}
 		return null;
 
@@ -475,26 +491,33 @@ public class ChatUtils {
 			if (c.moveToFirst()) {
 				return c.getInt(0);
 			}
-		} else if (uri.getScheme().equals("file")) {
-			try {
-				ExifInterface exif = new ExifInterface(uri.getPath());
-				int rotation = (int) exifOrientationToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL));
-				return rotation;
-			} catch (IOException e) {
-				SurespotLog.e(TAG, e, "Error checking exif");
-			}
 		}
+		else
+			if (uri.getScheme().equals("file")) {
+				try {
+					ExifInterface exif = new ExifInterface(uri.getPath());
+					int rotation = (int) exifOrientationToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL));
+					return rotation;
+				}
+				catch (IOException e) {
+					SurespotLog.e(TAG, e, "Error checking exif");
+				}
+			}
 		return 0f;
 	}
 
 	private static float exifOrientationToDegrees(int exifOrientation) {
 		if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
 			return 90;
-		} else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
-			return 180;
-		} else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
-			return 270;
 		}
+		else
+			if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+				return 180;
+			}
+			else
+				if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+					return 270;
+				}
 		return 0;
 	}
 
@@ -518,7 +541,8 @@ public class ChatUtils {
 			for (int i = 0; i < jsonUM.length(); i++) {
 				messages.add(SurespotMessage.toSurespotMessage(jsonUM.getJSONObject(i)));
 			}
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			SurespotLog.w(TAG, "jsonStringToChatMessages", e);
 		}
 		return messages;
@@ -533,7 +557,8 @@ public class ChatUtils {
 			for (int i = 0; i < jsonUM.length(); i++) {
 				messages.add(SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i))));
 			}
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			SurespotLog.w(TAG, "jsonStringsToMessages", e);
 		}
 		return messages;
@@ -573,11 +598,15 @@ public class ChatUtils {
 	public static String unicodeEscaped(int ch) {
 		if (ch < 0x10) {
 			return "\\u000" + Integer.toHexString(ch);
-		} else if (ch < 0x100) {
-			return "\\u00" + Integer.toHexString(ch);
-		} else if (ch < 0x1000) {
-			return "\\u0" + Integer.toHexString(ch);
 		}
+		else
+			if (ch < 0x100) {
+				return "\\u00" + Integer.toHexString(ch);
+			}
+			else
+				if (ch < 0x1000) {
+					return "\\u0" + Integer.toHexString(ch);
+				}
 		return "\\u" + Integer.toHexString(ch);
 	}
 

@@ -53,9 +53,7 @@ public class ImageSelectActivity extends SherlockActivity {
 
 		mImageView = (ImageViewTouch) this.findViewById(R.id.imageViewer);
 		mSendButton = (Button) this.findViewById(R.id.send);
-		
-		
-		
+
 		mCancelButton = (Button) this.findViewById(R.id.cancel);
 
 		mSendButton.setOnClickListener(new OnClickListener() {
@@ -112,8 +110,7 @@ public class ImageSelectActivity extends SherlockActivity {
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
-					SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
+			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 
 		}
 
@@ -133,7 +130,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	private void setButtonText() {
 		mSendButton.setText(mSize == IMAGE_SIZE_LARGE ? R.string.send : R.string.assign);
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
 		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
@@ -253,15 +250,23 @@ public class ImageSelectActivity extends SherlockActivity {
 			}
 		}
 		catch (IOException e1) {
-			SurespotLog.w(TAG, "compressImage", e1);
-			Utils.makeLongToast(this, getString(R.string.could_not_load_image));
+			SurespotLog.w(TAG, e1, "compressImage");
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_load_image));
+				}
+			};
+
+			this.runOnUiThread(runnable);
+			setResult(RESULT_CANCELED);
 			finish();
 			return null;
 		}
 
 		// scale, compress and save the image
-		int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConstants.MESSAGE_IMAGE_DIMENSION
-				: SurespotConstants.FRIEND_IMAGE_DIMENSION);
+		int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConstants.MESSAGE_IMAGE_DIMENSION : SurespotConstants.FRIEND_IMAGE_DIMENSION);
 
 		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, finalUri, rotate, maxDimension);
 		try {
@@ -272,19 +277,41 @@ public class ImageSelectActivity extends SherlockActivity {
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
 				fos.close();
 				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
+				return bitmap;
 			}
 			else {
-				Utils.makeLongToast(this, getString(R.string.could_not_load_image));
+				Runnable runnable = new Runnable() {
+
+					@Override
+					public void run() {
+						Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_load_image));
+					}
+				};
+
+				this.runOnUiThread(runnable);
+
+				setResult(RESULT_CANCELED);
 				finish();
+				return null;
 			}
-			return bitmap;
 		}
 		catch (IOException e) {
-			SurespotLog.w(TAG, "onActivityResult", e);
+			SurespotLog.w(TAG, e, "onActivityResult");
 			if (mCompressedImagePath != null) {
 				mCompressedImagePath.delete();
 				mCompressedImagePath = null;
 			}
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_load_image));
+				}
+			};
+
+			this.runOnUiThread(runnable);
+			setResult(RESULT_CANCELED);
+			finish();
 			return null;
 		}
 	}
