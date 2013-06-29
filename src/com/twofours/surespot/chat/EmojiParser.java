@@ -303,7 +303,6 @@ public class EmojiParser {
 		}
 
 		SpannableStringBuilder builder = new SpannableStringBuilder(text);
-		StringBuilder suppCps = new StringBuilder();
 		// TODO use regex
 		// would be nice to use a regex for these wacky characters:
 		// http://stackoverflow.com/questions/5409636/java-support-for-non-bmp-unicode-characters-i-e-codepoints-0xffff-in-their
@@ -314,8 +313,6 @@ public class EmojiParser {
 
 			if (mUncategorized.containsKey(cp.codePoint) || Character.isSupplementaryCodePoint(cp.codePoint)) {
 				String escapedUnicode = ChatUtils.unicodeEscaped(cp.codePoint);
-				suppCps.append(escapedUnicode + (i.hasNext() ? ", " : ""));
-
 				int index = getEmojiIndex(escapedUnicode);
 
 				if (index >= 0) {
