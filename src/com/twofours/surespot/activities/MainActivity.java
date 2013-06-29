@@ -1293,8 +1293,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private synchronized void showEmoji(boolean showEmoji, boolean force) {
 		int visibility = mEmojiView.getVisibility();
 		if (showEmoji) {
-
-			MainActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 			if (visibility != View.VISIBLE && force) {
 				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
@@ -1319,11 +1318,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private void toggleEmoji() {
 		if (mEmojiShowing) {
 			showSoftKeyboard(mEtMessage);
-		} else {					
-			showEmoji(true, true);
+		} else {								
 			if (mKeyboardShowing) {
 				hideSoftKeyboard();
+				showEmoji(true, false);
 			}
+			else {
+				showEmoji(true, true);
+			}
+			
 		}
 	}
 
