@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:imeActionLabel="@string/send"
             android:imeOptions="actionSend"
-            android:inputType="textMultiLine"
+            android:inputType="textMultiLine|textCapSentences"
             android:maxHeight="150dp"
             android:maxLines="5"
             android:minHeight="45dp"
