@@ -1717,10 +1717,13 @@ public class ChatController {
 
 	public void sendMessage(final String username, final String plainText, final String mimeType) {
 		if (plainText.length() > 0) {
-
+			final ChatAdapter chatAdapter = mChatAdapters.get(username);
+			if (chatAdapter == null) {
+				return;
+			}
 			// display the message immediately
 			final byte[] iv = EncryptionController.getIv();
-			final ChatAdapter chatAdapter = mChatAdapters.get(username);
+
 			// build a message without the encryption values set as they could take a while
 
 			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),

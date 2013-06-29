@@ -425,9 +425,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mCurrentFriend != null) {
+				Friend friend = mCurrentFriend;
+				if (friend != null) {
 					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
-						sendMessage(mCurrentFriend.getName());
+						sendMessage(friend.getName());
 					}
 					else {
 						// go to friends
@@ -491,9 +492,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
 
-				if (mCurrentFriend != null) {
+				Friend friend = mCurrentFriend;
+				if (friend != null) {
 					if (actionId == EditorInfo.IME_ACTION_SEND) {
-						sendMessage(mCurrentFriend.getName());
+						sendMessage(friend.getName());
 						handled = true;
 					}
 				}
@@ -1302,7 +1304,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		else {
 			if (visibility != View.GONE && force) {
 				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
-				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 				mEmojiView.setVisibility(View.GONE);
 			}
 		}
@@ -1425,16 +1427,19 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public boolean backButtonPressed() {
 		boolean handled = false;
 		SurespotLog.v(TAG, "backButtonPressed");
+		
+		if (mEmojiShowing) {
+			showEmoji(false, true);
+			handled = true;
+		}
+		
 		if (mKeyboardShowing) {
 
 			hideSoftKeyboard();
 			handled = true;
 		}
 
-		if (mEmojiShowing) {
-			showEmoji(false, true);
-			handled = true;
-		}
+		
 
 		return handled;
 	}
