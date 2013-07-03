@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -295,8 +294,8 @@ public class ChatAdapter extends BaseAdapter {
 				else {
 
 					if (item.getDateTime() != null) {
-						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(item.getDateTime()) + " "
-								+ DateFormat.getTimeFormat(MainActivity.getContext()).format(item.getDateTime()));
+						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
+								+ DateFormat.getTimeFormat(mContext).format(item.getDateTime()));
 					}
 					else {
 						chatMessageViewHolder.tvTime.setText("");
@@ -524,6 +523,10 @@ public class ChatAdapter extends BaseAdapter {
 
 	public boolean isLoaded() {
 		return mLoaded;
+	}
+
+	public Context getContext() {
+		return mContext;
 	}
 
 }

@@ -148,8 +148,8 @@ public class MessageDecryptor {
 								textView.setText(finalPlainData);
 								if (mMessage.getDateTime() != null) {
 
-									tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
-											+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
+									tvTime.setText(DateFormat.getDateFormat(mChatAdapter.getContext()).format(mMessage.getDateTime()) + " "
+											+ DateFormat.getTimeFormat(mChatAdapter.getContext()).format(mMessage.getDateTime()));
 
 								}
 							}

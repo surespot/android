@@ -97,8 +97,8 @@ public class MessageImageDownloader {
 			TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 			if (message.getDateTime() != null) {
 
-				tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
-						+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+				tvTime.setText(DateFormat.getDateFormat(mChatAdapter.getContext()).format(message.getDateTime()) + " "
+						+ DateFormat.getTimeFormat(mChatAdapter.getContext()).format(message.getDateTime()));
 
 			}
 		}

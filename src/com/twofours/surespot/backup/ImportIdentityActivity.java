@@ -336,8 +336,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			for (File file : sortedFiles.values()) {
 				long lastModTime = file.lastModified();
-				String date = DateFormat.getDateFormat(MainActivity.getContext()).format(lastModTime) + " "
-						+ DateFormat.getTimeFormat(MainActivity.getContext()).format(lastModTime);
+				String date = DateFormat.getDateFormat(this).format(lastModTime) + " "
+						+ DateFormat.getTimeFormat(this).format(lastModTime);
 
 				HashMap<String, String> map = new HashMap<String, String>();
 				map.put("name", IdentityController.getIdentityNameFromFile(file));
