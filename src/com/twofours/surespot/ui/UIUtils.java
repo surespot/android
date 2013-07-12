@@ -51,8 +51,10 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.KeyFingerprintDialogFragment;
+import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.qr.QRCodeEncoder;
@@ -373,7 +375,14 @@ public class UIUtils {
 		Spannable s1 = new SpannableString(user);
 		s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		String inviteUrl = "https://server.surespot.me/autoinvite/" + user + "/qr_droid";
+		String myFingerprint = "";
+		final SurespotIdentity identity = IdentityController.getIdentity();
+		for (PrivateKeyPairs pkp : identity.getKeyPairs()) {
+			byte[] encodedDSAPubKey = pkp.getKeyPairDSA().getPublic().getEncoded();
+			myFingerprint = UIUtils.md5(encodedDSAPubKey);
+		}
+
+		String inviteUrl = "https://server.surespot.me/autoinvite/" + user + "/fprint/" +  myFingerprint + "/qr_droid";
 		// String qrImageUrl = "https://chart.googleapis.com/chart?cht=qr&chl=" + inviteUrl + "&chs=300x300&chld=Q|0";
 
 		tvQrInviteText.setText(TextUtils.concat(activity.getString(R.string.qr_pre_username_help), " ", s1, " ",
