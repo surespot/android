@@ -577,6 +577,18 @@ public class ImportIdentityActivity extends SherlockActivity {
 		try {
 			// query the drive for identities
 			ChildList fileList = getIdentityFiles(identityDirId);
+			if (fileList == null) {
+				SurespotLog.v(TAG, "no identity backup files found on google drive");
+				this.runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						mSpdLoadIdentities.hide();
+					}
+				});
+				return;
+			
+			}
 
 			List<ChildReference> refs = fileList.getItems();
 
