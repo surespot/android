@@ -1422,15 +1422,20 @@ public class ChatController {
 
 	public synchronized void loadMessages(String username, boolean replace) {
 		SurespotLog.v(TAG, "loadMessages: " + username);
-		String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), username);
-		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		if (replace) {
-			chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
+
+		String loggedInUser = IdentityController.getLoggedInUser();
+
+		if (!TextUtils.isEmpty(loggedInUser)) {
+			String spot = ChatUtils.getSpot(loggedInUser, username);
+			ChatAdapter chatAdapter = mChatAdapters.get(username);
+			if (replace) {
+				chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
+			}
+			else {
+				chatAdapter.addOrUpdateMessages(SurespotApplication.getStateController().loadMessages(spot));
+			}
 		}
-		else {
-			chatAdapter.addOrUpdateMessages(SurespotApplication.getStateController().loadMessages(spot));
-		}
-		// ChatFragment chatFragment = getChatFragment(username);
+
 	}
 
 	private synchronized void saveMessages() {
@@ -1726,8 +1731,8 @@ public class ChatController {
 
 			// build a message without the encryption values set as they could take a while
 
-			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText),
-					new String(ChatUtils.base64EncodeNowrap(iv)));
+			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText), new String(
+					ChatUtils.base64EncodeNowrap(iv)));
 
 			try {
 
