@@ -119,8 +119,8 @@ public class NetworkController {
 			SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 			if (pm.getBoolean("pref_crash_reporting", false)) {
 				ACRA.getErrorReporter().handleSilentException(e);
-				throw new RuntimeException(e);
 			}
+			throw new RuntimeException("Fatal error, could not create http clients..is storage space available?", e);
 		}
 
 		HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
