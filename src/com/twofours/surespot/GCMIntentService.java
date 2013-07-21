@@ -17,6 +17,9 @@ import android.content.SharedPreferences;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import ch.boye.httpclientandroidlib.client.CookieStore;
+import ch.boye.httpclientandroidlib.cookie.Cookie;
+import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
 
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
@@ -92,20 +95,25 @@ public class GCMIntentService extends GCMBaseIntentService {
 				}
 				return;
 			}
+			
+			Cookie cookie = IdentityController.getCookie();
+			if (cookie != null) {
 
-			client.setCookieStore(MainActivity.getNetworkController().getCookieStore());
+				CookieStore cookieStore = new BasicCookieStore();
+				cookieStore.addCookie(cookie);				
+				client.setCookieStore(cookieStore);
 
-			Map<String, String> params = new HashMap<String, String>();
-			params.put("gcmId", id);
+				Map<String, String> params = new HashMap<String, String>();
+				params.put("gcmId", id);
 
-			String result = client.post(SurespotConfiguration.getBaseUrl() + "/registergcm", new RequestParams(params));
-			// success returns 204 = null result
-			if (result == null) {
-				SurespotLog.v(TAG, "Successfully saved GCM id on surespot server.");
+				String result = client.post(SurespotConfiguration.getBaseUrl() + "/registergcm", new RequestParams(params));
+				// success returns 204 = null result
+				if (result == null) {
+					SurespotLog.v(TAG, "Successfully saved GCM id on surespot server.");
 
-				// the server and client match, we're golden
-				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
-
+					// the server and client match, we're golden
+					Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_SENT, id);
+				}
 			}
 		}
 		else {
