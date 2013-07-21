@@ -339,14 +339,17 @@ public class ChatUtils {
 		catch (IllegalArgumentException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 			callback.handleResponse(false);
+			return;
 		}
 		catch (FileNotFoundException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 			callback.handleResponse(false);
+			return;
 		}
 		catch (URISyntaxException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
 			callback.handleResponse(false);
+			return;
 		}
 
 		networkController.postFileStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
