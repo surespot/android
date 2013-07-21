@@ -1044,7 +1044,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void stopWatchingExternalStorage() {
-		unregisterReceiver(mExternalStorageReceiver);
+		//don't puke if we can't unregister
+		try {
+			unregisterReceiver(mExternalStorageReceiver);
+		}
+		catch (java.lang.IllegalArgumentException e) {
+		}
 	}
 
 	private void updateExternalStorageState() {
