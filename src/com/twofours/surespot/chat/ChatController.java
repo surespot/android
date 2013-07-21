@@ -1191,6 +1191,7 @@ public class ChatController {
 						else
 							if (message.getAction().equals("delete")) {
 								String friendName = message.getData();
+
 								Friend friend = mFriendAdapter.getFriend(friendName);
 
 								if (friend != null) {
@@ -1206,13 +1207,22 @@ public class ChatController {
 											friend.setInviter(false);
 											friend.setInvited(false);
 										}
+										
+										// clear any associated invite notification
+										String loggedInUser = IdentityController.getLoggedInUser();
+										if (loggedInUser != null) {
+											mNotificationManager.cancel(loggedInUser + ":" + friendName,
+													SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+										}
+
 									}
 									// they really deleted us boo hoo
 									else {
-										user = message.getData();
-										handleDeleteUser(user, message.getMoreData(), notify);
+										handleDeleteUser(friendName, message.getMoreData(), notify);
 									}
+
 								}
+
 							}
 
 		if (notify) {

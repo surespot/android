@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -94,6 +95,11 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 			@Override
 			protected List<HashMap<String, String>> doInBackground(Void... params) {
+				Activity activity = getActivity();
+				if (activity == null) {
+					return null;
+				}
+				
 				String latestVersion = SurespotApplication.getCachingService().getLatestVersion(mUsername);
 				int maxVersion = Integer.parseInt(latestVersion);
 				List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
@@ -107,7 +113,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 						HashMap<String, String> map = new HashMap<String, String>();
 						map.put("version", sVer);
-						map.put("lastVerified", UIUtils.getFormattedDate(getActivity(), new Date(pubkeys.getLastModified())));																
+						map.put("lastVerified", UIUtils.getFormattedDate(activity, new Date(pubkeys.getLastModified())));																
 						map.put("DHFingerprint", UIUtils.md5(encodedDHPubKey));
 						map.put("DSAFingerprint", UIUtils.md5(encodedDSAPubKey));
 						items.add(map);
@@ -125,6 +131,10 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 			}
 
 			protected void onPostExecute(List<HashMap<String, String>> theirItems) {
+				if (theirItems == null) {
+					dismiss();
+					return;
+				}
 
 				KeyFingerprintAdapter myAdapter = new KeyFingerprintAdapter(getActivity(), R.layout.fingerprint_item_us, myItems);
 				KeyFingerprintAdapter theirAdapter = new KeyFingerprintAdapter(getActivity(), R.layout.fingerprint_item_them, theirItems);
