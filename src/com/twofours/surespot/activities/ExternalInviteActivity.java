@@ -23,6 +23,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.contacts.ContactPickerActivity;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.UIUtils;
 
 public class ExternalInviteActivity extends SherlockActivity {
@@ -91,7 +92,11 @@ public class ExternalInviteActivity extends SherlockActivity {
 					startActivity(intent);
 
 				} else {
-					UIUtils.sendInvitation(ExternalInviteActivity.this, MainActivity.getNetworkController(), mSelectedType, null, false);
+					NetworkController networkController = MainActivity.getNetworkController();
+					if (networkController == null) {
+						networkController = new NetworkController(ExternalInviteActivity.this, null);
+					}
+					UIUtils.sendInvitation(ExternalInviteActivity.this, networkController, mSelectedType, null, false);
 				}
 
 			}

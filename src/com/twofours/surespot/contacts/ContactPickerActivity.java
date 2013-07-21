@@ -29,6 +29,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.ui.UIUtils;
 
 public class ContactPickerActivity extends SherlockActivity {
@@ -79,7 +80,11 @@ public class ContactPickerActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				ArrayList<String> selectedContacts = getSelectedContactData();
-				UIUtils.sendInvitation(ContactPickerActivity.this, MainActivity.getNetworkController(), mSelectedType, selectedContacts, true);
+				NetworkController networkController = MainActivity.getNetworkController();
+				if (networkController == null) {
+					networkController = new NetworkController(ContactPickerActivity.this, null);
+				}
+				UIUtils.sendInvitation(ContactPickerActivity.this, networkController, mSelectedType, selectedContacts, true);
 			}
 		});
 
@@ -172,17 +177,16 @@ public class ContactPickerActivity extends SherlockActivity {
 					String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
 					if (name != null) {
-						
 
 						String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-						//set type to other by default in case we can't parse
+						// set type to other by default in case we can't parse
 						int type = ContactsContract.CommonDataKinds.Phone.TYPE_OTHER;
 						try {
 							type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
 						}
-						catch (NumberFormatException e) {							
+						catch (NumberFormatException e) {
 						}
-						
+
 						String id = cur.getString(cur.getColumnIndex("contact_id"));
 						SurespotContact contact = contacts.get(id);
 						if (contact == null) {
