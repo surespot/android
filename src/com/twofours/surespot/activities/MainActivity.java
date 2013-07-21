@@ -777,22 +777,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
 						@Override
 						public void handleResponse(String url, String version, String iv) {
-							if (url == null) {
+							if (mChatController == null ||  url == null) {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 							}
 							else {
 								mChatController.setImageUrl(to, url, version, iv);
-
 							}
 						}
 					});
-
 				}
-
 			}
 			break;
 		}
-
 	}
 
 	@Override
