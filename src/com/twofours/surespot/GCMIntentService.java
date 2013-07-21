@@ -134,16 +134,15 @@ public class GCMIntentService extends GCMBaseIntentService {
 	protected void onMessage(Context context, Intent intent) {
 		SurespotLog.v(TAG, "received GCM message, extras: " + intent.getExtras());
 		String to = intent.getStringExtra("to");
-
-		// make sure to is someone on this phone otherwise do not do a damn thing
-		if (!IdentityController.getIdentityNames(context).contains(to)) {
-			return;
-		}
-
 		String type = intent.getStringExtra("type");
 		String from = intent.getStringExtra("sentfrom");
 
-		if (type.equals("message")) {
+		if (type.equals("message")) {			
+			// make sure to is someone on this phone 
+			if (!IdentityController.getIdentityNames(context).contains(to)) {
+				return;
+			}
+
 			// if the chat is currently showing don't show a notification
 			// TODO setting for this
 
@@ -184,12 +183,22 @@ public class GCMIntentService extends GCMBaseIntentService {
 		}
 
 		if (type.equals("invite")) {
+			// make sure to is someone on this phone 
+			if (!IdentityController.getIdentityNames(context).contains(to)) {
+				return;
+			}
+			
 			generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			return;
 		}
 
 		if (type.equals("inviteResponse")) {
+			// make sure to is someone on this phone 
+			if (!IdentityController.getIdentityNames(context).contains(to)) {
+				return;
+			}
+			
 			generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 			return;

@@ -613,13 +613,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private boolean needsLogin(Intent intent) {
 		String user = IdentityController.getLoggedInUser();
-
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
-		SurespotLog.v(TAG, "user: " + user);
-		SurespotLog.v(TAG, "type: " + notificationType);
-		SurespotLog.v(TAG, "messageTo: " + messageTo);
+		SurespotLog.v(TAG, "user: %s", user);
+		SurespotLog.v(TAG, "type: %s", notificationType);
+		SurespotLog.v(TAG, "messageTo: %s", messageTo);
 
 		if ((user == null)
 				|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
