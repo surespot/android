@@ -17,6 +17,7 @@ import android.content.SharedPreferences;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.text.TextUtils;
 import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
@@ -95,12 +96,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 				}
 				return;
 			}
-			
+
 			Cookie cookie = IdentityController.getCookie();
 			if (cookie != null) {
 
 				CookieStore cookieStore = new BasicCookieStore();
-				cookieStore.addCookie(cookie);				
+				cookieStore.addCookie(cookie);
 				client.setCookieStore(cookieStore);
 
 				Map<String, String> params = new HashMap<String, String>();
@@ -179,17 +180,31 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+			return;
 		}
-		else {
-			if (type.equals("invite")) {
-				generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
-						context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-			}
-			else {
-				generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
-						context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+
+		if (type.equals("invite")) {
+			generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
+					context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			return;
+		}
+
+		if (type.equals("inviteResponse")) {
+			generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
+					context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+			return;
+		}
+
+		if (type.equals("system")) {
+			String tag = intent.getStringExtra("tag");
+			String title = intent.getStringExtra("title");
+			String message = intent.getStringExtra("message");
+
+			if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(message) && !TextUtils.isEmpty(title)) {
+				generateSystemNotification(context, title, message, tag, IntentRequestCodes.SYSTEM_NOTIFICATION);
 			}
 		}
+
 	}
 
 	private void generateNotification(Context context, String type, String from, String to, String title, String message, String tag, int id) {
@@ -206,21 +221,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
 		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(true).setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-		// if we're logged in, go to the chat, otherwise go to login
+
 		Intent mainIntent = null;
 		mainIntent = new Intent(context, MainActivity.class);
 		mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-		// mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-		// mainIntent.setAction("android.intent.action.MAIN");
-		// mainIntent.addCategory("android.intent.category.LAUNCHER");
-
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, to);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_FROM, from);
 		mainIntent.putExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE, type);
 
-		// stackBuilder.addParentStack(FriendActivity.class);
 		stackBuilder.addNextIntent(mainIntent);
 
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
@@ -249,6 +257,24 @@ public class GCMIntentService extends GCMBaseIntentService {
 			SurespotLog.v(TAG, "vibrating notification");
 			defaults |= Notification.DEFAULT_VIBRATE;
 		}
+
+		mBuilder.setDefaults(defaults);
+		mNotificationManager.notify(tag, id, mBuilder.build());
+	}
+
+	private void generateSystemNotification(Context context, String title, String message, String tag, int id) {
+
+		int icon = R.drawable.surespot_logo;
+
+		// need to use same builder for only alert once to work:
+		// http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
+		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(true).setContentText(message);
+
+		int defaults = 0;
+
+		mBuilder.setLights(0xff0000FF, 500, 5000);
+		defaults |= Notification.DEFAULT_SOUND;
+		defaults |= Notification.DEFAULT_VIBRATE;
 
 		mBuilder.setDefaults(defaults);
 		mNotificationManager.notify(tag, id, mBuilder.build());
