@@ -155,7 +155,7 @@ public class ChatController {
 			@Override
 			public void onMessage(JSONObject json, IOAcknowledge ack) {
 				try {
-					SurespotLog.v(TAG, "JSON Server said:" + json.toString(2));
+					SurespotLog.v(TAG, "JSON Server said: %s", json.toString(2));
 
 				}
 				catch (JSONException e) {
@@ -165,7 +165,7 @@ public class ChatController {
 
 			@Override
 			public void onMessage(String data, IOAcknowledge ack) {
-				SurespotLog.v(TAG, "Server said: " + data);
+				SurespotLog.v(TAG, "Server said: %s", data);
 			}
 
 			@Override
@@ -1447,7 +1447,7 @@ public class ChatController {
 
 	private synchronized void saveMessages(String username) {
 		// save last 30? messages
-		SurespotLog.v(TAG, "saveMessages, username:" + username);
+		SurespotLog.v(TAG, "saveMessages, username: %s", username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
 
 		if (chatAdapter != null) {

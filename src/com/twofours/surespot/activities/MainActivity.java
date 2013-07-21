@@ -1280,7 +1280,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							mKeyboardShowing = true;
 						}
 						else {
-							
+
 						}
 					}
 				});
@@ -1318,7 +1318,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private void toggleEmoji() {
 		if (mEmojiShowing) {
 			showSoftKeyboard(mEtMessage);
-		} else {								
+		}
+		else {
 			if (mKeyboardShowing) {
 				hideSoftKeyboard();
 				showEmoji(true, false);
@@ -1326,7 +1327,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			else {
 				showEmoji(true, true);
 			}
-			
+
 		}
 	}
 
@@ -1368,7 +1369,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
-				SurespotLog.v(TAG, "received action send, data: " + sharedText);
+				SurespotLog.v(TAG, "received action send, data: %s", sharedText);
 				mEtMessage.append(sharedText);
 				// requestFocus();
 				// clear the intent
@@ -1382,14 +1383,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					// Utils.makeToast(getActivity(), getString(R.string.uploading_image));
 
-					SurespotLog.v(TAG, "received image data, upload image, uri: " + imageUri);
+					SurespotLog.v(TAG, "received image data, upload image, uri: %s", imageUri);
 
 					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(), true,
 							new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(final Boolean result) {
-									SurespotLog.v(TAG, "upload picture response: " + result);
+									SurespotLog.v(TAG, "upload picture response: %b", result);
 
 									if (!result) {
 
@@ -1430,19 +1431,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public boolean backButtonPressed() {
 		boolean handled = false;
 		SurespotLog.v(TAG, "backButtonPressed");
-		
+
 		if (mEmojiShowing) {
 			showEmoji(false, true);
 			handled = true;
 		}
-		
+
 		if (mKeyboardShowing) {
 
 			hideSoftKeyboard();
 			handled = true;
 		}
-
-		
 
 		return handled;
 	}
