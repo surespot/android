@@ -78,8 +78,8 @@ public class ContactPickerActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				ArrayList<String> selectedContacts = getSelectedContactData();				
-				UIUtils.sendInvitation(ContactPickerActivity.this, MainActivity.getNetworkController(), mSelectedType, selectedContacts, true);				
+				ArrayList<String> selectedContacts = getSelectedContactData();
+				UIUtils.sendInvitation(ContactPickerActivity.this, MainActivity.getNetworkController(), mSelectedType, selectedContacts, true);
 			}
 		});
 
@@ -172,6 +172,17 @@ public class ContactPickerActivity extends SherlockActivity {
 					String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 
 					if (name != null) {
+						
+
+						String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+						//set type to other by default in case we can't parse
+						int type = ContactsContract.CommonDataKinds.Phone.TYPE_OTHER;
+						try {
+							type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
+						}
+						catch (NumberFormatException e) {							
+						}
+						
 						String id = cur.getString(cur.getColumnIndex("contact_id"));
 						SurespotContact contact = contacts.get(id);
 						if (contact == null) {
@@ -181,8 +192,6 @@ public class ContactPickerActivity extends SherlockActivity {
 							contacts.put(id, contact);
 						}
 
-						String number = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-						int type = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
 						String label = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL));
 
 						ContactData pNumber = new ContactData();
@@ -308,8 +317,7 @@ public class ContactPickerActivity extends SherlockActivity {
 
 		// Run query
 		Uri uri = ContactsContract.Contacts.CONTENT_URI;
-		String[] projection = new String[] { ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME,
-				ContactsContract.Contacts.HAS_PHONE_NUMBER };
+		String[] projection = new String[] { ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.HAS_PHONE_NUMBER };
 		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ?";
 		String[] selectionArgs = new String[] { "1" };
 		// String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
@@ -321,9 +329,8 @@ public class ContactPickerActivity extends SherlockActivity {
 
 		// Run query
 		Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-		String[] projection = new String[] { "contact_id", ContactsContract.Contacts.DISPLAY_NAME,
-				ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE,
-				ContactsContract.CommonDataKinds.Phone.LABEL };
+		String[] projection = new String[] { "contact_id", ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER,
+				ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.LABEL };
 		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ?";
 		String[] selectionArgs = new String[] { "1" };
 		// String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
