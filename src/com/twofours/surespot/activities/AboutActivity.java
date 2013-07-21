@@ -1,15 +1,12 @@
 package com.twofours.surespot.activities;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -25,16 +22,7 @@ public class AboutActivity extends SherlockActivity {
 		Utils.configureActionBar(this, getString(R.string.surespot), getString(R.string.about_action_bar_right), true);
 
 		// set version
-		PackageManager manager = this.getPackageManager();
-		PackageInfo info = null;
-		try {
-			info = manager.getPackageInfo(this.getPackageName(), 0);
-			((TextView) findViewById(R.id.tvAboutVersion)).setText(getString(R.string.about_version, info.versionName));
-
-		}
-		catch (NameNotFoundException e) {
-			SurespotLog.w(TAG, "onCreate", e);
-		}
+		((TextView) findViewById(R.id.tvAboutVersion)).setText(getString(R.string.about_version, SurespotApplication.getVersion()));
 
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutAbout), R.string.about_about);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutOpenSource), R.string.about_opensource);

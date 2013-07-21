@@ -167,7 +167,7 @@ public class NetworkController {
 		}
 	}
 
-	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers,
+	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers, String version,
 			final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
@@ -178,6 +178,8 @@ public class NetworkController {
 		if (!TextUtils.isEmpty(referrers)) {
 			params.put("referrers", referrers);
 		}
+		params.put("version", version);
+		
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
@@ -299,11 +301,12 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, String version, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
+		params.put("version", version);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);

@@ -180,7 +180,8 @@ public class SignupActivity extends SherlockActivity {
 					pwText.setText("");
 					userText.requestFocus();
 					mMpd.decrProgress();
-				} else {
+				}
+				else {
 					// make sure we can create the file
 					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
 						Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
@@ -221,7 +222,7 @@ public class SignupActivity extends SherlockActivity {
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
 										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
-												new CookieResponseHandler() {
+												SurespotApplication.getVersion(), new CookieResponseHandler() {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
@@ -264,7 +265,8 @@ public class SignupActivity extends SherlockActivity {
 																};
 															}.execute();
 
-														} else {
+														}
+														else {
 															SurespotLog.w(TAG, "201 not returned on user create.");
 															confirmPwText.setText("");
 															pwText.setText("");
@@ -300,7 +302,8 @@ public class SignupActivity extends SherlockActivity {
 																Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 															}
 
-														} else {
+														}
+														else {
 															Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 														}
 														confirmPwText.setText("");
@@ -335,7 +338,8 @@ public class SignupActivity extends SherlockActivity {
 					default:
 						Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 					}
-				} else {
+				}
+				else {
 					Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 				}
 
@@ -375,14 +379,13 @@ public class SignupActivity extends SherlockActivity {
 			intent.putExtra("signup", true);
 			startActivity(intent);
 			return true;
-			
+
 		case R.id.menu_about:
 			Intent abIntent = new Intent(this, AboutActivity.class);
 			abIntent.putExtra("signup", true);
 			startActivity(abIntent);
 			return true;
-			
-			
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

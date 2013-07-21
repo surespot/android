@@ -15,6 +15,9 @@ import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.chat.EmojiParser;
@@ -22,18 +25,14 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.services.CredentialCachingService;
 
-@ReportsCrashes(
-mode = ReportingInteractionMode.DIALOG,
-formKey = "", // will not be used
-formUri = "https://www.surespot.me:3000/logs/surespot",
-resToastText = R.string.crash_toast_text,
-resDialogText = R.string.crash_dialog_text,
-resDialogOkToast = R.string.crash_dialog_ok_toast,
-resDialogCommentPrompt = R.string.crash_dialog_comment_prompt) // optional
+@ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
+formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.crash_toast_text, resDialogText = R.string.crash_dialog_text, resDialogOkToast = R.string.crash_dialog_ok_toast, resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
+// optional
 public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
 	private static StateController mStateController = null;
+	private static String mVersion;
 
 	public static final int CORE_POOL_SIZE = 20;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -54,45 +53,45 @@ public class SurespotApplication extends Application {
 	/**
 	 * An {@link Executor} that can be used to execute tasks in parallel.
 	 */
-	public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
-			TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
+	public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS, sPoolWorkQueue,
+			sThreadFactory);
 
 	public void onCreate() {
 		super.onCreate();
 
-//		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-//
-//			@Override
-//			public void uncaughtException(Thread thread, Throwable ex) {
-//
-//				StringWriter stackTrace = new StringWriter();
-//				ex.printStackTrace(new PrintWriter(stackTrace));
-//				System.err.println(stackTrace);
-//
-//				new Thread() {
-//					@Override
-//					public void run() {
-//						Looper.prepare();
-//						Toast.makeText(SurespotApplication.this, "surespot just crashed. :(", Toast.LENGTH_SHORT).show();
-//						Looper.loop();
-//					};
-//				}.start();
-//				
-//				
-//				System.exit(1);
-//
-//			}
-//		});
+		// Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+		//
+		// @Override
+		// public void uncaughtException(Thread thread, Throwable ex) {
+		//
+		// StringWriter stackTrace = new StringWriter();
+		// ex.printStackTrace(new PrintWriter(stackTrace));
+		// System.err.println(stackTrace);
+		//
+		// new Thread() {
+		// @Override
+		// public void run() {
+		// Looper.prepare();
+		// Toast.makeText(SurespotApplication.this, "surespot just crashed. :(", Toast.LENGTH_SHORT).show();
+		// Looper.loop();
+		// };
+		// }.start();
+		//
+		//
+		// System.exit(1);
+		//
+		// }
+		// });
 
-//		String lastUser = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER);
-//		if (lastUser != null) {
-//			SurespotLog.v(TAG, "using shared prefs for user %s for ACRA", lastUser);
-//			ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-//			config.setSharedPreferenceName(lastUser);
-//			config.setSharedPreferenceMode(Context.MODE_PRIVATE);
-//			ACRA.setConfig(config);
-//
-//		}
+		// String lastUser = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER);
+		// if (lastUser != null) {
+		// SurespotLog.v(TAG, "using shared prefs for user %s for ACRA", lastUser);
+		// ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
+		// config.setSharedPreferenceName(lastUser);
+		// config.setSharedPreferenceMode(Context.MODE_PRIVATE);
+		// ACRA.setConfig(config);
+		//
+		// }
 		//
 		// boolean enableACRA = ACRA.getACRASharedPreferences().getBoolean(ACRA.PREF_ENABLE_ACRA, false);
 		// if (!enableACRA) {
@@ -101,7 +100,7 @@ public class SurespotApplication extends Application {
 
 		ACRA.init(this);
 		EmojiParser.init(this);
-				
+
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
@@ -126,6 +125,17 @@ public class SurespotApplication extends Application {
 			SurespotLog.w(TAG, "onCreate", e);
 		}
 
+		PackageManager manager = this.getPackageManager();
+		PackageInfo info = null;
+
+		try {
+			info = manager.getPackageInfo(this.getPackageName(), 0);
+			mVersion = info.versionName;
+		}
+		catch (NameNotFoundException e) {
+			mVersion = "unknown";
+		}
+
 		// NetworkController.unregister(this, regId);
 
 		SurespotLog.v(TAG, "starting cache service");
@@ -144,6 +154,10 @@ public class SurespotApplication extends Application {
 
 	public static StateController getStateController() {
 		return mStateController;
+	}
+
+	public static String getVersion() {
+		return mVersion;
 	}
 
 }
