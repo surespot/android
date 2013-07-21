@@ -59,18 +59,25 @@ public class ImageSelectActivity extends SherlockActivity {
 		mSendButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new AsyncTask<Void, Void, Void>() {
-					protected Void doInBackground(Void... params) {
-						Intent dataIntent = new Intent();
-						dataIntent.setData(Uri.fromFile(mCompressedImagePath));
-						dataIntent.putExtra("to", mTo);
-						dataIntent.putExtra("filename", mCompressedImagePath.getPath());
-						setResult(Activity.RESULT_OK, dataIntent);
-						finish();
-						return null;
-					};
+				if (mCompressedImagePath == null) {
+					setResult(RESULT_CANCELED);
+					finish();
+				}
+				else {
 
-				}.execute();
+					new AsyncTask<Void, Void, Void>() {
+						protected Void doInBackground(Void... params) {
+							Intent dataIntent = new Intent();
+							dataIntent.setData(Uri.fromFile(mCompressedImagePath));
+							dataIntent.putExtra("to", mTo);
+							dataIntent.putExtra("filename", mCompressedImagePath.getPath());
+							setResult(Activity.RESULT_OK, dataIntent);
+							finish();
+							return null;
+						};
+
+					}.execute();
+				}
 			}
 		});
 
