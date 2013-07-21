@@ -511,7 +511,7 @@ public class NetworkController {
 
 				}
 				catch (Exception e) {
-					SurespotLog.w(TAG, "createPostFile", e);
+					SurespotLog.w(TAG, e, "createPostFile");
 				}
 				return response;
 
@@ -565,7 +565,7 @@ public class NetworkController {
 				}
 
 				catch (Exception e) {
-					SurespotLog.w(TAG, "createPostFile", e);
+					SurespotLog.w(TAG, e, "createPostFile");
 				}
 				return null;
 
@@ -593,7 +593,7 @@ public class NetworkController {
 		}
 
 		catch (Exception e) {
-			SurespotLog.w(TAG, "getFileStream", e);
+			SurespotLog.w(TAG, e, "getFileStream");
 
 		}
 		return null;
