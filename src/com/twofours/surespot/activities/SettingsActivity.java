@@ -5,8 +5,6 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
-import android.view.View;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -59,9 +57,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
-					View view = LayoutInflater.from(SettingsActivity.this).inflate(R.layout.dialog_help, null);
-					UIUtils.setHelpLinks(SettingsActivity.this, view);
-					UIUtils.showHelpDialog(SettingsActivity.this, R.string.surespot_help, view);
+					UIUtils.showHelpDialog(SettingsActivity.this);
 					return true;
 				}
 			});

@@ -443,16 +443,22 @@ public class UIUtils {
 		try {
 			// Create MD5 Hash
 			MessageDigest digest = null;
-			digest = java.security.MessageDigest.getInstance("MD5");		
+			digest = java.security.MessageDigest.getInstance("MD5");
 			digest.update(s);
 			byte[] messageDigest = digest.digest();
 
 			// Create Hex String
-			return new String(Hex.encode(messageDigest));					
+			return new String(Hex.encode(messageDigest));
 		}
 		catch (NoSuchAlgorithmException e) {
 			SurespotLog.i(TAG, e, "md5");
 		}
 		return "";
+	}
+
+	public static void showHelpDialog(Activity context) {
+		View view = LayoutInflater.from(context).inflate(R.layout.dialog_help, null);
+		UIUtils.setHelpLinks(context, view);
+		showHelpDialog(context, R.string.surespot_help, view);
 	}
 }

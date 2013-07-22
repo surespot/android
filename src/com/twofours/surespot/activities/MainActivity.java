@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Paint;
@@ -24,6 +25,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -706,6 +708,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		setButtonText();
+		
+		//if this is the first time the app has been run, show the help screen
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		boolean helpShown = sp.getBoolean("helpShown", false);
+		if (!helpShown) {
+			Editor editor = sp.edit();
+			editor.putBoolean("helpShown", true);			
+			editor.commit();
+			UIUtils.showHelpDialog(this);			
+		}
 	}
 
 	@Override
