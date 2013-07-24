@@ -82,6 +82,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		Utils.logIntent(TAG, intent);
 		mSignup = intent.getBooleanExtra("signup", false);
+		mSpdLoadIdentities = new SingleProgressDialog(ImportIdentityActivity.this, getString(R.string.progress_loading_identities), 0);
 
 		final String action = intent.getAction();
 
@@ -233,7 +234,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 			rbRestoreLocal.setTag("local");
 			rbRestoreLocal.setChecked(true);
 			mShowingLocal = true;
-			mSpdLoadIdentities = new SingleProgressDialog(ImportIdentityActivity.this, getString(R.string.progress_loading_identities), 0);
+			
 
 			rbRestoreDrive.setTag("drive");
 
