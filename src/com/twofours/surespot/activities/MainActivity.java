@@ -716,7 +716,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			Editor editor = sp.edit();
 			editor.putBoolean("helpShown", true);			
 			editor.commit();
-			UIUtils.showHelpDialog(this);			
+			UIUtils.showHelpDialog(this, true);			
 		}
 	}
 

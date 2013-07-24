@@ -250,7 +250,6 @@ public class UIUtils {
 
 		TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
 		UIUtils.setHtml(context, tvWelcome, R.string.welcome_to_surespot);
-
 	}
 
 	public static void sendInvitation(final Activity context, NetworkController networkController, final int type, final List<String> contacts,
@@ -456,8 +455,14 @@ public class UIUtils {
 		return "";
 	}
 
-	public static void showHelpDialog(Activity context) {
+	public static void showHelpDialog(Activity context, boolean showAgreement) {
 		View view = LayoutInflater.from(context).inflate(R.layout.dialog_help, null);
+		if (showAgreement) {
+			TextView helpAgreement = (TextView) view.findViewById(R.id.helpAgreement);						
+			UIUtils.setHtml(context, helpAgreement, R.string.help_agreement);
+			helpAgreement.setVisibility(View.VISIBLE);
+		}
+
 		UIUtils.setHelpLinks(context, view);
 		showHelpDialog(context, R.string.surespot_help, view);
 	}

@@ -57,7 +57,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
-					UIUtils.showHelpDialog(SettingsActivity.this);
+					UIUtils.showHelpDialog(SettingsActivity.this, false);
 					return true;
 				}
 			});
