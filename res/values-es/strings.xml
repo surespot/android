@@ -292,7 +292,7 @@
   <string name="no_local_identities">No se han encontrado perfiles en el Almacenamiento Local.</string>
   <string name="identity_name">Nombre del perfil</string>
   <string name="last_backed_up">Exportado por última vez</string>
-  <string name="last_modified">Modificado por última vez</string>
+  <string name="last_modified">Última modificación</string>
   <string name="help">Ayuda</string>
   <string name="menu_import">Importar</string>
   <string name="backup_device">EXPORTAR PERFIL AL ALMACENAMIENTO LOCAL</string>
