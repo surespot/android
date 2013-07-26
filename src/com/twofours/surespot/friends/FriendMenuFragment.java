@@ -76,7 +76,7 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 				AlertDialog dialog = (AlertDialog) FriendMenuFragment.this.getDialog();
 				ListView listview = dialog.getListView();
 
-				if (!listview.getChildAt(which).isEnabled()) {
+				if (listview == null || !listview.getChildAt(which).isEnabled()) {
 					return;
 				}
 
