@@ -65,12 +65,9 @@
   <string name="no_messages">Keine Mitteilungen</string>
   <string name="home">Home</string>
   <string name="delete_message">Mitteilung löschen</string>
-  <string name="title_activity_external_invite">ExternalInviteActivity</string>
-  <string name="title_activity_contact_picker">ContactPickerActivity</string>
   <string name="block_underline"><u>blockieren</u></string>
   <string name="ignore_underline"><u>ignorieren</u></string>
   <string name="accept_underline"><u>akzeptieren</u></string>
-  <string name="title_activity_billing">BillingActivity</string>
   <string name="crash_toast_text">Fehler aufgetreten. Zitat: Houston wir haben ein Problem</string>
   <string name="crash_dialog_title">surespot ist abgestürzt</string>
   <string name="crash_dialog_text">Wir bedauern, dass ein unerwarteter Fehler aufgetreten ist. \n\nBitte helfen Sie uns das Problem zu beheben, indem Sie mit \'OK\' einen Fehlerbericht an uns senden. Dieser enthält keine persönlich identifizierenden Informationen.</string>
@@ -311,4 +308,6 @@
   <string name="public_key_fingerprints">öffentlicher Schlüssel</string>
   <string name="loading">Laden...</string>
   <string name="device_does_not_support_google_drive">Gerät nicht für Google Drive konfiguriert</string>
+  <string name="login_update">Sie müssen aktualisieren surespot, um sich anzumelden</string>
+  <string name="help_agreement"><![CDATA["Durch Klick auf OK erklären Sie sich mit den <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">Nutzungsbedingungen</a>."]]> </string>
 </resources>
