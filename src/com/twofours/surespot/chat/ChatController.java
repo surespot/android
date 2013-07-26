@@ -1326,6 +1326,9 @@ public class ChatController {
 	private void handleMessages(String username, String jsonMessageString) {
 		SurespotLog.v(TAG, "%s: handleMessages", username);
 		final ChatAdapter chatAdapter = mChatAdapters.get(username);
+		if (chatAdapter == null) {
+			return;
+		}
 		int sentByMeCount = 0;
 
 		SurespotMessage lastMessage = null;
