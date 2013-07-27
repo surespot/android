@@ -18,6 +18,7 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
+import android.widget.RemoteViews;
 import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
@@ -273,11 +274,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	private void generateSystemNotification(Context context, String title, String message, String tag, int id) {
 
-		int icon = R.drawable.surespot_logo;
 
 		// need to use same builder for only alert once to work:
 		// http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
-		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(true).setContentText(message);
+		mBuilder.setAutoCancel(true).setOnlyAlertOnce(true);
 
 		int defaults = 0;
 
@@ -286,6 +286,32 @@ public class GCMIntentService extends GCMBaseIntentService {
 		defaults |= Notification.DEFAULT_VIBRATE;
 
 		mBuilder.setDefaults(defaults);
-		mNotificationManager.notify(tag, id, mBuilder.build());
+		
+		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification);
+		contentView.setImageViewResource(R.id.notification_image, R.drawable.surespot_logo);
+		contentView.setTextViewText(R.id.notification_title, title);
+		contentView.setTextViewText(R.id.notification_text, message);
+			
+		PendingIntent contentIntent = PendingIntent.getActivity(
+			    context,
+			    (int) new Date().getTime(),
+			    new Intent(),
+			    PendingIntent.FLAG_CANCEL_CURRENT);
+		mBuilder.setContentIntent(contentIntent);
+		
+		//use big style if supported 
+		mBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
+		
+		mBuilder.setSmallIcon(R.drawable.surespot_logo);
+		mBuilder.setContentTitle(title);		
+		mBuilder.setContentText(message);
+				
+		//mBuilder.setContent(contentView);
+		Notification notification = mBuilder.build();
+		
+		//this seems to trick android into displaying our custom view when it's not using the "big style"
+		notification.contentView = contentView;
+			
+		mNotificationManager.notify(tag, id, notification);
 	}
 }
