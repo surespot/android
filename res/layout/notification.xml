@@ -15,6 +15,7 @@
         android:id="@+id/notification_title"
         style="@style/NotificationTitle"
         android:layout_width="wrap_content"
+        android:gravity="center_vertical"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/notification_image"
         android:layout_marginLeft="5dp"
@@ -28,14 +29,9 @@
         android:layout_below="@+id/notification_image"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:ellipsize="marquee"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:scrollHorizontally="false"
-        android:singleLine="true" >
+        android:ellipsize="marquee">
 
-        <requestFocus />
+     
     </TextView>
 
 </RelativeLayout>
