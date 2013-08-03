@@ -429,7 +429,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public void onClick(View v) {
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
-					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted()) {
+					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted(friend.getName())) {
 						sendMessage(friend.getName());
 					}
 					else {
