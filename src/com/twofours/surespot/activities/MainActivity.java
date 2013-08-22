@@ -1,5 +1,6 @@
 package com.twofours.surespot.activities;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,8 @@ import android.content.res.Configuration;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -47,6 +50,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -128,6 +132,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private int mSendTextSize;
 	private int mInviteTextSize;
 	private boolean mTextSizesSet;
+	private Button mPTTButton;
+	private static String mFileName = null;
+
+	private MediaRecorder mRecorder = null;
+
+	private MediaPlayer mPlayer = null;
+
+	public MainActivity() {
+		mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+		mFileName += "/audiorecordtest.3gp";
+	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -544,6 +559,41 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
+		// PTT
+		mSendButton = (TextScaleButton) findViewById(R.id.bSend);
+		mSendButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Friend friend = mCurrentFriend;
+				if (friend != null) {
+					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted(friend.getName())) {
+						sendMessage(friend.getName());
+					}
+					else {
+						// go to friends
+						mChatController.setCurrentChat(null);
+					}
+				}
+				else {
+					inviteFriend();
+				}
+			}
+		});
+
+		mPTTButton = (Button) findViewById(R.id.bPTT);
+		mPTTButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Friend friend = mCurrentFriend;
+				if (friend != null) {
+					if (!mChatController.isFriendDeleted(friend.getName())) {
+						sendPTT(friend.getName());
+					}
+
+				}
+			}
+		});
+
 		// figure out the button sizes
 	}
 
@@ -708,15 +758,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		setButtonText();
-		
-		//if this is the first time the app has been run, show the help screen
+
+		// if this is the first time the app has been run, show the help screen
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean helpShown = sp.getBoolean("helpShown", false);
 		if (!helpShown) {
 			Editor editor = sp.edit();
-			editor.putBoolean("helpShown", true);			
+			editor.putBoolean("helpShown", true);
 			editor.commit();
-			UIUtils.showHelpDialog(this, true);			
+			UIUtils.showHelpDialog(this, true);
 		}
 	}
 
@@ -738,6 +788,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.onPause();
 		}
 		stopWatchingExternalStorage();
+		if (mRecorder != null) {
+			mRecorder.release();
+			mRecorder = null;
+		}
+
+		if (mPlayer != null) {
+			mPlayer.release();
+			mPlayer = null;
+		}
 	}
 
 	@Override
@@ -788,7 +847,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
 						@Override
 						public void handleResponse(String url, String version, String iv) {
-							if (mChatController == null ||  url == null) {
+							if (mChatController == null || url == null) {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 							}
 							else {
@@ -1051,7 +1110,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private void stopWatchingExternalStorage() {
-		//don't puke if we can't unregister
+		// don't puke if we can't unregister
 		try {
 			unregisterReceiver(mExternalStorageReceiver);
 		}
@@ -1438,6 +1497,102 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		final String message = mEtMessage.getText().toString();
 		mChatController.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
 		TextKeyListener.clear(mEtMessage.getText());
+	}
+
+	private void sendPTT(String username) {
+		// record and send sound message
+		onRecord(mStartRecording);
+		if (!mStartRecording) {
+			startPlaying();
+		
+		}
+		mStartRecording = !mStartRecording;
+	}
+
+	private void startRecording() {
+		mRecorder = new MediaRecorder();
+		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+		mRecorder.setOutputFile(mFileName);
+		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+		try {
+			mRecorder.prepare();
+		}
+		catch (IOException e) {
+			SurespotLog.e(TAG, e, "prepare() failed");
+		}
+
+		mRecorder.start();
+	}
+
+	private void stopRecording() {
+		mRecorder.stop();
+		mRecorder.release();
+		mRecorder = null;
+	}
+
+	private void onRecord(boolean start) {
+		if (start) {
+			startRecording();
+		}
+		else {
+			stopRecording();
+		}
+	}
+
+	private void onPlay(boolean start) {
+		if (start) {
+			startPlaying();
+		}
+		else {
+			stopPlaying();
+		}
+	}
+
+	private void startPlaying() {
+		mPlayer = new MediaPlayer();
+		try {
+			mPlayer.setDataSource(mFileName);
+			mPlayer.prepare();
+			mPlayer.start();
+		}
+		catch (IOException e) {
+			SurespotLog.e(TAG, e, "prepare() failed");
+		}
+	}
+
+	private void stopPlaying() {
+		mPlayer.release();
+		mPlayer = null;
+	}
+
+
+		boolean mStartRecording = true;
+
+
+
+	class PlayButton extends Button {
+		boolean mStartPlaying = true;
+
+		OnClickListener clicker = new OnClickListener() {
+			public void onClick(View v) {
+				onPlay(mStartPlaying);
+				if (mStartPlaying) {
+					setText("Stop playing");
+				}
+				else {
+					setText("Start playing");
+				}
+				mStartPlaying = !mStartPlaying;
+			}
+		};
+
+		public PlayButton(Context ctx) {
+			super(ctx);
+			setText("Start playing");
+			setOnClickListener(clicker);
+		}
 	}
 
 	public boolean backButtonPressed() {
