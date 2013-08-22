@@ -22,6 +22,7 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ptt.PTTController;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
@@ -93,6 +94,21 @@ public class ChatFragment extends SherlockFragment {
 							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
 							ChatFragment.this.getActivity().startActivity(newIntent);
+						}
+					}
+					else {
+						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+							
+							PTTController pttController = getMainActivity().getPTTController();
+							pttController.playPTT(message);
+//							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
+//							if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
+//
+//								Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
+//								newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//								newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+//								ChatFragment.this.getActivity().startActivity(newIntent);
+//							}
 						}
 					}
 				}

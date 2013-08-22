@@ -602,7 +602,7 @@ public class ChatController {
 							// if it's an image that i sent
 							// get the local message
 							if (ChatUtils.isMyMessage(message)) {
-								handleCachedImage(chatAdapter, message);
+								handleCachedFile(chatAdapter, message);
 							}
 							else {
 
@@ -637,7 +637,36 @@ public class ChatController {
 						}
 						else {
 							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-								
+								if (ChatUtils.isMyMessage(message)) {
+									handleCachedFile(chatAdapter, message);
+								}
+								else {
+
+//									InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
+//
+//								
+//									PipedOutputStream out = new PipedOutputStream();
+//									PipedInputStream inputStream;
+//									try {
+//										inputStream = new PipedInputStream(out);
+//
+//										EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
+//												message.getIv(), new BufferedInputStream(imageStream), out);
+//
+//										
+//										byte[] bytes = Utils.inputStreamToBytes(inputStream);
+//
+//									
+//									}
+//									catch (InterruptedIOException ioe) {
+//
+//										SurespotLog.w(TAG, ioe, "handleMessage");
+//
+//									}
+//									catch (IOException e) {
+//										SurespotLog.w(TAG, e, "handleMessage");
+//									}									
+								}
 							}
 						}
 
@@ -707,7 +736,7 @@ public class ChatController {
 	}
 
 	// add entry to http cache for image we sent so we don't download it again
-	private void handleCachedImage(ChatAdapter chatAdapter, SurespotMessage message) {
+	private void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
 		SurespotLog.v(TAG, "handleCachedImage");
 		SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
 
@@ -1350,7 +1379,7 @@ public class ChatController {
 				boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
 				if (myMessage && lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-					handleCachedImage(chatAdapter, lastMessage);
+					handleCachedFile(chatAdapter, lastMessage);
 				}
 
 				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);

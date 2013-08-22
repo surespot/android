@@ -594,19 +594,26 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 				else {
 					if (event.getAction() == MotionEvent.ACTION_UP) {
-						
+
 						SurespotLog.v(TAG, "PTT up");
-						
-						//truncates without the delay for some reason
+
+						// truncates without the delay for some reason
 						mPTTButton.postDelayed(new Runnable() {
-							
+
 							@Override
 							public void run() {
 								mPTTController.stopRecording();
-								
+								mPTTController.sendPTT(MainActivity.this, new IAsyncCallback<Boolean>() {
+
+									@Override
+									public void handleResponse(Boolean result) {
+										Utils.makeToast(MainActivity.this, "sent ptt message");
+
+									}
+								});
+
 							}
 						}, 250);
-						
 
 						handled = true;
 					}
@@ -1789,5 +1796,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEmojiButton.setImageResource(R.drawable.keyboard_icon);
 		}
 
+	}
+
+	public PTTController getPTTController() {
+		return mPTTController;
 	}
 }

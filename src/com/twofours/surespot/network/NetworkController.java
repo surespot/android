@@ -491,7 +491,7 @@ public class NetworkController {
 		}
 	}
 
-	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
+	public void postImageStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
 			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Boolean> callback) {
 		new AsyncTask<Void, Void, HttpResponse>() {
 
@@ -532,6 +532,7 @@ public class NetworkController {
 			};
 		}.execute();
 	}
+		
 
 	public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv, final InputStream fileInputStream,
 			final IAsyncCallback<String> callback) {

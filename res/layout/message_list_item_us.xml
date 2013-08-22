@@ -89,12 +89,25 @@
             android:id="@+id/messageImage"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_gravity="left"
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2sp"
             android:adjustViewBounds="false"
             android:scaleType="centerCrop"
-            android:layout_gravity="left"            
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/messagePTT"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2sp"
+            android:adjustViewBounds="false"
+            android:src="@android:drawable/ic_media_play"
+            android:scaleType="centerCrop"
             android:visibility="gone" />
 
         <TextView

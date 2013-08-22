@@ -241,7 +241,7 @@ public class ChatUtils {
 									return;
 								}
 
-								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
+								networkController.postImageStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
 										new IAsyncCallback<Boolean>() {
 
 											@Override
@@ -412,7 +412,7 @@ public class ChatUtils {
 									return;
 								}
 
-								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
+								networkController.postImageStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
 										new IAsyncCallback<Boolean>() {
 
 											@Override
@@ -481,7 +481,7 @@ public class ChatUtils {
 			return;
 		}
 
-		networkController.postFileStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
+		networkController.postImageStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
 				SurespotConstants.MimeTypes.IMAGE, callback);
 	}
 

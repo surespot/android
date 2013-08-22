@@ -258,7 +258,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			chatMessageViewHolder.imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-
+			chatMessageViewHolder.pttView =  convertView.findViewById(R.id.messagePTT);
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 
@@ -287,8 +287,8 @@ public class ChatAdapter extends BaseAdapter {
 				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
 			}
 			else {
-
-				if (item.getPlainData() == null) {
+				//if it's PTT we'll download and  decrypt when the user presses play 
+				if (item.getPlainData() == null && !item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
 				}
 				else {
@@ -308,6 +308,7 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
+			chatMessageViewHolder.pttView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
 			chatMessageViewHolder.imageView.setImageBitmap(null);
@@ -323,21 +324,40 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 		}
 		else {
-			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.tvText.clearAnimation();
-			chatMessageViewHolder.tvText.setVisibility(View.GONE);
-			chatMessageViewHolder.tvText.setText("");
-			if (!TextUtils.isEmpty(item.getData())) {
-				mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
-			}
+			if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
+				chatMessageViewHolder.pttView.setVisibility(View.GONE);
+				chatMessageViewHolder.tvText.clearAnimation();
+				chatMessageViewHolder.tvText.setVisibility(View.GONE);
+				chatMessageViewHolder.tvText.setText("");
+				if (!TextUtils.isEmpty(item.getData())) {
+					mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
+				}
 
-			if (item.isShareable()) {
-				chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
-				chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
+				if (item.isShareable()) {
+					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+					chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
+				}
+				else {
+					chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
+					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+				}
 			}
 			else {
-				chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
-				chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+				if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+					chatMessageViewHolder.imageView.setVisibility(View.GONE);
+					chatMessageViewHolder.pttView.setVisibility(View.VISIBLE);
+					chatMessageViewHolder.tvText.clearAnimation();
+					chatMessageViewHolder.tvText.setVisibility(View.GONE);
+					chatMessageViewHolder.tvText.setText("");
+					if (!TextUtils.isEmpty(item.getData())) {
+						//mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
+					}
+					
+					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+				}
+
 			}
 		}
 
@@ -381,6 +401,7 @@ public class ChatAdapter extends BaseAdapter {
 		public ImageView ivShareable;
 		public ImageView ivNotShareable;
 		public int type;
+		public View pttView;
 
 	}
 
