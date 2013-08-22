@@ -83,15 +83,15 @@ public class NetworkController {
 		return mUnauthorized;
 	}
 
-	public synchronized void setUnauthorized(boolean unauthorized) {
+	public synchronized void setUnauthorized(boolean unauthorized, boolean clearCookies) {
 
 		mUnauthorized = unauthorized;
-		if (unauthorized) {
+		if (unauthorized && clearCookies) {
 			mCookieStore.clear();
 		}
 	}
 
-	public NetworkController(Context context, final IAsyncCallback<String> m401Handler) {
+	public NetworkController(Context context, final IAsyncCallbackTuple<String, Boolean> m401Handler) {
 		SurespotLog.v(TAG, "constructor");
 		mContext = context;
 
@@ -143,7 +143,7 @@ public class NetworkController {
 								mSyncClient.cancelRequests(mContext, true);
 
 								if (m401Handler != null) {
-									m401Handler.handleResponse(mContext.getString(R.string.unauthorized));
+									m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
 								}
 
 							}
@@ -205,7 +205,7 @@ public class NetworkController {
 					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
 				}
 				else {
-					setUnauthorized(false);
+					setUnauthorized(false, false);
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -337,7 +337,7 @@ public class NetworkController {
 					responseHandler.onFailure(new Exception("Did not get cookie."), null);
 				}
 				else {
-					setUnauthorized(false);
+					setUnauthorized(false, false);
 					// update shared prefs
 					if (gcmUpdated) {
 						Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);

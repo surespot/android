@@ -72,6 +72,7 @@ import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -120,13 +121,13 @@ public class ChatController {
 
 	private int mMode = MODE_NORMAL;
 
-	private IAsyncCallback<String> mCallback401;
+	private IAsyncCallbackTuple<String, Boolean> mCallback401;
 	private IAsyncCallback<Boolean> mProgressCallback;
 	private IAsyncCallback<Void> mSendIntentCallback;
 	private IAsyncCallback<Friend> mTabShowingCallback;
 	private AutoInviteData mAutoInviteData;
 
-	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallback<String> m401Handler,
+	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallbackTuple<String, Boolean> m401Handler,
 			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
 		SurespotLog.v(TAG, "constructor: " + this);
 		mContext = context;
@@ -174,7 +175,7 @@ public class ChatController {
 				if (socketIOException.getHttpStatus() == 403) {
 					socket = null;
 					logout();
-					mCallback401.handleResponse(mContext.getString(R.string.could_not_login_to_server));
+					mCallback401.handleResponse(mContext.getString(R.string.could_not_login_to_server), false);
 					return;
 				}
 
@@ -200,7 +201,7 @@ public class ChatController {
 				else {
 					// TODO tell user
 					SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
-					mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server));
+					mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server), true);
 				}
 			}
 
@@ -596,41 +597,41 @@ public class ChatController {
 					}
 
 					else {
-						// if it's an image that i sent
-						// get the local message
-						if (ChatUtils.isMyMessage(message)) {
-							handleCachedImage(chatAdapter, message);
-						}
-						else {
-
-							InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
-
-							Bitmap bitmap = null;
-							PipedOutputStream out = new PipedOutputStream();
-							PipedInputStream inputStream;
-							try {
-								inputStream = new PipedInputStream(out);
-
-								EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-										message.getIv(), new BufferedInputStream(imageStream), out);
-
-								byte[] bytes = Utils.inputStreamToBytes(inputStream);
-
-								bitmap = ChatUtils.getSampledImage(bytes);
+							// if it's an image that i sent
+							// get the local message
+							if (ChatUtils.isMyMessage(message)) {
+								handleCachedImage(chatAdapter, message);
 							}
-							catch (InterruptedIOException ioe) {
+							else {
 
-								SurespotLog.w(TAG, ioe, "handleMessage");
+								InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
 
-							}
-							catch (IOException e) {
-								SurespotLog.w(TAG, e, "handleMessage");
-							}
+								Bitmap bitmap = null;
+								PipedOutputStream out = new PipedOutputStream();
+								PipedInputStream inputStream;
+								try {
+									inputStream = new PipedInputStream(out);
 
-							if (bitmap != null) {
-								MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
+									EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
+											message.getIv(), new BufferedInputStream(imageStream), out);
+
+									byte[] bytes = Utils.inputStreamToBytes(inputStream);
+
+									bitmap = ChatUtils.getSampledImage(bytes);
+								}
+								catch (InterruptedIOException ioe) {
+
+									SurespotLog.w(TAG, ioe, "handleMessage");
+
+								}
+								catch (IOException e) {
+									SurespotLog.w(TAG, e, "handleMessage");
+								}
+
+								if (bitmap != null) {
+									MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
+								}
 							}
-						}
 
 					}
 					return null;
@@ -1207,7 +1208,7 @@ public class ChatController {
 											friend.setInviter(false);
 											friend.setInvited(false);
 										}
-										
+
 										// clear any associated invite notification
 										String loggedInUser = IdentityController.getLoggedInUser();
 										if (loggedInUser != null) {

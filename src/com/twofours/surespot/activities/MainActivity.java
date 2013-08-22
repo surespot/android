@@ -83,6 +83,7 @@ import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -100,7 +101,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
-	private IAsyncCallback<String> m401Handler;
+	private IAsyncCallbackTuple<String, Boolean> m401Handler;
 	private ChatController mChatController = null;
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
@@ -201,20 +202,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mContext = this;
 
-		m401Handler = new IAsyncCallback<String>() {
+		m401Handler = new IAsyncCallbackTuple<String, Boolean>() {
 
 			@Override
-			public void handleResponse(final String message) {
+			public void handleResponse(final String message, final Boolean timedOut) {
 				SurespotLog.v(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
-					MainActivity.this.getNetworkController().setUnauthorized(true);
-					// IdentityController.logout();
 
-					SurespotLog.v(TAG, "Got 401, launching login intent.");
-					Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					startActivity(intent);
-					finish();
+					// if we just timed out, don't blow away the cookie or go to login screen
+					MainActivity.this.getNetworkController().setUnauthorized(true, !timedOut);
+
+					if (!timedOut) {
+						SurespotLog.v(TAG, "Got 401, launching login intent.");
+						Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(intent);
+						finish();
+					}
 
 					if (!TextUtils.isEmpty(message)) {
 						Runnable runnable = new Runnable() {

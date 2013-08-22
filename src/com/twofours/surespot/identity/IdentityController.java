@@ -917,7 +917,7 @@ public class IdentityController {
 			deleteIdentity(context, username);
 
 			// delete identities locally?
-			MainActivity.getNetworkController().setUnauthorized(true);
+			MainActivity.getNetworkController().setUnauthorized(true, true);
 
 			// boot them out
 			launchLoginActivity(context);
