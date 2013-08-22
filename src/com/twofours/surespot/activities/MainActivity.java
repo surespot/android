@@ -1,6 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +18,6 @@ import android.content.res.Configuration;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -85,6 +82,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.ptt.PTTController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
@@ -134,16 +132,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private int mInviteTextSize;
 	private boolean mTextSizesSet;
 	private Button mPTTButton;
-	private static String mFileName = null;
-
-	private MediaRecorder mRecorder = null;
-
-	private MediaPlayer mPlayer = null;
-
-	public MainActivity() {
-		mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-		mFileName += "/audiorecordtest.3gp";
-	}
+	private PTTController mPTTController;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -294,6 +283,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteData);
+			mPTTController = new PTTController(mChatController, mNetworkController);
 			setupChatControls();
 
 			if (savedInstanceState != null) {
@@ -585,16 +575,44 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		});
 
 		mPTTButton = (Button) findViewById(R.id.bPTT);
-		mPTTButton.setOnClickListener(new View.OnClickListener() {
+		mPTTButton.setOnTouchListener(new OnTouchListener() {
+
 			@Override
-			public void onClick(View v) {
-				Friend friend = mCurrentFriend;
-				if (friend != null) {
-					if (!mChatController.isFriendDeleted(friend.getName())) {
-						sendPTT(friend.getName());
+			public boolean onTouch(View v, MotionEvent event) {
+				boolean handled = false;
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+					SurespotLog.v(TAG, "PTT Down");
+					Friend friend = mCurrentFriend;
+					if (friend != null) {
+						if (!mChatController.isFriendDeleted(friend.getName())) {
+							mPTTController.startRecording(friend.getName());
+						}
+
 					}
 
+					handled = true;
 				}
+				else {
+					if (event.getAction() == MotionEvent.ACTION_UP) {
+						
+						SurespotLog.v(TAG, "PTT up");
+						
+						//truncates without the delay for some reason
+						mPTTButton.postDelayed(new Runnable() {
+							
+							@Override
+							public void run() {
+								mPTTController.stopRecording();
+								
+							}
+						}, 250);
+						
+
+						handled = true;
+					}
+				}
+
+				return handled;
 			}
 		});
 
@@ -791,16 +809,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.onPause();
 		}
-		stopWatchingExternalStorage();
-		if (mRecorder != null) {
-			mRecorder.release();
-			mRecorder = null;
-		}
 
-		if (mPlayer != null) {
-			mPlayer.release();
-			mPlayer = null;
-		}
+		stopWatchingExternalStorage();
+
 	}
 
 	@Override
@@ -1068,7 +1079,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 		mChatController = null;
-
+		if (mPTTController != null) {
+			mPTTController.destroy();
+			mPTTController = null;
+		}
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1501,102 +1515,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		final String message = mEtMessage.getText().toString();
 		mChatController.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
 		TextKeyListener.clear(mEtMessage.getText());
-	}
-
-	private void sendPTT(String username) {
-		// record and send sound message
-		onRecord(mStartRecording);
-		if (!mStartRecording) {
-			startPlaying();
-		
-		}
-		mStartRecording = !mStartRecording;
-	}
-
-	private void startRecording() {
-		mRecorder = new MediaRecorder();
-		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-		mRecorder.setOutputFile(mFileName);
-		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-		try {
-			mRecorder.prepare();
-		}
-		catch (IOException e) {
-			SurespotLog.e(TAG, e, "prepare() failed");
-		}
-
-		mRecorder.start();
-	}
-
-	private void stopRecording() {
-		mRecorder.stop();
-		mRecorder.release();
-		mRecorder = null;
-	}
-
-	private void onRecord(boolean start) {
-		if (start) {
-			startRecording();
-		}
-		else {
-			stopRecording();
-		}
-	}
-
-	private void onPlay(boolean start) {
-		if (start) {
-			startPlaying();
-		}
-		else {
-			stopPlaying();
-		}
-	}
-
-	private void startPlaying() {
-		mPlayer = new MediaPlayer();
-		try {
-			mPlayer.setDataSource(mFileName);
-			mPlayer.prepare();
-			mPlayer.start();
-		}
-		catch (IOException e) {
-			SurespotLog.e(TAG, e, "prepare() failed");
-		}
-	}
-
-	private void stopPlaying() {
-		mPlayer.release();
-		mPlayer = null;
-	}
-
-
-		boolean mStartRecording = true;
-
-
-
-	class PlayButton extends Button {
-		boolean mStartPlaying = true;
-
-		OnClickListener clicker = new OnClickListener() {
-			public void onClick(View v) {
-				onPlay(mStartPlaying);
-				if (mStartPlaying) {
-					setText("Stop playing");
-				}
-				else {
-					setText("Start playing");
-				}
-				mStartPlaying = !mStartPlaying;
-			}
-		};
-
-		public PlayButton(Context ctx) {
-			super(ctx);
-			setText("Start playing");
-			setOnClickListener(clicker);
-		}
 	}
 
 	public boolean backButtonPressed() {

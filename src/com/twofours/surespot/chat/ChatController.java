@@ -597,6 +597,8 @@ public class ChatController {
 					}
 
 					else {
+						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+
 							// if it's an image that i sent
 							// get the local message
 							if (ChatUtils.isMyMessage(message)) {
@@ -632,6 +634,12 @@ public class ChatController {
 									MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
 								}
 							}
+						}
+						else {
+							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+								
+							}
+						}
 
 					}
 					return null;
