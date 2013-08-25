@@ -357,19 +357,9 @@ public class ChatUtils {
 						final File localImageFile = new File(localImageFilename);
 
 						localImageFile.createNewFile();
-						String localImageUri = Uri.fromFile(localImageFile).toString();
+						final String localImageUri = Uri.fromFile(localImageFile).toString();
 						SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
-						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.M4A, null, iv, localImageUri);
-						message.setId(null);
-						activity.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								SurespotLog.v(TAG, "adding local ptt message %s", message);
-								chatController.addMessage(message);
-
-							}
-						});
 
 						Runnable saveFileRunnable = new Runnable() {
 							@Override
@@ -390,6 +380,17 @@ public class ChatUtils {
 									fileSaveStream.close();
 									encryptionInputStream.close();
 
+									final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.M4A, null, iv, localImageUri);
+									message.setId(null);
+									activity.runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											SurespotLog.v(TAG, "adding local ptt message %s", message);
+											chatController.addMessage(message);
+
+										}
+									});
+
 								}
 
 								catch (IOException e) {
@@ -399,6 +400,7 @@ public class ChatUtils {
 								}
 
 								//TODO delete local ptt data
+								new File(localImageUri).delete();
 								
 								
 								// upload encrypted image to server

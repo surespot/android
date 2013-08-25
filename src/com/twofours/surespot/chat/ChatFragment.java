@@ -22,7 +22,7 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.ptt.PTTController;
+import com.twofours.surespot.voice.VoiceController;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
@@ -99,7 +99,7 @@ public class ChatFragment extends SherlockFragment {
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 							
-							PTTController pttController = getMainActivity().getPTTController();
+							VoiceController pttController = getMainActivity().getPTTController();
 							pttController.playPTT(message);
 //							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
 //							if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {

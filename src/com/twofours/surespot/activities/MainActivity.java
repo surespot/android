@@ -82,12 +82,12 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.ptt.PTTController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.TextScaleButton;
 import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
@@ -132,7 +132,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private int mInviteTextSize;
 	private boolean mTextSizesSet;
 	private Button mPTTButton;
-	private PTTController mPTTController;
+	private VoiceController mPTTController;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -283,7 +283,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteData);
-			mPTTController = new PTTController(mChatController, mNetworkController);
+			mPTTController = new VoiceController(mChatController, mNetworkController);
 			setupChatControls();
 
 			if (savedInstanceState != null) {
@@ -607,7 +607,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 									@Override
 									public void handleResponse(Boolean result) {
-										Utils.makeToast(MainActivity.this, "sent ptt message");
+										if (!result) {
+											Utils.makeToast(MainActivity.this, "error sending ptt message");
+										}
 
 									}
 								});
@@ -1798,7 +1800,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
-	public PTTController getPTTController() {
+	public VoiceController getPTTController() {
 		return mPTTController;
 	}
 }
