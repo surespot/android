@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Date;
 
 import android.app.Activity;
 import android.media.AudioFormat;
@@ -46,14 +47,16 @@ public class VoiceController {
 		INITIALIZING, READY, STARTED, RECORDING
 	};
 
-	private final static int[]sampleRates = { 44100, 8000, 11025, 22050, 44100 } ;
+	private final static int[] sampleRates = { 44100, 8000, 11025, 22050, 44100 };
 
 	private State mState;
+	private AACEncoder encoder;
 
 	public VoiceController(ChatController chatController, NetworkController networkController) {
 		mChatController = chatController;
 		mNetworkController = networkController;
 		mState = State.STARTED;
+		encoder = new AACEncoder();
 		// mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
 		// mFileName += "/audiorecordtest.m4a";
 	}
@@ -75,7 +78,7 @@ public class VoiceController {
 
 			do {
 				if (mRecorder != null)
-					mRecorder.release();				
+					mRecorder.release();
 				sampleRate = sampleRates[i];
 				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
 						AudioFormat.ENCODING_PCM_16BIT);
@@ -115,7 +118,7 @@ public class VoiceController {
 			mRecorder.stop();
 			// mRecorder.reset();
 			mRecorder.release();
-		//	mRecorder = null;
+			// mRecorder = null;
 			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
@@ -129,9 +132,10 @@ public class VoiceController {
 		try {
 			File file = new File(path);
 			// file.setReadable(true, false);
-			FileInputStream fis = new FileInputStream(path);
-			mPlayer.setDataSource(fis.getFD(), 0, file.length());
-			fis.close();
+		//	FileInputStream fis = new FileInputStream(path);
+		//	fis.
+			mPlayer.setDataSource(path);
+		//	fis.close();
 			mPlayer.prepare();
 			mPlayer.start();
 			mPlayer.setOnCompletionListener(new OnCompletionListener() {
@@ -216,8 +220,29 @@ public class VoiceController {
 	}
 
 	public void sendPTT(Activity activity, IAsyncCallback<Boolean> callback) {
+		// convert to AAC
+		FileInputStream fis;
+		try {
+			fis = new FileInputStream(mFileName);
+			Date start = new Date();
 
-		ChatUtils.uploadPTTAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(mFileName)), mUsername, callback);
+			String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
+			encoder.init(16000, 1, 44100, 16, outFile);
+
+			encoder.encode(Utils.inputStreamToBytes(fis));
+
+			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
+
+			encoder.uninit();
+
+			ChatUtils.uploadPTTAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(outFile)), mUsername, callback);
+		}
+
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	public void playPTT(final SurespotMessage message) {
