@@ -74,6 +74,7 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatController {
@@ -642,30 +643,31 @@ public class ChatController {
 								}
 								else {
 
-//									InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
-//
-//								
-//									PipedOutputStream out = new PipedOutputStream();
-//									PipedInputStream inputStream;
-//									try {
-//										inputStream = new PipedInputStream(out);
-//
-//										EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-//												message.getIv(), new BufferedInputStream(imageStream), out);
-//
-//										
-//										byte[] bytes = Utils.inputStreamToBytes(inputStream);
-//
-//									
-//									}
-//									catch (InterruptedIOException ioe) {
-//
-//										SurespotLog.w(TAG, ioe, "handleMessage");
-//
-//									}
-//									catch (IOException e) {
-//										SurespotLog.w(TAG, e, "handleMessage");
-//									}									
+									// InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
+									// message.getData());
+									//
+									//
+									// PipedOutputStream out = new PipedOutputStream();
+									// PipedInputStream inputStream;
+									// try {
+									// inputStream = new PipedInputStream(out);
+									//
+									// EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
+									// message.getIv(), new BufferedInputStream(imageStream), out);
+									//
+									//
+									// byte[] bytes = Utils.inputStreamToBytes(inputStream);
+									//
+									//
+									// }
+									// catch (InterruptedIOException ioe) {
+									//
+									// SurespotLog.w(TAG, ioe, "handleMessage");
+									//
+									// }
+									// catch (IOException e) {
+									// SurespotLog.w(TAG, e, "handleMessage");
+									// }
 								}
 							}
 						}
@@ -690,6 +692,13 @@ public class ChatController {
 							if (otherUser.equals(mCurrentChat)) {
 
 								friend.setLastViewedMessageId(messageId);
+
+								// if it was a voice message from the other user, play it
+								//TODO wrap in preference
+								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+									VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
+									pttController.playPTT(message);
+								}
 							}
 							else {
 								// if it's my message increment the count by one to account for it as I may have unread messages from the
