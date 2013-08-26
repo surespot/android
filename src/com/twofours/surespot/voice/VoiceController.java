@@ -10,6 +10,7 @@ import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Date;
+import java.util.HashMap;
 
 import android.app.Activity;
 import android.media.AudioFormat;
@@ -39,26 +40,27 @@ public class VoiceController {
 
 	private RehearsalAudioRecorder mRecorder = null;
 
-	private MediaPlayer mPlayer = null;
-
 	private ChatController mChatController;
 	private NetworkController mNetworkController;
+	private HashMap<String, MediaPlayer> mMediaPlayers;
+
 	boolean mRecording = false;
 
 	enum State {
 		INITIALIZING, READY, STARTED, RECORDING
 	};
 
-	private final static int[] sampleRates = { 44100, 8000, 11025, 22050, 44100 };
+	private final static int[] sampleRates = { 44100, 22050, 11025, 8000 };
 
 	private State mState;
-	private AACEncoder encoder;
+	private AACEncoder mEncoder;
 
 	public VoiceController(ChatController chatController, NetworkController networkController) {
 		mChatController = chatController;
 		mNetworkController = networkController;
 		mState = State.STARTED;
-		encoder = new AACEncoder();
+		mEncoder = new AACEncoder();
+		mMediaPlayers = new HashMap<String, MediaPlayer>();
 		// mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
 		// mFileName += "/audiorecordtest.m4a";
 	}
@@ -76,7 +78,7 @@ public class VoiceController {
 			SurespotLog.v(TAG, "recording to: %s", mFileName);
 
 			int i = 0;
-			int sampleRate = 8000;
+			int sampleRate = 44100;
 
 			do {
 				if (mRecorder != null)
@@ -129,15 +131,18 @@ public class VoiceController {
 
 	}
 
-	private void startPlaying(final String path, final boolean delete) {
-		mPlayer = new MediaPlayer();
+	// Play unencrypted audio file from path and optionally delete it
+
+	private synchronized void startPlaying(final String path, final boolean delete) {
+		// see if we're already running
+
+		if (mMediaPlayers.containsKey(path)) {
+			return;
+		}
+		MediaPlayer mPlayer = new MediaPlayer();
+		mMediaPlayers.put(path, mPlayer);
 		try {
-			File file = new File(path);
-			// file.setReadable(true, false);
-		//	FileInputStream fis = new FileInputStream(path);
-		//	fis.
 			mPlayer.setDataSource(path);
-		//	fis.close();
 			mPlayer.prepare();
 			mPlayer.start();
 			mPlayer.setOnCompletionListener(new OnCompletionListener() {
@@ -145,7 +150,6 @@ public class VoiceController {
 				@Override
 				public void onCompletion(MediaPlayer mp) {
 
-					// mp.
 					stopPlaying(path, delete);
 				}
 			});
@@ -155,9 +159,11 @@ public class VoiceController {
 		}
 	}
 
-	private void stopPlaying(String path, boolean delete) {
-		mPlayer.release();
-		mPlayer = null;
+	private synchronized void stopPlaying(String path, boolean delete) {
+		MediaPlayer mp = mMediaPlayers.remove(path);
+		mp.stop();
+		mp.release();
+		mp = null;
 
 		if (delete) {
 			new File(path).delete();
@@ -165,16 +171,18 @@ public class VoiceController {
 
 	}
 
-	public void destroy() {
+	public synchronized void destroy() {
 		if (mRecorder != null) {
 			mRecorder.release();
 			mRecorder = null;
 		}
 
-		if (mPlayer != null) {
-			mPlayer.release();
-			mPlayer = null;
+		for (MediaPlayer mp : mMediaPlayers.values()) {
+			mp.stop();
+			mp.release();
 		}
+
+		mMediaPlayers.clear();
 
 		mChatController = null;
 		mNetworkController = null;
@@ -229,20 +237,15 @@ public class VoiceController {
 			Date start = new Date();
 
 			String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
-			encoder.init(16000, 1, 44100, 16, outFile);
+			mEncoder.init(16000, 1, 44100, 16, outFile);
 
-			encoder.encode(Utils.inputStreamToBytes(fis));
-			encoder.uninit();			
-			
+			mEncoder.encode(Utils.inputStreamToBytes(fis));
+			mEncoder.uninit();
+
 			String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
 			new AACToM4A().convert(activity, outFile, m4aFile);
-			
 
 			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
-
-
-			
-		     
 
 			ChatUtils.uploadPTTAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername, callback);
 		}
@@ -257,8 +260,8 @@ public class VoiceController {
 	public void playPTT(final SurespotMessage message) {
 		final File tempFile;
 		try {
+			// create temp file to save un-encrypted data to (MediaPlayer can't stream from uh a Stream (InputStream) for some ass backwards reason.)
 			tempFile = File.createTempFile("sound", ".m4a");
-			// tempFile.setReadable(true, false);
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, e, "playPTT");
