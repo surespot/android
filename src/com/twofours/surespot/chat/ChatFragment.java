@@ -100,7 +100,7 @@ public class ChatFragment extends SherlockFragment {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 							
 							VoiceController pttController = getMainActivity().getPTTController();
-							pttController.playPTT(message);
+							pttController.playVoiceMessage(message);
 //							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
 //							if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
 //

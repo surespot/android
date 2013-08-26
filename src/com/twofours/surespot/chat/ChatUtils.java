@@ -324,7 +324,7 @@ public class ChatUtils {
 	}
 
 	@SuppressWarnings("resource")
-	public static void uploadPTTAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
+	public static void uploadVoiceMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
 			final Uri imageUri, final String to, final IAsyncCallback<Boolean> callback) {
 
 		Runnable runnable = new Runnable() {
@@ -385,7 +385,7 @@ public class ChatUtils {
 									activity.runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
-											SurespotLog.v(TAG, "adding local ptt message %s", message);
+											SurespotLog.v(TAG, "adding local voice message %s", message);
 											chatController.addMessage(message);
 
 										}
@@ -399,7 +399,7 @@ public class ChatUtils {
 									return;
 								}
 
-								//TODO delete local ptt data
+								//TODO delete local voice data
 								new File(localImageUri).delete();
 								
 								

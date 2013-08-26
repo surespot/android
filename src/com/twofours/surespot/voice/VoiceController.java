@@ -33,7 +33,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class VoiceController {
-	private static final String TAG = "PTTController";
+	private static final String TAG = "VoiceController";
 
 	private static String mFileName = null;
 	private static String mUsername = null;
@@ -61,20 +61,20 @@ public class VoiceController {
 		mState = State.STARTED;
 		mEncoder = new AACEncoder();
 		mMediaPlayers = new HashMap<String, MediaPlayer>();
-		// mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-		// mFileName += "/audiorecordtest.m4a";
 	}
 
-	private void startRecording(Activity context) {
+	private synchronized void startRecording(Activity context) {
 		if (mState != State.STARTED)
 			return;
 
 		try {
-			/*
-			 * Intent intent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION); context.startActivityForResult(intent, 30);
-			 */
+			// MediaRecorder has major delay issues on gingerbread so we record raw PCM then convert natively to m4a
+			if (mFileName != null) {
+				new File(mFileName).delete();
+			}
 
-			mFileName = File.createTempFile("ptt_rec_", ".wav").getAbsolutePath();
+			// create a temp file to hold the uncompressed audio data
+			mFileName = File.createTempFile("voice", ".wav").getAbsolutePath();
 			SurespotLog.v(TAG, "recording to: %s", mFileName);
 
 			int i = 0;
@@ -89,19 +89,7 @@ public class VoiceController {
 			}
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
 
-			//
-			// mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, 8000, AudioFormat.CHANNEL_CONFIGURATION_MONO,
-			// AudioFormat.ENCODING_PCM_8BIT);
-			//
-			// mRecorder = new MediaRecorder();
-			// mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-			// mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-			// FileOutputStream fos = new FileOutputStream(mFileName);
-			// File file = new File(mFileName);
-			// file.setReadable(true, false);
 			mRecorder.setOutputFile(mFileName);
-			// fos.close();
-			// mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 			mRecorder.prepare();
 			mRecorder.start();
 			mState = State.RECORDING;
@@ -113,16 +101,15 @@ public class VoiceController {
 
 	}
 
-	private void stopRecordingInternal() {
+	private synchronized void stopRecordingInternal() {
 		// state must be RECORDING
 		if (mState != State.RECORDING)
 			return;
 		try {
 
 			mRecorder.stop();
-			// mRecorder.reset();
 			mRecorder.release();
-			// mRecorder = null;
+			mRecorder = null;
 			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
@@ -135,10 +122,10 @@ public class VoiceController {
 
 	private synchronized void startPlaying(final String path, final boolean delete) {
 		// see if we're already running
-
 		if (mMediaPlayers.containsKey(path)) {
 			return;
 		}
+
 		MediaPlayer mPlayer = new MediaPlayer();
 		mMediaPlayers.put(path, mPlayer);
 		try {
@@ -188,7 +175,7 @@ public class VoiceController {
 		mNetworkController = null;
 	}
 
-	public void startRecording(Activity context, String username) {
+	public synchronized void startRecording(Activity context, String username) {
 
 		if (!mRecording) {
 			mUsername = username;
@@ -199,38 +186,16 @@ public class VoiceController {
 
 	}
 
-	public void stopRecording() {
+	public synchronized void stopRecording() {
 		if (mRecording) {
 			stopRecordingInternal();
-			//
-			// new AsyncTask<Void, Void, Void>() {
-			// @Override
-			// protected Void doInBackground(Void... params) {
-			// try {
-			// Thread.sleep(250);
-			// }
-			// catch (InterruptedException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-			// return null;
-			// }
-			//
-			// @Override
-			// protected void onPostExecute(Void result) {
-			// startPlaying(mFileName, false);
-			// mRecording = false;
-			// }
-			// };
-
-			// startPlaying(mFileName, false);
 			mRecording = false;
-
 		}
 	}
 
-	public void sendPTT(Activity activity, IAsyncCallback<Boolean> callback) {
+	public synchronized void sendVoiceMessage(Activity activity, IAsyncCallback<Boolean> callback) {
 		// convert to AAC
+		// TODO bg thread?
 		FileInputStream fis;
 		try {
 			fis = new FileInputStream(mFileName);
@@ -242,35 +207,46 @@ public class VoiceController {
 			mEncoder.encode(Utils.inputStreamToBytes(fis));
 			mEncoder.uninit();
 
+			// delete raw pcm
+			new File(mFileName).delete();
+
+			// convert to m4a (gingerbread can't play the AAC for some bloody reason).
 			String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
 			new AACToM4A().convert(activity, outFile, m4aFile);
 
-			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
+			// delete aac
+			new File(outFile).delete();
 
-			ChatUtils.uploadPTTAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername, callback);
+			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
+			ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername, callback);
+
 		}
 
 		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			SurespotLog.w(TAG, e, "sendVoiceMessage");
 		}
 
 	}
 
-	public void playPTT(final SurespotMessage message) {
+	public void playVoiceMessage(final SurespotMessage message) {
 		final File tempFile;
 		try {
-			// create temp file to save un-encrypted data to (MediaPlayer can't stream from uh a Stream (InputStream) for some ass backwards reason.)
+			// create temp file to save un-encrypted audio data to (MediaPlayer can't stream from uh a Stream (InputStream) for some ass backwards reason).
 			tempFile = File.createTempFile("sound", ".m4a");
 		}
 		catch (IOException e) {
-			SurespotLog.w(TAG, e, "playPTT");
+			// TODO tell user
+			SurespotLog.w(TAG, e, "playVoiceMessage");
 			return;
 		}
 		// download and decrypt
 		new AsyncTask<Void, Void, Boolean>() {
 			@Override
 			protected Boolean doInBackground(Void... params) {
+				// TODO in-memory cache of decrypted voice messages
+
+				// Hopefully this is cached
+				// TODO - progress
 				InputStream imageStream = mNetworkController.getFileStream(MainActivity.getContext(), message.getData());
 
 				PipedOutputStream out = new PipedOutputStream();
@@ -293,11 +269,11 @@ public class VoiceController {
 				}
 				catch (InterruptedIOException ioe) {
 
-					SurespotLog.w(TAG, ioe, "playPTT");
+					SurespotLog.w(TAG, ioe, "playVoiceMessage");
 
 				}
 				catch (IOException e) {
-					SurespotLog.w(TAG, e, "playPTT");
+					SurespotLog.w(TAG, e, "playVoiceMessage");
 				}
 				return false;
 			}
@@ -305,6 +281,7 @@ public class VoiceController {
 			@Override
 			protected void onPostExecute(Boolean result) {
 				if (result) {
+					// fuck me it worked lets play it
 					startPlaying(tempFile.getAbsolutePath(), true);
 				}
 			}

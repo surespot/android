@@ -603,7 +603,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							@Override
 							public void run() {
 								mPTTController.stopRecording();
-								mPTTController.sendPTT(MainActivity.this, new IAsyncCallback<Boolean>() {
+								mPTTController.sendVoiceMessage(MainActivity.this, new IAsyncCallback<Boolean>() {
 
 									@Override
 									public void handleResponse(Boolean result) {
