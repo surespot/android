@@ -19,6 +19,8 @@ import android.media.MediaRecorder.AudioSource;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import com.todoroo.aacenc.AACEncoder;
+import com.todoroo.aacenc.AACToM4A;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
@@ -230,12 +232,19 @@ public class VoiceController {
 			encoder.init(16000, 1, 44100, 16, outFile);
 
 			encoder.encode(Utils.inputStreamToBytes(fis));
+			encoder.uninit();			
+			
+			String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
+			new AACToM4A().convert(activity, outFile, m4aFile);
+			
 
 			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
 
-			encoder.uninit();
 
-			ChatUtils.uploadPTTAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(outFile)), mUsername, callback);
+			
+		     
+
+			ChatUtils.uploadPTTAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername, callback);
 		}
 
 		catch (IOException e) {
