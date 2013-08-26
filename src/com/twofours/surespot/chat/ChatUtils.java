@@ -325,17 +325,17 @@ public class ChatUtils {
 
 	@SuppressWarnings("resource")
 	public static void uploadVoiceMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
-			final Uri imageUri, final String to, final IAsyncCallback<Boolean> callback) {
+			final Uri audioUri, final String to, final IAsyncCallback<Boolean> callback) {
 
 		Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				SurespotLog.v(TAG, "uploadPictureMessageAsync");
+				SurespotLog.v(TAG, "uploadVoiceMessageAsync");
 				try {
 					InputStream dataStream = null;
 
-					dataStream = activity.getContentResolver().openInputStream(imageUri);
+					dataStream = activity.getContentResolver().openInputStream(audioUri);
 
 					if (dataStream != null) {
 
@@ -348,7 +348,7 @@ public class ChatUtils {
 						final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
 								encryptionOutputStream);
 
-						// save encrypted image locally until we receive server confirmation
+						// save encrypted audio locally until we receive server confirmation
 						String localImageDir = FileUtils.getImageUploadDir(activity);
 						new File(localImageDir).mkdirs();
 
@@ -399,8 +399,6 @@ public class ChatUtils {
 									return;
 								}
 
-								//TODO delete local voice data
-								new File(localImageUri).delete();
 								
 								
 								// upload encrypted image to server
@@ -413,6 +411,8 @@ public class ChatUtils {
 									callback.handleResponse(false);
 									return;
 								}
+								
+								
 
 								networkController.postImageStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
 										new IAsyncCallback<Boolean>() {

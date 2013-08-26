@@ -193,7 +193,7 @@ public class VoiceController {
 		}
 	}
 
-	public synchronized void sendVoiceMessage(Activity activity, IAsyncCallback<Boolean> callback) {
+	public synchronized void sendVoiceMessage(Activity activity, final IAsyncCallback<Boolean> callback) {
 		// convert to AAC
 		// TODO bg thread?
 		FileInputStream fis;
@@ -211,14 +211,28 @@ public class VoiceController {
 			new File(mFileName).delete();
 
 			// convert to m4a (gingerbread can't play the AAC for some bloody reason).
-			String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
+			final String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
 			new AACToM4A().convert(activity, outFile, m4aFile);
 
 			// delete aac
 			new File(outFile).delete();
 
 			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
-			ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername, callback);
+			ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername,
+					new IAsyncCallback<Boolean>() {
+
+						@Override
+						public void handleResponse(Boolean result) {
+							if (result) {
+								// delete m4a
+								new File(m4aFile).delete();
+							}
+
+							if (callback != null) {
+								callback.handleResponse(result);
+							}
+						}
+					});
 
 		}
 
