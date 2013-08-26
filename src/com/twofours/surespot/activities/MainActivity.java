@@ -585,7 +585,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					Friend friend = mCurrentFriend;
 					if (friend != null) {
 						if (!mChatController.isFriendDeleted(friend.getName())) {
-							mPTTController.startRecording(friend.getName());
+							mPTTController.startRecording(MainActivity.this, friend.getName());
 						}
 
 					}

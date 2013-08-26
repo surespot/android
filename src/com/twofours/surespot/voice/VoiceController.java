@@ -11,9 +11,10 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 import android.app.Activity;
+import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaRecorder;
+import android.media.MediaRecorder.AudioSource;
 import android.net.Uri;
 import android.os.AsyncTask;
 
@@ -33,7 +34,7 @@ public class VoiceController {
 	private static String mFileName = null;
 	private static String mUsername = null;
 
-	private MediaRecorder mRecorder = null;
+	private RehearsalAudioRecorder mRecorder = null;
 
 	private MediaPlayer mPlayer = null;
 
@@ -41,29 +42,63 @@ public class VoiceController {
 	private NetworkController mNetworkController;
 	boolean mRecording = false;
 
+	enum State {
+		INITIALIZING, READY, STARTED, RECORDING
+	};
+
+	private final static int[]sampleRates = { 44100, 8000, 11025, 22050, 44100 } ;
+
+	private State mState;
+
 	public VoiceController(ChatController chatController, NetworkController networkController) {
 		mChatController = chatController;
 		mNetworkController = networkController;
+		mState = State.STARTED;
 		// mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
 		// mFileName += "/audiorecordtest.m4a";
 	}
 
-	private void startRecording() {
+	private void startRecording(Activity context) {
+		if (mState != State.STARTED)
+			return;
 
 		try {
-			mFileName = File.createTempFile("ptt_rec_", ".m4a").getAbsolutePath();
+			/*
+			 * Intent intent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION); context.startActivityForResult(intent, 30);
+			 */
+
+			mFileName = File.createTempFile("ptt_rec_", ".wav").getAbsolutePath();
 			SurespotLog.v(TAG, "recording to: %s", mFileName);
-			mRecorder = new MediaRecorder();
-			mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-			mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-			//FileOutputStream fos = new FileOutputStream(mFileName);
+
+			int i = 0;
+			int sampleRate = 8000;
+
+			do {
+				if (mRecorder != null)
+					mRecorder.release();				
+				sampleRate = sampleRates[i];
+				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+						AudioFormat.ENCODING_PCM_16BIT);
+			}
+			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
+
+			//
+			// mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, 8000, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+			// AudioFormat.ENCODING_PCM_8BIT);
+			//
+			// mRecorder = new MediaRecorder();
+			// mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+			// mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+			// FileOutputStream fos = new FileOutputStream(mFileName);
 			// File file = new File(mFileName);
 			// file.setReadable(true, false);
 			mRecorder.setOutputFile(mFileName);
-			//fos.close();
-			mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+			// fos.close();
+			// mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 			mRecorder.prepare();
 			mRecorder.start();
+			mState = State.RECORDING;
+			Utils.makeToast(context, "sample rate: " + sampleRate);
 		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "prepare() failed");
@@ -72,16 +107,21 @@ public class VoiceController {
 	}
 
 	private void stopRecordingInternal() {
+		// state must be RECORDING
+		if (mState != State.RECORDING)
+			return;
 		try {
+
 			mRecorder.stop();
-			mRecorder.reset();
+			// mRecorder.reset();
 			mRecorder.release();
-			mRecorder = null;
+		//	mRecorder = null;
+			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
 
 		}
-		
+
 	}
 
 	private void startPlaying(final String path, final boolean delete) {
@@ -99,7 +139,7 @@ public class VoiceController {
 				@Override
 				public void onCompletion(MediaPlayer mp) {
 
-					//mp.
+					// mp.
 					stopPlaying(path, delete);
 				}
 			});
@@ -134,11 +174,11 @@ public class VoiceController {
 		mNetworkController = null;
 	}
 
-	public void startRecording(String username) {
+	public void startRecording(Activity context, String username) {
 
 		if (!mRecording) {
 			mUsername = username;
-			startRecording();
+			startRecording(context);
 
 			mRecording = true;
 		}
@@ -148,28 +188,28 @@ public class VoiceController {
 	public void stopRecording() {
 		if (mRecording) {
 			stopRecordingInternal();
-//
-//			new AsyncTask<Void, Void, Void>() {
-//				@Override
-//				protected Void doInBackground(Void... params) {
-//					try {
-//						Thread.sleep(250);
-//					}
-//					catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					return null;
-//				}
-//
-//				@Override
-//				protected void onPostExecute(Void result) {
-//					startPlaying(mFileName, false);
-//					mRecording = false;
-//				}
-//			};
+			//
+			// new AsyncTask<Void, Void, Void>() {
+			// @Override
+			// protected Void doInBackground(Void... params) {
+			// try {
+			// Thread.sleep(250);
+			// }
+			// catch (InterruptedException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
+			// return null;
+			// }
+			//
+			// @Override
+			// protected void onPostExecute(Void result) {
+			// startPlaying(mFileName, false);
+			// mRecording = false;
+			// }
+			// };
 
-			//startPlaying(mFileName, false);
+			// startPlaying(mFileName, false);
 			mRecording = false;
 
 		}
