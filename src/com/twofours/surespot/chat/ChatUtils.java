@@ -105,7 +105,6 @@ public class ChatUtils {
 		return chatMessage;
 	}
 
-	@SuppressWarnings("resource")
 	public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
 			final Uri imageUri, final String to, final boolean scale, final IAsyncCallback<Boolean> callback) {
 
@@ -323,7 +322,6 @@ public class ChatUtils {
 
 	}
 
-	@SuppressWarnings("resource")
 	public static void uploadVoiceMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
 			final Uri audioUri, final String to, final IAsyncCallback<Boolean> callback) {
 
@@ -394,7 +392,7 @@ public class ChatUtils {
 								}
 
 								catch (IOException e) {
-									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+									SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
 									callback.handleResponse(false);
 									return;
 								}
@@ -407,7 +405,7 @@ public class ChatUtils {
 									uploadStream = new FileInputStream(localImageFile);
 								}
 								catch (FileNotFoundException e) {
-									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+									SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
 									callback.handleResponse(false);
 									return;
 								}
@@ -419,7 +417,7 @@ public class ChatUtils {
 
 											@Override
 											public void handleResponse(Boolean result) {
-												// if it failed update the message
+												// if it failed update the message error status
 												SurespotLog.v(TAG, "postFileStream complete, result: %b", result);
 												if (!result) {
 													ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
