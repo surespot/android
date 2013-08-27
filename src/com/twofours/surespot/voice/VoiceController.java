@@ -21,8 +21,8 @@ import android.os.AsyncTask;
 
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -262,31 +262,47 @@ public class VoiceController {
 			@Override
 			protected Boolean doInBackground(Void... params) {
 				byte[] soundbytes = message.getPlainBinaryData();
+				// TODO - progress
 
 				if (soundbytes == null) {
-					// TODO - progress
-					byte[] voiceData = ChatUtils.base64DecodeNowrap(message.getData());
-					InputStream voiceStream = new ByteArrayInputStream(voiceData);
-
-					PipedOutputStream out = new PipedOutputStream();
-					PipedInputStream inputStream;
-					try {
-						inputStream = new PipedInputStream(out);
-
-						EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
-								voiceStream, out);
-
-						soundbytes = Utils.inputStreamToBytes(inputStream);
+					// see if the data has been sent to us inline
+					InputStream voiceStream = null;
+					if (message.getInlineData() == null) {
+						SurespotLog.v(TAG, "getting voice stream from cloud");
+						voiceStream = mNetworkController.getFileStream(MainActivity.getContext(), message.getData());
 
 					}
-					catch (InterruptedIOException ioe) {
-
-						SurespotLog.w(TAG, ioe, "playVoiceMessage");
+					else {
+						SurespotLog.v(TAG, "getting voice stream from inlineData");
+						voiceStream = new ByteArrayInputStream(message.getInlineData());
 
 					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "playVoiceMessage");
+
+					if (voiceStream != null) {
+
+						PipedOutputStream out = new PipedOutputStream();
+						PipedInputStream inputStream;
+						try {
+							inputStream = new PipedInputStream(out);
+
+							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
+									voiceStream, out);
+
+							soundbytes = Utils.inputStreamToBytes(inputStream);
+
+						}
+						catch (InterruptedIOException ioe) {
+
+							SurespotLog.w(TAG, ioe, "playVoiceMessage");
+
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "playVoiceMessage");
+						}
 					}
+				}
+				else {
+					SurespotLog.v(TAG, "getting voice stream from cache");
 				}
 				if (soundbytes != null) {
 					FileOutputStream fos;
@@ -299,7 +315,7 @@ public class VoiceController {
 
 						return true;
 
-					}					
+					}
 					catch (IOException e) {
 						SurespotLog.w(TAG, e, "playVoiceMessage");
 					}

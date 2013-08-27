@@ -76,10 +76,7 @@ public class ChatUtils {
 	public static SurespotMessage buildPlainMessage(String to, String mimeType, CharSequence plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
-		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
-		// chatMessage.setToVersion(IdentityController.getTheirLatestVersion(to));
-		// chatMessage.setCipherData(cipherData);
 		chatMessage.setPlainData(plainData);
 		chatMessage.setIv(iv);
 
@@ -92,10 +89,7 @@ public class ChatUtils {
 	public static SurespotMessage buildPlainBinaryMessage(String to, String mimeType, byte[] plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
-		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
 		chatMessage.setTo(to);
-		// chatMessage.setToVersion(IdentityController.getTheirLatestVersion(to));
-		// chatMessage.setCipherData(cipherData);
 		chatMessage.setPlainBinaryData(plainData);
 		chatMessage.setIv(iv);
 

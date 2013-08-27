@@ -6,6 +6,8 @@ import java.util.Observable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.text.TextUtils;
+
 import com.twofours.surespot.common.SurespotLog;
 
 /**
@@ -21,6 +23,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private String mData;
 	private CharSequence mPlainData;
 	private byte[] mPlainBinaryData;
+	private byte[] mInlineData;
 	private Integer mId;
 	private Integer mResendId;
 	private int mErrorStatus;
@@ -73,7 +76,15 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	}
 
 	public void setPlainBinaryData(byte[] plainData) {
+		mPlainBinaryData = plainData;
+	}
 
+	public byte[] getInlineData() {
+		return mInlineData;
+	}
+
+	public void setInlineData(byte[] inlineData) {
+		mInlineData = inlineData;
 	}
 
 	public Integer getId() {
@@ -147,6 +158,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
+		
 		chatMessage.setGcm(jsonMessage.optBoolean("gcm", false));
 
 		Integer id = jsonMessage.optInt("id");
@@ -167,6 +179,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		long datetime = jsonMessage.optLong("datetime");
 		if (datetime > 0) {
 			chatMessage.setDateTime(new Date(datetime));
+		}
+		
+		//if we have inline data store the base64 decoded bytes
+		String inlineData = (jsonMessage.optString("inlineData"));
+		if (!TextUtils.isEmpty(inlineData)) {			
+			chatMessage.setInlineData(ChatUtils.base64DecodeNowrap(inlineData));
 		}
 
 		return chatMessage;

@@ -638,12 +638,15 @@ public class ChatController {
 						}
 						else {
 							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-								//if (!ChatUtils.isMyMessage(message)) {
-								//	final byte[] plainData = EncryptionController.symmetricDecryptBytes(message.getOurVersion(), message.getOtherUser(),
-								//			message.getTheirVersion(), message.getIv(), message.getData());
+								if (ChatUtils.isMyMessage(message)) {
+									handleLocalData(chatAdapter, message);
+								}
+								// if (!ChatUtils.isMyMessage(message)) {
+								// final byte[] plainData = EncryptionController.symmetricDecryptBytes(message.getOurVersion(), message.getOtherUser(),
+								// message.getTheirVersion(), message.getIv(), message.getData());
 
-								//	message.setPlainBinaryData(plainData);
-							//	}
+								// message.setPlainBinaryData(plainData);
+								// }
 
 							}
 							else {
@@ -784,6 +787,42 @@ public class ChatController {
 			catch (URISyntaxException e) {
 				SurespotLog.w(TAG, e, "handleMessage");
 			}
+
+		}
+	}
+
+	private void handleLocalData(ChatAdapter chatAdapter, SurespotMessage message) {
+		SurespotLog.v(TAG, "handleLocalData");
+		SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
+
+		// if the data is different we haven't updated the http cache with data we sent
+		if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData()) && localMessage.getInlineData() != null) {
+			// add the remote cache entry for the new url
+
+			byte[] imageData = localMessage.getInlineData();
+
+			String remoteUri = message.getData();
+			HeapResource resource = new HeapResource(imageData);
+			Date date = new Date();
+			String sDate = DateUtils.formatDate(date);
+
+			Header[] cacheHeaders = new Header[3];
+
+			// create fake cache entry
+			cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
+			cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
+			cacheHeaders[2] = new BasicHeader("Date", sDate);
+
+			HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
+
+			SurespotLog.v(TAG, "creating http cache entry for: %s", remoteUri);
+			mNetworkController.addCacheEntry(remoteUri, cacheEntry);
+
+			// update message to point to real location
+			localMessage.setData(remoteUri);
+
+			// clear out the inline data as we should still have the decrypted plain data
+			localMessage.setInlineData(null);
 
 		}
 	}
@@ -1366,8 +1405,15 @@ public class ChatController {
 				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
 				boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
-				if (myMessage && lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-					handleCachedFile(chatAdapter, lastMessage);
+				if (myMessage) {
+					if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+						handleCachedFile(chatAdapter, lastMessage);
+					}
+					else {
+						if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+							handleLocalData(chatAdapter, lastMessage);
+						}
+					}
 				}
 
 				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);
@@ -1822,8 +1868,8 @@ public class ChatController {
 
 	}
 
-	public void sendVoiceMessage(final String username, final byte[] plainText, final String mimeType) {
-		if (plainText.length > 0) {
+	public void sendVoiceMessage(final String username, final byte[] plainData, final String mimeType) {
+		if (plainData.length > 0) {
 			final ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (chatAdapter == null) {
 				return;
@@ -1833,7 +1879,7 @@ public class ChatController {
 
 			// build a message without the encryption values set as they could take a while
 
-			final SurespotMessage chatMessage = ChatUtils.buildPlainBinaryMessage(username, mimeType, plainText, new String(ChatUtils.base64EncodeNowrap(iv)));
+			final SurespotMessage chatMessage = ChatUtils.buildPlainBinaryMessage(username, mimeType, plainData, new String(ChatUtils.base64EncodeNowrap(iv)));
 
 			try {
 
@@ -1853,10 +1899,15 @@ public class ChatController {
 					String ourLatestVersion = IdentityController.getOurLatestVersion();
 					String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
 
-					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
+					byte[] result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainData, iv);
 
 					if (result != null) {
-						chatMessage.setData(result);
+
+						// set data for sending
+						chatMessage.setData(new String(ChatUtils.base64EncodeNowrap(result)));
+
+						// set data to copy to http cache on send callback
+						chatMessage.setInlineData(result);
 						chatMessage.setFromVersion(ourLatestVersion);
 						chatMessage.setToVersion(theirLatestVersion);
 

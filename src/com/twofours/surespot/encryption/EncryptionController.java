@@ -461,7 +461,7 @@ public class EncryptionController {
 		return null;
 	}
 
-	public static String symmetricEncrypt(final String ourVersion, final String username, final String theirVersion, final byte[] plainBytes, byte[] iv) {
+	public static byte[] symmetricEncrypt(final String ourVersion, final String username, final String theirVersion, final byte[] plainBytes, byte[] iv) {
 
 		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 		// byte[] iv = new byte[IV_LENGTH];
@@ -480,7 +480,7 @@ public class EncryptionController {
 			int len = ccm.processBytes(enc, 0, enc.length, buf, 0);
 
 			len += ccm.doFinal(buf, len);
-			return new String(ChatUtils.base64EncodeNowrap(buf));
+			return buf;
 
 		}
 		catch (InvalidCacheLoadException icle) {
