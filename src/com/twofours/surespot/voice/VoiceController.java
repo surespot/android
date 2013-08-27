@@ -1,6 +1,6 @@
 package com.twofours.surespot.voice;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,15 +17,14 @@ import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.AudioSource;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -218,21 +217,26 @@ public class VoiceController {
 			new File(outFile).delete();
 
 			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
-			ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername,
-					new IAsyncCallback<Boolean>() {
 
-						@Override
-						public void handleResponse(Boolean result) {
-							if (result) {
-								// delete m4a
-								new File(m4aFile).delete();
-							}
+			FileInputStream m4aStream = new FileInputStream(m4aFile);
 
-							if (callback != null) {
-								callback.handleResponse(result);
-							}
-						}
-					});
+			mChatController.sendVoiceMessage(mUsername, Utils.inputStreamToBytes(m4aStream), SurespotConstants.MimeTypes.M4A);
+
+			// ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername,
+			// new IAsyncCallback<Boolean>() {
+			//
+			// @Override
+			// public void handleResponse(Boolean result) {
+			// if (result) {
+			// // delete m4a
+			// new File(m4aFile).delete();
+			// }
+			//
+			// if (callback != null) {
+			// callback.handleResponse(result);
+			// }
+			// }
+			// });
 
 		}
 
@@ -257,38 +261,50 @@ public class VoiceController {
 		new AsyncTask<Void, Void, Boolean>() {
 			@Override
 			protected Boolean doInBackground(Void... params) {
-				// TODO in-memory cache of decrypted voice messages
+				byte[] soundbytes = message.getPlainBinaryData();
 
-				// Hopefully this is cached
-				// TODO - progress
-				InputStream imageStream = mNetworkController.getFileStream(MainActivity.getContext(), message.getData());
+				if (soundbytes == null) {
+					// TODO - progress
+					byte[] voiceData = ChatUtils.base64DecodeNowrap(message.getData());
+					InputStream voiceStream = new ByteArrayInputStream(voiceData);
 
-				PipedOutputStream out = new PipedOutputStream();
-				PipedInputStream inputStream;
-				try {
-					inputStream = new PipedInputStream(out);
+					PipedOutputStream out = new PipedOutputStream();
+					PipedInputStream inputStream;
+					try {
+						inputStream = new PipedInputStream(out);
 
-					EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
-							new BufferedInputStream(imageStream), out);
+						EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
+								voiceStream, out);
 
-					byte[] soundbytes = Utils.inputStreamToBytes(inputStream);
+						soundbytes = Utils.inputStreamToBytes(inputStream);
 
-					//
-					FileOutputStream fos = new FileOutputStream(tempFile);
-					fos.write(soundbytes);
-					fos.close();
+					}
+					catch (InterruptedIOException ioe) {
 
-					return true;
+						SurespotLog.w(TAG, ioe, "playVoiceMessage");
 
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "playVoiceMessage");
+					}
 				}
-				catch (InterruptedIOException ioe) {
+				if (soundbytes != null) {
+					FileOutputStream fos;
+					try {
+						fos = new FileOutputStream(tempFile);
+						fos.write(soundbytes);
+						fos.close();
 
-					SurespotLog.w(TAG, ioe, "playVoiceMessage");
+						message.setPlainBinaryData(soundbytes);
 
+						return true;
+
+					}					
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "playVoiceMessage");
+					}
 				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "playVoiceMessage");
-				}
+
 				return false;
 			}
 

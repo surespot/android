@@ -180,7 +180,7 @@ public class ChatController {
 					return;
 				}
 
-				SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: $d", mRetries);
+				SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
 
 				setOnWifi();
 				// kick off another task
@@ -638,37 +638,16 @@ public class ChatController {
 						}
 						else {
 							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-								if (ChatUtils.isMyMessage(message)) {
-									handleCachedFile(chatAdapter, message);
-								}
-								else {
+								//if (!ChatUtils.isMyMessage(message)) {
+								//	final byte[] plainData = EncryptionController.symmetricDecryptBytes(message.getOurVersion(), message.getOtherUser(),
+								//			message.getTheirVersion(), message.getIv(), message.getData());
 
-									// InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
-									// message.getData());
-									//
-									//
-									// PipedOutputStream out = new PipedOutputStream();
-									// PipedInputStream inputStream;
-									// try {
-									// inputStream = new PipedInputStream(out);
-									//
-									// EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-									// message.getIv(), new BufferedInputStream(imageStream), out);
-									//
-									//
-									// byte[] bytes = Utils.inputStreamToBytes(inputStream);
-									//
-									//
-									// }
-									// catch (InterruptedIOException ioe) {
-									//
-									// SurespotLog.w(TAG, ioe, "handleMessage");
-									//
-									// }
-									// catch (IOException e) {
-									// SurespotLog.w(TAG, e, "handleMessage");
-									// }
-								}
+								//	message.setPlainBinaryData(plainData);
+							//	}
+
+							}
+							else {
+								message.setPlainData("unknown message mime type");
 							}
 						}
 
@@ -694,7 +673,7 @@ public class ChatController {
 								friend.setLastViewedMessageId(messageId);
 
 								// if it was a voice message from the other user, play it
-								//TODO wrap in preference
+								// TODO wrap in preference
 								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 									VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
 									pttController.playVoiceMessage(message);
@@ -1793,6 +1772,68 @@ public class ChatController {
 
 			final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText), new String(
 					ChatUtils.base64EncodeNowrap(iv)));
+
+			try {
+
+				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
+				enqueueMessage(chatMessage);
+			}
+			catch (SurespotMessageSequenceException e) {
+				// not gonna happen
+				SurespotLog.v(TAG, e, "sendMessage");
+			}
+
+			// do encryption in background
+			new AsyncTask<Void, Void, Boolean>() {
+
+				@Override
+				protected Boolean doInBackground(Void... arg0) {
+					String ourLatestVersion = IdentityController.getOurLatestVersion();
+					String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
+
+					String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
+
+					if (result != null) {
+						chatMessage.setData(result);
+						chatMessage.setFromVersion(ourLatestVersion);
+						chatMessage.setToVersion(theirLatestVersion);
+
+						SurespotLog.v(TAG, "sending message to chat controller iv: %s", chatMessage.getIv());
+						sendMessages();
+						return true;
+					}
+					else {
+						SurespotLog.v(TAG, "could not encrypt message, iv: %s", chatMessage.getIv());
+						chatMessage.setErrorStatus(500);
+
+						return false;
+					}
+				}
+
+				protected void onPostExecute(Boolean success) {
+					// if success is false we will have set an error status in the message so notify
+					if (!success) {
+						chatAdapter.notifyDataSetChanged();
+					}
+				};
+
+			}.execute();
+		}
+
+	}
+
+	public void sendVoiceMessage(final String username, final byte[] plainText, final String mimeType) {
+		if (plainText.length > 0) {
+			final ChatAdapter chatAdapter = mChatAdapters.get(username);
+			if (chatAdapter == null) {
+				return;
+			}
+			// display the message immediately
+			final byte[] iv = EncryptionController.getIv();
+
+			// build a message without the encryption values set as they could take a while
+
+			final SurespotMessage chatMessage = ChatUtils.buildPlainBinaryMessage(username, mimeType, plainText, new String(ChatUtils.base64EncodeNowrap(iv)));
 
 			try {
 

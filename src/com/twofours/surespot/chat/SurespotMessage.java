@@ -20,6 +20,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private String mIv;
 	private String mData;
 	private CharSequence mPlainData;
+	private byte[] mPlainBinaryData;
 	private Integer mId;
 	private Integer mResendId;
 	private int mErrorStatus;
@@ -34,7 +35,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mLoaded;
 	private boolean mLoading;
 	private boolean mGcm;
-	
+
 	public String getFrom() {
 		return mFrom;
 	}
@@ -62,9 +63,17 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	public CharSequence getPlainData() {
 		return mPlainData;
 	}
+	
+	public byte[] getPlainBinaryData() {
+		return mPlainBinaryData;
+	}
 
 	public void setPlainData(CharSequence charSequence) {
 		mPlainData = charSequence;
+	}
+
+	public void setPlainBinaryData(byte[] plainData) {
+
 	}
 
 	public Integer getId() {
@@ -138,7 +147,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
-		chatMessage.setGcm(jsonMessage.optBoolean("gcm",false));
+		chatMessage.setGcm(jsonMessage.optBoolean("gcm", false));
 
 		Integer id = jsonMessage.optInt("id");
 		if (id > 0) {
@@ -149,7 +158,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		if (errorStatus > 0) {
 			chatMessage.setErrorStatus(errorStatus);
 		}
-		
+
 		Integer resendId = jsonMessage.optInt("resendId");
 		if (resendId > 0) {
 			chatMessage.setResendId(resendId);
@@ -176,7 +185,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("mimeType", this.getMimeType());
 			message.put("shareable", this.isShareable());
 			message.put("gcm", this.isGcm());
-			
+
 			if (this.getErrorStatus() > 0) {
 				message.put("errorStatus", this.getErrorStatus());
 			}
@@ -192,9 +201,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
-			
-			
-			
 
 			return message;
 		}
@@ -276,14 +282,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	public void setLoading(boolean loading) {
 		mLoading = loading;
 	}
-	
+
 	public boolean isGcm() {
 		return mGcm;
 	}
 
 	public void setGcm(boolean gcm) {
 		mGcm = gcm;
-	}	
+	}
 
 	public Date getDateTime() {
 		return mDateTime;
@@ -372,7 +378,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\tdata: " + getData() + "\n");
 		sb.append("\tplainData: " + getPlainData() + "\n");
 		sb.append("\tmimeType: " + getMimeType() + "\n");
-	//sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
+		// sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
 		sb.append("\tshareable: " + isShareable() + "\n");
 		sb.append("\terrorStatus: " + getErrorStatus() + "\n");
 		sb.append("\tresendId: " + getResendId() + "\n");

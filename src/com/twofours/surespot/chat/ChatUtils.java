@@ -88,6 +88,24 @@ public class ChatUtils {
 		chatMessage.setMimeType(mimeType);
 		return chatMessage;
 	}
+	
+	public static SurespotMessage buildPlainBinaryMessage(String to, String mimeType, byte[] plainData, String iv) {
+		SurespotMessage chatMessage = new SurespotMessage();
+		chatMessage.setFrom(IdentityController.getLoggedInUser());
+		// chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
+		chatMessage.setTo(to);
+		// chatMessage.setToVersion(IdentityController.getTheirLatestVersion(to));
+		// chatMessage.setCipherData(cipherData);
+		chatMessage.setPlainBinaryData(plainData);
+		chatMessage.setIv(iv);
+
+		// store the mime type outside teh encrypted envelope, this way we can offload resources
+		// by mime type
+		chatMessage.setMimeType(mimeType);
+		return chatMessage;
+	}
+
+	
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
