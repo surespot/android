@@ -56,9 +56,9 @@
         android:id="@+id/editTexts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/fEmoji"
+        android:layout_above="@+id/fEmoji"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_toLeftOf="@+id/bPTT"
+        android:layout_toLeftOf="@+id/bSend"
         android:layout_toRightOf="@+id/fButtons" >
 
         <EditText
@@ -102,16 +102,6 @@
         android:paddingLeft="10dp"
         android:paddingRight="20dp"
         android:text="@string/home"
-        android:textColor="@android:color/black" />
-
-    <Button
-        android:id="@+id/bPTT"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/fEmoji"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_toLeftOf="@id/bSend"
-        android:text="PTT"
         android:textColor="@android:color/black" />
 
     <GridView

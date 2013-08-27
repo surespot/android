@@ -491,12 +491,59 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				if (mEtMessage.getText().toString().length() == 0) {
-					mChatController.closeTab();
+				// if (mEtMessage.getText().toString().length() == 0) {
+				// mChatController.closeTab();
+				// }
+				SurespotLog.v(TAG, "onLongClick voice");
+				Friend friend = mCurrentFriend;
+				if (friend != null) {
+					if (!mChatController.isFriendDeleted(friend.getName())) {
+						mPTTController.startRecording(MainActivity.this, friend.getName());
+					}
+
 				}
+
 				return true;
 			}
 		});
+
+		mSendButton.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				
+
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+						
+					SurespotLog.v(TAG, "voice record up");
+			
+					
+					// truncates without the delay for some reason
+					mSendButton.post(new Runnable() {
+
+						@Override
+						public void run() {
+							mPTTController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
+
+								@Override
+								public void handleResponse(Boolean result) {
+									if (!result) {
+										Utils.makeToast(MainActivity.this, "error sending voice message");
+									}
+
+								}
+							});
+
+						}
+					});
+
+				
+				}
+
+				return false;
+			}
+		});
+
 		mEtMessage = (EditText) findViewById(R.id.etMessage);
 		mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
@@ -574,56 +621,55 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
-		mPTTButton = (Button) findViewById(R.id.bPTT);
-		mPTTButton.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				boolean handled = false;
-				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-					SurespotLog.v(TAG, "PTT Down");
-					Friend friend = mCurrentFriend;
-					if (friend != null) {
-						if (!mChatController.isFriendDeleted(friend.getName())) {
-							mPTTController.startRecording(MainActivity.this, friend.getName());
-						}
-
-					}
-
-					handled = true;
-				}
-				else {
-					if (event.getAction() == MotionEvent.ACTION_UP) {
-
-						SurespotLog.v(TAG, "PTT up");
-
-						// truncates without the delay for some reason
-						mPTTButton.postDelayed(new Runnable() {
-
-							@Override
-							public void run() {
-								mPTTController.stopRecording();
-								mPTTController.sendVoiceMessage(MainActivity.this, new IAsyncCallback<Boolean>() {
-
-									@Override
-									public void handleResponse(Boolean result) {
-										if (!result) {
-											Utils.makeToast(MainActivity.this, "error sending ptt message");
-										}
-
-									}
-								});
-
-							}
-						}, 250);
-
-						handled = true;
-					}
-				}
-
-				return handled;
-			}
-		});
+//		mPTTButton = (Button) findViewById(R.id.bPTT);
+//		mPTTButton.setOnTouchListener(new OnTouchListener() {
+//
+//			@Override
+//			public boolean onTouch(View v, MotionEvent event) {
+//				boolean handled = false;
+//				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//					SurespotLog.v(TAG, "PTT Down");
+//					Friend friend = mCurrentFriend;
+//					if (friend != null) {
+//						if (!mChatController.isFriendDeleted(friend.getName())) {
+//							mPTTController.startRecording(MainActivity.this, friend.getName());
+//						}
+//
+//					}
+//
+//					handled = true;
+//				}
+//				else {
+//					if (event.getAction() == MotionEvent.ACTION_UP) {
+//
+//						SurespotLog.v(TAG, "PTT up");
+//
+//						// truncates without the delay for some reason
+//						mPTTButton.postDelayed(new Runnable() {
+//
+//							@Override
+//							public void run() {
+//								mPTTController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
+//
+//									@Override
+//									public void handleResponse(Boolean result) {
+//										if (!result) {
+//											Utils.makeToast(MainActivity.this, "error sending ptt message");
+//										}
+//
+//									}
+//								});
+//
+//							}
+//						}, 250);
+//
+//						handled = true;
+//					}
+//				}
+//
+//				return handled;
+//			}
+//		});
 
 		// figure out the button sizes
 	}

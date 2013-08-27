@@ -92,7 +92,7 @@ public class VoiceController {
 			mRecorder.prepare();
 			mRecorder.start();
 			mState = State.RECORDING;
-			Utils.makeToast(context, "sample rate: " + sampleRate);
+			//Utils.makeToast(context, "sample rate: " + sampleRate);
 		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "prepare() failed");
@@ -177,22 +177,28 @@ public class VoiceController {
 	public synchronized void startRecording(Activity context, String username) {
 
 		if (!mRecording) {
+			
 			mUsername = username;
-			startRecording(context);
-
+			Utils.makeToast(context, "recording");
+			startRecording(context);			
 			mRecording = true;
 		}
 
 	}
 
-	public synchronized void stopRecording() {
+	public synchronized void stopRecording(Activity context, IAsyncCallback<Boolean> callback) {
 		if (mRecording) {
 			stopRecordingInternal();
+			sendVoiceMessage(context, callback);
+			Utils.makeToast(context, "encrypting and transmitting");
 			mRecording = false;
+		}
+		else {
+			callback.handleResponse(true);
 		}
 	}
 
-	public synchronized void sendVoiceMessage(Activity activity, final IAsyncCallback<Boolean> callback) {
+	private synchronized void sendVoiceMessage(Activity activity, final IAsyncCallback<Boolean> callback) {
 		// convert to AAC
 		// TODO bg thread?
 		FileInputStream fis;
