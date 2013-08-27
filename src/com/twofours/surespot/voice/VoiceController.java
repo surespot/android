@@ -11,6 +11,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.media.AudioFormat;
@@ -18,9 +20,11 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.AudioSource;
 import android.os.AsyncTask;
+import android.view.View;
 
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
+import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -42,8 +46,10 @@ public class VoiceController {
 	private ChatController mChatController;
 	private NetworkController mNetworkController;
 	private HashMap<String, MediaPlayer> mMediaPlayers;
-
+	TimerTask mCurrentTimeTask;
 	boolean mRecording = false;
+	
+	Timer mTimer;
 
 	enum State {
 		INITIALIZING, READY, STARTED, RECORDING
@@ -54,15 +60,54 @@ public class VoiceController {
 	private State mState;
 	private AACEncoder mEncoder;
 
+	private long mTimeAtStart;
+
 	public VoiceController(ChatController chatController, NetworkController networkController) {
 		mChatController = chatController;
 		mNetworkController = networkController;
 		mState = State.STARTED;
 		mEncoder = new AACEncoder();
 		mMediaPlayers = new HashMap<String, MediaPlayer>();
+		
+
+		
 	}
 
-	private synchronized void startRecording(Activity context) {
+	int getMaxAmplitude()
+	{
+		if(mRecorder == null || mState != State.RECORDING)
+			return 0;
+		return mRecorder.getMaxAmplitude();
+	}
+	
+	private void startTimer(final Activity activity) {
+		if (mTimer != null) {
+			mTimer.cancel();	
+			mTimer.purge();
+		}		
+		mTimer = new Timer();
+		mCurrentTimeTask = new TimerTask() {
+			public void run() {
+				activity.runOnUiThread(new Runnable() {
+					public void run() {
+						VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
+						if (mState == State.RECORDING) {
+							// mCurrentTime.setText(mSessionPlayback.playTimeFormatter().format(mRecordService.getTimeInRecording()));
+							// if(mVolumeEnvelopeEnabled)
+							mEnvelopeView.setNewVolume(getMaxAmplitude());
+							return;
+						}
+
+						mEnvelopeView.clearVolume();
+					}
+				});
+			}
+		};
+		mTimer.scheduleAtFixedRate(mCurrentTimeTask, 0, 100);
+		
+	}
+	
+	private synchronized void startRecording(final Activity activity) {
 		if (mState != State.STARTED)
 			return;
 
@@ -78,6 +123,8 @@ public class VoiceController {
 
 			int i = 0;
 			int sampleRate = 44100;
+			
+			
 
 			do {
 				if (mRecorder != null)
@@ -88,11 +135,16 @@ public class VoiceController {
 			}
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
 
+			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
+			mEnvelopeView.setVisibility(View.VISIBLE);
 			mRecorder.setOutputFile(mFileName);
 			mRecorder.prepare();
 			mRecorder.start();
+			
+			startTimer(activity);
+			//mTimeAtStart = new Date().getTime();
 			mState = State.RECORDING;
-			//Utils.makeToast(context, "sample rate: " + sampleRate);
+			// Utils.makeToast(context, "sample rate: " + sampleRate);
 		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "prepare() failed");
@@ -105,10 +157,16 @@ public class VoiceController {
 		if (mState != State.RECORDING)
 			return;
 		try {
-
+			
+			mTimer.cancel();
+			mTimer.purge();
+			mTimer = null;
+			mCurrentTimeTask = null;
 			mRecorder.stop();
 			mRecorder.release();
 			mRecorder = null;
+			
+			
 			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
@@ -177,20 +235,22 @@ public class VoiceController {
 	public synchronized void startRecording(Activity context, String username) {
 
 		if (!mRecording) {
-			
+
 			mUsername = username;
 			Utils.makeToast(context, "recording");
-			startRecording(context);			
+			startRecording(context);
 			mRecording = true;
 		}
 
 	}
 
-	public synchronized void stopRecording(Activity context, IAsyncCallback<Boolean> callback) {
+	public synchronized void stopRecording(Activity activity, IAsyncCallback<Boolean> callback) {
 		if (mRecording) {
 			stopRecordingInternal();
-			sendVoiceMessage(context, callback);
-			Utils.makeToast(context, "encrypting and transmitting");
+			sendVoiceMessage(activity, callback);
+			Utils.makeToast(activity, "encrypting and transmitting");
+			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
+			mEnvelopeView.setVisibility(View.GONE);
 			mRecording = false;
 		}
 		else {

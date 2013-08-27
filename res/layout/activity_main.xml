@@ -119,4 +119,21 @@
         android:visibility="gone" >
     </GridView>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="#88000000" >
+
+        <com.twofours.surespot.voice.VolumeEnvelopeView
+            android:id="@+id/volume_envelope"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:background="#BB000000"
+            android:visibility="gone"
+            app:color="@color/surespotBlue" />
+    </FrameLayout>
+
 </com.twofours.surespot.chat.MainActivityLayout>

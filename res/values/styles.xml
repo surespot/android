@@ -30,4 +30,8 @@
         <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
     </style>
 
+    <declare-styleable name="VolumeEnvelopeView">
+        <attr name="color" format="color" />
+    </declare-styleable>
+
 </resources>
