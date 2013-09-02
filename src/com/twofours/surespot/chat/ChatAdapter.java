@@ -258,7 +258,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			chatMessageViewHolder.imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-			chatMessageViewHolder.pttView =  convertView.findViewById(R.id.messagePTT);
+			chatMessageViewHolder.voiceView =  convertView.findViewById(R.id.messageVoice);
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 
@@ -308,7 +308,7 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.pttView.setVisibility(View.GONE);
+			chatMessageViewHolder.voiceView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
 			chatMessageViewHolder.imageView.setImageBitmap(null);
@@ -326,7 +326,7 @@ public class ChatAdapter extends BaseAdapter {
 		else {
 			if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 				chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
-				chatMessageViewHolder.pttView.setVisibility(View.GONE);
+				chatMessageViewHolder.voiceView.setVisibility(View.GONE);
 				chatMessageViewHolder.tvText.clearAnimation();
 				chatMessageViewHolder.tvText.setVisibility(View.GONE);
 				chatMessageViewHolder.tvText.setText("");
@@ -346,7 +346,7 @@ public class ChatAdapter extends BaseAdapter {
 			else {
 				if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					chatMessageViewHolder.imageView.setVisibility(View.GONE);
-					chatMessageViewHolder.pttView.setVisibility(View.VISIBLE);
+					chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
 					chatMessageViewHolder.tvText.clearAnimation();
 					chatMessageViewHolder.tvText.setVisibility(View.GONE);
 					chatMessageViewHolder.tvText.setText("");
@@ -401,7 +401,7 @@ public class ChatAdapter extends BaseAdapter {
 		public ImageView ivShareable;
 		public ImageView ivNotShareable;
 		public int type;
-		public View pttView;
+		public View voiceView;
 
 	}
 

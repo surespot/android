@@ -1,14 +1,8 @@
 package com.twofours.surespot.voice;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
@@ -16,22 +10,18 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.media.AudioFormat;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.AudioSource;
-import android.os.AsyncTask;
 import android.view.View;
+import android.widget.SeekBar;
 
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
@@ -45,10 +35,10 @@ public class VoiceController {
 
 	private ChatController mChatController;
 	private NetworkController mNetworkController;
-	private HashMap<String, MediaPlayer> mMediaPlayers;
+	private HashMap<String, VoiceMessageContainer> mMediaPlayers;
 	TimerTask mCurrentTimeTask;
 	boolean mRecording = false;
-	
+
 	Timer mTimer;
 
 	enum State {
@@ -67,24 +57,21 @@ public class VoiceController {
 		mNetworkController = networkController;
 		mState = State.STARTED;
 		mEncoder = new AACEncoder();
-		mMediaPlayers = new HashMap<String, MediaPlayer>();
-		
+		mMediaPlayers = new HashMap<String, VoiceMessageContainer>();
 
-		
 	}
 
-	int getMaxAmplitude()
-	{
-		if(mRecorder == null || mState != State.RECORDING)
+	int getMaxAmplitude() {
+		if (mRecorder == null || mState != State.RECORDING)
 			return 0;
 		return mRecorder.getMaxAmplitude();
 	}
-	
+
 	private void startTimer(final Activity activity) {
 		if (mTimer != null) {
-			mTimer.cancel();	
+			mTimer.cancel();
 			mTimer.purge();
-		}		
+		}
 		mTimer = new Timer();
 		mCurrentTimeTask = new TimerTask() {
 			public void run() {
@@ -104,9 +91,9 @@ public class VoiceController {
 			}
 		};
 		mTimer.scheduleAtFixedRate(mCurrentTimeTask, 0, 100);
-		
+
 	}
-	
+
 	private synchronized void startRecording(final Activity activity) {
 		if (mState != State.STARTED)
 			return;
@@ -123,8 +110,6 @@ public class VoiceController {
 
 			int i = 0;
 			int sampleRate = 44100;
-			
-			
 
 			do {
 				if (mRecorder != null)
@@ -140,9 +125,9 @@ public class VoiceController {
 			mRecorder.setOutputFile(mFileName);
 			mRecorder.prepare();
 			mRecorder.start();
-			
+
 			startTimer(activity);
-			//mTimeAtStart = new Date().getTime();
+			// mTimeAtStart = new Date().getTime();
 			mState = State.RECORDING;
 			// Utils.makeToast(context, "sample rate: " + sampleRate);
 		}
@@ -157,7 +142,7 @@ public class VoiceController {
 		if (mState != State.RECORDING)
 			return;
 		try {
-			
+
 			mTimer.cancel();
 			mTimer.purge();
 			mTimer = null;
@@ -165,8 +150,7 @@ public class VoiceController {
 			mRecorder.stop();
 			mRecorder.release();
 			mRecorder = null;
-			
-			
+
 			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
@@ -177,43 +161,22 @@ public class VoiceController {
 
 	// Play unencrypted audio file from path and optionally delete it
 
-	private synchronized void startPlaying(final String path, final boolean delete) {
-		// see if we're already running
-		if (mMediaPlayers.containsKey(path)) {
-			return;
+	private synchronized void startPlaying(final SeekBar seekBar, final SurespotMessage message, final boolean delete) {
+		VoiceMessageContainer vmc = mMediaPlayers.get(message.getIv());
+		if (vmc != null) {
+			vmc.attachSeekBar(seekBar);
+			vmc.play(0);
+			
 		}
-
-		MediaPlayer mPlayer = new MediaPlayer();
-		mMediaPlayers.put(path, mPlayer);
-		try {
-			mPlayer.setDataSource(path);
-			mPlayer.prepare();
-			mPlayer.start();
-			mPlayer.setOnCompletionListener(new OnCompletionListener() {
-
-				@Override
-				public void onCompletion(MediaPlayer mp) {
-
-					stopPlaying(path, delete);
-				}
-			});
-		}
-		catch (IOException e) {
-			SurespotLog.e(TAG, e, "prepare() failed");
-		}
-	}
-
-	private synchronized void stopPlaying(String path, boolean delete) {
-		MediaPlayer mp = mMediaPlayers.remove(path);
-		mp.stop();
-		mp.release();
-		mp = null;
-
-		if (delete) {
-			new File(path).delete();
+		else {
+			vmc = new VoiceMessageContainer(mNetworkController, message);
+			vmc.attachSeekBar(seekBar);
+			mMediaPlayers.put(message.getIv(), vmc);
+			vmc.play(0);
 		}
 
 	}
+
 
 	public synchronized void destroy() {
 		if (mRecorder != null) {
@@ -221,15 +184,16 @@ public class VoiceController {
 			mRecorder = null;
 		}
 
-		for (MediaPlayer mp : mMediaPlayers.values()) {
-			mp.stop();
-			mp.release();
+		for (VoiceMessageContainer mp : mMediaPlayers.values()) {
+		//	mp.stop();
+		//	mp.release();
 		}
 
 		mMediaPlayers.clear();
 
 		mChatController = null;
 		mNetworkController = null;
+		
 	}
 
 	public synchronized void startRecording(Activity context, String username) {
@@ -312,92 +276,7 @@ public class VoiceController {
 
 	}
 
-	public void playVoiceMessage(final SurespotMessage message) {
-		final File tempFile;
-		try {
-			// create temp file to save un-encrypted audio data to (MediaPlayer can't stream from uh a Stream (InputStream) for some ass backwards reason).
-			tempFile = File.createTempFile("sound", ".m4a");
-		}
-		catch (IOException e) {
-			// TODO tell user
-			SurespotLog.w(TAG, e, "playVoiceMessage");
-			return;
-		}
-		// download and decrypt
-		new AsyncTask<Void, Void, Boolean>() {
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				byte[] soundbytes = message.getPlainBinaryData();
-				// TODO - progress
-
-				if (soundbytes == null) {
-					// see if the data has been sent to us inline
-					InputStream voiceStream = null;
-					if (message.getInlineData() == null) {
-						SurespotLog.v(TAG, "getting voice stream from cloud");
-						voiceStream = mNetworkController.getFileStream(MainActivity.getContext(), message.getData());
-
-					}
-					else {
-						SurespotLog.v(TAG, "getting voice stream from inlineData");
-						voiceStream = new ByteArrayInputStream(message.getInlineData());
-
-					}
-
-					if (voiceStream != null) {
-
-						PipedOutputStream out = new PipedOutputStream();
-						PipedInputStream inputStream;
-						try {
-							inputStream = new PipedInputStream(out);
-
-							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
-									voiceStream, out);
-
-							soundbytes = Utils.inputStreamToBytes(inputStream);
-
-						}
-						catch (InterruptedIOException ioe) {
-
-							SurespotLog.w(TAG, ioe, "playVoiceMessage");
-
-						}
-						catch (IOException e) {
-							SurespotLog.w(TAG, e, "playVoiceMessage");
-						}
-					}
-				}
-				else {
-					SurespotLog.v(TAG, "getting voice stream from cache");
-				}
-				if (soundbytes != null) {
-					FileOutputStream fos;
-					try {
-						fos = new FileOutputStream(tempFile);
-						fos.write(soundbytes);
-						fos.close();
-
-						message.setPlainBinaryData(soundbytes);
-
-						return true;
-
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "playVoiceMessage");
-					}
-				}
-
-				return false;
-			}
-
-			@Override
-			protected void onPostExecute(Boolean result) {
-				if (result) {
-					// fuck me it worked lets play it
-					startPlaying(tempFile.getAbsolutePath(), true);
-				}
-			}
-		}.execute();
-
+	public void playVoiceMessage(final SeekBar seekBar, final SurespotMessage message) {
+		startPlaying(seekBar, message, true);
 	}
 }

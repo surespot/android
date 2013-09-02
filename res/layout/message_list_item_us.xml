@@ -35,7 +35,7 @@
     </View>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
@@ -97,18 +97,29 @@
             android:scaleType="centerCrop"
             android:visibility="gone" />
 
-        <ImageView
-            android:id="@+id/messagePTT"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/messageVoice"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="left"
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2sp"
-            android:adjustViewBounds="false"
-            android:src="@android:drawable/ic_media_play"
-            android:scaleType="centerCrop"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:visibility="gone" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="false"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_media_play" />
+
+            <SeekBar
+                android:id="@+id/seekBarVoice"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/messageMimeType"

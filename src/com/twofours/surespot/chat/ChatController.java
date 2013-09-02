@@ -679,7 +679,7 @@ public class ChatController {
 								// TODO wrap in preference
 								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 									VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
-									pttController.playVoiceMessage(message);
+									pttController.playVoiceMessage(null, message);
 								}
 							}
 							else {

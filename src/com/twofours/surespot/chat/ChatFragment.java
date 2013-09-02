@@ -12,6 +12,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
@@ -100,8 +101,10 @@ public class ChatFragment extends SherlockFragment {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 							
 							VoiceController pttController = getMainActivity().getPTTController();
-							pttController.playVoiceMessage(message);
-//							ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
+							SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
+							
+							pttController.playVoiceMessage(seekBar, message);
+
 //							if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
 //
 //								Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);

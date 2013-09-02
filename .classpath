@@ -26,7 +26,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ImageViewTouch"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SSLWebSocket"/>
-	<classpathentry excluding="com/twofours/surespot/activities/StartupActivity.java|com/twofours/surespot/chat/ChatActivity.java|com/twofours/surespot/friends/FriendActivity.java" kind="src" path="src"/>
+	<classpathentry excluding="com/twofours/surespot/activities/StartupActivity.java|com/twofours/surespot/chat/ChatActivity.java|com/twofours/surespot/friends/FriendActivity.java|com/twofours/surespot/voice/VoiceMessagePlayer.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/aac-enc"/>
 	<classpathentry kind="output" path="bin/classes"/>
