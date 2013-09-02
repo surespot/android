@@ -134,26 +134,30 @@ public class VoiceMessageContainer {
 		try {
 			if (mPlayer == null) {
 
+				mSeekBarThread = new SeekBarThread();
 				mPlayer = new MediaPlayer();
-
+				mPlayer.setDataSource(path);
+				mPlayer.prepare();
 			}
 			else {
-				mPlayer.reset();
+				// mPlayer.reset();
 			}
-			mPlayer.setDataSource(path);
-			mPlayer.prepare();
-			mPlayer.seekTo(progress);
-			mSeekBarThread = new SeekBarThread();
+
+			if (progress > 0) {
+				mPlayer.seekTo(progress);
+			}
+			
 			new Thread(mSeekBarThread).start();
+			mPlayer.start();
+
 			mPlayer.setOnCompletionListener(new OnCompletionListener() {
 
 				@Override
 				public void onCompletion(MediaPlayer mp) {
 
-					playCompleted();
+					// playCompleted();
 				}
-			});			
-			mPlayer.start();
+			});
 
 		}
 		catch (IOException e) {
@@ -164,7 +168,6 @@ public class VoiceMessageContainer {
 
 	public void attachSeekBar(SeekBar seekBar) {
 		this.mSeekBar = seekBar;
-		// this.mVoiceController = mediaPlayer;
 
 	}
 
@@ -183,7 +186,7 @@ public class VoiceMessageContainer {
 	}
 
 	private void playCompleted() {
-		mSeekBarThread.stop();
+		mSeekBarThread.completed();
 	}
 
 	private class SeekBarThread implements Runnable {
@@ -192,29 +195,35 @@ public class VoiceMessageContainer {
 		@Override
 		public void run() {
 			try {
-
-				mSeekBar.setMax(mPlayer.getDuration());
+				mRun = true;
+				mSeekBar.setMax(100);
 				mSeekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
 				while (mRun) {
 
 					int currentPosition = mPlayer.getCurrentPosition();
 					int duration = mPlayer.getDuration();
-					SurespotLog.v(TAG, "SeekBarThread, currentPosition: %d, duration: %d", currentPosition, duration);
+					int progress = (int) (((float) currentPosition / (float) duration) * 101);
+					SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", this, currentPosition, duration, progress);
+					if (progress < 0)
+						progress = 0;
+					if (progress > 90)
+						progress = 100;
+
 					if (currentPosition < duration) {
-						mSeekBar.setProgress(currentPosition);
+						mSeekBar.setProgress(progress);
 
 					}
 					else {
 						mSeekBar.setProgress(0);
 					}
 					try {
-						Thread.sleep(250);
+						Thread.sleep(100);
 					}
 					catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					if (!mPlayer.isPlaying()) {
-						stop();
+					if (progress == 100) {
+						completed();
 					}
 				}
 			}
@@ -223,9 +232,10 @@ public class VoiceMessageContainer {
 			}
 		}
 
-		public void stop() {
+		public void completed() {
+			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
-			mSeekBar.setProgress(0);
+			mSeekBar.setProgress(100);
 		}
 	}
 
@@ -235,15 +245,19 @@ public class VoiceMessageContainer {
 		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
 			if (fromTouch) {
 				SurespotLog.v(TAG, "onProgressChanged, progress: %d", progress);
+				int time = (int) (mPlayer.getDuration() * (float) progress / 101);
 				// if (mVoiceController.)
-				
+
 				if (mPlayer.isPlaying()) {
-					mPlayer.seekTo(progress);
+					SurespotLog.v(TAG, "onProgressChanged,  seekingTo: %d", progress);
+					mPlayer.seekTo(time);
+					
 				}
 				else {
-					play(progress);
-					
-				}				
+					SurespotLog.v(TAG, "onProgressChanged,  playing from: %d", progress);
+					play(time);
+
+				}
 			}
 		}
 
