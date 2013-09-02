@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.lang.ref.WeakReference;
 
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -24,7 +25,8 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
 public class VoiceMessageContainer {
-	private SeekBar mSeekBar;
+	private WeakReference<SeekBar> mSeekBarReference;
+	// private SeekBar mSeekBar;
 	private MediaPlayer mPlayer;
 	private SurespotMessage mMessage;
 	private static final String TAG = "VoiceMessageContainer";
@@ -32,28 +34,31 @@ public class VoiceMessageContainer {
 	private File mAudioFile;
 	private SeekBarThread mSeekBarThread;
 
-	public VoiceMessageContainer(NetworkController networkController, SurespotMessage message) {
-		mMessage = message;
+	public VoiceMessageContainer(NetworkController networkController) {
 		mNetworkController = networkController;
 
 	}
 
-	private void prepareAudio(final IAsyncCallback<Boolean> callback) {
+	public synchronized void prepareAudio(final IAsyncCallback<Integer> callback) {
 
 		try {
 			// create temp file to save un-encrypted audio data to (MediaPlayer can't stream from uh a Stream (InputStream) for some ass backwards reason).
-			mAudioFile = File.createTempFile("sound", ".m4a");
+			if (mAudioFile == null) {
+				mAudioFile = File.createTempFile("sound", ".m4a");
+			}
 		}
 		catch (IOException e) {
 			// TODO tell user
 			SurespotLog.w(TAG, e, "playVoiceMessage");
-			callback.handleResponse(false);
+			if (callback != null) {
+				callback.handleResponse(-1);
+			}
 			return;
 		}
 		// download and decrypt
-		new AsyncTask<Void, Void, Boolean>() {
+		new AsyncTask<Void, Void, Integer>() {
 			@Override
-			protected Boolean doInBackground(Void... params) {
+			protected Integer doInBackground(Void... params) {
 				byte[] soundbytes = mMessage.getPlainBinaryData();
 				// TODO - progress
 
@@ -106,7 +111,13 @@ public class VoiceMessageContainer {
 
 						mMessage.setPlainBinaryData(soundbytes);
 
-						return true;
+						// figure out duration
+						String path = mAudioFile.getAbsolutePath();
+						mPlayer.reset();
+						mPlayer.setDataSource(path);
+						mPlayer.prepare();
+
+						return mPlayer.getDuration();
 
 					}
 					catch (IOException e) {
@@ -114,69 +125,57 @@ public class VoiceMessageContainer {
 					}
 				}
 
-				return false;
+				return -1;
 			}
 
 			@Override
-			protected void onPostExecute(Boolean result) {
-				callback.handleResponse(result);
-				// if (result) {
-				// // fuck me it worked lets play it
-				// startPlaying(seekBar, tempFile.getAbsolutePath(), true);
-				// }
+			protected void onPostExecute(Integer duration) {
+				if (callback != null) {
+					callback.handleResponse(duration);
+				}
 			}
 		}.execute();
 
 	}
 
-	private void prepAndPlay(int progress) {
-		String path = mAudioFile.getAbsolutePath();
-		try {
-			if (mPlayer == null) {
+	private synchronized void prepAndPlay(int progress) {
+		// String path = mAudioFile.getAbsolutePath();
+		// try {
+		if (mSeekBarThread == null) {
 
-				mSeekBarThread = new SeekBarThread();
-				mPlayer = new MediaPlayer();
-				mPlayer.setDataSource(path);
-				mPlayer.prepare();
-			}
-			else {
-				// mPlayer.reset();
-			}
-
-			if (progress > 0) {
-				mPlayer.seekTo(progress);
-			}
-			
-			new Thread(mSeekBarThread).start();
-			mPlayer.start();
-
-			mPlayer.setOnCompletionListener(new OnCompletionListener() {
-
-				@Override
-				public void onCompletion(MediaPlayer mp) {
-
-					// playCompleted();
-				}
-			});
-
-		}
-		catch (IOException e) {
-			SurespotLog.e(TAG, e, "preparePlayer failed");
+			mSeekBarThread = new SeekBarThread();
 		}
 
-	}
+		if (progress > 0) {
+			mPlayer.seekTo(progress);
+		}
 
-	public void attachSeekBar(SeekBar seekBar) {
-		this.mSeekBar = seekBar;
+		new Thread(mSeekBarThread).start();
+		mPlayer.start();
 
-	}
-
-	public void play(final int progress) {
-		prepareAudio(new IAsyncCallback<Boolean>() {
+		mPlayer.setOnCompletionListener(new OnCompletionListener() {
 
 			@Override
-			public void handleResponse(Boolean result) {
-				if (result) {
+			public void onCompletion(MediaPlayer mp) {
+
+				// playCompleted();
+			}
+		});
+
+	}
+
+	// catch (IOException e) {
+	// SurespotLog.e(TAG, e, "preparePlayer failed");
+	// }
+
+	// }
+
+	public void play(final int progress) {
+		prepareAudio(new IAsyncCallback<Integer>() {
+
+			@Override
+			public void handleResponse(Integer duration) {
+				if (duration > 0) {
 					prepAndPlay(progress);
 				}
 
@@ -194,55 +193,75 @@ public class VoiceMessageContainer {
 
 		@Override
 		public void run() {
-			try {
-				mRun = true;
-				mSeekBar.setMax(100);
-				mSeekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
-				while (mRun) {
+			if (mSeekBarReference != null) {
+				try {
+					SeekBar seekBar = mSeekBarReference.get();
+					VoiceMessageContainer seekContainer = (VoiceMessageContainer) seekBar.getTag();
 
-					int currentPosition = mPlayer.getCurrentPosition();
-					int duration = mPlayer.getDuration();
-					int progress = (int) (((float) currentPosition / (float) duration) * 101);
-					SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", this, currentPosition, duration, progress);
-					if (progress < 0)
-						progress = 0;
-					if (progress > 90)
-						progress = 100;
+					if (VoiceMessageContainer.this == seekContainer) {
 
-					if (currentPosition < duration) {
-						mSeekBar.setProgress(progress);
+						mRun = true;
 
+						seekBar.setMax(100);
+						seekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
+						while (mRun) {
+
+							int currentPosition = mPlayer.getCurrentPosition();
+							int duration = mPlayer.getDuration();
+							int progress = (int) (((float) currentPosition / (float) duration) * 101);
+							SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", this, currentPosition, duration, progress);
+							if (progress < 0)
+								progress = 0;
+							if (progress > 90)
+								progress = 100;
+
+							if (currentPosition < duration) {
+								mSeekBarReference.get().setProgress(progress);
+
+							}
+							else {
+								mSeekBarReference.get().setProgress(0);
+							}
+							try {
+								Thread.sleep(100);
+							}
+							catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							if (progress == 100) {
+								completed();
+							}
+						}
 					}
 					else {
-						mSeekBar.setProgress(0);
+						mRun = false;
 					}
-					try {
-						Thread.sleep(100);
-					}
-					catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					if (progress == 100) {
-						completed();
-					}
+					
+				}
+				catch (Exception e) {
+					SurespotLog.w(TAG, e, "SeekBarThread");
 				}
 			}
-			catch (Exception e) {
-				SurespotLog.w(TAG, e, "SeekBarThread");
-			}
+
 		}
 
 		public void completed() {
 			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
-			mSeekBar.setProgress(100);
+			mSeekBarReference.get().setProgress(100);
+		}
+
+		public void reset() {
+			SurespotLog.v(TAG, "SeekBarThread reset");
+			mRun = false;
+			mSeekBarReference.get().setProgress(100);
 		}
 	}
 
 	private class MyOnSeekBarChangedListener implements OnSeekBarChangeListener {
 
 		@Override
-		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
+		public synchronized void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
 			if (fromTouch) {
 				SurespotLog.v(TAG, "onProgressChanged, progress: %d", progress);
 				int time = (int) (mPlayer.getDuration() * (float) progress / 101);
@@ -251,7 +270,7 @@ public class VoiceMessageContainer {
 				if (mPlayer.isPlaying()) {
 					SurespotLog.v(TAG, "onProgressChanged,  seekingTo: %d", progress);
 					mPlayer.seekTo(time);
-					
+
 				}
 				else {
 					SurespotLog.v(TAG, "onProgressChanged,  playing from: %d", progress);
@@ -269,6 +288,22 @@ public class VoiceMessageContainer {
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
 			// Empty method
+		}
+	}
+
+	public synchronized void attach(SeekBar seekBar, MediaPlayer mediaPlayer, SurespotMessage message) {
+		mSeekBarReference = new WeakReference<SeekBar>(seekBar);
+		mPlayer = mediaPlayer;
+		mMessage = message;
+
+	}
+
+	public int getDuration() {
+		if (mPlayer == null) {
+			return -1;
+		}
+		else {
+			return mPlayer.getDuration();
 		}
 	}
 };

@@ -10,6 +10,7 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.media.AudioFormat;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder.AudioSource;
 import android.view.View;
 import android.widget.SeekBar;
@@ -17,6 +18,7 @@ import android.widget.SeekBar;
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -31,15 +33,16 @@ public class VoiceController {
 	private static String mFileName = null;
 	private static String mUsername = null;
 
-	private RehearsalAudioRecorder mRecorder = null;
+	private static RehearsalAudioRecorder mRecorder = null;
 
 	private ChatController mChatController;
 	private NetworkController mNetworkController;
-	private HashMap<String, VoiceMessageContainer> mMediaPlayers;
-	TimerTask mCurrentTimeTask;
-	boolean mRecording = false;
+	private static HashMap<String, MediaPlayer> mMediaPlayers;
+	private static HashMap<String, VoiceMessageContainer> mContainers;
+	static TimerTask mCurrentTimeTask;
+	static boolean mRecording = false;
 
-	Timer mTimer;
+	static Timer mTimer;
 
 	enum State {
 		INITIALIZING, READY, STARTED, RECORDING
@@ -47,27 +50,29 @@ public class VoiceController {
 
 	private final static int[] sampleRates = { 44100, 22050, 11025, 8000 };
 
-	private State mState;
-	private AACEncoder mEncoder;
+	private static State mState;
+	private static AACEncoder mEncoder;
 
 	private long mTimeAtStart;
 
-	public VoiceController(ChatController chatController, NetworkController networkController) {
-		mChatController = chatController;
-		mNetworkController = networkController;
+	static {
+
+		// mChatController = chatController;
+		// mNetworkController = networkController;
 		mState = State.STARTED;
 		mEncoder = new AACEncoder();
-		mMediaPlayers = new HashMap<String, VoiceMessageContainer>();
+		mMediaPlayers = new HashMap<String, MediaPlayer>();
+		mContainers = new HashMap<String, VoiceMessageContainer>();
 
 	}
 
-	int getMaxAmplitude() {
+	static int getMaxAmplitude() {
 		if (mRecorder == null || mState != State.RECORDING)
 			return 0;
 		return mRecorder.getMaxAmplitude();
 	}
 
-	private void startTimer(final Activity activity) {
+	private static void startTimer(final Activity activity) {
 		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer.purge();
@@ -94,7 +99,7 @@ public class VoiceController {
 
 	}
 
-	private synchronized void startRecording(final Activity activity) {
+	private synchronized static void startRecording(final Activity activity) {
 		if (mState != State.STARTED)
 			return;
 
@@ -120,6 +125,7 @@ public class VoiceController {
 			}
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
 
+			SurespotLog.v(TAG, "sampleRate: %d", sampleRate);
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.VISIBLE);
 			mRecorder.setOutputFile(mFileName);
@@ -137,7 +143,7 @@ public class VoiceController {
 
 	}
 
-	private synchronized void stopRecordingInternal() {
+	private synchronized static void stopRecordingInternal() {
 		// state must be RECORDING
 		if (mState != State.RECORDING)
 			return;
@@ -161,22 +167,19 @@ public class VoiceController {
 
 	// Play unencrypted audio file from path and optionally delete it
 
-	private synchronized void startPlaying(final SeekBar seekBar, final SurespotMessage message, final boolean delete) {
-		VoiceMessageContainer vmc = mMediaPlayers.get(message.getIv());
-		if (vmc != null) {
-			vmc.attachSeekBar(seekBar);
-			vmc.play(0);
-			
-		}
-		else {
-			vmc = new VoiceMessageContainer(mNetworkController, message);
-			vmc.attachSeekBar(seekBar);
-			mMediaPlayers.put(message.getIv(), vmc);
-			vmc.play(0);
-		}
+	private synchronized static void startPlaying(final SeekBar seekBar, final SurespotMessage message, final boolean delete) {
+		updateSeekBar(message, seekBar, new IAsyncCallback<Integer>() {
+
+			@Override
+			public void handleResponse(Integer result) {
+				if (result > 0) {
+					VoiceMessageContainer vmc = (VoiceMessageContainer) seekBar.getTag();
+					vmc.play(0);
+				}
+			}
+		});
 
 	}
-
 
 	public synchronized void destroy() {
 		if (mRecorder != null) {
@@ -184,19 +187,19 @@ public class VoiceController {
 			mRecorder = null;
 		}
 
-		for (VoiceMessageContainer mp : mMediaPlayers.values()) {
-		//	mp.stop();
-		//	mp.release();
+		for (MediaPlayer mp : mMediaPlayers.values()) {
+			mp.stop();
+			mp.release();
 		}
 
 		mMediaPlayers.clear();
 
 		mChatController = null;
 		mNetworkController = null;
-		
+
 	}
 
-	public synchronized void startRecording(Activity context, String username) {
+	public static synchronized void startRecording(Activity context, String username) {
 
 		if (!mRecording) {
 
@@ -208,7 +211,7 @@ public class VoiceController {
 
 	}
 
-	public synchronized void stopRecording(Activity activity, IAsyncCallback<Boolean> callback) {
+	public synchronized static void stopRecording(MainActivity activity, IAsyncCallback<Boolean> callback) {
 		if (mRecording) {
 			stopRecordingInternal();
 			sendVoiceMessage(activity, callback);
@@ -222,7 +225,7 @@ public class VoiceController {
 		}
 	}
 
-	private synchronized void sendVoiceMessage(Activity activity, final IAsyncCallback<Boolean> callback) {
+	private synchronized static void sendVoiceMessage(MainActivity activity, final IAsyncCallback<Boolean> callback) {
 		// convert to AAC
 		// TODO bg thread?
 		FileInputStream fis;
@@ -250,7 +253,7 @@ public class VoiceController {
 
 			FileInputStream m4aStream = new FileInputStream(m4aFile);
 
-			mChatController.sendVoiceMessage(mUsername, Utils.inputStreamToBytes(m4aStream), SurespotConstants.MimeTypes.M4A);
+			MainActivity.getChatController().sendVoiceMessage(mUsername, Utils.inputStreamToBytes(m4aStream), SurespotConstants.MimeTypes.M4A);
 
 			// ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername,
 			// new IAsyncCallback<Boolean>() {
@@ -271,12 +274,41 @@ public class VoiceController {
 		}
 
 		catch (IOException e) {
+			Utils.makeToast(activity, "error sending message");
 			SurespotLog.w(TAG, e, "sendVoiceMessage");
 		}
 
 	}
 
-	public void playVoiceMessage(final SeekBar seekBar, final SurespotMessage message) {
+	public static void playVoiceMessage(final SeekBar seekBar, final SurespotMessage message) {
 		startPlaying(seekBar, message, true);
 	}
+
+	public static void updateSeekBar(SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
+		SurespotLog.v(TAG, "updateSeekBar, seekBar: %s, message: %s", seekBar, message.getIv());
+		MediaPlayer mediaPlayer = mMediaPlayers.get(message.getIv());
+
+		if (mediaPlayer == null) {
+			SurespotLog.v(TAG, "updateSeekBar, creating media player");
+			mediaPlayer = new MediaPlayer();
+			mMediaPlayers.put(message.getIv(), mediaPlayer);
+		}
+
+		
+		VoiceMessageContainer vmc = (VoiceMessageContainer) seekBar.getTag();
+		//VoiceMessageContainer messageVmc = mContainers.get(message.getIv());
+		
+		//if they are the same do nothing
+		//otherwise update
+
+		if (vmc == null) {
+			SurespotLog.v(TAG, "updateSeekBar, creating voice message container");
+			vmc = new VoiceMessageContainer(MainActivity.getNetworkController());
+		}
+		vmc.attach(seekBar, mediaPlayer, message);
+
+		seekBar.setTag(vmc);
+		vmc.prepareAudio(durationCallback);
+	}
+	
 }

@@ -678,8 +678,8 @@ public class ChatController {
 								// if it was a voice message from the other user, play it
 								// TODO wrap in preference
 								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-									VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
-									pttController.playVoiceMessage(null, message);
+							//		VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
+									VoiceController.playVoiceMessage(null, message);
 								}
 							}
 							else {

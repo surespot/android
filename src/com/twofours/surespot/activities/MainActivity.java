@@ -95,12 +95,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private static CredentialCachingService mCredentialCachingService = null;
 	private static NetworkController mNetworkController = null;
-
+	private static ChatController mChatController = null;
+	
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
 	private IAsyncCallbackTuple<String, Boolean> m401Handler;
-	private ChatController mChatController = null;
+	
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
 	private BroadcastReceiver mExternalStorageReceiver;
@@ -132,7 +133,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private int mInviteTextSize;
 	private boolean mTextSizesSet;
 	private Button mPTTButton;
-	private VoiceController mPTTController;
+	//private VoiceController mPTTController;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -283,7 +284,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteData);
-			mPTTController = new VoiceController(mChatController, mNetworkController);
+			
 			setupChatControls();
 
 			if (savedInstanceState != null) {
@@ -498,7 +499,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
 					if (!mChatController.isFriendDeleted(friend.getName())) {
-						mPTTController.startRecording(MainActivity.this, friend.getName());
+						VoiceController.startRecording(MainActivity.this, friend.getName());
 					}
 
 				}
@@ -523,7 +524,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 						@Override
 						public void run() {
-							mPTTController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
+							VoiceController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(Boolean result) {
@@ -1134,10 +1135,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 		mChatController = null;
-		if (mPTTController != null) {
-			mPTTController.destroy();
-			mPTTController = null;
-		}
+//		if (mPTTController != null) {
+//			mPTTController.destroy();
+//			mPTTController = null;
+//		}
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1148,7 +1149,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		return mContext;
 	}
 
-	public ChatController getChatController() {
+	public static ChatController getChatController() {
 		return mChatController;
 	}
 
@@ -1846,7 +1847,5 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
-	public VoiceController getPTTController() {
-		return mPTTController;
-	}
+	
 }

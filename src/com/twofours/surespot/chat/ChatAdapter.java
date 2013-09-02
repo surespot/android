@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
@@ -24,6 +25,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.voice.VoiceController;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -258,9 +260,11 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.tvText = (TextView) convertView.findViewById(R.id.messageText);
 			chatMessageViewHolder.imageView = (ImageView) convertView.findViewById(R.id.messageImage);
 			chatMessageViewHolder.imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-			chatMessageViewHolder.voiceView =  convertView.findViewById(R.id.messageVoice);
+			chatMessageViewHolder.voiceView = convertView.findViewById(R.id.messageVoice);
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
+			chatMessageViewHolder.voiceSeekBar = (SeekBar) convertView.findViewById(R.id.seekBarVoice);
+			chatMessageViewHolder.voiceTime = (TextView) convertView.findViewById(R.id.voiceTime);
 
 			if (mDebugMode) {
 				chatMessageViewHolder.tvId = (TextView) convertView.findViewById(R.id.messageId);
@@ -287,7 +291,7 @@ public class ChatAdapter extends BaseAdapter {
 				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
 			}
 			else {
-				//if it's PTT we'll download and  decrypt when the user presses play 
+				// if it's PTT we'll download and decrypt when the user presses play
 				if (item.getPlainData() == null && !item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
 				}
@@ -350,14 +354,20 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.tvText.clearAnimation();
 					chatMessageViewHolder.tvText.setVisibility(View.GONE);
 					chatMessageViewHolder.tvText.setText("");
-					if (!TextUtils.isEmpty(item.getData())) {
-						//mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
-					}
-					
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-				}
+					final TextView finalVoiceTime = chatMessageViewHolder.voiceTime;
+					VoiceController.updateSeekBar(item, chatMessageViewHolder.voiceSeekBar, new IAsyncCallback<Integer>() {
 
+						@Override
+						public void handleResponse(Integer duration) {
+							if (duration != null) {
+								SurespotLog.v(TAG, "duration: %d", duration);
+								finalVoiceTime.setText(String.format("%.1fs", (float) duration/1000));								
+							}
+						}
+					});
+				}
 			}
 		}
 
@@ -402,6 +412,8 @@ public class ChatAdapter extends BaseAdapter {
 		public ImageView ivNotShareable;
 		public int type;
 		public View voiceView;
+		public SeekBar voiceSeekBar;
+		public TextView voiceTime;
 
 	}
 

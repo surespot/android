@@ -385,7 +385,11 @@ public class EncryptionController {
 
 	public static String symmetricDecrypt(final String ourVersion, final String username, final String theirVersion, final String ivs, final String cipherData) {
 
-		return new String(symmetricDecryptBytes(ourVersion, username, theirVersion, ivs, cipherData));
+		byte[] decrypted = symmetricDecryptBytes(ourVersion, username, theirVersion, ivs, cipherData);
+		if (decrypted == null) {
+			return null;
+		}
+		return new String(decrypted);
 
 	}
 
