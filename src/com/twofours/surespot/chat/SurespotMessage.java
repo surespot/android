@@ -38,6 +38,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mLoaded;
 	private boolean mLoading;
 	private boolean mGcm;
+	private boolean mPlayVoice = false;
 
 	public String getFrom() {
 		return mFrom;
@@ -85,6 +86,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public void setInlineData(byte[] inlineData) {
 		mInlineData = inlineData;
+	}
+
+	public boolean isPlayVoice() {
+		return mPlayVoice;
+	}
+
+	public void setPlayMedia(boolean play) {
+		mPlayVoice = play;
 	}
 
 	public Integer getId() {
@@ -405,5 +414,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 		return sb.toString();
 	}
+
 
 }

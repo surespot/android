@@ -357,16 +357,23 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 					final TextView finalVoiceTime = chatMessageViewHolder.voiceTime;
-					VoiceController.updateSeekBar(item, chatMessageViewHolder.voiceSeekBar, new IAsyncCallback<Integer>() {
+					// play it if we need to
+					if (item.isPlayVoice()) {
+						VoiceController.playVoiceMessage(chatMessageViewHolder.voiceSeekBar, item);
+					}
+					else {
+						VoiceController.updateSeekBar(item, chatMessageViewHolder.voiceSeekBar, new IAsyncCallback<Integer>() {
 
-						@Override
-						public void handleResponse(Integer duration) {
-							if (duration != null) {
-								SurespotLog.v(TAG, "duration: %d", duration);
-								finalVoiceTime.setText(String.format("%.1fs", (float) duration/1000));								
+							@Override
+							public void handleResponse(Integer duration) {
+								if (duration != null) {
+									SurespotLog.v(TAG, "duration: %d", duration);
+									finalVoiceTime.setText(String.format("%.1fs", (float) duration / 1000));
+
+								}
 							}
-						}
-					});
+						});
+					}
 				}
 			}
 		}

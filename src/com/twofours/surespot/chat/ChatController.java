@@ -74,7 +74,6 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatController {
@@ -670,18 +669,21 @@ public class ChatController {
 							// always update the available id
 							friend.setAvailableMessageId(messageId);
 
-							// if the chat is showing or we sent the message update the last viewed id
+							// if the chat is showing set the last viewed id the id of the message we just received
 							if (otherUser.equals(mCurrentChat)) {
 
 								friend.setLastViewedMessageId(messageId);
 
-								// if it was a voice message from the other user, play it
+								// if it was a voice message from the other user set play flag
 								// TODO wrap in preference
 								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+									message.setPlayMedia(true);
 							//		VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
-									VoiceController.playVoiceMessage(null, message);
+								//	VoiceController.playVoiceMessage(null, message);
 								}
+								
 							}
+							//chat not showing
 							else {
 								// if it's my message increment the count by one to account for it as I may have unread messages from the
 								// other user; we

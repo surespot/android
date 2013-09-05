@@ -10,7 +10,6 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.media.AudioFormat;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder.AudioSource;
 import android.view.View;
 import android.widget.SeekBar;
@@ -37,7 +36,6 @@ public class VoiceController {
 
 	private ChatController mChatController;
 	private NetworkController mNetworkController;
-	private static HashMap<String, MediaPlayer> mMediaPlayers;
 	private static HashMap<String, VoiceMessageContainer> mContainers;
 	static TimerTask mCurrentTimeTask;
 	static boolean mRecording = false;
@@ -61,7 +59,6 @@ public class VoiceController {
 		// mNetworkController = networkController;
 		mState = State.STARTED;
 		mEncoder = new AACEncoder();
-		mMediaPlayers = new HashMap<String, MediaPlayer>();
 		mContainers = new HashMap<String, VoiceMessageContainer>();
 
 	}
@@ -173,7 +170,7 @@ public class VoiceController {
 			@Override
 			public void handleResponse(Integer result) {
 				if (result > 0) {
-					VoiceMessageContainer vmc = (VoiceMessageContainer) seekBar.getTag();
+					VoiceMessageContainer vmc = mContainers.get(message.getIv());
 					vmc.play(0);
 				}
 			}
@@ -187,12 +184,10 @@ public class VoiceController {
 			mRecorder = null;
 		}
 
-		for (MediaPlayer mp : mMediaPlayers.values()) {
-			mp.stop();
-			mp.release();
-		}
-
-		mMediaPlayers.clear();
+		// for (MediaPlayer mp : mMediaPlayers.values()) {
+		// mp.stop();
+		// mp.release();
+		// }
 
 		mChatController = null;
 		mNetworkController = null;
@@ -286,29 +281,28 @@ public class VoiceController {
 
 	public static void updateSeekBar(SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
 		SurespotLog.v(TAG, "updateSeekBar, seekBar: %s, message: %s", seekBar, message.getIv());
-		MediaPlayer mediaPlayer = mMediaPlayers.get(message.getIv());
 
-		if (mediaPlayer == null) {
-			SurespotLog.v(TAG, "updateSeekBar, creating media player");
-			mediaPlayer = new MediaPlayer();
-			mMediaPlayers.put(message.getIv(), mediaPlayer);
-		}
+		VoiceMessageContainer messageVmc = mContainers.get(message.getIv());
 
-		
-		VoiceMessageContainer vmc = (VoiceMessageContainer) seekBar.getTag();
-		//VoiceMessageContainer messageVmc = mContainers.get(message.getIv());
-		
-		//if they are the same do nothing
-		//otherwise update
+		if (messageVmc == null) {
 
-		if (vmc == null) {
+			// if they are the same do nothing
+			// otherwise update
+
 			SurespotLog.v(TAG, "updateSeekBar, creating voice message container");
-			vmc = new VoiceMessageContainer(MainActivity.getNetworkController());
-		}
-		vmc.attach(seekBar, mediaPlayer, message);
+			messageVmc = new VoiceMessageContainer(MainActivity.getNetworkController(), message);
+			mContainers.put(message.getIv(), messageVmc);
+			
 
-		seekBar.setTag(vmc);
-		vmc.prepareAudio(durationCallback);
+			messageVmc.attach(seekBar);
+			messageVmc.prepareAudio(durationCallback);
+
+		}
+		else {
+			messageVmc.attach(seekBar);
+			durationCallback.handleResponse(messageVmc.getDuration());
+		}
+
 	}
-	
+
 }
