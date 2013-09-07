@@ -275,7 +275,7 @@ public class VoiceController {
 			mRecorder.release();
 			mRecorder = null;
 		}
-		
+
 		playCompleted();
 
 	}
@@ -360,7 +360,7 @@ public class VoiceController {
 			seekBar.setEnabled(false);
 		}
 	}
-	
+
 	// public static void updateSeekBar(Context context, SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
 	// SurespotLog.v(TAG, "updateSeekBar, seekBar: %s, message: %s", seekBar, message.getIv());
 	//
@@ -406,16 +406,17 @@ public class VoiceController {
 
 				int progress = 0;
 				if (mDuration > -1) {
-					int currentPosition = mPlayer.getCurrentPosition();
-
-					progress = (int) (((float) currentPosition / (float) mDuration) * 101);
-					SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration, progress);
-					if (progress < 0)
-						progress = 0;
-					if (progress > 90)
-						progress = 100;
 
 					if (isCurrentMessage()) {
+
+						int currentPosition = mPlayer.getCurrentPosition();
+
+						progress = (int) (((float) currentPosition / (float) mDuration) * 101);
+						SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration, progress);
+						if (progress < 0)
+							progress = 0;
+						if (progress > 90)
+							progress = 100;
 
 						SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
 
@@ -426,17 +427,19 @@ public class VoiceController {
 						else {
 							mSeekBar.setProgress(0);
 						}
-						// mSeekBar.setEnabled(true);
+
 					}
 					else {
 						mSeekBar.setProgress(0);
-						// mSeekBar.setEnabled(false);
-					}
 
+					}
 				}
-				
+				else {
+					mSeekBar.setProgress(0);
+				}
+
 				try {
-					Thread.sleep(50);
+					Thread.sleep(30);
 				}
 				catch (InterruptedException e) {
 					e.printStackTrace();
@@ -457,6 +460,9 @@ public class VoiceController {
 			if (isCurrentMessage()) {
 				mSeekBar.setProgress(100);
 			}
+			else {
+				mSeekBar.setProgress(0);
+			}
 		}
 
 		public void reset() {
@@ -473,20 +479,22 @@ public class VoiceController {
 			return isCurrentMessage(mSeekBar);
 		}
 		return false;
-		
+
 	}
-	
+
 	private static boolean isCurrentMessage(SeekBar seekBar) {
 		if (seekBar == null) {
 			return false;
 		}
+		
+		// if the message is attached to the seekbar
 		WeakReference<SurespotMessage> ref = (WeakReference<SurespotMessage>) seekBar.getTag();
 
 		SurespotMessage seekBarMessage = null;
 		if (ref != null) {
 			seekBarMessage = ref.get();
 		}
-		// if the seekbar  is attached to the message
+
 		if (seekBarMessage != null && seekBarMessage.equals(mMessage) && mPlaying) { //
 			return true;
 		}

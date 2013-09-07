@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
@@ -360,8 +361,10 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 						
+					
 					mMessageVoiceDownloader.download(convertView, item);
-					VoiceController.attach(item, chatMessageViewHolder.voiceSeekBar);
+					chatMessageViewHolder.voiceSeekBar.setTag(new WeakReference<SurespotMessage>(item));
+					VoiceController.attach(chatMessageViewHolder.voiceSeekBar);
 					
 					// play it if we need to
 //					if (item.isPlayVoice()) {
