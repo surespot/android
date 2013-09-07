@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -23,13 +23,11 @@ import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 
 public class VoiceController {
 	private static final String TAG = "VoiceController";
@@ -39,9 +37,6 @@ public class VoiceController {
 
 	private static RehearsalAudioRecorder mRecorder = null;
 
-	private ChatController mChatController;
-	private NetworkController mNetworkController;
-	private static HashMap<String, VoiceMessageContainer> mContainers;
 	static TimerTask mCurrentTimeTask;
 	static boolean mRecording = false;
 	private static SeekBarThread mSeekBarThread;
@@ -72,7 +67,6 @@ public class VoiceController {
 		// mNetworkController = networkController;
 		mState = State.STARTED;
 		mEncoder = new AACEncoder();
-		mContainers = new HashMap<String, VoiceMessageContainer>();
 
 	}
 
@@ -190,13 +184,23 @@ public class VoiceController {
 		// }
 		// }
 		// });
+
+		if (message.getPlainBinaryData() == null) {
+			return;
+		}
+
 		if (mPlaying) {
-			mPlayer.stop();
-			playCompleted();
+			return;
+			// mPlayer.stop();
+			// playCompleted();
 		}
 
 		if (!mPlaying) {
 			mPlaying = true;
+			mSeekBar = seekBar;
+			mMessage = message;
+			mSeekBar.setMax(100);
+			mSeekBar.setEnabled(true);
 
 			if (mSeekBarThread == null) {
 
@@ -217,10 +221,12 @@ public class VoiceController {
 
 				mPlayer.setDataSource(mAudioFile.getAbsolutePath());
 				mPlayer.prepare();
+				mDuration = mPlayer.getDuration();
 			}
+
 			catch (Exception e) {
 				SurespotLog.w(TAG, e, "prepAndPlay error");
-				mPlaying = false;
+				playCompleted();
 				return;
 			}
 
@@ -228,9 +234,6 @@ public class VoiceController {
 			// mPlayer.seekTo(progress);
 			// }
 
-			mMessage = message;
-			mSeekBar = seekBar;
-			mDuration = message.getPlainBinaryData().length;
 			new Thread(mSeekBarThread).start();
 			mPlayer.start();
 
@@ -246,14 +249,23 @@ public class VoiceController {
 
 	}
 
-	private static void playCompleted() {
+	private synchronized static void playCompleted() {
 		mSeekBarThread.completed();
 		mMessage.setPlayMedia(false);
 		if (mAudioFile != null) {
 			mAudioFile.delete();
 		}
-		mPlayer.release();
-		mPlayer = null;
+		if (mPlayer != null) {
+			mPlayer.setOnCompletionListener(null);
+			mPlayer.release();
+			mPlayer = null;
+		}
+		if (mSeekBar != null) {
+			// mSeekBar.setProgress(0);
+			mSeekBar.setEnabled(false);
+			mSeekBar = null;
+		}
+		// mMessage = null;
 		mPlaying = false;
 
 	}
@@ -263,14 +275,8 @@ public class VoiceController {
 			mRecorder.release();
 			mRecorder = null;
 		}
-
-		// for (MediaPlayer mp : mMediaPlayers.values()) {
-		// mp.stop();
-		// mp.release();
-		// }
-
-		mChatController = null;
-		mNetworkController = null;
+		
+		playCompleted();
 
 	}
 
@@ -330,22 +336,6 @@ public class VoiceController {
 
 			MainActivity.getChatController().sendVoiceMessage(mUsername, Utils.inputStreamToBytes(m4aStream), SurespotConstants.MimeTypes.M4A);
 
-			// ChatUtils.uploadVoiceMessageAsync(activity, mChatController, mNetworkController, Uri.fromFile(new File(m4aFile)), mUsername,
-			// new IAsyncCallback<Boolean>() {
-			//
-			// @Override
-			// public void handleResponse(Boolean result) {
-			// if (result) {
-			// // delete m4a
-			// new File(m4aFile).delete();
-			// }
-			//
-			// if (callback != null) {
-			// callback.handleResponse(result);
-			// }
-			// }
-			// });
-
 		}
 
 		catch (IOException e) {
@@ -360,50 +350,45 @@ public class VoiceController {
 		startPlaying(context, seekBar, message, true);
 	}
 
-	public static void updateSeekBar(Context context, SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
-		SurespotLog.v(TAG, "updateSeekBar, seekBar: %s, message: %s", seekBar, message.getIv());
-
-		VoiceMessageContainer messageVmc = mContainers.get(message.getIv());
-
-		if (messageVmc == null) {
-
-			// if they are the same do nothing
-			// otherwise update
-
-			SurespotLog.v(TAG, "updateSeekBar, creating voice message container");
-			messageVmc = new VoiceMessageContainer(context, MainActivity.getNetworkController(), message);
-			mContainers.put(message.getIv(), messageVmc);
-
-			// messageVmc.attach(seekBar);
-			messageVmc.prepareAudio(seekBar, durationCallback);
-
-		}
-		else {
-			// messageVmc.attach(seekBar);
-			if (durationCallback != null) {
-				durationCallback.handleResponse(messageVmc.getDuration());
-			}
-		}
-
-		seekBar.setTag(messageVmc);
-
-	}
-
-	public static void attach(SurespotMessage message, SeekBar seekBar) {
-		// mSeekBarReference = new WeakReference<SeekBar>(seekBar);
-
-		// if this message is the one that's being played, attach the seekbar
-		if (message.equals(mMessage)) {
+	public static void attach(SeekBar seekBar) {
+		if (isCurrentMessage(seekBar)) {
 			mSeekBar = seekBar;
+			seekBar.setEnabled(true);
 		}
 		else {
-			mSeekBar = null;
+			seekBar.setProgress(0);
+			seekBar.setEnabled(false);
 		}
-
-		// VoiceMessageDownloader.DecryptionTaskWrapper task = seekBar.getTag();
-		// seekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
-		// setDatetimeAndDuration(seekBar);
 	}
+	
+	// public static void updateSeekBar(Context context, SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
+	// SurespotLog.v(TAG, "updateSeekBar, seekBar: %s, message: %s", seekBar, message.getIv());
+	//
+	// VoiceMessageContainer messageVmc = mContainers.get(message.getIv());
+	//
+	// if (messageVmc == null) {
+	//
+	// // if they are the same do nothing
+	// // otherwise update
+	//
+	// SurespotLog.v(TAG, "updateSeekBar, creating voice message container");
+	// messageVmc = new VoiceMessageContainer(context, MainActivity.getNetworkController(), message);
+	// mContainers.put(message.getIv(), messageVmc);
+	//
+	// // messageVmc.attach(seekBar);
+	// messageVmc.prepareAudio(seekBar, durationCallback);
+	//
+	// }
+	// else {
+	// // messageVmc.attach(seekBar);
+	// if (durationCallback != null) {
+	// durationCallback.handleResponse(messageVmc.getDuration());
+	// }
+	// }
+	//
+	// seekBar.setTag(messageVmc);
+	//
+	// }
 
 	private static class SeekBarThread implements Runnable {
 		private boolean mRun = true;
@@ -417,10 +402,6 @@ public class VoiceController {
 
 			mRun = true;
 
-			if (mSeekBar != null) {
-				mSeekBar.setMax(100);
-			}
-
 			while (mRun) {
 
 				int progress = 0;
@@ -428,13 +409,13 @@ public class VoiceController {
 					int currentPosition = mPlayer.getCurrentPosition();
 
 					progress = (int) (((float) currentPosition / (float) mDuration) * 101);
-					SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", this, currentPosition, mDuration, progress);
+					SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration, progress);
 					if (progress < 0)
 						progress = 0;
 					if (progress > 90)
 						progress = 100;
 
-					if (mSeekBar != null) {
+					if (isCurrentMessage()) {
 
 						SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
 
@@ -445,11 +426,17 @@ public class VoiceController {
 						else {
 							mSeekBar.setProgress(0);
 						}
+						// mSeekBar.setEnabled(true);
+					}
+					else {
+						mSeekBar.setProgress(0);
+						// mSeekBar.setEnabled(false);
 					}
 
 				}
+				
 				try {
-					Thread.sleep(100);
+					Thread.sleep(50);
 				}
 				catch (InterruptedException e) {
 					e.printStackTrace();
@@ -467,7 +454,7 @@ public class VoiceController {
 			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
 
-			if (mSeekBar != null) {
+			if (isCurrentMessage()) {
 				mSeekBar.setProgress(100);
 			}
 		}
@@ -478,6 +465,33 @@ public class VoiceController {
 			if (mSeekBar != null) {
 				mSeekBar.setProgress(100);
 			}
+		}
+	}
+
+	private static boolean isCurrentMessage() {
+		if (mSeekBar != null) {
+			return isCurrentMessage(mSeekBar);
+		}
+		return false;
+		
+	}
+	
+	private static boolean isCurrentMessage(SeekBar seekBar) {
+		if (seekBar == null) {
+			return false;
+		}
+		WeakReference<SurespotMessage> ref = (WeakReference<SurespotMessage>) seekBar.getTag();
+
+		SurespotMessage seekBarMessage = null;
+		if (ref != null) {
+			seekBarMessage = ref.get();
+		}
+		// if the seekbar  is attached to the message
+		if (seekBarMessage != null && seekBarMessage.equals(mMessage) && mPlaying) { //
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 

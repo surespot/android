@@ -25,7 +25,6 @@ import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -34,7 +33,6 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -51,13 +49,7 @@ import com.twofours.surespot.encryption.EncryptionController;
  */
 public class VoiceMessageDownloader {
 	private static final String TAG = "VoiceMessageDownloader";
-	// private static BitmapCache mBitmapCache = new BitmapCache();
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
-	private ChatAdapter mChatAdapter;
-
-	// public VoiceMessageDownloader(ChatAdapter chatAdapter) {
-	// mChatAdapter = chatAdapter;
-	// }
 
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
@@ -275,20 +267,20 @@ public class VoiceMessageDownloader {
 
 	private void updateUI(SurespotMessage message, View parentView, int bytes) {
 		if (message.getDateTime() != null) {
-			TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
-			tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
-					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+//			TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
+//			tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
+//					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
 
 		}
 		TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
 		ImageView voicePlay = (ImageView) parentView.findViewById(R.id.voicePlay);
 
 		// if (mDuration > 0) {
-		SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-		seekBar.setEnabled(true);
+	//	SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);		
+		//seekBar.setEnabled(true);
 		voicePlay.setEnabled(true);
 		voiceTime.setVisibility(View.VISIBLE);
-		voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
+	//	voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
 
 	}
 
