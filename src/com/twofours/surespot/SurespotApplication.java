@@ -34,7 +34,7 @@ public class SurespotApplication extends Application {
 	private static StateController mStateController = null;
 	private static String mVersion;
 
-	public static final int CORE_POOL_SIZE = 20;
+	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	public static final int KEEP_ALIVE = 1;
 

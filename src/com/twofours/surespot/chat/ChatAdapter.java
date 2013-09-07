@@ -26,6 +26,7 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
+import com.twofours.surespot.voice.VoiceMessageDownloader;
 
 public class ChatAdapter extends BaseAdapter {
 	private final static String TAG = "ChatAdapter";
@@ -41,7 +42,8 @@ public class ChatAdapter extends BaseAdapter {
 	private MessageDecryptor mMessageDecryptor;
 	private MessageImageDownloader mMessageImageDownloader;
 	private boolean mLoaded;
-
+	private VoiceMessageDownloader mMessageVoiceDownloader;
+	
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
@@ -50,6 +52,8 @@ public class ChatAdapter extends BaseAdapter {
 		// pm.getBoolean("pref_hide_deleted_messages", false);
 		mMessageDecryptor = new MessageDecryptor(this);
 		mMessageImageDownloader = new MessageImageDownloader(this);
+		mMessageVoiceDownloader = new VoiceMessageDownloader();
+		
 	}
 
 	public void doneCheckingSequence() {
@@ -355,14 +359,17 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.tvText.setText("");
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-
+						
+					mMessageVoiceDownloader.download(convertView, item);
+					VoiceController.attach(item, chatMessageViewHolder.voiceSeekBar);
+					
 					// play it if we need to
-					if (item.isPlayVoice()) {
-						VoiceController.playVoiceMessage(mContext, chatMessageViewHolder.voiceSeekBar, item);
-					}
-					else {
-						VoiceController.updateSeekBar(mContext, item, chatMessageViewHolder.voiceSeekBar, null);
-					}
+//					if (item.isPlayVoice()) {
+//						VoiceController.playVoiceMessage(mContext, chatMessageViewHolder.voiceSeekBar, item);
+//					}
+//					else {
+//						VoiceController.updateSeekBar(mContext, item, chatMessageViewHolder.voiceSeekBar, null);
+//					}
 				}
 			}
 		}

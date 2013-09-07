@@ -30,6 +30,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.voice.VoiceMessageDownloader.VoiceMessageDownloaderTask;
 
 public class VoiceMessageContainer {
 	private WeakReference<SeekBar> mSeekBarReference;
@@ -57,7 +58,7 @@ public class VoiceMessageContainer {
 	}
 
 	public synchronized void prepareAudio(final SeekBar seekBar, final IAsyncCallback<Integer> callback) {
-		
+
 		if (!mLoaded && !mLoading) {
 			mLoading = true;
 
@@ -424,7 +425,16 @@ public class VoiceMessageContainer {
 		}
 	}
 
-	public void attach(SeekBar seekBar) {
+	private VoiceMessageDownloaderTask getDownloaderTask() {
+		return null;
+//		Object oDecryptionTaskWrapper = seekBar.getTag();
+//		if (oDecryptionTaskWrapper instanceof DecryptionTaskWrapper) {
+//			DecryptionTaskWrapper decryptionTaskWrapper = (DecryptionTaskWrapper) oDecryptionTaskWrapper;
+//			return decryptionTaskWrapper.getDecryptionTask();
+//		}
+	}
+
+	public void attach(SurespotMessage message, SeekBar seekBar) {
 		mSeekBarReference = new WeakReference<SeekBar>(seekBar);
 
 		seekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());

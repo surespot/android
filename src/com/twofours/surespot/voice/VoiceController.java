@@ -2,6 +2,7 @@ package com.twofours.surespot.voice;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,9 +12,12 @@ import java.util.TimerTask;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioFormat;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.AudioSource;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
@@ -40,8 +44,14 @@ public class VoiceController {
 	private static HashMap<String, VoiceMessageContainer> mContainers;
 	static TimerTask mCurrentTimeTask;
 	static boolean mRecording = false;
+	private static SeekBarThread mSeekBarThread;
+	private static SurespotMessage mMessage;
 
 	static Timer mTimer;
+	private static File mAudioFile;
+	static MediaPlayer mPlayer;
+	static SeekBar mSeekBar;
+	static boolean mPlaying = false;
 
 	enum State {
 		INITIALIZING, READY, STARTED, RECORDING
@@ -51,6 +61,8 @@ public class VoiceController {
 
 	private static State mState;
 	private static AACEncoder mEncoder;
+
+	private static int mDuration;
 
 	private long mTimeAtStart;
 
@@ -167,17 +179,82 @@ public class VoiceController {
 
 	private synchronized static void startPlaying(Context context, final SeekBar seekBar, final SurespotMessage message, final boolean delete) {
 		SurespotLog.v(TAG, "startPlaying");
-		updateSeekBar(context, message, seekBar, new IAsyncCallback<Integer>() {
+		// updateSeekBar(context, message, seekBar, new IAsyncCallback<Integer>() {
+		//
+		// @Override
+		// public void handleResponse(Integer result) {
+		// if (result > 0) {
+		// SurespotLog.v(TAG, "startPlaying playing");
+		// VoiceMessageContainer vmc = mContainers.get(message.getIv());
+		// vmc.play(seekBar, 0);
+		// }
+		// }
+		// });
+		if (mPlaying) {
+			mPlayer.stop();
+			playCompleted();
+		}
 
-			@Override
-			public void handleResponse(Integer result) {
-				if (result > 0) {
-					SurespotLog.v(TAG, "startPlaying playing");
-					VoiceMessageContainer vmc = mContainers.get(message.getIv());
-					vmc.play(seekBar, 0);
-				}
+		if (!mPlaying) {
+			mPlaying = true;
+
+			if (mSeekBarThread == null) {
+
+				mSeekBarThread = new SeekBarThread();
 			}
-		});
+
+			mPlayer = new MediaPlayer();
+			try {
+				if (mAudioFile != null) {
+					mAudioFile.delete();
+				}
+
+				mAudioFile = File.createTempFile("sound", ".m4a");
+
+				FileOutputStream fos = new FileOutputStream(mAudioFile);
+				fos.write(message.getPlainBinaryData());
+				fos.close();
+
+				mPlayer.setDataSource(mAudioFile.getAbsolutePath());
+				mPlayer.prepare();
+			}
+			catch (Exception e) {
+				SurespotLog.w(TAG, e, "prepAndPlay error");
+				mPlaying = false;
+				return;
+			}
+
+			// if (progress > 0) {
+			// mPlayer.seekTo(progress);
+			// }
+
+			mMessage = message;
+			mSeekBar = seekBar;
+			mDuration = message.getPlainBinaryData().length;
+			new Thread(mSeekBarThread).start();
+			mPlayer.start();
+
+			mPlayer.setOnCompletionListener(new OnCompletionListener() {
+
+				@Override
+				public void onCompletion(MediaPlayer mp) {
+
+					playCompleted();
+				}
+			});
+		}
+
+	}
+
+	private static void playCompleted() {
+		mSeekBarThread.completed();
+		mMessage.setPlayMedia(false);
+		if (mAudioFile != null) {
+			mAudioFile.delete();
+		}
+		mPlayer.release();
+		mPlayer = null;
+		mPlaying = false;
 
 	}
 
@@ -297,12 +374,12 @@ public class VoiceController {
 			messageVmc = new VoiceMessageContainer(context, MainActivity.getNetworkController(), message);
 			mContainers.put(message.getIv(), messageVmc);
 
-			messageVmc.attach(seekBar);
+			// messageVmc.attach(seekBar);
 			messageVmc.prepareAudio(seekBar, durationCallback);
 
 		}
 		else {
-			messageVmc.attach(seekBar);
+			// messageVmc.attach(seekBar);
 			if (durationCallback != null) {
 				durationCallback.handleResponse(messageVmc.getDuration());
 			}
@@ -310,6 +387,135 @@ public class VoiceController {
 
 		seekBar.setTag(messageVmc);
 
+	}
+
+	public static void attach(SurespotMessage message, SeekBar seekBar) {
+		// mSeekBarReference = new WeakReference<SeekBar>(seekBar);
+
+		// if this message is the one that's being played, attach the seekbar
+		if (message.equals(mMessage)) {
+			mSeekBar = seekBar;
+		}
+		else {
+			mSeekBar = null;
+		}
+
+		// VoiceMessageDownloader.DecryptionTaskWrapper task = seekBar.getTag();
+		// seekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
+		// setDatetimeAndDuration(seekBar);
+	}
+
+	private static class SeekBarThread implements Runnable {
+		private boolean mRun = true;
+
+		@Override
+		public void run() {
+
+			// VoiceMessageContainer seekContainer = (VoiceMessageContainer) seekBar.getTag();
+
+			// if (VoiceMessageContainer.this == seekContainer) {
+
+			mRun = true;
+
+			if (mSeekBar != null) {
+				mSeekBar.setMax(100);
+			}
+
+			while (mRun) {
+
+				int progress = 0;
+				if (mDuration > -1) {
+					int currentPosition = mPlayer.getCurrentPosition();
+
+					progress = (int) (((float) currentPosition / (float) mDuration) * 101);
+					SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", this, currentPosition, mDuration, progress);
+					if (progress < 0)
+						progress = 0;
+					if (progress > 90)
+						progress = 100;
+
+					if (mSeekBar != null) {
+
+						SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
+
+						if (currentPosition < mDuration) {
+							mSeekBar.setProgress(progress);
+
+						}
+						else {
+							mSeekBar.setProgress(0);
+						}
+					}
+
+				}
+				try {
+					Thread.sleep(100);
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				//
+				// if (progress == 100) {
+				// completed();
+				// }
+
+			}
+
+		}
+
+		public void completed() {
+			SurespotLog.v(TAG, "SeekBarThread completed");
+			mRun = false;
+
+			if (mSeekBar != null) {
+				mSeekBar.setProgress(100);
+			}
+		}
+
+		public void reset() {
+			SurespotLog.v(TAG, "SeekBarThread reset");
+			mRun = false;
+			if (mSeekBar != null) {
+				mSeekBar.setProgress(100);
+			}
+		}
+	}
+
+	private class MyOnSeekBarChangedListener implements OnSeekBarChangeListener {
+
+		@Override
+		public synchronized void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch) {
+			// if (seekBar.getTag() != VoiceMessageContainer.this) {
+			// return;
+			// }
+			//
+			// if (fromTouch && mDuration > -1 && mLoaded && mPlayer != null) {
+			// SurespotLog.v(TAG, "onProgressChanged, progress: %d, seekBar: %s", progress, seekBar);
+			// int time = (int) (mPlayer.getDuration() * (float) progress / 101);
+			// // if (mVoiceController.)
+			//
+			// if (mPlayer.isPlaying()) {
+			// SurespotLog.v(TAG, "onProgressChanged,  seekingTo: %d", progress);
+			// mPlayer.seekTo(time);
+			//
+			// }
+			// else {
+			// SurespotLog.v(TAG, "onProgressChanged,  playing from: %d", progress);
+			// play(seekBar, time);
+			//
+			// }
+			// }
+		}
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			// Empty method
+		}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			// Empty method
+		}
 	}
 
 }
