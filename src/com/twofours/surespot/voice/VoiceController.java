@@ -171,7 +171,7 @@ public class VoiceController {
 			public void handleResponse(Integer result) {
 				if (result > 0) {
 					VoiceMessageContainer vmc = mContainers.get(message.getIv());
-					vmc.play(0);
+					vmc.play(seekBar, 0);
 				}
 			}
 		});
@@ -275,7 +275,7 @@ public class VoiceController {
 
 	}
 
-	public static void playVoiceMessage(final SeekBar seekBar, final SurespotMessage message) {
+	public static void playVoiceMessage(final SeekBar seekBar, final SurespotMessage message) {		
 		startPlaying(seekBar, message, true);
 	}
 
@@ -295,13 +295,17 @@ public class VoiceController {
 			
 
 			messageVmc.attach(seekBar);
-			messageVmc.prepareAudio(durationCallback);
+			messageVmc.prepareAudio(seekBar, durationCallback);
+			
+			
 
 		}
 		else {
 			messageVmc.attach(seekBar);
 			durationCallback.handleResponse(messageVmc.getDuration());
 		}
+		
+		seekBar.setTag(messageVmc);
 
 	}
 

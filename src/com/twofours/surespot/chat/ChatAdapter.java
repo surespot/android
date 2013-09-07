@@ -368,7 +368,7 @@ public class ChatAdapter extends BaseAdapter {
 							public void handleResponse(Integer duration) {
 								if (duration != null) {
 									SurespotLog.v(TAG, "duration: %d", duration);
-									finalVoiceTime.setText(String.format("%.1fs", (float) duration / 1000));
+									//finalVoiceTime.setText(String.format("%.1fs", (float) duration / 1000));
 
 								}
 							}
