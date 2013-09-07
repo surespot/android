@@ -291,8 +291,7 @@ public class ChatAdapter extends BaseAdapter {
 				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
 			}
 			else {
-				// if it's PTT we'll download and decrypt when the user presses play
-				if (item.getPlainData() == null && !item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+				if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
 					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
 				}
 				else {
@@ -356,23 +355,13 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.tvText.setText("");
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-					final TextView finalVoiceTime = chatMessageViewHolder.voiceTime;
+
 					// play it if we need to
 					if (item.isPlayVoice()) {
-						VoiceController.playVoiceMessage(chatMessageViewHolder.voiceSeekBar, item);
+						VoiceController.playVoiceMessage(mContext, chatMessageViewHolder.voiceSeekBar, item);
 					}
 					else {
-						VoiceController.updateSeekBar(item, chatMessageViewHolder.voiceSeekBar, new IAsyncCallback<Integer>() {
-
-							@Override
-							public void handleResponse(Integer duration) {
-								if (duration != null) {
-									SurespotLog.v(TAG, "duration: %d", duration);
-									//finalVoiceTime.setText(String.format("%.1fs", (float) duration / 1000));
-
-								}
-							}
-						});
+						VoiceController.updateSeekBar(mContext, item, chatMessageViewHolder.voiceSeekBar, null);
 					}
 				}
 			}

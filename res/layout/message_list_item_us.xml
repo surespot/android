@@ -108,9 +108,11 @@
             android:visibility="gone" >
 
             <ImageView
+                android:id="@+id/voicePlay"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:adjustViewBounds="false"
+                android:enabled="false"
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_media_play" />
 
@@ -118,7 +120,8 @@
                 android:id="@+id/seekBarVoice"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:enabled="false" />
 
             <TextView
                 android:id="@+id/voiceTime"

@@ -10,12 +10,19 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.text.format.DateFormat;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
@@ -30,6 +37,7 @@ public class VoiceMessageContainer {
 	private MediaPlayer mPlayer;
 	private SurespotMessage mMessage;
 	private static final String TAG = "VoiceMessageContainer";
+	private Context mContext;
 	private NetworkController mNetworkController;
 	private File mAudioFile;
 	private SeekBarThread mSeekBarThread;
@@ -37,15 +45,19 @@ public class VoiceMessageContainer {
 	private boolean mLoaded = false;
 	private boolean mLoading = false;
 	private boolean mPlaying = false;
+	private Handler mHandler;
 
-	public VoiceMessageContainer(NetworkController networkController, SurespotMessage message) {
+	public VoiceMessageContainer(Context context, NetworkController networkController, SurespotMessage message) {
+		mContext = context;
 		mNetworkController = networkController;
 		mMessage = message;
 		mDuration = -1;
+		mHandler = new Handler(context.getMainLooper());
 
 	}
 
 	public synchronized void prepareAudio(final SeekBar seekBar, final IAsyncCallback<Integer> callback) {
+		
 		if (!mLoaded && !mLoading) {
 			mLoading = true;
 
@@ -86,7 +98,6 @@ public class VoiceMessageContainer {
 						}
 
 						if (voiceStream != null) {
-
 							PipedOutputStream out = new PipedOutputStream();
 							PipedInputStream inputStream;
 							try {
@@ -121,19 +132,22 @@ public class VoiceMessageContainer {
 							mMessage.setPlainBinaryData(soundbytes);
 
 							// figure out duration
-							String path = mAudioFile.getAbsolutePath();
-							mPlayer = new MediaPlayer();
-							mPlayer.setDataSource(path);
-							mPlayer.prepare();
+							// String path = mAudioFile.getAbsolutePath();
+							// mPlayer = new MediaPlayer();
+							// mPlayer.setDataSource(path);
+							// mPlayer.prepare();
+							//
+							// mDuration = mPlayer.getDuration();
 
-							mDuration = mPlayer.getDuration();
-
+							mDuration = soundbytes.length;
 							SurespotLog.v(TAG, "duration: %d", mDuration);
 							SurespotLog.v(TAG, "seekbar same: %b", seekBar.getTag() == VoiceMessageContainer.this);
+
+							setDatetimeAndDuration(seekBar);
+
 							mLoaded = true;
 							mLoading = false;
 							return mDuration;
-
 						}
 						catch (IOException e) {
 							SurespotLog.w(TAG, e, "playVoiceMessage");
@@ -153,7 +167,9 @@ public class VoiceMessageContainer {
 			}.execute();
 		}
 		else {
-			callback.handleResponse(mDuration);
+			if (callback != null) {
+				callback.handleResponse(mDuration);
+			}
 		}
 	}
 
@@ -168,7 +184,7 @@ public class VoiceMessageContainer {
 				mSeekBarThread = new SeekBarThread();
 			}
 
-			mPlayer.reset();
+			mPlayer = new MediaPlayer();
 			try {
 				mPlayer.setDataSource(mAudioFile.getAbsolutePath());
 				mPlayer.prepare();
@@ -203,6 +219,7 @@ public class VoiceMessageContainer {
 	// }
 
 	public void play(SeekBar seekbar, final int progress) {
+		SurespotLog.v(TAG, "play");
 		prepareAudio(seekbar, new IAsyncCallback<Integer>() {
 
 			@Override
@@ -288,10 +305,10 @@ public class VoiceMessageContainer {
 						catch (InterruptedException e) {
 							e.printStackTrace();
 						}
-
-						if (progress == 100) {
-							completed();
-						}
+						//
+						// if (progress == 100) {
+						// completed();
+						// }
 
 					}
 				}
@@ -305,13 +322,30 @@ public class VoiceMessageContainer {
 		public void completed() {
 			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
-			mSeekBarReference.get().setProgress(100);
+
+			SeekBar seekBar = mSeekBarReference.get();
+			if (seekBar == null) {
+				return;
+			}
+
+			if (seekBar.getTag() != VoiceMessageContainer.this) {
+				return;
+			}
+			seekBar.setProgress(100);
 		}
 
 		public void reset() {
 			SurespotLog.v(TAG, "SeekBarThread reset");
 			mRun = false;
-			mSeekBarReference.get().setProgress(100);
+			SeekBar seekBar = mSeekBarReference.get();
+			if (seekBar == null) {
+				return;
+			}
+
+			if (seekBar.getTag() != VoiceMessageContainer.this) {
+				return;
+			}
+			seekBar.setProgress(100);
 		}
 	}
 
@@ -323,7 +357,7 @@ public class VoiceMessageContainer {
 				return;
 			}
 
-			if (fromTouch && mDuration > -1 && mLoaded) {
+			if (fromTouch && mDuration > -1 && mLoaded && mPlayer != null) {
 				SurespotLog.v(TAG, "onProgressChanged, progress: %d, seekBar: %s", progress, seekBar);
 				int time = (int) (mPlayer.getDuration() * (float) progress / 101);
 				// if (mVoiceController.)
@@ -352,10 +386,49 @@ public class VoiceMessageContainer {
 		}
 	}
 
+	private void setDatetimeAndDuration(final SeekBar seekBar) {
+		// set message datetime and duration
+		if (mMessage.getDateTime() != null) {
+
+			mHandler.post(new Runnable() {
+
+				@Override
+				public void run() {
+
+					if (seekBar.getTag() == VoiceMessageContainer.this) {
+
+						TextView tvTime = (TextView) ((View) seekBar.getParent().getParent()).findViewById(R.id.messageTime);
+						tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
+								+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
+
+						TextView voiceTime = (TextView) ((View) seekBar.getParent()).findViewById(R.id.voiceTime);
+						ImageView voicePlay = (ImageView) ((View) seekBar.getParent()).findViewById(R.id.voicePlay);
+
+						if (mDuration > 0) {
+							seekBar.setEnabled(true);
+							voicePlay.setEnabled(true);
+							voiceTime.setVisibility(View.VISIBLE);
+							voiceTime.setText(String.format("%.1fs", (float) mDuration / 1000));
+						}
+						else {
+							voiceTime.setVisibility(View.GONE);
+							seekBar.setEnabled(false);
+							voicePlay.setEnabled(false);
+
+						}
+					}
+				}
+
+			});
+
+		}
+	}
+
 	public void attach(SeekBar seekBar) {
 		mSeekBarReference = new WeakReference<SeekBar>(seekBar);
 
-		// seekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
+		seekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangedListener());
+		setDatetimeAndDuration(seekBar);
 	}
 
 	public int getDuration() {

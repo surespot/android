@@ -103,7 +103,7 @@ public class ChatFragment extends SherlockFragment {
 					//		VoiceController pttController = getMainActivity().getPTTController();
 							SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
 							
-							VoiceController.playVoiceMessage(seekBar, message);
+							VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
 
 //							if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
 //

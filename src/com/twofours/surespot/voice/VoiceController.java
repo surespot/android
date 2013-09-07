@@ -9,6 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.content.Context;
 import android.media.AudioFormat;
 import android.media.MediaRecorder.AudioSource;
 import android.view.View;
@@ -164,12 +165,14 @@ public class VoiceController {
 
 	// Play unencrypted audio file from path and optionally delete it
 
-	private synchronized static void startPlaying(final SeekBar seekBar, final SurespotMessage message, final boolean delete) {
-		updateSeekBar(message, seekBar, new IAsyncCallback<Integer>() {
+	private synchronized static void startPlaying(Context context, final SeekBar seekBar, final SurespotMessage message, final boolean delete) {
+		SurespotLog.v(TAG, "startPlaying");
+		updateSeekBar(context, message, seekBar, new IAsyncCallback<Integer>() {
 
 			@Override
 			public void handleResponse(Integer result) {
 				if (result > 0) {
+					SurespotLog.v(TAG, "startPlaying playing");
 					VoiceMessageContainer vmc = mContainers.get(message.getIv());
 					vmc.play(seekBar, 0);
 				}
@@ -275,11 +278,12 @@ public class VoiceController {
 
 	}
 
-	public static void playVoiceMessage(final SeekBar seekBar, final SurespotMessage message) {		
-		startPlaying(seekBar, message, true);
+	public static void playVoiceMessage(Context context, final SeekBar seekBar, final SurespotMessage message) {
+		SurespotLog.v(TAG, "playVoiceMessage");
+		startPlaying(context, seekBar, message, true);
 	}
 
-	public static void updateSeekBar(SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
+	public static void updateSeekBar(Context context, SurespotMessage message, SeekBar seekBar, IAsyncCallback<Integer> durationCallback) {
 		SurespotLog.v(TAG, "updateSeekBar, seekBar: %s, message: %s", seekBar, message.getIv());
 
 		VoiceMessageContainer messageVmc = mContainers.get(message.getIv());
@@ -290,21 +294,20 @@ public class VoiceController {
 			// otherwise update
 
 			SurespotLog.v(TAG, "updateSeekBar, creating voice message container");
-			messageVmc = new VoiceMessageContainer(MainActivity.getNetworkController(), message);
+			messageVmc = new VoiceMessageContainer(context, MainActivity.getNetworkController(), message);
 			mContainers.put(message.getIv(), messageVmc);
-			
 
 			messageVmc.attach(seekBar);
 			messageVmc.prepareAudio(seekBar, durationCallback);
-			
-			
 
 		}
 		else {
 			messageVmc.attach(seekBar);
-			durationCallback.handleResponse(messageVmc.getDuration());
+			if (durationCallback != null) {
+				durationCallback.handleResponse(messageVmc.getDuration());
+			}
 		}
-		
+
 		seekBar.setTag(messageVmc);
 
 	}
