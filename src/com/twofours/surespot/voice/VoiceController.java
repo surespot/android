@@ -271,6 +271,10 @@ public class VoiceController {
 				mPlayer.stop();
 			}
 			playCompleted();
+			if (mSeekBar != null) {
+				setProgress(mSeekBar, 0);
+			}
+
 		}
 
 		if (!mPlaying) {
@@ -323,20 +327,28 @@ public class VoiceController {
 
 	public static void attach(final SeekBar seekBar) {
 		if (isCurrentMessage(seekBar)) {
+			SurespotLog.v(TAG, "attach: iscurrent");
 			mSeekBar = seekBar;
 		}
 		else {
-			seekBar.post(new Runnable() {
-
-				@Override
-				public void run() {
-					seekBar.setProgress(0);
-
-				}
-
-			});
-
+			SurespotLog.v(TAG, "attach: notscurrent");
+			setProgress(seekBar, 0);
 		}
+	}
+
+	private static void setProgress(final SeekBar seekBar, final int progress) {
+		if (seekBar == null)
+			return;
+		seekBar.post(new Runnable() {
+
+			@Override
+			public void run() {
+				SurespotLog.v(TAG, "Setting progress to %d", progress);
+				seekBar.setProgress(progress);
+
+			}
+
+		});
 	}
 
 	private static class SeekBarThread implements Runnable {
@@ -347,6 +359,7 @@ public class VoiceController {
 			mRun = true;
 			while (mRun) {
 				int progress = 0;
+
 				if (mDuration > -1) {
 
 					if (isCurrentMessage()) {
@@ -354,31 +367,24 @@ public class VoiceController {
 						int currentPosition = mPlayer.getCurrentPosition();
 
 						progress = (int) (((float) currentPosition / (float) mDuration) * 101);
-						SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration, progress);
+						// SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
+						// progress);
 						if (progress < 0)
 							progress = 0;
-						if (progress > 90)
+						if (progress > 95)
 							progress = 100;
 
-						SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
+						// SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
 
 						if (currentPosition < mDuration) {
 							if (!mRun) {
 								break;
 							}
-							mSeekBar.setProgress(progress);
 
 						}
-						else {
-							mSeekBar.setProgress(0);
-						}
 					}
-					else {
-						mSeekBar.setProgress(0);
-					}
-				}
-				else {
-					mSeekBar.setProgress(0);
+
+					setProgress(mSeekBar, progress);
 				}
 
 				try {
@@ -386,43 +392,34 @@ public class VoiceController {
 				}
 				catch (InterruptedException e) {
 					mRun = false;
-					SurespotLog.w(TAG,"SeekBarThread interrupted", e);
+					SurespotLog.w(TAG, e, "SeekBarThread interrupted");
 				}
 			}
-			
-			//mSeekBar.setProgress(0);
-			
-			if (mSeekBar != null) {
-//				if (isCurrentMessage()) {
-//					mSeekBar.setProgress(100);
-//				}
-//				else {
-					mSeekBar.setProgress(0);
-				//}
-			}
+
+			setProgress(mSeekBar, 0);
 		}
 
 		public void completed() {
 			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
 
-//			Runnable runnable = new Runnable() {
-//
-//				@Override
-//				public void run() {
-//					if (mSeekBar != null) {
-//						if (isCurrentMessage()) {
-//							mSeekBar.setProgress(100);
-//						}
-//						else {
-//							mSeekBar.setProgress(0);
-//						}
-//					}
-//
-//				}
-//			};
-//
-//			mSeekBar.post(runnable);
+			// Runnable runnable = new Runnable() {
+			//
+			// @Override
+			// public void run() {
+			// if (mSeekBar != null) {
+			// if (isCurrentMessage()) {
+			// mSeekBar.setProgress(100);
+			// }
+			// else {
+			// mSeekBar.setProgress(0);
+			// }
+			// }
+			//
+			// }
+			// };
+			//
+			// mSeekBar.post(runnable);
 
 		}
 	}
