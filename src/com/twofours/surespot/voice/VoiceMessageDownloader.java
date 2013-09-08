@@ -25,6 +25,7 @@ import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -76,8 +77,7 @@ public class VoiceMessageDownloader {
 			message.setLoading(false);
 
 			updateUI(message, parentView, voiceData.length);
-			
-		
+
 		}
 	}
 
@@ -94,7 +94,10 @@ public class VoiceMessageDownloader {
 			VoiceMessageDownloaderTask task = new VoiceMessageDownloaderTask(parentView, message);
 			DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-			seekBar.setTag(decryptionTaskWrapper);
+			seekBar.setTag(R.id.tagDownloader, decryptionTaskWrapper);
+			TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
+			voiceTime.setVisibility(View.GONE);
+
 			message.setLoaded(false);
 			message.setLoading(true);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -129,16 +132,14 @@ public class VoiceMessageDownloader {
 	public VoiceMessageDownloaderTask getBitmapDownloaderTask(View parentView) {
 		if (parentView != null) {
 			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-			Object oDecryptionTaskWrapper = seekBar.getTag();
+			Object oDecryptionTaskWrapper = seekBar.getTag(R.id.tagDownloader);
 			if (oDecryptionTaskWrapper instanceof DecryptionTaskWrapper) {
 				DecryptionTaskWrapper decryptionTaskWrapper = (DecryptionTaskWrapper) oDecryptionTaskWrapper;
 				return decryptionTaskWrapper.getDecryptionTask();
-			}					
+			}
 		}
 		return null;
 	}
-	
-	
 
 	/**
 	 * The actual AsyncTask that will asynchronously download the image.
@@ -165,8 +166,6 @@ public class VoiceMessageDownloader {
 		@Override
 		public void run() {
 			byte[] soundbytes = mMessage.getPlainBinaryData();
-			// TODO - progress
-
 			if (soundbytes == null) {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
@@ -209,30 +208,6 @@ public class VoiceMessageDownloader {
 			if (soundbytes != null) {
 
 				mMessage.setPlainBinaryData(soundbytes);
-
-				// figure out duration
-				// String path = mAudioFile.getAbsolutePath();
-				// mPlayer = new MediaPlayer();
-				// mPlayer.setDataSource(path);
-				// mPlayer.prepare();
-				//
-				// mDuration = mPlayer.getDuration();
-
-				// mDuration = soundbytes.length;
-				// SurespotLog.v(TAG, "duration: %d", mDuration);
-				// SurespotLog.v(TAG, "seekbar same: %b", seekBar.getTag() == VoiceMessageContainer.this);
-				//
-				// setDatetimeAndDuration(seekBar);
-				//
-				// mLoaded = true;
-				// mLoading = false;
-				// return mDuration;
-				// }
-				// catch (IOException e) {
-				// SurespotLog.w(TAG, e, "playVoiceMessage");
-				// }
-				// }
-
 				mMessage.setLoaded(true);
 				mMessage.setLoading(false);
 
@@ -245,14 +220,7 @@ public class VoiceMessageDownloader {
 
 							@Override
 							public void run() {
-								updateUI(mMessage, imageView, bytes);
-								// }
-								// else {
-								// voiceTime.setVisibility(View.GONE);
-								// seekBar.setEnabled(false);
-								// voicePlay.setEnabled(false);
-								//
-								// }
+								updateUI(mMessage, imageView, bytes);							
 							}
 
 						});
@@ -267,20 +235,24 @@ public class VoiceMessageDownloader {
 
 	private void updateUI(SurespotMessage message, View parentView, int bytes) {
 		if (message.getDateTime() != null) {
-//			TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
-//			tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
-//					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+			TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
+			tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
+					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
 
 		}
 		TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
 		ImageView voicePlay = (ImageView) parentView.findViewById(R.id.voicePlay);
 
-		// if (mDuration > 0) {
-	//	SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);		
-		//seekBar.setEnabled(true);
-		voicePlay.setEnabled(true);
+		//if (mDuration > 0) {
+
+		//voicePlay.setEnabled(true);
 		voiceTime.setVisibility(View.VISIBLE);
-	//	voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
+		voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
+
+//		if (message.isPlayVoice()) {
+//			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
+//			VoiceController.playVoiceMessage(MainActivity.getContext(), seekBar, message);
+//		}
 
 	}
 
@@ -295,38 +267,4 @@ public class VoiceMessageDownloader {
 			return decryptionTaskReference.get();
 		}
 	}
-	
-	/**
-	 * Adds this bitmap to the cache.
-	 * 
-	 * @param bitmap
-	 *            The newly downloaded bitmap.
-	 */
-	// public static void addBitmapToCache(String key, Bitmap bitmap) {
-	// if (bitmap != null) {
-	// mBitmapCache.addBitmapToMemoryCache(key, bitmap);
-	// }
-	// }
-	//
-	// /**
-	// * @param url
-	// * The URL of the image that will be retrieved from the cache.
-	// * @return The cached bitmap or null if it was not found.
-	// */
-	// private static Bitmap getBitmapFromCache(String key) {
-	// return mBitmapCache.getBitmapFromMemCache(key);
-	// }
-	//
-	// public static void evictCache() {
-	// mBitmapCache.evictAll();
-	//
-	// }
-	//
-	// public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
-	// Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
-	// if (bitmap != null) {
-	// mBitmapCache.remove(sourceKey);
-	// mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
-	// }
-	// }
 }

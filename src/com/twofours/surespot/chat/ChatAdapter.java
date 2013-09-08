@@ -269,6 +269,7 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 			chatMessageViewHolder.voiceSeekBar = (SeekBar) convertView.findViewById(R.id.seekBarVoice);
+			chatMessageViewHolder.voiceSeekBar.setEnabled(false);
 			chatMessageViewHolder.voiceTime = (TextView) convertView.findViewById(R.id.voiceTime);
 
 			if (mDebugMode) {
@@ -363,16 +364,9 @@ public class ChatAdapter extends BaseAdapter {
 						
 					
 					mMessageVoiceDownloader.download(convertView, item);
-					chatMessageViewHolder.voiceSeekBar.setTag(new WeakReference<SurespotMessage>(item));
+					chatMessageViewHolder.voiceSeekBar.setTag(R.id.tagMessage, new WeakReference<SurespotMessage>(item));
 					VoiceController.attach(chatMessageViewHolder.voiceSeekBar);
 					
-					// play it if we need to
-//					if (item.isPlayVoice()) {
-//						VoiceController.playVoiceMessage(mContext, chatMessageViewHolder.voiceSeekBar, item);
-//					}
-//					else {
-//						VoiceController.updateSeekBar(mContext, item, chatMessageViewHolder.voiceSeekBar, null);
-//					}
 				}
 			}
 		}
