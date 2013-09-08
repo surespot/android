@@ -161,13 +161,10 @@ public class VoiceController {
 
 	}
 
-	// Play unencrypted audio file from path and optionally delete it
+	// Play is over, cleanup
 
 	private synchronized static void playCompleted() {
-		// if (mSeekBar != null) {
-		// mSeekBar.setProgress(0);
-		// //mSeekBar = null;
-		// }
+
 		mSeekBarThread.completed();
 		mMessage.setPlayMedia(false);
 		if (mAudioFile != null) {
@@ -369,6 +366,8 @@ public class VoiceController {
 						progress = (int) (((float) currentPosition / (float) mDuration) * 101);
 						// SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
 						// progress);
+						
+						//TODO weight by length
 						if (progress < 0)
 							progress = 0;
 						if (progress > 95)
@@ -403,23 +402,6 @@ public class VoiceController {
 			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
 
-			// Runnable runnable = new Runnable() {
-			//
-			// @Override
-			// public void run() {
-			// if (mSeekBar != null) {
-			// if (isCurrentMessage()) {
-			// mSeekBar.setProgress(100);
-			// }
-			// else {
-			// mSeekBar.setProgress(0);
-			// }
-			// }
-			//
-			// }
-			// };
-			//
-			// mSeekBar.post(runnable);
 
 		}
 	}
