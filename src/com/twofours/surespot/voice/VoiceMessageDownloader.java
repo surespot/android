@@ -220,7 +220,7 @@ public class VoiceMessageDownloader {
 
 							@Override
 							public void run() {
-								updateUI(mMessage, imageView, bytes);							
+								updateUI(mMessage, imageView, bytes);
 							}
 
 						});
@@ -243,16 +243,16 @@ public class VoiceMessageDownloader {
 		TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
 		ImageView voicePlay = (ImageView) parentView.findViewById(R.id.voicePlay);
 
-		//if (mDuration > 0) {
+		// if (mDuration > 0) {
 
-		//voicePlay.setEnabled(true);
+		// voicePlay.setEnabled(true);
 		voiceTime.setVisibility(View.VISIBLE);
 		voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
 
-//		if (message.isPlayVoice()) {
-//			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-//			VoiceController.playVoiceMessage(MainActivity.getContext(), seekBar, message);
-//		}
+		if (message.isPlayVoice()) {
+			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
+			VoiceController.playVoiceMessage(MainActivity.getContext(), seekBar, message);
+		}
 
 	}
 
