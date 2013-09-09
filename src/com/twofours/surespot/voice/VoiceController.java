@@ -129,6 +129,8 @@ public class VoiceController {
 	private synchronized static void startRecordingInternal(final Activity activity) {
 		if (mState != State.STARTED)
 			return;
+		
+		
 
 		try {
 			// MediaRecorder has major delay issues on gingerbread so we record raw PCM then convert natively to m4a
@@ -225,8 +227,9 @@ public class VoiceController {
 	}
 
 	public static synchronized void startRecording(Activity context, String username) {
-
 		if (!mRecording) {
+			stopPlaying();
+			
 			mActivity = context;
 			mUsername = username;
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
@@ -307,6 +310,10 @@ public class VoiceController {
 	}
 
 	public synchronized static void playVoiceMessage(Context context, final SeekBar seekBar, final SurespotMessage message) {
+		if (mRecording) {
+			return;
+		}
+		
 		SurespotLog.v(TAG, "playVoiceMessage");
 
 		if (message.getPlainBinaryData() == null) {
@@ -315,16 +322,7 @@ public class VoiceController {
 
 		boolean differentMessage = !message.equals(mMessage);
 
-		if (mPlaying) {
-			if (mPlayer != null) {
-				mPlayer.stop();
-			}
-			playCompleted();
-			if (mSeekBar != null) {
-				setProgress(mSeekBar, 0);
-			}
-
-		}
+		stopPlaying();
 
 		if (!mPlaying && differentMessage) {
 			mPlaying = true;
@@ -374,6 +372,19 @@ public class VoiceController {
 			updatePlayControls();
 		}
 
+	}
+	
+	private static void stopPlaying() {
+		if (mPlaying) {
+			if (mPlayer != null) {
+				mPlayer.stop();
+			}
+			playCompleted();
+			if (mSeekBar != null) {
+				setProgress(mSeekBar, 0);
+			}
+
+		}
 	}
 
 	public static synchronized void attach(final SeekBar seekBar) {
