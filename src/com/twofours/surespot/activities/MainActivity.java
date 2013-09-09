@@ -15,8 +15,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -29,7 +27,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.InputFilter;
-import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
@@ -47,7 +44,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -85,7 +81,6 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
-import com.twofours.surespot.ui.TextScaleButton;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -96,12 +91,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private static CredentialCachingService mCredentialCachingService = null;
 	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController = null;
-	
+
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
 	private IAsyncCallbackTuple<String, Boolean> m401Handler;
-	
+
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
 	private BroadcastReceiver mExternalStorageReceiver;
@@ -113,7 +108,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private MainActivityLayout mActivityLayout;
 	private EditText mEtMessage;
 	private EditText mEtInvite;
-	private TextScaleButton mSendButton;
+	private View mSendButton;
 	private GridView mEmojiView;
 	private boolean mKeyboardShowing;
 	private int mEmojiHeight;
@@ -128,12 +123,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mEmojiShowing;
 	private boolean mFriendHasBeenSet;
 	private int mEmojiResourceId = -1;
-	private int mHomeTextSize;
-	private int mSendTextSize;
-	private int mInviteTextSize;
-	private boolean mTextSizesSet;
-	private Button mPTTButton;
-	//private VoiceController mPTTController;
+	private ImageView mIvInvite;
+	private ImageView mIvHome;
+	private ImageView mIvVoice;
+	private ImageView mIvSend;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -284,7 +277,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteData);
-			
+
 			setupChatControls();
 
 			if (savedInstanceState != null) {
@@ -426,30 +419,91 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
 					.getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
 
-			if (figureOutButtonTextSizesBecauseAndroidIsAPainInTheArse()) {
-				setButtonText();
-			}
+			setButtonText();
+
 		}
 	}
 
 	private void setupChatControls() {
-		mSendButton = (TextScaleButton) findViewById(R.id.bSend);
+		mIvInvite = (ImageView) findViewById(R.id.ivInvite);
+		mIvHome = (ImageView) findViewById(R.id.ivHome);
+		mIvVoice = (ImageView) findViewById(R.id.ivVoice);
+		mIvSend = (ImageView) findViewById(R.id.ivSend);
+
+		mSendButton = (View) findViewById(R.id.bSend);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Friend friend = mCurrentFriend;
-				if (friend != null) {
-					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted(friend.getName())) {
-						sendMessage(friend.getName());
+				if (mChatController != null) {
+					Friend friend = mCurrentFriend;
+					if (friend != null) {
+						if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted(friend.getName())) {
+							sendMessage(friend.getName());
+						}
+						else {
+							// go to friends
+							mChatController.setCurrentChat(null);
+						}
 					}
 					else {
-						// go to friends
-						mChatController.setCurrentChat(null);
+						inviteFriend();
 					}
 				}
-				else {
-					inviteFriend();
+			}
+		});
+
+		mSendButton.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				// if (mEtMessage.getText().toString().length() == 0) {
+				// mChatController.closeTab();
+				// }
+				SurespotLog.v(TAG, "onLongClick voice");
+				Friend friend = mCurrentFriend;
+				if (friend != null) {
+					// if we haven't entered any text start recording voice
+
+					if (mEtMessage.getText().toString().length() == 0 && !mChatController.isFriendDeleted(friend.getName())) {
+						VoiceController.startRecording(MainActivity.this, friend.getName());
+					}
+
 				}
+
+				return true;
+			}
+		});
+
+		mSendButton.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+
+				if (event.getAction() == MotionEvent.ACTION_UP) {
+
+					SurespotLog.v(TAG, "voice record up");
+
+					// truncates without the delay for some reason
+					mSendButton.post(new Runnable() {
+
+						@Override
+						public void run() {
+							VoiceController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
+
+								@Override
+								public void handleResponse(Boolean result) {
+									if (!result) {
+										Utils.makeToast(MainActivity.this, "error sending voice message");
+									}
+
+								}
+							});
+
+						}
+					});
+
+				}
+
+				return false;
 			}
 		});
 
@@ -486,62 +540,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public void onClick(View v) {
 				UIUtils.showQRDialog(MainActivity.this);
-			}
-		});
-
-		mSendButton.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				// if (mEtMessage.getText().toString().length() == 0) {
-				// mChatController.closeTab();
-				// }
-				SurespotLog.v(TAG, "onLongClick voice");
-				Friend friend = mCurrentFriend;
-				if (friend != null) {
-					if (!mChatController.isFriendDeleted(friend.getName())) {
-						VoiceController.startRecording(MainActivity.this, friend.getName());
-					}
-
-				}
-
-				return true;
-			}
-		});
-
-		mSendButton.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				
-
-				if (event.getAction() == MotionEvent.ACTION_UP) {
-						
-					SurespotLog.v(TAG, "voice record up");
-			
-					
-					// truncates without the delay for some reason
-					mSendButton.post(new Runnable() {
-
-						@Override
-						public void run() {
-							VoiceController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
-
-								@Override
-								public void handleResponse(Boolean result) {
-									if (!result) {
-										Utils.makeToast(MainActivity.this, "error sending voice message");
-									}
-
-								}
-							});
-
-						}
-					});
-
-				
-				}
-
-				return false;
 			}
 		});
 
@@ -601,144 +599,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
-		// PTT
-		mSendButton = (TextScaleButton) findViewById(R.id.bSend);
-		mSendButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Friend friend = mCurrentFriend;
-				if (friend != null) {
-					if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted(friend.getName())) {
-						sendMessage(friend.getName());
-					}
-					else {
-						// go to friends
-						mChatController.setCurrentChat(null);
-					}
-				}
-				else {
-					inviteFriend();
-				}
-			}
-		});
-
-//		mPTTButton = (Button) findViewById(R.id.bPTT);
-//		mPTTButton.setOnTouchListener(new OnTouchListener() {
-//
-//			@Override
-//			public boolean onTouch(View v, MotionEvent event) {
-//				boolean handled = false;
-//				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//					SurespotLog.v(TAG, "PTT Down");
-//					Friend friend = mCurrentFriend;
-//					if (friend != null) {
-//						if (!mChatController.isFriendDeleted(friend.getName())) {
-//							mPTTController.startRecording(MainActivity.this, friend.getName());
-//						}
-//
-//					}
-//
-//					handled = true;
-//				}
-//				else {
-//					if (event.getAction() == MotionEvent.ACTION_UP) {
-//
-//						SurespotLog.v(TAG, "PTT up");
-//
-//						// truncates without the delay for some reason
-//						mPTTButton.postDelayed(new Runnable() {
-//
-//							@Override
-//							public void run() {
-//								mPTTController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
-//
-//									@Override
-//									public void handleResponse(Boolean result) {
-//										if (!result) {
-//											Utils.makeToast(MainActivity.this, "error sending ptt message");
-//										}
-//
-//									}
-//								});
-//
-//							}
-//						}, 250);
-//
-//						handled = true;
-//					}
-//				}
-//
-//				return handled;
-//			}
-//		});
-
-		// figure out the button sizes
-	}
-
-	// fucking annoying when the text is the same number of characters but renders at different sizes
-	private boolean figureOutButtonTextSizesBecauseAndroidIsAPainInTheArse() {
-		// rubbish
-		if (!mTextSizesSet) {
-
-			String send = getString(R.string.send);
-			String home = getString(R.string.home);
-			String invite = getString(R.string.invite);
-
-			int text_width = mSendButton.getWidth() - mSendButton.getPaddingLeft() - mSendButton.getPaddingRight();
-
-			if (text_width > 0) {
-
-				int sendSize = getTextSize(send, text_width, mSendButton.getHeight());
-				int homeSize = getTextSize(home, text_width, mSendButton.getHeight());
-				int inviteSize = getTextSize(invite, text_width, mSendButton.getHeight());
-
-				SurespotLog.v(TAG, "textwidth: %d, home text size: %d, send text size: %d, invite text size: %d", text_width, mHomeTextSize, mSendTextSize,
-						mInviteTextSize);
-
-				if (send.length() == home.length()) {
-					mSendTextSize = sendSize > homeSize ? homeSize : sendSize;
-					mHomeTextSize = sendSize > homeSize ? homeSize : sendSize;
-				}
-				else {
-					mSendTextSize = sendSize;
-					mHomeTextSize = homeSize;
-				}
-
-				if (invite.length() == home.length()) {
-					mInviteTextSize = homeSize;
-				}
-				else {
-					mInviteTextSize = inviteSize;
-				}
-				mTextSizesSet = true;
-				return true;
-			}
-		}
-		return false;
-
-	}
-
-	int getTextSize(String text, int text_width, int viewHeight) {
-		int incr_text_size = 1;
-
-		int text_check_w = 0;
-		Rect bounds = new Rect();
-		// ask the paint for the bounding rect if it were to draw this
-
-		TextPaint mTextPaint = new TextPaint();
-		mTextPaint.setTextAlign(Paint.Align.CENTER);
-		mTextPaint.setAntiAlias(true);
-
-		while (text_width > text_check_w && incr_text_size < 500) {
-			mTextPaint.setTextSize(incr_text_size);// have this the same as your text size
-			mTextPaint.getTextBounds(text, 0, text.length(), bounds);
-
-			text_check_w = bounds.width();
-			incr_text_size++;
-
-		}
-
-		return incr_text_size;
 	}
 
 	private boolean needsLogin(Intent intent) {
@@ -1135,10 +995,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 		mChatController = null;
-//		if (mPTTController != null) {
-//			mPTTController.destroy();
-//			mPTTController = null;
-//		}
+		// if (mPTTController != null) {
+		// mPTTController.destroy();
+		// mPTTController = null;
+		// }
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1673,23 +1533,43 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setButtonText() {
 		if (mCurrentFriend == null) {
-			mSendButton.setText(getString(R.string.invite), mInviteTextSize);
-			mSendButton.invalidate();
+			// mSendButton.setText(getString(R.string.invite), mInviteTextSize);
+			// mSendButton.invalidate();
+
+			mIvInvite.setVisibility(View.VISIBLE);
+			mIvHome.setVisibility(View.GONE);
+			mIvVoice.setVisibility(View.GONE);
+			mIvSend.setVisibility(View.GONE);
 
 		}
 		else {
 			if (mCurrentFriend.isDeleted()) {
-				mSendButton.setText(getString(R.string.home), mHomeTextSize);
-				mSendButton.invalidate();
+				// mSendButton.setText(getString(R.string.home), mHomeTextSize);
+				// mSendButton.invalidate();
+
+				mIvInvite.setVisibility(View.GONE);
+				mIvHome.setVisibility(View.VISIBLE);
+				mIvVoice.setVisibility(View.GONE);
+				mIvSend.setVisibility(View.GONE);
 			}
 			else {
 				if (mEtMessage.getText().length() > 0) {
-					mSendButton.setText(getString(R.string.send), mSendTextSize);
-					mSendButton.invalidate();
+					// mSendButton.setText(getString(R.string.send), mSendTextSize);
+					// mSendButton.invalidate();
+
+					mIvInvite.setVisibility(View.GONE);
+					mIvHome.setVisibility(View.GONE);
+					mIvVoice.setVisibility(View.GONE);
+					mIvSend.setVisibility(View.VISIBLE);
 				}
 				else {
-					mSendButton.setText(getString(R.string.home), mHomeTextSize);
-					mSendButton.invalidate();
+					// mSendButton.setText(getString(R.string.home), mHomeTextSize);
+					// mSendButton.invalidate();
+
+					mIvInvite.setVisibility(View.GONE);
+					mIvHome.setVisibility(View.VISIBLE);
+					mIvVoice.setVisibility(View.VISIBLE);
+					mIvSend.setVisibility(View.GONE);
 				}
 			}
 
@@ -1847,5 +1727,4 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
-	
 }
