@@ -371,7 +371,7 @@ public class VoiceController {
 
 			@Override
 			public void run() {
-				SurespotLog.v(TAG, "Setting progress to %d", progress);
+				//SurespotLog.v(TAG, "Setting progress to %d", progress);
 				seekBar.setProgress(progress);
 
 			}

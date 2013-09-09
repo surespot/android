@@ -64,12 +64,12 @@ public class VoiceMessageDownloader {
 		byte[] voiceData = message.getPlainBinaryData();
 
 		if (voiceData == null) {
-			SurespotLog.v(TAG, "voice data not ready: " + message.getData());
+	//		SurespotLog.v(TAG, "voice data not ready: " + message.getData());
 
 			forceDownload(parentView, message);
 		}
 		else {
-			SurespotLog.v(TAG, "loading voice data from message");
+	//		SurespotLog.v(TAG, "loading voice data from message");
 			cancelPotentialDownload(parentView, message);
 
 			message.setLoaded(true);
@@ -94,7 +94,7 @@ public class VoiceMessageDownloader {
 			DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
 			seekBar.setTag(R.id.tagDownloader, decryptionTaskWrapper);
-			TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
+			TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
 			voiceTime.setVisibility(View.GONE);
 
 			message.setLoaded(false);
@@ -169,12 +169,11 @@ public class VoiceMessageDownloader {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
 				if (mMessage.getInlineData() == null) {
-					SurespotLog.v(TAG, "getting voice stream from cloud");
+					//SurespotLog.v(TAG, "getting voice stream from cloud");
 					voiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
-
 				}
 				else {
-					SurespotLog.v(TAG, "getting voice stream from inlineData");
+					//SurespotLog.v(TAG, "getting voice stream from inlineData");
 					voiceStream = new ByteArrayInputStream(mMessage.getInlineData());
 
 				}
@@ -189,7 +188,6 @@ public class VoiceMessageDownloader {
 								voiceStream, out);
 
 						soundbytes = Utils.inputStreamToBytes(inputStream);
-
 					}
 					catch (InterruptedIOException ioe) {
 
@@ -202,7 +200,7 @@ public class VoiceMessageDownloader {
 				}
 			}
 			else {
-				SurespotLog.v(TAG, "getting voice stream from cache");
+				//SurespotLog.v(TAG, "getting voice stream from cache");
 			}
 			if (soundbytes != null) {
 
@@ -239,9 +237,12 @@ public class VoiceMessageDownloader {
 					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
 
 		}
-		TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
+		TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
 		voiceTime.setVisibility(View.VISIBLE);
-		voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
+		
+		//use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
+		float kb = (float) bytes / 1000;		
+		voiceTime.setText(String.format("%d kB", (int) Math.ceil(kb)));
 
 		if (message.isPlayVoice()) {
 			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);

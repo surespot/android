@@ -289,7 +289,7 @@ public class EncryptionController {
 							break;
 						}
 						bos.write(buf, 0, i);
-						SurespotLog.v(TAG, "encrypted " + i + " bytes");
+					//	SurespotLog.v(TAG, "encrypted " + i + " bytes");
 					}
 
 					// cos.close();
@@ -346,7 +346,7 @@ public class EncryptionController {
 					int i = 0;
 
 					while ((i = cis.read(buf)) != -1) {
-						SurespotLog.v(TAG, "decrypted " + i + " bytes");
+						//SurespotLog.v(TAG, "decrypted " + i + " bytes");
 						bos.write(buf, 0, i);
 					}
 

@@ -268,9 +268,9 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.voiceView = convertView.findViewById(R.id.messageVoice);
 			chatMessageViewHolder.ivNotShareable = (ImageView) convertView.findViewById(R.id.messageImageNotShareable);
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
+			chatMessageViewHolder.messageSize = (TextView) convertView.findViewById(R.id.messageSize);
 			chatMessageViewHolder.voiceSeekBar = (SeekBar) convertView.findViewById(R.id.seekBarVoice);
-			chatMessageViewHolder.voiceSeekBar.setEnabled(false);
-			chatMessageViewHolder.voiceTime = (TextView) convertView.findViewById(R.id.voiceTime);
+			chatMessageViewHolder.voiceSeekBar.setEnabled(false);			
 			chatMessageViewHolder.voicePlay = (ImageView) convertView.findViewById(R.id.voicePlay);
 			chatMessageViewHolder.voiceStop = (ImageView) convertView.findViewById(R.id.voiceStop);
 
@@ -320,6 +320,7 @@ public class ChatAdapter extends BaseAdapter {
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 			chatMessageViewHolder.voiceView.setVisibility(View.GONE);
+			chatMessageViewHolder.messageSize.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.clearAnimation();
 			chatMessageViewHolder.imageView.setImageBitmap(null);
@@ -338,6 +339,7 @@ public class ChatAdapter extends BaseAdapter {
 			if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 				chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
 				chatMessageViewHolder.voiceView.setVisibility(View.GONE);
+				chatMessageViewHolder.messageSize.setVisibility(View.GONE);
 				chatMessageViewHolder.tvText.clearAnimation();
 				chatMessageViewHolder.tvText.setVisibility(View.GONE);
 				chatMessageViewHolder.tvText.setText("");
@@ -410,10 +412,10 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView tvMimeType;
 		public ImageView ivShareable;
 		public ImageView ivNotShareable;
+		public TextView messageSize;
 		public int type;
 		public View voiceView;
-		public SeekBar voiceSeekBar;
-		public TextView voiceTime;
+		public SeekBar voiceSeekBar;		
 		public ImageView voicePlay;
 		public ImageView voiceStop;
 
