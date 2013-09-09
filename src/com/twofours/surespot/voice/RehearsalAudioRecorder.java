@@ -25,6 +25,7 @@ public class RehearsalAudioRecorder {
 	// The interval in which the recorded samples are output to the file
 	// Used only in uncompressed mode
 	private static final int TIMER_INTERVAL = 120;
+	protected static final String TAG = "RehearsalAudioRecorder";
 
 	// Toggles uncompressed recording on/off; RECORDING_UNCOMPRESSED / RECORDING_COMPRESSED
 	private boolean rUncompressed;
@@ -153,8 +154,7 @@ public class RehearsalAudioRecorder {
 
 				aRecorder = new AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSize);
 				if (aRecorder.getState() != AudioRecord.STATE_INITIALIZED)
-					throw new Exception("AudioRecord initialization failed");
-				aRecorder.setRecordPositionUpdateListener(updateListener);
+					throw new Exception("AudioRecord initialization failed");								
 				aRecorder.setPositionNotificationPeriod(framePeriod);
 			}
 			else { // RECORDING_COMPRESSED
@@ -369,6 +369,7 @@ public class RehearsalAudioRecorder {
 		if (state == State.READY) {
 			if (rUncompressed) {
 				payloadSize = 0;
+				aRecorder.setRecordPositionUpdateListener(updateListener);
 				aRecorder.startRecording();
 				aRecorder.read(buffer, 0, buffer.length);
 			}
@@ -393,8 +394,10 @@ public class RehearsalAudioRecorder {
 	public void stop() {
 		if (state == State.RECORDING) {
 			if (rUncompressed) {
+				
+				aRecorder.setRecordPositionUpdateListener(null);
 				aRecorder.stop();
-
+				
 				try {
 					fWriter.seek(4); // Write size to RIFF header
 					fWriter.writeInt(Integer.reverseBytes(36 + payloadSize));
