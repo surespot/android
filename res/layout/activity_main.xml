@@ -109,11 +109,11 @@
         </ImageView>
 
         <LinearLayout
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
             android:orientation="vertical" >
 
             <ImageView
@@ -155,21 +155,46 @@
         android:visibility="gone" >
     </GridView>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:background="#88000000" >
+        android:orientation="vertical" >
 
-        <com.twofours.surespot.voice.VolumeEnvelopeView
-            android:id="@+id/volume_envelope"
+        <LinearLayout
+            android:id="@+id/voiceHeader"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:background="#BB000000"
-            android:visibility="gone"
-            app:color="@color/surespotBlue" />
-    </FrameLayout>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recording time left: " />
+
+            <TextView
+                android:id="@+id/voiceRecTimeLeft"
+                android:textColor="@color/surespotBlue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#88000000" >
+
+            <com.twofours.surespot.voice.VolumeEnvelopeView
+                android:id="@+id/volume_envelope"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="#BB000000"
+                android:visibility="gone"
+                app:color="@color/surespotBlue" />
+        </FrameLayout>
+    </LinearLayout>
 
 </com.twofours.surespot.chat.MainActivityLayout>

@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,9 +14,11 @@ import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.AudioSource;
+import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
@@ -27,7 +28,6 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.IAsyncCallback;
 
 public class VoiceController {
 	private static final String TAG = "VoiceController";
@@ -48,6 +48,12 @@ public class VoiceController {
 	static SeekBar mSeekBar;
 	static boolean mPlaying = false;
 	private static int mSampleRate;
+	private static VolumeEnvelopeView mEnvelopeView;
+	private static View mVoiceHeaderView;
+	private static TextView mVoiceRecTimeLeftView;
+	private static float mTimeLeft;
+
+	private static Activity mActivity;
 
 	enum State {
 		INITIALIZING, READY, STARTED, RECORDING
@@ -75,16 +81,39 @@ public class VoiceController {
 			mTimer.cancel();
 			mTimer.purge();
 		}
+
+		final int rate = 50;
+		mTimeLeft = 10000;
 		mTimer = new Timer();
 		mCurrentTimeTask = new TimerTask() {
 			public void run() {
 				activity.runOnUiThread(new Runnable() {
 					public void run() {
-						VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
+
 						if (mState == State.RECORDING) {
-							// mCurrentTime.setText(mSessionPlayback.playTimeFormatter().format(mRecordService.getTimeInRecording()));
-							// if(mVolumeEnvelopeEnabled)
-							mEnvelopeView.setNewVolume(getMaxAmplitude());
+
+							mTimeLeft -= rate;
+
+							final float currentTimeLeft = mTimeLeft;
+
+							if (currentTimeLeft < 0) {
+								stopRecording(mActivity);
+								return;
+							}
+							mEnvelopeView.setNewVolume(getMaxAmplitude(), true);
+
+							// if we're at a half second boundary, update time display
+							if (currentTimeLeft % 500 == 0) {
+
+								mVoiceRecTimeLeftView.post(new Runnable() {
+
+									@Override
+									public void run() {
+										mVoiceRecTimeLeftView.setText(Float.toString(currentTimeLeft / 1000));
+									}
+								});
+							}
+
 							return;
 						}
 
@@ -93,11 +122,11 @@ public class VoiceController {
 				});
 			}
 		};
-		mTimer.scheduleAtFixedRate(mCurrentTimeTask, 0, 100);
+		mTimer.scheduleAtFixedRate(mCurrentTimeTask, 0, rate);
 
 	}
 
-	private synchronized static void startRecording(final Activity activity) {
+	private synchronized static void startRecordingInternal(final Activity activity) {
 		if (mState != State.STARTED)
 			return;
 
@@ -124,17 +153,17 @@ public class VoiceController {
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
 
 			SurespotLog.v(TAG, "sampleRate: %d", mSampleRate);
-			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.VISIBLE);
+			mVoiceHeaderView.setVisibility(View.VISIBLE);
+			mVoiceRecTimeLeftView.setText("10.0");
 			mEnvelopeView.clearVolume();
 			mRecorder.setOutputFile(mFileName);
 			mRecorder.prepare();
 			mRecorder.start();
 
 			startTimer(activity);
-			// mTimeAtStart = new Date().getTime();
 			mState = State.RECORDING;
-			Utils.makeToast(activity, "sample rate: " + mSampleRate);
+			// Utils.makeToast(activity, "sample rate: " + mSampleRate);
 		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "prepare() failed");
@@ -198,67 +227,82 @@ public class VoiceController {
 	public static synchronized void startRecording(Activity context, String username) {
 
 		if (!mRecording) {
-
+			mActivity = context;
 			mUsername = username;
+			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
+			mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
+			mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
 			Utils.makeToast(context, "recording");
-			startRecording(context);
+			startRecordingInternal(context);
 			mRecording = true;
 		}
 
 	}
 
-	public synchronized static void stopRecording(MainActivity activity, IAsyncCallback<Boolean> callback) {
+	public synchronized static void stopRecording(Activity activity) {
 		if (mRecording) {
 			stopRecordingInternal();
-			sendVoiceMessage(activity, callback);
+			sendVoiceMessage(activity);
 			Utils.makeToast(activity, "encrypting and transmitting");
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.GONE);
+			mVoiceHeaderView.setVisibility(View.GONE);
 			mRecording = false;
-		}
-		else {
-			callback.handleResponse(true);
 		}
 	}
 
-	private synchronized static void sendVoiceMessage(MainActivity activity, final IAsyncCallback<Boolean> callback) {
-		// convert to AAC
-		// TODO bg thread?
-		FileInputStream fis;
-		try {
-			File file = new File(mFileName);
-			SurespotLog.v(TAG, "uncompressed data length: %d", file.length());
-			fis = new FileInputStream(mFileName);
-			Date start = new Date();
+	private synchronized static void sendVoiceMessage(final Activity activity) {
+		new AsyncTask<Void, Void, FileInputStream>() {
 
-			String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
-			mEncoder.init(16000, 1, mSampleRate, 16, outFile);
+			@Override
+			protected FileInputStream doInBackground(Void... params) {
+				// convert to AAC
+				FileInputStream fis;
+				try {
+					fis = new FileInputStream(mFileName);
 
-			mEncoder.encode(Utils.inputStreamToBytes(fis));
-			mEncoder.uninit();
+					String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
+					mEncoder.init(16000, 1, mSampleRate, 16, outFile);
 
-			// delete raw pcm
-			new File(mFileName).delete();
+					mEncoder.encode(Utils.inputStreamToBytes(fis));
+					mEncoder.uninit();
 
-			// convert to m4a (gingerbread can't play the AAC for some bloody reason).
-			final String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
-			new AACToM4A().convert(activity, outFile, m4aFile);
+					// delete raw pcm
+					new File(mFileName).delete();
 
-			// delete aac
-			new File(outFile).delete();
+					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
+					final String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
+					new AACToM4A().convert(activity, outFile, m4aFile);
 
-			SurespotLog.v(TAG, "AAC encoding end, time: %d ms", (new Date().getTime() - start.getTime()));
+					// delete aac
+					new File(outFile).delete();
 
-			FileInputStream m4aStream = new FileInputStream(m4aFile);
+					FileInputStream m4aStream = new FileInputStream(m4aFile);
 
-			MainActivity.getChatController().sendVoiceMessage(mUsername, Utils.inputStreamToBytes(m4aStream), SurespotConstants.MimeTypes.M4A);
+					return m4aStream;
+				}
 
-		}
+				catch (IOException e) {
+					SurespotLog.w(TAG, e, "sendVoiceMessage");
+				}
+				return null;
+			}
 
-		catch (IOException e) {
-			Utils.makeToast(activity, "error sending message");
-			SurespotLog.w(TAG, e, "sendVoiceMessage");
-		}
+			protected void onPostExecute(FileInputStream result) {
+				if (result != null) {
+					try {
+						MainActivity.getChatController().sendVoiceMessage(mUsername, Utils.inputStreamToBytes(result), SurespotConstants.MimeTypes.M4A);
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "sendVoiceMessage");
+					}
+				}
+				else {
+					Utils.makeToast(activity, "error sending message");
+				}
+
+			};
+		}.execute();
 
 	}
 

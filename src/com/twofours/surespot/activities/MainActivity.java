@@ -90,7 +90,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private static CredentialCachingService mCredentialCachingService = null;
 	private static NetworkController mNetworkController = null;
-	private static ChatController mChatController = null;
+	private static ChatController mChatController;
 
 	private static Context mContext = null;
 	private static Handler mMainHandler = null;
@@ -448,7 +448,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					else {
 						inviteFriend();
 					}
-				}
+				}			
 			}
 		});
 
@@ -487,16 +487,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 						@Override
 						public void run() {
-							VoiceController.stopRecording(MainActivity.this, new IAsyncCallback<Boolean>() {
-
-								@Override
-								public void handleResponse(Boolean result) {
-									if (!result) {
-										Utils.makeToast(MainActivity.this, "error sending voice message");
-									}
-
-								}
-							});
+							VoiceController.stopRecording(MainActivity.this);
 
 						}
 					});
@@ -933,7 +924,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
 			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			mChatController = null;
+			//mChatController = null;
 			MainActivity.this.startActivity(finalIntent);
 			finish();
 			// return null;
@@ -994,7 +985,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
-		mChatController = null;
+		//mChatController = null;
 		// if (mPTTController != null) {
 		// mPTTController.destroy();
 		// mPTTController = null;
