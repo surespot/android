@@ -122,7 +122,7 @@
                 android:layout_height="match_parent"
                 android:adjustViewBounds="false"
                 android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_media_pause"
+                android:src="@android:drawable/ic_media_previous"
                 android:visibility="gone" />
 
             <SeekBar
