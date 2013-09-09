@@ -137,11 +137,13 @@ public class UIUtils {
 			statusText = context.getString(R.string.error_message_throttled);
 			break;
 		case 500:
-			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 				statusText = context.getString(R.string.error_message_generic);
 			}
 			else {
-				statusText = context.getString(R.string.error_message_resend);
+				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+					statusText = context.getString(R.string.error_message_resend);
+				}
 			}
 
 			break;
@@ -458,7 +460,7 @@ public class UIUtils {
 	public static void showHelpDialog(Activity context, boolean showAgreement) {
 		View view = LayoutInflater.from(context).inflate(R.layout.dialog_help, null);
 		if (showAgreement) {
-			TextView helpAgreement = (TextView) view.findViewById(R.id.helpAgreement);						
+			TextView helpAgreement = (TextView) view.findViewById(R.id.helpAgreement);
 			UIUtils.setHtml(context, helpAgreement, R.string.help_agreement);
 			helpAgreement.setVisibility(View.VISIBLE);
 		}

@@ -99,19 +99,19 @@ public class ChatFragment extends SherlockFragment {
 					}
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-							
-					//		VoiceController pttController = getMainActivity().getPTTController();
+
+							// VoiceController pttController = getMainActivity().getPTTController();
 							SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
-							
+
 							VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
 
-//							if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
-//
-//								Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
-//								newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//								newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
-//								ChatFragment.this.getActivity().startActivity(newIntent);
-//							}
+							// if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
+							//
+							// Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
+							// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							// newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+							// ChatFragment.this.getActivity().startActivity(newIntent);
+							// }
 						}
 					}
 				}
@@ -132,12 +132,25 @@ public class ChatFragment extends SherlockFragment {
 					return true;
 				}
 				else {
+					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 
-					ImageMessageMenuFragment dialog = new ImageMessageMenuFragment();
-					dialog.setActivityAndMessage(getMainActivity(), message);
-					dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
-					return true;
+						ImageMessageMenuFragment dialog = new ImageMessageMenuFragment();
+						dialog.setActivityAndMessage(getMainActivity(), message);
+						dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
+						return true;
+					}
+					else {
+						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+
+							TextMessageMenuFragment dialog = new TextMessageMenuFragment();
+							dialog.setActivityAndMessage(getMainActivity(), message);
+							dialog.show(getActivity().getSupportFragmentManager(), "TextMessageMenuFragment");
+							return true;
+						}
+
+					}
 				}
+				return false;
 
 			}
 		});
@@ -174,8 +187,8 @@ public class ChatFragment extends SherlockFragment {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		//	 SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
-		//	 + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
+			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
 
 			if (!mLoading) {
 				boolean hint = getUserVisibleHint();
@@ -190,7 +203,7 @@ public class ChatFragment extends SherlockFragment {
 						return;
 					}
 					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
-			//		SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
+					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
 					if (chatController != null && hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
 
 						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
@@ -217,7 +230,6 @@ public class ChatFragment extends SherlockFragment {
 								@Override
 								public void handleResponse(Boolean loadedNew) {
 
-									
 									int selection = mListView.getFirstVisiblePosition();
 									// mSelection = firstVisibleItem;
 									View v = mListView.getChildAt(0);
@@ -241,9 +253,9 @@ public class ChatFragment extends SherlockFragment {
 									else {
 										mJustLoaded = false;
 										mLoading = false;
-									
+
 									}
-									
+
 									if (!loadedNew) {
 										mHasEarlier = false;
 									}
@@ -333,7 +345,7 @@ public class ChatFragment extends SherlockFragment {
 				}
 			}
 		}
-		//if the messages weren't loaded don't sav ethe scroll position because it's bogus
+		// if the messages weren't loaded don't sav ethe scroll position because it's bogus
 		else {
 			SurespotLog.v(TAG, "%s: messages not loaded,  not saving scroll position", mUsername);
 		}
