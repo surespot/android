@@ -16,6 +16,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder.AudioSource;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
 import com.todoroo.aacenc.AACEncoder;
@@ -178,6 +179,7 @@ public class VoiceController {
 
 		mMessage = null;
 		mPlaying = false;
+		updatePlayControls();
 
 	}
 
@@ -256,12 +258,14 @@ public class VoiceController {
 
 	}
 
-	public static void playVoiceMessage(Context context, final SeekBar seekBar, final SurespotMessage message) {
+	public synchronized static void playVoiceMessage(Context context, final SeekBar seekBar, final SurespotMessage message) {
 		SurespotLog.v(TAG, "playVoiceMessage");
 
 		if (message.getPlainBinaryData() == null) {
 			return;
 		}
+
+		boolean differentMessage = !message.equals(mMessage);
 
 		if (mPlaying) {
 			if (mPlayer != null) {
@@ -274,7 +278,7 @@ public class VoiceController {
 
 		}
 
-		if (!mPlaying) {
+		if (!mPlaying && differentMessage) {
 			mPlaying = true;
 			mSeekBar = seekBar;
 			mMessage = message;
@@ -308,6 +312,7 @@ public class VoiceController {
 				return;
 			}
 
+			
 			new Thread(mSeekBarThread).start();
 			mPlayer.setOnCompletionListener(new OnCompletionListener() {
 
@@ -319,17 +324,43 @@ public class VoiceController {
 			});
 
 			mPlayer.start();
+			updatePlayControls();
+		}
+		
+	
+	}
+
+	public static synchronized void attach(final SeekBar seekBar) {
+		if (isCurrentMessage(seekBar)) {
+			mSeekBar = seekBar;
+			updatePlayControls();
+		}
+		else {
+			setProgress(seekBar, 0);
+			updatePlayControls();
 		}
 	}
 
-	public static void attach(final SeekBar seekBar) {
-		if (isCurrentMessage(seekBar)) {
-			SurespotLog.v(TAG, "attach: iscurrent");
-			mSeekBar = seekBar;
+	private synchronized static void updatePlayControls() {
+
+		ImageView voicePlay = null;
+		ImageView voiceStop = null;
+
+		if (mSeekBar != null) {
+			voicePlay = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlay);
+			voiceStop = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voiceStop);
 		}
-		else {
-			SurespotLog.v(TAG, "attach: notscurrent");
-			setProgress(seekBar, 0);
+
+		if (voicePlay != null && voiceStop != null) {
+			if (isCurrentMessage()) {
+
+				voicePlay.setVisibility(View.GONE);
+				voiceStop.setVisibility(View.VISIBLE);
+			}
+			else {
+				voicePlay.setVisibility(View.VISIBLE);
+				voiceStop.setVisibility(View.GONE);
+			}
 		}
 	}
 
@@ -366,8 +397,8 @@ public class VoiceController {
 						progress = (int) (((float) currentPosition / (float) mDuration) * 101);
 						// SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
 						// progress);
-						
-						//TODO weight by length
+
+						// TODO weight by length
 						if (progress < 0)
 							progress = 0;
 						if (progress > 95)
@@ -401,7 +432,6 @@ public class VoiceController {
 		public void completed() {
 			SurespotLog.v(TAG, "SeekBarThread completed");
 			mRun = false;
-
 
 		}
 	}

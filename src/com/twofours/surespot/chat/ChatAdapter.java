@@ -44,7 +44,7 @@ public class ChatAdapter extends BaseAdapter {
 	private MessageImageDownloader mMessageImageDownloader;
 	private boolean mLoaded;
 	private VoiceMessageDownloader mMessageVoiceDownloader;
-	
+
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
@@ -54,7 +54,7 @@ public class ChatAdapter extends BaseAdapter {
 		mMessageDecryptor = new MessageDecryptor(this);
 		mMessageImageDownloader = new MessageImageDownloader(this);
 		mMessageVoiceDownloader = new VoiceMessageDownloader();
-		
+
 	}
 
 	public void doneCheckingSequence() {
@@ -271,6 +271,8 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.voiceSeekBar = (SeekBar) convertView.findViewById(R.id.seekBarVoice);
 			chatMessageViewHolder.voiceSeekBar.setEnabled(false);
 			chatMessageViewHolder.voiceTime = (TextView) convertView.findViewById(R.id.voiceTime);
+			chatMessageViewHolder.voicePlay = (ImageView) convertView.findViewById(R.id.voicePlay);
+			chatMessageViewHolder.voiceStop = (ImageView) convertView.findViewById(R.id.voiceStop);
 
 			if (mDebugMode) {
 				chatMessageViewHolder.tvId = (TextView) convertView.findViewById(R.id.messageId);
@@ -361,12 +363,10 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.tvText.setText("");
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-						
-					
+
 					mMessageVoiceDownloader.download(convertView, item);
 					chatMessageViewHolder.voiceSeekBar.setTag(R.id.tagMessage, new WeakReference<SurespotMessage>(item));
 					VoiceController.attach(chatMessageViewHolder.voiceSeekBar);
-					
 				}
 			}
 		}
@@ -414,6 +414,8 @@ public class ChatAdapter extends BaseAdapter {
 		public View voiceView;
 		public SeekBar voiceSeekBar;
 		public TextView voiceTime;
+		public ImageView voicePlay;
+		public ImageView voiceStop;
 
 	}
 

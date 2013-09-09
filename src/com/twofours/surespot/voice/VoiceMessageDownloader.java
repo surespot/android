@@ -27,7 +27,6 @@ import java.lang.ref.WeakReference;
 import android.os.Handler;
 import android.text.format.DateFormat;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -241,11 +240,6 @@ public class VoiceMessageDownloader {
 
 		}
 		TextView voiceTime = (TextView) parentView.findViewById(R.id.voiceTime);
-		ImageView voicePlay = (ImageView) parentView.findViewById(R.id.voicePlay);
-
-		// if (mDuration > 0) {
-
-		// voicePlay.setEnabled(true);
 		voiceTime.setVisibility(View.VISIBLE);
 		voiceTime.setText(String.format("%.1fs", (float) bytes / 1000));
 

@@ -116,6 +116,15 @@
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_media_play" />
 
+            <ImageView
+                android:id="@+id/voiceStop"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="false"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_media_pause"
+                android:visibility="gone" />
+
             <SeekBar
                 android:id="@+id/seekBarVoice"
                 android:layout_width="0dp"
