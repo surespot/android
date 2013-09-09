@@ -47,12 +47,13 @@ public class VoiceController {
 	static MediaPlayer mPlayer;
 	static SeekBar mSeekBar;
 	static boolean mPlaying = false;
+	private static int mSampleRate;
 
 	enum State {
 		INITIALIZING, READY, STARTED, RECORDING
 	};
 
-	private final static int[] sampleRates = { 44100, 22050, 11025, 8000 };
+	private final static int[] sampleRates = { 44100, 22050 };
 	private static State mState;
 	private static AACEncoder mEncoder;
 	private static int mDuration;
@@ -111,20 +112,21 @@ public class VoiceController {
 			SurespotLog.v(TAG, "recording to: %s", mFileName);
 
 			int i = 0;
-			int sampleRate = 44100;
+			mSampleRate = sampleRates[0];
 
 			do {
 				if (mRecorder != null)
 					mRecorder.release();
-				sampleRate = sampleRates[i];
-				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+				mSampleRate = sampleRates[i];
+				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, mSampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
 						AudioFormat.ENCODING_PCM_16BIT);
 			}
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
 
-			SurespotLog.v(TAG, "sampleRate: %d", sampleRate);
+			SurespotLog.v(TAG, "sampleRate: %d", mSampleRate);
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.VISIBLE);
+			mEnvelopeView.clearVolume();
 			mRecorder.setOutputFile(mFileName);
 			mRecorder.prepare();
 			mRecorder.start();
@@ -132,7 +134,7 @@ public class VoiceController {
 			startTimer(activity);
 			// mTimeAtStart = new Date().getTime();
 			mState = State.RECORDING;
-			// Utils.makeToast(context, "sample rate: " + sampleRate);
+			Utils.makeToast(activity, "sample rate: " + mSampleRate);
 		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "prepare() failed");
@@ -224,11 +226,13 @@ public class VoiceController {
 		// TODO bg thread?
 		FileInputStream fis;
 		try {
+			File file = new File(mFileName);
+			SurespotLog.v(TAG, "uncompressed data length: %d", file.length());
 			fis = new FileInputStream(mFileName);
 			Date start = new Date();
 
 			String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
-			mEncoder.init(16000, 1, 44100, 16, outFile);
+			mEncoder.init(16000, 1, mSampleRate, 16, outFile);
 
 			mEncoder.encode(Utils.inputStreamToBytes(fis));
 			mEncoder.uninit();
@@ -312,7 +316,6 @@ public class VoiceController {
 				return;
 			}
 
-			
 			new Thread(mSeekBarThread).start();
 			mPlayer.setOnCompletionListener(new OnCompletionListener() {
 
@@ -326,8 +329,7 @@ public class VoiceController {
 			mPlayer.start();
 			updatePlayControls();
 		}
-		
-	
+
 	}
 
 	public static synchronized void attach(final SeekBar seekBar) {
@@ -371,7 +373,7 @@ public class VoiceController {
 
 			@Override
 			public void run() {
-				//SurespotLog.v(TAG, "Setting progress to %d", progress);
+				// SurespotLog.v(TAG, "Setting progress to %d", progress);
 				seekBar.setProgress(progress);
 
 			}
