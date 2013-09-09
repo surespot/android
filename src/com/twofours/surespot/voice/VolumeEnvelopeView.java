@@ -12,6 +12,8 @@ import android.view.View;
 import com.twofours.surespot.R;
 
 public class VolumeEnvelopeView extends View {
+	private static final String TAG = null;	
+
 	/**
 	 * Constructor. This version is only needed if you will be instantiating the object manually (not from a layout XML file).
 	 * 
@@ -66,8 +68,10 @@ public class VolumeEnvelopeView extends View {
 	}
 
 	public void setNewVolume(int value, boolean redraw) {
-		if (value != 0)
-			mEnvelope.add((float) Math.sqrt(value) / 164.31981f);
+
+		if (value != 0) {			
+			mEnvelope.add(value);
+		}
 		else
 			if (!mEnvelope.isEmpty())
 				mEnvelope.add(mEnvelope.getLast());
@@ -95,14 +99,14 @@ public class VolumeEnvelopeView extends View {
 		int x = 2 * (mSize - mEnvelope.size()) - 2;
 		int height = (this.getHeight() - this.getPaddingBottom() - this.getPaddingTop()) / 2;
 		int mid = this.getHeight() / 2;
-		for (Float i : mEnvelope) {
-			int offset = (int) (height * i.floatValue());
+		for (Integer i : mEnvelope) {
+			int offset = (int) ((i.floatValue() / 32768) * height);
 			canvas.drawLine(x, mid - offset, x, mid + offset + 1, mEnvelopePaint);
-			x+=2;			
+			x += 2;
 		}
 	}
 
 	private Paint mEnvelopePaint;
-	private LinkedList<Float> mEnvelope = new LinkedList<Float>();
+	private LinkedList<Integer> mEnvelope = new LinkedList<Integer>();
 	int mSize = 0;
 }
