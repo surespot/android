@@ -12,7 +12,8 @@ import android.view.View;
 import com.twofours.surespot.R;
 
 public class VolumeEnvelopeView extends View {
-	private static final String TAG = null;	
+	private static final String TAG = null;
+	
 
 	/**
 	 * Constructor. This version is only needed if you will be instantiating the object manually (not from a layout XML file).
@@ -62,7 +63,6 @@ public class VolumeEnvelopeView extends View {
 
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-		// TODO Auto-generated method stub
 		super.onSizeChanged(w, h, oldw, oldh);
 		mSize = (w - this.getPaddingLeft() - this.getPaddingRight()) / 2;
 	}
@@ -88,11 +88,6 @@ public class VolumeEnvelopeView extends View {
 		invalidate();
 	}
 
-	/**
-	 * Render the text
-	 * 
-	 * @see android.view.View#onDraw(android.graphics.Canvas)
-	 */
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
