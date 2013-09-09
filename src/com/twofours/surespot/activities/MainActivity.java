@@ -716,6 +716,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.onPause();
 		}
+		
+		VoiceController.pause();
 
 		stopWatchingExternalStorage();
 

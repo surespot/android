@@ -522,4 +522,9 @@ public class VoiceController {
 		}
 	}
 
+	public static void pause() {
+		stopPlaying();
+		
+	}
+
 }
