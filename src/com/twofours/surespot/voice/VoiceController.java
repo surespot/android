@@ -265,7 +265,7 @@ public class VoiceController {
 					fis = new FileInputStream(mFileName);
 
 					String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
-					mEncoder.init(44100, 1, mSampleRate, 16, outFile);
+					mEncoder.init(16000, 1, mSampleRate, 16, outFile);
 
 					mEncoder.encode(Utils.inputStreamToBytes(fis));
 					mEncoder.uninit();
