@@ -155,30 +155,13 @@
         android:visibility="gone" >
     </GridView>
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/voiceHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:orientation="vertical" >
-
-        <LinearLayout
-            android:id="@+id/voiceHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="gone" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Recording time left: " />
-
-            <TextView
-                android:id="@+id/voiceRecTimeLeft"
-                android:textColor="@color/surespotBlue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+        android:orientation="vertical"
+        android:visibility="gone" >
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -195,6 +178,20 @@
                 android:visibility="gone"
                 app:color="@color/surespotBlue" />
         </FrameLayout>
-    </LinearLayout>
+
+        <TextView
+            android:id="@+id/voiceRecTimeLeft"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/transparent_blue_circle"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
 </com.twofours.surespot.chat.MainActivityLayout>

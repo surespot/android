@@ -94,7 +94,7 @@ public class VoiceController {
 
 							mTimeLeft -= rate;
 
-							final float currentTimeLeft = mTimeLeft;
+							final int currentTimeLeft = (int) mTimeLeft;
 
 							if (currentTimeLeft < 0) {
 								stopRecording(mActivity);
@@ -102,14 +102,14 @@ public class VoiceController {
 							}
 							mEnvelopeView.setNewVolume(getMaxAmplitude(), true);
 
-							// if we're at a half second boundary, update time display
-							if (currentTimeLeft % 500 == 0) {
+							// if we're at a second boundary, update time display
+							if (currentTimeLeft % 1000 == 0) {
 
 								mVoiceRecTimeLeftView.post(new Runnable() {
 
 									@Override
 									public void run() {
-										mVoiceRecTimeLeftView.setText(Float.toString(currentTimeLeft / 1000));
+										mVoiceRecTimeLeftView.setText(Integer.toString(currentTimeLeft / 1000));
 									}
 								});
 							}
@@ -155,7 +155,7 @@ public class VoiceController {
 			SurespotLog.v(TAG, "sampleRate: %d", mSampleRate);
 			mEnvelopeView.setVisibility(View.VISIBLE);
 			mVoiceHeaderView.setVisibility(View.VISIBLE);
-			mVoiceRecTimeLeftView.setText("10.0");
+			mVoiceRecTimeLeftView.setText("10");
 			mEnvelopeView.clearVolume();
 			mRecorder.setOutputFile(mFileName);
 			mRecorder.prepare();
