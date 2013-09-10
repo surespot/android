@@ -137,7 +137,7 @@ public class VoiceController {
 			}
 
 			// create a temp file to hold the uncompressed audio data
-			mFileName = File.createTempFile("voice", ".wav").getAbsolutePath();
+			mFileName = File.createTempFile("record", ".wav").getAbsolutePath();
 			SurespotLog.v(TAG, "recording to: %s", mFileName);
 
 			int i = 0;
@@ -264,7 +264,7 @@ public class VoiceController {
 				try {
 					fis = new FileInputStream(mFileName);
 
-					String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
+					String outFile = File.createTempFile("record", ".aac").getAbsolutePath();
 					mEncoder.init(16000, 1, mSampleRate, 16, outFile);
 
 					mEncoder.encode(Utils.inputStreamToBytes(fis));
@@ -272,7 +272,7 @@ public class VoiceController {
 
 					
 					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
-					final String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
+					final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
 					new AACToM4A().convert(activity, outFile, m4aFile);
 
 
@@ -280,7 +280,7 @@ public class VoiceController {
 					byte[] data = Utils.inputStreamToBytes(m4aStream);
 					
 					// delete files
-					new File(outFile).delete();					
+					new File(outFile).delete();
 					new File(mFileName).delete();
 					new File(m4aFile).delete();
 				
@@ -340,7 +340,7 @@ public class VoiceController {
 					mAudioFile.delete();
 				}
 
-				mAudioFile = File.createTempFile("sound", ".m4a");
+				mAudioFile = File.createTempFile("play", ".m4a");
 
 				FileOutputStream fos = new FileOutputStream(mAudioFile);
 				fos.write(message.getPlainBinaryData());
