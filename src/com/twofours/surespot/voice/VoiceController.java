@@ -235,7 +235,7 @@ public class VoiceController {
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
 			mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
 			mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
-			Utils.makeToast(context, "recording");
+			//Utils.makeToast(context, "recording");
 			startRecordingInternal(context);
 			mRecording = true;
 		}
@@ -246,7 +246,7 @@ public class VoiceController {
 		if (mRecording) {
 			stopRecordingInternal();
 			sendVoiceMessage(activity);
-			Utils.makeToast(activity, "encrypting and transmitting");
+			//Utils.makeToast(activity, "encrypting and transmitting");
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.GONE);
 			mVoiceHeaderView.setVisibility(View.GONE);
