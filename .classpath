@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="libs/scprov-jdk15on-1.47.0.3-SNAPSHOT.jar" sourcepath="/home/adam/dev/surespot/libs/android/github/forks/spongycastle"/>
 	<classpathentry kind="lib" path="libs/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/google-play-services.jar"/>
-	<classpathentry kind="lib" path="/android-async-http/libs/httpclientandroidlib-1.1.1.madman.jar" sourcepath="/home/adam/dev/surespot/libs/android/google/adam-httpclientandroidlib/script"/>
 	<classpathentry kind="lib" path="libs/google-http-client-1.15.0-rc.jar"/>
 	<classpathentry kind="lib" path="libs/google-http-client-android-1.15.0-rc.jar"/>
 	<classpathentry kind="lib" path="libs/google-oauth-client-1.15.0-rc.jar"/>
