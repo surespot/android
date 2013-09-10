@@ -81,24 +81,26 @@ public class RehearsalAudioRecorder {
 	private AudioRecord.OnRecordPositionUpdateListener updateListener = new AudioRecord.OnRecordPositionUpdateListener() {
 		public void onPeriodicNotification(AudioRecord recorder) {
 			aRecorder.read(buffer, 0, buffer.length); // Fill buffer
+
 			try {
-				fWriter.write(buffer); // Write buffer to file
-				payloadSize += buffer.length;
-				if (bSamples == 16) {
-					for (int i = 0; i < buffer.length / 2; i++) { // 16bit sample size
-						short curSample = getShort(buffer[i * 2], buffer[i * 2 + 1]);
-						if (curSample > cAmplitude) { // Check amplitude
-							cAmplitude = curSample;
+					fWriter.write(buffer); // Write buffer to file
+
+					payloadSize += buffer.length;
+					if (bSamples == 16) {
+						for (int i = 0; i < buffer.length / 2; i++) { // 16bit sample size
+							short curSample = getShort(buffer[i * 2], buffer[i * 2 + 1]);
+							if (curSample > cAmplitude) { // Check amplitude
+								cAmplitude = curSample;
+							}							
 						}
 					}
-				}
-				else { // 8bit sample size
-					for (int i = 0; i < buffer.length; i++) {
-						if (buffer[i] > cAmplitude) { // Check amplitude
-							cAmplitude = buffer[i];
+					else { // 8bit sample size
+						for (int i = 0; i < buffer.length; i++) {
+							if (buffer[i] > cAmplitude) { // Check amplitude
+								cAmplitude = buffer[i];
+							}
 						}
 					}
-				}
 			}
 			catch (IOException e) {
 				SurespotLog.e(RehearsalAudioRecorder.class.getName(), e, "Error occured in updateListener, recording is aborted");
@@ -131,7 +133,7 @@ public class RehearsalAudioRecorder {
 					bSamples = 8;
 				}
 
-				if (channelConfig == AudioFormat.CHANNEL_CONFIGURATION_MONO) {
+				if (channelConfig == AudioFormat.CHANNEL_IN_MONO) {
 					nChannels = 1;
 				}
 				else {
@@ -154,7 +156,7 @@ public class RehearsalAudioRecorder {
 
 				aRecorder = new AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSize);
 				if (aRecorder.getState() != AudioRecord.STATE_INITIALIZED)
-					throw new Exception("AudioRecord initialization failed");								
+					throw new Exception("AudioRecord initialization failed");
 				aRecorder.setPositionNotificationPeriod(framePeriod);
 			}
 			else { // RECORDING_COMPRESSED
@@ -264,7 +266,7 @@ public class RehearsalAudioRecorder {
 						fWriter.writeBytes("data");
 						fWriter.writeInt(0); // Data chunk size not known yet, write 0
 
-						buffer = new byte[framePeriod * bSamples / 8 * nChannels];
+						buffer = new byte[framePeriod * bSamples / 8 * nChannels];						
 						state = State.READY;
 					}
 					else {
@@ -394,10 +396,10 @@ public class RehearsalAudioRecorder {
 	public void stop() {
 		if (state == State.RECORDING) {
 			if (rUncompressed) {
-				
+
 				aRecorder.setRecordPositionUpdateListener(null);
 				aRecorder.stop();
-				
+
 				try {
 					fWriter.seek(4); // Write size to RIFF header
 					fWriter.writeInt(Integer.reverseBytes(36 + payloadSize));

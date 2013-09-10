@@ -129,13 +129,11 @@ public class VoiceController {
 	private synchronized static void startRecordingInternal(final Activity activity) {
 		if (mState != State.STARTED)
 			return;
-		
-		
 
 		try {
 			// MediaRecorder has major delay issues on gingerbread so we record raw PCM then convert natively to m4a
 			if (mFileName != null) {
-				new File(mFileName).delete();
+				 new File(mFileName).delete();
 			}
 
 			// create a temp file to hold the uncompressed audio data
@@ -149,7 +147,7 @@ public class VoiceController {
 				if (mRecorder != null)
 					mRecorder.release();
 				mSampleRate = sampleRates[i];
-				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, mSampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, mSampleRate, AudioFormat.CHANNEL_IN_MONO,
 						AudioFormat.ENCODING_PCM_16BIT);
 			}
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
@@ -201,9 +199,7 @@ public class VoiceController {
 
 		mSeekBarThread.completed();
 		mMessage.setPlayMedia(false);
-		if (mAudioFile != null) {
-			mAudioFile.delete();
-		}
+
 		if (mPlayer != null) {
 			mPlayer.setOnCompletionListener(null);
 			mPlayer.release();
@@ -211,6 +207,10 @@ public class VoiceController {
 		}
 
 		mMessage = null;
+		if (mAudioFile != null) {
+			mAudioFile.delete();
+		}
+
 		mPlaying = false;
 		updatePlayControls();
 
@@ -229,7 +229,7 @@ public class VoiceController {
 	public static synchronized void startRecording(Activity context, String username) {
 		if (!mRecording) {
 			stopPlaying();
-			
+
 			mActivity = context;
 			mUsername = username;
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
@@ -255,34 +255,36 @@ public class VoiceController {
 	}
 
 	private synchronized static void sendVoiceMessage(final Activity activity) {
-		new AsyncTask<Void, Void, FileInputStream>() {
+		new AsyncTask<Void, Void, byte[]>() {
 
 			@Override
-			protected FileInputStream doInBackground(Void... params) {
+			protected byte[] doInBackground(Void... params) {
 				// convert to AAC
 				FileInputStream fis;
 				try {
 					fis = new FileInputStream(mFileName);
 
 					String outFile = File.createTempFile("voice", ".aac").getAbsolutePath();
-					mEncoder.init(16000, 1, mSampleRate, 16, outFile);
+					mEncoder.init(44100, 1, mSampleRate, 16, outFile);
 
 					mEncoder.encode(Utils.inputStreamToBytes(fis));
 					mEncoder.uninit();
 
-					// delete raw pcm
-					new File(mFileName).delete();
-
+					
 					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
 					final String m4aFile = File.createTempFile("voice", ".m4a").getAbsolutePath();
 					new AACToM4A().convert(activity, outFile, m4aFile);
 
-					// delete aac
-					new File(outFile).delete();
 
 					FileInputStream m4aStream = new FileInputStream(m4aFile);
-
-					return m4aStream;
+					byte[] data = Utils.inputStreamToBytes(m4aStream);
+					
+					// delete files
+					new File(outFile).delete();					
+					new File(mFileName).delete();
+					new File(m4aFile).delete();
+				
+					return data;
 				}
 
 				catch (IOException e) {
@@ -291,14 +293,11 @@ public class VoiceController {
 				return null;
 			}
 
-			protected void onPostExecute(FileInputStream result) {
-				if (result != null) {
-					try {
-						MainActivity.getChatController().sendVoiceMessage(mUsername, Utils.inputStreamToBytes(result), SurespotConstants.MimeTypes.M4A);
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "sendVoiceMessage");
-					}
+			protected void onPostExecute(byte[] data) {
+				if (data != null) {
+
+					MainActivity.getChatController().sendVoiceMessage(mUsername, data, SurespotConstants.MimeTypes.M4A);
+
 				}
 				else {
 					Utils.makeToast(activity, "error sending message");
@@ -313,7 +312,7 @@ public class VoiceController {
 		if (mRecording) {
 			return;
 		}
-		
+
 		SurespotLog.v(TAG, "playVoiceMessage");
 
 		if (message.getPlainBinaryData() == null) {
@@ -373,7 +372,7 @@ public class VoiceController {
 		}
 
 	}
-	
+
 	private static void stopPlaying() {
 		if (mPlaying) {
 			if (mPlayer != null) {
@@ -524,7 +523,7 @@ public class VoiceController {
 
 	public static void pause() {
 		stopPlaying();
-		
+
 	}
 
 }
