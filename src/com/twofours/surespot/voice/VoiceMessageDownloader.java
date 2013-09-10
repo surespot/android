@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -50,7 +51,12 @@ import com.twofours.surespot.encryption.EncryptionController;
 public class VoiceMessageDownloader {
 	private static final String TAG = "VoiceMessageDownloader";
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+	private ChatAdapter mChatAdapter;
 
+	
+	public VoiceMessageDownloader(ChatAdapter chatAdapter) {
+		mChatAdapter = chatAdapter;
+	}
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
 	 * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
@@ -168,6 +174,7 @@ public class VoiceMessageDownloader {
 			if (soundbytes == null) {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
+				
 				if (mMessage.getInlineData() == null) {
 					//SurespotLog.v(TAG, "getting voice stream from cloud");
 					voiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
@@ -175,19 +182,35 @@ public class VoiceMessageDownloader {
 				else {
 					//SurespotLog.v(TAG, "getting voice stream from inlineData");
 					voiceStream = new ByteArrayInputStream(mMessage.getInlineData());
-
 				}
 
-				if (voiceStream != null) {
+
+				if (!mCancelled && voiceStream != null) {					
 					PipedOutputStream out = new PipedOutputStream();
 					PipedInputStream inputStream;
 					try {
 						inputStream = new PipedInputStream(out);
+						
+						if (mCancelled) {
+							inputStream.close();
+							mMessage.setLoaded(true);
+							mMessage.setLoading(false);
+							mChatAdapter.checkLoaded();
+							return;
+						}
 
 						EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(),
 								voiceStream, out);
 
 						soundbytes = Utils.inputStreamToBytes(inputStream);
+						
+						if (mCancelled) {
+							mMessage.setPlainBinaryData(soundbytes);
+							mMessage.setLoaded(true);
+							mMessage.setLoading(false);
+							mChatAdapter.checkLoaded();
+							return;
+						}
 					}
 					catch (InterruptedIOException ioe) {
 

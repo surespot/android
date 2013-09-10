@@ -53,7 +53,7 @@ public class ChatAdapter extends BaseAdapter {
 		// pm.getBoolean("pref_hide_deleted_messages", false);
 		mMessageDecryptor = new MessageDecryptor(this);
 		mMessageImageDownloader = new MessageImageDownloader(this);
-		mMessageVoiceDownloader = new VoiceMessageDownloader();
+		mMessageVoiceDownloader = new VoiceMessageDownloader(this);
 
 	}
 
