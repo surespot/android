@@ -16,6 +16,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.Camera;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -220,6 +221,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!processIntent(intent)) {
+			//set volume control buttons
+			setVolumeControlStream(AudioManager.STREAM_MUSIC);
+			
 			// we're loading so build the ui
 			setContentView(R.layout.activity_main);
 
