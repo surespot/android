@@ -82,26 +82,6 @@
             android:title="@string/pref_title_alternate_sms_invite_to" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_title_debug" >
-
-        <!--
-             <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="pref_logging"
-            android:summary="Logs to android"
-            android:title="logging" />
-        -->
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_crash_reporting"
-            android:summary="@string/pref_summary_silent_error_reporting"
-            android:title="@string/pref_title_silent_error_reporting" />
-
-        <!--
-             <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="acra.enable"          
-            android:title="crash reporting" />
-        -->
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_debug_mode"

@@ -6,8 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.acra.ACRA;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -89,12 +87,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				};
 			}
 			catch (IOException e) {
-				// TODO tell user shit is fucked
-				// get shared prefs
-				SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-				if (pm.getBoolean("pref_crash_reporting", false)) {
-					ACRA.getErrorReporter().handleSilentException(e);
-				}
+				// TODO tell user shit is fucked				
 				return;
 			}
 

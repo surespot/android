@@ -1,7 +1,6 @@
 package com.twofours.surespot.activities;
 
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
@@ -9,7 +8,6 @@ import android.preference.PreferenceManager;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.ui.UIUtils;
@@ -60,17 +58,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					UIUtils.showHelpDialog(SettingsActivity.this, false);
 					return true;
 				}
-			});
-
-			prefMgr.findPreference("pref_crash_reporting").setOnPreferenceClickListener(new OnPreferenceClickListener() {
-
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					SurespotLog.setCrashReporting(((CheckBoxPreference) preference).isChecked());
-					return true;
-				}
-			});
-
+			});			
 		}
 	}
 
