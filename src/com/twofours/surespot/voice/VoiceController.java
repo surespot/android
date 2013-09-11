@@ -11,8 +11,10 @@ import java.util.TimerTask;
 import android.app.Activity;
 import android.content.Context;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder.AudioSource;
 import android.os.AsyncTask;
 import android.view.View;
@@ -335,6 +337,8 @@ public class VoiceController {
 			}
 
 			mPlayer = new MediaPlayer();
+			//mPlayer.setAudioStreamType(AudioManager.STREAM_VOICE_CALL);
+			mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			try {
 				if (mAudioFile != null) {
 					mAudioFile.delete();
@@ -346,9 +350,20 @@ public class VoiceController {
 				fos.write(message.getPlainBinaryData());
 				fos.close();
 
-				mPlayer.setDataSource(mAudioFile.getAbsolutePath());
-				mPlayer.prepare();
-				mDuration = mPlayer.getDuration();
+				mPlayer.setOnPreparedListener(new OnPreparedListener() {
+					
+					@Override
+					public void onPrepared(MediaPlayer mp) {
+						mPlayer.start();
+						updatePlayControls();			
+						mDuration = mPlayer.getDuration();
+						mPlayer.setOnPreparedListener(null);
+					}
+				});
+				
+				mPlayer.setDataSource(mAudioFile.getAbsolutePath());				
+				mPlayer.prepareAsync();
+				
 			}
 
 			catch (Exception e) {
@@ -367,8 +382,7 @@ public class VoiceController {
 				}
 			});
 
-			mPlayer.start();
-			updatePlayControls();
+			
 		}
 
 	}
