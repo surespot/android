@@ -169,6 +169,7 @@
             android:background="#88000000" >
 
             <com.twofours.surespot.voice.VolumeEnvelopeView
+                android:layout_gravity="center"
                 android:id="@+id/volume_envelope"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
