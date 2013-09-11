@@ -6,12 +6,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.acra.ACRA;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
@@ -115,11 +113,7 @@ public class NetworkController {
 			};
 		}
 		catch (IOException e) {
-			// TODO tell user shit is fucked
-			SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-			if (pm.getBoolean("pref_crash_reporting", false)) {
-				ACRA.getErrorReporter().handleSilentException(e);
-			}
+			// TODO tell user shit is fucked						
 			throw new RuntimeException("Fatal error, could not create http clients..is storage space available?", e);
 		}
 

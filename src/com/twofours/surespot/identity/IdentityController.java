@@ -20,7 +20,6 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
@@ -60,28 +59,7 @@ public class IdentityController {
 		if (identity != null) {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
 			Utils.putSharedPrefsString(context, "referrer", null);
-			SurespotApplication.getCachingService().login(identity, cookie);
-
-			// set logging and crash reporting based on shared prefs for the
-			// user
-			SharedPreferences sp = context.getSharedPreferences(identity.getUsername(), Context.MODE_PRIVATE);
-
-			// PROD TODO set to false on release
-			// boolean prefLogging = sp.getBoolean("pref_logging",
-			// SurespotConstants.LOGGING);
-			// SurespotLog.v(TAG, "setting logging based on preference: %b",
-			// prefLogging);
-
-			// SurespotLog.setLogging(prefLogging);
-			SurespotLog.setCrashReporting(sp.getBoolean("pref_crash_reporting", SurespotConstants.CRASH_REPORTING));
-
-			// you would think changing the shared prefs name would update the
-			// internal state but it doesn't
-			// ACRA.getConfig().setSharedPreferenceName(identity.getUsername());
-			// ACRA.getConfig().setSharedPreferenceMode(Context.MODE_PRIVATE);
-			//
-			// boolean enableACRA = sp.getBoolean(ACRA.PREF_ENABLE_ACRA, false);
-			// ACRA.getErrorReporter().setEnabled(enableACRA);
+			SurespotApplication.getCachingService().login(identity, cookie);		
 		} else {
 			SurespotLog.w(TAG, "getIdentity null");
 		}
