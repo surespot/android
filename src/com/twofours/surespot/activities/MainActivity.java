@@ -15,6 +15,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -221,9 +222,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!processIntent(intent)) {
-			//set volume control buttons
+			// set volume control buttons
 			setVolumeControlStream(AudioManager.STREAM_MUSIC);
-			
+
 			// we're loading so build the ui
 			setContentView(R.layout.activity_main);
 
@@ -452,7 +453,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					else {
 						inviteFriend();
 					}
-				}			
+				}
 			}
 		});
 
@@ -483,6 +484,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onTouch(View v, MotionEvent event) {
 
 				if (event.getAction() == MotionEvent.ACTION_UP) {
+					
+					//if user let go of send button out of send button bounds, don't send the recording
+					Rect rect = new Rect(mSendButton.getLeft(), mSendButton.getTop(), mSendButton.getRight(), mSendButton.getBottom());
+
+					boolean send = true;
+					if (!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())) {
+
+						send = false;
+						Utils.makeToast(MainActivity.this, "recording cancelled");
+					}
+
+					final boolean finalSend = send;
 
 					SurespotLog.v(TAG, "voice record up");
 
@@ -491,7 +504,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 						@Override
 						public void run() {
-							VoiceController.stopRecording(MainActivity.this);
+							VoiceController.stopRecording(MainActivity.this, finalSend);
 
 						}
 					});
@@ -720,7 +733,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.onPause();
 		}
-		
+
 		VoiceController.pause();
 
 		stopWatchingExternalStorage();
@@ -930,7 +943,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
 			finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			//mChatController = null;
+			// mChatController = null;
 			MainActivity.this.startActivity(finalIntent);
 			finish();
 			// return null;
@@ -991,7 +1004,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
-		//mChatController = null;
+		// mChatController = null;
 		// if (mPTTController != null) {
 		// mPTTController.destroy();
 		// mPTTController = null;

@@ -99,7 +99,7 @@ public class VoiceController {
 							final int currentTimeLeft = (int) mTimeLeft;
 
 							if (currentTimeLeft < 0) {
-								stopRecording(mActivity);
+								stopRecording(mActivity, true);
 								return;
 							}
 							mEnvelopeView.setNewVolume(getMaxAmplitude(), true);
@@ -135,7 +135,7 @@ public class VoiceController {
 		try {
 			// MediaRecorder has major delay issues on gingerbread so we record raw PCM then convert natively to m4a
 			if (mFileName != null) {
-				 new File(mFileName).delete();
+				new File(mFileName).delete();
 			}
 
 			// create a temp file to hold the uncompressed audio data
@@ -149,8 +149,7 @@ public class VoiceController {
 				if (mRecorder != null)
 					mRecorder.release();
 				mSampleRate = sampleRates[i];
-				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, mSampleRate, AudioFormat.CHANNEL_IN_MONO,
-						AudioFormat.ENCODING_PCM_16BIT);
+				mRecorder = new RehearsalAudioRecorder(true, AudioSource.MIC, mSampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
 			}
 			while ((++i < sampleRates.length) & !(mRecorder.getState() == RehearsalAudioRecorder.State.INITIALIZING));
 
@@ -237,18 +236,18 @@ public class VoiceController {
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
 			mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
 			mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
-			//Utils.makeToast(context, "recording");
 			startRecordingInternal(context);
 			mRecording = true;
 		}
 
 	}
 
-	public synchronized static void stopRecording(Activity activity) {
+	public synchronized static void stopRecording(Activity activity, boolean send) {
 		if (mRecording) {
 			stopRecordingInternal();
-			sendVoiceMessage(activity);
-			//Utils.makeToast(activity, "encrypting and transmitting");
+			if (send) {
+				sendVoiceMessage(activity);
+			}
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.GONE);
 			mVoiceHeaderView.setVisibility(View.GONE);
@@ -272,20 +271,18 @@ public class VoiceController {
 					mEncoder.encode(Utils.inputStreamToBytes(fis));
 					mEncoder.uninit();
 
-					
 					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
 					final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
 					new AACToM4A().convert(activity, outFile, m4aFile);
 
-
 					FileInputStream m4aStream = new FileInputStream(m4aFile);
 					byte[] data = Utils.inputStreamToBytes(m4aStream);
-					
+
 					// delete files
 					new File(outFile).delete();
 					new File(mFileName).delete();
 					new File(m4aFile).delete();
-				
+
 					return data;
 				}
 
@@ -337,7 +334,7 @@ public class VoiceController {
 			}
 
 			mPlayer = new MediaPlayer();
-			//mPlayer.setAudioStreamType(AudioManager.STREAM_VOICE_CALL);
+			// mPlayer.setAudioStreamType(AudioManager.STREAM_VOICE_CALL);
 			mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			try {
 				if (mAudioFile != null) {
@@ -351,19 +348,19 @@ public class VoiceController {
 				fos.close();
 
 				mPlayer.setOnPreparedListener(new OnPreparedListener() {
-					
+
 					@Override
 					public void onPrepared(MediaPlayer mp) {
 						mPlayer.start();
-						updatePlayControls();			
+						updatePlayControls();
 						mDuration = mPlayer.getDuration();
 						mPlayer.setOnPreparedListener(null);
 					}
 				});
-				
-				mPlayer.setDataSource(mAudioFile.getAbsolutePath());				
+
+				mPlayer.setDataSource(mAudioFile.getAbsolutePath());
 				mPlayer.prepareAsync();
-				
+
 			}
 
 			catch (Exception e) {
@@ -382,7 +379,6 @@ public class VoiceController {
 				}
 			});
 
-			
 		}
 
 	}
