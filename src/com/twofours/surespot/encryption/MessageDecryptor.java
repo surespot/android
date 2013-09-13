@@ -19,16 +19,15 @@ package com.twofours.surespot.encryption;
 import java.lang.ref.WeakReference;
 
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.TextView;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.ui.UIUtils;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -122,37 +121,14 @@ public class MessageDecryptor {
 				DecryptionTask decryptionTask = getDecryptionTask(textView);
 				// Change text only if this process is still associated with it
 				if ((this == decryptionTask)) {
-					// textView.clearAnimation();
-					// if (plainText != null) {
-					// Animation fadeOut = new AlphaAnimation(1,0);
-					// Animation fadeIn = new AlphaAnimation(0, 1);
-					// fadeIn.setDuration(1000);
-					// fadeOut.setDuration(1000);
-					// textView.startAnimation(fadeIn);
-					// textView.startAnimation(fadeOut);
-					// }
 
 					final CharSequence finalPlainData = plainData;
 					mHandler.post(new Runnable() {
 
 						@Override
 						public void run() {
-							View row = (View) textView.getParent();
-
-							TextView tvTime = (TextView) (row).findViewById(R.id.messageTime);
-							if (finalPlainData == null) {
-								mMessage.setErrorStatus(500);
-								tvTime.setText(R.string.message_error_decrypting_message);
-							}
-							else {
-								textView.setText(finalPlainData);
-								if (mMessage.getDateTime() != null) {
-
-									tvTime.setText(DateFormat.getDateFormat(mChatAdapter.getContext()).format(mMessage.getDateTime()) + " "
-											+ DateFormat.getTimeFormat(mChatAdapter.getContext()).format(mMessage.getDateTime()));
-
-								}
-							}
+							textView.setText(finalPlainData);
+							UIUtils.updateDateAndSize(mMessage, (View) textView.getParent());
 						}
 					});
 				}

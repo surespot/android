@@ -21,7 +21,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private String mData;
 	private CharSequence mPlainData;
 	private byte[] mPlainBinaryData;
-	private byte[] mInlineData;
+	private Integer dataSize;
 	private Integer mId;
 	private Integer mResendId;
 	private int mErrorStatus;
@@ -37,6 +37,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mLoading;
 	private boolean mGcm;
 	private boolean mPlayVoice = false;
+	
+	
 
 	public String getFrom() {
 		return mFrom;
@@ -76,6 +78,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public void setPlainBinaryData(byte[] plainData) {
 		mPlainBinaryData = plainData;
+	}
+
+	public Integer getDataSize() {
+		return dataSize;
+	}
+
+	public void setDataSize(int dataSize) {
+		this.dataSize = dataSize;
 	}
 
 	public boolean isPlayVoice() {
@@ -179,6 +189,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		if (datetime > 0) {
 			chatMessage.setDateTime(new Date(datetime));
 		}
+		
+		Integer dataSize = jsonMessage.optInt("dataSize");
+		if (dataSize > 0) {
+			chatMessage.setDataSize(dataSize);
+		}
+		
 				
 		return chatMessage;
 	}
@@ -212,6 +228,11 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
+			
+			if (this.getDataSize() != null) {
+				message.put("dataSize", this.getDataSize());
+			}
+
 
 			return message;
 		}
@@ -388,6 +409,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\tiv: " + getIv() + "\n");
 		sb.append("\tdata: " + getData() + "\n");
 		sb.append("\tplainData: " + getPlainData() + "\n");
+		sb.append("\tdataSize: " + getDataSize() + "\n");
 		sb.append("\tmimeType: " + getMimeType() + "\n");
 		// sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
 		sb.append("\tshareable: " + isShareable() + "\n");

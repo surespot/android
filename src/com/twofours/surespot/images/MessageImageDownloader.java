@@ -31,13 +31,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -49,6 +47,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.ui.UIUtils;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -82,8 +81,7 @@ public class MessageImageDownloader {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
-
+			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());			
 			forceDownload(imageView, message);
 		}
 		else {
@@ -94,13 +92,8 @@ public class MessageImageDownloader {
 			message.setLoaded(true);
 			message.setLoading(false);
 
-			TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
-			if (message.getDateTime() != null) {
+			UIUtils.updateDateAndSize(message, (View) imageView.getParent());
 
-				tvTime.setText(DateFormat.getDateFormat(mChatAdapter.getContext()).format(message.getDateTime()) + " "
-						+ DateFormat.getTimeFormat(mChatAdapter.getContext()).format(message.getDateTime()));
-
-			}
 		}
 	}
 
@@ -119,6 +112,8 @@ public class MessageImageDownloader {
 			imageView.setImageDrawable(downloadedDrawable);
 			message.setLoaded(false);
 			message.setLoading(true);
+			//TextView dataSize = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageSize);
+			//dataSize.setVisibility(View.GONE);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
 		}
 	}
@@ -250,7 +245,6 @@ public class MessageImageDownloader {
 					// Change bitmap only if this process is still associated with it
 					// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
 					if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
-
 						mHandler.post(new Runnable() {
 
 							@Override
@@ -277,7 +271,6 @@ public class MessageImageDownloader {
 								imageView.setImageBitmap(finalBitmap);
 								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
 								
-								TextView tvTime = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageTime);
 								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
 								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageNotShareable);
 
@@ -290,19 +283,10 @@ public class MessageImageDownloader {
 									ivNotShareable.setVisibility(View.VISIBLE);
 								}
 
-								// if (mMessage.getErrorStatus() > 0) {
-								// UIUtils.setMessageErrorText(tvTime, mMessage);
-								// }
-								// else {
-
-								if (mMessage.getDateTime() != null) {
-
-									tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(mMessage.getDateTime()) + " "
-											+ DateFormat.getTimeFormat(MainActivity.getContext()).format(mMessage.getDateTime()));
-								}
-
+								
+								UIUtils.updateDateAndSize(mMessage, (View) imageView.getParent());
 								mChatAdapter.checkLoaded();
-								// }
+
 							}
 						});
 					}
@@ -378,6 +362,8 @@ public class MessageImageDownloader {
 		}
 
 	}
+	
+	
 
 	/**
 	 * Adds this bitmap to the cache.

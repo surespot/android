@@ -375,7 +375,7 @@ public class ChatUtils {
 							@Override
 							public void run() {
 
-								// save encrypted image to disk
+								// save encrypted voice message to disk
 								FileOutputStream fileSaveStream;
 								try {
 									fileSaveStream = new FileOutputStream(localImageFile);

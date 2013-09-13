@@ -140,6 +140,9 @@ public class ChatAdapter extends BaseAdapter {
 			if (!message.isGcm()) {
 				updateMessage.setGcm(message.isGcm());
 			}
+			if (message.getDataSize() != null) {
+				updateMessage.setDataSize(message.getDataSize());
+			}
 
 		}
 

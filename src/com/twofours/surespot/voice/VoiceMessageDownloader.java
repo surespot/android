@@ -26,10 +26,8 @@ import java.lang.ref.WeakReference;
 
 import android.net.Uri;
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -39,6 +37,7 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.ui.UIUtils;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -72,7 +71,6 @@ public class VoiceMessageDownloader {
 
 		if (voiceData == null) {
 			SurespotLog.v(TAG, "voice data not ready: " + message.getData());
-
 			forceDownload(parentView, message);
 		}
 		else {
@@ -82,7 +80,7 @@ public class VoiceMessageDownloader {
 			message.setLoaded(true);
 			message.setLoading(false);
 
-			updateUI(message, parentView, voiceData.length);
+			updateUI(message, parentView);
 
 		}
 	}
@@ -101,9 +99,6 @@ public class VoiceMessageDownloader {
 			DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
 			seekBar.setTag(R.id.tagDownloader, decryptionTaskWrapper);
-			TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
-			voiceTime.setVisibility(View.GONE);
-
 			message.setLoaded(false);
 			message.setLoading(true);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -158,11 +153,11 @@ public class VoiceMessageDownloader {
 			return mMessage;
 		}
 
-		private final WeakReference<View> imageViewReference;
+		private final WeakReference<View> viewReference;
 
 		public VoiceMessageDownloaderTask(View parentView, SurespotMessage message) {
 			mMessage = message;
-			imageViewReference = new WeakReference<View>(parentView);
+			viewReference = new WeakReference<View>(parentView);
 		}
 
 		public void cancel() {
@@ -236,16 +231,16 @@ public class VoiceMessageDownloader {
 				mMessage.setLoaded(true);
 				mMessage.setLoading(false);
 
-				if (imageViewReference != null) {
-					final View imageView = imageViewReference.get();
-					final VoiceMessageDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+				if (viewReference != null) {
+					final View view = viewReference.get();
+					final VoiceMessageDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(view);
 					if (!mCancelled && (VoiceMessageDownloaderTask.this == bitmapDownloaderTask)) {
-						final int bytes = soundbytes.length;
 						mHandler.post(new Runnable() {
 
 							@Override
 							public void run() {
-								updateUI(mMessage, imageView, bytes);
+								updateUI(mMessage, view);
+
 							}
 
 						});
@@ -253,24 +248,15 @@ public class VoiceMessageDownloader {
 					}
 				}
 
+				mChatAdapter.checkLoaded();
+
 			}
 
 		}
 	}
 
-	private void updateUI(SurespotMessage message, View parentView, int bytes) {
-		if (message.getDateTime() != null) {
-			TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
-			tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
-					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
-
-		}
-		TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
-		voiceTime.setVisibility(View.VISIBLE);
-
-		// use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
-		float kb = (float) bytes / 1000;
-		voiceTime.setText(String.format("%d kB", (int) Math.ceil(kb)));
+	private void updateUI(SurespotMessage message, View parentView) {
+		UIUtils.updateDateAndSize(message, parentView);
 
 		if (message.isPlayVoice()) {
 			SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
@@ -278,7 +264,7 @@ public class VoiceMessageDownloader {
 		}
 
 	}
-
+	
 	class DecryptionTaskWrapper {
 		private final WeakReference<VoiceMessageDownloaderTask> decryptionTaskReference;
 

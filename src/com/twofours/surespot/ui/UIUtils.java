@@ -468,4 +468,27 @@ public class UIUtils {
 		UIUtils.setHelpLinks(context, view);
 		showHelpDialog(context, R.string.surespot_help, view);
 	}
+
+	public static void updateDateAndSize(SurespotMessage message, View parentView) {
+		if (message.getDateTime() != null) {
+			TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
+			tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
+					+ DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+
+		}
+
+		if (message.getDataSize() != null && message.getDataSize() > 0) {
+			TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
+			voiceTime.setVisibility(View.VISIBLE);
+
+			// use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
+			float kb = (float) message.getDataSize() / 1000;
+			voiceTime.setText(String.format("%d kB", (int) Math.ceil(kb)));
+		}
+		else {
+			TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
+			voiceTime.setVisibility(View.GONE);
+		}
+	}
+
 }
