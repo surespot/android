@@ -464,10 +464,10 @@ public class ChatUtils {
 
 	}
 
-	public static void resendPictureMessage(Context context, NetworkController networkController, final SurespotMessage message,
+	public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message,
 			IAsyncCallback<Boolean> callback) {
 
-		// upload encrypted image to server
+		// upload encrypted file to server
 		FileInputStream uploadStream = null;
 		try {
 			if (message.getData().startsWith("file")) {
@@ -494,7 +494,7 @@ public class ChatUtils {
 		}
 
 		networkController.postImageStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
-				SurespotConstants.MimeTypes.IMAGE, callback);
+				message.getMimeType(), callback);
 	}
 
 	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate, int maxDimension) {

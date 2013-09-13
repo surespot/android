@@ -20,10 +20,12 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.images.ImageMessageMenuFragment;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.voice.VoiceController;
+import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class ChatFragment extends SherlockFragment {
 	private String TAG = "ChatFragment";
@@ -142,9 +144,9 @@ public class ChatFragment extends SherlockFragment {
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 
-							TextMessageMenuFragment dialog = new TextMessageMenuFragment();
+							VoiceMessageMenuFragment dialog = new VoiceMessageMenuFragment();
 							dialog.setActivityAndMessage(getMainActivity(), message);
-							dialog.show(getActivity().getSupportFragmentManager(), "TextMessageMenuFragment");
+							dialog.show(getActivity().getSupportFragmentManager(), "VoiceMessageMenuFragment");
 							return true;
 						}
 

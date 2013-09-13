@@ -2163,7 +2163,7 @@ public class ChatController {
 		}
 	}
 
-	public void resendPictureMessage(final SurespotMessage message) {
+	public void resendFileMessage(final SurespotMessage message) {
 
 		message.setErrorStatus(0);
 
@@ -2171,7 +2171,7 @@ public class ChatController {
 		chatAdapter.notifyDataSetChanged();
 
 		setProgress("resend", true);
-		ChatUtils.resendPictureMessage(mContext, mNetworkController, message, new IAsyncCallback<Boolean>() {
+		ChatUtils.resendFileMessage(mContext, mNetworkController, message, new IAsyncCallback<Boolean>() {
 
 			@Override
 			public void handleResponse(Boolean result) {

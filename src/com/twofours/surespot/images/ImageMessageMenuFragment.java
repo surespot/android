@@ -1,4 +1,4 @@
-package com.twofours.surespot.chat;
+package com.twofours.surespot.images;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -23,6 +23,7 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -185,7 +186,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 				}
 
 				if (itemText.equals(getString(R.string.menu_resend_message))) {
-					mActivity.getChatController().resendPictureMessage(mMessage);
+					mActivity.getChatController().resendFileMessage(mMessage);
 					return;
 				}
 
