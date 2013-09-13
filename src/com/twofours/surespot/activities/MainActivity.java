@@ -229,7 +229,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mHomeImageView = (ImageView) findViewById(android.R.id.home);
 			if (mHomeImageView == null) {
-				mHomeImageView = (ImageView) findViewById(R.id.abs__home);
+				mHomeImageView = (ImageView) findViewById(R.id.abs__home);				
 			}
 
 			setHomeProgress(true);
@@ -658,7 +658,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.v(TAG, "started from invite");
 			mSet = true;
 			Utils.clearIntent(intent);
-			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), true);
 		}
 
 		// message received show chat activity for user
@@ -666,7 +666,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			SurespotLog.v(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), true);
 			mSet = true;
 			Utils.clearIntent(intent);
 			Utils.logIntent(TAG, intent);
@@ -678,7 +678,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), false);
+			Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
 			SurespotLog.v(TAG, "started from SEND");
 			// need to select a user so put the chat controller in select mode
 
@@ -690,7 +690,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (!mSet) {
-			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), true);
 			String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 			if (lastName != null) {
 				SurespotLog.v(TAG, "using LAST_CHAT");
@@ -1378,7 +1378,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (action.equals(Intent.ACTION_SEND)) {
-			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), false);
+			Utils.configureActionBar(this, getString(R.string.surespot), IdentityController.getLoggedInUser(), true);
 
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
