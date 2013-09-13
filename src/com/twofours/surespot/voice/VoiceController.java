@@ -16,6 +16,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder.AudioSource;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,10 +27,11 @@ import com.todoroo.aacenc.AACEncoder;
 import com.todoroo.aacenc.AACToM4A;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 public class VoiceController {
 	private static final String TAG = "VoiceController";
@@ -256,10 +258,10 @@ public class VoiceController {
 	}
 
 	private synchronized static void sendVoiceMessage(final Activity activity) {
-		new AsyncTask<Void, Void, byte[]>() {
+		new AsyncTask<Void, Void, String>() {
 
 			@Override
-			protected byte[] doInBackground(Void... params) {
+			protected String doInBackground(Void... params) {
 				// convert to AAC
 				FileInputStream fis;
 				try {
@@ -274,16 +276,13 @@ public class VoiceController {
 					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
 					final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
 					new AACToM4A().convert(activity, outFile, m4aFile);
-
-					FileInputStream m4aStream = new FileInputStream(m4aFile);
-					byte[] data = Utils.inputStreamToBytes(m4aStream);
-
+		
 					// delete files
 					new File(outFile).delete();
 					new File(mFileName).delete();
-					new File(m4aFile).delete();
 
-					return data;
+					return m4aFile;
+
 				}
 
 				catch (IOException e) {
@@ -292,10 +291,20 @@ public class VoiceController {
 				return null;
 			}
 
-			protected void onPostExecute(byte[] data) {
-				if (data != null) {
+			protected void onPostExecute(final String encryptedVoiceMessageFile) {
+				if (encryptedVoiceMessageFile != null) {
 
-					MainActivity.getChatController().sendVoiceMessage(mUsername, data, SurespotConstants.MimeTypes.M4A);
+					ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
+							Uri.fromFile(new File(encryptedVoiceMessageFile)), mUsername, new IAsyncCallback<Boolean>() {
+
+								@Override
+								public void handleResponse(Boolean result) {
+									if (result) {
+										// delete m4a
+										new File(encryptedVoiceMessageFile).delete();
+									}
+								}
+							});
 
 				}
 				else {
@@ -334,7 +343,6 @@ public class VoiceController {
 			}
 
 			mPlayer = new MediaPlayer();
-			// mPlayer.setAudioStreamType(AudioManager.STREAM_VOICE_CALL);
 			mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			try {
 				if (mAudioFile != null) {

@@ -16,7 +16,7 @@
 
 package com.twofours.surespot.voice;
 
-import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -24,6 +24,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 
+import android.net.Uri;
 import android.os.Handler;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -53,10 +54,10 @@ public class VoiceMessageDownloader {
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 	private ChatAdapter mChatAdapter;
 
-	
 	public VoiceMessageDownloader(ChatAdapter chatAdapter) {
 		mChatAdapter = chatAdapter;
 	}
+
 	/**
 	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
 	 * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
@@ -70,12 +71,12 @@ public class VoiceMessageDownloader {
 		byte[] voiceData = message.getPlainBinaryData();
 
 		if (voiceData == null) {
-	//		SurespotLog.v(TAG, "voice data not ready: " + message.getData());
+			SurespotLog.v(TAG, "voice data not ready: " + message.getData());
 
 			forceDownload(parentView, message);
 		}
 		else {
-	//		SurespotLog.v(TAG, "loading voice data from message");
+			SurespotLog.v(TAG, "loading voice data from message");
 			cancelPotentialDownload(parentView, message);
 
 			message.setLoaded(true);
@@ -174,23 +175,27 @@ public class VoiceMessageDownloader {
 			if (soundbytes == null) {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
-				
-				if (mMessage.getInlineData() == null) {
-					//SurespotLog.v(TAG, "getting voice stream from cloud");
-					voiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+
+				if (mMessage.getData().startsWith("file")) {
+					try {
+						SurespotLog.v(TAG, "loading voice stream from local file");
+						voiceStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
+					}
+					catch (FileNotFoundException e) {
+						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+					}
 				}
 				else {
-					//SurespotLog.v(TAG, "getting voice stream from inlineData");
-					voiceStream = new ByteArrayInputStream(mMessage.getInlineData());
+					SurespotLog.v(TAG, "getting voice stream from cloud");
+					voiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 				}
 
-
-				if (!mCancelled && voiceStream != null) {					
+				if (!mCancelled && voiceStream != null) {
 					PipedOutputStream out = new PipedOutputStream();
 					PipedInputStream inputStream;
 					try {
 						inputStream = new PipedInputStream(out);
-						
+
 						if (mCancelled) {
 							inputStream.close();
 							mMessage.setLoaded(true);
@@ -203,7 +208,7 @@ public class VoiceMessageDownloader {
 								voiceStream, out);
 
 						soundbytes = Utils.inputStreamToBytes(inputStream);
-						
+
 						if (mCancelled) {
 							mMessage.setPlainBinaryData(soundbytes);
 							mMessage.setLoaded(true);
@@ -223,7 +228,7 @@ public class VoiceMessageDownloader {
 				}
 			}
 			else {
-				//SurespotLog.v(TAG, "getting voice stream from cache");
+				SurespotLog.v(TAG, "getting voice stream from cache");
 			}
 			if (soundbytes != null) {
 
@@ -262,9 +267,9 @@ public class VoiceMessageDownloader {
 		}
 		TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
 		voiceTime.setVisibility(View.VISIBLE);
-		
-		//use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
-		float kb = (float) bytes / 1000;		
+
+		// use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
+		float kb = (float) bytes / 1000;
 		voiceTime.setText(String.format("%d kB", (int) Math.ceil(kb)));
 
 		if (message.isPlayVoice()) {

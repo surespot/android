@@ -537,7 +537,6 @@ public class ChatController {
 
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
-			// TODO handle different mime types
 			SurespotLog.v(TAG, "sendmessage, socket: %s", socket);
 			JSONObject json = message.toJSONObject();
 			SurespotLog.v(TAG, "sendmessage, json: %s", json);
@@ -638,15 +637,33 @@ public class ChatController {
 						else {
 							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 								if (ChatUtils.isMyMessage(message)) {
-									handleLocalData(chatAdapter, message);
+									handleCachedFile(chatAdapter, message);
 								}
-								// if (!ChatUtils.isMyMessage(message)) {
-								// final byte[] plainData = EncryptionController.symmetricDecryptBytes(message.getOurVersion(), message.getOtherUser(),
-								// message.getTheirVersion(), message.getIv(), message.getData());
+								else {
 
-								// message.setPlainBinaryData(plainData);
-								// }
+									InputStream encryptedVoiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
+											message.getData());
 
+									PipedOutputStream out = new PipedOutputStream();
+									PipedInputStream inputStream;
+									try {
+										inputStream = new PipedInputStream(out);
+
+										EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
+												message.getIv(), new BufferedInputStream(encryptedVoiceStream), out);
+
+										byte[] bytes = Utils.inputStreamToBytes(inputStream);
+										message.setPlainBinaryData(bytes);
+									}
+									catch (InterruptedIOException ioe) {
+
+										SurespotLog.w(TAG, ioe, "handleMessage");
+
+									}
+									catch (IOException e) {
+										SurespotLog.w(TAG, e, "handleMessage");
+									}
+								}
 							}
 							else {
 								message.setPlainData("unknown message mime type");
@@ -677,13 +694,11 @@ public class ChatController {
 								// if it was a voice message from the other user set play flag
 								// TODO wrap in preference
 								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-									message.setPlayMedia(true);
-							//		VoiceController pttController = new VoiceController(ChatController.this, mNetworkController);
-								//	VoiceController.playVoiceMessage(null, message);
+									message.setPlayMedia(true);							
 								}
-								
+
 							}
-							//chat not showing
+							// chat not showing
 							else {
 								// if it's my message increment the count by one to account for it as I may have unread messages from the
 								// other user; we
@@ -762,7 +777,9 @@ public class ChatController {
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
 				// update image cache
-				MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
+				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+					MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
+				}
 
 				// update message to point to real location
 				localMessage.setData(remoteUri);
@@ -793,41 +810,41 @@ public class ChatController {
 		}
 	}
 
-	private void handleLocalData(ChatAdapter chatAdapter, SurespotMessage message) {
-		SurespotLog.v(TAG, "handleLocalData");
-		SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
-
-		// if the data is different we haven't updated the http cache with data we sent
-		if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData()) && localMessage.getInlineData() != null) {
-			// add the remote cache entry for the new url
-
-			byte[] imageData = localMessage.getInlineData();
-
-			String remoteUri = message.getData();
-			HeapResource resource = new HeapResource(imageData);
-			Date date = new Date();
-			String sDate = DateUtils.formatDate(date);
-
-			Header[] cacheHeaders = new Header[3];
-
-			// create fake cache entry
-			cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
-			cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
-			cacheHeaders[2] = new BasicHeader("Date", sDate);
-
-			HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
-
-			SurespotLog.v(TAG, "creating http cache entry for: %s", remoteUri);
-			mNetworkController.addCacheEntry(remoteUri, cacheEntry);
-
-			// update message to point to real location
-			localMessage.setData(remoteUri);
-
-			// clear out the inline data as we should still have the decrypted plain data
-			localMessage.setInlineData(null);
-
-		}
-	}
+	// private void handleLocalData(ChatAdapter chatAdapter, SurespotMessage message) {
+	// SurespotLog.v(TAG, "handleLocalData");
+	// SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
+	//
+	// // if the data is different we haven't updated the http cache with data we sent
+	// if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData()) && localMessage.getInlineData() != null) {
+	// // add the remote cache entry for the new url
+	//
+	// byte[] imageData = localMessage.getInlineData();
+	//
+	// String remoteUri = message.getData();
+	// HeapResource resource = new HeapResource(imageData);
+	// Date date = new Date();
+	// String sDate = DateUtils.formatDate(date);
+	//
+	// Header[] cacheHeaders = new Header[3];
+	//
+	// // create fake cache entry
+	// cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
+	// cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
+	// cacheHeaders[2] = new BasicHeader("Date", sDate);
+	//
+	// HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
+	//
+	// SurespotLog.v(TAG, "creating http cache entry for: %s", remoteUri);
+	// mNetworkController.addCacheEntry(remoteUri, cacheEntry);
+	//
+	// // update message to point to real location
+	// localMessage.setData(remoteUri);
+	//
+	// // clear out the inline data as we should still have the decrypted plain data
+	// localMessage.setInlineData(null);
+	//
+	// }
+	// }
 
 	// message handling shiznit
 
@@ -1413,7 +1430,7 @@ public class ChatController {
 					}
 					else {
 						if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-							handleLocalData(chatAdapter, lastMessage);
+							handleCachedFile(chatAdapter, lastMessage);
 						}
 					}
 				}
@@ -1907,9 +1924,6 @@ public class ChatController {
 
 						// set data for sending
 						chatMessage.setData(new String(ChatUtils.base64EncodeNowrap(result)));
-
-						// set data to copy to http cache on send callback
-						chatMessage.setInlineData(result);
 						chatMessage.setFromVersion(ourLatestVersion);
 						chatMessage.setToVersion(theirLatestVersion);
 

@@ -6,8 +6,6 @@ import java.util.Observable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.text.TextUtils;
-
 import com.twofours.surespot.common.SurespotLog;
 
 /**
@@ -78,14 +76,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public void setPlainBinaryData(byte[] plainData) {
 		mPlainBinaryData = plainData;
-	}
-
-	public byte[] getInlineData() {
-		return mInlineData;
-	}
-
-	public void setInlineData(byte[] inlineData) {
-		mInlineData = inlineData;
 	}
 
 	public boolean isPlayVoice() {
@@ -189,13 +179,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		if (datetime > 0) {
 			chatMessage.setDateTime(new Date(datetime));
 		}
-		
-		//if we have inline data store the base64 decoded bytes
-		String inlineData = (jsonMessage.optString("inlineData"));
-		if (!TextUtils.isEmpty(inlineData)) {			
-			chatMessage.setInlineData(ChatUtils.base64DecodeNowrap(inlineData));
-		}
-
+				
 		return chatMessage;
 	}
 
