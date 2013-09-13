@@ -126,7 +126,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mFriendHasBeenSet;
 	private int mEmojiResourceId = -1;
 	private ImageView mIvInvite;
-	private ImageView mIvHome;
 	private ImageView mIvVoice;
 	private ImageView mIvSend;
 
@@ -431,7 +430,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setupChatControls() {
 		mIvInvite = (ImageView) findViewById(R.id.ivInvite);
-		mIvHome = (ImageView) findViewById(R.id.ivHome);
 		mIvVoice = (ImageView) findViewById(R.id.ivVoice);
 		mIvSend = (ImageView) findViewById(R.id.ivSend);
 
@@ -484,8 +482,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onTouch(View v, MotionEvent event) {
 
 				if (event.getAction() == MotionEvent.ACTION_UP) {
-					
-					//if user let go of send button out of send button bounds, don't send the recording
+
+					// if user let go of send button out of send button bounds, don't send the recording
 					Rect rect = new Rect(mSendButton.getLeft(), mSendButton.getTop(), mSendButton.getRight(), mSendButton.getBottom());
 
 					boolean send = true;
@@ -1543,41 +1541,25 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setButtonText() {
 		if (mCurrentFriend == null) {
-			// mSendButton.setText(getString(R.string.invite), mInviteTextSize);
-			// mSendButton.invalidate();
-
 			mIvInvite.setVisibility(View.VISIBLE);
-			mIvHome.setVisibility(View.GONE);
 			mIvVoice.setVisibility(View.GONE);
 			mIvSend.setVisibility(View.GONE);
 
 		}
 		else {
 			if (mCurrentFriend.isDeleted()) {
-				// mSendButton.setText(getString(R.string.home), mHomeTextSize);
-				// mSendButton.invalidate();
-
 				mIvInvite.setVisibility(View.GONE);
-				mIvHome.setVisibility(View.VISIBLE);
 				mIvVoice.setVisibility(View.GONE);
 				mIvSend.setVisibility(View.GONE);
 			}
 			else {
 				if (mEtMessage.getText().length() > 0) {
-					// mSendButton.setText(getString(R.string.send), mSendTextSize);
-					// mSendButton.invalidate();
-
 					mIvInvite.setVisibility(View.GONE);
-					mIvHome.setVisibility(View.GONE);
 					mIvVoice.setVisibility(View.GONE);
 					mIvSend.setVisibility(View.VISIBLE);
 				}
 				else {
-					// mSendButton.setText(getString(R.string.home), mHomeTextSize);
-					// mSendButton.invalidate();
-
 					mIvInvite.setVisibility(View.GONE);
-					mIvHome.setVisibility(View.VISIBLE);
 					mIvVoice.setVisibility(View.VISIBLE);
 					mIvSend.setVisibility(View.GONE);
 				}
