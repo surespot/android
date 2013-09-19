@@ -85,7 +85,7 @@ public class ChatUtils {
 		chatMessage.setMimeType(mimeType);
 		return chatMessage;
 	}
-	
+
 	public static SurespotMessage buildPlainBinaryMessage(String to, String mimeType, byte[] plainData, String iv) {
 		SurespotMessage chatMessage = new SurespotMessage();
 		chatMessage.setFrom(IdentityController.getLoggedInUser());
@@ -98,8 +98,6 @@ public class ChatUtils {
 		chatMessage.setMimeType(mimeType);
 		return chatMessage;
 	}
-
-	
 
 	public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
 		SurespotMessage chatMessage = new SurespotMessage();
@@ -252,22 +250,37 @@ public class ChatUtils {
 									return;
 								}
 
-								networkController.postImageStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
-										new IAsyncCallback<Boolean>() {
+								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
+										new IAsyncCallback<Integer>() {
 
 											@Override
-											public void handleResponse(Boolean result) {
+											public void handleResponse(Integer statusCode) {
+												boolean success = false;
 												// if it failed update the message
-												SurespotLog.v(TAG, "postFileStream complete, result: %b", result);
-												if (!result) {
-													ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
+												SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+												ChatAdapter chatAdapter = null;
+												switch (statusCode) {
+												case 200:
+													success = true;
+													break;
+												case 402:
+													chatAdapter = chatController.getChatAdapter(activity, to);
+													if (chatAdapter != null) {
+														chatAdapter.getMessageByIv(iv).setErrorStatus(402);
+														chatAdapter.notifyDataSetChanged();
+													}
+													break;
+												default: 
+													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
+												
+												
 
-												callback.handleResponse(result);
+												callback.handleResponse(success);
 											}
 										});
 
@@ -370,7 +383,6 @@ public class ChatUtils {
 						final String localImageUri = Uri.fromFile(localImageFile).toString();
 						SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
-
 						Runnable saveFileRunnable = new Runnable() {
 							@Override
 							public void run() {
@@ -409,8 +421,6 @@ public class ChatUtils {
 									return;
 								}
 
-								
-								
 								// upload encrypted image to server
 								FileInputStream uploadStream;
 								try {
@@ -421,25 +431,38 @@ public class ChatUtils {
 									callback.handleResponse(false);
 									return;
 								}
-								
-								
 
-								networkController.postImageStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
-										new IAsyncCallback<Boolean>() {
+								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
+										new IAsyncCallback<Integer>() {
 
 											@Override
-											public void handleResponse(Boolean result) {
-												// if it failed update the message error status
-												SurespotLog.v(TAG, "postFileStream complete, result: %b", result);
-												if (!result) {
-													ChatAdapter chatAdapter = chatController.getChatAdapter(activity, to);
+											public void handleResponse(Integer statusCode) {
+												boolean success = false;
+												// if it failed update the message
+												SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+												ChatAdapter chatAdapter = null;
+												switch (statusCode) {
+												case 200:
+													success = true;
+													break;
+												case 402:
+													chatAdapter = chatController.getChatAdapter(activity, to);
+													if (chatAdapter != null) {
+														chatAdapter.getMessageByIv(iv).setErrorStatus(402);
+														chatAdapter.notifyDataSetChanged();
+													}
+													break;
+												default: 
+													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
+												
+												
 
-												callback.handleResponse(result);
+												callback.handleResponse(success);											
 											}
 										});
 
@@ -464,8 +487,7 @@ public class ChatUtils {
 
 	}
 
-	public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message,
-			IAsyncCallback<Boolean> callback) {
+	public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message, final IAsyncCallback<Boolean> callback) {
 
 		// upload encrypted file to server
 		FileInputStream uploadStream = null;
@@ -493,8 +515,15 @@ public class ChatUtils {
 			return;
 		}
 
-		networkController.postImageStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
-				message.getMimeType(), callback);
+		networkController.postFileStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
+				message.getMimeType(), new IAsyncCallback<Integer>() {
+					
+					@Override
+					public void handleResponse(Integer statusCode) {
+						SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+						callback.handleResponse(statusCode == 200);						
+					}
+				});
 	}
 
 	public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate, int maxDimension) {

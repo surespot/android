@@ -59,7 +59,9 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
+import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -128,6 +130,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mIvInvite;
 	private ImageView mIvVoice;
 	private ImageView mIvSend;
+
+	private BillingController mBillingController;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -221,6 +225,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!processIntent(intent)) {
+			// start billing framework
+			setupBilling();
+
 			// set volume control buttons
 			setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -229,7 +236,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mHomeImageView = (ImageView) findViewById(android.R.id.home);
 			if (mHomeImageView == null) {
-				mHomeImageView = (ImageView) findViewById(R.id.abs__home);				
+				mHomeImageView = (ImageView) findViewById(R.id.abs__home);
 			}
 
 			setHomeProgress(true);
@@ -428,6 +435,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
+	private void setupBilling() {
+		mBillingController = SurespotApplication.getBillingController();
+
+		if (!mBillingController.isSetup()) {
+
+			mBillingController.startSetup(new IAsyncCallback<Boolean>() {
+
+				@Override
+				public void handleResponse(Boolean result) {
+
+				}
+			});
+		}
+
+	}
+
 	private void setupChatControls() {
 		mIvInvite = (ImageView) findViewById(R.id.ivInvite);
 		mIvVoice = (ImageView) findViewById(R.id.ivVoice);
@@ -464,10 +487,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				SurespotLog.v(TAG, "onLongClick voice");
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
-					// if we haven't entered any text start recording voice
 
-					if (mEtMessage.getText().toString().length() == 0 && !mChatController.isFriendDeleted(friend.getName())) {
-						VoiceController.startRecording(MainActivity.this, friend.getName());
+					if (mBillingController.hasVoiceMessaging()) {
+						// if we haven't entered any text start recording voice
+
+						if (mEtMessage.getText().toString().length() == 0 && !mChatController.isFriendDeleted(friend.getName())) {
+							VoiceController.startRecording(MainActivity.this, friend.getName());
+						}
+					}
+					else {
+						mBillingController.purchase(MainActivity.this, SurespotConstants.Products.VOICE_MESSAGING);
 					}
 
 				}
@@ -797,7 +826,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 			}
 			break;
+
+		case SurespotConstants.IntentRequestCodes.PURCHASE:
+			// Pass on the activity result to the helper for handling
+			if (!SurespotApplication.getBillingController().getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
+				super.onActivityResult(requestCode, resultCode, data);
+			}
+			else {
+				//TODO upload token to server
+				SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
+			}
+		default:
+			super.onActivityResult(requestCode, resultCode, data);
 		}
+
 	}
 
 	@Override

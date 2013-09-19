@@ -222,7 +222,7 @@ public class SignupActivity extends SherlockActivity {
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
 										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
-												SurespotApplication.getVersion(), new CookieResponseHandler() {
+												SurespotApplication.getVersion(), SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {

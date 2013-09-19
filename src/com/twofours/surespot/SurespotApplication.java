@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 
 import com.google.android.gcm.GCMRegistrar;
+import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
@@ -33,6 +34,7 @@ public class SurespotApplication extends Application {
 	private static CredentialCachingService mCredentialCachingService;
 	private static StateController mStateController = null;
 	private static String mVersion;
+	private static BillingController mBillingController;
 
 	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -55,6 +57,7 @@ public class SurespotApplication extends Application {
 	 */
 	public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS, sPoolWorkQueue,
 			sThreadFactory);
+	;
 
 	public void onCreate() {
 		super.onCreate();
@@ -142,6 +145,9 @@ public class SurespotApplication extends Application {
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 
 		startService(cacheIntent);
+		
+		mBillingController = new BillingController(this);
+				
 	}
 
 	public static CredentialCachingService getCachingService() {
@@ -159,5 +165,11 @@ public class SurespotApplication extends Application {
 	public static String getVersion() {
 		return mVersion;
 	}
+	
+	public static BillingController getBillingController() {
+		return mBillingController;
+	}
+	
+
 
 }

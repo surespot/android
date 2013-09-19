@@ -211,6 +211,7 @@ public class LoginActivity extends SherlockActivity {
 
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);
 						networkController.login(username, idSig.derivedPassword, idSig.signature, SurespotApplication.getVersion(),
+								SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken(),
 								new CookieResponseHandler() {
 									@Override
 									public void onSuccess(int responseCode, String arg0, Cookie cookie) {

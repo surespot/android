@@ -113,7 +113,7 @@ public class NetworkController {
 			};
 		}
 		catch (IOException e) {
-			// TODO tell user shit is fucked						
+			// TODO tell user shit is fucked
 			throw new RuntimeException("Fatal error, could not create http clients..is storage space available?", e);
 		}
 
@@ -162,7 +162,7 @@ public class NetworkController {
 	}
 
 	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers, String version,
-			final CookieResponseHandler responseHandler) {
+			String voiceMessagingPurchaseToken, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -173,7 +173,8 @@ public class NetworkController {
 			params.put("referrers", referrers);
 		}
 		params.put("version", version);
-		
+		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
+
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
@@ -295,12 +296,15 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, String version, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, String version, String voiceMessagingPurchaseToken,
+			final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
 		params.put("version", version);
+
+		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -352,6 +356,21 @@ public class NetworkController {
 				responseHandler.onFinish();
 			}
 		});
+
+	}
+
+	private void addVoiceMessagingPurchaseTokens(String voiceMessagingPurchaseToken, Map<String, String> params) {
+		if (params != null && !TextUtils.isEmpty(voiceMessagingPurchaseToken)) {
+			// build purchase token json object string
+			JSONObject jPurchaseTokens = new JSONObject();
+			try {
+				jPurchaseTokens.put(SurespotConstants.Products.VOICE_MESSAGING, voiceMessagingPurchaseToken);
+				params.put("purchaseTokens", jPurchaseTokens.toString());
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, e, "json error creating purchase token object");
+			}
+		}
 
 	}
 
@@ -485,8 +504,8 @@ public class NetworkController {
 		}
 	}
 
-	public void postImageStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
-			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Boolean> callback) {
+	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
+			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
 		new AsyncTask<Void, Void, HttpResponse>() {
 
 			@Override
@@ -515,18 +534,15 @@ public class NetworkController {
 			}
 
 			protected void onPostExecute(HttpResponse response) {
-				if (response != null && response.getStatusLine().getStatusCode() == 200) {
-
-					callback.handleResponse(true);
+				if (response != null) {
+					callback.handleResponse(response.getStatusLine().getStatusCode());
 				}
 				else {
-					callback.handleResponse(false);
+					callback.handleResponse(500);
 				}
-
 			};
 		}.execute();
 	}
-		
 
 	public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv, final InputStream fileInputStream,
 			final IAsyncCallback<String> callback) {
@@ -675,4 +691,13 @@ public class NetworkController {
 		mCachingHttpClient.removeEntry(key);
 
 	}
+
+	public void updateVoiceMessagingPurchaseToken(String voiceMessagingPurchaseToken, final AsyncHttpResponseHandler responseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
+		post("/updatePurchaseTokens", new RequestParams(params), responseHandler);
+	}
+
+	
+
 }

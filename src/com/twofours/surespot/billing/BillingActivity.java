@@ -1,7 +1,6 @@
 package com.twofours.surespot.billing;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -22,12 +21,11 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
-import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
-import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
-import com.twofours.surespot.billing.IabHelper.OnIabSetupFinishedListener;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 @SuppressLint("InlinedApi")
@@ -35,12 +33,8 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 	protected static final String TAG = "BillingActivity";
 
-	// (arbitrary) request code for the purchase flow
-	static final int RC_REQUEST = 10001;
-	private IabHelper mIabHelper;
-	private boolean mQueried;
+	private BillingController mBillingController;
 	private ImageView mHomeImageView;
-	private boolean mHelperReady;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,47 +50,31 @@ public class BillingActivity extends SherlockFragmentActivity {
 			mHomeImageView = (ImageView) findViewById(R.id.abs__home);
 		}
 
-		mIabHelper = new IabHelper(this, SurespotConstants.GOOGLE_APP_LICENSE_KEY);
+		mBillingController = SurespotApplication.getBillingController();
 
-		if (savedInstanceState != null) {
-			mQueried = savedInstanceState.getBoolean("queried");
+		if (!mBillingController.isSetup()) {
+			showProgress();
+
+			mBillingController.startSetup(new IAsyncCallback<Boolean>() {
+
+				@Override
+				public void handleResponse(Boolean result) {
+					hideProgress();
+					if (!result) {
+						Utils.makeLongToast(BillingActivity.this, getString(R.string.billing_could_not_enable));
+
+						// disable in app purchase buttons
+						ViewGroup layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
+						UIUtils.disableImmediateChildren(layout);
+						layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
+						UIUtils.disableImmediateChildren(layout);
+
+					}
+
+				}
+
+			});
 		}
-
-		showProgress();
-		mHelperReady = false;
-		mIabHelper.startSetup(new OnIabSetupFinishedListener() {
-
-			@Override
-			public void onIabSetupFinished(IabResult result) {
-				if (!result.isSuccess()) {
-					// Oh noes, there was a problem.
-					SurespotLog.v(TAG, "Problem setting up In-app Billing: " + result);
-					Utils.makeLongToast(BillingActivity.this, getString(R.string.billing_could_not_enable));
-
-					// disable in app purchase buttons
-					ViewGroup layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
-					UIUtils.disableImmediateChildren(layout);
-					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
-					UIUtils.disableImmediateChildren(layout);
-
-					hideProgress();
-					return;
-				}
-
-				mHelperReady = true;
-				if (!mQueried) {
-					mQueried = true;
-
-					SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
-					mIabHelper.queryInventoryAsync(mGotInventoryListener);
-				} else {
-					hideProgress();
-					SurespotLog.v(TAG, "already queried");
-				}
-
-			}
-		});
-
 	}
 
 	private void showProgress() {
@@ -110,74 +88,42 @@ public class BillingActivity extends SherlockFragmentActivity {
 		setProgress(false);
 	}
 
-	// Listener that's called when we finish querying the items and subscriptions we own
-	IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-		public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-			SurespotLog.d(TAG, "Query inventory finished.");
-			if (result.isFailure()) {
-				// complain("Failed to query inventory: " + result);
-				hideProgress();
-				return;
-			}
-
-			SurespotLog.d(TAG, "Query inventory was successful.");
-
-			// consume owned items
-			List<Purchase> owned = inventory.getAllPurchases();
-
-			if (owned.size() > 0) {
-				SurespotLog.d(TAG, "consuming purchases");
-
-				mIabHelper.consumeAsync(owned, new IabHelper.OnConsumeMultiFinishedListener() {
-
-					@Override
-					public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results) {
-						SurespotLog.d(TAG, "consumed purchases: %s", results);
-						hideProgress();
-					}
-				});
-			} else {
-				SurespotLog.d(TAG, "no purchases to consume");
-				hideProgress();
-			}
-
-			SurespotLog.d(TAG, "Initial inventory query finished.");
-
-		}
-	};
-
 	public void onPurchase(View arg0) {
 		String denom = (String) arg0.getTag();
-		try {
-			if (mHelperReady) {
-				showProgress();
-				mIabHelper.launchPurchaseFlow(this, "pwyl_" + denom, RC_REQUEST, new OnIabPurchaseFinishedListener() {
-
-					@Override
-					public void onIabPurchaseFinished(IabResult result, Purchase info) {
-						if (result.isFailure()) {
-							hideProgress();
-							return;
-						}
-						// Utils.makeToast(BillingActivity.this, "thank you");
-						SurespotLog.v(TAG, "purchase successful, consuming");
-						mIabHelper.consumeAsync(info, new OnConsumeFinishedListener() {
-
-							@Override
-							public void onConsumeFinished(Purchase purchase, IabResult result) {
-								SurespotLog.v(TAG, "consumption result: " + result.isSuccess());
-								hideProgress();
-
-							}
-						});
-					}
-				});
-			}
-		} catch (IllegalStateException ise) {
-			hideProgress();
-			Utils.makeToast(this, getString(R.string.billing_purchase_error));
-			SurespotLog.v(TAG, ise, "onPurchase error");
-		}
+	//	try {
+		//	if (mBillingController.isSetup()) {
+			//	showProgress();
+				mBillingController.purchase(this, SurespotConstants.Products.PWYL_PREFIX + denom);
+				//, new OnIabPurchaseFinishedListener() {
+//
+//					@Override
+//					public void onIabPurchaseFinished(IabResult result, Purchase info) {
+//						if (result.isFailure()) {
+//							hideProgress();
+//							return;
+//						}
+//						SurespotLog.v(TAG, "purchase successful, consuming");
+//						mBillingController.getIabHelper().consumeAsync(info, new OnConsumeFinishedListener() {
+//
+//							@Override
+//							public void onConsumeFinished(Purchase purchase, IabResult result) {
+//								SurespotLog.v(TAG, "consumption result: " + result.isSuccess());
+//								hideProgress();
+//
+//							}
+//						});
+//					}
+//				});
+//			}
+//			else {
+//				Utils.makeToast(this, "Billing not ready yet, please try again later.");
+//			}
+//		}
+//		catch (IllegalStateException ise) {
+//			hideProgress();
+//			Utils.makeToast(this, getString(R.string.billing_purchase_error));
+//			SurespotLog.v(TAG, ise, "onPurchase error");
+//		}
 	}
 
 	@Override
@@ -185,12 +131,13 @@ public class BillingActivity extends SherlockFragmentActivity {
 		SurespotLog.d(TAG, "onActivityResult(%s, $s, $s)", requestCode, resultCode, data);
 
 		// Pass on the activity result to the helper for handling
-		if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
+		if (!mBillingController.getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
 			// not handled, so handle it ourselves (here's where you'd
 			// perform any handling of activity results not related to in-app
 			// billing...
 			super.onActivityResult(requestCode, resultCode, data);
-		} else {
+		}
+		else {
 			SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
 		}
 	}
@@ -220,7 +167,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		// Start your favorite browser
 		Intent viewIntent = new Intent(Intent.ACTION_VIEW, payPalUri);
-		startActivity(viewIntent);		
+		startActivity(viewIntent);
 	}
 
 	public void onPaypalEmail(View arg0) {
@@ -255,7 +202,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
 				intent.putExtra(Intent.EXTRA_TEXT, body);
-				startActivity(intent);				
+				startActivity(intent);
 			}
 
 		});
@@ -309,7 +256,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
 				intent.putExtra(Intent.EXTRA_TEXT, body);
-				startActivity(intent);				
+				startActivity(intent);
 			}
 
 		});
@@ -325,32 +272,33 @@ public class BillingActivity extends SherlockFragmentActivity {
 		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		try {
 			startActivity(intent);
-		} catch (ActivityNotFoundException anfe) {
+		}
+		catch (ActivityNotFoundException anfe) {
 			Utils.makeToast(this, getString(R.string.could_not_open_bitcoin_wallet));
 		}
 
 	}
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-
-		super.onSaveInstanceState(outState);
-
-		outState.putBoolean("queried", mQueried);
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (mIabHelper != null && mQueried) {
-			try {
-				mIabHelper.dispose();
-			} catch (Exception e) {
-			}
-		}
-
-		mIabHelper = null;
-	}
+	// @Override
+	// protected void onSaveInstanceState(Bundle outState) {
+	//
+	// super.onSaveInstanceState(outState);
+	//
+	// outState.putBoolean("queried", mQueried);
+	// }
+	//
+	// @Override
+	// protected void onDestroy() {
+	// super.onDestroy();
+	// if (mIabHelper != null && mQueried) {
+	// try {
+	// mIabHelper.dispose();
+	// } catch (Exception e) {
+	// }
+	// }
+	//
+	// mIabHelper = null;
+	// }
 
 	// TODO Factor this out with main activity...
 	private void setProgress(boolean inProgress) {
@@ -365,7 +313,8 @@ public class BillingActivity extends SherlockFragmentActivity {
 			a.setDuration(1000);
 			mHomeImageView.clearAnimation();
 			mHomeImageView.startAnimation(a);
-		} else {
+		}
+		else {
 			mHomeImageView.clearAnimation();
 		}
 
