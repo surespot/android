@@ -311,5 +311,8 @@
     <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
     <string name="login_update">please update surespot to login</string>
     <string name="help_agreement"><![CDATA["By clicking OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
-    <string name="payment_required_voice">show me the money</string>
+    <string name="billing_payment_required_voice">surepot voice message not purchased</string>
+    <string name="billing_getting_inventory">getting purchase inventory, please try again later</string>
+    <string name="billing_unavailable">billing unavailable</string>
+    <string name="billing_error">billing error</string>
 </resources>

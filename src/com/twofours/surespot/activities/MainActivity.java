@@ -62,6 +62,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
+import com.twofours.surespot.billing.IabHelper;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -132,6 +133,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mIvSend;
 
 	private BillingController mBillingController;
+	private IAsyncCallback<Integer> mBillingResponseHandler;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -227,6 +229,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (!processIntent(intent)) {
 			// start billing framework
 			setupBilling();
+			
 
 			// set volume control buttons
 			setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -437,19 +440,34 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setupBilling() {
 		mBillingController = SurespotApplication.getBillingController();
-
-		if (!mBillingController.isSetup()) {
-
-			mBillingController.startSetup(new IAsyncCallback<Boolean>() {
-
-				@Override
-				public void handleResponse(Boolean result) {
-
+		mBillingResponseHandler = new IAsyncCallback<Integer>() {
+			
+			@Override
+			public void handleResponse(Integer response) {								
+				switch (response) {
+				case BillingController.BILLING_QUERYING_INVENTORY:
+					Utils.makeToast(MainActivity.this, getString(R.string.billing_getting_inventory));									
+					break;
+				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
+					Utils.makeToast(MainActivity.this, getString(R.string.billing_unavailable));
+					break;
+				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
+				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
+					Utils.makeToast(MainActivity.this, getString(R.string.billing_error));
+					break;				
+					
 				}
-			});
+				
+				
+			}
+		};
+		
+		if (!mBillingController.hasBeenQueried()) {
+			mBillingController.setup(this, true, mBillingResponseHandler);
 		}
-
 	}
+	
+	
 
 	private void setupChatControls() {
 		mIvInvite = (ImageView) findViewById(R.id.ivInvite);
@@ -496,7 +514,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						}
 					}
 					else {
-						mBillingController.purchase(MainActivity.this, SurespotConstants.Products.VOICE_MESSAGING);
+						mBillingController.purchase(MainActivity.this, SurespotConstants.Products.VOICE_MESSAGING, true, mBillingResponseHandler);
 					}
 
 				}
@@ -761,8 +779,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.onPause();
 		}
 
-		VoiceController.pause();
-
+		VoiceController.pause();		
 		stopWatchingExternalStorage();
 
 	}
@@ -833,7 +850,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				super.onActivityResult(requestCode, resultCode, data);
 			}
 			else {
-				//TODO upload token to server
+				// TODO upload token to server
 				SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
 			}
 		default:
@@ -1043,6 +1060,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.v(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
+		}
+		
+		BillingController bc = SurespotApplication.getBillingController();
+		if (bc != null) {
+			bc.dispose();
 		}
 		// mChatController = null;
 		// if (mPTTController != null) {

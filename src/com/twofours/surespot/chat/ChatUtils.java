@@ -451,6 +451,7 @@ public class ChatUtils {
 														chatAdapter.getMessageByIv(iv).setErrorStatus(402);
 														chatAdapter.notifyDataSetChanged();
 													}
+													SurespotApplication.getBillingController().revokeVoiceMessaging();
 													break;
 												default: 
 													chatAdapter = chatController.getChatAdapter(activity, to);

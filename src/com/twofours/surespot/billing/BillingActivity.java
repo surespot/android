@@ -34,6 +34,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 	protected static final String TAG = "BillingActivity";
 
 	private BillingController mBillingController;
+	private IAsyncCallback<Integer> mBillingResponseHandler;
 	private ImageView mHomeImageView;
 
 	@Override
@@ -51,29 +52,46 @@ public class BillingActivity extends SherlockFragmentActivity {
 		}
 
 		mBillingController = SurespotApplication.getBillingController();
+		mBillingResponseHandler = new IAsyncCallback<Integer>() {
 
-		if (!mBillingController.isSetup()) {
-			showProgress();
+			@Override
+			public void handleResponse(Integer response) {
+				hideProgress();
+				ViewGroup layout = null;						
 
-			mBillingController.startSetup(new IAsyncCallback<Boolean>() {
+				switch (response) {
+				case BillingController.BILLING_QUERYING_INVENTORY:
+					Utils.makeToast(BillingActivity.this, getString(R.string.billing_getting_inventory));
 
-				@Override
-				public void handleResponse(Boolean result) {
-					hideProgress();
-					if (!result) {
-						Utils.makeLongToast(BillingActivity.this, getString(R.string.billing_could_not_enable));
+					break;
+				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
+					Utils.makeToast(BillingActivity.this, getString(R.string.billing_unavailable));
+					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
+					UIUtils.disableImmediateChildren(layout);
+					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
+					UIUtils.disableImmediateChildren(layout);
 
-						// disable in app purchase buttons
-						ViewGroup layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
-						UIUtils.disableImmediateChildren(layout);
-						layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
-						UIUtils.disableImmediateChildren(layout);
+					break;
+				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
+				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
+					Utils.makeToast(BillingActivity.this, getString(R.string.billing_error));
 
-					}
+					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
+					UIUtils.disableImmediateChildren(layout);
+					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);
+					UIUtils.disableImmediateChildren(layout);
+
+					break;
 
 				}
 
-			});
+			}
+		};
+
+		if (!mBillingController.hasBeenQueried()) {
+			showProgress();
+
+			mBillingController.setup(this, false, mBillingResponseHandler);
 		}
 	}
 
@@ -90,40 +108,10 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 	public void onPurchase(View arg0) {
 		String denom = (String) arg0.getTag();
-	//	try {
-		//	if (mBillingController.isSetup()) {
-			//	showProgress();
-				mBillingController.purchase(this, SurespotConstants.Products.PWYL_PREFIX + denom);
-				//, new OnIabPurchaseFinishedListener() {
-//
-//					@Override
-//					public void onIabPurchaseFinished(IabResult result, Purchase info) {
-//						if (result.isFailure()) {
-//							hideProgress();
-//							return;
-//						}
-//						SurespotLog.v(TAG, "purchase successful, consuming");
-//						mBillingController.getIabHelper().consumeAsync(info, new OnConsumeFinishedListener() {
-//
-//							@Override
-//							public void onConsumeFinished(Purchase purchase, IabResult result) {
-//								SurespotLog.v(TAG, "consumption result: " + result.isSuccess());
-//								hideProgress();
-//
-//							}
-//						});
-//					}
-//				});
-//			}
-//			else {
-//				Utils.makeToast(this, "Billing not ready yet, please try again later.");
-//			}
-//		}
-//		catch (IllegalStateException ise) {
-//			hideProgress();
-//			Utils.makeToast(this, getString(R.string.billing_purchase_error));
-//			SurespotLog.v(TAG, ise, "onPurchase error");
-//		}
+		// try {		
+		showProgress();
+		//we don't care about purcases on this screen so don't query
+		mBillingController.purchase(this, SurespotConstants.Products.PWYL_PREFIX + denom, false, mBillingResponseHandler);
 	}
 
 	@Override
@@ -330,5 +318,15 @@ public class BillingActivity extends SherlockFragmentActivity {
 			return super.onOptionsItemSelected(item);
 		}
 
+	}
+
+	@Override
+	protected void onDestroy() {
+		SurespotLog.v(TAG, "onDestroy");
+		super.onPause();
+		BillingController bc = SurespotApplication.getBillingController();
+		if (bc != null) {
+			bc.dispose();
+		}
 	}
 }

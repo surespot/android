@@ -18,77 +18,99 @@ import com.twofours.surespot.network.NetworkController;
 
 public class BillingController {
 	protected static final String TAG = "BillingController";
-	private Context mContext;
+
 	private IabHelper mIabHelper;
 	private boolean mQueried;
-	private boolean mSetup;
+	private boolean mQuerying;
+
 	private boolean mHasVoiceMessagingCapability;
 	private String mVoiceMessagePurchaseToken;
-	private NetworkController mNetworkController;
+
+	public static final int BILLING_QUERYING_INVENTORY = 100;
 
 	public BillingController(Context context) {
-		mContext = context;
 
-		mIabHelper = new IabHelper(context, SurespotConstants.GOOGLE_APP_LICENSE_KEY);
-		startSetup(null);
+		setup(context, true, null);
 
 	}
 
-	public void startSetup(final IAsyncCallback<Boolean> callback) {
+	public synchronized void setup(Context context, final boolean query, final IAsyncCallback<Integer> callback) {
 
-		if (!mSetup) {
-			mIabHelper.startSetup(new OnIabSetupFinishedListener() {
+		if (!mQuerying) {
+			if (mIabHelper == null) {
+				mIabHelper = new IabHelper(context, SurespotConstants.GOOGLE_APP_LICENSE_KEY);
+			}
+			try {
+				mIabHelper.startSetup(new OnIabSetupFinishedListener() {
 
-				@Override
-				public void onIabSetupFinished(IabResult result) {
-					if (!result.isSuccess()) {
-						// bollocks
-						SurespotLog.v(TAG, "Problem setting up In-app Billing: " + result);
-						if (callback != null) {
-							callback.handleResponse(false);
+					@Override
+					public void onIabSetupFinished(IabResult result) {
+						if (!result.isSuccess()) {
+							// bollocks
+							SurespotLog.v(TAG, "Problem setting up In-app Billing: " + result);
+							if (callback != null) {
+								callback.handleResponse(result.getResponse());
+							}
+							return;
 						}
-						return;
-					}
 
-					mSetup = true;
+						if (query) {
+							if (!hasBeenQueried()) {
+								SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
+								synchronized (BillingController.this) {
+									mQuerying = true;
+								}
+								mIabHelper.queryInventoryAsync(mGotInventoryListener);
+							}
+							else {
+								SurespotLog.v(TAG, "already queried");
+							}
+						}
 
-					if (!hasBeenQueried()) {
-						SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
-						mIabHelper.queryInventoryAsync(mGotInventoryListener);
+						if (callback != null) {
+							callback.handleResponse(result.getResponse());
+						}
 					}
-					else {
-						SurespotLog.v(TAG, "already queried");
-					}
-
-					if (callback != null) {
-						callback.handleResponse(true);
-					}
-				}
-			});
+				});
+			}
+			//will be thrown if it's already setup
+			catch (IllegalStateException ise) {
+				callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_OK);
+			}
+			catch (Exception e) {
+				callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_ERROR);
+			}
 		}
 		else {
 			SurespotLog.v(TAG, "In-app Billing already setup");
+			if (callback != null) {
+				callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_OK);
+			}
 		}
 	}
 
-	public IabHelper getIabHelper() {
+	public synchronized IabHelper getIabHelper() {
 		return mIabHelper;
 	}
 
-	public boolean hasBeenQueried() {
+	public synchronized boolean hasBeenQueried() {
 		return mQueried;
 	}
 
-	public boolean hasVoiceMessaging() {
+	public synchronized boolean hasVoiceMessaging() {
 		return mHasVoiceMessagingCapability;
 	}
 
 	IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
 		public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
 			SurespotLog.d(TAG, "Query inventory finished.");
+
 			if (result.isFailure()) {
 				// complain("Failed to query inventory: " + result);
 				// hideProgress();
+				synchronized (BillingController.this) {
+					mQuerying = false;
+				}
 				return;
 			}
 
@@ -117,15 +139,15 @@ public class BillingController {
 					}
 				}
 
-				mIabHelper.consumeAsync(consumables, new IabHelper.OnConsumeMultiFinishedListener() {
+				if (consumables.size() > 0) {
+					mIabHelper.consumeAsync(consumables, new IabHelper.OnConsumeMultiFinishedListener() {
 
-					@Override
-					public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results) {
-						SurespotLog.d(TAG, "consumed purchases: %s", results);
-						// hideProgress();
-					}
-				});
-
+						@Override
+						public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results) {
+							SurespotLog.d(TAG, "consumed purchases: %s", results);							
+						}
+					});
+				}
 			}
 			else {
 				SurespotLog.d(TAG, "no purchases to consume");
@@ -133,23 +155,45 @@ public class BillingController {
 			}
 
 			SurespotLog.d(TAG, "Initial inventory query finished.");
-			mQueried = true;
+			synchronized (BillingController.this) {
+				mQuerying = false;
+				mQueried = true;
+			}
+
 		}
 	};
 
-	public boolean isSetup() {
-		return mSetup;
+	public void purchase(final Activity activity, final String sku, final boolean query, final IAsyncCallback<Integer> callback) {
+		if (!mQuerying) {
+			setup(activity, query, new IAsyncCallback<Integer>() {
+
+				@Override
+				public void handleResponse(Integer response) {
+					if (response != IabHelper.BILLING_RESPONSE_RESULT_OK) {
+						callback.handleResponse(response);
+					}
+					else {
+						purchaseInternal(activity, sku, callback);
+					}
+
+				}
+			});
+		}
+		else {
+			callback.handleResponse(BILLING_QUERYING_INVENTORY);
+		}
+
 	}
 
-	public void purchase(Activity activity, final String sku) {
-		if (isSetup()) {
+	private void purchaseInternal(Activity activity, final String sku, final IAsyncCallback<Integer> callback) {
+		try {
 			// showProgress();
 			getIabHelper().launchPurchaseFlow(activity, sku, SurespotConstants.IntentRequestCodes.PURCHASE, new OnIabPurchaseFinishedListener() {
 
 				@Override
 				public void onIabPurchaseFinished(IabResult result, Purchase info) {
 					if (result.isFailure()) {
-						// hideProgress();
+						callback.handleResponse(result.getResponse());
 						return;
 					}
 					SurespotLog.v(TAG, "purchase successful");
@@ -160,6 +204,9 @@ public class BillingController {
 						setVoiceMessagingToken(info.getToken(), new IAsyncCallback<Boolean>() {
 							@Override
 							public void handleResponse(Boolean result) {
+								if (result) {
+									SurespotLog.v(TAG, " set server purchase token result: %b", result);
+								}
 
 							}
 						});
@@ -170,27 +217,39 @@ public class BillingController {
 
 							@Override
 							public void onConsumeFinished(Purchase purchase, IabResult result) {
-								SurespotLog.v(TAG, "consumption result: " + result.isSuccess());
-
+								SurespotLog.v(TAG, "consumption result: %b", result.isSuccess());
+								callback.handleResponse(result.getResponse());
 							}
 						});
 					}
+					else {
+						callback.handleResponse(result.getResponse());
+					}
+										
 				}
 			});
-
 		}
-
+		// handle something else going on
+		catch (IllegalStateException e) {
+			SurespotLog.w(TAG, e, "could not purchase");
+			callback.handleResponse(BILLING_QUERYING_INVENTORY);
+		}
+		catch (Exception e) {
+			callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_ERROR);
+		}
 	}
 
 	public void setVoiceMessagingToken(String token, IAsyncCallback<Boolean> updateServerCallback) {
-		mVoiceMessagePurchaseToken = token;
-		mHasVoiceMessagingCapability = true;
-		
+		synchronized (this) {
+			mVoiceMessagePurchaseToken = token;
+			mHasVoiceMessagingCapability = true;
+		}
+
 		if (updateServerCallback != null) {
 
 			// upload to server
 			NetworkController networkController = MainActivity.getNetworkController();
-			//TODO tell user if we can't update the token on the server tell them to login
+			// TODO tell user if we can't update the token on the server tell them to login
 			if (networkController != null) {
 				networkController.updateVoiceMessagingPurchaseToken(token, new AsyncHttpResponseHandler() {
 					@Override
@@ -203,7 +262,7 @@ public class BillingController {
 		}
 	}
 
-	public String getVoiceMessagingPurchaseToken() {
+	public synchronized String getVoiceMessagingPurchaseToken() {
 		return mVoiceMessagePurchaseToken;
 	}
 
@@ -219,6 +278,22 @@ public class BillingController {
 
 				return false;
 			}
+		}
+	}
+
+	public synchronized void revokeVoiceMessaging() {
+		mHasVoiceMessagingCapability = false;
+		mVoiceMessagePurchaseToken = null;
+
+	}
+
+
+
+	public void dispose() {
+		SurespotLog.v(TAG, "dispose");
+		if (mIabHelper != null && !mIabHelper.mAsyncInProgress) {
+			mIabHelper.dispose();
+			mIabHelper = null;
 		}
 	}
 
