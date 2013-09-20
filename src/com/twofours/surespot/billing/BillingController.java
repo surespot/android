@@ -104,13 +104,13 @@ public class BillingController {
 	IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
 		public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
 			SurespotLog.d(TAG, "Query inventory finished.");
-
+			synchronized (BillingController.this) {
+				mQuerying = false;
+				mQueried = true;
+			}
+			
 			if (result.isFailure()) {
-				// complain("Failed to query inventory: " + result);
-				// hideProgress();
-				synchronized (BillingController.this) {
-					mQuerying = false;
-				}
+				mQueried = false;
 				return;
 			}
 
@@ -151,15 +151,8 @@ public class BillingController {
 			}
 			else {
 				SurespotLog.d(TAG, "no purchases to consume");
-				// hideProgress();
 			}
-
-			SurespotLog.d(TAG, "Initial inventory query finished.");
-			synchronized (BillingController.this) {
-				mQuerying = false;
-				mQueried = true;
-			}
-
+						
 		}
 	};
 
@@ -282,19 +275,18 @@ public class BillingController {
 	}
 
 	public synchronized void revokeVoiceMessaging() {
+		//Will probably have to kill surespot process to re-query after this but oh well
 		mHasVoiceMessagingCapability = false;
 		mVoiceMessagePurchaseToken = null;
-
 	}
 
 
 
-	public void dispose() {
+	public synchronized void dispose() {
 		SurespotLog.v(TAG, "dispose");
 		if (mIabHelper != null && !mIabHelper.mAsyncInProgress) {
 			mIabHelper.dispose();
 			mIabHelper = null;
 		}
 	}
-
 }
