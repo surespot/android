@@ -101,19 +101,8 @@ public class ChatFragment extends SherlockFragment {
 					}
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-
-							// VoiceController pttController = getMainActivity().getPTTController();
 							SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
-
 							VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
-
-							// if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
-							//
-							// Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
-							// newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							// newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
-							// ChatFragment.this.getActivity().startActivity(newIntent);
-							// }
 						}
 					}
 				}
