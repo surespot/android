@@ -22,39 +22,46 @@ import com.twofours.surespot.ui.UIUtils;
 public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "VoiceMessageMenuFragment";
 	private SurespotMessage mMessage;
-	private MainActivity mActivity;
 	private ArrayList<String> mItems;
 	private BillingController mBillingController;
 
-	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
-		mMessage = message;
-		mActivity = activity;
-		mBillingController = SurespotApplication.getBillingController();
+	public static SherlockDialogFragment newInstance(SurespotMessage message) {
+		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
+
+		Bundle args = new Bundle();
+		args.putString("message", message.toJSONObject().toString());
+		f.setArguments(args);
+	
+		return f;
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-		if (mMessage == null) {
-			return null;
+		String messageString = getArguments().getString("message");
+		if (messageString != null) {
+			mMessage = SurespotMessage.toSurespotMessage(messageString);
 		}
+
+		final MainActivity mActivity = (MainActivity) getActivity();
+		
+		mBillingController = SurespotApplication.getBillingController();
 
 		mItems = new ArrayList<String>(2);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
-		
-		//nag nag nag
+
+		// nag nag nag
 		if (!mBillingController.hasVoiceMessaging()) {
 			mItems.add(getString(R.string.menu_purchase_voice_messaging));
 		}
-		
 
-		// if we have an errored image we can resend it
+		// if we have an errored voice message we can resend it
 		if (mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getErrorStatus() > 0) {
 			mItems.add(getString(R.string.menu_resend_message));
 		}
-			
+
 		// can always delete
 		mItems.add(getString(R.string.menu_delete_message));
 
@@ -64,7 +71,6 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 					return;
 
 				String itemText = mItems.get(which);
-			
 
 				if (itemText.equals(getString(R.string.menu_delete_message))) {
 					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
@@ -75,12 +81,14 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											mActivity.getChatController().deleteMessage(mMessage);
-										} else {
+										}
+										else {
 											dialogi.cancel();
 										}
 									};
 								});
-					} else {
+					}
+					else {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
 
@@ -91,10 +99,10 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 					mActivity.getChatController().resendFileMessage(mMessage);
 					return;
 				}
-				
+
 				if (itemText.equals(getString(R.string.menu_purchase_voice_messaging))) {
 					mActivity.showVoicePurchaseDialog(false);
-					return;				
+					return;
 				}
 
 			}
@@ -102,6 +110,12 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 
 		AlertDialog dialog = builder.create();
 		return dialog;
+	}
+	
+	@Override
+	public void onDismiss(DialogInterface dialog) {
+		MainActivity activity = (MainActivity) getActivity();
+		activity.setButtonText();
 	}
 
 }

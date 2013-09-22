@@ -5,6 +5,7 @@
     android:orientation="vertical" >
 
     <TextView
+        android:id="@+id/tvPurchase"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/voice_messaging_purchase_1" >
@@ -23,5 +24,11 @@
         android:layout_height="wrap_content"
         android:text="@string/voice_message_suppress_purchase_ask"
         android:visibility="gone" />
+
+    <Button
+        android:id="@+id/bClose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ok" />
 
 </LinearLayout>

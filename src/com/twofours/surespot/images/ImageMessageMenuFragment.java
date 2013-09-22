@@ -31,17 +31,22 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class ImageMessageMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "ImageMessageMenuFragment";
 	private SurespotMessage mMessage;
-	private MainActivity mActivity;
 	private ArrayList<String> mItems;
 	private Observer mMessageObserver;
 
-	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
-		mMessage = message;
-		mActivity = activity;
+	public static SherlockDialogFragment newInstance(SurespotMessage message) {
+		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
+
+		Bundle args = new Bundle();
+		args.putString("message", message.toJSONObject().toString());
+		f.setArguments(args);
+
+		return f;
 	}
 
 	private void setButtonVisibility() {
@@ -59,8 +64,8 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					return;
 				}
 			}
-		} else {
-			mActivity = null;
+		}
+		else {
 			mMessage.deleteObserver(mMessageObserver);
 			mMessage = null;
 		}
@@ -69,8 +74,10 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-		if (mMessage == null) {
-			return null;
+		final MainActivity mActivity = (MainActivity) getActivity();
+		String messageString = getArguments().getString("message");
+		if (messageString != null) {
+			mMessage = SurespotMessage.toSurespotMessage(messageString);
 		}
 
 		mItems = new ArrayList<String>(5);
@@ -139,7 +146,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 								}
 								else {
 									return false;
-								}								
+								}
 							}
 
 							catch (IOException e) {
@@ -154,7 +161,8 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 								if (result) {
 
 									Utils.makeToast(mActivity, mActivity.getString(R.string.image_saved_to_gallery));
-								} else {
+								}
+								else {
 									Utils.makeToast(mActivity, mActivity.getString(R.string.error_saving_image_to_gallery));
 								}
 							}
@@ -173,12 +181,14 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 									public void handleResponse(Boolean result) {
 										if (result) {
 											mActivity.getChatController().deleteMessage(mMessage);
-										} else {
+										}
+										else {
 											dialogi.cancel();
 										}
 									};
 								});
-					} else {
+					}
+					else {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
 
@@ -217,5 +227,4 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 		}
 		return dialog;
 	}
-
 }

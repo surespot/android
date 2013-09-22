@@ -65,7 +65,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-					Utils.makeToast(BillingActivity.this, getString(R.string.billing_unavailable));
+					Utils.makeToast(BillingActivity.this, getString(R.string.billing_unavailable_title));
 					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons1);
 					UIUtils.disableImmediateChildren(layout);
 					layout = (ViewGroup) BillingActivity.this.findViewById(R.id.inAppButtons2);

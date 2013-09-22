@@ -13,37 +13,49 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class TextMessageMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "TextMessageMenuFragment";
 	private SurespotMessage mMessage;
-	private MainActivity mActivity;
 	private String[] mMenuItemArray;
 
-	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
-		mMessage = message;
-		mActivity = activity;
+	public static SherlockDialogFragment newInstance(SurespotMessage message) {
+		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
+
+		Bundle args = new Bundle();
+		args.putString("message", message.toJSONObject().toString());
+		f.setArguments(args);
+
+		return f;
 	}
 
+	
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		// builder.setTitle(R.string.pick_color);
+		final MainActivity mActivity = (MainActivity) getActivity();
 
+		String messageString = getArguments().getString("message");
+		if (messageString != null) {
+			mMessage = SurespotMessage.toSurespotMessage(messageString);
+		}
+
+		
 		mMenuItemArray = new String[1];
 		mMenuItemArray[0] = getString(R.string.menu_delete_message);
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
 			public void onClick(final DialogInterface dialogi, int which) {
-				if (mMessage == null)
+				if (mMessage == null) {
 					return;
+				}
 
-				SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+				SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 				boolean confirm = sp.getBoolean("pref_delete_message", true);
 				if (confirm) {
 					UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
-							getString(R.string.delete_message), getString(R.string.ok),
-							getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+							getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 								public void handleResponse(Boolean result) {
 									if (result) {
 										mActivity.getChatController().deleteMessage(mMessage);
@@ -64,5 +76,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
+
+	
 
 }

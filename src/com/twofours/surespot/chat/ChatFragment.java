@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
@@ -117,24 +118,22 @@ public class ChatFragment extends SherlockFragment {
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 				if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-					TextMessageMenuFragment dialog = new TextMessageMenuFragment();
-					dialog.setActivityAndMessage(getMainActivity(), message);
+					SherlockDialogFragment dialog = TextMessageMenuFragment.newInstance(message);
 					dialog.show(getActivity().getSupportFragmentManager(), "TextMessageMenuFragment");
 					return true;
 				}
 				else {
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 
-						ImageMessageMenuFragment dialog = new ImageMessageMenuFragment();
-						dialog.setActivityAndMessage(getMainActivity(), message);
+						SherlockDialogFragment dialog = ImageMessageMenuFragment.newInstance(message);
 						dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
 						return true;
 					}
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 
-							VoiceMessageMenuFragment dialog = new VoiceMessageMenuFragment();
-							dialog.setActivityAndMessage(getMainActivity(), message);
+							SherlockDialogFragment dialog = VoiceMessageMenuFragment.newInstance(message);
+							// dialog.setActivityAndMessage(getMainActivity(), message);
 							dialog.show(getActivity().getSupportFragmentManager(), "VoiceMessageMenuFragment");
 							return true;
 						}

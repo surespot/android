@@ -115,6 +115,14 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_btn_speak_now" >
         </ImageView>
+        
+         <ImageView
+            android:id="@+id/ivHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_menu_home" >
+        </ImageView>
 
         <ImageView
             android:id="@+id/ivSend"

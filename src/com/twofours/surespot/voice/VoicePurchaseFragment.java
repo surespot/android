@@ -1,6 +1,9 @@
 package com.twofours.surespot.voice;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
@@ -12,10 +15,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.billing.IabHelper;
 import com.twofours.surespot.common.SurespotConstants;
@@ -25,12 +30,13 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class VoicePurchaseFragment extends SherlockDialogFragment implements OnClickListener, OnCheckedChangeListener {
 	private BillingController mBillingController;
-	private IAsyncCallback<Integer> mBillingResponseHandler;
-	
+	private IAsyncCallback<Integer> mBillingSetupResponseHandler;
+	private IAsyncCallback<Integer> mBillingPurchaseResponseHandler;
+	private Dialog mDialog;
 
 	public static SherlockDialogFragment newInstance(boolean comingFromButton) {
 		VoicePurchaseFragment f = new VoicePurchaseFragment();
-	
+
 		Bundle args = new Bundle();
 		args.putBoolean("cameFromButton", comingFromButton);
 		f.setArguments(args);
@@ -40,42 +46,97 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		//super.onCreateView(inflater, container, savedInstanceState);
-		boolean cameFromButton = getArguments().getBoolean("cameFromButton");
+		super.onCreateView(inflater, container, savedInstanceState);
+		mDialog = getDialog();
+		final boolean cameFromButton = getArguments().getBoolean("cameFromButton");
 
-		View view = inflater.inflate(R.layout.voice_purchase_fragment, container, false);
-		Button bPurchase = (Button) view.findViewById(R.id.bPurchaseVoice);
-		bPurchase.setOnClickListener(this);
+		final View view = inflater.inflate(R.layout.voice_purchase_fragment, container, false);
+		final Button bPurchase = (Button) view.findViewById(R.id.bPurchaseVoice);
 
-		if (cameFromButton) {
-			CheckBox cbDontShow = (CheckBox) view.findViewById(R.id.cbDontShow);
-			cbDontShow.setVisibility(View.VISIBLE);
-			cbDontShow.setOnCheckedChangeListener(this);
-		}
+		final CheckBox cbDontShow = (CheckBox) view.findViewById(R.id.cbDontShow);
+		final Button bok = (Button) view.findViewById(R.id.bClose);
+		bok.setOnClickListener(new OnClickListener() {
 
-		getDialog().setTitle(R.string.purchase_voice_title);
+			@Override
+			public void onClick(View v) {
+				dismiss();
 
-		setupBilling();
+			}
+		});
 
-		return view;
-	}
+		SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+		boolean dontShow = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
+		cbDontShow.setChecked(dontShow);
 
-	private void setupBilling() {
+		final TextView tvPurchase = (TextView) view.findViewById(R.id.tvPurchase);
+
 		mBillingController = SurespotApplication.getBillingController();
-		mBillingResponseHandler = new IAsyncCallback<Integer>() {
+
+		mBillingPurchaseResponseHandler = new IAsyncCallback<Integer>() {
 
 			@Override
 			public void handleResponse(Integer response) {
 				switch (response) {
+				case IabHelper.BILLING_RESPONSE_RESULT_OK:
+					dismiss();
+
+					break;
+
 				case BillingController.BILLING_QUERYING_INVENTORY:
-					Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
+					// Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-					Utils.makeToast(getActivity(), getString(R.string.billing_unavailable));
+					mDialog.setTitle(getString(R.string.billing_unavailable_title));
+					tvPurchase.setText(getString(R.string.billing_unavailable_message));
+					bPurchase.setVisibility(View.GONE);
+					if (cameFromButton) {
+						cbDontShow.setVisibility(View.VISIBLE);
+						cbDontShow.setOnCheckedChangeListener(VoicePurchaseFragment.this);
+					}
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
 				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
 					Utils.makeToast(getActivity(), getString(R.string.billing_error));
+					dismiss();
+					break;
+
+				}
+
+			}
+		};
+
+		mBillingSetupResponseHandler = new IAsyncCallback<Integer>() {
+
+			@Override
+			public void handleResponse(Integer response) {
+				switch (response) {
+				case IabHelper.BILLING_RESPONSE_RESULT_OK:
+					mDialog.setTitle(R.string.purchase_voice_title);
+					tvPurchase.setText(getString(R.string.voice_messaging_purchase_1));
+					if (cameFromButton) {
+						bPurchase.setOnClickListener(VoicePurchaseFragment.this);
+						cbDontShow.setVisibility(View.VISIBLE);
+						cbDontShow.setOnCheckedChangeListener(VoicePurchaseFragment.this);
+					}
+
+					break;
+
+				case BillingController.BILLING_QUERYING_INVENTORY:
+					Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
+					break;
+				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
+					mDialog.setTitle(getString(R.string.billing_unavailable_title));
+					tvPurchase.setText(getString(R.string.billing_unavailable_message));
+					bPurchase.setVisibility(View.GONE);
+					if (cameFromButton) {
+						cbDontShow.setVisibility(View.VISIBLE);
+						cbDontShow.setOnCheckedChangeListener(VoicePurchaseFragment.this);
+					}
+					break;
+				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
+				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
+					Utils.makeToast(getActivity(), getString(R.string.billing_error));
+					dismiss();
 					break;
 
 				}
@@ -84,14 +145,26 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		};
 
 		if (!mBillingController.hasBeenQueried()) {
-			mBillingController.setup(getActivity(), true, mBillingResponseHandler);
+
+			mBillingController.setup(getActivity(), true, mBillingSetupResponseHandler);
+
 		}
+
+		return view;
 
 	}
 
 	@Override
+	public void onDestroy() {
+
+		super.onDestroy();
+		// dismiss();
+	}
+
+	//
+	@Override
 	public void onClick(View v) {
-		SurespotApplication.getBillingController().purchase(getActivity(), SurespotConstants.Products.VOICE_MESSAGING, true, mBillingResponseHandler);
+		SurespotApplication.getBillingController().purchase(getActivity(), SurespotConstants.Products.VOICE_MESSAGING, true, mBillingPurchaseResponseHandler);
 	}
 
 	@Override
@@ -100,5 +173,14 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		Editor e = sp.edit();
 		e.putBoolean("pref_suppress_voice_purchase_ask", isChecked);
 		e.commit();
+	}
+
+	@Override
+	public void onDismiss(DialogInterface dialog) {
+		super.onDismiss(dialog);
+		Activity activity = getActivity();
+		if (activity != null) {
+			((MainActivity) activity).setButtonText();
+		}
 	}
 }
