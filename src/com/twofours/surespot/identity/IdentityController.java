@@ -59,7 +59,8 @@ public class IdentityController {
 		if (identity != null) {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
 			Utils.putSharedPrefsString(context, "referrer", null);
-			SurespotApplication.getCachingService().login(identity, cookie);		
+			SurespotApplication.getCachingService().login(identity, cookie);
+			SurespotApplication.getBillingController().dispose();
 		} else {
 			SurespotLog.w(TAG, "getIdentity null");
 		}

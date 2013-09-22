@@ -26,6 +26,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -53,6 +54,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -62,7 +64,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
-import com.twofours.surespot.billing.IabHelper;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -88,6 +89,7 @@ import com.twofours.surespot.services.CredentialCachingService.CredentialCaching
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
+import com.twofours.surespot.voice.VoicePurchaseFragment;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
@@ -133,7 +135,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mIvSend;
 
 	private BillingController mBillingController;
-	private IAsyncCallback<Integer> mBillingResponseHandler;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -227,10 +228,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!processIntent(intent)) {
-			// start billing framework
-			setupBilling();
-			
-
 			// set volume control buttons
 			setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -253,6 +250,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mMainHandler = new Handler(getMainLooper());
 			mNetworkController = new NetworkController(MainActivity.this, m401Handler);
+			mBillingController = SurespotApplication.getBillingController();
 
 			mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler,
 					new IAsyncCallback<Boolean>() {
@@ -438,37 +436,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
-	private void setupBilling() {
-		mBillingController = SurespotApplication.getBillingController();
-		mBillingResponseHandler = new IAsyncCallback<Integer>() {
-			
-			@Override
-			public void handleResponse(Integer response) {								
-				switch (response) {
-				case BillingController.BILLING_QUERYING_INVENTORY:
-					Utils.makeToast(MainActivity.this, getString(R.string.billing_getting_inventory));									
-					break;
-				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-					Utils.makeToast(MainActivity.this, getString(R.string.billing_unavailable));
-					break;
-				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
-				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
-					Utils.makeToast(MainActivity.this, getString(R.string.billing_error));
-					break;				
-					
-				}
-				
-				
-			}
-		};
-		
-		if (!mBillingController.hasBeenQueried()) {
-			mBillingController.setup(this, true, mBillingResponseHandler);
-		}
-	}
-	
-	
-
 	private void setupChatControls() {
 		mIvInvite = (ImageView) findViewById(R.id.ivInvite);
 		mIvVoice = (ImageView) findViewById(R.id.ivVoice);
@@ -499,24 +466,30 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mSendButton.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				// if (mEtMessage.getText().toString().length() == 0) {
-				// mChatController.closeTab();
-				// }
+				// 
 				SurespotLog.v(TAG, "onLongClick voice");
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
 
 					if (mBillingController.hasVoiceMessaging()) {
 						// if we haven't entered any text start recording voice
-
 						if (mEtMessage.getText().toString().length() == 0 && !mChatController.isFriendDeleted(friend.getName())) {
 							VoiceController.startRecording(MainActivity.this, friend.getName());
 						}
 					}
 					else {
-						mBillingController.purchase(MainActivity.this, SurespotConstants.Products.VOICE_MESSAGING, true, mBillingResponseHandler);
+						//
+						SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+						boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
+						if (dontAskDontTell) {
+							if (mEtMessage.getText().toString().length() == 0) {
+								mChatController.closeTab();
+							}
+						}
+						else {
+							showVoicePurchaseDialog(true);
+						}
 					}
-
 				}
 
 				return true;
@@ -529,6 +502,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onTouch(View v, MotionEvent event) {
 
 				if (event.getAction() == MotionEvent.ACTION_UP) {
+					Friend friend = mCurrentFriend;
+					if (friend != null) {
+
+				
+				
 
 					// if user let go of send button out of send button bounds, don't send the recording
 					Rect rect = new Rect(mSendButton.getLeft(), mSendButton.getTop(), mSendButton.getRight(), mSendButton.getBottom());
@@ -553,7 +531,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 						}
 					});
-
+					}
 				}
 
 				return false;
@@ -779,7 +757,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.onPause();
 		}
 
-		VoiceController.pause();		
+		VoiceController.pause();
 		stopWatchingExternalStorage();
 
 	}
@@ -887,9 +865,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.enableMenuItems(mCurrentFriend);
 		}
 
-		// TODO PROD enable for release
-		// menu.findItem(R.id.menu_invite_external).setEnabled(false);
-
+		//nag nag nag
+		if (mBillingController.hasVoiceMessaging()) {
+			menu.findItem(R.id.menu_close_bar).setVisible(false);		
+		}
+		
 		enableImageMenuItems();
 		return true;
 	}
@@ -1047,10 +1027,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 			}.execute();
 			return true;
+		case R.id.menu_purchase_voice:
+			showVoicePurchaseDialog(false);
+			return true;
 		default:
 			return false;
 
 		}
+		
 	}
 
 	@Override
@@ -1061,7 +1045,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
-		
+
 		BillingController bc = SurespotApplication.getBillingController();
 		if (bc != null) {
 			bc.dispose();
@@ -1723,14 +1707,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
 			if (friend == null) {
 				if (mEmojiShowing) {
-
 					showSoftKeyboardThenHideEmoji(mEtInvite);
-
 				}
 
 				else {
 					hideSoftKeyboard(mEtMessage);
-
 				}
 			}
 			else {
@@ -1781,6 +1762,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mEmojiButton.setImageResource(R.drawable.keyboard_icon);
 		}
 
+	}
+
+	public void showVoicePurchaseDialog(boolean comingFromButton) {
+		FragmentManager fm = getSupportFragmentManager();
+		SherlockDialogFragment dialog = VoicePurchaseFragment.newInstance(comingFromButton);
+		dialog.show(fm, "voice_purchase");
 	}
 
 }

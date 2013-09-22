@@ -288,5 +288,8 @@ public class BillingController {
 			mIabHelper.dispose();
 			mIabHelper = null;
 		}
+		
+		mQueried = false;
+		mQuerying = false;
 	}
 }

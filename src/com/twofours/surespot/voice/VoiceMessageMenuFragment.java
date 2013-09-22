@@ -11,7 +11,9 @@ import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -22,10 +24,12 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 	private SurespotMessage mMessage;
 	private MainActivity mActivity;
 	private ArrayList<String> mItems;
+	private BillingController mBillingController;
 
 	public void setActivityAndMessage(MainActivity activity, SurespotMessage message) {
 		mMessage = message;
 		mActivity = activity;
+		mBillingController = SurespotApplication.getBillingController();
 	}
 
 	@Override
@@ -39,6 +43,12 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		// builder.setTitle(R.string.pick_color);
+		
+		//nag nag nag
+		if (!mBillingController.hasVoiceMessaging()) {
+			mItems.add(getString(R.string.menu_purchase_voice_messaging));
+		}
+		
 
 		// if we have an errored image we can resend it
 		if (mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getErrorStatus() > 0) {
@@ -80,6 +90,11 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 				if (itemText.equals(getString(R.string.menu_resend_message))) {
 					mActivity.getChatController().resendFileMessage(mMessage);
 					return;
+				}
+				
+				if (itemText.equals(getString(R.string.menu_purchase_voice_messaging))) {
+					mActivity.showVoicePurchaseDialog(false);
+					return;				
 				}
 
 			}

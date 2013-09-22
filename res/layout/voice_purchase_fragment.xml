@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/voice_messaging_purchase_1" >
+    </TextView>
+
+    <Button
+        android:id="@+id/bPurchaseVoice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/voice_messaging_purchase_button" >
+    </Button>
+
+    <CheckBox
+        android:id="@+id/cbDontShow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/voice_message_suppress_purchase_ask"
+        android:visibility="gone" />
+
+</LinearLayout>

@@ -43,6 +43,13 @@
             android:summary="@string/pref_summary_delete_all_messages"
             android:title="@string/pref_title_delete_all_messages" />
     </PreferenceCategory>
+      <PreferenceCategory android:title="@string/pref_billing" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_suppress_voice_purchase_ask"
+            android:summary="@string/pref_suppress_voice_purchase_ask_summary"
+            android:title="@string/pref_suppress_voice_purchase_ask_title" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_title_identity_management" >
         <Preference android:title="@string/pref_title_change_password" >
             <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity" >

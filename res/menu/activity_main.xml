@@ -27,6 +27,10 @@
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/blue_heart"
                 android:title="@string/menu_invite_contacts"/>
+            <item
+                android:id="@+id/menu_purchase_voice"
+                android:icon="@drawable/gold_heart"
+                android:title="@string/menu_purchase_voice_messaging"/>
 
             <!-- I told you before kid, paywhatyoulike -->
 
@@ -34,7 +38,6 @@
                 android:id="@+id/menu_pwyl"
                 android:icon="@drawable/heart"
                 android:title="@string/pay_what_you_like">
-                
             </item>
             <item
                 android:id="@+id/menu_logout_bar"
