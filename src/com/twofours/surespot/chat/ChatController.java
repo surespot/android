@@ -694,7 +694,7 @@ public class ChatController {
 								// if it was a voice message from the other user set play flag
 								// TODO wrap in preference
 								if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-									message.setPlayMedia(true);							
+									message.setPlayMedia(true);
 								}
 
 							}
@@ -2319,13 +2319,17 @@ public class ChatController {
 
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
-				// deleted users can't have images sent to them
-				if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+				// don't fuck with voice purchase
+				if (menuItem.getItemId() != R.id.menu_purchase_voice) {
 
-					menuItem.setVisible(enabled && !isDeleted);
-				}
-				else {
-					menuItem.setVisible(enabled);
+					// deleted users can't have images sent to them
+					if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+
+						menuItem.setVisible(enabled && !isDeleted);
+					}
+					else {
+						menuItem.setVisible(enabled);
+					}
 				}
 			}
 		}

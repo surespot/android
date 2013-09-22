@@ -229,6 +229,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!processIntent(intent)) {
+			mBillingController = SurespotApplication.getBillingController();
+			mBillingController.setup(this, true, null);
+			
 			// set volume control buttons
 			setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -866,7 +869,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		// nag nag nag
 		if (mBillingController.hasVoiceMessaging()) {
-			menu.findItem(R.id.menu_close_bar).setVisible(false);
+			menu.findItem(R.id.menu_purchase_voice).setVisible(false);
 		}
 
 		enableImageMenuItems();

@@ -57,7 +57,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 			@Override
 			public void handleResponse(Integer response) {
 				hideProgress();
-				ViewGroup layout = null;						
+				ViewGroup layout = null;
 
 				switch (response) {
 				case BillingController.BILLING_QUERYING_INVENTORY:
@@ -88,11 +88,9 @@ public class BillingActivity extends SherlockFragmentActivity {
 			}
 		};
 
-		if (!mBillingController.hasBeenQueried()) {
-			showProgress();
+		showProgress();
+		mBillingController.setup(this, false, mBillingResponseHandler);
 
-			mBillingController.setup(this, false, mBillingResponseHandler);
-		}
 	}
 
 	private void showProgress() {
@@ -108,9 +106,9 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 	public void onPurchase(View arg0) {
 		String denom = (String) arg0.getTag();
-		// try {		
+		// try {
 		showProgress();
-		//we don't care about purcases on this screen so don't query
+		// we don't care about purcases on this screen so don't query
 		mBillingController.purchase(this, SurespotConstants.Products.PWYL_PREFIX + denom, false, mBillingResponseHandler);
 	}
 

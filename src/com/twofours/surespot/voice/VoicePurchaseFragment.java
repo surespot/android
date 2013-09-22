@@ -83,7 +83,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
-					// Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
+					Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
 					mDialog.setTitle(getString(R.string.billing_unavailable_title));
@@ -118,7 +118,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 						cbDontShow.setVisibility(View.VISIBLE);
 						cbDontShow.setOnCheckedChangeListener(VoicePurchaseFragment.this);
 					}
-
+					bok.setVisibility(View.GONE);					
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
@@ -144,11 +144,10 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 			}
 		};
 
-		if (!mBillingController.hasBeenQueried()) {
+		
+		mBillingController.setup(getActivity(), true, mBillingSetupResponseHandler);
 
-			mBillingController.setup(getActivity(), true, mBillingSetupResponseHandler);
-
-		}
+		
 
 		return view;
 

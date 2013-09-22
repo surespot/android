@@ -20,7 +20,6 @@ public class BillingController {
 	protected static final String TAG = "BillingController";
 
 	private IabHelper mIabHelper;
-	private boolean mQueried;
 	private boolean mQuerying;
 
 	private boolean mHasVoiceMessagingCapability;
@@ -55,16 +54,13 @@ public class BillingController {
 						}
 
 						if (query) {
-							if (!hasBeenQueried()) {
-								SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
-								synchronized (BillingController.this) {
-									mQuerying = true;
-								}
-								mIabHelper.queryInventoryAsync(mGotInventoryListener);
+
+							SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
+							synchronized (BillingController.this) {
+								mQuerying = true;
 							}
-							else {
-								SurespotLog.v(TAG, "already queried");
-							}
+							mIabHelper.queryInventoryAsync(mGotInventoryListener);
+
 						}
 
 						if (callback != null) {
@@ -73,12 +69,16 @@ public class BillingController {
 					}
 				});
 			}
-			//will be thrown if it's already setup
+			// will be thrown if it's already setup
 			catch (IllegalStateException ise) {
-				callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_OK);
+				if (callback != null) {
+					callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_OK);
+				}
 			}
 			catch (Exception e) {
-				callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_ERROR);
+				if (callback != null) {
+					callback.handleResponse(IabHelper.BILLING_RESPONSE_RESULT_ERROR);
+				}
 			}
 		}
 		else {
@@ -93,10 +93,6 @@ public class BillingController {
 		return mIabHelper;
 	}
 
-	public synchronized boolean hasBeenQueried() {
-		return mQueried;
-	}
-
 	public synchronized boolean hasVoiceMessaging() {
 		return mHasVoiceMessagingCapability;
 	}
@@ -106,11 +102,10 @@ public class BillingController {
 			SurespotLog.d(TAG, "Query inventory finished.");
 			synchronized (BillingController.this) {
 				mQuerying = false;
-				mQueried = true;
+
 			}
-			
+
 			if (result.isFailure()) {
-				mQueried = false;
 				return;
 			}
 
@@ -144,7 +139,7 @@ public class BillingController {
 
 						@Override
 						public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results) {
-							SurespotLog.d(TAG, "consumed purchases: %s", results);							
+							SurespotLog.d(TAG, "consumed purchases: %s", results);
 						}
 					});
 				}
@@ -152,7 +147,7 @@ public class BillingController {
 			else {
 				SurespotLog.d(TAG, "no purchases to consume");
 			}
-						
+
 		}
 	};
 
@@ -218,7 +213,7 @@ public class BillingController {
 					else {
 						callback.handleResponse(result.getResponse());
 					}
-										
+
 				}
 			});
 		}
@@ -275,12 +270,10 @@ public class BillingController {
 	}
 
 	public synchronized void revokeVoiceMessaging() {
-		//Will probably have to kill surespot process to re-query after this but oh well
+		// Will probably have to kill surespot process to re-query after this but oh well
 		mHasVoiceMessagingCapability = false;
 		mVoiceMessagePurchaseToken = null;
 	}
-
-
 
 	public synchronized void dispose() {
 		SurespotLog.v(TAG, "dispose");
@@ -289,7 +282,8 @@ public class BillingController {
 			mIabHelper = null;
 		}
 		
-		mQueried = false;
-		mQuerying = false;
+		mHasVoiceMessagingCapability = false;
+		mVoiceMessagePurchaseToken = null;
+
 	}
 }
