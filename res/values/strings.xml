@@ -313,18 +313,18 @@
     <string name="help_agreement"><![CDATA["By clicking OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
     <string name="billing_payment_required_voice">surepot voice message not purchased</string>
     <string name="billing_getting_inventory">getting purchase inventory, please try again in a second</string>
-    <string name="billing_unavailable_message">you must have a gogole account to purchase voice messaging</string>
+    <string name="billing_unavailable_message">you must have a Google account on your device to purchase voice messaging</string>
     <string name="billing_unavailable_title">billing unavailable</string>
     <string name="billing_error">billing error</string>
     <string name="pref_billing">purchases</string>
     <string name="suppress_voice_purchase">"don't ask me to buy voice messaging (closes tab instead)"</string>
     <string name="voice_messaging_purchase_1">"buy voice messaging! it's the best! send encrypted voice messages - don't crash your car!"</string>
-    <string name="voice_messaging_purchase_button">"$1.99 bitches"</string>
-    <string name="voice_message_suppress_purchase_ask">"don't ask me again (closes tab instead)"</string>
-    <string name="pref_suppress_voice_purchase_ask_title">"don't ask me again (closes tab instead)"</string>
+    <string name="voice_messaging_purchase_button">"click here to buy for $1.99"</string>
+    <string name="voice_message_suppress_purchase_ask">"don't ask me again"</string>
+    <string name="pref_suppress_voice_purchase_ask_title">"don't ask me again"</string>
     <string name="pref_suppress_voice_purchase_ask_summary">"doesn't ask you to buy voice messaging capability and closes the tab instead"</string>
     <string name="menu_purchase_voice_messaging">"purchase voice"</string>
-    <string name="purchase_voice_title">you know you want it</string>
+    <string name="purchase_voice_title">voice messaging purchase</string>
     
     
     

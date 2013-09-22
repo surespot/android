@@ -54,15 +54,6 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		final Button bPurchase = (Button) view.findViewById(R.id.bPurchaseVoice);
 
 		final CheckBox cbDontShow = (CheckBox) view.findViewById(R.id.cbDontShow);
-		final Button bok = (Button) view.findViewById(R.id.bClose);
-		bok.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				dismiss();
-
-			}
-		});
 
 		SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 		boolean dontShow = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
@@ -79,7 +70,6 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 				switch (response) {
 				case IabHelper.BILLING_RESPONSE_RESULT_OK:
 					dismiss();
-
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
@@ -113,12 +103,11 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 				case IabHelper.BILLING_RESPONSE_RESULT_OK:
 					mDialog.setTitle(R.string.purchase_voice_title);
 					tvPurchase.setText(getString(R.string.voice_messaging_purchase_1));
+					bPurchase.setOnClickListener(VoicePurchaseFragment.this);
 					if (cameFromButton) {
-						bPurchase.setOnClickListener(VoicePurchaseFragment.this);
 						cbDontShow.setVisibility(View.VISIBLE);
 						cbDontShow.setOnCheckedChangeListener(VoicePurchaseFragment.this);
 					}
-					bok.setVisibility(View.GONE);					
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
@@ -144,10 +133,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 			}
 		};
 
-		
 		mBillingController.setup(getActivity(), true, mBillingSetupResponseHandler);
-
-		
 
 		return view;
 

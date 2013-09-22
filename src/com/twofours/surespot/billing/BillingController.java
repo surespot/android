@@ -20,6 +20,7 @@ public class BillingController {
 	protected static final String TAG = "BillingController";
 
 	private IabHelper mIabHelper;
+	private boolean mQueried;
 	private boolean mQuerying;
 
 	private boolean mHasVoiceMessagingCapability;
@@ -54,13 +55,17 @@ public class BillingController {
 						}
 
 						if (query) {
+							if (!mQueried) {
+								SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
+								synchronized (BillingController.this) {
+									mQuerying = true;
+								}
+								mIabHelper.queryInventoryAsync(mGotInventoryListener);
 
-							SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
-							synchronized (BillingController.this) {
-								mQuerying = true;
 							}
-							mIabHelper.queryInventoryAsync(mGotInventoryListener);
-
+							else {
+								SurespotLog.v(TAG, "already queried");
+							}
 						}
 
 						if (callback != null) {
@@ -102,7 +107,7 @@ public class BillingController {
 			SurespotLog.d(TAG, "Query inventory finished.");
 			synchronized (BillingController.this) {
 				mQuerying = false;
-
+				mQueried = true;
 			}
 
 			if (result.isFailure()) {
@@ -281,7 +286,9 @@ public class BillingController {
 			mIabHelper.dispose();
 			mIabHelper = null;
 		}
-		
+
+		mQueried = false;
+		mQuerying = false;
 		mHasVoiceMessagingCapability = false;
 		mVoiceMessagePurchaseToken = null;
 
