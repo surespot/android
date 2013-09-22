@@ -31,7 +31,7 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject().toString());
 		f.setArguments(args);
-	
+
 		return f;
 	}
 
@@ -44,7 +44,7 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 		}
 
 		final MainActivity mActivity = (MainActivity) getActivity();
-		
+
 		mBillingController = SurespotApplication.getBillingController();
 
 		mItems = new ArrayList<String>(2);
@@ -111,11 +111,14 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
-	
+
 	@Override
 	public void onDismiss(DialogInterface dialog) {
+		super.onDismiss(dialog);
 		MainActivity activity = (MainActivity) getActivity();
-		activity.setButtonText();
+		if (activity != null) {
+			activity.setButtonText();
+		}
 	}
 
 }
