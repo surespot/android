@@ -288,9 +288,6 @@ public class BillingController {
 		}
 
 		mQueried = false;
-		mQuerying = false;
-		mHasVoiceMessagingCapability = false;
-		mVoiceMessagePurchaseToken = null;
-
+		mQuerying = false;	
 	}
 }
