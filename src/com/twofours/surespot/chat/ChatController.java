@@ -1388,6 +1388,7 @@ public class ChatController {
 			chatAdapter.sort();
 			chatAdapter.notifyDataSetChanged();
 			chatAdapter.doneCheckingSequence();
+			mFriendAdapter.sort();
 			mFriendAdapter.notifyDataSetChanged();
 
 			scrollToEnd(username);
