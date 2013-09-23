@@ -323,22 +323,44 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 		}
 		else {
-			chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
-			chatMessageViewHolder.tvText.clearAnimation();
-			chatMessageViewHolder.tvText.setVisibility(View.GONE);
-			chatMessageViewHolder.tvText.setText("");
-			if (!TextUtils.isEmpty(item.getData())) {
-				mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
-			}
+			if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
+				chatMessageViewHolder.tvText.clearAnimation();
+				chatMessageViewHolder.tvText.setVisibility(View.GONE);
+				chatMessageViewHolder.tvText.setText("");
+				if (!TextUtils.isEmpty(item.getData())) {
+					mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
+				}
 
-			if (item.isShareable()) {
-				chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
-				chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
+				if (item.isShareable()) {
+					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+					chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
+				}
+				else {
+					chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
+					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+				}
+
 			}
 			else {
-				chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
-				chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+				if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+					chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
+					chatMessageViewHolder.imageView.setVisibility(View.GONE);
+					chatMessageViewHolder.imageView.clearAnimation();
+					chatMessageViewHolder.imageView.setImageBitmap(null);
+					if (item.getPlainData() != null) {
+						chatMessageViewHolder.tvText.clearAnimation();
+						chatMessageViewHolder.tvText.setText(item.getPlainData());
+					}
+					else {
+						chatMessageViewHolder.tvText.clearAnimation();
+						chatMessageViewHolder.tvText.setText("please upgrade to play voice messages");
+					}
+					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+				}
 			}
+
 		}
 
 		if (type == TYPE_US) {

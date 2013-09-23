@@ -596,42 +596,50 @@ public class ChatController {
 					}
 
 					else {
-						// if it's an image that i sent
-						// get the local message
-						if (ChatUtils.isMyMessage(message)) {
-							handleCachedImage(chatAdapter, message);
+						if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+							// if it's an image that i sent
+							// get the local message
+							if (ChatUtils.isMyMessage(message)) {
+								handleCachedImage(chatAdapter, message);
+							}
+							else {
+
+								InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
+
+								Bitmap bitmap = null;
+								PipedOutputStream out = new PipedOutputStream();
+								PipedInputStream inputStream;
+								try {
+									inputStream = new PipedInputStream(out);
+
+									EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
+											message.getIv(), new BufferedInputStream(imageStream), out);
+
+									byte[] bytes = Utils.inputStreamToBytes(inputStream);
+
+									bitmap = ChatUtils.getSampledImage(bytes);
+								}
+								catch (InterruptedIOException ioe) {
+
+									SurespotLog.w(TAG, ioe, "handleMessage");
+
+								}
+								catch (IOException e) {
+									SurespotLog.w(TAG, e, "handleMessage");
+								}
+
+								if (bitmap != null) {
+									MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
+								}
+							}
 						}
 						else {
-
-							InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
-
-							Bitmap bitmap = null;
-							PipedOutputStream out = new PipedOutputStream();
-							PipedInputStream inputStream;
-							try {
-								inputStream = new PipedInputStream(out);
-
-								EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-										message.getIv(), new BufferedInputStream(imageStream), out);
-
-								byte[] bytes = Utils.inputStreamToBytes(inputStream);
-
-								bitmap = ChatUtils.getSampledImage(bytes);
-							}
-							catch (InterruptedIOException ioe) {
-
-								SurespotLog.w(TAG, ioe, "handleMessage");
-
-							}
-							catch (IOException e) {
-								SurespotLog.w(TAG, e, "handleMessage");
+							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+								//tell user they need to upgrade
+								message.setPlainData("please upgrade to play voice messages");
 							}
 
-							if (bitmap != null) {
-								MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
-							}
 						}
-
 					}
 					return null;
 				}
@@ -1207,7 +1215,7 @@ public class ChatController {
 											friend.setInviter(false);
 											friend.setInvited(false);
 										}
-										
+
 										// clear any associated invite notification
 										String loggedInUser = IdentityController.getLoggedInUser();
 										if (loggedInUser != null) {
