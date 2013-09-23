@@ -155,7 +155,7 @@
   <string name="pwyl_paypal_send_to_self">lien courriel pour vous</string>
   <string name="billing_bitcoin_copied_to_clipboard">%s copié dans le presse papier</string>
   <string name="billing_bitcoin_email_subject">faire un don à surespot via bitcoin address</string>
-  <string name="billing_bitcoin_email_body_address">Merci de verser ce que vous avez envie pour surespot! L\'adresse bitcoin est:% s</string>
+  <string name="billing_bitcoin_email_body_address">Merci de verser ce que vous avez envie pour surespot! L\'adresse bitcoin est: %s</string>
   <string name="billing_bitcoin_email_body_qr">Le code QR peut être visionné ici: %s</string>
   <string name="could_not_open_bitcoin_wallet">impossible d\'ouvrir bitcoin wallet</string>
   <string name="message_sending">envoie...</string>
