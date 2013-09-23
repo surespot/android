@@ -354,8 +354,14 @@ public class ChatAdapter extends BaseAdapter {
 					}
 					else {
 						chatMessageViewHolder.tvText.clearAnimation();
-						chatMessageViewHolder.tvText.setText("please upgrade to play voice messages");
+						chatMessageViewHolder.tvText.setText(R.string.voice_upgrade_required);
 					}
+					
+					if (item.getDateTime() != null) {
+						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
+								+ DateFormat.getTimeFormat(mContext).format(item.getDateTime()));
+					}
+
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
 				}

@@ -311,4 +311,5 @@
     <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
     <string name="login_update">please update surespot to login</string>
     <string name="help_agreement"><![CDATA["By clicking OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
+    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>
 </resources>

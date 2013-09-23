@@ -635,8 +635,7 @@ public class ChatController {
 						}
 						else {
 							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-								//tell user they need to upgrade
-								message.setPlainData("please upgrade to play voice messages");
+								
 							}
 
 						}
@@ -1316,7 +1315,7 @@ public class ChatController {
 	private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
 		// if it's an image blow the http cache entry away
 		if (dMessage.getMimeType() != null) {
-			if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+			if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || dMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 				mNetworkController.purgeCacheUrl(dMessage.getData());
 			}
 
