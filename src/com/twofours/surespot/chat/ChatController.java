@@ -2319,7 +2319,6 @@ public class ChatController {
 
 		if (mMenuItems != null) {
 			for (MenuItem menuItem : mMenuItems) {
-				// don't fuck with voice purchase
 				if (menuItem.getItemId() != R.id.menu_purchase_voice) {
 
 					// deleted users can't have images sent to them
@@ -2330,6 +2329,11 @@ public class ChatController {
 					else {
 						menuItem.setVisible(enabled);
 					}
+				}
+				else {
+					boolean voiceEnabled = SurespotApplication.getBillingController().hasVoiceMessaging();
+					SurespotLog.v(TAG, "enableMenuItems, setting voice purchase menu visibility: %b", !voiceEnabled);
+					menuItem.setVisible(!voiceEnabled);
 				}
 			}
 		}

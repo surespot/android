@@ -168,6 +168,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		else {
 			if (!processIntent(intent)) {
+				setupBilling();
 				launch(intent);
 			}
 		}
@@ -229,9 +230,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!processIntent(intent)) {
-			mBillingController = SurespotApplication.getBillingController();
-			mBillingController.setup(this, true, null);
-			
+			setupBilling();
+
 			// set volume control buttons
 			setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -309,9 +309,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
 								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
 			}
-
 		}
+	}
 
+	private void setupBilling() {
+		mBillingController = SurespotApplication.getBillingController();
+		mBillingController.setup(this, true, null);
 	}
 
 	private boolean processIntent(Intent intent) {
@@ -761,7 +764,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		VoiceController.pause();
 		stopWatchingExternalStorage();
+		BillingController bc = SurespotApplication.getBillingController();
+		if (bc != null) {
+			bc.dispose();
 
+		}
 	}
 
 	@Override
@@ -862,16 +869,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
+		// nag nag nag
+
+		mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
 		if (mChatController != null) {
 			mChatController.enableMenuItems(mCurrentFriend);
 		}
 
-		// nag nag nag
-		if (mBillingController.hasVoiceMessaging()) {
-			menu.findItem(R.id.menu_purchase_voice).setVisible(false);
-		}
-
+		//
 		enableImageMenuItems();
 		return true;
 	}
@@ -1046,17 +1052,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.v(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
-		}
-
-		BillingController bc = SurespotApplication.getBillingController();
-		if (bc != null) {
-			bc.dispose();
-		}
-		// mChatController = null;
-		// if (mPTTController != null) {
-		// mPTTController.destroy();
-		// mPTTController = null;
-		// }
+		}	
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1211,6 +1207,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		else {
 			mHomeImageView.clearAnimation();
+		}
+
+		if (mChatController != null) {
+			mChatController.enableMenuItems(mCurrentFriend);
 		}
 	}
 
@@ -1783,9 +1783,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	public void showVoicePurchaseDialog(boolean comingFromButton) {
 		FragmentManager fm = getSupportFragmentManager();
-		SherlockDialogFragment dialog = VoicePurchaseFragment.newInstance(comingFromButton);		
+		SherlockDialogFragment dialog = VoicePurchaseFragment.newInstance(comingFromButton);
 		dialog.show(fm, "voice_purchase");
-
 
 	}
 

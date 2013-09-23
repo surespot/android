@@ -23,6 +23,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.billing.IabHelper;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
@@ -69,7 +70,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 			public void handleResponse(Integer response) {
 				switch (response) {
 				case IabHelper.BILLING_RESPONSE_RESULT_OK:
-					dismiss();
+					dismissAllowingStateLoss();
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
@@ -87,7 +88,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
 				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
 					Utils.makeToast(getActivity(), getString(R.string.billing_error));
-					dismiss();
+					dismissAllowingStateLoss();
 					break;
 
 				}
@@ -125,7 +126,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
 				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
 					Utils.makeToast(getActivity(), getString(R.string.billing_error));
-					dismiss();
+					dismissAllowingStateLoss();
 					break;
 
 				}
@@ -137,13 +138,6 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 
 		return view;
 
-	}
-
-	@Override
-	public void onDestroy() {
-
-		super.onDestroy();
-		// dismiss();
 	}
 
 	//
@@ -165,7 +159,12 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		super.onDismiss(dialog);
 		Activity activity = getActivity();
 		if (activity != null) {
-			((MainActivity) activity).setButtonText();
+			MainActivity mactivity = (MainActivity) activity;
+			mactivity.setButtonText();
+			ChatController cc = MainActivity.getChatController();
+			if (cc != null) {
+				cc.enableMenuItems(null);
+			}
 		}
 	}
 }
