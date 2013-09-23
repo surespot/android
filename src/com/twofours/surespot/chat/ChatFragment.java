@@ -113,13 +113,23 @@ public class ChatFragment extends SherlockFragment {
 					return true;
 				}
 				else {
-
-					ImageMessageMenuFragment dialog = new ImageMessageMenuFragment();
-					dialog.setActivityAndMessage(getMainActivity(), message);
-					dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
-					return true;
+					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+						ImageMessageMenuFragment dialog = new ImageMessageMenuFragment();
+						dialog.setActivityAndMessage(getMainActivity(), message);
+						dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
+						return true;
+					}
+					else {
+						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+							TextMessageMenuFragment dialog = new TextMessageMenuFragment();
+							dialog.setActivityAndMessage(getMainActivity(), message);
+							dialog.show(getActivity().getSupportFragmentManager(), "VoiceMessageMenuFragment");
+							return true;
+						}
+					}
 				}
 
+				return false;
 			}
 		});
 
@@ -155,8 +165,8 @@ public class ChatFragment extends SherlockFragment {
 
 		@Override
 		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		//	 SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
-		//	 + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
+			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
 
 			if (!mLoading) {
 				boolean hint = getUserVisibleHint();
@@ -171,7 +181,7 @@ public class ChatFragment extends SherlockFragment {
 						return;
 					}
 					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
-			//		SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
+					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
 					if (chatController != null && hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
 
 						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
@@ -198,7 +208,6 @@ public class ChatFragment extends SherlockFragment {
 								@Override
 								public void handleResponse(Boolean loadedNew) {
 
-									
 									int selection = mListView.getFirstVisiblePosition();
 									// mSelection = firstVisibleItem;
 									View v = mListView.getChildAt(0);
@@ -222,9 +231,9 @@ public class ChatFragment extends SherlockFragment {
 									else {
 										mJustLoaded = false;
 										mLoading = false;
-									
+
 									}
-									
+
 									if (!loadedNew) {
 										mHasEarlier = false;
 									}
@@ -314,7 +323,7 @@ public class ChatFragment extends SherlockFragment {
 				}
 			}
 		}
-		//if the messages weren't loaded don't sav ethe scroll position because it's bogus
+		// if the messages weren't loaded don't sav ethe scroll position because it's bogus
 		else {
 			SurespotLog.v(TAG, "%s: messages not loaded,  not saving scroll position", mUsername);
 		}

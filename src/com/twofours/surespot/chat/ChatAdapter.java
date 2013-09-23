@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -321,6 +322,7 @@ public class ChatAdapter extends BaseAdapter {
 			}
 			chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 			chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+			chatMessageViewHolder.tvText.setAutoLinkMask(Linkify.ALL);
 		}
 		else {
 			if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
@@ -348,15 +350,11 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.imageView.setVisibility(View.GONE);
 					chatMessageViewHolder.imageView.clearAnimation();
 					chatMessageViewHolder.imageView.setImageBitmap(null);
-					if (item.getPlainData() != null) {
-						chatMessageViewHolder.tvText.clearAnimation();
-						chatMessageViewHolder.tvText.setText(item.getPlainData());
-					}
-					else {
-						chatMessageViewHolder.tvText.clearAnimation();
-						chatMessageViewHolder.tvText.setText(R.string.voice_upgrade_required);
-					}
+					chatMessageViewHolder.tvText.clearAnimation();
+					chatMessageViewHolder.tvText.setAutoLinkMask(0);
+					UIUtils.setHtml(mContext, chatMessageViewHolder.tvText, R.string.voice_upgrade_required);
 					
+
 					if (item.getDateTime() != null) {
 						chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
 								+ DateFormat.getTimeFormat(mContext).format(item.getDateTime()));

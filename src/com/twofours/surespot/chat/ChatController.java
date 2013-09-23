@@ -632,13 +632,7 @@ public class ChatController {
 									MessageImageDownloader.addBitmapToCache(message.getData(), bitmap);
 								}
 							}
-						}
-						else {
-							if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-								
-							}
-
-						}
+						}					
 					}
 					return null;
 				}
