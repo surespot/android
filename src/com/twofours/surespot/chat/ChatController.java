@@ -894,7 +894,7 @@ public class ChatController {
 				}
 
 				if (friend != null) {
-
+					mFriendAdapter.sort();
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
@@ -1390,6 +1390,8 @@ public class ChatController {
 			chatAdapter.doneCheckingSequence();
 			mFriendAdapter.sort();
 			mFriendAdapter.notifyDataSetChanged();
+			
+			
 
 			scrollToEnd(username);
 		}
@@ -1540,7 +1542,7 @@ public class ChatController {
 		}
 
 		mFriendAdapter.setFriends(friends);
-		mFriendAdapter.setLoading(false);
+		mFriendAdapter.setLoading(false);		
 
 		loadUnsentMessages();
 	}
