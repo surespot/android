@@ -623,7 +623,6 @@ public class ChatController {
 								catch (InterruptedIOException ioe) {
 
 									SurespotLog.w(TAG, ioe, "handleMessage");
-
 								}
 								catch (IOException e) {
 									SurespotLog.w(TAG, e, "handleMessage");
@@ -668,8 +667,7 @@ public class ChatController {
 							else {
 								message.setPlainData("unknown message mime type");
 							}
-						}
-
+						}					
 					}
 					return null;
 				}
@@ -977,7 +975,7 @@ public class ChatController {
 				}
 
 				if (friend != null) {
-
+					mFriendAdapter.sort();
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
@@ -1392,7 +1390,7 @@ public class ChatController {
 	private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
 		// if it's an image blow the http cache entry away
 		if (dMessage.getMimeType() != null) {
-			if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+			if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || dMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 				mNetworkController.purgeCacheUrl(dMessage.getData());
 			}
 
@@ -1478,7 +1476,10 @@ public class ChatController {
 			chatAdapter.sort();
 			chatAdapter.notifyDataSetChanged();
 			chatAdapter.doneCheckingSequence();
+			mFriendAdapter.sort();
 			mFriendAdapter.notifyDataSetChanged();
+			
+			
 
 			scrollToEnd(username);
 		}
@@ -1629,7 +1630,7 @@ public class ChatController {
 		}
 
 		mFriendAdapter.setFriends(friends);
-		mFriendAdapter.setLoading(false);
+		mFriendAdapter.setLoading(false);		
 
 		loadUnsentMessages();
 	}

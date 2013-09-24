@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.WindowManager.LayoutParams;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -31,6 +32,13 @@ public class ImageViewActivity extends SherlockActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		// PROD Gingerbread does not like FLAG_SECURE
+		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
+				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+		}
+		
 		setContentView(R.layout.activity_image_view);
 		Utils.configureActionBar(this, getString(R.string.image), getString(R.string.pan_and_zoom), true);
 

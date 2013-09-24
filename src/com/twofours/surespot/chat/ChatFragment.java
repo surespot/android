@@ -124,24 +124,20 @@ public class ChatFragment extends SherlockFragment {
 				}
 				else {
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-
 						SherlockDialogFragment dialog = ImageMessageMenuFragment.newInstance(message);
 						dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
 						return true;
 					}
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-
 							SherlockDialogFragment dialog = VoiceMessageMenuFragment.newInstance(message);
 							// dialog.setActivityAndMessage(getMainActivity(), message);
 							dialog.show(getActivity().getSupportFragmentManager(), "VoiceMessageMenuFragment");
 							return true;
 						}
-
 					}
 				}
 				return false;
-
 			}
 		});
 

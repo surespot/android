@@ -42,7 +42,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		setContentView(R.layout.activity_change_password);
 		Utils.configureActionBar(this, getString(R.string.password), getString(R.string.change_password_actionbar_right), true);
 
-		mMpd = new MultiProgressDialog(this, getString(R.string.change_password_progress), 500);
+		mMpd = new MultiProgressDialog(this, getString(R.string.change_password_progress), 0);
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
