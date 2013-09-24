@@ -496,6 +496,11 @@ public class NetworkController {
 
 				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);
 
+				if (fileInputStream == null) {
+					SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
+					return null;
+				}
+				
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
 
 				MultipartEntity reqEntity = new MultipartEntity();
