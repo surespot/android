@@ -60,11 +60,11 @@ public class FriendAdapter extends BaseAdapter {
 		mLongClickListener = longClickListener;
 	}
 
-	public boolean isLoading() {
+	public synchronized boolean isLoading() {
 		return mLoading;
 	}
 
-	public void setLoading(boolean loading) {
+	public synchronized void setLoading(boolean loading) {
 		mLoading = loading;
 		mLoaded = true;
 		if (mLoadingCallback != null) {
@@ -85,7 +85,7 @@ public class FriendAdapter extends BaseAdapter {
 		return null;
 	}
 
-	public void addNewFriend(String name) {
+	public synchronized void addNewFriend(String name) {
 		Friend friend = getFriend(name);
 		if (friend == null) {
 			friend = new Friend(name);
@@ -98,7 +98,7 @@ public class FriendAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 
-	public boolean addFriendInvited(String name) {
+	public synchronized boolean addFriendInvited(String name) {
 		Friend friend = getFriend(name);
 		if (friend == null) {
 			friend = new Friend(name);
@@ -111,7 +111,7 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public void addFriendInviter(String name) {
+	public synchronized void addFriendInviter(String name) {
 		Friend friend = getFriend(name);
 		if (friend == null) {
 			friend = new Friend(name);
@@ -123,7 +123,7 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public Friend setFriendDeleted(String name) {
+	public synchronized Friend setFriendDeleted(String name) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.setDeleted();
@@ -134,7 +134,7 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public void setChatActive(String name, boolean b) {
+	public synchronized void setChatActive(String name, boolean b) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
 			friend.setChatActive(b);
@@ -153,7 +153,7 @@ public class FriendAdapter extends BaseAdapter {
 	//
 	// }
 
-	public void setFriends(List<Friend> friends) {
+	public synchronized void setFriends(List<Friend> friends) {
 		if (friends != null) {
 			SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
 			mFriends.clear();
@@ -163,7 +163,7 @@ public class FriendAdapter extends BaseAdapter {
 		}
 	}
 
-	public void addFriends(Collection<Friend> friends) {
+	public synchronized void addFriends(Collection<Friend> friends) {
 		SurespotLog.v(TAG, "addFriends, adding friends to adapter: " + this + ", count: " + friends.size());
 
 		for (Friend friend : friends) {
@@ -206,7 +206,7 @@ public class FriendAdapter extends BaseAdapter {
 		return position;
 	}
 
-	public void removeFriend(String name) {
+	public synchronized void removeFriend(String name) {
 		mFriends.remove(getFriend(name));
 		notifyDataSetChanged();
 	}
@@ -369,13 +369,13 @@ public class FriendAdapter extends BaseAdapter {
 		public View friendInactive;
 	}
 
-	public void sort() {
+	public synchronized  void sort() {
 		if (mFriends != null) {
 			Collections.sort(mFriends);
 		}
 	}
 
-	public Collection<String> getFriendNames() {
+	public synchronized Collection<String> getFriendNames() {
 		if (mFriends == null)
 			return null;
 		ArrayList<String> names = new ArrayList<String>();
@@ -389,7 +389,7 @@ public class FriendAdapter extends BaseAdapter {
 		return mFriends;
 	}
 
-	public ArrayList<String> getActiveChats() {
+	public synchronized ArrayList<String> getActiveChats() {
 		if (mFriends == null)
 			return null;
 		ArrayList<String> names = new ArrayList<String>();

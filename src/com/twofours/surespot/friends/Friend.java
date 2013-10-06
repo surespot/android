@@ -26,10 +26,9 @@ public class Friend implements Comparable<Friend> {
 	private int mLastReceivedUserControlId;
 	private String mImageUrl;
 	private String mImageVersion;
-	private String mImageIv;	
+	private String mImageIv;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
-	
 
 	public Friend(String name) {
 		mName = name;
@@ -127,7 +126,10 @@ public class Friend implements Comparable<Friend> {
 
 	public void setInviter(boolean set) {
 		if (set) {
-			mFlags |= INVITER;
+			// if they're not a new friend
+			if (!isNewFriend()) {
+				mFlags |= INVITER;
+			}
 		}
 		else {
 			mFlags &= ~INVITER;
@@ -142,7 +144,10 @@ public class Friend implements Comparable<Friend> {
 
 	public void setInvited(boolean set) {
 		if (set) {
-			mFlags |= INVITED;
+			// if they're not a new friend
+			if (!isNewFriend()) {
+				mFlags |= INVITED;
+			}
 		}
 		else {
 			mFlags &= ~INVITED;
@@ -155,7 +160,7 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public void setDeleted() {
-		//preserve active flag #257
+		// preserve active flag #257
 		int active = mFlags & CHAT_ACTIVE;
 		mFlags = DELETED | active;
 		SurespotLog.v(TAG, "setDeleted, friend: %s", this);
@@ -264,15 +269,15 @@ public class Friend implements Comparable<Friend> {
 		if (another.isMessageActivity()) {
 			theirFlags |= MESSAGE_ACTIVITY;
 		}
-		
-		//only compare flags for new message, invitation, or open tab
+
+		// only compare flags for new message, invitation, or open tab
 		theirFlags = theirFlags & (CHAT_ACTIVE | MESSAGE_ACTIVITY | INVITER);
 		myFlags = myFlags & (CHAT_ACTIVE | MESSAGE_ACTIVITY | INVITER);
 
 		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
 
 		if ((theirFlags == myFlags) || (theirFlags < CHAT_ACTIVE && myFlags < CHAT_ACTIVE)) {
-			return ComparisonChain.start().compare(this.getName().toLowerCase(), another.getName().toLowerCase(), Ordering.natural()).result();										
+			return ComparisonChain.start().compare(this.getName().toLowerCase(), another.getName().toLowerCase(), Ordering.natural()).result();
 		}
 		else {
 			// sort by flag value
@@ -281,42 +286,42 @@ public class Friend implements Comparable<Friend> {
 
 	}
 
-//	public boolean update(JSONObject jsonFriend) {
-//
-//		String status;
-//
-//		try {
-//
-//			String name = jsonFriend.getString("name");
-//			if (name.equals(this.getName())) {
-//				status = jsonFriend.getString("status");
-//
-//				if (status.equals("invited")) {
-//					this.setInvited(true);
-//				}
-//
-//				else {
-//					if (status.equals("invitee")) {
-//						this.setInviter(true);
-//					}
-//				}
-//
-//				this.setName(jsonFriend.getString("name"));
-//				this.setImageUrl(jsonFriend.getString("imageUrl"));
-//				this.setImageVersion(jsonFriend.getString("imageVersion"));
-//
-//				setNewFriend(false);
-//
-//				SurespotLog.v(TAG, "update <JSONObject>, friend: %s", this);
-//				return true;
-//			}
-//
-//		}
-//		catch (JSONException e) {
-//			SurespotLog.w(TAG, "update", e);
-//		}
-//		return false;
-//	}
+	// public boolean update(JSONObject jsonFriend) {
+	//
+	// String status;
+	//
+	// try {
+	//
+	// String name = jsonFriend.getString("name");
+	// if (name.equals(this.getName())) {
+	// status = jsonFriend.getString("status");
+	//
+	// if (status.equals("invited")) {
+	// this.setInvited(true);
+	// }
+	//
+	// else {
+	// if (status.equals("invitee")) {
+	// this.setInviter(true);
+	// }
+	// }
+	//
+	// this.setName(jsonFriend.getString("name"));
+	// this.setImageUrl(jsonFriend.getString("imageUrl"));
+	// this.setImageVersion(jsonFriend.getString("imageVersion"));
+	//
+	// setNewFriend(false);
+	//
+	// SurespotLog.v(TAG, "update <JSONObject>, friend: %s", this);
+	// return true;
+	// }
+	//
+	// }
+	// catch (JSONException e) {
+	// SurespotLog.w(TAG, "update", e);
+	// }
+	// return false;
+	// }
 
 	public void update(Friend friend) {
 		this.setNewFriend(false);
@@ -325,8 +330,8 @@ public class Friend implements Comparable<Friend> {
 		this.setImageUrl(friend.getImageUrl());
 		this.setImageVersion(friend.getImageVersion());
 		this.setImageIv(friend.getImageIv());
-		//this.setSelectedItem(friend.getSelectedItem());
-		//this.setSelectedTop(friend.getSelectedTop());
+		// this.setSelectedItem(friend.getSelectedItem());
+		// this.setSelectedTop(friend.getSelectedTop());
 		// this.setChatActive(friend.isChatActive());
 		// this.setMessageActivity(friend.isMessageActivity());
 
@@ -365,8 +370,7 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("imageVersion", this.getImageVersion());
 			jsonFriend.put("imageUrl", this.getImageUrl());
 			jsonFriend.put("imageIv", this.getImageIv());
-			
-			
+
 			jsonFriend.put("selectedItem", this.getSelectedItem());
 			jsonFriend.put("selectedTop", this.getSelectedTop());
 
@@ -400,24 +404,24 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public void setSelectedItem(int i) {
-		//if (i == 0) {
-			//SurespotLog.v(TAG, "SELECTED ITEM SET TO 0 FOR USER: %s", getName());
-			//Utils.makeLongToast(MainActivity.getContext(), "SELECTED ITEM SET TO 0");
-		//}
-		//SurespotLog.v(TAG, "setSelectedItemAfter: %s", this);
+		// if (i == 0) {
+		// SurespotLog.v(TAG, "SELECTED ITEM SET TO 0 FOR USER: %s", getName());
+		// Utils.makeLongToast(MainActivity.getContext(), "SELECTED ITEM SET TO 0");
+		// }
+		// SurespotLog.v(TAG, "setSelectedItemAfter: %s", this);
 		mSelectedItem = i;
-	//	SurespotLog.v(TAG, "setSelectedItemBefore: %s", this);
-		
+		// SurespotLog.v(TAG, "setSelectedItemBefore: %s", this);
+
 	}
 
 	public void setSelectedTop(int i) {
 		mSelectedTop = i;
-		
+
 	}
 
 	public int getSelectedItem() {
 
-		return  mSelectedItem;
+		return mSelectedItem;
 	}
 
 	public int getSelectedTop() {
