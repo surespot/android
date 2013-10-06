@@ -443,6 +443,13 @@ public class ChatController {
 
 		for (int i = 0; i < resendMessages.length; i++) {
 			SurespotMessage message = resendMessages[i];
+			
+			//if it has an id don't send it again
+			if (message.getId() != null) {
+				mResendBuffer.remove(message);
+				continue;
+			}
+			
 			// set the last received id so the server knows which messages to check
 			String otherUser = message.getOtherUser();
 

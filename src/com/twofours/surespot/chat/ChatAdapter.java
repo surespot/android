@@ -95,7 +95,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	// update the id and sent status of the message once we received
-	private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) throws SurespotMessageSequenceException {
+	private synchronized boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) throws SurespotMessageSequenceException {
 
 		// SurespotLog.v(TAG, "addMessage, could not find message");
 
@@ -424,7 +424,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public synchronized boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
+	public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
 			throws SurespotMessageSequenceException {
 		boolean added = false;
 		added = addOrUpdateMessage(message, checkSequence, sort);
