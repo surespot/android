@@ -53,14 +53,18 @@ public class SignupActivity extends SherlockActivity {
 	private static final String TAG = "SignupActivity";
 	private Button signupButton;
 	private MultiProgressDialog mMpd;
+	private MultiProgressDialog mMpdCheck;
 	private boolean mSignupAttempted;
 	private boolean mCacheServiceBound;
+	private NetworkController mNetworkController;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_signup);
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);
+
+		mNetworkController = new NetworkController(SignupActivity.this, null);
 
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
 
@@ -80,9 +84,23 @@ public class SignupActivity extends SherlockActivity {
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
 		mMpd = new MultiProgressDialog(this, getString(R.string.create_user_progress), 250);
+		mMpdCheck = new MultiProgressDialog(this, getString(R.string.user_exists_progress), 250);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
+		editText.setOnEditorActionListener(new OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				boolean handled = false;
+				if (actionId == EditorInfo.IME_ACTION_NEXT) {
+					checkUsername();
+					handled = true;
+				}
+				return handled;
+			}
+
+		});
+
 
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
@@ -93,12 +111,12 @@ public class SignupActivity extends SherlockActivity {
 			}
 		});
 
-		editText = (EditText) findViewById(R.id.etSignupPassword);
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
+		final EditText pwText = (EditText) findViewById(R.id.etSignupPassword);
+		pwText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
 
-		editText = (EditText) findViewById(R.id.etSignupPasswordConfirm);
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
-		editText.setOnEditorActionListener(new OnEditorActionListener() {
+		final EditText pwConfirmText = (EditText) findViewById(R.id.etSignupPasswordConfirm);
+		pwConfirmText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
+		pwConfirmText.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
@@ -108,6 +126,16 @@ public class SignupActivity extends SherlockActivity {
 					handled = true;
 				}
 				return handled;
+			}
+
+		});
+
+		Button checkUsernameButton = (Button) this.findViewById(R.id.bCheckUsername);
+		checkUsernameButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				checkUsername();
 			}
 
 		});
@@ -137,6 +165,64 @@ public class SignupActivity extends SherlockActivity {
 
 		}
 	};
+
+	private void checkUsername() {
+		final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
+		final String username = userText.getText().toString();
+
+		if (TextUtils.isEmpty(username)) {
+			return;
+		}
+
+		mMpdCheck.incrProgress();
+
+		// see if the user exists
+		mNetworkController.userExists(username, new AsyncHttpResponseHandler() {
+			@Override
+			public void onSuccess(String arg1) {
+				if (arg1.equals("true")) {
+					mMpdCheck.decrProgress();
+					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
+					userText.setText("");
+					userText.requestFocus();
+
+				}
+
+				else {
+					mMpdCheck.decrProgress();
+					Utils.makeToast(SignupActivity.this, getString(R.string.username_available));
+					EditText pwText = (EditText) findViewById(R.id.etSignupPassword);
+					pwText.requestFocus();
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String content) {
+				SurespotLog.i(TAG, arg0, "userExists");
+				mMpdCheck.decrProgress();
+				if (arg0 instanceof HttpResponseException) {
+					HttpResponseException error = (HttpResponseException) arg0;
+					int statusCode = error.getStatusCode();
+
+					switch (statusCode) {
+					case 429:
+						Utils.makeToast(SignupActivity.this, getString(R.string.user_exists_throttled));
+						break;
+					default:
+						Utils.makeToast(SignupActivity.this, getString(R.string.user_exists_error));
+					}
+				}
+				else {
+					Utils.makeToast(SignupActivity.this, getString(R.string.user_exists_error));
+				}
+
+				userText.setText("");
+				userText.requestFocus();
+			}
+
+		});
+
+	}
 
 	private void signup() {
 		if (SurespotApplication.getCachingService() == null) {
@@ -169,8 +255,7 @@ public class SignupActivity extends SherlockActivity {
 		mMpd.incrProgress();
 
 		// see if the user exists
-		final NetworkController networkController = new NetworkController(SignupActivity.this, null);
-		networkController.userExists(username, new AsyncHttpResponseHandler() {
+		mNetworkController.userExists(username, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
@@ -221,8 +306,9 @@ public class SignupActivity extends SherlockActivity {
 
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
-										networkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
-												SurespotApplication.getVersion(), SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
+										mNetworkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
+												SurespotApplication.getVersion(), SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken(),
+												new CookieResponseHandler() {
 
 													@Override
 													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {

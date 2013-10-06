@@ -22,14 +22,29 @@
             android:layout_height="wrap_content"
             android:text="@string/username" />
 
-        <EditText
-            android:id="@+id/etSignupUsername"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:imeOptions="actionNext"
-            android:inputType="textNoSuggestions"
-            android:singleLine="true" />
+            android:orientation="horizontal" >
+
+            <EditText
+                android:id="@+id/etSignupUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="5dp"
+                android:imeOptions="actionNext"
+                android:inputType="textNoSuggestions"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/bCheckUsername"
+                style="@style/Widget.Sherlock.ActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"                
+                android:text="@string/check"
+                android:textColor="@color/surespotBlue" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
@@ -76,7 +91,7 @@
             android:layout_width="match_parent"
             android:layout_height="1px"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"            
+            android:layout_marginRight="10dp"
             android:background="#aaa" />
     </LinearLayout>
 
