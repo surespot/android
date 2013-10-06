@@ -16,7 +16,7 @@
         android:id="@+id/bPurchaseVoice"
         style="@style/Widget.Sherlock.ActionButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"        
+        android:layout_height="wrap_content"
         android:text="@string/voice_messaging_purchase_button"
         android:textColor="@color/surespotBlue" >
     </Button>
@@ -25,10 +25,26 @@
         android:id="@+id/cbDontShow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:layout_marginBottom="5dp"
         android:text="@string/voice_message_suppress_purchase_ask"
         android:visibility="gone" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="#aaa" />
+
+    <Button
+        android:id="@+id/bClose"
+        style="@style/Widget.Sherlock.ActionButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ok"
+        android:textColor="@color/surespotBlue" >
+    </Button>
 
 </LinearLayout>

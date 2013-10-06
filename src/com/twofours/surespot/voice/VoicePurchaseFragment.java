@@ -53,6 +53,15 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 
 		final View view = inflater.inflate(R.layout.voice_purchase_fragment, container, false);
 		final Button bPurchase = (Button) view.findViewById(R.id.bPurchaseVoice);
+		final Button bOK = (Button) view.findViewById(R.id.bClose);
+		bOK.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				dismissAllowingStateLoss();
+				
+			}
+		});
 
 		final CheckBox cbDontShow = (CheckBox) view.findViewById(R.id.cbDontShow);
 
