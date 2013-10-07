@@ -182,8 +182,7 @@ public class SignupActivity extends SherlockActivity {
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
 					mMpdCheck.decrProgress();
-					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
-					userText.setText("");
+					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));					
 					userText.requestFocus();
 
 				}
@@ -216,7 +215,6 @@ public class SignupActivity extends SherlockActivity {
 					Utils.makeToast(SignupActivity.this, getString(R.string.user_exists_error));
 				}
 
-				userText.setText("");
 				userText.requestFocus();
 			}
 
@@ -303,6 +301,12 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
+										
+										
+										
+										
+										
+										
 
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
