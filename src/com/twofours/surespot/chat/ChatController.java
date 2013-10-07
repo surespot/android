@@ -443,13 +443,13 @@ public class ChatController {
 
 		for (int i = 0; i < resendMessages.length; i++) {
 			SurespotMessage message = resendMessages[i];
-			
-			//if it has an id don't send it again
+
+			// if it has an id don't send it again
 			if (message.getId() != null) {
 				mResendBuffer.remove(message);
 				continue;
 			}
-			
+
 			// set the last received id so the server knows which messages to check
 			String otherUser = message.getOtherUser();
 
@@ -674,7 +674,7 @@ public class ChatController {
 							else {
 								message.setPlainData("unknown message mime type");
 							}
-						}					
+						}
 					}
 					return null;
 				}
@@ -1485,8 +1485,6 @@ public class ChatController {
 			chatAdapter.doneCheckingSequence();
 			mFriendAdapter.sort();
 			mFriendAdapter.notifyDataSetChanged();
-			
-			
 
 			scrollToEnd(username);
 		}
@@ -1637,7 +1635,7 @@ public class ChatController {
 		}
 
 		mFriendAdapter.setFriends(friends);
-		mFriendAdapter.setLoading(false);		
+		mFriendAdapter.setLoading(false);
 
 		loadUnsentMessages();
 	}
@@ -2143,14 +2141,21 @@ public class ChatController {
 
 	}
 
-	public void toggleMessageShareable(final SurespotMessage message) {
+	public void toggleMessageShareable(String to, final String messageIv) {
+		final ChatAdapter chatAdapter = mChatAdapters.get(to);
+		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
 		if (message != null && message.getId() > 0) {
-			String username = message.getOtherUser();
-			final ChatAdapter chatAdapter = mChatAdapters.get(username);
+			String messageUsername = message.getOtherUser();
+
+			if (!messageUsername.equals(to)) {
+				Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
+				return;
+			}
+
 			if (chatAdapter != null) {
 
 				setProgress("shareable", true);
-				mNetworkController.setMessageShareable(username, message.getId(), !message.isShareable(), new AsyncHttpResponseHandler() {
+				mNetworkController.setMessageShareable(to, message.getId(), !message.isShareable(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
 						message.setShareable(!message.isShareable());
@@ -2163,19 +2168,17 @@ public class ChatController {
 						SurespotLog.i(TAG, error, "toggleMessageShareable");
 						setProgress("shareable", false);
 						Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
-
 					}
-
 				});
 			}
 		}
 	}
 
-	public void resendFileMessage(final SurespotMessage message) {
+	public void resendFileMessage(String to, final String messageIv) {
+		final ChatAdapter chatAdapter = mChatAdapters.get(to);
+		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
 
 		message.setErrorStatus(0);
-
-		final ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
 		chatAdapter.notifyDataSetChanged();
 
 		setProgress("resend", true);
