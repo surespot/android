@@ -13,7 +13,6 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
-import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class TextMessageMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "TextMessageMenuFragment";
@@ -21,7 +20,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 	private String[] mMenuItemArray;
 
 	public static SherlockDialogFragment newInstance(SurespotMessage message) {
-		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
+		TextMessageMenuFragment f = new TextMessageMenuFragment();
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject().toString());

@@ -96,7 +96,7 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 				}
 
 				if (itemText.equals(getString(R.string.menu_resend_message))) {
-					mActivity.getChatController().resendFileMessage(mMessage);
+					mActivity.getChatController().resendFileMessage(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 

@@ -31,7 +31,6 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
-import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class ImageMessageMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "ImageMessageMenuFragment";
@@ -40,7 +39,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 	private Observer mMessageObserver;
 
 	public static SherlockDialogFragment newInstance(SurespotMessage message) {
-		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
+		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject().toString());
@@ -120,7 +119,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 				String itemText = mItems.get(which);
 
 				if (itemText.equals(getString(R.string.menu_lock)) || itemText.equals(getString(R.string.menu_unlock))) {
-					mActivity.getChatController().toggleMessageShareable(mMessage);
+					mActivity.getChatController().toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 
@@ -196,7 +195,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 				}
 
 				if (itemText.equals(getString(R.string.menu_resend_message))) {
-					mActivity.getChatController().resendFileMessage(mMessage);
+					mActivity.getChatController().resendFileMessage(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 
