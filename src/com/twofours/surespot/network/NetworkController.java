@@ -264,11 +264,7 @@ public class NetworkController {
 			responseHandler.onFailure(e, new JSONObject());
 		}
 
-	}
-
-	public void getAutoInviteUrl(String medium, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-		get("/autoinviteurl/" + medium, null, asyncHttpResponseHandler);
-	}
+	}	
 
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
 			String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
