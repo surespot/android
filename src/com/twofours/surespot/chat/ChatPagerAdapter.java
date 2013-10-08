@@ -11,17 +11,18 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.ui.SurespotFragmentPagerAdapter;
+import com.viewpagerindicator.IconProvider;
 
-public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
+public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements IconProvider {
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<String> mChatNames;
-	
+
 	private static String mHomeName;
 
 	public ChatPagerAdapter(Context context, FragmentManager fm) {
 		super(fm);
-		mHomeName =  context.getResources().getString(R.string.home);
+		mHomeName = "";
 	}
 
 	@Override
@@ -111,8 +112,8 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 	}
 
 	private synchronized void sort() {
-		
-		mChatNames  = new ArrayList<String>(Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(mChatNames));
+
+		mChatNames = new ArrayList<String>(Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(mChatNames));
 	}
 
 	public boolean containsChat(String username) {
@@ -152,9 +153,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		}
 	}
 
-	public void removeChat(int viewId, int index) {		
+	public void removeChat(int viewId, int index) {
 		String name = mChatNames.remove(index - 1);
-		
+
 		String fragname = makeFragmentName(viewId, name.hashCode());
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
 
@@ -177,6 +178,18 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter {
 		}
 		else {
 			return mChatNames.get(position - 1).hashCode();
+		}
+	}
+
+
+	@Override
+	public int getIcon(int position) {
+		SurespotLog.v(TAG, "getIcon: %d", position);
+		if (position == 0) {
+			return R.drawable.ic_menu_home;
+		}
+		else {
+			return IconProvider.NO_ICON;
 		}
 	}
 }
