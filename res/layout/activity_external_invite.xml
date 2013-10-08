@@ -2,18 +2,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <!--
-             <CheckBox
-            android:checked="true"
-            android:id="@+id/cbAutoInvite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/inviteRadioGroup"
-            android:layout_marginTop="10dp"
-            android:text="auto invite me when app installed/opened from this link" />
-    -->
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -108,7 +96,7 @@
         android:src="@drawable/qr_surespot" />
 
     <FrameLayout
-        android:id="@+id/bNext"
+        android:id="@+id/bFrame"
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
@@ -116,14 +104,14 @@
         android:layout_marginBottom="-10dp"
         android:layout_marginRight="-10dp"
         android:background="@drawable/send_button"
-        android:textColor="@android:color/black" >
+         >
 
         <ImageView
             android:id="@+id/bNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_menu_send" >
+            android:layout_gravity="center"            
+            android:src="@drawable/ic_menu_forward" >
         </ImageView>
 
         <ImageView
@@ -131,6 +119,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            
             android:src="@drawable/ic_menu_invite"
             android:visibility="gone" >
         </ImageView>

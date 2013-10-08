@@ -40,16 +40,22 @@
         android:text="@string/select_all"
         android:textColor="@color/surespotBlue" />
 
-    <Button
+    <FrameLayout
         android:id="@+id/bSelectContacts"
-        android:layout_width="70sp"
-        android:layout_height="70sp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="-10sp"
-        android:layout_marginRight="-10sp"
-        android:background="@drawable/send_button"
-        android:text="@string/invite"
-        android:textColor="@android:color/black" />
+        android:layout_marginBottom="-10dp"
+        android:layout_marginRight="-10dp"
+        android:background="@drawable/send_button" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_menu_invite" >
+        </ImageView>
+    </FrameLayout>
 
 </RelativeLayout>

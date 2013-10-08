@@ -10,7 +10,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -33,12 +32,12 @@ public class ExternalInviteActivity extends SherlockActivity {
 	private RadioButton mRbEmail;
 	private RadioButton mRbSms;
 	private RadioButton mRbSocial;
-	// private CheckBox mCbAutoInvite;
 	public static final int SHARE_EMAIL = 0;
 	public static final int SHARE_SMS = 1;
 	public static final int SHARE_SOCIAL = 2;
 	private int mSelectedType;
-	private Button mbInvite;
+	private View mbInvite;
+	private View mbNext;
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -57,9 +56,32 @@ public class ExternalInviteActivity extends SherlockActivity {
 		mRbEmail.setTag(SHARE_EMAIL);
 		mRbSocial = (RadioButton) findViewById(R.id.rbSocial);
 		mRbSocial.setTag(SHARE_SOCIAL);
-		// mCbAutoInvite = (CheckBox) findViewById(R.id.cbAutoInvite);
 
-		mbInvite = (Button) findViewById(R.id.bSendInvitation);
+		findViewById(R.id.bFrame).setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (mSelectedType != SHARE_SOCIAL) {
+
+					Intent intent = new Intent(ExternalInviteActivity.this, ContactPickerActivity.class);
+					intent.putExtra("type", mSelectedType);
+					startActivity(intent);
+
+				}
+				else {
+					NetworkController networkController = MainActivity.getNetworkController();
+					if (networkController == null) {
+						networkController = new NetworkController(ExternalInviteActivity.this, null);
+					}
+					UIUtils.sendInvitation(ExternalInviteActivity.this, networkController, mSelectedType, null, false);
+				}
+
+			}
+		});
+
+		mbInvite = findViewById(R.id.bInvite);
+		mbNext = findViewById(R.id.bNext);
+
 		mRbEmail.setChecked(true);
 
 		OnClickListener rbClickListener = new OnClickListener() {
@@ -80,27 +102,6 @@ public class ExternalInviteActivity extends SherlockActivity {
 		mRbEmail.setOnClickListener(rbClickListener);
 		mRbSms.setOnClickListener(rbClickListener);
 		mRbSocial.setOnClickListener(rbClickListener);
-
-		mbInvite.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				if (mSelectedType != SHARE_SOCIAL) {
-
-					Intent intent = new Intent(ExternalInviteActivity.this, ContactPickerActivity.class);
-					intent.putExtra("type", mSelectedType);
-					startActivity(intent);
-
-				} else {
-					NetworkController networkController = MainActivity.getNetworkController();
-					if (networkController == null) {
-						networkController = new NetworkController(ExternalInviteActivity.this, null);
-					}
-					UIUtils.sendInvitation(ExternalInviteActivity.this, networkController, mSelectedType, null, false);
-				}
-
-			}
-		});
 
 		// give user option to fix sms contact population
 		// http://stackoverflow.com/questions/9584136/how-to-click-or-tap-on-a-textview-text-on-different-words
@@ -126,11 +127,14 @@ public class ExternalInviteActivity extends SherlockActivity {
 		switch (type) {
 		case SHARE_EMAIL:
 		case SHARE_SMS:
-			mbInvite.setText(R.string.next);
+			mbNext.setVisibility(View.VISIBLE);
+			mbInvite.setVisibility(View.GONE);
 			break;
 
 		case SHARE_SOCIAL:
-			mbInvite.setText(R.string.invite);
+			mbNext.setVisibility(View.GONE);
+			mbInvite.setVisibility(View.VISIBLE);
+
 			break;
 		}
 	}
@@ -176,7 +180,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 		case android.R.id.home:
 			finish();
 			return true;
-		
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

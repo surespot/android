@@ -74,7 +74,7 @@ public class ContactPickerActivity extends SherlockActivity {
 			}
 		});
 
-		Button bSelect = (Button) findViewById(R.id.bSelectContacts);
+		View bSelect = findViewById(R.id.bSelectContacts);
 		bSelect.setOnClickListener(new OnClickListener() {
 
 			@Override
