@@ -9,16 +9,16 @@
 	<classpathentry kind="lib" path="libs/scprov-jdk15on-1.47.0.3-SNAPSHOT.jar" sourcepath="/home/adam/dev/surespot/libs/android/github/forks/spongycastle"/>
 	<classpathentry kind="lib" path="libs/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/google-play-services.jar"/>
-	<classpathentry kind="lib" path="libs/google-http-client-1.15.0-rc.jar"/>
-	<classpathentry kind="lib" path="libs/google-http-client-android-1.15.0-rc.jar"/>
-	<classpathentry kind="lib" path="libs/google-oauth-client-1.15.0-rc.jar"/>
 	<classpathentry kind="lib" path="libs/gson-2.1.jar"/>
 	<classpathentry kind="lib" path="libs/jsr305-1.3.9.jar"/>
 	<classpathentry kind="lib" path="libs/protobuf-java-2.4.1.jar"/>
-	<classpathentry kind="lib" path="libs/google-api-services-drive-v2-rev86-1.15.0-rc.jar"/>
-	<classpathentry kind="lib" path="libs/google-api-client-1.15.0-rc.jar"/>
-	<classpathentry kind="lib" path="libs/google-api-client-android-1.15.0-rc.jar"/>
-	<classpathentry kind="lib" path="libs/google-http-client-gson-1.15.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-api-client-1.17.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-api-client-android-1.17.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-http-client-1.17.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-http-client-android-1.17.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-http-client-gson-1.17.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-oauth-client-1.17.0-rc.jar"/>
+	<classpathentry kind="lib" path="libs/google-api-services-drive-v2-rev103-1.17.0-rc.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/actionbarsherlock"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-async-http"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/viewpagerindicator"/>

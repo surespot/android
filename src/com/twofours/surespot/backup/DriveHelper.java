@@ -2,6 +2,7 @@ package com.twofours.surespot.backup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import android.accounts.Account;
 import android.content.Context;
@@ -39,8 +40,10 @@ public class DriveHelper {
 		if (mService == null) {
 
 			if (getDriveAccount() != null) {
-				GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, DriveScopes.DRIVE,
-						"https://www.googleapis.com/auth/drive.install");
+				ArrayList<String> scopes = new ArrayList<String>(2);
+				scopes.add(DriveScopes.DRIVE);
+				scopes.add("https://www.googleapis.com/auth/drive.install");
+				GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, scopes);
 				credential.setSelectedAccountName(mAccount.name);
 				mService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).build();
 
@@ -73,7 +76,8 @@ public class DriveHelper {
 				SharedPreferences.Editor editor = mContext.getSharedPreferences(username, Context.MODE_PRIVATE).edit();
 				editor.putString("pref_google_drive_account", name);
 				editor.commit();
-			} else {
+			}
+			else {
 				// TODO save for when account is created and set for the created user
 			}
 
@@ -101,7 +105,8 @@ public class DriveHelper {
 					return Utils.inputStreamToBytes(inputStream);
 				}
 
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				SurespotLog.w(TAG, e, "getFileContent");
 				return null;
 			}
