@@ -245,8 +245,31 @@ public class EmojiParser {
 		addCharToResMapping("267F", R.drawable.wheelchair);
 		mUncategorized.put(0x267F, null);
 		addCharToResMapping("1F51E", R.drawable.no_one_under_eighteen_symbol);
+
+		addCharToResMapping("2648", R.drawable.aries);
+		mUncategorized.put(0x2648, null);
+		addCharToResMapping("2649", R.drawable.taurus);
+		mUncategorized.put(0x2649, null);
+		addCharToResMapping("264A", R.drawable.gemini);
+		mUncategorized.put(0x264A, null);
 		addCharToResMapping("264B", R.drawable.cancer);
 		mUncategorized.put(0x264B, null);
+		addCharToResMapping("264C", R.drawable.leo);
+		mUncategorized.put(0x264C, null);
+		addCharToResMapping("264D", R.drawable.virgo);
+		mUncategorized.put(0x264D, null);
+		addCharToResMapping("264E", R.drawable.libra);
+		mUncategorized.put(0x264E, null);
+		addCharToResMapping("264F", R.drawable.scorpius);
+		mUncategorized.put(0x264F, null);
+		addCharToResMapping("2650", R.drawable.sagittarius);
+		mUncategorized.put(0x2650, null);
+		addCharToResMapping("2651", R.drawable.capricorn);
+		mUncategorized.put(0x2651, null);
+		addCharToResMapping("2652", R.drawable.aquarius);
+		mUncategorized.put(0x2652, null);
+		addCharToResMapping("2653", R.drawable.pisces);
+		mUncategorized.put(0x2653, null);
 
 		// // omitted
 		// addCharToResMapping("", R.drawable.rainbow_sky);
