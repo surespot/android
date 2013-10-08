@@ -41,6 +41,8 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -537,5 +539,12 @@ public class UIUtils {
 		notification.contentView = contentView;
 		
 		return notification;
+	}
+	
+	public static void showProgressAnimation(Context context, View view) {
+		Animation a = AnimationUtils.loadAnimation(context, R.anim.progress_anim);
+		a.setDuration(1000);
+		view.clearAnimation();
+		view.startAnimation(a);
 	}
 }

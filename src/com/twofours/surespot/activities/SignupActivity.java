@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -57,7 +58,9 @@ public class SignupActivity extends SherlockActivity {
 	private boolean mSignupAttempted;
 	private boolean mCacheServiceBound;
 	private NetworkController mNetworkController;
-
+	private View mUsernameValid;
+	private View mUsernameInvalid;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -79,28 +82,28 @@ public class SignupActivity extends SherlockActivity {
 
 		tvSignupHelp.setText(TextUtils.concat(suggestion1, " ", suggestion2, " ", suggestion3, " ", warning));
 
+		mUsernameValid = findViewById(R.id.ivUsernameValid);
+		mUsernameInvalid = findViewById(R.id.ivUsernameInvalid);
+				
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
 		mMpd = new MultiProgressDialog(this, getString(R.string.create_user_progress), 250);
-		mMpdCheck = new MultiProgressDialog(this, getString(R.string.user_exists_progress), 250);
+		mMpdCheck = new MultiProgressDialog(this, getString(R.string.user_exists_progress), 500);
 
 		EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
-		editText.setOnEditorActionListener(new OnEditorActionListener() {
+		editText.setOnFocusChangeListener(new OnFocusChangeListener() {
+
 			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				boolean handled = false;
-				if (actionId == EditorInfo.IME_ACTION_NEXT) {
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
 					checkUsername();
-					handled = true;
 				}
-				return handled;
+
 			}
-
 		});
-
 
 		this.signupButton = (Button) this.findViewById(R.id.bSignup);
 		this.signupButton.setOnClickListener(new View.OnClickListener() {
@@ -126,16 +129,6 @@ public class SignupActivity extends SherlockActivity {
 					handled = true;
 				}
 				return handled;
-			}
-
-		});
-
-		Button checkUsernameButton = (Button) this.findViewById(R.id.bCheckUsername);
-		checkUsernameButton.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				checkUsername();
 			}
 
 		});
@@ -173,7 +166,7 @@ public class SignupActivity extends SherlockActivity {
 		if (TextUtils.isEmpty(username)) {
 			return;
 		}
-
+		
 		mMpdCheck.incrProgress();
 
 		// see if the user exists
@@ -182,14 +175,13 @@ public class SignupActivity extends SherlockActivity {
 			public void onSuccess(String arg1) {
 				if (arg1.equals("true")) {
 					mMpdCheck.decrProgress();
-					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));					
+					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
+					setUsernameValidity(false);
 					userText.requestFocus();
-
 				}
-
 				else {
 					mMpdCheck.decrProgress();
-					Utils.makeToast(SignupActivity.this, getString(R.string.username_available));
+					setUsernameValidity(true);
 					EditText pwText = (EditText) findViewById(R.id.etSignupPassword);
 					pwText.requestFocus();
 				}
@@ -216,6 +208,7 @@ public class SignupActivity extends SherlockActivity {
 				}
 
 				userText.requestFocus();
+				setUsernameValidity(false);
 			}
 
 		});
@@ -259,9 +252,10 @@ public class SignupActivity extends SherlockActivity {
 				if (arg1.equals("true")) {
 					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
 					userText.setText("");
-					confirmPwText.setText("");
-					pwText.setText("");
+					// confirmPwText.setText("");
+					// pwText.setText("");
 					userText.requestFocus();
+					setUsernameValidity(false);
 					mMpd.decrProgress();
 				}
 				else {
@@ -269,10 +263,11 @@ public class SignupActivity extends SherlockActivity {
 					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
 						Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
 						userText.setText("");
-						confirmPwText.setText("");
-						pwText.setText("");
+						// confirmPwText.setText("");
+						// pwText.setText("");
 						userText.requestFocus();
 						mMpd.decrProgress();
+						setUsernameValidity(false);
 						return;
 					}
 
@@ -301,12 +296,6 @@ public class SignupActivity extends SherlockActivity {
 										String sPublicDH = result[0];
 										String sPublicECDSA = result[1];
 										String signature = result[2];
-										
-										
-										
-										
-										
-										
 
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
@@ -352,6 +341,8 @@ public class SignupActivity extends SherlockActivity {
 																	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 																	imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
 																	finish();
+																	mUsernameInvalid.setVisibility(View.GONE);
+																	mUsernameValid.setVisibility(View.VISIBLE);
 																};
 															}.execute();
 
@@ -361,6 +352,7 @@ public class SignupActivity extends SherlockActivity {
 															confirmPwText.setText("");
 															pwText.setText("");
 															pwText.requestFocus();
+															setUsernameValidity(false);
 														}
 
 													}
@@ -398,19 +390,15 @@ public class SignupActivity extends SherlockActivity {
 														}
 														confirmPwText.setText("");
 														pwText.setText("");
-
+														setUsernameValidity(false);
 													}
-
 												});
 									};
 								}.execute();
-
 							}
 						}
 					});
-
 				}
-
 			}
 
 			@Override
@@ -434,9 +422,11 @@ public class SignupActivity extends SherlockActivity {
 				}
 
 				userText.setText("");
-				confirmPwText.setText("");
-				pwText.setText("");
+				// confirmPwText.setText("");
+				// pwText.setText("");
 				userText.requestFocus();
+				setUsernameValidity(false);
+
 			}
 		});
 	}
@@ -480,6 +470,13 @@ public class SignupActivity extends SherlockActivity {
 			return super.onOptionsItemSelected(item);
 		}
 
+	}
+
+
+
+	private void setUsernameValidity(boolean isValid) {		
+		mUsernameValid.setVisibility(isValid ? View.VISIBLE : View.GONE);
+		mUsernameInvalid.setVisibility(isValid ? View.GONE : View.VISIBLE);
 	}
 
 }

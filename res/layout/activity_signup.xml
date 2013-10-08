@@ -31,19 +31,25 @@
                 android:id="@+id/etSignupUsername"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginTop="5dp"
+                android:layout_weight="1"
                 android:imeOptions="actionNext"
                 android:inputType="textNoSuggestions"
                 android:singleLine="true" />
 
-            <Button
-                android:id="@+id/bCheckUsername"
-                style="@style/Widget.Sherlock.ActionButton"
+            <ImageView
+                android:id="@+id/ivUsernameValid"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"                
-                android:text="@string/check"
-                android:textColor="@color/surespotBlue" />
+                android:layout_height="match_parent"
+                android:src="@drawable/btn_check_buttonless_on"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/ivUsernameInvalid"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_delete"
+                android:visibility="gone" />
         </LinearLayout>
 
         <TextView

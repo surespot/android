@@ -325,9 +325,7 @@
     <string name="pref_suppress_voice_purchase_ask_summary">"doesn't ask you to buy voice messaging capability and closes the tab instead"</string>
     <string name="menu_purchase_voice_messaging">"purchase voice"</string>
     <string name="purchase_voice_title">voice messaging purchase</string>
-    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>
-    <string name="check">check</string>
-    <string name="username_available">username available!</string>
+    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>    
     <string name="user_exists_throttled">too many checks try again later</string>
     <string name="user_exists_error">error checking for username</string>
     <string name="user_exists_progress">checking username</string>

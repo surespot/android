@@ -41,8 +41,6 @@ import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -1214,12 +1212,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		SurespotLog.v(TAG, "progress status changed to: %b", inProgress);
 		if (inProgress) {
-
-			Animation a = AnimationUtils.loadAnimation(this, R.anim.progress_anim);
-			a.setDuration(1000);
-			mHomeImageView.clearAnimation();
-			mHomeImageView.startAnimation(a);
-		}
+			UIUtils.showProgressAnimation(this, mHomeImageView);		}
 		else {
 			mHomeImageView.clearAnimation();
 		}
