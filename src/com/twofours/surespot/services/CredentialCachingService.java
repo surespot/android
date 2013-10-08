@@ -7,16 +7,20 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat.Builder;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
+import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -25,6 +29,7 @@ import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
+import com.twofours.surespot.ui.UIUtils;
 
 public class CredentialCachingService extends Service {
 	private static final String TAG = "CredentialCachingService";
@@ -41,14 +46,22 @@ public class CredentialCachingService extends Service {
 	@Override
 	public void onCreate() {
 		SurespotLog.v(TAG, "onCreate");
-		// TODO make display optional?
-		Notification notification = new Notification(0, null, System.currentTimeMillis());
-		notification.flags |= Notification.FLAG_NO_CLEAR;
 
-		// Intent notificationIntent = new Intent(this, StartupActivity.class);
-		// PendingIntent pendingIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION,
-		// notificationIntent, 0);
-		// notification.setLatestEventInfo(this, "surespot", "caching credentials", pendingIntent);
+		// in 4.3 and above they decide to fuck us by showing the notification
+		// so make the text meaningful at least
+		Notification notification = null;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {		
+			PendingIntent contentIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.BACKGROUND_CACHE_NOTIFICATION, new Intent(this,
+					MainActivity.class), 0);
+			notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(),
+					getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
+		}
+		else {
+			notification = new Notification(0, null, System.currentTimeMillis());
+			notification.flags |= Notification.FLAG_NO_CLEAR;
+		}
+
 		startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
 
 		CacheLoader<PublicKeyPairKey, PublicKeys> keyPairCacheLoader = new CacheLoader<PublicKeyPairKey, PublicKeys>() {
@@ -298,21 +311,29 @@ public class CredentialCachingService extends Service {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (!(obj instanceof VersionMap)) return false;
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof VersionMap))
+				return false;
 			VersionMap other = (VersionMap) obj;
-			if (!getOuterType().equals(other.getOuterType())) return false;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
 			if (mUsername == null) {
-				if (other.mUsername != null) return false;
+				if (other.mUsername != null)
+					return false;
 			}
 			else
-				if (!mUsername.equals(other.mUsername)) return false;
+				if (!mUsername.equals(other.mUsername))
+					return false;
 			if (mVersion == null) {
-				if (other.mVersion != null) return false;
+				if (other.mVersion != null)
+					return false;
 			}
 			else
-				if (!mVersion.equals(other.mVersion)) return false;
+				if (!mVersion.equals(other.mVersion))
+					return false;
 			return true;
 		}
 
@@ -348,16 +369,22 @@ public class CredentialCachingService extends Service {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (!(obj instanceof PublicKeyPairKey)) return false;
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof PublicKeyPairKey))
+				return false;
 			PublicKeyPairKey other = (PublicKeyPairKey) obj;
-			if (!getOuterType().equals(other.getOuterType())) return false;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
 			if (mVersionMap == null) {
-				if (other.mVersionMap != null) return false;
+				if (other.mVersionMap != null)
+					return false;
 			}
 			else
-				if (!mVersionMap.equals(other.mVersionMap)) return false;
+				if (!mVersionMap.equals(other.mVersionMap))
+					return false;
 			return true;
 		}
 
@@ -404,21 +431,29 @@ public class CredentialCachingService extends Service {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (!(obj instanceof SharedSecretKey)) return false;
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof SharedSecretKey))
+				return false;
 			SharedSecretKey other = (SharedSecretKey) obj;
-			if (!getOuterType().equals(other.getOuterType())) return false;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
 			if (mOurVersionMap == null) {
-				if (other.mOurVersionMap != null) return false;
+				if (other.mOurVersionMap != null)
+					return false;
 			}
 			else
-				if (!mOurVersionMap.equals(other.mOurVersionMap)) return false;
+				if (!mOurVersionMap.equals(other.mOurVersionMap))
+					return false;
 			if (mTheirVersionMap == null) {
-				if (other.mTheirVersionMap != null) return false;
+				if (other.mTheirVersionMap != null)
+					return false;
 			}
 			else
-				if (!mTheirVersionMap.equals(other.mTheirVersionMap)) return false;
+				if (!mTheirVersionMap.equals(other.mTheirVersionMap))
+					return false;
 			return true;
 		}
 

@@ -330,5 +330,8 @@
     <string name="username_available">username available!</string>
     <string name="user_exists_throttled">too many checks try again later</string>
     <string name="user_exists_error">error checking for username</string>
-    <string name="user_exists_progress">checking username</string>            
+    <string name="user_exists_progress">checking username</string>
+    <string name="caching_service_notification_title">surespot cache</string>
+    <string name="caching_service_notification_message">caching credentials for maximum performance and security</string>
+             
 </resources>

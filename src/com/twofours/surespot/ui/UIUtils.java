@@ -12,6 +12,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,6 +26,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -41,6 +44,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -510,5 +514,28 @@ public class UIUtils {
 	}
 	
 	
-
+	public static Notification generateNotification(NotificationCompat.Builder builder, PendingIntent contentIntent, String packageName, String title, String message) {
+		RemoteViews contentView = new RemoteViews(packageName, R.layout.notification);
+		contentView.setImageViewResource(R.id.notification_image, R.drawable.surespot_logo);
+		contentView.setTextViewText(R.id.notification_title, title);
+		contentView.setTextViewText(R.id.notification_text, message);
+			
+		
+		builder.setContentIntent(contentIntent);
+		
+		//use big style if supported 
+		builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
+		
+		builder.setSmallIcon(R.drawable.surespot_logo);
+		builder.setContentTitle(title);		
+		builder.setContentText(message);
+				
+		//mBuilder.setContent(contentView);
+		Notification notification = builder.build();
+		
+		//this seems to trick android into displaying our custom view when it's not using the "big style"
+		notification.contentView = contentView;
+		
+		return notification;
+	}
 }
