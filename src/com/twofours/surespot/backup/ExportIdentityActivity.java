@@ -13,11 +13,15 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -71,6 +75,11 @@ public class ExportIdentityActivity extends SherlockActivity {
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.backup), true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
 
+		TextView tvBackupWarning = (TextView) findViewById(R.id.backupIdentitiesWarning);
+		Spannable s1 = new SpannableString(getString(R.string.help_backupIdentities1));
+		s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		tvBackupWarning.setText(s1);
+		
 		final TextView tvPath = (TextView) findViewById(R.id.backupLocalLocation);
 		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
 
@@ -157,7 +166,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 				chooseAccount(true);
 			}
-		});
+		});		
 	}
 
 	// //////// Local
