@@ -23,7 +23,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				// SurespotApplication.mBackupManager.dataChanged();
 				return true;
 			}
 		};
@@ -41,15 +40,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			prefMgr.findPreference("pref_notifications_sound").setOnPreferenceClickListener(onPreferenceClickListener);
 			prefMgr.findPreference("pref_notifications_vibration").setOnPreferenceClickListener(onPreferenceClickListener);
 			prefMgr.findPreference("pref_notifications_led").setOnPreferenceClickListener(onPreferenceClickListener);
-
-			// prefMgr.findPreference("pref_logging").setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			//
-			// @Override
-			// public boolean onPreferenceClick(Preference preference) {
-			// SurespotLog.setLogging(((CheckBoxPreference) preference).isChecked());
-			// return true;
-			// }
-			// });
+			
 
 			prefMgr.findPreference("pref_help").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 

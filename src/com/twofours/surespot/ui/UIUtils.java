@@ -22,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.text.Html;
 import android.text.InputFilter;
@@ -46,6 +47,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -402,7 +404,7 @@ public class UIUtils {
 		dialog.show();
 	}
 
-	public static void showHelpDialog(Activity activity, int titleStringId, View view) {
+	public static void showHelpDialog(final Activity activity, int titleStringId, View view, final boolean firstTime) {
 		// show help dialog
 		AlertDialog.Builder b = new Builder(activity);
 		b.setIcon(R.drawable.surespot_logo).setTitle(activity.getString(titleStringId));
@@ -410,6 +412,17 @@ public class UIUtils {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+				//if it's first time show the backup activity
+				if (firstTime) {
+					new AsyncTask<Void, Void, Void>() {
+						protected Void doInBackground(Void... params) {
+
+							Intent intent = new Intent(activity, ExportIdentityActivity.class);
+							activity.startActivity(intent);
+							return null;
+						}
+					}.execute();
+				}
 			}
 		});
 
@@ -462,16 +475,16 @@ public class UIUtils {
 		return "";
 	}
 
-	public static void showHelpDialog(Activity context, boolean showAgreement) {
+	public static void showHelpDialog(Activity context, boolean firstTime) {
 		View view = LayoutInflater.from(context).inflate(R.layout.dialog_help, null);
-		if (showAgreement) {
+		if (firstTime) {
 			TextView helpAgreement = (TextView) view.findViewById(R.id.helpAgreement);
 			UIUtils.setHtml(context, helpAgreement, R.string.help_agreement);
 			helpAgreement.setVisibility(View.VISIBLE);
 		}
 
 		UIUtils.setHelpLinks(context, view);
-		showHelpDialog(context, R.string.surespot_help, view);
+		showHelpDialog(context, R.string.surespot_help, view, firstTime);
 	}
 
 	public static void updateDateAndSize(SurespotMessage message, View parentView) {

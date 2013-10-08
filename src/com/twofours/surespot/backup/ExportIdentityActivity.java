@@ -514,7 +514,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			t2 = (TextView) view.findViewById(R.id.helpBackup4);
 			t2.setText(R.string.help_backup_drive2);
 
-			UIUtils.showHelpDialog(this, R.string.surespot_help, view);
+			UIUtils.showHelpDialog(this, R.string.surespot_help, view, false);
 			return true;
 
 		default:

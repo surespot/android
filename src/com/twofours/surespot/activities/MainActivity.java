@@ -748,13 +748,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		// if this is the first time the app has been run, show the help screen
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean helpShown = sp.getBoolean("helpShown", false);
+		boolean helpShown = sp.getBoolean("helpShownAgain", false);
 		if (!helpShown) {
 			Editor editor = sp.edit();
-			editor.putBoolean("helpShown", true);
+			editor.remove("helpShown");
+			editor.putBoolean("helpShownAgain", true);
 			editor.commit();
-			UIUtils.showHelpDialog(this, true);
+			UIUtils.showHelpDialog(this, true);			
 		}
+		
 	}
 
 	@Override
