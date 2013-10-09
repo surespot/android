@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.Observable;
 import java.util.Observer;
 
 import android.app.AlertDialog;
@@ -75,7 +76,14 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 		final MainActivity mActivity = (MainActivity) getActivity();
 		String messageString = getArguments().getString("message");
 		if (messageString != null) {
-			mMessage = SurespotMessage.toSurespotMessage(messageString);
+			SurespotMessage rebuiltMessage = SurespotMessage.toSurespotMessage(messageString);
+
+			// get the actual message instance to add a listener to
+			mMessage = mActivity.getChatController().getLiveMessage(rebuiltMessage);
+
+			if (mMessage == null) {
+				mMessage = rebuiltMessage;
+			}
 		}
 
 		mItems = new ArrayList<String>(5);
@@ -211,18 +219,17 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 			}
 		});
 
-//		// TODO listen to message control events and handle delete as well
-//		mMessageObserver = new Observer() {
-//
-//			@Override
-//			public void update(Observable observable, Object data) {
-//				setButtonVisibility();
-//
-//			}
-//		};
-//		if (mMessage != null) {
-//			mMessage.addObserver(mMessageObserver);
-//		}
+		// // TODO listen to message control events and handle delete as well
+		mMessageObserver = new Observer() {
+
+			@Override
+			public void update(Observable observable, Object data) {
+				setButtonVisibility();
+			}
+		};
+		if (mMessage != null) {
+			mMessage.addObserver(mMessageObserver);
+		}
 		return dialog;
 	}
 }

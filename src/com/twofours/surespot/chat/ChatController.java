@@ -2373,4 +2373,14 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
+	
+	public SurespotMessage getLiveMessage(SurespotMessage message) {
+		String otherUser = message.getOtherUser();
+		ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
+		if (chatAdapter != null) {
+			return chatAdapter.getMessageByIv(message.getIv());
+		}
+		
+		return null;
+	}
 }
