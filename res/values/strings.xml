@@ -112,7 +112,7 @@
     <string name="qr_pre_username_help">scanning this QR code will invite</string>
     <string name="qr_post_username_help">to be a friend on surespot, installing surespot from the play store if necessary</string>    
     <string name="send">send</string>
-    <string name="main_action_bar_right">select recipient</string>
+    <string name="main_action_bar_right">to</string>
     <string name="could_not_upload_friend_image">could not upload friend image</string>
     <string name="delete_all_confirmation">are you sure you wish to delete all messages?</string>
     <string name="delete_all_title">delete all messages</string>
