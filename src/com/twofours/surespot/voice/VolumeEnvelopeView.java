@@ -13,7 +13,6 @@ import com.twofours.surespot.R;
 
 public class VolumeEnvelopeView extends View {
 	private static final String TAG = null;
-	
 
 	/**
 	 * Constructor. This version is only needed if you will be instantiating the object manually (not from a layout XML file).
@@ -69,7 +68,7 @@ public class VolumeEnvelopeView extends View {
 
 	public void setNewVolume(int value, boolean redraw) {
 
-		if (value != 0) {			
+		if (value != 0) {
 			mEnvelope.add(value);
 		}
 		else
@@ -91,13 +90,18 @@ public class VolumeEnvelopeView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		int x = 2 * (mSize - mEnvelope.size()) - 2;
+
+		int size = mEnvelope.size();
+		int width = Math.round((float) canvas.getWidth() / (VoiceController.MAX_TIME / VoiceController.INTERVAL));
+		int x = canvas.getWidth() - width * size;
+
 		int height = (this.getHeight() - this.getPaddingBottom() - this.getPaddingTop()) / 2;
 		int mid = this.getHeight() / 2;
-		for (Integer i : mEnvelope) {
+		
+		for (Integer i : mEnvelope) {			
 			int offset = (int) ((i.floatValue() / 32768) * height);
 			canvas.drawLine(x, mid - offset, x, mid + offset + 1, mEnvelopePaint);
-			x += 2;
+			x += width;			
 		}
 	}
 

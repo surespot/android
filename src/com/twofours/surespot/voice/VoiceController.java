@@ -38,6 +38,10 @@ public class VoiceController {
 
 	private static String mFileName = null;
 	private static String mUsername = null;
+	
+	public static final int MAX_TIME = 10000;
+	public static final int INTERVAL = 50;
+	
 
 	private static RehearsalAudioRecorder mRecorder = null;
 
@@ -86,8 +90,8 @@ public class VoiceController {
 			mTimer.purge();
 		}
 
-		final int rate = 50;
-		mTimeLeft = 10000;
+		final int rate = INTERVAL;
+		mTimeLeft = MAX_TIME;
 		mTimer = new Timer();
 		mCurrentTimeTask = new TimerTask() {
 			public void run() {
