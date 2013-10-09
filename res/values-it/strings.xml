@@ -134,7 +134,7 @@
   <string name="backup_identities_again_password">Poichè la password della tua identità cambierà, fai il  backup di questa identità dopo aver completato l\'operazione con successo.</string>
   <string name="create_new_keys_for">crea nuove chiavi per %s</string>
   <string name="enter_password_for">inserisci la password di surespot per %s</string>
-  <string name="enter_username_and_password">Inserisci username e password, oppure ripristina un\'identità dal menù.</string>
+  <string name="enter_username_and_password">Inserisci username e password, oppure [ripristina] un\'identità dal menù.</string>
   <string name="usernames_case_sensitive">Gli username sono case-sensitive</string>
   <string name="aware_username_password">quindi fai attenzione quando li condividi con altri. Le password dovrebbero essere di almeno 8 caratteri e contenere cararatteri non standard in posizioni strane.</string>
   <string name="warning_password_reset">ATTENZIONE: non esiste la possibilità di resettare la password in surespot, quindi assicurati di memorizzarla!</string>

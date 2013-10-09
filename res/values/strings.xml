@@ -134,8 +134,9 @@
     <string name="backup_identities_again_keys">Since your identity keys will change, please backup this identity (again) after the operation completes successfully.</string>
     <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity again after the operation completes successfully.</string>
     <string name="create_new_keys_for">create new keys for %s</string>
-    <string name="enter_password_for">enter surespot password for %s</string>
-    <string name="enter_username_and_password">Please enter a username and password, or restore an identity from the menu.</string>
+    <string name="enter_password_for">enter surespot password for %s</string>    
+    <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
+    <string name="enter_username_and_password">Please enter a username and password, or [restore an identity] from the menu.</string>
     <string name="usernames_case_sensitive">Usernames are case sensitive</string>
     <string name="aware_username_password">so be aware of this when sharing them with others. The password should be at least 8 characters long and contain funky characters in weird places.</string>
     <string name="warning_password_reset">WARNING: There is no password reset functionality in surespot so make sure you remember it!</string>

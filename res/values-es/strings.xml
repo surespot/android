@@ -134,7 +134,7 @@
   <string name="backup_identities_again_password">Como tu contraseña cambiará, por favor, asegúrate de hacer de nuevo una copia de seguridad de este perfil después de que la operación finalice.</string>
   <string name="create_new_keys_for">Crear nuevas claves para %s</string>
   <string name="enter_password_for">Introducir contraseña surespot para %s</string>
-  <string name="enter_username_and_password">Introduce tu usuario y contraseña o selecciona un perfil desde el menú.</string>
+  <string name="enter_username_and_password">Introduce tu usuario y contraseña o selecciona un [perfil] desde el menú.</string>
   <string name="usernames_case_sensitive">Los nombres de usuario son sensibles a mayúsculas</string>
   <string name="aware_username_password">así que ten cuidado cuando los compartas. La contraseña debería tener mínimo 8 caracteres de longitud y contener símbolos intercalados.</string>
   <string name="warning_password_reset">ATENCIÓN: No es posible restablecer la contraseña en Surespot por lo que ¡asegúrate de recordarla!</string>

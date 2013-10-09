@@ -134,7 +134,7 @@
   <string name="backup_identities_again_password">Da sich Ihr Passwort zum aktuellen Profil geändert hat, sichern Sie bitte dieses wieder nach dem der Vorgang erfolgreich abgeschlossen ist.</string>
   <string name="create_new_keys_for">Neues Schlüsselpar für %s erstellen</string>
   <string name="enter_password_for">Geben Sie das surespot Passwort für %s ein</string>
-  <string name="enter_username_and_password">Bitte geben Sie Benutzername und Passwort ein oder verwenden Sie \'Profil wiederherstellen\' aus dem Menü</string>
+  <string name="enter_username_and_password">Bitte geben Sie Benutzername und Passwort ein oder verwenden Sie [\'Profil wiederherstellen\'] aus dem Menü</string>
   <string name="usernames_case_sensitive">Groß-und Kleinschreibung beim Benutzername beachten</string>
   <string name="aware_username_password">Das Passwort sollte mindestens 8 Zeichen lang sein und Sonderzeichen enthalten.</string>
   <string name="warning_password_reset">ACHTUNG: Es gibt kein Passwort-Reset-Funktionalität bei surespot, stellen Sie sicher, dass Sie sich daran erinnern!</string>

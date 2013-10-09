@@ -14,7 +14,10 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TextView.BufferType;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
@@ -60,7 +64,7 @@ public class SignupActivity extends SherlockActivity {
 	private NetworkController mNetworkController;
 	private View mUsernameValid;
 	private View mUsernameInvalid;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,8 +74,9 @@ public class SignupActivity extends SherlockActivity {
 		mNetworkController = new NetworkController(SignupActivity.this, null);
 
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
+		tvSignupHelp.setMovementMethod(LinkMovementMethod.getInstance());
 
-		Spannable suggestion1 = new SpannableString(getString(R.string.enter_username_and_password));
+		Spannable suggestion1 = setRestoreListener(getString(R.string.enter_username_and_password));
 		Spannable suggestion2 = new SpannableString(getString(R.string.usernames_case_sensitive));
 		suggestion2.setSpan(new ForegroundColorSpan(Color.RED), 0, suggestion2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		Spannable suggestion3 = new SpannableString(getString(R.string.aware_username_password));
@@ -80,11 +85,11 @@ public class SignupActivity extends SherlockActivity {
 
 		warning.setSpan(new ForegroundColorSpan(Color.RED), 0, warning.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		tvSignupHelp.setText(TextUtils.concat(suggestion1, " ", suggestion2, " ", suggestion3, " ", warning));
+		tvSignupHelp.setText(TextUtils.concat(suggestion1, " ", suggestion2, " ", suggestion3, " ", warning), BufferType.SPANNABLE);
 
 		mUsernameValid = findViewById(R.id.ivUsernameValid);
 		mUsernameInvalid = findViewById(R.id.ivUsernameInvalid);
-				
+
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
@@ -101,7 +106,6 @@ public class SignupActivity extends SherlockActivity {
 				if (!hasFocus) {
 					checkUsername();
 				}
-
 			}
 		});
 
@@ -130,8 +134,34 @@ public class SignupActivity extends SherlockActivity {
 				}
 				return handled;
 			}
-
 		});
+	}
+
+	private SpannableStringBuilder setRestoreListener(String str) {
+
+		int idx1 = str.indexOf("[");
+		int idx2 = str.indexOf("]");
+
+		if (idx1 < idx2) {
+
+			String preString = str.substring(0, idx1);
+			String linkString = str.substring(idx1 + 1, idx2);
+			String endString = str.substring(idx2 + 1, str.length());
+
+			SpannableStringBuilder ssb = new SpannableStringBuilder(preString + linkString + endString);
+
+			ssb.setSpan(new ClickableSpan() {
+
+				@Override
+				public void onClick(View widget) {
+					launchImport();
+				}
+			}, idx1, idx2 - 1, 0);
+
+			return ssb;
+		}
+
+		return new SpannableStringBuilder(str);
 
 	}
 
@@ -166,7 +196,7 @@ public class SignupActivity extends SherlockActivity {
 		if (TextUtils.isEmpty(username)) {
 			return;
 		}
-		
+
 		mMpdCheck.incrProgress();
 
 		// see if the user exists
@@ -452,29 +482,27 @@ public class SignupActivity extends SherlockActivity {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
-
 			return true;
 		case R.id.menu_import_identities:
-			Intent intent = new Intent(this, ImportIdentityActivity.class);
-			intent.putExtra("signup", true);
-			startActivity(intent);
+			launchImport();
 			return true;
-
 		case R.id.menu_about:
 			Intent abIntent = new Intent(this, AboutActivity.class);
 			abIntent.putExtra("signup", true);
 			startActivity(abIntent);
 			return true;
-
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-
 	}
 
+	private void launchImport() {
+		Intent intent = new Intent(this, ImportIdentityActivity.class);
+		intent.putExtra("signup", true);
+		startActivity(intent);
+	}
 
-
-	private void setUsernameValidity(boolean isValid) {		
+	private void setUsernameValidity(boolean isValid) {
 		mUsernameValid.setVisibility(isValid ? View.VISIBLE : View.GONE);
 		mUsernameInvalid.setVisibility(isValid ? View.GONE : View.VISIBLE);
 	}

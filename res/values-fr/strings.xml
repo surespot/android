@@ -134,7 +134,7 @@
   <string name="backup_identities_again_password">Comme votre mot de passe d\'identité est changé, veuillez ré-sauvegarder cette identité après que l\'opération se soit terminée avec succès.</string>
   <string name="create_new_keys_for">Création de nouvelles clés pour %s</string>
   <string name="enter_password_for">saisir le mot de passe pour surespot %s</string>
-  <string name="enter_username_and_password">Veuillez saisir un nom d\'utilisateur et mot de passe, ou restaurer une identité depuis le menu.</string>
+  <string name="enter_username_and_password">Veuillez saisir un nom d\'utilisateur et mot de passe, ou [restaurer] une identité depuis le menu.</string>
   <string name="usernames_case_sensitive">Les noms d\'utilisateurs sont sensibles à la casse</string>
   <string name="aware_username_password">pour être avertis quand c\'est partagé avec les autres. Le mot de passe doit comporter au moins 8 caractères et contenir des caractères spéciaux dans des endroits étranges.</string>
   <string name="warning_password_reset">ATTENTION: Il n\'existe aucune fonctionnalité de réinitialisation de mot de passe dans surespot alors assurez-vous de vous en souvenez!</string>
