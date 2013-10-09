@@ -237,12 +237,9 @@ public class SignupActivity extends SherlockActivity {
 					Utils.makeToast(SignupActivity.this, getString(R.string.user_exists_error));
 				}
 
-				userText.requestFocus();
-				setUsernameValidity(false);
+				userText.requestFocus();				
 			}
-
 		});
-
 	}
 
 	private void signup() {
@@ -371,18 +368,17 @@ public class SignupActivity extends SherlockActivity {
 																	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 																	imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
 																	finish();
-																	mUsernameInvalid.setVisibility(View.GONE);
-																	mUsernameValid.setVisibility(View.VISIBLE);
+																	setUsernameValidity(true);																	
 																};
 															}.execute();
 
 														}
 														else {
 															SurespotLog.w(TAG, "201 not returned on user create.");
-															confirmPwText.setText("");
-															pwText.setText("");
+															//confirmPwText.setText("");
+															//pwText.setText("");
 															pwText.requestFocus();
-															setUsernameValidity(false);
+															//setUsernameValidity(false);
 														}
 
 													}
@@ -405,6 +401,7 @@ public class SignupActivity extends SherlockActivity {
 																Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
 																userText.setText("");
 																userText.requestFocus();
+																setUsernameValidity(false);
 																break;
 															case 403:
 																// future use
@@ -418,9 +415,9 @@ public class SignupActivity extends SherlockActivity {
 														else {
 															Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 														}
-														confirmPwText.setText("");
-														pwText.setText("");
-														setUsernameValidity(false);
+														//confirmPwText.setText("");
+														//pwText.setText("");
+														
 													}
 												});
 									};
@@ -451,12 +448,10 @@ public class SignupActivity extends SherlockActivity {
 					Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 				}
 
-				userText.setText("");
+				//userText.setText("");
 				// confirmPwText.setText("");
 				// pwText.setText("");
 				userText.requestFocus();
-				setUsernameValidity(false);
-
 			}
 		});
 	}
