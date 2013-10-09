@@ -35,7 +35,7 @@ public class EmojiAdapter extends BaseAdapter {
 			imageView = new ImageView(mContext);
 						
 			//imageView.setLayoutParams(new GridView.LayoutParams());
-			imageView.setAdjustViewBounds(true);			
+			imageView.setAdjustViewBounds(false);			
 			imageView.setPadding(0, 8, 0, 8);
 		}
 		else {
