@@ -328,7 +328,7 @@
     <string name="caching_service_notification_message">caching for maximum performance</string>
     <string name="voice_help_1">Hold down the microphone button to record a voice message, release the button to send.</string>
     <string name="voice_help_2">To cancel the recording drag away from button and release.</string>
-    <string name="voice_help_3">touch on a voice message to play, touch again to stop.</string>
+    <string name="voice_help_3">Touch on a voice message to play, touch again to stop.</string>
     <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
     <string name="close">close</string>
 </resources>
