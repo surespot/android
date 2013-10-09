@@ -65,7 +65,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="5dp"
-            android:text="@string/help_shortPress" />
+            android:text="@string/voice_help_1" />
 
         <TextView
             android:layout_width="match_parent"
@@ -73,7 +73,24 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="5dp"
-            android:text="@string/help_longPress" />
+            android:text="@string/voice_help_2" />
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/voice_help_3" />
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/voice_help_4" />
+        
 
         <TextView
             android:layout_width="match_parent"

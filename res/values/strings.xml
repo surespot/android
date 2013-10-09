@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">surespot</string>
     <string name="friends">friends</string>
     <string name="menu_settings">settings</string>
@@ -11,8 +10,8 @@
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
     <string name="hello_world">Hello world!</string>
-    <string name="export_sd">Execute Local Storage Backup</string>
-    <string name="import_sd">restore from local storage</string>
+    <string name="export_sd">Execute Device Storage Backup</string>
+    <string name="import_sd">Restore from Device Storage</string>
     <string name="title_activity_chat">chat</string>
     <string name="title_activity_image_view">image view</string>
     <string name="title_activity_image_select">image select</string>
@@ -42,15 +41,13 @@
     <string name="select_image">select image</string>
     <string name="capture_image">capture image</string>
     <string name="assign_image">assign image</string>
-    <string name="logout">logout</string>
+    <string name="logout">log out</string>
     <string name="settings">settings</string>
-    <string name="welcome_to_surespot"><![CDATA["Welcome to surespot! Data sent using this app is <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> encrypted with <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">symmetric-key</a> encryption (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) using keys created with 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
-    <string name="no_friends">"No friends...yet. Invite surespot users by entering their username below and touching 'invite'."</string>
-    <string name="help_invite">"Invite surespot users by entering their username and touching 'invite' on the 'home' tab."</string>
+    <string name="welcome_to_surespot"><![CDATA["Welcome to surespot! Data sent using this app is <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> encrypted with <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">symmetric-key</a> encryption (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) using keys created with 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
+    <string name="no_friends">"No friends...yet. Invite surespot users by entering their username below."</string>
+    <string name="help_invite">"Invite surespot users by entering their username on the home tab."</string>
     <string name="invite_contacts">"Use the 'invite contacts' menu option to invite users via QR code, email, text message, or other applications."</string>
     <string name="navigate_between_chat_tabs">Navigate between tabs by swiping.</string>
-    <string name="help_shortPress">"Touch 'home' to go to the home tab."</string>
-    <string name="help_longPress">"Hold 'home' to close the chat tab."</string>
     <string name="help_holdmessage">Hold on a message for message options.</string>
     <string name="help_holdfriend">Hold on a friend for friend options.</string>
     <string name="help_imageZoom">Zoom images by touching the image.</string>
@@ -64,21 +61,20 @@
     <string name="close_tab">close tab</string>
     <string name="action_settings">Settings</string>
     <string name="no_messages">no messages</string>
-    <string name="home">home</string>
     <string name="delete_message">delete message</string>
     <string name="block_underline"><u>block</u></string>
     <string name="ignore_underline"><u>ignore</u></string>
-    <string name="accept_underline"><u>accept</u></string>    
+    <string name="accept_underline"><u>accept</u></string>
     <string name="crash_toast_text">houston we have a problem</string>
     <string name="crash_dialog_title">surespot has crashed</string>
-    <string name="crash_dialog_text">It is with deep shame that we have to confess that an unexpected error has occurred.\n\nPlease help us to fix the issue by clicking OK to send an error report containing no personally identifying information.</string>
+    <string name="crash_dialog_text">We must confess that an unexpected error has occurred.\n\nPlease help us to fix the issue by clicking OK to send an error report containing no personally identifying information.</string>
     <string name="crash_dialog_comment_prompt">You can add your comments about the problem below if you like:</string>
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click %s to install the android app and invite me as a friend."</string>
     <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
-    <string name="help_backupIdentities2">"Surespot has both Google Drive and Device Storage based identity backup mechanisms that can be found on the settings menu."</string>
-    <string name="help_backup_what"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
-    <string name="help_backup_local">"For maximum security we recommend using Device Storage backup. Once backed up, the identity file should then be copied from your device to a secure backup location so that it can be restored in the case of app uninstall or 'clear data', a lost or stolen device, or other data loss."</string>
+    <string name="help_backupIdentities2">"Surespot can use Google Drive and/or Device Storage for backing up your identity. These options are in the settings menu."</string>
+    <string name="help_backup_what"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES-GCM</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
+    <string name="help_backup_local">"For maximum security we recommend using Device Storage backup. Once backed up, the identity file should then be copied (or moved) from your device to a secure location so that it may be restored in the case of app uninstall or 'clear data', a lost or stolen device, or other data loss."</string>
     <string name="help_backup_drive1"><![CDATA["If you elect to backup your identity on Google Drive you will be storing a copy of your <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">private keys</a> on Google Drive servers. Should a third party somehow gain access to the Google Drive servers and attempt to decrypt your identity file by <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute force attack</a>, be aware that the <a href="https://en.wikipedia.org/wiki/Password_strength">strength</a> of your password will ultimately determine their success."]]></string>
     <string name="help_backup_drive2">"Your identities will be stored on Google Drive in the folder 'surespot identity backups'. Identities can be restored from the 'restore identity' settings menu in surespot, and also from within the Google Drive Android app."</string>
     <string name="pwyl_text"><![CDATA["Surespot is ad and data mining free.<br><br>Servers and storage cost money; your donations ensure that we do not have to charge for surespot.<br><br>We will donate a percentage to the <a href="https://www.eff.org/issues/privacy">EFF</a> that they may continue to fight for all of our electronic freedoms."]]></string>
@@ -107,14 +103,14 @@
     <string name="sms">sms</string>
     <string name="social">social</string>
     <string name="unknown">unknown</string>
-    <string name="login">login</string>
+    <string name="login">log in</string>
     <string name="login_progress">logging in</string>
-    <string name="login_check_password">Could not login, please make sure your password is correct.</string>
+    <string name="login_check_password">Could not log in, please make sure your password is correct.</string>
     <string name="login_try_again_later">Error logging in, please try again later.</string>
     <string name="login_max_identities_reached">Sorry, you have already created the maximum number of identities (%d).\n\nIdentities can be deleted from the settings menu after logging in.</string>
     <string name="local_cache_cleared">local cache cleared</string>
     <string name="qr_pre_username_help">scanning this QR code will invite</string>
-    <string name="qr_post_username_help">to be a friend on surespot, installing surespot from the play store if necessary</string>
+    <string name="qr_post_username_help">to be a friend on surespot, installing surespot from the play store if necessary</string>    
     <string name="send">send</string>
     <string name="main_action_bar_right">select recipient</string>
     <string name="could_not_upload_friend_image">could not upload friend image</string>
@@ -134,12 +130,12 @@
     <string name="backup_identities_again_keys">Since your identity keys will change, please backup this identity (again) after the operation completes successfully.</string>
     <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity again after the operation completes successfully.</string>
     <string name="create_new_keys_for">create new keys for %s</string>
-    <string name="enter_password_for">enter surespot password for %s</string>    
-    <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
+    <string name="enter_password_for">enter surespot password for %s</string>
+        <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
     <string name="enter_username_and_password">Please enter a username and password, or [restore an identity] from the menu.</string>
     <string name="usernames_case_sensitive">Usernames are case sensitive</string>
-    <string name="aware_username_password">so be aware of this when sharing them with others. The password should be at least 8 characters long and contain funky characters in weird places.</string>
-    <string name="warning_password_reset">WARNING: There is no password reset functionality in surespot so make sure you remember it!</string>
+    <string name="aware_username_password">so be aware of this when sharing them with others. The password should be at least 8 characters long and contain symbols.</string>
+    <string name="warning_password_reset">WARNING: There is ABSOLUTELY NO WAY to reset your password or username in surespot so make sure you remember it!</string>
     <string name="create_user_progress">creating a user and generating key pairs</string>
     <string name="create">create</string>
     <string name="passwords_do_not_match">passwords do not match</string>
@@ -152,17 +148,17 @@
     <string name="billing_could_not_enable">Could not enable in-app billing.</string>
     <string name="billing_purchase_error">Error, could not complete purchase.</string>
     <string name="billing_paypal_link_email_subject">surespot pay what you like paypal link</string>
-    <string name="billing_paypal_link_email_body">Thankyou for paying what you like for surespot! The paypal link is:</string>
+    <string name="billing_paypal_link_email_body">Thank you for paying what you like for surespot! The paypal link is:</string>
     <string name="none">none</string>
     <string name="pwyl_paypal_send_to_self">email link to yourself</string>
     <string name="billing_bitcoin_copied_to_clipboard">%s copied to clipboard</string>
     <string name="billing_bitcoin_email_subject">surespot pay what you like bitcoin address</string>
-    <string name="billing_bitcoin_email_body_address">Thankyou for paying what you like for surespot! The bitcoin address is: %s</string>
+    <string name="billing_bitcoin_email_body_address">Thank you for paying what you like for surespot! The bitcoin address is: %s</string>
     <string name="billing_bitcoin_email_body_qr">The QR code can be viewed here: %s</string>
     <string name="could_not_open_bitcoin_wallet">could not open bitcoin wallet</string>
     <string name="message_sending">sending...</string>
     <string name="message_loading_and_decrypting">loading and decrypting...</string>
-    <string name="could_not_login_to_server">could not login to server</string>
+    <string name="could_not_login_to_server">could not log in to server</string>
     <string name="could_not_connect_to_server">could not connect to server</string>
     <string name="autoinvite_user_exists">your friend list already contains %s</string>
     <string name="loading_latest_messages_failed">loading latest messages failed</string>
@@ -207,7 +203,7 @@
     <string name="assign">assign</string>
     <string name="could_not_load_image">could not load image</string>
     <string name="image">image</string>
-    <string name="pan_and_zoom">pan and zoom</string>
+    <string name="pan_and_zoom">move and zoom</string>
     <string name="done">done</string>
     <string name="message_error_invalid">error sending message: invalid message</string>
     <string name="message_error_unauthorized">error sending message: unauthorized</string>
@@ -232,16 +228,16 @@
     <string name="select_all">select all</string>
     <string name="delete_identity_message_warning">Deleting an identity will erase all messages that identity has sent. It can not be undone.</string>
     <string name="identity_colon">identity:</string>
-    <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your ROM.</string>
+    <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your device.</string>
     <string name="invite_others">Invite others to communicate with you privately via surespot by sharing an auto-invite link with them.</string>
     <string name="invite_reassurance">Your contact information is not stored, uploaded, or used anywhere other than in this capacity.</string>
     <string name="invite_via_email">invite via email</string>
     <string name="invite_via_text_message">invite via text message</string>
     <string name="invite_via_other_application">invite via other application</string>
-    <string name="click_to_select_email_contacts">"Touch 'next' to select email addresses and launch your email app."</string>
+    <string name="click_to_select_email_contacts">"Press the button to select email addresses and launch your email app."</string>
     <!-- anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
-    <string name="invite_text">"Touch 'next' to select phone numbers and launch your sms app. (Please [click here] if contacts fail to populate in your sms app)."</string>
-    <string name="touch_invite_button">"Touch 'invite' to select application to invite with, eg. facebook, twitter."</string>
+    <string name="invite_text">"Press the button to select phone numbers and launch your sms app. (Please [click here] if contacts fail to populate in your sms app)."</string>
+    <string name="touch_invite_button">"Press the button to select application to invite with, eg. facebook, twitter."</string>
     <string name="phone_number">phone number</string>
     <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices (ie. lost or stolen phones) will no longer be able to access surespot using the selected identity.</string>
     <string name="username">username</string>
@@ -270,13 +266,11 @@
     <string name="pref_summary_delete_identity">Deleting an identity can not be undone.</string>
     <string name="pref_summary_regen_keys">For the paranoid.</string>
     <string name="pref_summary_alternate_sms_delimiter">Needs to be enabled on some devices to populate the sms \'to\' field correctly when multiple contacts are selected in invite contacts.</string>
-    <string name="pref_summary_silent_error_reporting">Silently sends error reports containing no personally identifying information to surespot developers.</string>
     <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>
     <string name="menu_invite_contacts">invite contacts</string>
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
     <string name="surespot_help">surespot help</string>
-    <string name="next">next</string>
     <string name="backup_drive_button">Execute Google Drive Backup</string>
     <string name="could_not_backup_identity_to_google_drive">Could not backup identity to Google Drive</string>
     <string name="identity_successfully_backed_up_to_google_drive">Identity successfully backed up to Google Drive</string>
@@ -310,7 +304,7 @@
     <string name="public_key_fingerprints">public key fingerprints</string>
     <string name="loading">loading...</string>
     <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
-    <string name="login_update">please update surespot to login</string>
+    <string name="login_update">please update surespot to log in</string>
     <string name="help_agreement"><![CDATA["By clicking OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
     <string name="billing_payment_required_voice">surepot voice message not purchased</string>
     <string name="billing_getting_inventory">getting purchase inventory, please try again in a second</string>
@@ -319,18 +313,22 @@
     <string name="billing_error">billing error</string>
     <string name="pref_billing">purchases</string>
     <string name="suppress_voice_purchase">"don't ask me to buy voice messaging (closes tab instead)"</string>
-    <string name="voice_messaging_purchase_1">"buy voice messaging! it's the best! send encrypted voice messages - don't crash your car!"</string>
+    <string name="voice_messaging_purchase_1">"Add voice messaging to your surespot and make encrypted communication even easier! Simply hold down the microphone icon to record and release to send. Because sometimes it is easier to say it than type it."</string>
     <string name="voice_messaging_purchase_button">"click here to buy for $1.99"</string>
     <string name="voice_message_suppress_purchase_ask">"don't ask me again"</string>
     <string name="pref_suppress_voice_purchase_ask_title">"don't ask me again"</string>
-    <string name="pref_suppress_voice_purchase_ask_summary">"doesn't ask you to buy voice messaging capability and closes the tab instead"</string>
+    <string name="pref_suppress_voice_purchase_ask_summary">"stop asking me to purchase voice messaging capability"</string>
     <string name="menu_purchase_voice_messaging">"purchase voice"</string>
     <string name="purchase_voice_title">voice messaging purchase</string>
-    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>    
-    <string name="user_exists_throttled">too many checks try again later</string>
+    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>
+    <string name="user_exists_throttled">too many checks, try again later</string>
     <string name="user_exists_error">error checking for username</string>
     <string name="user_exists_progress">checking username</string>
-    <string name="caching_service_notification_title">surespot cache</string>
-    <string name="caching_service_notification_message">caching credentials for maximum performance and security</string>
-             
+    <string name="caching_service_notification_title">surespot</string>
+    <string name="caching_service_notification_message">caching for maximum performance</string>
+    <string name="voice_help_1">Hold down the microphone button to record a voice message, release the button to send.</string>
+    <string name="voice_help_2">To cancel the recording drag away from button and release.</string>
+    <string name="voice_help_3">Click on a voice message to play, click again to stop.</string>
+    <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
+    <string name="close">close</string>
 </resources>
