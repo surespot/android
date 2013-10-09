@@ -369,7 +369,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			}
 		}
-
+		
 		return false;
 	}
 
@@ -693,6 +693,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
+		boolean userWasCreated = intent.getBooleanExtra("userWasCreated", false);
+		intent.removeExtra("userWasCreated");
+		
 		boolean mSet = false;
 		String name = null;
 
@@ -747,17 +750,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		setButtonText();
 
-		// if this is the first time the app has been run, show the help screen
+		// if this is the first time the app has been run, or they just created a user, show the help screen
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean helpShown = sp.getBoolean("helpShownAgain", false);
-		if (!helpShown) {
+		
+		if (!helpShown || userWasCreated) {
 			Editor editor = sp.edit();
 			editor.remove("helpShown");
 			editor.putBoolean("helpShownAgain", true);
 			editor.commit();
 			UIUtils.showHelpDialog(this, true);
 		}
-
 	}
 
 	@Override

@@ -362,7 +362,9 @@ public class SignupActivity extends SherlockActivity {
 																	if (extras != null) {
 																		newIntent.putExtras(extras);
 																	}
-																	intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+																	//set a flag showing we just created a user
+																	newIntent.putExtra("userWasCreated", true);
+																	newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 																	startActivity(newIntent);
 																	Utils.clearIntent(intent);
 																	mMpd.decrProgress();
