@@ -515,15 +515,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (event.getAction() == MotionEvent.ACTION_UP) {
 					Friend friend = mCurrentFriend;
 					if (friend != null) {
-						//if they're deleted do nothing
+						// if they're deleted do nothing
 						if (mChatController.isFriendDeleted(friend.getName())) {
 							return false;
 						}
-						
+
 						if (mEtMessage.getText().toString().length() == 0) {
 
-							// if user let go of send button out of send button bounds, don't send the recording
-							Rect rect = new Rect(mSendButton.getLeft(), mSendButton.getTop(), mSendButton.getRight(), mSendButton.getBottom());
+							int width = mSendButton.getWidth();
+
+							// if user let go of send button out of send button + width (height) bounds, don't send the recording
+							Rect rect = new Rect(mSendButton.getLeft() - width, mSendButton.getTop() - width, mSendButton.getRight(), mSendButton.getBottom()
+									+ width);
 
 							boolean send = true;
 							if (!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())) {
@@ -752,9 +755,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			editor.remove("helpShown");
 			editor.putBoolean("helpShownAgain", true);
 			editor.commit();
-			UIUtils.showHelpDialog(this, true);			
+			UIUtils.showHelpDialog(this, true);
 		}
-		
+
 	}
 
 	@Override
@@ -1212,7 +1215,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		SurespotLog.v(TAG, "progress status changed to: %b", inProgress);
 		if (inProgress) {
-			UIUtils.showProgressAnimation(this, mHomeImageView);		}
+			UIUtils.showProgressAnimation(this, mHomeImageView);
+		}
 		else {
 			mHomeImageView.clearAnimation();
 		}
