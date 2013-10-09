@@ -507,7 +507,7 @@ public class UIUtils {
 
 			// use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
 			float kb = (float) message.getDataSize() / 1000;
-			voiceTime.setText(String.format("%d kB", (int) Math.ceil(kb)));
+			voiceTime.setText(String.format("%d KB", (int) Math.ceil(kb)));
 		}
 		else {
 			TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
