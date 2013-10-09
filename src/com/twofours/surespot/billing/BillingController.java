@@ -5,6 +5,8 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.activities.MainActivity;
@@ -13,6 +15,7 @@ import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabSetupFinishedListener;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 
@@ -28,9 +31,10 @@ public class BillingController {
 	private boolean mJustPurchasedVoice;
 
 	public static final int BILLING_QUERYING_INVENTORY = 100;
+	private Context mContext;
 
 	public BillingController(Context context) {
-
+		mContext = context;
 		setup(context, true, null);
 
 	}
@@ -147,8 +151,7 @@ public class BillingController {
 				for (Purchase purchase : owned) {
 					SurespotLog.v(TAG, "has purchased sku: %s, state: %d, token: %s", purchase.getSku(), purchase.getPurchaseState(), purchase.getToken());
 
-					if (purchase.getSku().equals(SurespotConstants.Products.VOICE_MESSAGING)) {
-
+					if (purchase.getSku().equals(SurespotConstants.Products.VOICE_MESSAGING)) {						
 						if (purchase.getPurchaseState() == 0) {
 							setVoiceMessagingToken(purchase.getToken(), false, null);
 						}
@@ -198,7 +201,7 @@ public class BillingController {
 
 	}
 
-	private void purchaseInternal(Activity activity, final String sku, final IAsyncCallback<Integer> callback) {
+	private void purchaseInternal(final Activity activity, final String sku, final IAsyncCallback<Integer> callback) {
 		try {
 			// showProgress();
 			getIabHelper().launchPurchaseFlow(activity, sku, SurespotConstants.IntentRequestCodes.PURCHASE, new OnIabPurchaseFinishedListener() {
@@ -214,6 +217,12 @@ public class BillingController {
 					String returnedSku = info.getSku();
 
 					if (returnedSku.equals(SurespotConstants.Products.VOICE_MESSAGING)) {
+						//clear the don't show me again flag
+						SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);								
+						Editor editor = sp.edit();
+						editor.putBoolean("pref_suppress_voice_purchase_ask", false);
+						editor.commit();						
+						
 						setVoiceMessagingToken(info.getToken(), true, new IAsyncCallback<Boolean>() {
 							@Override
 							public void handleResponse(Boolean result) {
