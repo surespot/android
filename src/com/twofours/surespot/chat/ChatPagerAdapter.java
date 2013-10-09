@@ -183,8 +183,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 
 	@Override
-	public int getIcon(int position) {
-		SurespotLog.v(TAG, "getIcon: %d", position);
+	public int getIcon(int position) {		
 		if (position == 0) {
 			return R.drawable.ic_menu_home_blue;
 		}
