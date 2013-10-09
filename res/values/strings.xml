@@ -67,7 +67,7 @@
     <string name="accept_underline"><u>accept</u></string>
     <string name="crash_toast_text">houston we have a problem</string>
     <string name="crash_dialog_title">surespot has crashed</string>
-    <string name="crash_dialog_text">We must confess that an unexpected error has occurred.\n\nPlease help us to fix the issue by clicking OK to send an error report containing no personally identifying information.</string>
+    <string name="crash_dialog_text">We must confess that an unexpected error has occurred.\n\nPlease help us to fix the issue by touching OK to send an error report containing no personally identifying information.</string>
     <string name="crash_dialog_comment_prompt">You can add your comments about the problem below if you like:</string>
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click %s to install the android app and invite me as a friend."</string>
@@ -83,8 +83,8 @@
     <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
     <string name="about_website"><![CDATA["Please visit the surespot website at <a href="https://www.surespot.me">https://www.surespot.me</a> for more information, including the <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">privacy policy</a>, and <a href="https://www.surespot.me/documents/threat.html">data and threat analysis</a>."]]></string>
     <string name="about_opensource"><![CDATA["Surespot is 100% open source and welcomes your participation - view the source code on github at <a href="https://github.com/surespot">https://github.com/surespot</a>."]]></string>
-    <string name="about_tech"><![CDATA["For a more technical overview of how surespot works please click <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>."]]></string>
-    <string name="about_support"><![CDATA["For questions or support please <a href="https://www.surespot.me/support.html>click here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
+    <string name="about_tech"><![CDATA["For a more technical overview of how surespot works please touch <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>."]]></string>
+    <string name="about_support"><![CDATA["For questions or support please <a href="https://www.surespot.me/support.html>touch here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
     <string name="notification_title">surespot</string>
     <string name="notification_message">"%1$s: new message from %2$s"</string>
     <string name="notification_invite">"%1$s: friend invite from %2$s"</string>
@@ -236,7 +236,7 @@
     <string name="invite_via_other_application">invite via other application</string>
     <string name="click_to_select_email_contacts">"Press the button to select email addresses and launch your email app."</string>
     <!-- anything in [] for the string below will fire the onclick listener to set the alternate sms delimiter -->
-    <string name="invite_text">"Press the button to select phone numbers and launch your sms app. (Please [click here] if contacts fail to populate in your sms app)."</string>
+    <string name="invite_text">"Press the button to select phone numbers and launch your sms app. (Please [touch here] if contacts fail to populate in your sms app)."</string>
     <string name="touch_invite_button">"Press the button to select application to invite with, eg. facebook, twitter."</string>
     <string name="phone_number">phone number</string>
     <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices (ie. lost or stolen phones) will no longer be able to access surespot using the selected identity.</string>
@@ -305,7 +305,7 @@
     <string name="loading">loading...</string>
     <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
     <string name="login_update">please update surespot to log in</string>
-    <string name="help_agreement"><![CDATA["By clicking OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
+    <string name="help_agreement"><![CDATA["By touching OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
     <string name="billing_payment_required_voice">surepot voice message not purchased</string>
     <string name="billing_getting_inventory">getting purchase inventory, please try again in a second</string>
     <string name="billing_unavailable_message">you must have a Google account on your device to purchase voice messaging</string>
@@ -314,7 +314,7 @@
     <string name="pref_billing">purchases</string>
     <string name="suppress_voice_purchase">"don't ask me to buy voice messaging (closes tab instead)"</string>
     <string name="voice_messaging_purchase_1">"Add voice messaging to your surespot and make encrypted communication even easier! Simply hold down the microphone icon to record and release to send. Because sometimes it is easier to say it than type it."</string>
-    <string name="voice_messaging_purchase_button">"click here to buy for $1.99"</string>
+    <string name="voice_messaging_purchase_button">"touch here to buy for $1.99"</string>
     <string name="voice_message_suppress_purchase_ask">"don't ask me again"</string>
     <string name="pref_suppress_voice_purchase_ask_title">"don't ask me again"</string>
     <string name="pref_suppress_voice_purchase_ask_summary">"stop asking me to purchase voice messaging capability"</string>
@@ -328,7 +328,7 @@
     <string name="caching_service_notification_message">caching for maximum performance</string>
     <string name="voice_help_1">Hold down the microphone button to record a voice message, release the button to send.</string>
     <string name="voice_help_2">To cancel the recording drag away from button and release.</string>
-    <string name="voice_help_3">Click on a voice message to play, click again to stop.</string>
+    <string name="voice_help_3">touch on a voice message to play, touch again to stop.</string>
     <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
     <string name="close">close</string>
 </resources>
