@@ -72,11 +72,11 @@
     <string name="crash_dialog_ok_toast">Thank you!</string>
     <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click %s to install the android app and invite me as a friend."</string>
     <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
-    <string name="help_backupIdentities2">"Surespot can use Google Drive and/or Device Storage for backing up your identity. These options are in the settings menu."</string>
+    <string name="help_backupIdentities2">"Surespot can use Google Drive and/or Device Storage for backing up your identity. These options are in the identity management settings."</string>
     <string name="help_backup_what"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES-GCM</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
     <string name="help_backup_local">"For maximum security we recommend using Device Storage backup. Once backed up, the identity file should then be copied (or moved) from your device to a secure location so that it may be restored in the case of app uninstall or 'clear data', a lost or stolen device, or other data loss."</string>
     <string name="help_backup_drive1"><![CDATA["If you elect to backup your identity on Google Drive you will be storing a copy of your <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">private keys</a> on Google Drive servers. Should a third party somehow gain access to the Google Drive servers and attempt to decrypt your identity file by <a href="https://en.wikipedia.org/wiki/Brute-force_attack">brute force attack</a>, be aware that the <a href="https://en.wikipedia.org/wiki/Password_strength">strength</a> of your password will ultimately determine their success."]]></string>
-    <string name="help_backup_drive2">"Your identities will be stored on Google Drive in the folder 'surespot identity backups'. Identities can be restored from the 'restore identity' settings menu in surespot, and also from within the Google Drive Android app."</string>
+    <string name="help_backup_drive2">"Your identities will be stored on Google Drive in the folder 'surespot identity backups'. Identities can be restored from the create user screen or in identity management settings."</string>
     <string name="pwyl_text"><![CDATA["Surespot is ad and data mining free.<br><br>Servers and storage cost money; your donations ensure that we do not have to charge for surespot.<br><br>We will donate a percentage to the <a href="https://www.eff.org/issues/privacy">EFF</a> that they may continue to fight for all of our electronic freedoms."]]></string>
     <string name="help_messageHistory">Surespot has a 1000 message history. Once you reach 1000 messages your oldest message will be deleted so you will only ever have 1000 (encrypted) messages stored on the server. Of course you can delete any and all of your messages at any time.</string>
     <string name="title_activity_about">about surespot</string>
@@ -107,7 +107,7 @@
     <string name="login_progress">logging in</string>
     <string name="login_check_password">Could not log in, please make sure your password is correct.</string>
     <string name="login_try_again_later">Error logging in, please try again later.</string>
-    <string name="login_max_identities_reached">Sorry, you have already created the maximum number of identities (%d).\n\nIdentities can be deleted from the settings menu after logging in.</string>
+    <string name="login_max_identities_reached">Sorry, you have already created the maximum number of identities (%d).\n\nIdentities can be deleted in the identity management settings after logging in.</string>
     <string name="local_cache_cleared">local cache cleared</string>
     <string name="qr_pre_username_help">scanning this QR code will invite</string>
     <string name="qr_post_username_help">to be a friend on surespot, installing surespot from the play store if necessary</string>    
@@ -127,8 +127,8 @@
     <string name="could_not_invite">Could not invite friend, please try again later.</string>
     <string name="keys">keys</string>
     <string name="generating_keys_progress">generating and uploading new keys</string>
-    <string name="backup_identities_again_keys">Since your identity keys will change, please backup this identity (again) after the operation completes successfully.</string>
-    <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity again after the operation completes successfully.</string>
+    <string name="backup_identities_again_keys">Since your identity keys will change, please backup this identity after the operation completes successfully.</string>
+    <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity after the operation completes successfully.</string>
     <string name="create_new_keys_for">create new keys for %s</string>
     <string name="enter_password_for">enter surespot password for %s</string>
         <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
@@ -247,8 +247,8 @@
     <string name="delete_all_messages">delete all messages</string>
     <string name="pay_what_you_like">pay what you like</string>
     <string name="pref_title_general">general</string>
-    <string name="pref_title_about_surespot">about surespot...</string>
-    <string name="pref_title_help">help...</string>
+    <string name="pref_title_about_surespot">about surespot</string>
+    <string name="pref_title_help">help</string>
     <string name="pref_title_confirmations">confirmations</string>
     <string name="pref_title_delete_message">delete message</string>
     <string name="pref_title_delete_all_messages">delete all messages</string>
