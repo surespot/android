@@ -135,7 +135,7 @@ public class UIUtils {
 			statusText = context.getString(R.string.message_error_invalid);
 			break;
 		case 402:
-			//if it's voice message they need to have upgraded, otherwise fall through to 403
+			// if it's voice message they need to have upgraded, otherwise fall through to 403
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 				statusText = context.getString(R.string.billing_payment_required_voice);
 				break;
@@ -418,7 +418,7 @@ public class UIUtils {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				//if it's first time show the backup activity
+				// if it's first time show the backup activity
 				if (firstTime) {
 					new AsyncTask<Void, Void, Void>() {
 						protected Void doInBackground(Void... params) {
@@ -514,33 +514,35 @@ public class UIUtils {
 			voiceTime.setVisibility(View.GONE);
 		}
 	}
-	
-	
-	public static Notification generateNotification(NotificationCompat.Builder builder, PendingIntent contentIntent, String packageName, String title, String message) {
+
+	public static Notification generateNotification(NotificationCompat.Builder builder, PendingIntent contentIntent, String packageName, String title,
+			String message) {
+		return generateNotification(builder, contentIntent, packageName, R.drawable.surespot_logo, title, message);
+	}
+
+	public static Notification generateNotification(NotificationCompat.Builder builder, PendingIntent contentIntent, String packageName, int iconResId,
+			String title, String message) {
 		RemoteViews contentView = new RemoteViews(packageName, R.layout.notification);
-		contentView.setImageViewResource(R.id.notification_image, R.drawable.surespot_logo);
+		contentView.setImageViewResource(R.id.notification_image, iconResId);
 		contentView.setTextViewText(R.id.notification_title, title);
 		contentView.setTextViewText(R.id.notification_text, message);
-			
-		
+
 		builder.setContentIntent(contentIntent);
-		
-		//use big style if supported 
+
+		// use big style if supported
 		builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
-		
-		builder.setSmallIcon(R.drawable.surespot_logo);
-		builder.setContentTitle(title);		
+
+		builder.setSmallIcon(iconResId);
+		builder.setContentTitle(title);
 		builder.setContentText(message);
-				
-		//mBuilder.setContent(contentView);
 		Notification notification = builder.build();
-		
-		//this seems to trick android into displaying our custom view when it's not using the "big style"
+
+		// this seems to trick android into displaying our custom view when it's not using the "big style"
 		notification.contentView = contentView;
-		
+
 		return notification;
 	}
-	
+
 	public static void showProgressAnimation(Context context, View view) {
 		Animation a = AnimationUtils.loadAnimation(context, R.anim.progress_anim);
 		a.setDuration(1000);

@@ -51,10 +51,10 @@ public class CredentialCachingService extends Service {
 		// so make the text meaningful at least
 		Notification notification = null;
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			PendingIntent contentIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.BACKGROUND_CACHE_NOTIFICATION, new Intent(this,
 					MainActivity.class), 0);
-			notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(),
+			notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
 					getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
 		}
 		else {
