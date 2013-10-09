@@ -369,7 +369,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -513,42 +513,46 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			public boolean onTouch(View v, MotionEvent event) {
 
 				if (event.getAction() == MotionEvent.ACTION_UP) {
-					Friend friend = mCurrentFriend;
-					if (friend != null) {
-						// if they're deleted do nothing
-						if (mChatController.isFriendDeleted(friend.getName())) {
-							return false;
-						}
+					if (VoiceController.isRecording()) {
 
-						if (mEtMessage.getText().toString().length() == 0) {
-
-							int width = mSendButton.getWidth();
-
-							// if user let go of send button out of send button + width (height) bounds, don't send the recording
-							Rect rect = new Rect(mSendButton.getLeft() - width, mSendButton.getTop() - width, mSendButton.getRight(), mSendButton.getBottom()
-									+ width);
-
-							boolean send = true;
-							if (!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())) {
-
-								send = false;
-
-								Utils.makeToast(MainActivity.this, "recording cancelled");
+						Friend friend = mCurrentFriend;
+						if (friend != null) {
+							// if they're deleted do nothing
+							if (mChatController.isFriendDeleted(friend.getName())) {
+								return false;
 							}
 
-							final boolean finalSend = send;
+							if (mEtMessage.getText().toString().length() == 0) {
 
-							SurespotLog.v(TAG, "voice record up");
+								int width = mSendButton.getWidth();
 
-							// truncates without the delay for some reason
-							mSendButton.post(new Runnable() {
+								// if user let go of send button out of send button + width (height) bounds, don't send the recording
+								Rect rect = new Rect(mSendButton.getLeft() - width, mSendButton.getTop() - width, mSendButton.getRight(), mSendButton
+										.getBottom() + width);
 
-								@Override
-								public void run() {
-									VoiceController.stopRecording(MainActivity.this, finalSend);
+								boolean send = true;
+								if (!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())) {
+
+									send = false;
+
+									Utils.makeToast(MainActivity.this, "recording cancelled");
 
 								}
-							});
+
+								final boolean finalSend = send;
+
+								SurespotLog.v(TAG, "voice record up");
+
+								// truncates without the delay for some reason
+								mSendButton.post(new Runnable() {
+
+									@Override
+									public void run() {
+										VoiceController.stopRecording(MainActivity.this, finalSend);
+
+									}
+								});
+							}
 						}
 					}
 				}
@@ -695,7 +699,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		boolean userWasCreated = intent.getBooleanExtra("userWasCreated", false);
 		intent.removeExtra("userWasCreated");
-		
+
 		boolean mSet = false;
 		String name = null;
 
@@ -753,7 +757,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		// if this is the first time the app has been run, or they just created a user, show the help screen
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean helpShown = sp.getBoolean("helpShownAgain", false);
-		
+
 		if (!helpShown || userWasCreated) {
 			Editor editor = sp.edit();
 			editor.remove("helpShown");

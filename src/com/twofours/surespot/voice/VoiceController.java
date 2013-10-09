@@ -38,10 +38,9 @@ public class VoiceController {
 
 	private static String mFileName = null;
 	private static String mUsername = null;
-	
+
 	public static final int MAX_TIME = 10000;
 	public static final int INTERVAL = 50;
-	
 
 	private static RehearsalAudioRecorder mRecorder = null;
 
@@ -280,7 +279,7 @@ public class VoiceController {
 					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
 					final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
 					new AACToM4A().convert(activity, outFile, m4aFile);
-		
+
 					// delete files
 					new File(outFile).delete();
 					new File(mFileName).delete();
@@ -546,6 +545,10 @@ public class VoiceController {
 	public static void pause() {
 		stopPlaying();
 
+	}
+
+	public static synchronized boolean isRecording() {
+		return mState == State.RECORDING;
 	}
 
 }
