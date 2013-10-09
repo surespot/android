@@ -64,6 +64,7 @@ public class SignupActivity extends SherlockActivity {
 	private NetworkController mNetworkController;
 	private View mUsernameValid;
 	private View mUsernameInvalid;
+	private Menu mMenuOverflow;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -467,13 +468,16 @@ public class SignupActivity extends SherlockActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_signup, menu);
+		mMenuOverflow = menu;
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		super.onOptionsItemSelected(item);
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
@@ -487,9 +491,20 @@ public class SignupActivity extends SherlockActivity {
 			startActivity(abIntent);
 			return true;
 		default:
-			return super.onOptionsItemSelected(item);
+			return false;
 		}
 	}
+	
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_MENU) {
+			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+			return true;
+		}
+
+		return super.onKeyUp(keyCode, event);
+	}
+
 
 	private void launchImport() {
 		Intent intent = new Intent(this, ImportIdentityActivity.class);
