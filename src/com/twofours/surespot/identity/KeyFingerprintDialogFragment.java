@@ -19,7 +19,7 @@ import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.ui.ExpandableHeightListView;
@@ -100,7 +100,8 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 					return null;
 				}
 				
-				String latestVersion = SurespotApplication.getCachingService().getLatestVersion(mUsername);
+				//get latest version from server							
+				String latestVersion = MainActivity.getNetworkController().getKeyVersionSync(mUsername);
 				int maxVersion = Integer.parseInt(latestVersion);
 				List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
 				if (maxVersion > 0) {
