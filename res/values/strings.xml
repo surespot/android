@@ -57,7 +57,7 @@
     <string name="key_management">generate new key pairs...</string>
     <string name="regenerate_keys">generate new key pairs</string>
     <string name="could_not_create_new_keys">could not create new key pairs</string>
-    <string name="keys_created">new keys successfully created, please backup the identity (again)</string>
+    <string name="keys_created">new keys successfully created, please backup the identity</string>
     <string name="close_tab">close tab</string>
     <string name="action_settings">Settings</string>
     <string name="no_messages">no messages</string>
@@ -188,7 +188,7 @@
     <string name="change_password_actionbar_right">change</string>
     <string name="change_password_progress">changing password</string>
     <string name="could_not_change_password">could not change password</string>
-    <string name="password_changed">password changed</string>
+    <string name="password_changed">password changed, please backup the identity</string>
     <string name="delete">delete</string>
     <string name="delete_identity_progress">deleting identity</string>
     <string name="could_not_delete_identity">could not delete identity</string>

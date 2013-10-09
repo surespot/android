@@ -3,6 +3,7 @@ package com.twofours.surespot.identity;
 import java.security.PrivateKey;
 import java.util.List;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -170,6 +172,8 @@ public class ChangePasswordActivity extends SherlockActivity {
 											resetFields();
 											mMpd.decrProgress();
 											Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed));
+											Intent intent = new Intent(ChangePasswordActivity.this, ExportIdentityActivity.class);
+											ChangePasswordActivity.this.startActivity(intent);											
 											finish();
 										};
 

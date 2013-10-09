@@ -7,6 +7,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -181,6 +183,8 @@ public class ManageKeysActivity extends SherlockActivity {
 													result.keyPairs[0], result.keyPairs[1]);
 											mMpd.decrProgress();
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));
+											Intent intent = new Intent(ManageKeysActivity.this, ExportIdentityActivity.class);
+											ManageKeysActivity.this.startActivity(intent);
 										};
 
 										@Override
