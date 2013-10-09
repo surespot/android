@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -18,7 +19,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
 
 			@Override
@@ -40,7 +40,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			prefMgr.findPreference("pref_notifications_sound").setOnPreferenceClickListener(onPreferenceClickListener);
 			prefMgr.findPreference("pref_notifications_vibration").setOnPreferenceClickListener(onPreferenceClickListener);
 			prefMgr.findPreference("pref_notifications_led").setOnPreferenceClickListener(onPreferenceClickListener);
-			
 
 			prefMgr.findPreference("pref_help").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
@@ -49,7 +48,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					UIUtils.showHelpDialog(SettingsActivity.this, false);
 					return true;
 				}
-			});			
+			});
 		}
 	}
 
@@ -63,6 +62,18 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
 
+	//work around https://code.google.com/p/android/issues/detail?id=4611
+	@SuppressWarnings("deprecation")
+	@Override
+	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+		super.onPreferenceTreeClick(preferenceScreen, preference);
+		if (preference != null)
+			if (preference instanceof PreferenceScreen)
+				if (((PreferenceScreen) preference).getDialog() != null)
+					((PreferenceScreen) preference).getDialog().getWindow().getDecorView()
+							.setBackgroundDrawable(this.getWindow().getDecorView().getBackground().getConstantState().newDrawable());
+		return false;
 	}
 };
