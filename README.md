@@ -29,7 +29,12 @@ If you would like to contribute/improve a translation:
 
 THANK YOU TO OUR CONTRIBUTORS:
 
-Jean Schmitt for the German translation
+Jean Schmitt, repat, mrbiber, for the German translations
+Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher for the Spanish translations
+sharkyiwc for the French translations
+lgasp, dickhead, Mauriziopz for the Italian translations
+
+
 
 License
 =========
@@ -80,5 +85,7 @@ Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) This pro
 * [httpclientandroidlib](https://code.google.com/p/httpclientandroidlib/) - Apache License 2.0
 * [ZXING](https://code.google.com/p/zxing) - Apache License 2.0
 * [PhantomOpenEmoji](https://github.com/Genshin/PhantomOpenEmoji) - Emoji by Genshin Souzou K.K. Phantom Creation Inc
+* [android-acc-enc](https://github.com/timsu/android-aac-enc) - Apache License 2.0
+* [rehearsal assistant](http://sourceforge.net/projects/rehearsalassist/) - GPLv2 
 
 
