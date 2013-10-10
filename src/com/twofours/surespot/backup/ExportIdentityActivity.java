@@ -71,6 +71,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_export_identity);
+		
+		
 
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.backup), true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
@@ -92,7 +94,11 @@ public class ExportIdentityActivity extends SherlockActivity {
 		}
 
 		mSpinner.setAdapter(adapter);
-		mSpinner.setSelection(adapter.getPosition(IdentityController.getLoggedInUser()));
+		
+		String backupUsername = getIntent().getStringExtra("backupUsername");
+		getIntent().removeExtra("backupUsername");
+		
+		mSpinner.setSelection(adapter.getPosition(backupUsername == null ? IdentityController.getLoggedInUser() : backupUsername));
 		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override

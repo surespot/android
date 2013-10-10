@@ -173,6 +173,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 											mMpd.decrProgress();
 											Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed));
 											Intent intent = new Intent(ChangePasswordActivity.this, ExportIdentityActivity.class);
+											intent.putExtra("backupUsername", username);
 											ChangePasswordActivity.this.startActivity(intent);											
 											finish();
 										};

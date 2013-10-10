@@ -184,6 +184,7 @@ public class ManageKeysActivity extends SherlockActivity {
 											mMpd.decrProgress();
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));
 											Intent intent = new Intent(ManageKeysActivity.this, ExportIdentityActivity.class);
+											intent.putExtra("backupUsername", username);
 											ManageKeysActivity.this.startActivity(intent);
 										};
 
