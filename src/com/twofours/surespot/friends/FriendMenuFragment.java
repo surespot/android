@@ -9,7 +9,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
@@ -72,19 +71,9 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 			public void onClick(final DialogInterface dialogi, int which) {
 				if (mFriend == null)
 					return;
-
-				AlertDialog dialog = (AlertDialog) FriendMenuFragment.this.getDialog();
-				ListView listview = dialog.getListView();
-
-				if (listview == null || !listview.getChildAt(which).isEnabled()) {
-					return;
-				}
-
+					
 				String itemText = mItems.get(which);
-
 				mSelectionCallback.handleResponse(dialogi, mFriend, itemText);
-				// dialogi.cancel();
-
 			}
 		});
 
