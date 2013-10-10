@@ -20,12 +20,14 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.text.Html;
 import android.text.InputFilter;
@@ -418,6 +420,14 @@ public class UIUtils {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+
+				//when they click ok we won't nag them again
+				SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(activity);
+
+				Editor editor = sp.edit();
+				editor.putBoolean("helpShownAgain", true);
+				editor.commit();
+				
 				// if it's first time show the backup activity
 				if (firstTime) {
 					new AsyncTask<Void, Void, Void>() {
@@ -429,6 +439,8 @@ public class UIUtils {
 						}
 					}.execute();
 				}
+				
+
 			}
 		});
 

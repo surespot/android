@@ -760,8 +760,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		if (!helpShown || userWasCreated) {
 			Editor editor = sp.edit();
-			editor.remove("helpShown");
-			editor.putBoolean("helpShownAgain", true);
+			editor.remove("helpShown");			
 			editor.commit();
 			UIUtils.showHelpDialog(this, true);
 		}
