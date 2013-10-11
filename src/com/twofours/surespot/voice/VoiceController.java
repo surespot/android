@@ -39,6 +39,7 @@ public class VoiceController {
 	private static String mFileName = null;
 	private static String mUsername = null;
 
+	public static final int SEND_THRESHOLD = 5000;
 	public static final int MAX_TIME = 10000;
 	public static final int INTERVAL = 50;
 
@@ -261,61 +262,69 @@ public class VoiceController {
 	}
 
 	private synchronized static void sendVoiceMessage(final Activity activity) {
-		new AsyncTask<Void, Void, String>() {
+		int maxVolume = mEnvelopeView.getMaxVolume();
+		SurespotLog.v(TAG, "max recorded volume: %d", maxVolume);
+		if (maxVolume < SEND_THRESHOLD) {
+			Utils.makeToast(activity, activity.getString(R.string.no_audio_detected));
+		}
+		else {
+			new AsyncTask<Void, Void, String>() {
 
-			@Override
-			protected String doInBackground(Void... params) {
-				// convert to AAC
-				FileInputStream fis;
-				try {
-					fis = new FileInputStream(mFileName);
+				@Override
+				protected String doInBackground(Void... params) {
+					// convert to AAC
+					FileInputStream fis;
+					try {
+						fis = new FileInputStream(mFileName);
 
-					String outFile = File.createTempFile("record", ".aac").getAbsolutePath();
-					mEncoder.init(16000, 1, mSampleRate, 16, outFile);
+						String outFile = File.createTempFile("record", ".aac").getAbsolutePath();
+						mEncoder.init(16000, 1, mSampleRate, 16, outFile);
 
-					mEncoder.encode(Utils.inputStreamToBytes(fis));
-					mEncoder.uninit();
+						mEncoder.encode(Utils.inputStreamToBytes(fis));
+						mEncoder.uninit();
 
-					// convert to m4a (gingerbread can't play the AAC for some bloody reason).
-					final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
-					new AACToM4A().convert(activity, outFile, m4aFile);
+						// convert to m4a (gingerbread can't play the AAC for some bloody reason).
+						final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
+						new AACToM4A().convert(activity, outFile, m4aFile);
 
-					// delete files
-					new File(outFile).delete();
-					new File(mFileName).delete();
+						// delete files
+						new File(outFile).delete();
+						new File(mFileName).delete();
 
-					return m4aFile;
+						return m4aFile;
 
+					}
+
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "sendVoiceMessage");
+					}
+					return null;
 				}
 
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "sendVoiceMessage");
-				}
-				return null;
-			}
+				protected void onPostExecute(final String encryptedVoiceMessageFile) {
+					if (encryptedVoiceMessageFile != null) {
 
-			protected void onPostExecute(final String encryptedVoiceMessageFile) {
-				if (encryptedVoiceMessageFile != null) {
+						ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
+								Uri.fromFile(new File(encryptedVoiceMessageFile)), mUsername, new IAsyncCallback<Boolean>() {
 
-					ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
-							Uri.fromFile(new File(encryptedVoiceMessageFile)), mUsername, new IAsyncCallback<Boolean>() {
-
-								@Override
-								public void handleResponse(Boolean result) {
-									if (result) {
-										// delete m4a
-										new File(encryptedVoiceMessageFile).delete();
+									@Override
+									public void handleResponse(Boolean result) {
+										if (result) {
+											// delete m4a
+											new File(encryptedVoiceMessageFile).delete();
+										}
 									}
-								}
-							});
+								});
 
-				}
-				else {
-					Utils.makeToast(activity, "error sending message");
-				}
+					}
+					else {
+						Utils.makeToast(activity, "error sending message");
+					}
 
-			};
-		}.execute();
+				};
+
+			}.execute();
+		}
 
 	}
 

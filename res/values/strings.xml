@@ -331,4 +331,5 @@
     <string name="voice_help_3">Touch on a voice message to play, touch again to stop.</string>
     <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
     <string name="close">close</string>
+    <string name="no_audio_detected">no audio detected - not sending voice message</string>
 </resources>

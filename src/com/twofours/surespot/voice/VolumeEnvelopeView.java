@@ -13,6 +13,7 @@ import com.twofours.surespot.R;
 
 public class VolumeEnvelopeView extends View {
 	private static final String TAG = null;
+	private static int mMaxVolume;
 
 	/**
 	 * Constructor. This version is only needed if you will be instantiating the object manually (not from a layout XML file).
@@ -70,6 +71,9 @@ public class VolumeEnvelopeView extends View {
 
 		if (value != 0) {
 			mEnvelope.add(value);
+			if (value > mMaxVolume) {
+				mMaxVolume = value;
+			}
 		}
 		else
 			if (!mEnvelope.isEmpty())
@@ -83,6 +87,7 @@ public class VolumeEnvelopeView extends View {
 	}
 
 	public void clearVolume() {
+		mMaxVolume = 0;
 		mEnvelope.clear();
 		invalidate();
 	}
@@ -108,4 +113,8 @@ public class VolumeEnvelopeView extends View {
 	private Paint mEnvelopePaint;
 	private LinkedList<Integer> mEnvelope = new LinkedList<Integer>();
 	int mSize = 0;
+	
+	public int getMaxVolume() {
+		return mMaxVolume;
+	}
 }
