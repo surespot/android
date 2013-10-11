@@ -345,12 +345,11 @@ public class VoiceController {
 
 		if (!mPlaying && differentMessage) {
 			mPlaying = true;
-			mSeekBar = seekBar;
 			mMessage = message;
+			mSeekBar = seekBar;			
 			mSeekBar.setMax(100);
 
 			if (mSeekBarThread == null) {
-
 				mSeekBarThread = new SeekBarThread();
 			}
 
@@ -372,7 +371,7 @@ public class VoiceController {
 					@Override
 					public void onPrepared(MediaPlayer mp) {
 						mPlayer.start();
-						updatePlayControls();
+						updatePlayControls();						
 						mDuration = mPlayer.getDuration();
 						mPlayer.setOnPreparedListener(null);
 					}
@@ -389,6 +388,7 @@ public class VoiceController {
 				return;
 			}
 
+			mMessage.setVoicePlayed(true);
 			new Thread(mSeekBarThread).start();
 			mPlayer.setOnCompletionListener(new OnCompletionListener() {
 
@@ -398,9 +398,7 @@ public class VoiceController {
 					playCompleted();
 				}
 			});
-
 		}
-
 	}
 
 	private static void stopPlaying() {
@@ -418,34 +416,48 @@ public class VoiceController {
 
 	public static synchronized void attach(final SeekBar seekBar) {
 		if (isCurrentMessage(seekBar)) {
-			mSeekBar = seekBar;
-			updatePlayControls();
+			mSeekBar = seekBar;			
 		}
 		else {
-			setProgress(seekBar, 0);
-			updatePlayControls();
+			setProgress(seekBar, 0);			
 		}
+		
+		updatePlayControls();
 	}
 
 	private synchronized static void updatePlayControls() {
 
+		ImageView voicePlayed = null;
 		ImageView voicePlay = null;
 		ImageView voiceStop = null;
 
 		if (mSeekBar != null) {
 			voicePlay = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlay);
+			voicePlayed = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlayed);
 			voiceStop = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voiceStop);
 		}
 
 		if (voicePlay != null && voiceStop != null) {
 			if (isCurrentMessage()) {
-
+				voicePlayed.setVisibility(View.GONE);
 				voicePlay.setVisibility(View.GONE);
 				voiceStop.setVisibility(View.VISIBLE);
 			}
 			else {
-				voicePlay.setVisibility(View.VISIBLE);
-				voiceStop.setVisibility(View.GONE);
+				SurespotMessage message = getSeekbarMessage(mSeekBar);
+				if (message != null) {
+					if (message.isVoicePlayed()) {
+						SurespotLog.v(TAG, "updatePlayControls setting played to visible");
+						voicePlayed.setVisibility(View.VISIBLE);
+						voicePlay.setVisibility(View.GONE);
+					}
+					else {
+						SurespotLog.v(TAG, "updatePlayControls setting played to gone");
+						voicePlayed.setVisibility(View.GONE);
+						voicePlay.setVisibility(View.VISIBLE);
+					}
+					voiceStop.setVisibility(View.GONE);
+				}								
 			}
 		}
 	}
@@ -535,20 +547,23 @@ public class VoiceController {
 			return false;
 		}
 
-		// if the message is attached to the seekbar
-		WeakReference<SurespotMessage> ref = (WeakReference<SurespotMessage>) seekBar.getTag(R.id.tagMessage);
-
-		SurespotMessage seekBarMessage = null;
-		if (ref != null) {
-			seekBarMessage = ref.get();
-		}
-
+		SurespotMessage seekBarMessage = getSeekbarMessage(seekBar);
 		if (seekBarMessage != null && seekBarMessage.equals(mMessage) && mPlaying) { //
 			return true;
 		}
 		else {
 			return false;
 		}
+	}
+
+	private static SurespotMessage getSeekbarMessage(SeekBar seekBar) {
+		WeakReference<SurespotMessage> ref = (WeakReference<SurespotMessage>) seekBar.getTag(R.id.tagMessage);
+		if (ref != null) {
+			return ref.get();
+		}
+
+		return null;
+
 	}
 
 	public static void pause() {

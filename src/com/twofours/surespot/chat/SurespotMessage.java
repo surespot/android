@@ -37,6 +37,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mLoading;
 	private boolean mGcm;
 	private boolean mPlayVoice = false;
+	private boolean mVoicePlayed = false;
 	
 	
 
@@ -90,6 +91,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public boolean isPlayVoice() {
 		return mPlayVoice;
+	}
+
+	public boolean isVoicePlayed() {
+		return mVoicePlayed;
+	}
+
+	public void setVoicePlayed(boolean voicePlayed) {
+		mVoicePlayed = voicePlayed;
 	}
 
 	public void setPlayMedia(boolean play) {
@@ -167,6 +176,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		chatMessage.setToVersion(jsonMessage.getString("toVersion"));
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
+		chatMessage.setVoicePlayed(jsonMessage.optBoolean("voicePlayed", false));
 		
 		chatMessage.setGcm(jsonMessage.optBoolean("gcm", false));
 
@@ -212,6 +222,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("mimeType", this.getMimeType());
 			message.put("shareable", this.isShareable());
 			message.put("gcm", this.isGcm());
+			message.put("voicePlayed", this.isVoicePlayed());
 
 			if (this.getErrorStatus() > 0) {
 				message.put("errorStatus", this.getErrorStatus());
@@ -416,7 +427,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\terrorStatus: " + getErrorStatus() + "\n");
 		sb.append("\tresendId: " + getResendId() + "\n");
 		sb.append("\tdatetime: " + getDateTime() + "\n");
-		sb.append("\tgcm: " + isGcm() + "\n");
+		sb.append("\tgcm: " + isGcm() + "\n");		
+		sb.append("\tvoicePlayed: " + isVoicePlayed() + "\n");
 
 		return sb.toString();
 	}

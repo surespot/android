@@ -117,7 +117,7 @@
             android:visibility="gone" >
 
             <ImageView
-                android:id="@+id/voicePlay"
+                android:id="@+id/voicePlayed"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:adjustViewBounds="false"

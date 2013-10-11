@@ -107,9 +107,17 @@
             android:layout_marginRight="2sp"
             android:orientation="horizontal"
             android:visibility="gone" >
-
             <ImageView
                 android:id="@+id/voicePlay"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="false"                
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_media_played" />
+            
+
+            <ImageView
+                android:id="@+id/voicePlayed"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:adjustViewBounds="false"

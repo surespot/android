@@ -261,6 +261,7 @@ public class ChatAdapter extends BaseAdapter {
 				break;
 			case TYPE_THEM:
 				convertView = inflater.inflate(R.layout.message_list_item_them, parent, false);
+				chatMessageViewHolder.voicePlay = (ImageView) convertView.findViewById(R.id.voicePlay);
 				break;
 			}
 
@@ -273,8 +274,8 @@ public class ChatAdapter extends BaseAdapter {
 			chatMessageViewHolder.ivShareable = (ImageView) convertView.findViewById(R.id.messageImageShareable);
 			chatMessageViewHolder.messageSize = (TextView) convertView.findViewById(R.id.messageSize);
 			chatMessageViewHolder.voiceSeekBar = (SeekBar) convertView.findViewById(R.id.seekBarVoice);
-			chatMessageViewHolder.voiceSeekBar.setEnabled(false);			
-			chatMessageViewHolder.voicePlay = (ImageView) convertView.findViewById(R.id.voicePlay);
+			chatMessageViewHolder.voiceSeekBar.setEnabled(false);
+			chatMessageViewHolder.voicePlayed = (ImageView) convertView.findViewById(R.id.voicePlayed);
 			chatMessageViewHolder.voiceStop = (ImageView) convertView.findViewById(R.id.voiceStop);
 
 			if (mDebugMode) {
@@ -351,6 +352,7 @@ public class ChatAdapter extends BaseAdapter {
 				}
 
 				if (item.isShareable()) {
+
 					chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
 					chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
 				}
@@ -363,6 +365,20 @@ public class ChatAdapter extends BaseAdapter {
 				if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					chatMessageViewHolder.imageView.setVisibility(View.GONE);
 					chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
+					// //if it's ours we don't care if it's been played or not
+					if (type == TYPE_THEM) {
+
+						if (item.isVoicePlayed()) {
+							SurespotLog.v(TAG, "chatAdapter setting played to visible");
+							chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
+							chatMessageViewHolder.voicePlay.setVisibility(View.GONE);
+						}
+						else {
+							SurespotLog.v(TAG, "chatAdapter setting played to gone");
+							chatMessageViewHolder.voicePlayed.setVisibility(View.GONE);
+							chatMessageViewHolder.voicePlay.setVisibility(View.VISIBLE);
+						}
+					}
 					chatMessageViewHolder.tvText.clearAnimation();
 					chatMessageViewHolder.tvText.setVisibility(View.GONE);
 					chatMessageViewHolder.tvText.setText("");
@@ -418,14 +434,14 @@ public class ChatAdapter extends BaseAdapter {
 		public TextView messageSize;
 		public int type;
 		public View voiceView;
-		public SeekBar voiceSeekBar;		
+		public SeekBar voiceSeekBar;
+		public ImageView voicePlayed;
 		public ImageView voicePlay;
 		public ImageView voiceStop;
 
 	}
 
-	public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
-			throws SurespotMessageSequenceException {
+	public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) throws SurespotMessageSequenceException {
 		boolean added = false;
 		added = addOrUpdateMessage(message, checkSequence, sort);
 		if (notify) {
