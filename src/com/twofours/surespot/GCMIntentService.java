@@ -87,7 +87,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				};
 			}
 			catch (IOException e) {
-				// TODO tell user shit is fucked				
+				// TODO tell user shit is fucked
 				return;
 			}
 
@@ -131,8 +131,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String type = intent.getStringExtra("type");
 		String from = intent.getStringExtra("sentfrom");
 
-		if (type.equals("message")) {			
-			// make sure to is someone on this phone 
+		if (type.equals("message")) {
+			// make sure to is someone on this phone
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
 			}
@@ -162,13 +162,29 @@ public class GCMIntentService extends GCMBaseIntentService {
 			// add the message if it came in the GCM
 			String message = intent.getStringExtra("message");
 			if (message != null) {
-				ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
+
 				SurespotMessage sm = SurespotMessage.toSurespotMessage(message);
 				sm.setGcm(true);
 				if (sm != null) {
-					messages.add(sm);
+					//see if we can add it to existing chat controller
+					ChatController chatController = MainActivity.getChatController();
+					boolean added = false;
+					if (chatController != null) {
+						if (chatController.addMessageExternal(sm)) {
+							added = true;
+						}
+					}
+
+					//if not add it directly
+					if (!added) {
+						ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
+						if (!messages.contains(sm)) {
+							messages.add(sm);
+							SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
+						}
+					}
 				}
-				SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
+				
 			}
 
 			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
@@ -177,22 +193,22 @@ public class GCMIntentService extends GCMBaseIntentService {
 		}
 
 		if (type.equals("invite")) {
-			// make sure to is someone on this phone 
+			// make sure to is someone on this phone
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
 			}
-			
+
 			generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			return;
 		}
 
 		if (type.equals("inviteResponse")) {
-			// make sure to is someone on this phone 
+			// make sure to is someone on this phone
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
 			}
-			
+
 			generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
 					context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 			return;
@@ -267,7 +283,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	private void generateSystemNotification(Context context, String title, String message, String tag, int id) {
 
-
 		// need to use same builder for only alert once to work:
 		// http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
 		mBuilder.setAutoCancel(true).setOnlyAlertOnce(true);
@@ -279,18 +294,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 		defaults |= Notification.DEFAULT_VIBRATE;
 
 		mBuilder.setDefaults(defaults);
-		
-		PendingIntent contentIntent = PendingIntent.getActivity(
-			    context,
-			    (int) new Date().getTime(),
-			    new Intent(),
-			    PendingIntent.FLAG_CANCEL_CURRENT);
-		
+
+		PendingIntent contentIntent = PendingIntent.getActivity(context, (int) new Date().getTime(), new Intent(), PendingIntent.FLAG_CANCEL_CURRENT);
+
 		Notification notification = UIUtils.generateNotification(mBuilder, contentIntent, getPackageName(), title, message);
-		
-			
+
 		mNotificationManager.notify(tag, id, notification);
 	}
-	
-	
+
 }

@@ -39,6 +39,8 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
@@ -2373,14 +2375,46 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
-	
+
 	public SurespotMessage getLiveMessage(SurespotMessage message) {
 		String otherUser = message.getOtherUser();
 		ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 		if (chatAdapter != null) {
 			return chatAdapter.getMessageByIv(message.getIv());
 		}
-		
+
 		return null;
+	}
+
+	// called from GCM service
+	public boolean addMessageExternal(final SurespotMessage message) {
+		// might not be same user so check that to is the currently logged in user
+		boolean sameUser = message.getTo().equals(IdentityController.getLoggedInUser());
+		if (!sameUser) {
+			return false;
+		}
+		else {
+			final ChatAdapter chatAdapter = mChatAdapters.get(message.getFrom());
+			if (chatAdapter == null) {
+				return false;
+			}
+			else {
+
+				Handler handler = new Handler(Looper.getMainLooper());
+				handler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							chatAdapter.addOrUpdateMessage(message, false, true, true);
+						}
+						catch (SurespotMessageSequenceException e) {
+						}
+					}
+				});
+
+				return true;
+			}
+		}
 	}
 }
