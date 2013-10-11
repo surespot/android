@@ -1668,6 +1668,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mQRButton.setVisibility(View.VISIBLE);
 			mEtInvite.requestFocus();
+			
+			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
 			SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
 			if (mFriendHasBeenSet) {
@@ -1685,6 +1687,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		}
 		else {
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 			if (friend.isDeleted()) {
 
