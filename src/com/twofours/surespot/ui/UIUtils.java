@@ -421,13 +421,13 @@ public class UIUtils {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 
-				//when they click ok we won't nag them again
+				// when they click ok we won't nag them again
 				SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(activity);
 
 				Editor editor = sp.edit();
 				editor.putBoolean("helpShownAgain", true);
 				editor.commit();
-				
+
 				// if it's first time show the backup activity
 				if (firstTime) {
 					new AsyncTask<Void, Void, Void>() {
@@ -439,7 +439,6 @@ public class UIUtils {
 						}
 					}.execute();
 				}
-				
 
 			}
 		});
@@ -541,16 +540,18 @@ public class UIUtils {
 
 		builder.setContentIntent(contentIntent);
 
-		// use big style if supported
-		builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
-
 		builder.setSmallIcon(iconResId);
 		builder.setContentTitle(title);
 		builder.setContentText(message);
 		Notification notification = builder.build();
 
-		// this seems to trick android into displaying our custom view when it's not using the "big style"
-		notification.contentView = contentView;
+		// use big style if supported
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+			notification.contentView = contentView;
+		}
+		else {
+			builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
+		}
 
 		return notification;
 	}
