@@ -760,13 +760,13 @@ public class ChatController {
 			// add the remote cache entry for the new url
 
 			String localUri = localMessage.getData();
-
-			FileInputStream fis;
+			String remoteUri = message.getData();
+			
+			FileInputStream fis;			
 			try {
 				fis = new FileInputStream(new File(new URI(localUri)));
 				byte[] imageData = Utils.inputStreamToBytes(fis);
-
-				String remoteUri = message.getData();
+				
 				HeapResource resource = new HeapResource(imageData);
 				Date date = new Date();
 				String sDate = DateUtils.formatDate(date);
@@ -788,8 +788,6 @@ public class ChatController {
 					MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
 				}
 
-				// update message to point to real location
-				localMessage.setData(remoteUri);
 
 			}
 			catch (FileNotFoundException e1) {
@@ -813,6 +811,10 @@ public class ChatController {
 			catch (URISyntaxException e) {
 				SurespotLog.w(TAG, e, "handleMessage");
 			}
+			
+			// update message to point to real location
+			localMessage.setData(remoteUri);
+
 
 		}
 	}
