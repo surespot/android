@@ -1563,7 +1563,7 @@ public class ChatController {
 		}
 	}
 
-	private synchronized void saveMessages(String username) {
+	public synchronized void saveMessages(String username) {
 		// save last 30? messages
 		SurespotLog.v(TAG, "saveMessages, username: %s", username);
 		ChatAdapter chatAdapter = mChatAdapters.get(username);

@@ -171,12 +171,16 @@ public class GCMIntentService extends GCMBaseIntentService {
 					boolean added = false;
 					if (chatController != null) {
 						if (chatController.addMessageExternal(sm)) {
+							SurespotLog.v(TAG, "adding gcm message to controller");
+							chatController.saveMessages(from);
 							added = true;
 						}
 					}
 
 					//if not add it directly
 					if (!added) {
+						SurespotLog.v(TAG, "adding gcm message directly");
+						
 						ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
 						if (!messages.contains(sm)) {
 							messages.add(sm);

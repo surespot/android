@@ -166,10 +166,10 @@ public class ChatUtils {
 						final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
 								encryptionOutputStream);
 
-						// add a message immediately						
+						// add a message immediately
 						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, null);
 						message.setId(null);
-						
+
 						activity.runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
@@ -177,8 +177,6 @@ public class ChatUtils {
 								chatController.addMessage(activity, message);
 							}
 						});
-
-						
 
 						if (scale) {
 							// use iv as key
@@ -214,7 +212,7 @@ public class ChatUtils {
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
 							message.setData(localImageUri);
 
-							//update message with image
+							// update message with image
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
@@ -283,15 +281,13 @@ public class ChatUtils {
 														chatAdapter.notifyDataSetChanged();
 													}
 													break;
-												default: 
+												default:
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
-												
-												
 
 												callback.handleResponse(success);
 											}
@@ -465,17 +461,15 @@ public class ChatUtils {
 														chatAdapter.notifyDataSetChanged();
 													}
 													break;
-												default: 
+												default:
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
-												
-												
 
-												callback.handleResponse(success);											
+												callback.handleResponse(success);
 											}
 										});
 
@@ -500,7 +494,8 @@ public class ChatUtils {
 
 	}
 
-	public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message, final IAsyncCallback<Boolean> callback) {
+	public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message,
+			final IAsyncCallback<Boolean> callback) {
 
 		// upload encrypted file to server
 		FileInputStream uploadStream = null;
@@ -530,11 +525,11 @@ public class ChatUtils {
 
 		networkController.postFileStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
 				message.getMimeType(), new IAsyncCallback<Integer>() {
-					
+
 					@Override
 					public void handleResponse(Integer statusCode) {
 						SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-						callback.handleResponse(statusCode == 200);						
+						callback.handleResponse(statusCode == 200);
 					}
 				});
 	}
@@ -707,13 +702,14 @@ public class ChatUtils {
 	}
 
 	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
-
+		//avoid concurrent modification issues
+		SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
 		JSONArray jsonMessages = new JSONArray();
-		Iterator<SurespotMessage> iterator = messages.iterator();
-		while (iterator.hasNext()) {
-			jsonMessages.put(iterator.next().toJSONObject());
 
+		for (SurespotMessage message : messageArray) {
+			jsonMessages.put(message.toJSONObject());
 		}
+
 		return jsonMessages;
 
 	}
