@@ -1963,8 +1963,8 @@ public class ChatController {
 	void addMessage(Activity activity, SurespotMessage message) {
 		if (mChatAdapters != null) {
 			ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
-			try {
 
+			try {
 				chatAdapter.addOrUpdateMessage(message, false, true, true);
 				scrollToEnd(message.getTo());
 				saveState(message.getTo());
@@ -1974,7 +1974,7 @@ public class ChatController {
 			}
 		}
 		else {
-			Utils.makeToast(activity, activity.getString(R.string.could_not_send_message));
+			Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
 		}
 	}
 

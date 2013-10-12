@@ -166,18 +166,6 @@ public class ChatUtils {
 						final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
 								encryptionOutputStream);
 
-						// add a message immediately
-						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, null);
-						message.setId(null);
-
-						activity.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								SurespotLog.v(TAG, "adding local image message %s", message);
-								chatController.addMessage(activity, message);
-							}
-						});
-
 						if (scale) {
 							// use iv as key
 
@@ -209,16 +197,16 @@ public class ChatUtils {
 
 						if (bitmap != null) {
 							SurespotLog.v(TAG, "adding bitmap to cache: %s", localImageUri);
+							
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
-							message.setData(localImageUri);
+							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
+							message.setId(null);
 
-							// update message with image
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									SurespotLog.v(TAG, "updating local image message %s", message);
+									SurespotLog.v(TAG, "adding local image message %s", message);
 									chatController.addMessage(activity, message);
-
 								}
 							});
 						}
@@ -418,7 +406,6 @@ public class ChatUtils {
 										public void run() {
 											SurespotLog.v(TAG, "adding local voice message %s", message);
 											chatController.addMessage(activity, message);
-
 										}
 									});
 
@@ -702,7 +689,7 @@ public class ChatUtils {
 	}
 
 	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
-		//avoid concurrent modification issues
+		// avoid concurrent modification issues
 		SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
 		JSONArray jsonMessages = new JSONArray();
 
