@@ -452,14 +452,27 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public void onClick(View v) {
 				if (mChatController != null) {
+
 					Friend friend = mCurrentFriend;
 					if (friend != null) {
+
 						if (mEtMessage.getText().toString().length() > 0 && !mChatController.isFriendDeleted(friend.getName())) {
 							sendMessage(friend.getName());
 						}
 						else {
-							// go to friends
-							mChatController.setCurrentChat(null);
+
+							SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+							boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
+
+							// if they have purchased voice or don't want to be bugged anymore or the user they are on is deleted
+							if (mBillingController.hasVoiceMessaging() || dontAskDontTell || mChatController.isFriendDeleted(friend.getName())) {
+								// go to home
+								mChatController.setCurrentChat(null);
+							}
+							else {
+								// nag nag nag
+								showVoicePurchaseDialog(true);
+							}
 						}
 					}
 					else {
@@ -760,7 +773,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		if (!helpShown || userWasCreated) {
 			Editor editor = sp.edit();
-			editor.remove("helpShown");			
+			editor.remove("helpShown");
 			editor.commit();
 			UIUtils.showHelpDialog(this, true);
 		}
@@ -1668,7 +1681,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mQRButton.setVisibility(View.VISIBLE);
 			mEtInvite.requestFocus();
-			
+
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
 			SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
