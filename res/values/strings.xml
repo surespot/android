@@ -332,4 +332,5 @@
     <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
     <string name="close">close</string>
     <string name="no_audio_detected">no audio detected - not sending voice message</string>
+    <string name="could_not_send_message">could not send message</string>
 </resources>

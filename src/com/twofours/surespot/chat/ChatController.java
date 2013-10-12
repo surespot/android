@@ -30,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -761,12 +762,12 @@ public class ChatController {
 
 			String localUri = localMessage.getData();
 			String remoteUri = message.getData();
-			
-			FileInputStream fis;			
+
+			FileInputStream fis;
 			try {
 				fis = new FileInputStream(new File(new URI(localUri)));
 				byte[] imageData = Utils.inputStreamToBytes(fis);
-				
+
 				HeapResource resource = new HeapResource(imageData);
 				Date date = new Date();
 				String sDate = DateUtils.formatDate(date);
@@ -787,7 +788,6 @@ public class ChatController {
 				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 					MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
 				}
-
 
 			}
 			catch (FileNotFoundException e1) {
@@ -811,10 +811,9 @@ public class ChatController {
 			catch (URISyntaxException e) {
 				SurespotLog.w(TAG, e, "handleMessage");
 			}
-			
+
 			// update message to point to real location
 			localMessage.setData(remoteUri);
-
 
 		}
 	}
@@ -1961,18 +1960,21 @@ public class ChatController {
 
 	}
 
-	void addMessage(SurespotMessage message) {
-		ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
+	void addMessage(Activity activity, SurespotMessage message) {
+		if (mChatAdapters != null) {
+			ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
+			try {
 
-		try {
-
-			chatAdapter.addOrUpdateMessage(message, false, true, true);
-			scrollToEnd(message.getTo());
-			saveState(message.getTo());
+				chatAdapter.addOrUpdateMessage(message, false, true, true);
+				scrollToEnd(message.getTo());
+				saveState(message.getTo());
+			}
+			catch (Exception e) {
+				SurespotLog.v(TAG, e, "addMessage");
+			}
 		}
-		catch (SurespotMessageSequenceException e) {
-			// not gonna happen
-			SurespotLog.v(TAG, "addMessage", e);
+		else {
+			Utils.makeToast(activity, activity.getString(R.string.could_not_send_message));
 		}
 	}
 

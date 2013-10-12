@@ -166,7 +166,20 @@ public class ChatUtils {
 						final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
 								encryptionOutputStream);
 
-						// add a message immediately
+						// add a message immediately						
+						final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, null);
+						message.setId(null);
+						
+						activity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								SurespotLog.v(TAG, "adding local image message %s", message);
+								chatController.addMessage(activity, message);
+							}
+						});
+
+						
+
 						if (scale) {
 							// use iv as key
 
@@ -197,16 +210,16 @@ public class ChatUtils {
 						SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
 
 						if (bitmap != null) {
-							SurespotLog.v(TAG, "adding bitmap to caches: %s", localImageUri);
-
+							SurespotLog.v(TAG, "adding bitmap to cache: %s", localImageUri);
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
-							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
-							message.setId(null);
+							message.setData(localImageUri);
+
+							//update message with image
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									SurespotLog.v(TAG, "adding local image message %s", message);
-									chatController.addMessage(message);
+									SurespotLog.v(TAG, "updating local image message %s", message);
+									chatController.addMessage(activity, message);
 
 								}
 							});
@@ -408,7 +421,7 @@ public class ChatUtils {
 										@Override
 										public void run() {
 											SurespotLog.v(TAG, "adding local voice message %s", message);
-											chatController.addMessage(message);
+											chatController.addMessage(activity, message);
 
 										}
 									});
