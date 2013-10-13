@@ -2277,18 +2277,19 @@ public class ChatController {
 			if (position > 0) {
 
 				String name = mChatPagerAdapter.getChatName(position);
-				SurespotLog.v(TAG, "closeTab, name: %s, position: %d", name, position);
+				if (name != null) {
+					SurespotLog.v(TAG, "closeTab, name: %s, position: %d", name, position);
 
-				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
-				mFriendAdapter.setChatActive(name, false);
-				mEarliestMessage.remove(name);
-				destroyChatAdapter(name);
-				mIndicator.notifyDataSetChanged();
+					mChatPagerAdapter.removeChat(mViewPager.getId(), position);
+					mFriendAdapter.setChatActive(name, false);
+					mEarliestMessage.remove(name);
+					destroyChatAdapter(name);
+					mIndicator.notifyDataSetChanged();
 
-				position = mViewPager.getCurrentItem();
-				mCurrentChat = mChatPagerAdapter.getChatName(position);
-
-				SurespotLog.v(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
+					position = mViewPager.getCurrentItem();
+					setCurrentChat(mChatPagerAdapter.getChatName(position));
+					SurespotLog.v(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
+				}
 			}
 		}
 	}
@@ -2306,13 +2307,20 @@ public class ChatController {
 			if (position > 0) {
 
 				String name = mChatPagerAdapter.getChatName(position);
-				SurespotLog.v(TAG, "closeTab, name: %s, position: %d", name, position);
+				if (name != null) {
+					SurespotLog.v(TAG, "closeTab, name: %s, position: %d", name, position);
 
-				mChatPagerAdapter.removeChat(mViewPager.getId(), position);
-				mFriendAdapter.setChatActive(name, false);
-				mEarliestMessage.remove(name);
-				destroyChatAdapter(name);
-				mIndicator.notifyDataSetChanged();
+					mChatPagerAdapter.removeChat(mViewPager.getId(), position);
+					mFriendAdapter.setChatActive(name, false);
+					mEarliestMessage.remove(name);
+					destroyChatAdapter(name);
+
+					mIndicator.notifyDataSetChanged();
+
+					position = mViewPager.getCurrentItem();
+					setCurrentChat(mChatPagerAdapter.getChatName(position));
+					SurespotLog.v(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
+				}
 			}
 		}
 	}
