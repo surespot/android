@@ -31,11 +31,9 @@ public class FfmpegController {
 
 	private void checkBinary() throws FileNotFoundException, IOException {
 		fileBinDir = mContext.getDir("bin", 0);
-
-	//	long assetLength = mContext.getResources().openRawResourceFd(R.raw.ffmpeg).getLength();
 		File fileBin = new File(fileBinDir, "ffmpeg");
 
-		if (!fileBin.exists()) {// || fileBin.length() != assetLength) {
+		if (!fileBin.exists()) {
 			BinaryInstaller bi = new BinaryInstaller(mContext, fileBinDir);
 			bi.installFromRaw();
 		}

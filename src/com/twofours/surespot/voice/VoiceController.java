@@ -282,9 +282,7 @@ public class VoiceController {
 				ffc.convertWavToMp4(mFileName, m4aFile, new ShellCallback() {
 
 					@Override
-					public void shellOut(String shellLine) {
-						// TODO Auto-generated method stub
-
+					public void shellOut(String shellLine) {					
 					}
 
 					@Override
@@ -297,7 +295,7 @@ public class VoiceController {
 										public void handleResponse(Boolean result) {
 											if (result) {
 												// delete files
-											//	new File(m4aFile).delete();
+												new File(m4aFile).delete();
 												new File(mFileName).delete();
 											}
 										}
