@@ -166,7 +166,7 @@ public class VoiceController {
 			mRecorder.prepare();
 			mRecorder.start();
 
-				startTimer(activity);
+			startTimer(activity);
 			mState = State.RECORDING;
 			// Utils.makeToast(activity, "sample rate: " + mSampleRate);
 		}
@@ -189,7 +189,7 @@ public class VoiceController {
 			mRecorder.stop();
 			mRecorder.release();
 			mRecorder = null;
-			
+
 			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
@@ -234,16 +234,16 @@ public class VoiceController {
 	public static synchronized void startRecording(Activity context, String username) {
 		if (!mRecording) {
 			stopPlaying();
-			//disable rotation
+			// disable rotation
 			UIUtils.lockOrientation(context);
-		
+
 			mActivity = context;
 			mUsername = username;
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
 			mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
 			mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
 			startRecordingInternal(context);
-		
+
 			mRecording = true;
 		}
 
@@ -252,14 +252,14 @@ public class VoiceController {
 	public synchronized static void stopRecording(Activity activity, boolean send) {
 		if (mRecording) {
 			stopRecordingInternal();
-		
+
 			if (send) {
 				sendVoiceMessage(activity);
 			}
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.GONE);
 			mVoiceHeaderView.setVisibility(View.GONE);
-			//enable rotation
+			// enable rotation
 			activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 
 			mRecording = false;
@@ -276,13 +276,12 @@ public class VoiceController {
 
 			try {
 
-
 				final String m4aFile = File.createTempFile("record", ".mp4").getAbsolutePath();
 				FfmpegController ffc = new FfmpegController(activity);
 				ffc.convertWavToMp4(mFileName, m4aFile, new ShellCallback() {
 
 					@Override
-					public void shellOut(String shellLine) {					
+					public void shellOut(String shellLine) {
 					}
 
 					@Override
@@ -425,11 +424,14 @@ public class VoiceController {
 			voicePlayed = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlayed);
 			voiceStop = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voiceStop);
 		}
-
-		if (voicePlay != null && voiceStop != null) {
+		if (voicePlayed != null && voiceStop != null) {
 			if (isCurrentMessage()) {
+				SurespotLog.v(TAG, "updatePlayControls, currentMessage");
+
 				voicePlayed.setVisibility(View.GONE);
-				voicePlay.setVisibility(View.GONE);
+				if (voicePlay != null) {
+					voicePlay.setVisibility(View.GONE);
+				}
 				voiceStop.setVisibility(View.VISIBLE);
 			}
 			else {
@@ -438,17 +440,22 @@ public class VoiceController {
 					if (message.isVoicePlayed()) {
 						SurespotLog.v(TAG, "updatePlayControls setting played to visible");
 						voicePlayed.setVisibility(View.VISIBLE);
-						voicePlay.setVisibility(View.GONE);
+						if (voicePlay != null) {
+							voicePlay.setVisibility(View.GONE);
+						}
 					}
 					else {
 						SurespotLog.v(TAG, "updatePlayControls setting played to gone");
 						voicePlayed.setVisibility(View.GONE);
-						voicePlay.setVisibility(View.VISIBLE);
+						if (voicePlay != null) {
+							voicePlay.setVisibility(View.VISIBLE);
+						}
 					}
 					voiceStop.setVisibility(View.GONE);
 				}
 			}
 		}
+
 	}
 
 	private static void setProgress(final SeekBar seekBar, final int progress) {
