@@ -126,24 +126,29 @@ public class ChatAdapter extends BaseAdapter {
 		else {
 			// SurespotLog.v(TAG, "addMessage, updating message");
 			SurespotMessage updateMessage = mMessages.get(index);
+
+			//SurespotLog.v(TAG, "updating message: %s", updateMessage);
+			//SurespotLog.v(TAG, "new message: %s", message);
+
+			//don't update unless we have an id
 			if (message.getId() != null) {
 				// if the id is null 'tis the same as adding the message
 				added = updateMessage.getId() == null;
 				updateMessage.setId(message.getId());
-			}
-			if (message.getDateTime() != null) {
-				updateMessage.setDateTime(message.getDateTime());
-			}
-			if (message.getData() != null) {
-				updateMessage.setData(message.getData());
-			}
-			if (!message.isGcm()) {
-				updateMessage.setGcm(message.isGcm());
-			}
-			if (message.getDataSize() != null) {
-				updateMessage.setDataSize(message.getDataSize());
-			}
 
+				if (message.getDateTime() != null) {
+					updateMessage.setDateTime(message.getDateTime());
+				}
+				if (message.getData() != null) {
+					updateMessage.setData(message.getData());
+				}
+				if (!message.isGcm()) {
+					updateMessage.setGcm(message.isGcm());
+				}
+				if (message.getDataSize() != null) {
+					updateMessage.setDataSize(message.getDataSize());
+				}
+			}
 		}
 
 		if (sort) {

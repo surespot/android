@@ -753,7 +753,7 @@ public class ChatController {
 
 	// add entry to http cache for image we sent so we don't download it again
 	private void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
-		SurespotLog.v(TAG, "handleCachedImage");
+		SurespotLog.v(TAG, "handleCachedFile");
 		SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
 
 		// if the data is different we haven't updated the url to point externally
