@@ -1064,46 +1064,27 @@ public class ChatController {
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
 			setProgress(username, true);
 
-			// mChatAdapters.get(username).setLoading(true);
 			mNetworkController.getMessageData(username, fetchMessageId, fetchControlMessageId, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, JSONObject response) {
 
 					JSONArray controlMessages = response.optJSONArray("controlMessages");
-					if (controlMessages != null) {
-						handleControlMessages(username, controlMessages);
-					}
+
 					String messages = response.optString("messages", null);
 					if (messages != null) {
 						handleMessages(username, messages);
 					}
-					else {
-						// if (username.equals(mCurrentChat)) {
-						// ChatFragment chatFragment = getChatFragment(username);
-						// if (chatFragment != null) {
-						// chatFragment.scrollToState();
-						// // chatFragment.requestFocus();
-						//
-						// }
-						// }
 
-						setProgress(username, false);
+					if (controlMessages != null) {
+						handleControlMessages(username, controlMessages);
 					}
+
+					setProgress(username, false);
 
 				}
 			});
 		}
 
-		// else {
-		// if (username.equals(mCurrentChat)) {
-		// ChatFragment chatFragment = getChatFragment(username);
-		// if (chatFragment != null) {
-		// chatFragment.scrollToState();
-		// // chatFragment.requestFocus();
-		//
-		// }
-		// }
-		// }
 	}
 
 	private void handleControlMessages(String username, JSONArray jsonArray) {
@@ -1458,7 +1439,7 @@ public class ChatController {
 			// shouldn't happen
 			SurespotLog.w(TAG, e, "handleMessages");
 			// getLatestMessagesAndControls(username, e.getMessageId(), -1);
-			setProgress(username, false);
+			// setProgress(username, false);
 			return;
 		}
 
@@ -1492,7 +1473,7 @@ public class ChatController {
 			scrollToEnd(username);
 		}
 
-		setProgress(username, false);
+		// setProgress(username, false);
 	}
 
 	private Integer getEarliestMessageId(String username) {
