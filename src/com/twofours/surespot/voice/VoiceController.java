@@ -1,12 +1,14 @@
 package com.twofours.surespot.voice;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.ffmpeg.android.FfmpegController;
+import org.ffmpeg.android.ShellUtils.ShellCallback;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,14 +19,11 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder.AudioSource;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.todoroo.aacenc.AACEncoder;
-import com.todoroo.aacenc.AACToM4A;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
@@ -69,13 +68,10 @@ public class VoiceController {
 
 	private final static int[] sampleRates = { 44100, 22050 };
 	private static State mState;
-	private static AACEncoder mEncoder;
 	private static int mDuration;
 
 	static {
 		mState = State.STARTED;
-		mEncoder = new AACEncoder();
-
 	}
 
 	static int getMaxAmplitude() {
@@ -162,7 +158,7 @@ public class VoiceController {
 			SurespotLog.v(TAG, "sampleRate: %d", mSampleRate);
 			mEnvelopeView.setVisibility(View.VISIBLE);
 			mVoiceHeaderView.setVisibility(View.VISIBLE);
-			mVoiceRecTimeLeftView.setText("10");
+			mVoiceRecTimeLeftView.setText(String.valueOf(MAX_TIME / 1000));
 			mEnvelopeView.clearVolume();
 			mRecorder.setOutputFile(mFileName);
 			mRecorder.prepare();
@@ -268,62 +264,48 @@ public class VoiceController {
 			Utils.makeToast(activity, activity.getString(R.string.no_audio_detected));
 		}
 		else {
-			new AsyncTask<Void, Void, String>() {
 
-				@Override
-				protected String doInBackground(Void... params) {
-					// convert to AAC
-					FileInputStream fis;
-					try {
-						fis = new FileInputStream(mFileName);
+			try {
 
-						String outFile = File.createTempFile("record", ".aac").getAbsolutePath();
-						mEncoder.init(16000, 1, mSampleRate, 16, outFile);
 
-						mEncoder.encode(Utils.inputStreamToBytes(fis));
-						mEncoder.uninit();
+				final String m4aFile = File.createTempFile("record", ".mp4").getAbsolutePath();
+				FfmpegController ffc = new FfmpegController(activity);
+				ffc.convertWavToMp4(mFileName, m4aFile, new ShellCallback() {
 
-						// convert to m4a (gingerbread can't play the AAC for some bloody reason).
-						final String m4aFile = File.createTempFile("record", ".m4a").getAbsolutePath();
-						new AACToM4A().convert(activity, outFile, m4aFile);
-
-						// delete files
-						new File(outFile).delete();
-						new File(mFileName).delete();
-
-						return m4aFile;
+					@Override
+					public void shellOut(String shellLine) {
+						// TODO Auto-generated method stub
 
 					}
 
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "sendVoiceMessage");
-					}
-					return null;
-				}
+					@Override
+					public void processComplete(int exitValue) {
+						if (exitValue == 0) {
+							ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
+									Uri.fromFile(new File(m4aFile)), mUsername, new IAsyncCallback<Boolean>() {
 
-				protected void onPostExecute(final String encryptedVoiceMessageFile) {
-					if (encryptedVoiceMessageFile != null) {
-
-						ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
-								Uri.fromFile(new File(encryptedVoiceMessageFile)), mUsername, new IAsyncCallback<Boolean>() {
-
-									@Override
-									public void handleResponse(Boolean result) {
-										if (result) {
-											// delete m4a
-											new File(encryptedVoiceMessageFile).delete();
+										@Override
+										public void handleResponse(Boolean result) {
+											if (result) {
+												// delete files
+												new File(m4aFile).delete();
+												new File(mFileName).delete();
+											}
 										}
-									}
-								});
+									});
+						}
+						else {
+							Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
+						}
 
 					}
-					else {
-						Utils.makeToast(activity, "error sending message");
-					}
+				});
+			}
+			catch (Exception e) {
+				SurespotLog.w(TAG, e, "sendVoiceMessage");
+				Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
+			}
 
-				};
-
-			}.execute();
 		}
 
 	}
@@ -346,7 +328,7 @@ public class VoiceController {
 		if (!mPlaying && differentMessage) {
 			mPlaying = true;
 			mMessage = message;
-			mSeekBar = seekBar;			
+			mSeekBar = seekBar;
 			mSeekBar.setMax(100);
 
 			if (mSeekBarThread == null) {
@@ -371,7 +353,7 @@ public class VoiceController {
 					@Override
 					public void onPrepared(MediaPlayer mp) {
 						mPlayer.start();
-						updatePlayControls();						
+						updatePlayControls();
 						mDuration = mPlayer.getDuration();
 						mPlayer.setOnPreparedListener(null);
 					}
@@ -416,12 +398,12 @@ public class VoiceController {
 
 	public static synchronized void attach(final SeekBar seekBar) {
 		if (isCurrentMessage(seekBar)) {
-			mSeekBar = seekBar;			
+			mSeekBar = seekBar;
 		}
 		else {
-			setProgress(seekBar, 0);			
+			setProgress(seekBar, 0);
 		}
-		
+
 		updatePlayControls();
 	}
 
@@ -457,7 +439,7 @@ public class VoiceController {
 						voicePlay.setVisibility(View.VISIBLE);
 					}
 					voiceStop.setVisibility(View.GONE);
-				}								
+				}
 			}
 		}
 	}
