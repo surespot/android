@@ -127,10 +127,10 @@ public class ChatAdapter extends BaseAdapter {
 			// SurespotLog.v(TAG, "addMessage, updating message");
 			SurespotMessage updateMessage = mMessages.get(index);
 
-			//SurespotLog.v(TAG, "updating message: %s", updateMessage);
-			//SurespotLog.v(TAG, "new message: %s", message);
+			// SurespotLog.v(TAG, "updating message: %s", updateMessage);
+			// SurespotLog.v(TAG, "new message: %s", message);
 
-			//don't update unless we have an id
+			// don't update unless we have an id
 			if (message.getId() != null) {
 				// if the id is null 'tis the same as adding the message
 				added = updateMessage.getId() == null;
@@ -303,9 +303,13 @@ public class ChatAdapter extends BaseAdapter {
 		else {
 
 			if (item.getId() == null) {
-
-				chatMessageViewHolder.tvTime.setText(R.string.message_sending);
-				SurespotLog.v(TAG, "getView, item.getId() is null, setting status text to sending...");
+				if (item.isLoadedFromDisk()) {
+					chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
+				}
+				else {
+					chatMessageViewHolder.tvTime.setText(R.string.message_sending);
+					SurespotLog.v(TAG, "getView, item.getId() is null and not loaded from disk, setting status text to sending...");
+				}
 			}
 			else {
 				if (item.getPlainData() == null && item.getPlainBinaryData() == null) {

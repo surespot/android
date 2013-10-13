@@ -233,7 +233,9 @@ public class StateController {
 			if (sMessages != null) {
 				Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sMessages).iterator();
 				while (iterator.hasNext()) {
-					messages.add(iterator.next());
+					SurespotMessage message = iterator.next();
+					message.setLoadedFromDisk(true);
+					messages.add(message);
 				}
 				SurespotLog.v(TAG, "loaded: %d messages.", messages.size());
 			}
