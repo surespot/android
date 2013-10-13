@@ -21,6 +21,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -41,6 +42,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -561,5 +563,49 @@ public class UIUtils {
 		a.setDuration(1000);
 		view.clearAnimation();
 		view.startAnimation(a);
+	}
+	
+	//thanks to http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity
+	@SuppressWarnings("deprecation")
+	@SuppressLint("NewApi")
+	public static void lockOrientation(Activity activity) {
+	    Display display = activity.getWindowManager().getDefaultDisplay();
+	    int rotation = display.getRotation();
+	    int height;
+	    int width;
+	    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR2) {
+	        height = display.getHeight();
+	        width = display.getWidth();
+	    } else {
+	        Point size = new Point();
+	        display.getSize(size);
+	        height = size.y;
+	        width = size.x;
+	    }
+	    switch (rotation) {
+	    case Surface.ROTATION_90:
+	        if (width > height)
+	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+	        else
+	            activity.setRequestedOrientation(9/* reversePortait */);
+	        break;
+	    case Surface.ROTATION_180:
+	        if (height > width)
+	            activity.setRequestedOrientation(9/* reversePortait */);
+	        else
+	            activity.setRequestedOrientation(8/* reverseLandscape */);
+	        break;          
+	    case Surface.ROTATION_270:
+	        if (width > height)
+	            activity.setRequestedOrientation(8/* reverseLandscape */);
+	        else
+	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+	        break;
+	    default :
+	        if (height > width)
+	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+	        else
+	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+	    }
 	}
 }

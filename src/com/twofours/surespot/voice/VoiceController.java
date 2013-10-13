@@ -12,6 +12,7 @@ import org.ffmpeg.android.ShellUtils.ShellCallback;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -31,6 +32,7 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.UIUtils;
 
 public class VoiceController {
 	private static final String TAG = "VoiceController";
@@ -164,7 +166,7 @@ public class VoiceController {
 			mRecorder.prepare();
 			mRecorder.start();
 
-			startTimer(activity);
+				startTimer(activity);
 			mState = State.RECORDING;
 			// Utils.makeToast(activity, "sample rate: " + mSampleRate);
 		}
@@ -187,7 +189,7 @@ public class VoiceController {
 			mRecorder.stop();
 			mRecorder.release();
 			mRecorder = null;
-
+			
 			mState = State.STARTED;
 		}
 		catch (RuntimeException stopException) {
@@ -232,13 +234,16 @@ public class VoiceController {
 	public static synchronized void startRecording(Activity context, String username) {
 		if (!mRecording) {
 			stopPlaying();
-
+			//disable rotation
+			UIUtils.lockOrientation(context);
+		
 			mActivity = context;
 			mUsername = username;
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
 			mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
 			mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
 			startRecordingInternal(context);
+		
 			mRecording = true;
 		}
 
@@ -247,12 +252,16 @@ public class VoiceController {
 	public synchronized static void stopRecording(Activity activity, boolean send) {
 		if (mRecording) {
 			stopRecordingInternal();
+		
 			if (send) {
 				sendVoiceMessage(activity);
 			}
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.GONE);
 			mVoiceHeaderView.setVisibility(View.GONE);
+			//enable rotation
+			activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+
 			mRecording = false;
 		}
 	}
@@ -288,7 +297,7 @@ public class VoiceController {
 										public void handleResponse(Boolean result) {
 											if (result) {
 												// delete files
-												new File(m4aFile).delete();
+											//	new File(m4aFile).delete();
 												new File(mFileName).delete();
 											}
 										}
