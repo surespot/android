@@ -44,6 +44,7 @@ public class ChatAdapter extends BaseAdapter {
 	private MessageImageDownloader mMessageImageDownloader;
 	private boolean mLoaded;
 	private VoiceMessageDownloader mMessageVoiceDownloader;
+	private ArrayList<SurespotControlMessage> mControlMessages = new ArrayList<SurespotControlMessage>();
 
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
@@ -95,7 +96,7 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	// update the id and sent status of the message once we received
-	private synchronized boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) throws SurespotMessageSequenceException {
+	private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) throws SurespotMessageSequenceException {
 
 		// SurespotLog.v(TAG, "addMessage, could not find message");
 
@@ -158,35 +159,42 @@ public class ChatAdapter extends BaseAdapter {
 	}
 
 	private void insertMessage(SurespotMessage message) {
-		// if (mMessages.indexOf(message) == -1) {
-		mMessages.add(0, message);
-		// }
-		// else {
-		// SurespotLog.v(TAG, "insertMessage, message already present");
-		// }
+		synchronized (mMessages) {
+			// if (mMessages.indexOf(message) == -1) {
+			mMessages.add(0, message);
+			// }
+			// else {
+			// SurespotLog.v(TAG, "insertMessage, message already present: %s", message);
+			// }
+		}
 	}
 
-	public synchronized void setMessages(ArrayList<SurespotMessage> messages) {
-		if (messages.size() > 0) {
-			mMessages.clear();
-			mMessages.addAll(messages);
+	public void setMessages(ArrayList<SurespotMessage> messages) {
+		synchronized (mMessages) {
 
-			// notifyDataSetChanged();
+			if (messages.size() > 0) {
+				mMessages.clear();
+				mMessages.addAll(messages);
+
+				// notifyDataSetChanged();
+			}
 		}
-
 	}
 
 	public void addOrUpdateMessages(ArrayList<SurespotMessage> messages) {
-		for (SurespotMessage message : messages) {
-			try {
-				addOrUpdateMessage(message, false, false);
-			}
-			catch (SurespotMessageSequenceException e) {
-				SurespotLog.i(TAG, e, "addOrUpdateMessage");
-			}
-		}
+		synchronized (mMessages) {
 
-		sort();
+			for (SurespotMessage message : messages) {
+				try {
+					addOrUpdateMessage(message, false, false);
+				}
+				catch (SurespotMessageSequenceException e) {
+					SurespotLog.i(TAG, e, "addOrUpdateMessage");
+				}
+			}
+
+			sort();
+		}
 	}
 
 	@Override
@@ -452,7 +460,9 @@ public class ChatAdapter extends BaseAdapter {
 
 	public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) throws SurespotMessageSequenceException {
 		boolean added = false;
-		added = addOrUpdateMessage(message, checkSequence, sort);
+		synchronized (mMessages) {
+			added = addOrUpdateMessage(message, checkSequence, sort);
+		}
 		if (notify) {
 			notifyDataSetChanged();
 		}
@@ -460,32 +470,33 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public synchronized void insertMessage(SurespotMessage message, boolean notify) {
-
+	public void insertMessage(SurespotMessage message, boolean notify) {
 		insertMessage(message);
 		if (notify) {
 			notifyDataSetChanged();
 		}
-
 	}
 
-	public synchronized SurespotMessage deleteMessageByIv(String iv) {
-		SurespotMessage message = null;
-		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-			message = iterator.next();
+	public SurespotMessage deleteMessageByIv(String iv) {
+		synchronized (mMessages) {
 
-			if (message.getIv().equals(iv)) {
-				iterator.remove();
-				message.setDeleted(true);
-				notifyDataSetChanged();
-				return message;
+			SurespotMessage message = null;
+			for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+				message = iterator.next();
+
+				if (message.getIv().equals(iv)) {
+					iterator.remove();
+					message.setDeleted(true);
+					notifyDataSetChanged();
+					return message;
+				}
 			}
 		}
 
 		return null;
 	}
 
-	public synchronized SurespotMessage deleteMessageById(Integer id) {
+	public SurespotMessage deleteMessageById(Integer id) {
 		SurespotMessage message = null;
 		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious();) {
 			message = iterator.previous();
@@ -536,28 +547,33 @@ public class ChatAdapter extends BaseAdapter {
 
 	}
 
-	public synchronized void deleteAllMessages(int utaiMessageId) {
+	public void deleteAllMessages(int utaiMessageId) {
 
-		//
-		// mMessages.clear();
-		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-			SurespotMessage message = iterator.next();
+		synchronized (mMessages) {
 
-			if (message.getId() == null || (message.getId() != null && message.getId() <= utaiMessageId)) {
-				message.setDeleted(true);
-				iterator.remove();
+			//
+			// mMessages.clear();
+			for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+				SurespotMessage message = iterator.next();
+
+				if (message.getId() == null || (message.getId() != null && message.getId() <= utaiMessageId)) {
+					message.setDeleted(true);
+					iterator.remove();
+				}
 			}
 		}
 	}
 
-	public synchronized void deleteTheirMessages(int utaiMessageId) {
-		for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
-			SurespotMessage message = iterator.next();
+	public void deleteTheirMessages(int utaiMessageId) {
+		synchronized (mMessages) {
+			for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+				SurespotMessage message = iterator.next();
 
-			// if it's not our message, delete it
-			if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
-				message.setDeleted(true);
-				iterator.remove();
+				// if it's not our message, delete it
+				if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+					message.setDeleted(true);
+					iterator.remove();
+				}
 			}
 		}
 	}
@@ -592,6 +608,16 @@ public class ChatAdapter extends BaseAdapter {
 
 	public Context getContext() {
 		return mContext;
+	}
+
+	public void addControlMessage(SurespotControlMessage message) {
+		synchronized (mControlMessages) {
+			mControlMessages.add(message);
+		}
+	}
+
+	public ArrayList<SurespotControlMessage> getControlMessages() {
+		return mControlMessages;
 	}
 
 }

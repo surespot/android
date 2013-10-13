@@ -242,7 +242,7 @@ public class ChatController {
 				if (event.equals("control")) {
 					try {
 						SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
-						handleControlMessage(null, message, true);
+						handleControlMessage(null, message, true, false);
 					}
 					catch (JSONException e) {
 						SurespotLog.w(TAG, "on control", e);
@@ -267,7 +267,7 @@ public class ChatController {
 										try {
 											SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(
 													deleteControlMessages.getString(i)));
-											handleControlMessage(null, dMessage, true);
+											handleControlMessage(null, dMessage, true, false);
 										}
 										catch (JSONException e) {
 											SurespotLog.w(TAG, "on control", e);
@@ -684,7 +684,7 @@ public class ChatController {
 
 				protected void onPostExecute(Void result) {
 					try {
-						boolean added = chatAdapter.addOrUpdateMessage(message, true, true, true);
+						boolean added = applyControlMessages(chatAdapter, message, false, false, true);
 						scrollToEnd(otherUser);
 
 						Friend friend = mFriendAdapter.getFriend(otherUser);
@@ -749,6 +749,39 @@ public class ChatController {
 			}
 		}
 
+	}
+
+	private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) throws SurespotMessageSequenceException {
+		// see if we have applicable control messages and apply them if necessary
+		ArrayList<SurespotControlMessage> controlMessages = chatAdapter.getControlMessages();
+		ArrayList<SurespotControlMessage> applicableControlMessages = new ArrayList<SurespotControlMessage>();
+		for (SurespotControlMessage controlMessage : controlMessages) {
+			int messageId = Integer.parseInt(controlMessage.getMoreData());
+			if (message.getId() == messageId) {
+				applicableControlMessages.add(controlMessage);
+			}
+		}
+		boolean added = false;
+
+		if (applicableControlMessages.size() == 0) {
+
+			added = chatAdapter.addOrUpdateMessage(message, checkSequence, sort, notify);
+
+		}
+		else {
+			added = chatAdapter.addOrUpdateMessage(message, checkSequence, false, false);
+
+			for (SurespotControlMessage controlMessage : applicableControlMessages) {
+				SurespotLog.v(TAG, "applying control message %s: to message %s", controlMessage, message);
+				handleControlMessage(chatAdapter, controlMessage, false, true);
+			}
+
+			if (notify) {
+				chatAdapter.notifyDataSetChanged();
+			}
+		}
+
+		return added;
 	}
 
 	// add entry to http cache for image we sent so we don't download it again
@@ -1098,7 +1131,7 @@ public class ChatController {
 			try {
 				JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
 				message = SurespotControlMessage.toSurespotControlMessage(jsonMessage);
-				handleControlMessage(chatAdapter, message, false);
+				handleControlMessage(chatAdapter, message, false, false);
 				// if it's a system message from another user then check version
 				if (message.getType().equals("user")) {
 					userActivity = true;
@@ -1148,7 +1181,7 @@ public class ChatController {
 		// chatAdapter.setLoading(false);
 	}
 
-	private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify) {
+	private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
 		// if it's a system message from another user then check version
 		if (message.getType().equals("user")) {
 			handleUserControlMessage(message, notify);
@@ -1163,6 +1196,12 @@ public class ChatController {
 				}
 
 				if (chatAdapter != null) {
+					// if we're not re applying this control message
+					if (!reApplying) {
+						// add control message to check messages against later for this session
+						chatAdapter.addControlMessage(message);
+					}
+
 					boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
 					if (message.getAction().equals("delete")) {
 						int messageId = Integer.parseInt(message.getMoreData());
@@ -1424,7 +1463,8 @@ public class ChatController {
 					}
 				}
 
-				boolean added = chatAdapter.addOrUpdateMessage(lastMessage, false, false, false);
+				boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
+
 				mResendBuffer.remove(lastMessage);
 				if (added && myMessage) {
 					sentByMeCount++;
@@ -2399,7 +2439,7 @@ public class ChatController {
 					@Override
 					public void run() {
 						try {
-							chatAdapter.addOrUpdateMessage(message, false, true, true);
+							applyControlMessages(chatAdapter, message, false, true, true);
 						}
 						catch (SurespotMessageSequenceException e) {
 						}

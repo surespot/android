@@ -137,8 +137,27 @@ public class SurespotControlMessage {
 			return true;
 		}
 		else {
-			return (this.getLocalId().equals(rhs.getLocalId()));
+			if (this.getLocalId() != null && rhs.getLocalId() != null && this.getLocalId().equals(rhs.getLocalId())) {
+				return true;
+			}
+			else {
+				return false;
+			}			
 		}
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\nSurespotControlMessage:\n");
+		sb.append("\tid: " + getId() + "\n");		
+		sb.append("\tfrom: " + getFrom() + "\n");
+		sb.append("\taction: " + getAction() + "\n");
+		sb.append("\tlocalId: " + getLocalId() + "\n");		
+		sb.append("\tdata: " + getData() + "\n");
+		sb.append("\tmoreData: " + getMoreData() + "\n");
+		
+		return sb.toString();
 	}
 
 
