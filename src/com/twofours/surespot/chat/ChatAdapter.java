@@ -113,7 +113,7 @@ public class ChatAdapter extends BaseAdapter {
 		// throw new SurespotMessageSequenceException(previousId);
 		// }
 		//
-		// }
+		SurespotLog.v(TAG, "addOrUpdateMessage: %s", message);
 
 		int index = mMessages.indexOf(message);
 		boolean added = false;
@@ -127,7 +127,7 @@ public class ChatAdapter extends BaseAdapter {
 			// SurespotLog.v(TAG, "addMessage, updating message");
 			SurespotMessage updateMessage = mMessages.get(index);
 
-			// SurespotLog.v(TAG, "updating message: %s", updateMessage);
+			SurespotLog.v(TAG, "updating message: %s", updateMessage);
 			// SurespotLog.v(TAG, "new message: %s", message);
 
 			// don't update unless we have an id
