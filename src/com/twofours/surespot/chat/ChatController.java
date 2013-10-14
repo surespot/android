@@ -682,7 +682,7 @@ public class ChatController {
 
 				protected void onPostExecute(Void result) {
 					try {
-						boolean added = applyControlMessages(chatAdapter, message, false, false, true);
+						boolean added = applyControlMessages(chatAdapter, message, false, true, true);
 						scrollToEnd(otherUser);
 
 						Friend friend = mFriendAdapter.getFriend(otherUser);
