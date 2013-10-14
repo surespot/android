@@ -197,7 +197,7 @@ public class ChatUtils {
 
 						if (bitmap != null) {
 							SurespotLog.v(TAG, "adding bitmap to cache: %s", localImageUri);
-							
+
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
 							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
 							message.setId(null);
@@ -690,15 +690,16 @@ public class ChatUtils {
 
 	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
 		// avoid concurrent modification issues
-		SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
-		JSONArray jsonMessages = new JSONArray();
+		synchronized (messages) {
+			SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);			
+			JSONArray jsonMessages = new JSONArray();
 
-		for (SurespotMessage message : messageArray) {
-			jsonMessages.put(message.toJSONObject());
+			for (SurespotMessage message : messageArray) {
+				jsonMessages.put(message.toJSONObject());
+			}
+
+			return jsonMessages;
 		}
-
-		return jsonMessages;
-
 	}
 
 	public static ArrayList<SurespotMessage> jsonStringToChatMessages(String jsonMessageString) {
