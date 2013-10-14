@@ -41,7 +41,7 @@ public class VoiceController {
 	private static String mFileName = null;
 	private static String mUsername = null;
 
-	public static final int SEND_THRESHOLD = 5000;
+	public static final int SEND_THRESHOLD = 4000;
 	public static final int MAX_TIME = 10000;
 	public static final int INTERVAL = 50;
 
@@ -102,16 +102,14 @@ public class VoiceController {
 							mTimeLeft -= rate;
 
 							final int currentTimeLeft = (int) mTimeLeft;
-
-							if (currentTimeLeft < 0) {
-								stopRecording(mActivity, true);
-								return;
-							}
+							
+							//SurespotLog.v(TAG, "currentTimeLeft: %d", currentTimeLeft);
+						
 							mEnvelopeView.setNewVolume(getMaxAmplitude(), true);
 
 							// if we're at a second boundary, update time display
 							if (currentTimeLeft % 1000 == 0) {
-
+								//SurespotLog.v(TAG, "currentTimeLeft mod: %d", currentTimeLeft%1000);	
 								mVoiceRecTimeLeftView.post(new Runnable() {
 
 									@Override
@@ -119,6 +117,11 @@ public class VoiceController {
 										mVoiceRecTimeLeftView.setText(Integer.toString(currentTimeLeft / 1000));
 									}
 								});
+							}
+							
+							if (currentTimeLeft < -150) {
+								stopRecording(mActivity, true);
+								return;
 							}
 
 							return;
@@ -475,7 +478,7 @@ public class VoiceController {
 							}
 						}
 					}
-					
+
 					shareable.setVisibility(View.GONE);
 					notshareable.setVisibility(View.GONE);
 					voiceStop.setVisibility(View.GONE);
@@ -513,7 +516,15 @@ public class VoiceController {
 
 					if (isCurrentMessage()) {
 
-						int currentPosition = mPlayer.getCurrentPosition();
+						int currentPosition = 0;
+						try {
+							currentPosition = mPlayer.getCurrentPosition();
+						}
+						catch (Exception e) {
+							SurespotLog.w(TAG, "SeekBarThread error getting current position");
+							mRun = false;
+							break;
+						}
 
 						progress = (int) (((float) currentPosition / (float) mDuration) * 101);
 						// SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
