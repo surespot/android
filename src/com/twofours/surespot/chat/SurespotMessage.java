@@ -38,7 +38,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mGcm;
 	private boolean mPlayVoice = false;
 	private boolean mVoicePlayed = false;
-	private boolean mLoadedFromDisk = false;
+	private boolean mAlreadySent = false;
 	
 
 	public String getFrom() {
@@ -334,12 +334,13 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		mGcm = gcm;
 	}
 
-	public boolean isLoadedFromDisk() {
-		return mLoadedFromDisk;
+
+	public boolean isAlreadySent() {
+		return mAlreadySent;
 	}
 
-	public void setLoadedFromDisk(boolean loadedFromDisk) {
-		mLoadedFromDisk = loadedFromDisk;
+	public void setAlreadySent(boolean alreadySent) {
+		mAlreadySent = alreadySent;
 	}
 
 	public Date getDateTime() {

@@ -1090,7 +1090,7 @@ public class ChatController {
 
 	}
 
-	private void getLatestMessagesAndControls(final String username, int fetchMessageId, int fetchControlMessageId) {
+	private void getLatestMessagesAndControls(final String username, final int fetchMessageId, int fetchControlMessageId) {
 		SurespotLog.v(TAG, "getLatestMessagesAndControls: name %s, fetchMessageId: %d, fetchControlMessageId: %d", username, fetchMessageId,
 				fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
@@ -1103,7 +1103,10 @@ public class ChatController {
 					JSONArray controlMessages = response.optJSONArray("controlMessages");
 
 					String messages = response.optString("messages", null);
-					if (messages != null) {
+					
+					//don't update messages if we didn't query for them
+					//this prevents setting message state to error before we get the true result
+					if (fetchMessageId > -1) {
 						handleMessages(username, messages);
 					}
 
@@ -1440,79 +1443,86 @@ public class ChatController {
 		if (chatAdapter == null) {
 			return;
 		}
-		int sentByMeCount = 0;
 
-		SurespotMessage lastMessage = null;
-		try {
-			JSONArray jsonUM = new JSONArray(jsonMessageString);
-			SurespotLog.v(TAG, "%s: loaded: %d messages from the server: %s", username, jsonUM.length(), jsonMessageString);
-			for (int i = 0; i < jsonUM.length(); i++) {
+		//if we received new messages
+		if (jsonMessageString != null) {
 
-				lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
-				boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
+			int sentByMeCount = 0;
 
-				if (myMessage) {
-					if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-						handleCachedFile(chatAdapter, lastMessage);
-					}
-					else {
-						if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+			SurespotMessage lastMessage = null;
+			try {
+				JSONArray jsonUM = new JSONArray(jsonMessageString);
+				SurespotLog.v(TAG, "%s: loaded: %d messages from the server: %s", username, jsonUM.length(), jsonMessageString);
+				for (int i = 0; i < jsonUM.length(); i++) {
+
+					lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
+					boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
+
+					if (myMessage) {
+						if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
 							handleCachedFile(chatAdapter, lastMessage);
 						}
+						else {
+							if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+								handleCachedFile(chatAdapter, lastMessage);
+							}
+						}
+					}
+
+					boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
+
+					mResendBuffer.remove(lastMessage);
+					if (added && myMessage) {
+						sentByMeCount++;
 					}
 				}
+			}
+			catch (JSONException e) {
+				SurespotLog.w(TAG, e, "jsonStringsToMessages");
 
-				boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
+			}
+			catch (SurespotMessageSequenceException e) {
+				// shouldn't happen
+				SurespotLog.w(TAG, e, "handleMessages");
+				// getLatestMessagesAndControls(username, e.getMessageId(), -1);
+				// setProgress(username, false);
+				return;
+			}
 
-				mResendBuffer.remove(lastMessage);
-				if (added && myMessage) {
-					sentByMeCount++;
+			if (lastMessage != null) {
+				Friend friend = mFriendAdapter.getFriend(username);
+
+				int availableId = lastMessage.getId();
+				friend.setAvailableMessageId(availableId);
+
+				int lastViewedId = friend.getLastViewedMessageId();
+
+				// how many new messages total are there
+				int delta = availableId - lastViewedId;
+
+				// if the current chat is showing or
+				// all the new messages are mine then i've viewed them all
+				if (username.equals(mCurrentChat) || sentByMeCount == delta) {
+					friend.setLastViewedMessageId(availableId);
 				}
+				else {
+					// set the last viewed id to the difference caused by their messages
+					friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
+				}
+		
+				mFriendAdapter.sort();
+				mFriendAdapter.notifyDataSetChanged();
+				
+				scrollToEnd(username);
 			}
 		}
-		catch (JSONException e) {
-			SurespotLog.w(TAG, e, "jsonStringsToMessages");
-
-		}
-		catch (SurespotMessageSequenceException e) {
-			// shouldn't happen
-			SurespotLog.w(TAG, e, "handleMessages");
-			// getLatestMessagesAndControls(username, e.getMessageId(), -1);
-			// setProgress(username, false);
-			return;
-		}
-
-		if (lastMessage != null) {
-			Friend friend = mFriendAdapter.getFriend(username);
-
-			int availableId = lastMessage.getId();
-			friend.setAvailableMessageId(availableId);
-
-			int lastViewedId = friend.getLastViewedMessageId();
-
-			// how many new messages total are there
-			int delta = availableId - lastViewedId;
-
-			// if the current chat is showing or
-			// all the new messages are mine then i've viewed them all
-			if (username.equals(mCurrentChat) || sentByMeCount == delta) {
-				friend.setLastViewedMessageId(availableId);
-			}
-			else {
-				// set the last viewed id to the difference caused by their messages
-				friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
-			}
-
-			chatAdapter.sort();
-			chatAdapter.notifyDataSetChanged();
-			chatAdapter.doneCheckingSequence();
-			mFriendAdapter.sort();
-			mFriendAdapter.notifyDataSetChanged();
-
-			scrollToEnd(username);
-		}
-
-		// setProgress(username, false);
+		
+		
+		chatAdapter.sort();
+		chatAdapter.doneCheckingSequence();
+		// mark messages left in chatAdapter with no id as errored
+		chatAdapter.markErrored();
+		chatAdapter.notifyDataSetChanged();
 	}
 
 	private Integer getEarliestMessageId(String username) {
@@ -1777,7 +1787,6 @@ public class ChatController {
 
 			// get latest messages from server
 			getLatestMessagesAndControls(username);
-
 		}
 
 		return chatAdapter;
@@ -2203,10 +2212,11 @@ public class ChatController {
 	public void resendFileMessage(String to, final String messageIv) {
 		final ChatAdapter chatAdapter = mChatAdapters.get(to);
 		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
-
+			
+		//reset status flags
 		message.setErrorStatus(0);
+		message.setAlreadySent(false);
 		chatAdapter.notifyDataSetChanged();
-
 		setProgress("resend", true);
 		ChatUtils.resendFileMessage(mContext, mNetworkController, message, new IAsyncCallback<Boolean>() {
 
@@ -2214,9 +2224,11 @@ public class ChatController {
 			public void handleResponse(Boolean result) {
 				setProgress("resend", false);
 				if (!result) {
-					message.setErrorStatus(500);
-					chatAdapter.notifyDataSetChanged();
+					message.setErrorStatus(500);					
 				}
+						
+				message.setAlreadySent(true);
+				chatAdapter.notifyDataSetChanged();
 			}
 		});
 
@@ -2440,7 +2452,7 @@ public class ChatController {
 				try {
 					applyControlMessages(chatAdapter, message, false, true, false);
 				}
-				catch (SurespotMessageSequenceException e) {					
+				catch (SurespotMessageSequenceException e) {
 				}
 				// }
 				// });

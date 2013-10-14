@@ -149,6 +149,9 @@ public class ChatAdapter extends BaseAdapter {
 				if (message.getDataSize() != null) {
 					updateMessage.setDataSize(message.getDataSize());
 				}
+
+				// clear error status
+				updateMessage.setErrorStatus(0);
 			}
 		}
 
@@ -160,12 +163,12 @@ public class ChatAdapter extends BaseAdapter {
 
 	private void insertMessage(SurespotMessage message) {
 		synchronized (mMessages) {
-			// if (mMessages.indexOf(message) == -1) {
-			mMessages.add(0, message);
-			// }
-			// else {
-			// SurespotLog.v(TAG, "insertMessage, message already present: %s", message);
-			// }
+			if (mMessages.indexOf(message) == -1) {
+				mMessages.add(0, message);
+			}
+			else {
+				SurespotLog.v(TAG, "insertMessage, message already present: %s", message);
+			}
 		}
 	}
 
@@ -175,8 +178,6 @@ public class ChatAdapter extends BaseAdapter {
 			if (messages.size() > 0) {
 				mMessages.clear();
 				mMessages.addAll(messages);
-
-				// notifyDataSetChanged();
 			}
 		}
 	}
@@ -305,14 +306,25 @@ public class ChatAdapter extends BaseAdapter {
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 
+		SurespotLog.v(TAG, "rendering item: %s", item);
+
 		if (item.getErrorStatus() > 0) {
+			SurespotLog.v(TAG, "item has error: %s", item);
 			UIUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
 		}
 		else {
-
-			if (item.getId() == null && !item.isLoadedFromDisk()) {
-				chatMessageViewHolder.tvTime.setText(R.string.message_sending);
-				SurespotLog.v(TAG, "getView, item.getId() is null and not loaded from disk, setting status text to sending...");
+			if (item.getId() == null) {
+				// if it's a text message or we're sending
+				if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || !item.isAlreadySent()) {
+					chatMessageViewHolder.tvTime.setText(R.string.message_sending);
+					SurespotLog.v(TAG, "getView, item.getId() is null, a text message or not loaded from disk, setting status text to sending...");
+				}
+				else {
+					if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+						chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
+						SurespotLog.v(TAG, "getView, item.getId() is null, an image or voice message, setting status text to loading and decrypting...");
+					}
+				}
 			}
 			else {
 				if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
@@ -329,7 +341,6 @@ public class ChatAdapter extends BaseAdapter {
 						SurespotLog.v(TAG, "getView, item: %s", item);
 					}
 				}
-
 			}
 		}
 
@@ -620,4 +631,21 @@ public class ChatAdapter extends BaseAdapter {
 		return mControlMessages;
 	}
 
+	// after updating this is called to mark any messages we didn't get back from the server (ie. have no id set) as errored
+	public void markErrored() {
+
+		synchronized (mMessages) {
+			for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext();) {
+				SurespotMessage message = iterator.next();
+
+				if (message.getId() == null) {
+
+					if (message.getErrorStatus() == 0) {
+						SurespotLog.v(TAG, "marking messages errored for user: %s", message.getOtherUser());
+						message.setErrorStatus(500);
+					}
+				}
+			}
+		}
+	}
 }

@@ -154,11 +154,12 @@ public class UIUtils {
 			statusText = context.getString(R.string.error_message_throttled);
 			break;
 		case 500:
-			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+			
+			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 				statusText = context.getString(R.string.error_message_generic);
 			}
 			else {
-				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					statusText = context.getString(R.string.error_message_resend);
 				}
 			}
@@ -564,48 +565,49 @@ public class UIUtils {
 		view.clearAnimation();
 		view.startAnimation(a);
 	}
-	
-	//thanks to http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity
+
+	// thanks to http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
 	public static void lockOrientation(Activity activity) {
-	    Display display = activity.getWindowManager().getDefaultDisplay();
-	    int rotation = display.getRotation();
-	    int height;
-	    int width;
-	    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR2) {
-	        height = display.getHeight();
-	        width = display.getWidth();
-	    } else {
-	        Point size = new Point();
-	        display.getSize(size);
-	        height = size.y;
-	        width = size.x;
-	    }
-	    switch (rotation) {
-	    case Surface.ROTATION_90:
-	        if (width > height)
-	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-	        else
-	            activity.setRequestedOrientation(9/* reversePortait */);
-	        break;
-	    case Surface.ROTATION_180:
-	        if (height > width)
-	            activity.setRequestedOrientation(9/* reversePortait */);
-	        else
-	            activity.setRequestedOrientation(8/* reverseLandscape */);
-	        break;          
-	    case Surface.ROTATION_270:
-	        if (width > height)
-	            activity.setRequestedOrientation(8/* reverseLandscape */);
-	        else
-	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-	        break;
-	    default :
-	        if (height > width)
-	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-	        else
-	            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-	    }
+		Display display = activity.getWindowManager().getDefaultDisplay();
+		int rotation = display.getRotation();
+		int height;
+		int width;
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR2) {
+			height = display.getHeight();
+			width = display.getWidth();
+		}
+		else {
+			Point size = new Point();
+			display.getSize(size);
+			height = size.y;
+			width = size.x;
+		}
+		switch (rotation) {
+		case Surface.ROTATION_90:
+			if (width > height)
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			else
+				activity.setRequestedOrientation(9/* reversePortait */);
+			break;
+		case Surface.ROTATION_180:
+			if (height > width)
+				activity.setRequestedOrientation(9/* reversePortait */);
+			else
+				activity.setRequestedOrientation(8/* reverseLandscape */);
+			break;
+		case Surface.ROTATION_270:
+			if (width > height)
+				activity.setRequestedOrientation(8/* reverseLandscape */);
+			else
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			break;
+		default:
+			if (height > width)
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			else
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		}
 	}
 }
