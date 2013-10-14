@@ -61,7 +61,7 @@ public class VoiceController {
 	private static View mVoiceHeaderView;
 	private static TextView mVoiceRecTimeLeftView;
 	private static float mTimeLeft;
-
+	private static String mSendingFile;
 	private static Activity mActivity;
 
 	enum State {
@@ -139,6 +139,7 @@ public class VoiceController {
 		try {
 			// MediaRecorder has major delay issues on gingerbread so we record raw PCM then convert natively to m4a
 			if (mFileName != null) {
+				SurespotLog.v(TAG, "start recording, deleting file: %s", mFileName);
 				new File(mFileName).delete();
 			}
 
@@ -254,8 +255,15 @@ public class VoiceController {
 			stopRecordingInternal();
 
 			if (send) {
+				mSendingFile = mFileName;
+				mFileName = null;
 				sendVoiceMessage(activity);
 			}
+			else {
+				SurespotLog.v(TAG, "not sending, deleting: %s", mSendingFile);
+				new File(mFileName).delete();				
+			}
+
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
 			mEnvelopeView.setVisibility(View.GONE);
 			mVoiceHeaderView.setVisibility(View.GONE);
@@ -270,37 +278,39 @@ public class VoiceController {
 		int maxVolume = mEnvelopeView.getMaxVolume();
 		SurespotLog.v(TAG, "max recorded volume: %d", maxVolume);
 		if (maxVolume < SEND_THRESHOLD) {
+			new File(mSendingFile).delete();
 			Utils.makeToast(activity, activity.getString(R.string.no_audio_detected));
 		}
 		else {
-
 			try {
-
 				final String m4aFile = File.createTempFile("record", ".mp4").getAbsolutePath();
+				final String wavFile = mSendingFile;
 				FfmpegController ffc = new FfmpegController(activity);
-				ffc.convertWavToMp4(mFileName, m4aFile, new ShellCallback() {
+				ffc.convertWavToMp4(wavFile, m4aFile, new ShellCallback() {
 
 					@Override
 					public void shellOut(String shellLine) {
+						SurespotLog.v(TAG, "ffmpeg out: %s", shellLine);
 					}
 
 					@Override
 					public void processComplete(int exitValue) {
+						SurespotLog.v(TAG, "ffmpeg complete, deleting: %s", mSendingFile);
+						new File(wavFile).delete();
+
 						if (exitValue == 0) {
 							ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
 									Uri.fromFile(new File(m4aFile)), mUsername, new IAsyncCallback<Boolean>() {
-
 										@Override
 										public void handleResponse(Boolean result) {
-											if (result) {
-												// delete files
-												new File(m4aFile).delete();
-												new File(mFileName).delete();
-											}
+											// delete files
+											SurespotLog.v(TAG, "upload complete, deleting %s", m4aFile);
+											new File(m4aFile).delete();
 										}
 									});
 						}
 						else {
+							SurespotLog.w(TAG, "not sending message, ffmpeg error: %d", exitValue);
 							Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
 						}
 
@@ -308,12 +318,11 @@ public class VoiceController {
 				});
 			}
 			catch (Exception e) {
-				SurespotLog.w(TAG, e, "sendVoiceMessage");
+				SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
+				new File(mSendingFile).delete();
 				Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
 			}
-
 		}
-
 	}
 
 	public synchronized static void playVoiceMessage(Context context, final SeekBar seekBar, final SurespotMessage message) {

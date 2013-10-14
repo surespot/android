@@ -530,6 +530,11 @@ public class NetworkController {
 				catch (Exception e) {
 					SurespotLog.w(TAG, e, "createPostFile");
 				}
+				finally {
+					httppost.releaseConnection();
+				}
+				
+				
 				return response;
 
 			}
@@ -582,6 +587,9 @@ public class NetworkController {
 				catch (Exception e) {
 					SurespotLog.w(TAG, e, "createPostFile");
 				}
+				finally {
+					httppost.releaseConnection();
+				}
 				return null;
 
 			}
@@ -610,6 +618,9 @@ public class NetworkController {
 		catch (Exception e) {
 			SurespotLog.w(TAG, e, "getFileStream");
 
+		}
+		finally {
+			httpGet.releaseConnection();
 		}
 		return null;
 	}
