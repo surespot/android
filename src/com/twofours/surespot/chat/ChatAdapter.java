@@ -377,8 +377,12 @@ public class ChatAdapter extends BaseAdapter {
 				if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					chatMessageViewHolder.imageView.setVisibility(View.GONE);
 					chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
+
+					if (type == TYPE_US) {
+						chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
+					}
 					// //if it's ours we don't care if it's been played or not
-					if (type == TYPE_THEM) {
+					else {
 
 						if (item.isVoicePlayed()) {
 							SurespotLog.v(TAG, "chatAdapter setting played to visible");
@@ -391,6 +395,7 @@ public class ChatAdapter extends BaseAdapter {
 							chatMessageViewHolder.voicePlay.setVisibility(View.VISIBLE);
 						}
 					}
+					chatMessageViewHolder.voiceStop.setVisibility(View.GONE);
 					chatMessageViewHolder.tvText.clearAnimation();
 					chatMessageViewHolder.tvText.setVisibility(View.GONE);
 					chatMessageViewHolder.tvText.setText("");

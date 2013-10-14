@@ -29,6 +29,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -261,7 +262,7 @@ public class VoiceController {
 			}
 			else {
 				SurespotLog.v(TAG, "not sending, deleting: %s", mSendingFile);
-				new File(mFileName).delete();				
+				new File(mFileName).delete();
 			}
 
 			VolumeEnvelopeView mEnvelopeView = (VolumeEnvelopeView) activity.findViewById(R.id.volume_envelope);
@@ -411,7 +412,7 @@ public class VoiceController {
 		}
 	}
 
-	public static synchronized void attach(final SeekBar seekBar) {
+	public static void attach(final SeekBar seekBar) {
 		if (isCurrentMessage(seekBar)) {
 			mSeekBar = seekBar;
 		}
@@ -422,16 +423,20 @@ public class VoiceController {
 		updatePlayControls();
 	}
 
-	private synchronized static void updatePlayControls() {
+	private static void updatePlayControls() {
 
 		ImageView voicePlayed = null;
 		ImageView voicePlay = null;
 		ImageView voiceStop = null;
+		View shareable = null;
+		View notshareable = null;
 
 		if (mSeekBar != null) {
 			voicePlay = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlay);
 			voicePlayed = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlayed);
 			voiceStop = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voiceStop);
+			shareable = ((View) mSeekBar.getParent().getParent()).findViewById(R.id.messageImageShareable);
+			notshareable = ((View) mSeekBar.getParent().getParent()).findViewById(R.id.messageImageNotShareable);
 		}
 		if (voicePlayed != null && voiceStop != null) {
 			if (isCurrentMessage()) {
@@ -445,26 +450,39 @@ public class VoiceController {
 			}
 			else {
 				SurespotMessage message = getSeekbarMessage(mSeekBar);
-				if (message != null) {
-					if (message.isVoicePlayed()) {
-						SurespotLog.v(TAG, "updatePlayControls setting played to visible");
+				if (message != null && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+
+					SurespotLog.v(TAG, "message: %s not playing", message);
+
+					if (ChatUtils.isMyMessage(message)) {
 						voicePlayed.setVisibility(View.VISIBLE);
-						if (voicePlay != null) {
-							voicePlay.setVisibility(View.GONE);
-						}
 					}
+					// //if it's ours we don't care if it's been played or not
 					else {
-						SurespotLog.v(TAG, "updatePlayControls setting played to gone");
-						voicePlayed.setVisibility(View.GONE);
-						if (voicePlay != null) {
-							voicePlay.setVisibility(View.VISIBLE);
+
+						if (message.isVoicePlayed()) {
+							SurespotLog.v(TAG, "setting played to visible");
+							voicePlayed.setVisibility(View.VISIBLE);
+							if (voicePlay != null) {
+								voicePlay.setVisibility(View.GONE);
+							}
+						}
+						else {
+							SurespotLog.v(TAG, "setting played to gone");
+							voicePlayed.setVisibility(View.GONE);
+							if (voicePlay != null) {
+								voicePlay.setVisibility(View.VISIBLE);
+							}
 						}
 					}
+					
+					shareable.setVisibility(View.GONE);
+					notshareable.setVisibility(View.GONE);
 					voiceStop.setVisibility(View.GONE);
+
 				}
 			}
 		}
-
 	}
 
 	private static void setProgress(final SeekBar seekBar, final int progress) {
