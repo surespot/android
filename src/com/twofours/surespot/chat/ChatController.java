@@ -40,8 +40,6 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
@@ -751,7 +749,8 @@ public class ChatController {
 
 	}
 
-	private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) throws SurespotMessageSequenceException {
+	private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
+			throws SurespotMessageSequenceException {
 		// see if we have applicable control messages and apply them if necessary
 		ArrayList<SurespotControlMessage> controlMessages = chatAdapter.getControlMessages();
 		ArrayList<SurespotControlMessage> applicableControlMessages = new ArrayList<SurespotControlMessage>();
@@ -2433,18 +2432,18 @@ public class ChatController {
 			}
 			else {
 
-				Handler handler = new Handler(Looper.getMainLooper());
-				handler.post(new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							applyControlMessages(chatAdapter, message, false, true, true);
-						}
-						catch (SurespotMessageSequenceException e) {
-						}
-					}
-				});
+				// Handler handler = new Handler(Looper.getMainLooper());
+				// handler.post(new Runnable() {
+				//
+				// @Override
+				// public void run() {
+				try {
+					applyControlMessages(chatAdapter, message, false, true, false);
+				}
+				catch (SurespotMessageSequenceException e) {					
+				}
+				// }
+				// });
 
 				return true;
 			}
