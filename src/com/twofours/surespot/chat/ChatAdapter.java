@@ -640,7 +640,7 @@ public class ChatAdapter extends BaseAdapter {
 
 				if (message.getId() == null) {
 
-					if (message.getErrorStatus() == 0) {
+					if (message.getErrorStatus() == 0 && message.isAlreadySent()) {
 						SurespotLog.v(TAG, "marking messages errored for user: %s", message.getOtherUser());
 						message.setErrorStatus(500);
 					}
