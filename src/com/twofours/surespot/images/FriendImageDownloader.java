@@ -59,8 +59,8 @@ public class FriendImageDownloader {
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 
 	/**
-	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found
-	 * in the cache and will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
+	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
+	 * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
 	 * 
 	 * @param url
 	 *            The URL of the image to download.
@@ -70,13 +70,11 @@ public class FriendImageDownloader {
 	public static void download(ImageView imageView, Friend friend) {
 		String imageUrl = friend.getImageUrl();
 		SurespotLog.v(TAG, "downloading image for %s", friend);
-		
-		
+
 		if (TextUtils.isEmpty(imageUrl)) {
 			return;
 		}
 
-		
 		Bitmap bitmap = getBitmapFromCache(imageUrl);
 
 		if (bitmap == null) {
@@ -84,19 +82,17 @@ public class FriendImageDownloader {
 			forceDownload(imageView, friend);
 		}
 		else {
-			SurespotLog.v(TAG, "loading bitmap from cache: %s, %s",friend.getName(), imageUrl);
+			SurespotLog.v(TAG, "loading bitmap from cache: %s, %s", friend.getName(), imageUrl);
 			cancelPotentialDownload(imageView, friend);
 			imageView.clearAnimation();
 			imageView.setImageBitmap(bitmap);
-			//imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
-
+			// imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
 
 		}
 	}
 
 	/**
-	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not
-	 * clear.
+	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
 	 */
 	private static void forceDownload(ImageView imageView, Friend friend) {
 		if (cancelPotentialDownload(imageView, friend)) {
@@ -108,8 +104,8 @@ public class FriendImageDownloader {
 	}
 
 	/**
-	 * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if
-	 * the download in progress deals with the same url. The download is not stopped in that case.
+	 * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
+	 * progress deals with the same url. The download is not stopped in that case.
 	 */
 	private static boolean cancelPotentialDownload(ImageView imageView, Friend friend) {
 		BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
@@ -172,17 +168,28 @@ public class FriendImageDownloader {
 
 			imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mFriend.getImageUrl());
 
+			if (mCancelled) {
+				try {
+					if (imageStream != null) {
+						imageStream.close();
+					}
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, e, "FriendImage DownloaderTask ioe");
+				}
+				return;
+			}
+
 			if (!mCancelled && imageStream != null) {
 				PipedOutputStream out = new PipedOutputStream();
-				PipedInputStream inputStream;
+				PipedInputStream inputStream = null;
 				try {
 					inputStream = new PipedInputStream(out);
 
-					EncryptionController.runDecryptTask(mFriend.getImageVersion(), IdentityController.getLoggedInUser(),
-							mFriend.getImageVersion(), mFriend.getImageIv(), new BufferedInputStream(imageStream), out);
+					EncryptionController.runDecryptTask(mFriend.getImageVersion(), IdentityController.getLoggedInUser(), mFriend.getImageVersion(),
+							mFriend.getImageIv(), new BufferedInputStream(imageStream), out);
 
 					if (mCancelled) {
-						inputStream.close();
 						return;
 					}
 
@@ -195,11 +202,31 @@ public class FriendImageDownloader {
 				}
 				catch (InterruptedIOException ioe) {
 
-					SurespotLog.w(TAG, "BitmapDownloaderTask ioe", ioe);
+					SurespotLog.w(TAG, ioe, "FriendImage DownloaderTask ioe");
 
 				}
 				catch (IOException e) {
-					SurespotLog.w(TAG, "BitmapDownloaderTask e", e);
+					SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+				}
+				finally {
+
+					try {
+						if (imageStream != null) {
+							imageStream.close();
+						}
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+					}
+
+					try {
+						if (inputStream != null) {
+							inputStream.close();
+						}
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+					}
 				}
 			}
 
@@ -241,7 +268,7 @@ public class FriendImageDownloader {
 
 								SurespotLog.v(TAG, "setting image for %s", mFriend.getName());
 								imageView.setImageBitmap(finalBitmap);
-							//	imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
+								// imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
 
 							}
 						});
@@ -291,8 +318,8 @@ public class FriendImageDownloader {
 	 * A fake Drawable that will be attached to the imageView while the download is in progress.
 	 * 
 	 * <p>
-	 * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure
-	 * that only the last started download process can bind its result, independently of the download finish order.
+	 * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure that only the last
+	 * started download process can bind its result, independently of the download finish order.
 	 * </p>
 	 */
 	public static class DownloadedDrawable extends ColorDrawable {

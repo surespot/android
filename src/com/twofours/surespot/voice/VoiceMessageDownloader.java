@@ -185,14 +185,25 @@ public class VoiceMessageDownloader {
 					voiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 				}
 
+				if (mCancelled) {
+					try {
+						if (voiceStream != null) {
+							voiceStream.close();
+						}
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+					}
+					return;
+				}
+
 				if (!mCancelled && voiceStream != null) {
 					PipedOutputStream out = new PipedOutputStream();
-					PipedInputStream inputStream;
+					PipedInputStream inputStream = null;
 					try {
 						inputStream = new PipedInputStream(out);
 
 						if (mCancelled) {
-							inputStream.close();
 							mMessage.setLoaded(true);
 							mMessage.setLoading(false);
 							mChatAdapter.checkLoaded();
@@ -214,11 +225,31 @@ public class VoiceMessageDownloader {
 					}
 					catch (InterruptedIOException ioe) {
 
-						SurespotLog.w(TAG, ioe, "playVoiceMessage");
+						SurespotLog.w(TAG, ioe, "VoiceMessageDownloaderTask");
 
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, e, "playVoiceMessage");
+						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+					}
+					finally {
+
+						try {
+							if (voiceStream != null) {
+								voiceStream.close();
+							}
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+						}
+
+						try {
+							if (inputStream != null) {
+								inputStream.close();
+							}
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+						}
 					}
 				}
 			}
@@ -264,7 +295,7 @@ public class VoiceMessageDownloader {
 		}
 
 	}
-	
+
 	class DecryptionTaskWrapper {
 		private final WeakReference<VoiceMessageDownloaderTask> decryptionTaskReference;
 

@@ -32,13 +32,13 @@ public class ImageViewActivity extends SherlockActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		// PROD Gingerbread does not like FLAG_SECURE
 		if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
 				|| android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 		}
-		
+
 		setContentView(R.layout.activity_image_view);
 		Utils.configureActionBar(this, getString(R.string.image), getString(R.string.pan_and_zoom), true);
 
@@ -53,23 +53,42 @@ public class ImageViewActivity extends SherlockActivity {
 					@Override
 					protected Bitmap doInBackground(Void... params) {
 
-						InputStream imageStream = MainActivity.getNetworkController().getFileStream(ImageViewActivity.this,
-								message.getData());
+						InputStream imageStream = MainActivity.getNetworkController().getFileStream(ImageViewActivity.this, message.getData());
 
 						Bitmap bitmap = null;
 						PipedOutputStream out = new PipedOutputStream();
-						PipedInputStream inputStream;
+						PipedInputStream inputStream = null;
 						try {
 							inputStream = new PipedInputStream(out);
 
-							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-									message.getIv(), new BufferedInputStream(imageStream), out);
+							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
+									new BufferedInputStream(imageStream), out);
 
 							bitmap = BitmapFactory.decodeStream(inputStream);
 
 						}
 						catch (IOException e) {
-							SurespotLog.w(TAG, "BitmapDownloaderTask", e);
+							SurespotLog.w(TAG, e, "ImageViewActivity");
+						}
+						finally {
+
+							try {
+								if (imageStream != null) {
+									imageStream.close();
+								}
+							}
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "ImageViewActivity");
+							}
+
+							try {
+								if (inputStream != null) {
+									inputStream.close();
+								}
+							}
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "ImageViewActivity");
+							}
 						}
 
 						return bitmap;
@@ -82,7 +101,7 @@ public class ImageViewActivity extends SherlockActivity {
 						imageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
 						if (result != null) {
 							imageView.setImageBitmap(result);
-							
+
 						}
 						else {
 							finish();

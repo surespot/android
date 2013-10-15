@@ -80,7 +80,7 @@ public class MessageImageDownloader {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		if (bitmap == null) {
-			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());			
+			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
 			forceDownload(imageView, message);
 		}
 		else {
@@ -183,16 +183,28 @@ public class MessageImageDownloader {
 					imageStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
 				}
 				catch (FileNotFoundException e) {
-					SurespotLog.w(TAG, e, "BitmapDownloaderTask");
+					SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
 				}
 			}
 			else {
 				imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 			}
 
+			if (mCancelled) {
+				try {
+					if (imageStream != null) {
+						imageStream.close();
+					}
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+				}
+				return;
+			}
+
 			if (!mCancelled && imageStream != null) {
 				PipedOutputStream out = new PipedOutputStream();
-				PipedInputStream inputStream;
+				PipedInputStream inputStream = null;
 				try {
 					inputStream = new PipedInputStream(out);
 
@@ -200,7 +212,6 @@ public class MessageImageDownloader {
 							new BufferedInputStream(imageStream), out);
 
 					if (mCancelled) {
-						inputStream.close();
 						mMessage.setLoaded(true);
 						mMessage.setLoading(false);
 						mChatAdapter.checkLoaded();
@@ -219,11 +230,31 @@ public class MessageImageDownloader {
 				}
 				catch (InterruptedIOException ioe) {
 
-					SurespotLog.w(TAG, "BitmapDownloaderTask ioe", ioe);
+					SurespotLog.w(TAG, ioe, "MessageImage ioe");
 
 				}
 				catch (IOException e) {
-					SurespotLog.w(TAG, "BitmapDownloaderTask e", e);
+					SurespotLog.w(TAG, e, "MessageImage e");
+				}
+				finally {
+
+					try {
+						if (imageStream != null) {
+							imageStream.close();
+						}
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+					}
+
+					try {
+						if (inputStream != null) {
+							inputStream.close();
+						}
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+					}
 				}
 			}
 
@@ -267,7 +298,7 @@ public class MessageImageDownloader {
 
 								imageView.setImageBitmap(finalBitmap);
 								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-									
+
 								UIUtils.updateDateAndSize(mMessage, (View) imageView.getParent());
 								mChatAdapter.checkLoaded();
 
@@ -346,8 +377,6 @@ public class MessageImageDownloader {
 		}
 
 	}
-	
-	
 
 	/**
 	 * Adds this bitmap to the cache.

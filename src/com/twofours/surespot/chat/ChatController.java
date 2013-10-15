@@ -652,7 +652,7 @@ public class ChatController {
 											message.getData());
 
 									PipedOutputStream out = new PipedOutputStream();
-									PipedInputStream inputStream;
+									PipedInputStream inputStream = null;
 									try {
 										inputStream = new PipedInputStream(out);
 
@@ -669,6 +669,26 @@ public class ChatController {
 									}
 									catch (IOException e) {
 										SurespotLog.w(TAG, e, "handleMessage");
+									}
+									finally {
+										
+										try {
+											if (inputStream != null) {
+												inputStream.close();
+											}
+										}
+										catch (IOException e) {
+											SurespotLog.w(TAG, e, "handleMessage");
+										}
+										
+										try {
+											if (encryptedVoiceStream != null) {
+												encryptedVoiceStream.close();
+											}
+										}
+										catch (IOException e) {
+											SurespotLog.w(TAG, e, "handleMessage");
+										}
 									}
 								}
 							}
@@ -1103,9 +1123,9 @@ public class ChatController {
 					JSONArray controlMessages = response.optJSONArray("controlMessages");
 
 					String messages = response.optString("messages", null);
-					
-					//don't update messages if we didn't query for them
-					//this prevents setting message state to error before we get the true result
+
+					// don't update messages if we didn't query for them
+					// this prevents setting message state to error before we get the true result
 					if (fetchMessageId > -1) {
 						handleMessages(username, messages);
 					}
@@ -1444,7 +1464,7 @@ public class ChatController {
 			return;
 		}
 
-		//if we received new messages
+		// if we received new messages
 		if (jsonMessageString != null) {
 
 			int sentByMeCount = 0;
@@ -1509,15 +1529,14 @@ public class ChatController {
 					// set the last viewed id to the difference caused by their messages
 					friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
 				}
-		
+
 				mFriendAdapter.sort();
 				mFriendAdapter.notifyDataSetChanged();
-				
+
 				scrollToEnd(username);
 			}
 		}
-		
-		
+
 		chatAdapter.sort();
 		chatAdapter.doneCheckingSequence();
 		// mark messages left in chatAdapter with no id as errored
@@ -2212,8 +2231,8 @@ public class ChatController {
 	public void resendFileMessage(String to, final String messageIv) {
 		final ChatAdapter chatAdapter = mChatAdapters.get(to);
 		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
-			
-		//reset status flags
+
+		// reset status flags
 		message.setErrorStatus(0);
 		message.setAlreadySent(false);
 		chatAdapter.notifyDataSetChanged();
@@ -2224,9 +2243,9 @@ public class ChatController {
 			public void handleResponse(Boolean result) {
 				setProgress("resend", false);
 				if (!result) {
-					message.setErrorStatus(500);					
+					message.setErrorStatus(500);
 				}
-						
+
 				message.setAlreadySent(true);
 				chatAdapter.notifyDataSetChanged();
 			}
