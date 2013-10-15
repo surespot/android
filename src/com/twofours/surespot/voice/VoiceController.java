@@ -29,7 +29,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -431,15 +430,11 @@ public class VoiceController {
 		ImageView voicePlayed = null;
 		ImageView voicePlay = null;
 		ImageView voiceStop = null;
-		View shareable = null;
-		View notshareable = null;
 
 		if (mSeekBar != null) {
 			voicePlay = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlay);
 			voicePlayed = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voicePlayed);
 			voiceStop = (ImageView) ((View) mSeekBar.getParent()).findViewById(R.id.voiceStop);
-			shareable = ((View) mSeekBar.getParent().getParent()).findViewById(R.id.messageImageShareable);
-			notshareable = ((View) mSeekBar.getParent().getParent()).findViewById(R.id.messageImageNotShareable);
 		}
 		if (voicePlayed != null && voiceStop != null) {
 			if (isCurrentMessage()) {
@@ -453,7 +448,7 @@ public class VoiceController {
 			}
 			else {
 				SurespotMessage message = getSeekbarMessage(mSeekBar);
-				if (message != null && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+				if (message != null) {
 
 					SurespotLog.v(TAG, "message: %s not playing", message);
 
@@ -478,13 +473,10 @@ public class VoiceController {
 							}
 						}
 					}
-
-					shareable.setVisibility(View.GONE);
-					notshareable.setVisibility(View.GONE);
+				
 					voiceStop.setVisibility(View.GONE);
-
 				}
-			}
+			}	
 		}
 	}
 

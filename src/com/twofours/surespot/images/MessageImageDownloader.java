@@ -37,7 +37,6 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
@@ -112,8 +111,6 @@ public class MessageImageDownloader {
 			imageView.setImageDrawable(downloadedDrawable);
 			message.setLoaded(false);
 			message.setLoading(true);
-			//TextView dataSize = (TextView) ((View) imageView.getParent()).findViewById(R.id.messageSize);
-			//dataSize.setVisibility(View.GONE);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
 		}
 	}
@@ -270,20 +267,7 @@ public class MessageImageDownloader {
 
 								imageView.setImageBitmap(finalBitmap);
 								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-								
-								ImageView ivShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageShareable);
-								ImageView ivNotShareable = (ImageView) ((View) imageView.getParent()).findViewById(R.id.messageImageNotShareable);
-
-								if (mMessage.isShareable()) {
-									ivShareable.setVisibility(View.VISIBLE);
-									ivNotShareable.setVisibility(View.GONE);
-								}
-								else {
-									ivShareable.setVisibility(View.GONE);
-									ivNotShareable.setVisibility(View.VISIBLE);
-								}
-
-								
+									
 								UIUtils.updateDateAndSize(mMessage, (View) imageView.getParent());
 								mChatAdapter.checkLoaded();
 
