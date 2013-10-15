@@ -91,10 +91,12 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		mBillingPurchaseResponseHandler = new IAsyncCallback<Integer>() {
 
 			@Override
-			public void handleResponse(Integer response) {
+			public void handleResponse(Integer response) {				
 				switch (response) {
 				case IabHelper.BILLING_RESPONSE_RESULT_OK:
-					dismissAllowingStateLoss();
+					if (isAdded()) {
+						dismissAllowingStateLoss();
+					}
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
@@ -115,8 +117,9 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
 					if (isAdded()) {
 						Utils.makeToast(getActivity(), getString(R.string.billing_error));
+						dismissAllowingStateLoss();
 					}
-					dismissAllowingStateLoss();
+
 					break;
 
 				}
@@ -131,7 +134,6 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 				SurespotLog.v(TAG, "setup response: %d", response);
 				mBillingState = response;
 				setBillingState(mBillingState);
-
 			}
 		};
 
@@ -175,8 +177,9 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
 			if (isAdded()) {
 				Utils.makeToast(getActivity(), getString(R.string.billing_error));
+				dismissAllowingStateLoss();
 			}
-			dismissAllowingStateLoss();
+
 			break;
 
 		}
@@ -210,9 +213,4 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		}
 	}
 
-	@Override
-	public void onSaveInstanceState(Bundle arg0) {
-		super.onSaveInstanceState(arg0);
-		arg0.putInt("billingState", mBillingState);
-	}
 }
