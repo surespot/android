@@ -408,11 +408,12 @@ public class ExportIdentityActivity extends SherlockActivity {
 			byte[] gzIdData = out.toByteArray();
 
 			ByteArrayContent content = new ByteArrayContent("application/octet-stream", gzIdData);
-			String filename = IdentityController.caseInsensitivize(username) + IdentityController.IDENTITY_EXTENSION;
+			String caseInsensitiveUsername = IdentityController.caseInsensitivize(username); 
+			String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
 
 			// see if identity exists
 			com.google.api.services.drive.model.File file = null;
-			ChildReference idFile = getIdentityFile(idDirId, username);
+			ChildReference idFile = getIdentityFile(idDirId, caseInsensitiveUsername);
 			if (idFile != null) {
 
 				// update
@@ -488,7 +489,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 				// delete all but one identity...should never happen
 				SurespotLog.w(TAG, "$d identities with the same filename found on google drive: %s", items.size(), username);
 
-				for (int i = items.size(); i > 0; i--) {
+				for (int i = items.size(); i > 1; i--) {
 					SurespotLog.w(TAG, "deleting identity file from google drive %s", username);
 					mDriveHelper.getDriveService().files().delete(items.get(i - 1).getId()).execute();
 				}
