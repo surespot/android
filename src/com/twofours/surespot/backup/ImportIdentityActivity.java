@@ -320,7 +320,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		// query the filesystem for identities
 		final File exportDir = FileUtils.getIdentityExportDir();
-		File[] files = IdentityController.getIdentityFiles(this, exportDir.getPath());
+		File[] files = IdentityController.getExportIdentityFiles(this, exportDir.getPath());
 
 		TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 

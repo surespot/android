@@ -104,7 +104,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-				String identityFile = identityDir + File.separator + adapter.getItem(position) + IdentityController.IDENTITY_EXTENSION;
+				String identityFile = identityDir + File.separator + IdentityController.caseInsensitivize(adapter.getItem(position)) + IdentityController.IDENTITY_EXTENSION;
 				tvPath.setText(identityFile);
 			}
 
@@ -408,7 +408,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			byte[] gzIdData = out.toByteArray();
 
 			ByteArrayContent content = new ByteArrayContent("application/octet-stream", gzIdData);
-			String filename = username + IdentityController.IDENTITY_EXTENSION;
+			String filename = IdentityController.caseInsensitivize(username) + IdentityController.IDENTITY_EXTENSION;
 
 			// see if identity exists
 			com.google.api.services.drive.model.File file = null;
@@ -432,7 +432,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			pr.setId(idDirId);
 			ArrayList<ParentReference> parent = new ArrayList<ParentReference>(1);
 			parent.add(pr);
-			file.setParents(parent);
+			file.setParents(parent);			
 			file.setTitle(filename);
 			file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
 

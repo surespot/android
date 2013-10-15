@@ -59,35 +59,48 @@ public class IdentityController {
 		if (identity != null) {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
 			Utils.putSharedPrefsString(context, "referrer", null);
-			SurespotApplication.getCachingService().login(identity, cookie);		
-			//if we're logging in we probably didn't just buy it
+			SurespotApplication.getCachingService().login(identity, cookie);
+			// if we're logging in we probably didn't just buy it
 			SurespotApplication.getBillingController().clearJustPurchased();
-		} else {
+		}
+		else {
 			SurespotLog.w(TAG, "getIdentity null");
 		}
 	}
 
 	public static synchronized void createIdentity(final Context context, final String username, final String password, final String salt,
 			final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
-		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = new SurespotIdentity(username, salt);
 		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
-		saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
+		saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 		setLoggedInUser(context, identity, cookie);
 
 	}
 
 	public static void updatePassword(Context context, String username, String currentPassword, String newPassword, String newSalt) {
-		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = getIdentity(context, username, currentPassword);
 		identity.setSalt(newSalt);
 		if (identity != null) {
-			saveIdentity(context, identityDir, identity, newPassword + CACHE_IDENTITY_ID);
+			saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
 		}
 	}
 
-	private static synchronized String saveIdentity(Context backupContext, String identityDir, SurespotIdentity identity, String password) {
-		String filename = identity.getUsername() + IDENTITY_EXTENSION;
+	private static synchronized String saveIdentity(Context backupContext, boolean internal, SurespotIdentity identity, String password) {
+		String identityDir = null;
+		String filename = null;
+		// export files don't have case sensitivity so we have to massage the filename to indicate case
+		if (internal) {
+			filename = identity.getUsername() + IDENTITY_EXTENSION;
+			identityDir = FileUtils.getIdentityDir(backupContext);
+		}
+		else {
+			filename = caseInsensitivize(identity.getUsername()) + IDENTITY_EXTENSION;
+			identityDir = FileUtils.getIdentityExportDir().getAbsolutePath();
+		}
+
+		if (identityDir == null || filename == null) {
+			return null;
+		}
 
 		byte[] identityBytes = encryptIdentity(identity, password);
 
@@ -119,7 +132,8 @@ public class IdentityController {
 
 		catch (FileNotFoundException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		return null;
@@ -152,7 +166,7 @@ public class IdentityController {
 		}
 
 		catch (JSONException e) {
-			SurespotLog.w(TAG, e, "saveIdentity");
+			SurespotLog.w(TAG, e, "encryptIdentity");
 		}
 		return null;
 	}
@@ -202,12 +216,14 @@ public class IdentityController {
 											SurespotLog.i(TAG, error, "exportIdentity");
 											callback.handleResponse(null, null);
 										}
-									} else {
+									}
+									else {
 										callback.handleResponse(null, null);
 									}
 								}
 							});
-				} else {
+				}
+				else {
 					callback.handleResponse(null, null);
 				}
 				return null;
@@ -243,10 +259,12 @@ public class IdentityController {
 
 		if (exists && !overwrite) {
 			return false;
-		} else {
+		}
+		else {
 			if (exists) {
 				return identityFile.isFile() && identityFile.canWrite();
-			} else {
+			}
+			else {
 
 				try {
 					// make sure we'll have the space to write the identity file
@@ -255,7 +273,8 @@ public class IdentityController {
 					fos.close();
 					identityFile.delete();
 					return true;
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					return false;
 				}
 			}
@@ -292,7 +311,13 @@ public class IdentityController {
 
 			// delete export identity
 			final File exportDir = FileUtils.getIdentityExportDir();
-			identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
+
+			// could potentially delete the wrong file so don't delete the case insensitive version
+			// identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
+			// file = new File(identityFilename);
+			// file.delete();
+
+			identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
 			file = new File(identityFilename);
 			file.delete();
 
@@ -301,7 +326,8 @@ public class IdentityController {
 			String deletedFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_DELETED_EXTENSION;
 			try {
 				new File(deletedFilename).createNewFile();
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				SurespotLog.e(TAG, e, "could not create deleted identity file: %s", deletedFilename);
 			}
 
@@ -326,18 +352,43 @@ public class IdentityController {
 	public static SurespotIdentity getIdentity(Context context, String username, String password) {
 		SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(username);
 		if (identity == null) {
-			identity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+			identity = loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
 		}
 		return identity;
 
 	}
 
-	private synchronized static SurespotIdentity loadIdentity(Context context, String dir, String username, String password) {
-		String identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
+	private synchronized static SurespotIdentity loadIdentity(Context context, boolean internal, String username, String password) {
+		String dir = null;
+		String identityFilename = null;
+		boolean checkCase = true;
+		// try case insensitive filename
+		if (internal) {
+			dir = FileUtils.getIdentityDir(context);
+			identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
+		}
+		else {
+			dir = FileUtils.getIdentityExportDir().getAbsolutePath();
+			identityFilename = dir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
+			checkCase = false;
+		}
+
+		if (identityFilename == null || dir == null) {
+			return null;
+		}
+
 		File idFile = new File(identityFilename);
 
-		if (!idFile.canRead()) {
+		if (!idFile.canRead() && !internal) {
 			SurespotLog.i(TAG, "identity file: %s not present", identityFilename);
+
+			// try case sensitive filename
+			identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
+			idFile = new File(identityFilename);
+
+			if (!idFile.canRead()) {
+				SurespotLog.i(TAG, "identity file: %s not present", identityFilename);
+			}
 			return null;
 		}
 
@@ -351,17 +402,18 @@ public class IdentityController {
 			}
 
 			if (idBytes != null) {
-				return decryptIdentity(idBytes, username, password);
+				return decryptIdentity(idBytes, username, password, checkCase);
 			}
 
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			SurespotLog.w(TAG, e, "loadIdentity");
 		}
 
 		return null;
 	}
 
-	private static SurespotIdentity decryptIdentity(byte[] idBytes, String username, String password) {
+	private static SurespotIdentity decryptIdentity(byte[] idBytes, String username, String password, boolean checkCase) {
 		String identity = EncryptionController.symmetricDecryptSyncPK(password, idBytes);
 
 		if (identity == null) {
@@ -374,13 +426,13 @@ public class IdentityController {
 			String name = jsonIdentity.getString("username");
 			String salt = jsonIdentity.getString("salt");
 
-			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", username, salt);
-			if (!name.equals(username)) {
+			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", name, salt);
+			if (checkCase && !name.equals(username) || (!checkCase && !name.toLowerCase().equals(username.toLowerCase()))) {
 				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username), "internal identity did not match");
 				return null;
 			}
 
-			SurespotIdentity si = new SurespotIdentity(username, salt);
+			SurespotIdentity si = new SurespotIdentity(name, salt);
 
 			JSONArray keys = jsonIdentity.getJSONArray("keys");
 			for (int i = 0; i < keys.length(); i++) {
@@ -397,31 +449,33 @@ public class IdentityController {
 			}
 
 			return si;
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 		}
 		return null;
 
 	}
 
-	public static void importIdentity(final Context context, File exportDir, final String username, final String password,
+	public static void importIdentity(final Context context, File exportDir, String username, final String password,
 			final IAsyncCallback<IdentityOperationResult> callback) {
-		final SurespotIdentity identity = loadIdentity(context, exportDir.getPath(), username, password + EXPORT_IDENTITY_ID);
+		final SurespotIdentity identity = loadIdentity(context, false, username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
 
 			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+			final String finalusername = identity.getUsername();
 			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
 				networkController = new NetworkController(context, null);
 			}
-			networkController.validate(username, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword),
+			networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
 					new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 
 							// should never happen
-							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+							SurespotIdentity existingIdentity = loadIdentity(context, true, finalusername, password + CACHE_IDENTITY_ID);
 							if (existingIdentity != null) {
 								int importVersion = Integer.parseInt(identity.getLatestVersion());
 								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
@@ -431,11 +485,12 @@ public class IdentityController {
 								}
 							}
 
-							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
-							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+							}
+							else {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
 										false));
 							}
 						}
@@ -457,17 +512,19 @@ public class IdentityController {
 
 								default:
 									SurespotLog.i(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
 											false));
 								}
-							} else {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+							}
+							else {
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
 										false));
 							}
 						}
 					});
 
-		} else {
+		}
+		else {
 			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 		}
 
@@ -475,7 +532,7 @@ public class IdentityController {
 
 	public static void importIdentityBytes(final Context context, final String username, final String password, byte[] identityBytes,
 			final IAsyncCallback<IdentityOperationResult> callback) {
-		final SurespotIdentity identity = decryptIdentity(identityBytes, username, password + EXPORT_IDENTITY_ID);
+		final SurespotIdentity identity = decryptIdentity(identityBytes, username, password + EXPORT_IDENTITY_ID, true);
 		if (identity != null) {
 
 			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
@@ -491,7 +548,7 @@ public class IdentityController {
 						public void onSuccess(int statusCode, String content) {
 
 							// should never happen
-							SurespotIdentity existingIdentity = loadIdentity(context, FileUtils.getIdentityDir(context), username, password + CACHE_IDENTITY_ID);
+							SurespotIdentity existingIdentity = loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
 							if (existingIdentity != null) {
 								int importVersion = Integer.parseInt(identity.getLatestVersion());
 								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
@@ -501,10 +558,11 @@ public class IdentityController {
 								}
 							}
 
-							String file = saveIdentity(context, FileUtils.getIdentityDir(context), identity, password + CACHE_IDENTITY_ID);
+							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
-							} else {
+							}
+							else {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
 										false));
 							}
@@ -530,26 +588,29 @@ public class IdentityController {
 									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
 											false));
 								}
-							} else {
+							}
+							else {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
 										false));
 							}
 						}
 					});
 
-		} else {
+		}
+		else {
 			callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
 		}
 
 	}
 
-	public static void exportIdentity(final Context context, final String username, final String password, final IAsyncCallback<String> callback) {
-		final SurespotIdentity identity = getIdentity(context, username, password);
+	public static void exportIdentity(final Context context, String username, final String password, final IAsyncCallback<String> callback) {
+		final SurespotIdentity identity = getIdentity(context, username, password);		
 		if (identity == null) {
 			callback.handleResponse(null);
 			return;
 		}
 
+		final String finalUsername = identity.getUsername();
 		final File exportDir = FileUtils.getIdentityExportDir();
 		if (FileUtils.ensureDir(exportDir.getPath())) {
 			byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
@@ -559,8 +620,8 @@ public class IdentityController {
 			MainActivity.getNetworkController().validate(username, dPassword,
 					EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
 						public void onSuccess(int statusCode, String content) {
-							String path = saveIdentity(null, exportDir.getPath(), identity, password + EXPORT_IDENTITY_ID);
-							callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, username, path));
+							String path = saveIdentity(null, false, identity, password + EXPORT_IDENTITY_ID);
+							callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, finalUsername, path));
 						}
 
 						public void onFailure(Throwable error) {
@@ -581,12 +642,14 @@ public class IdentityController {
 									SurespotLog.i(TAG, error, "exportIdentity");
 									callback.handleResponse(null);
 								}
-							} else {
+							}
+							else {
 								callback.handleResponse(null);
 							}
 						}
 					});
-		} else {
+		}
+		else {
 			callback.handleResponse(null);
 		}
 
@@ -606,7 +669,8 @@ public class IdentityController {
 			FileUtils.writeFile(pkFile, keyPair);
 
 			return pkFile;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			SurespotLog.w(TAG, e, "saveIdentity");
 		}
 		return null;
@@ -642,7 +706,8 @@ public class IdentityController {
 				savePublicKeyPair(username, version, json.toString());
 				SurespotLog.v(TAG, "loaded public keys from server");
 				return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
-			} catch (JSONException e) {
+			}
+			catch (JSONException e) {
 				SurespotLog.w(TAG, e, "recreatePublicKeyPair");
 			}
 		}
@@ -666,7 +731,8 @@ public class IdentityController {
 				// alert alert
 				SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."), "could not verify DH key against server signature");
 				return null;
-			} else {
+			}
+			else {
 				SurespotLog.i(TAG, "DH key successfully verified");
 			}
 
@@ -675,12 +741,14 @@ public class IdentityController {
 				// alert alert
 				SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."), "could not verify DSA key against server signature");
 				return null;
-			} else {
+			}
+			else {
 				SurespotLog.i(TAG, "DSA key successfully verified");
 			}
 
 			return json;
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			SurespotLog.w(TAG, e, "recreatePublicIdentity");
 		}
 		return null;
@@ -699,7 +767,7 @@ public class IdentityController {
 
 		if (files != null) {
 			for (File f : files) {
-				identityNames.add(f.getName().substring(0, f.getName().length() - IDENTITY_EXTENSION.length()));
+				identityNames.add(caseSensitivize(f.getName().substring(0, f.getName().length() - IDENTITY_EXTENSION.length())));
 			}
 		}
 
@@ -715,33 +783,12 @@ public class IdentityController {
 
 	}
 
-	public static List<String> getDeletedIdentityNames(Context context) {
-		String dir = getIdentityDir(context);
-
-		ArrayList<String> identityNames = new ArrayList<String>();
-		File[] files = new File(dir).listFiles(new FilenameFilter() {
-
-			@Override
-			public boolean accept(File dir, String filename) {
-				return filename.endsWith(IDENTITY_DELETED_EXTENSION);
-			}
-		});
-
-		if (files != null) {
-			for (File f : files) {
-				identityNames.add(getIdentityNameFromFile(f));
-			}
-		}
-
-		return identityNames;
-	}
-
 	public static String getIdentityNameFromFile(File file) {
 		return getIdentityNameFromFilename(file.getName());
 	}
 
 	public static String getIdentityNameFromFilename(String filename) {
-		return filename.substring(0, filename.length() - IDENTITY_DELETED_EXTENSION.length());
+		return caseSensitivize(filename.substring(0, filename.length() - IDENTITY_EXTENSION.length()));
 	}
 
 	public static synchronized int getIdentityCount(Context context) {
@@ -752,7 +799,7 @@ public class IdentityController {
 		return getIdentityNames(context, FileUtils.getIdentityDir(context));
 	}
 
-	public static File[] getIdentityFiles(Context context, String dir) {
+	public static File[] getExportIdentityFiles(Context context, String dir) {
 		File[] files = new File(dir).listFiles(new FilenameFilter() {
 
 			@Override
@@ -769,7 +816,7 @@ public class IdentityController {
 		setLoggedInUser(context, identity, cookie);
 	}
 
-	public static void logout() {		
+	public static void logout() {
 		if (hasLoggedInUser()) {
 			if (MainActivity.getNetworkController() != null) {
 				MainActivity.getNetworkController().logout();
@@ -792,7 +839,7 @@ public class IdentityController {
 			SurespotLog.v(TAG, "Could not load public key pair file: %s", pkFilename);
 			return null;
 		}
-		
+
 		long lastModified = pkFile.lastModified();
 
 		try {
@@ -804,7 +851,8 @@ public class IdentityController {
 			return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
 					EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")), lastModified);
 
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			SurespotLog.w(TAG, "loadPublicKeyPair", e);
 		}
 		return null;
@@ -828,7 +876,8 @@ public class IdentityController {
 		if (service != null) {
 			return service.getLoggedInUser();
 
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -866,10 +915,9 @@ public class IdentityController {
 	}
 
 	public static void rollKeys(Context context, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {
-		String identityDir = FileUtils.getIdentityDir(context);
 		SurespotIdentity identity = getIdentity(context, username, password);
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
-		String idFile = saveIdentity(context, identityDir, identity, password + CACHE_IDENTITY_ID);
+		String idFile = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 		// big problems if we can't save it, but shouldn't happen as we create
 		// the file first
 		if (idFile == null) {
@@ -906,7 +954,8 @@ public class IdentityController {
 			// Utils.makeLongToast(context, "identity: " + username +
 			// " revoked");
 
-		} else {
+		}
+		else {
 			SurespotApplication.getCachingService().updateLatestVersion(username, version);
 		}
 
@@ -918,6 +967,40 @@ public class IdentityController {
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(intent);
 
+	}
+
+	// convert to case insensitive by prepending uppercase chars with _ and _
+	public static String caseInsensitivize(String string) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+
+			if (Character.isUpperCase(c)) {
+				sb.append("_");
+				sb.append(c);
+			}
+			else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+
+	private static String caseSensitivize(String string) {
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+
+			if (c == '_') {
+				sb.append(Character.toUpperCase(string.charAt(++i)));
+			}
+			else {
+				sb.append(c);
+			}
+		}
+
+		return sb.toString();
 	}
 
 }
