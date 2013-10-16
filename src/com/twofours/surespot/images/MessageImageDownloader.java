@@ -64,7 +64,13 @@ public class MessageImageDownloader {
 	private static BitmapCache mBitmapCache = new BitmapCache();
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 	private ChatAdapter mChatAdapter;
-	private static HashMap<ImageView, Object> mImageViews = new HashMap<ImageView, Object>();
+	private static HashMap<ImageView, Object> mImageViews;
+
+	static {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			mImageViews = new HashMap<ImageView, Object>();
+		}
+	}
 
 	public MessageImageDownloader(ChatAdapter chatAdapter) {
 		mChatAdapter = chatAdapter;
@@ -83,7 +89,9 @@ public class MessageImageDownloader {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
 		// keep a handle on the image view so we can purge the bitmap later
-		mImageViews.put(imageView, null);
+		if (mImageViews != null) {
+			mImageViews.put(imageView, null);
+		}
 
 		if (bitmap == null) {
 			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
@@ -364,13 +372,13 @@ public class MessageImageDownloader {
 
 	public static void evictCache() {
 		// evict cache on gingerbread because bitmap garbage collection is fucked
-
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB && mImageViews != null) {
 
 			ArrayList<Bitmap> preserve = new ArrayList<Bitmap>();
 
 			// make sure we're not using the bitmaps before we recycle
 			for (ImageView view : mImageViews.keySet()) {
+				//don't evict visible bitmaps
 				if (!view.isShown()) {
 					view.setImageDrawable(null);
 				}
@@ -388,7 +396,7 @@ public class MessageImageDownloader {
 			preserve.clear();
 		}
 		else {
-			//otherwise just trim it 
+			// otherwise just trim it
 			mBitmapCache.trimToSize(10);
 		}
 	}
