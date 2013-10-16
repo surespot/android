@@ -1121,7 +1121,10 @@ public class ChatController {
 				public void onSuccess(int statusCode, JSONObject response) {
 
 					JSONArray controlMessages = response.optJSONArray("controlMessages");
-
+					if (controlMessages != null) {
+						handleControlMessages(username, controlMessages);
+					}					
+					
 					String messages = response.optString("messages", null);
 
 					// don't update messages if we didn't query for them
@@ -1129,11 +1132,7 @@ public class ChatController {
 					if (fetchMessageId > -1 || forceMessageUpdate) {
 						handleMessages(username, messages);
 					}
-
-					if (controlMessages != null) {
-						handleControlMessages(username, controlMessages);
-					}
-
+				
 					setProgress(username, false);
 
 				}
