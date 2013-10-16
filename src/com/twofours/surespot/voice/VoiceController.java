@@ -40,7 +40,7 @@ public class VoiceController {
 	private static String mFileName = null;
 	private static String mUsername = null;
 
-	public static final int SEND_THRESHOLD = 4000;
+	public static final int SEND_THRESHOLD = 3500;
 	public static final int MAX_TIME = 10000;
 	public static final int INTERVAL = 50;
 
