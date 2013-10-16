@@ -388,7 +388,8 @@ public class ChatAdapter extends BaseAdapter {
 				if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					chatMessageViewHolder.imageView.setVisibility(View.GONE);
 					chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
-
+					chatMessageViewHolder.messageSize.setVisibility(View.GONE);
+					
 					if (type == TYPE_US) {
 						chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
 					}
