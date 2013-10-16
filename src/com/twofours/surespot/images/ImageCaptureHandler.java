@@ -42,7 +42,7 @@ public class ImageCaptureHandler implements Parcelable {
 	}
 
 	public void capture(MainActivity activity) {
-		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		Intent intent = new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA);
 
 		File f;
 		try {
