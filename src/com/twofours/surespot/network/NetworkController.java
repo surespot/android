@@ -28,8 +28,10 @@ import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
 import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
 import ch.boye.httpclientandroidlib.message.BasicHeader;
+import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
 import ch.boye.httpclientandroidlib.protocol.HTTP;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
+import ch.boye.httpclientandroidlib.util.EntityUtils;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
@@ -264,7 +266,7 @@ public class NetworkController {
 			responseHandler.onFailure(e, new JSONObject());
 		}
 
-	}	
+	}
 
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
 			String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
@@ -500,8 +502,14 @@ public class NetworkController {
 		}
 	}
 
+	
+	
 	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
 			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
+		
+	
+		
+		
 		new AsyncTask<Void, Void, HttpResponse>() {
 
 			@Override
@@ -509,13 +517,12 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);
-
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);				
 				if (fileInputStream == null) {
 					SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
 					return null;
 				}
-				
+
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
 
 				MultipartEntity reqEntity = new MultipartEntity();
@@ -524,7 +531,7 @@ public class NetworkController {
 				HttpResponse response = null;
 
 				try {
-					response = mCachingHttpClient.execute(httppost);
+					response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
 
 				}
 				catch (Exception e) {
@@ -532,9 +539,16 @@ public class NetworkController {
 				}
 				finally {
 					httppost.releaseConnection();
+					if (response != null) {
+						try {
+							EntityUtils.consume(response.getEntity());
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "postFileStream");
+						}
+					}
 				}
-				
-				
+
 				return response;
 
 			}
@@ -562,14 +576,13 @@ public class NetworkController {
 				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user + "/" + ourVersion);
 
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, SurespotConstants.MimeTypes.IMAGE, iv);
-
 				MultipartEntity reqEntity = new MultipartEntity();
 				reqEntity.addPart("image", isBody);
 				httppost.setEntity(reqEntity);
 				HttpResponse response = null;
 
 				try {
-					response = mCachingHttpClient.execute(httppost);
+					response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
 					if (response != null && response.getStatusLine().getStatusCode() == 200) {
 						String url = Utils.inputStreamToString(response.getEntity().getContent());
 						return url;
@@ -589,6 +602,14 @@ public class NetworkController {
 				}
 				finally {
 					httppost.releaseConnection();
+					if (response != null) {
+						try {
+							EntityUtils.consume(response.getEntity());
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "postFileStream");
+						}
+					}
 				}
 				return null;
 
@@ -604,11 +625,13 @@ public class NetworkController {
 	public InputStream getFileStream(Context context, final String url) {
 
 		// SurespotLog.v(TAG, "getting file stream");
+		
+		
 
 		HttpGet httpGet = new HttpGet(url);
-		HttpResponse response;
+		HttpResponse response = null;
 		try {
-			response = mCachingHttpClient.execute(httpGet);
+			response = mCachingHttpClient.execute(httpGet, new BasicHttpContext());
 			HttpEntity resEntity = response.getEntity();
 			if (response.getStatusLine().getStatusCode() == 200) {
 				return resEntity.getContent();
@@ -621,6 +644,14 @@ public class NetworkController {
 		}
 		finally {
 			httpGet.releaseConnection();
+			if (response != null) {
+				try {
+					EntityUtils.consume(response.getEntity());
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, e, "postFileStream");
+				}
+			}
 		}
 		return null;
 	}
@@ -710,6 +741,9 @@ public class NetworkController {
 		post("/updatePurchaseTokens", new RequestParams(params), responseHandler);
 	}
 
-	
+	public void destroy() {
+		mCachingHttpClient.destroy();
+		
+	}
 
 }
