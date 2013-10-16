@@ -1,13 +1,12 @@
 package com.twofours.surespot.images;
 
 import android.graphics.Bitmap;
-import android.support.v4.util.LruCache;
 
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
 public class BitmapCache {
-	private LruCache<String, Bitmap> mMemoryCache;
+	private BitmapLruCache mMemoryCache;
 	private final static String TAG = "BitMapCache";
 
 	public BitmapCache() {
@@ -15,12 +14,12 @@ public class BitmapCache {
 		// Get max available VM memory, exceeding this amount will throw an
 		// OutOfMemory exception. Stored in kilobytes as LruCache takes an
 		// int in its constructor.
-		// final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+		//final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
 		// Use 1/8th of the available memory for this memory cache.
 		// final int cacheSize = maxMemory / 2;
 
-		mMemoryCache = new LruCache<String, Bitmap>(30);
+		mMemoryCache = new BitmapLruCache(30);
 		// {
 		//
 		// @Override
@@ -45,8 +44,7 @@ public class BitmapCache {
 
 	public void evictAll() {
 		SurespotLog.v(TAG, "evicting bitmap cache");
-		mMemoryCache.evictAll();		
-		System.gc();
+		mMemoryCache.evictAll();				
 	}
 
 	public void remove(String key) {

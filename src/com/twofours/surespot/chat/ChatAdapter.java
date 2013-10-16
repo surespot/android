@@ -64,11 +64,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void setAllLoadedCallback(IAsyncCallback<Boolean> callback) {
 		mAllLoadedCallback = callback;
-	}
-
-	public void evictCache() {
-		MessageImageDownloader.evictCache();
-	}
+	}	
 
 	public ArrayList<SurespotMessage> getMessages() {
 		return mMessages;

@@ -24,8 +24,8 @@ import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -33,7 +33,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
@@ -62,9 +61,10 @@ public class MessageImageDownloader {
 	private static BitmapCache mBitmapCache = new BitmapCache();
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 	private ChatAdapter mChatAdapter;
+	private static HashMap<ImageView, Object> mImageViews = new HashMap<ImageView, Object>();
 
 	public MessageImageDownloader(ChatAdapter chatAdapter) {
-		mChatAdapter = chatAdapter;
+		mChatAdapter = chatAdapter;		
 	}
 
 	/**
@@ -78,6 +78,9 @@ public class MessageImageDownloader {
 	 */
 	public void download(ImageView imageView, SurespotMessage message) {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
+		
+		//keep a handle on the image view so we can purge the bitmap later
+		mImageViews.put(imageView, null);
 
 		if (bitmap == null) {
 			SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
@@ -285,16 +288,8 @@ public class MessageImageDownloader {
 									Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
 																																	// AlphaAnimation(0,
 																																	// 1);
-									// Animation fadeout = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_out);
-									// fadeIn.setDuration(1000);
 									imageView.startAnimation(fadeIn);
-
-								}
-								else {
-									SurespotLog.v(TAG, "clearing uploading flag");
-									// mMessage.setPlainData(null);
-									ImageViewAnimatedChange(imageView.getContext(), imageView, finalBitmap);
-								}
+								}								
 
 								imageView.setImageBitmap(finalBitmap);
 								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
@@ -311,40 +306,6 @@ public class MessageImageDownloader {
 		}
 	}
 
-	public static void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
-		SurespotLog.v(TAG, "switching image");
-		final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out);
-		final Animation anim_in = AnimationUtils.loadAnimation(c, android.R.anim.fade_in);
-		anim_out.setAnimationListener(new AnimationListener() {
-			@Override
-			public void onAnimationStart(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
-
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				v.setImageBitmap(new_image);
-				anim_in.setAnimationListener(new AnimationListener() {
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
-					}
-				});
-				v.startAnimation(anim_in);
-			}
-		});
-		v.startAnimation(anim_out);
-	}
 
 	/**
 	 * A fake Drawable that will be attached to the imageView while the download is in progress.
@@ -400,8 +361,14 @@ public class MessageImageDownloader {
 	}
 
 	public static void evictCache() {
+		
+		//make sure we're not using the bitmaps before we recycle
+		for (ImageView view : mImageViews.keySet()) {
+			view.setImageDrawable(null);
+		}
+				
+		mImageViews.clear();
 		mBitmapCache.evictAll();
-
 	}
 
 	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
