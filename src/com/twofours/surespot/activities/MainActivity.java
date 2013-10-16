@@ -494,29 +494,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						mChatController.closeTab();
 					}
 					else {
-						if (mBillingController.hasVoiceMessaging()) {
-							// if we haven't entered any text start recording voice
-							if (mEtMessage.getText().toString().length() == 0) {
+						if (mEtMessage.getText().toString().length() > 0) {
+							sendMessage(friend.getName());
+						}
+						else {
+							if (mBillingController.hasVoiceMessaging()) {
 								VoiceController.startRecording(MainActivity.this, friend.getName());
 							}
 							else {
-								sendMessage(friend.getName());
-							}
-						}
-						else {
-							//
-							SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-							boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
-							if (dontAskDontTell) {
-								if (mEtMessage.getText().toString().length() == 0) {
+								//
+								SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+								boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
+								if (dontAskDontTell) {
 									mChatController.closeTab();
 								}
 								else {
-									sendMessage(friend.getName());
+									showVoicePurchaseDialog(true);
 								}
-							}
-							else {
-								showVoicePurchaseDialog(true);
 							}
 						}
 					}
@@ -1089,7 +1083,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		MessageImageDownloader.evictCache();		
+		MessageImageDownloader.evictCache();
 		if (mNetworkController != null) {
 			mNetworkController.destroy();
 		}
