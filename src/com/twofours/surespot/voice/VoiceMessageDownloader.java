@@ -170,6 +170,10 @@ public class VoiceMessageDownloader {
 			if (soundbytes == null) {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
+				
+				if (mCancelled) {					
+					return;
+				}
 
 				if (mMessage.getData().startsWith("file")) {
 					try {
