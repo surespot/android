@@ -1089,7 +1089,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		MessageImageDownloader.evictCache();
+		MessageImageDownloader.evictCache();		
+		if (mNetworkController != null) {
+			mNetworkController.destroy();
+		}
 		SurespotLog.v(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
