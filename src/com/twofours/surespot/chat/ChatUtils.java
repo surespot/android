@@ -194,23 +194,25 @@ public class ChatUtils {
 						localImageFile.createNewFile();
 						String localImageUri = Uri.fromFile(localImageFile).toString();
 						SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
-
+						SurespotMessage message = null;
 						if (bitmap != null) {
 							SurespotLog.v(TAG, "adding bitmap to cache: %s", localImageUri);
 
 							MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
-							final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
+							message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
 							message.setId(null);
 
+							final SurespotMessage finalMessage = message;
 							activity.runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									SurespotLog.v(TAG, "adding local image message %s", message);
-									chatController.addMessage(activity, message);
+									SurespotLog.v(TAG, "adding local image message %s", finalMessage);
+									chatController.addMessage(activity, finalMessage);
 								}
 							});
 						}
 
+						final SurespotMessage finalMessage = message;
 						Runnable saveFileRunnable = new Runnable() {
 							@Override
 							public void run() {
@@ -263,16 +265,16 @@ public class ChatUtils {
 													success = true;
 													break;
 												case 402:
+													finalMessage.setErrorStatus(402);
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
-														chatAdapter.getMessageByIv(iv).setErrorStatus(402);
 														chatAdapter.notifyDataSetChanged();
 													}
 													break;
 												default:
+													finalMessage.setErrorStatus(500);
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
-														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
@@ -384,6 +386,7 @@ public class ChatUtils {
 							@Override
 							public void run() {
 
+								SurespotMessage message = null;
 								// save encrypted voice message to disk
 								FileOutputStream fileSaveStream;
 								try {
@@ -399,13 +402,15 @@ public class ChatUtils {
 									fileSaveStream.close();
 									encryptionInputStream.close();
 
-									final SurespotMessage message = buildMessage(to, SurespotConstants.MimeTypes.M4A, null, iv, localImageUri);
+									message = buildMessage(to, SurespotConstants.MimeTypes.M4A, null, iv, localImageUri);
 									message.setId(null);
+
+									final SurespotMessage finalMessage = message;
 									activity.runOnUiThread(new Runnable() {
 										@Override
 										public void run() {
-											SurespotLog.v(TAG, "adding local voice message %s", message);
-											chatController.addMessage(activity, message);
+											SurespotLog.v(TAG, "adding local voice message %s", finalMessage);
+											chatController.addMessage(activity, finalMessage);
 										}
 									});
 
@@ -428,6 +433,8 @@ public class ChatUtils {
 									return;
 								}
 
+								final SurespotMessage finalMessage = message;
+
 								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
 										new IAsyncCallback<Integer>() {
 
@@ -442,16 +449,16 @@ public class ChatUtils {
 													success = true;
 													break;
 												case 402:
+													finalMessage.setErrorStatus(402);
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
-														chatAdapter.getMessageByIv(iv).setErrorStatus(402);
 														chatAdapter.notifyDataSetChanged();
 													}
 													break;
 												default:
+													finalMessage.setErrorStatus(500);
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
-														chatAdapter.getMessageByIv(iv).setErrorStatus(500);
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
@@ -691,7 +698,7 @@ public class ChatUtils {
 	public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
 		// avoid concurrent modification issues
 		synchronized (messages) {
-			SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);			
+			SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
 			JSONArray jsonMessages = new JSONArray();
 
 			for (SurespotMessage message : messageArray) {
