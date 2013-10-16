@@ -58,4 +58,9 @@ public class BitmapCache {
 		mMemoryCache.evictExcept(preserve);
 
 	}
+
+	public void trimToSize(int size) {
+		mMemoryCache.trimToSize(size);
+		
+	}
 }

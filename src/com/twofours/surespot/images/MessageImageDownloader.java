@@ -387,6 +387,10 @@ public class MessageImageDownloader {
 			mBitmapCache.evictExcept(preserve);
 			preserve.clear();
 		}
+		else {
+			//otherwise just trim it 
+			mBitmapCache.trimToSize(10);
+		}
 	}
 
 	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {

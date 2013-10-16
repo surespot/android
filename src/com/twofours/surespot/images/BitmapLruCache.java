@@ -3,6 +3,7 @@ package com.twofours.surespot.images;
 import java.util.ArrayList;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.support.v4.util.LruCache;
 
 import com.twofours.surespot.common.SurespotLog;
@@ -20,7 +21,7 @@ public class BitmapLruCache extends LruCache<String, Bitmap> {
 	protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
 
 		SurespotLog.v(TAG, "entryRemoved, %s", key);
-		if (evicted && !mEvictionExceptions.contains(oldValue)) {
+		if (evicted && (mEvictionExceptions == null || !mEvictionExceptions.contains(oldValue)) && Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
 			SurespotLog.v(TAG, "evicted, recycling bitmap");
 			oldValue.recycle();
 		}
@@ -29,6 +30,6 @@ public class BitmapLruCache extends LruCache<String, Bitmap> {
 	public void evictExcept(ArrayList<Bitmap> preserve) {
 		mEvictionExceptions = preserve;
 		evictAll();
-		mEvictionExceptions = null;		
+		mEvictionExceptions = null;
 	}
 }
