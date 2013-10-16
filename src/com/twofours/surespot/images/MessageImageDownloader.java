@@ -32,6 +32,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
@@ -66,7 +67,7 @@ public class MessageImageDownloader {
 	private static HashMap<ImageView, Object> mImageViews = new HashMap<ImageView, Object>();
 
 	public MessageImageDownloader(ChatAdapter chatAdapter) {
-		mChatAdapter = chatAdapter;		
+		mChatAdapter = chatAdapter;
 	}
 
 	/**
@@ -80,8 +81,8 @@ public class MessageImageDownloader {
 	 */
 	public void download(ImageView imageView, SurespotMessage message) {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
-		
-		//keep a handle on the image view so we can purge the bitmap later
+
+		// keep a handle on the image view so we can purge the bitmap later
 		mImageViews.put(imageView, null);
 
 		if (bitmap == null) {
@@ -291,7 +292,7 @@ public class MessageImageDownloader {
 																																	// AlphaAnimation(0,
 																																	// 1);
 									imageView.startAnimation(fadeIn);
-								}								
+								}
 
 								imageView.setImageBitmap(finalBitmap);
 								imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
@@ -307,7 +308,6 @@ public class MessageImageDownloader {
 
 		}
 	}
-
 
 	/**
 	 * A fake Drawable that will be attached to the imageView while the download is in progress.
@@ -363,27 +363,30 @@ public class MessageImageDownloader {
 	}
 
 	public static void evictCache() {
-		ArrayList<Bitmap> preserve = new ArrayList<Bitmap>();
-		
-		//make sure we're not using the bitmaps before we recycle
-		for (ImageView view : mImageViews.keySet()) {
-			if (!view.isShown()) {
-				view.setImageDrawable(null);
-			}
-			else {
-				Drawable drawable = view.getDrawable();
-				if (drawable instanceof BitmapDrawable) {
-					Bitmap bmp = ((BitmapDrawable) view.getDrawable()).getBitmap();
-					preserve.add(bmp);
+		// evict cache on gingerbread because bitmap garbage collection is fucked
+
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+
+			ArrayList<Bitmap> preserve = new ArrayList<Bitmap>();
+
+			// make sure we're not using the bitmaps before we recycle
+			for (ImageView view : mImageViews.keySet()) {
+				if (!view.isShown()) {
+					view.setImageDrawable(null);
+				}
+				else {
+					Drawable drawable = view.getDrawable();
+					if (drawable instanceof BitmapDrawable) {
+						Bitmap bmp = ((BitmapDrawable) view.getDrawable()).getBitmap();
+						preserve.add(bmp);
+					}
 				}
 			}
+
+			mImageViews.clear();
+			mBitmapCache.evictExcept(preserve);
+			preserve.clear();
 		}
-		
-		
-				
-		mImageViews.clear();		
-		mBitmapCache.evictExcept(preserve);
-		preserve.clear();
 	}
 
 	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {

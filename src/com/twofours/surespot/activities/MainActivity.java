@@ -1819,4 +1819,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
+	@Override
+	public void onLowMemory() {
+		MessageImageDownloader.evictCache();
+	}
 }
