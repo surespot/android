@@ -236,7 +236,10 @@ public class ChatUtils {
 
 								catch (IOException e) {
 									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-									callback.handleResponse(false);
+									if (finalMessage != null) {
+										finalMessage.setErrorStatus(500);
+									}
+									callback.handleResponse(true);
 									return;
 								}
 
@@ -247,7 +250,10 @@ public class ChatUtils {
 								}
 								catch (FileNotFoundException e) {
 									SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-									callback.handleResponse(false);
+									if (finalMessage != null) {
+										finalMessage.setErrorStatus(500);
+									}
+									callback.handleResponse(true);
 									return;
 								}
 
@@ -255,31 +261,33 @@ public class ChatUtils {
 										new IAsyncCallback<Integer>() {
 
 											@Override
-											public void handleResponse(Integer statusCode) {
-												boolean success = false;
+											public void handleResponse(Integer statusCode) {												
 												// if it failed update the message
 												SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
 												ChatAdapter chatAdapter = null;
 												switch (statusCode) {
-												case 200:
-													success = true;
+												case 200:													
 													break;
 												case 402:
-													finalMessage.setErrorStatus(402);
+													if (finalMessage != null) {
+														finalMessage.setErrorStatus(402);
+													}
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.notifyDataSetChanged();
 													}
 													break;
 												default:
-													finalMessage.setErrorStatus(500);
+													if (finalMessage != null) {
+														finalMessage.setErrorStatus(500);
+													}
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
 
-												callback.handleResponse(success);
+												callback.handleResponse(true);
 											}
 										});
 
@@ -337,6 +345,7 @@ public class ChatUtils {
 				}
 
 				catch (IOException e) {
+					callback.handleResponse(null, null, null);
 					SurespotLog.w(TAG, e, "uploadFriendImageAsync");
 				}
 			}
@@ -418,7 +427,10 @@ public class ChatUtils {
 
 								catch (IOException e) {
 									SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-									callback.handleResponse(false);
+									if (message != null) {
+										message.setErrorStatus(500);
+									}
+									callback.handleResponse(true);
 									return;
 								}
 
@@ -429,41 +441,45 @@ public class ChatUtils {
 								}
 								catch (FileNotFoundException e) {
 									SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-									callback.handleResponse(false);
+									if (message != null) {
+										message.setErrorStatus(500);
+									}
+									callback.handleResponse(true);
 									return;
 								}
 
 								final SurespotMessage finalMessage = message;
-
 								networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
 										new IAsyncCallback<Integer>() {
 
 											@Override
-											public void handleResponse(Integer statusCode) {
-												boolean success = false;
+											public void handleResponse(Integer statusCode) {												
 												// if it failed update the message
 												SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
 												ChatAdapter chatAdapter = null;
 												switch (statusCode) {
-												case 200:
-													success = true;
+												case 200:													
 													break;
 												case 402:
-													finalMessage.setErrorStatus(402);
+													if (finalMessage != null) {
+														finalMessage.setErrorStatus(402);
+													}
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.notifyDataSetChanged();
 													}
 													break;
 												default:
-													finalMessage.setErrorStatus(500);
+													if (finalMessage != null) {
+														finalMessage.setErrorStatus(500);
+													}
 													chatAdapter = chatController.getChatAdapter(activity, to);
 													if (chatAdapter != null) {
 														chatAdapter.notifyDataSetChanged();
 													}
 												}
 
-												callback.handleResponse(success);
+												callback.handleResponse(true);
 											}
 										});
 
@@ -480,6 +496,7 @@ public class ChatUtils {
 
 				catch (IOException e) {
 					SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+					callback.handleResponse(false);
 				}
 			}
 		};

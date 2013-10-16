@@ -62,14 +62,13 @@ public class ImageCaptureHandler implements Parcelable {
 		ChatUtils.uploadPictureMessageAsync(activity, activity.getChatController(), activity.getNetworkController(), Uri.fromFile(new File(mCurrentPhotoPath)),
 				mTo, true, new IAsyncCallback<Boolean>() {
 					@Override
-					public void handleResponse(Boolean result) {
-						if (!result) {
+					public void handleResponse(Boolean errorHandled) {
+						if (!errorHandled) {
 							Utils.makeToast(activity, activity.getString(R.string.could_not_upload_image));
 						}
 					}
 				});
 		FileUtils.galleryAddPic(activity, mCurrentPhotoPath);
-
 	}
 
 	@Override

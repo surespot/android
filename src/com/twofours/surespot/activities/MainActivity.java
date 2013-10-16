@@ -822,9 +822,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					// Utils.makeToast(this, getString(R.string.uploading_image));
 					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
-						public void handleResponse(Boolean result) {
-							if (!result) {
-
+						public void handleResponse(Boolean errorHandled) {
+							if (!errorHandled) {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
 							}
 						}
@@ -967,9 +966,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			setHomeProgress(true);
+			MessageImageDownloader.evictCache();
 			new AsyncTask<Void, Void, Void>() {
 				protected Void doInBackground(Void... params) {
-					MessageImageDownloader.evictCache();
 					Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
 					intent.putExtra("to", currentChat);
 					intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
@@ -992,10 +991,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			setHomeProgress(true);
+			MessageImageDownloader.evictCache();
 			new AsyncTask<Void, Void, Void>() {
 				protected Void doInBackground(Void... params) {
-
-					MessageImageDownloader.evictCache();
+					
 					mImageCaptureHandler = new ImageCaptureHandler(currentChat);
 					mImageCaptureHandler.capture(MainActivity.this);
 					return null;
@@ -1083,7 +1082,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		MessageImageDownloader.evictCache();
+		
 		if (mNetworkController != null) {
 			mNetworkController.destroy();
 		}
@@ -1091,6 +1090,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
+		
+	    MessageImageDownloader.evictCache();
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1486,11 +1487,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							new IAsyncCallback<Boolean>() {
 
 								@Override
-								public void handleResponse(final Boolean result) {
-									SurespotLog.v(TAG, "upload picture response: %b", result);
-
-									if (!result) {
-
+								public void handleResponse(Boolean errorHandled) {								
+									if (!errorHandled) {
 										Runnable runnable = new Runnable() {
 
 											@Override
@@ -1501,9 +1499,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 										};
 
 										getMainHandler().post(runnable);
-
 									}
-
 								}
 							});
 				}
