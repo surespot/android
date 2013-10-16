@@ -499,6 +499,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							if (mEtMessage.getText().toString().length() == 0) {
 								VoiceController.startRecording(MainActivity.this, friend.getName());
 							}
+							else {
+								sendMessage(friend.getName());
+							}
 						}
 						else {
 							//
@@ -507,6 +510,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							if (dontAskDontTell) {
 								if (mEtMessage.getText().toString().length() == 0) {
 									mChatController.closeTab();
+								}
+								else {
+									sendMessage(friend.getName());
 								}
 							}
 							else {
