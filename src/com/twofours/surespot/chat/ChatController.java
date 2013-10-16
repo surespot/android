@@ -671,7 +671,7 @@ public class ChatController {
 										SurespotLog.w(TAG, e, "handleMessage");
 									}
 									finally {
-										
+
 										try {
 											if (inputStream != null) {
 												inputStream.close();
@@ -680,7 +680,7 @@ public class ChatController {
 										catch (IOException e) {
 											SurespotLog.w(TAG, e, "handleMessage");
 										}
-										
+
 										try {
 											if (encryptedVoiceStream != null) {
 												encryptedVoiceStream.close();
@@ -747,7 +747,7 @@ public class ChatController {
 					}
 					catch (SurespotMessageSequenceException e) {
 						SurespotLog.v(TAG, "handleMessage: %s", e.getMessage());
-						getLatestMessagesAndControls(otherUser, e.getMessageId());
+						getLatestMessagesAndControls(otherUser, e.getMessageId(), true);
 					}
 				};
 
@@ -1041,7 +1041,7 @@ public class ChatController {
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
-				getLatestMessagesAndControls();
+				getLatestMessagesAndControls(true);
 
 			}
 
@@ -1061,9 +1061,9 @@ public class ChatController {
 		public int latestControlMessageId;
 	}
 
-	private void getLatestMessagesAndControls() {
+	private void getLatestMessagesAndControls(boolean forceMessageUpdate) {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			getLatestMessagesAndControls(entry.getKey());
+			getLatestMessagesAndControls(entry.getKey(), forceMessageUpdate);
 		}
 
 		// done with "global" updates
@@ -1097,20 +1097,20 @@ public class ChatController {
 		return intPair;
 	}
 
-	private void getLatestMessagesAndControls(final String username) {
+	private void getLatestMessagesAndControls(final String username, boolean forceMessageUpdate) {
 
 		LatestIdPair ids = getLatestIds(username);
 
-		getLatestMessagesAndControls(username, ids.latestMessageId, ids.latestControlMessageId);
+		getLatestMessagesAndControls(username, ids.latestMessageId, ids.latestControlMessageId, forceMessageUpdate);
 
 	}
 
-	private void getLatestMessagesAndControls(String username, int messageId) {
-		getLatestMessagesAndControls(username, messageId, -1);
+	private void getLatestMessagesAndControls(String username, int messageId, boolean forceMessageUpdate) {
+		getLatestMessagesAndControls(username, messageId, -1, forceMessageUpdate);
 
 	}
 
-	private void getLatestMessagesAndControls(final String username, final int fetchMessageId, int fetchControlMessageId) {
+	private void getLatestMessagesAndControls(final String username, final int fetchMessageId, int fetchControlMessageId, final boolean forceMessageUpdate) {
 		SurespotLog.v(TAG, "getLatestMessagesAndControls: name %s, fetchMessageId: %d, fetchControlMessageId: %d", username, fetchMessageId,
 				fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {
@@ -1126,7 +1126,7 @@ public class ChatController {
 
 					// don't update messages if we didn't query for them
 					// this prevents setting message state to error before we get the true result
-					if (fetchMessageId > -1) {
+					if (fetchMessageId > -1 || forceMessageUpdate) {
 						handleMessages(username, messages);
 					}
 
@@ -1805,7 +1805,7 @@ public class ChatController {
 			mPreConnectIds.put(username, idPair);
 
 			// get latest messages from server
-			getLatestMessagesAndControls(username);
+			getLatestMessagesAndControls(username, false);
 		}
 
 		return chatAdapter;
