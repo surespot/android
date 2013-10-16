@@ -1,5 +1,7 @@
 package com.twofours.surespot.images;
 
+import java.util.ArrayList;
+
 import android.graphics.Bitmap;
 
 import com.twofours.surespot.common.SurespotLog;
@@ -14,7 +16,7 @@ public class BitmapCache {
 		// Get max available VM memory, exceeding this amount will throw an
 		// OutOfMemory exception. Stored in kilobytes as LruCache takes an
 		// int in its constructor.
-		//final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+		// final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
 		// Use 1/8th of the available memory for this memory cache.
 		// final int cacheSize = maxMemory / 2;
@@ -44,11 +46,16 @@ public class BitmapCache {
 
 	public void evictAll() {
 		SurespotLog.v(TAG, "evicting bitmap cache");
-		mMemoryCache.evictAll();				
+		mMemoryCache.evictAll();
 	}
 
 	public void remove(String key) {
 		String md5Key = Utils.md5(key);
 		mMemoryCache.remove(md5Key);
+	}
+
+	public void evictExcept(ArrayList<Bitmap> preserve) {
+		mMemoryCache.evictExcept(preserve);
+
 	}
 }

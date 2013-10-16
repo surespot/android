@@ -24,9 +24,11 @@ import java.io.InterruptedIOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -361,14 +363,27 @@ public class MessageImageDownloader {
 	}
 
 	public static void evictCache() {
+		ArrayList<Bitmap> preserve = new ArrayList<Bitmap>();
 		
 		//make sure we're not using the bitmaps before we recycle
 		for (ImageView view : mImageViews.keySet()) {
-			view.setImageDrawable(null);
+			if (!view.isShown()) {
+				view.setImageDrawable(null);
+			}
+			else {
+				Drawable drawable = view.getDrawable();
+				if (drawable instanceof BitmapDrawable) {
+					Bitmap bmp = ((BitmapDrawable) view.getDrawable()).getBitmap();
+					preserve.add(bmp);
+				}
+			}
 		}
+		
+		
 				
-		mImageViews.clear();
-		mBitmapCache.evictAll();
+		mImageViews.clear();		
+		mBitmapCache.evictExcept(preserve);
+		preserve.clear();
 	}
 
 	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
