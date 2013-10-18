@@ -40,7 +40,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -741,19 +740,4 @@ public class NetworkController {
 		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
 		post("/updatePurchaseTokens", new RequestParams(params), responseHandler);
 	}
-
-	public void destroy() {
-		Runnable runnable = new Runnable() {
-			
-			@Override
-			public void run() {
-				mCachingHttpClient.destroy();
-				
-			}
-		};
-		
-		SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
-		
-	}
-
 }

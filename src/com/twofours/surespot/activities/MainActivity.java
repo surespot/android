@@ -994,7 +994,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			MessageImageDownloader.evictCache();
 			new AsyncTask<Void, Void, Void>() {
 				protected Void doInBackground(Void... params) {
-					
+
 					mImageCaptureHandler = new ImageCaptureHandler(currentChat);
 					mImageCaptureHandler.capture(MainActivity.this);
 					return null;
@@ -1082,16 +1082,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		
-		if (mNetworkController != null) {
-			mNetworkController.destroy();
-		}
 		SurespotLog.v(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
-		
-	    MessageImageDownloader.evictCache();
+
+		MessageImageDownloader.evictCache();
 	}
 
 	public static NetworkController getNetworkController() {
@@ -1113,8 +1109,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-			return true;
+			if (mMenuOverflow != null) {
+				mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+				return true;
+			}
 		}
 
 		return super.onKeyUp(keyCode, event);
@@ -1487,7 +1485,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							new IAsyncCallback<Boolean>() {
 
 								@Override
-								public void handleResponse(Boolean errorHandled) {								
+								public void handleResponse(Boolean errorHandled) {
 									if (!errorHandled) {
 										Runnable runnable = new Runnable() {
 
