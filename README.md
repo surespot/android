@@ -85,7 +85,7 @@ Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) This pro
 * [httpclientandroidlib](https://code.google.com/p/httpclientandroidlib/) - Apache License 2.0
 * [ZXING](https://code.google.com/p/zxing) - Apache License 2.0
 * [PhantomOpenEmoji](https://github.com/Genshin/PhantomOpenEmoji) - Emoji by Genshin Souzou K.K. Phantom Creation Inc
-* [android-acc-enc](https://github.com/timsu/android-aac-enc) - Apache License 2.0
+* [rehearsal assistant](http://sourceforge.net/projects/rehearsalassist/) - GPLv2
 * [FFmpeg](http://www.ffmpeg.org/) - FFmpeg project under the LGPLv2.1 complied with the following configuration- configuration: --arch=arm --cpu=cortex-a8 --target-os=linux --enable-runtime-cpudetect --prefix=/data/data/info.guardianproject.ffmpeg/app_opt --enable-pic --disable-shared --enable-static --cross-prefix=/home/adam/devtools/android-ndk-r9//toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi- --sysroot=/home/adam/devtools/android-ndk-r9//platforms/android-3/arch-arm --extra-cflags='-mfloat-abi=softfp -mfpu=neon' --disable-doc --enable-yasm --disable-decoders --enable-decoder=pcm_s16le --disable-encoders --enable-encoder=aac --disable-muxers --enable-muxer=mp4 --disable-demuxers --enable-demuxer=wav --disable-parsers --disable-protocols --enable-protocol=file --disable-filters --enable-filter=aresample --disable-libfreetype --disable-indevs --disable-indev=lavfi --disable-outdevs --enable-hwaccels --enable-ffmpeg --disable-ffplay --disable-ffprobe --disable-ffserver --disable-network --disable-bsfs --enable-small
 
 
