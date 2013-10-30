@@ -105,8 +105,8 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 					}
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-					mDialog.setTitle(getString(R.string.billing_unavailable_title));
-					mTVPurchase.setText(getString(R.string.billing_unavailable_message));
+					mDialog.setTitle(R.string.billing_unavailable_title);
+					mTVPurchase.setText(R.string.billing_unavailable_message);
 					mBPurchase.setVisibility(View.GONE);
 					if (mCameFromButton) {
 						mCBDontShow.setVisibility(View.VISIBLE);
@@ -151,7 +151,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		switch (state) {
 		case IabHelper.BILLING_RESPONSE_RESULT_OK:
 			mDialog.setTitle(R.string.purchase_voice_title);
-			mTVPurchase.setText(getString(R.string.voice_messaging_purchase_1));
+			mTVPurchase.setText(R.string.voice_messaging_purchase_1);
 			mBPurchase.setOnClickListener(VoicePurchaseFragment.this);
 			if (mCameFromButton) {
 				mCBDontShow.setVisibility(View.VISIBLE);
@@ -165,8 +165,8 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 			}
 			break;
 		case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-			mDialog.setTitle(getString(R.string.billing_unavailable_title));
-			mTVPurchase.setText(getString(R.string.billing_unavailable_message));
+			mDialog.setTitle(R.string.billing_unavailable_title);
+			mTVPurchase.setText(R.string.billing_unavailable_message);
 			mBPurchase.setVisibility(View.GONE);
 			if (mCameFromButton) {
 				mCBDontShow.setVisibility(View.VISIBLE);
