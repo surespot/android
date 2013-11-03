@@ -328,14 +328,8 @@ public class FriendAdapter extends BaseAdapter {
 						friend.setNewFriend(true);
 					}
 					else {
-						if (action.equals("block")) {
-							// ignore
-							if (!friend.isDeleted()) {
-								mFriends.remove(position);
-							}
-						}
-						else {
-							// ignore
+						if (action.equals("block") || action.equals("ignore")) {
+
 							if (!friend.isDeleted()) {
 								mFriends.remove(position);
 							}
