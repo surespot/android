@@ -23,7 +23,6 @@ public class Friend implements Comparable<Friend> {
 	private int mAvailableMessageId;
 	private int mLastReceivedMessageControlId;
 	private int mAvailableMessageControlId;
-	private int mLastReceivedUserControlId;
 	private String mImageUrl;
 	private String mImageVersion;
 	private String mImageIv;
@@ -94,15 +93,6 @@ public class Friend implements Comparable<Friend> {
 		SurespotLog.v(TAG, "setLastReceivedMessageControlId, friend: %s", this);
 	}
 
-	public int getLastReceivedUserControlId() {
-		return mLastReceivedUserControlId;
-	}
-
-	public void setLastReceivedUserControlId(int lastReceivedUserControlId) {
-		mLastReceivedUserControlId = lastReceivedUserControlId;
-		SurespotLog.v(TAG, "setLastReceivedUserControlId, friend: %s", this);
-	}
-
 	public void setChatActive(boolean set) {
 		if (set) {
 			mFlags |= CHAT_ACTIVE;
@@ -116,7 +106,7 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	// public void setMessageActivity(boolean set) {
-	// if (set) {
+	// if (set) {isch
 	// mFlags |= MESSAGE_ACTIVITY;
 	// }
 	// else {
@@ -347,8 +337,7 @@ public class Friend implements Comparable<Friend> {
 
 		friend.setFlags(jsonFriend.optInt("flags"));
 		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
-		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));
-		friend.setLastReceivedUserControlId(jsonFriend.optInt("lastReceivedUserControlId"));
+		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));	
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
 		friend.setSelectedItem(jsonFriend.optInt("selectedItem", -1));
 		friend.setSelectedTop(jsonFriend.optInt("selectedTop", 0));
@@ -365,7 +354,6 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("flags", this.getFlags());
 			jsonFriend.put("lastReceivedMessageControlId", this.getLastReceivedMessageControlId());
 			jsonFriend.put("lastAvailableMessageId", this.mAvailableMessageId);
-			jsonFriend.put("lastReceivedUserControlId", this.getLastReceivedUserControlId());
 			jsonFriend.put("lastViewedMessageId", this.getLastViewedMessageId());
 			jsonFriend.put("imageVersion", this.getImageVersion());
 			jsonFriend.put("imageUrl", this.getImageUrl());
@@ -396,7 +384,6 @@ public class Friend implements Comparable<Friend> {
 		sb.append("\tavailableMessageId: " + getAvailableMessageId() + "\n");
 		sb.append("\tlastReceivedMessageControlId: " + getLastReceivedMessageControlId() + "\n");
 		sb.append("\tavailableMessageControlId: " + getAvailableMessageControlId() + "\n");
-		sb.append("\tlastReceivedUserControlId: " + getLastReceivedUserControlId() + "\n");
 		sb.append("\tselectedItem: " + getSelectedItem() + "\n");
 		sb.append("\tselectedTop: " + getSelectedTop() + "\n");
 
