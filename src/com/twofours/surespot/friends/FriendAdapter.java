@@ -123,17 +123,6 @@ public class FriendAdapter extends BaseAdapter {
 
 	}
 
-	public synchronized Friend setFriendDeleted(String name) {
-		Friend friend = getFriend(name);
-		if (friend != null) {
-			friend.setDeleted();
-			Collections.sort(mFriends);
-			notifyDataSetChanged();
-		}
-		return friend;
-
-	}
-
 	public synchronized void setChatActive(String name, boolean b) {
 		Friend friend = getFriend(name);
 		if (friend != null) {
@@ -142,16 +131,6 @@ public class FriendAdapter extends BaseAdapter {
 			notifyDataSetChanged();
 		}
 	}
-
-	// public void setMessageActivity(String username, boolean activity) {
-	// Friend friend = getFriend(username);
-	// if (friend != null) {
-	// friend.setMessageActivity(activity);
-	// }
-	// Collections.sort(mFriends);
-	// notifyDataSetChanged();
-	//
-	// }
 
 	public synchronized void setFriends(List<Friend> friends) {
 		if (friends != null) {
@@ -181,13 +160,6 @@ public class FriendAdapter extends BaseAdapter {
 		sort();
 		notifyDataSetChanged();
 	}
-
-	// public void clearFriends(boolean notify) {
-	// mFriends.clear();
-	// if (notify) {
-	// notifyDataSetChanged();
-	// }
-	// }
 
 	@Override
 	public int getCount() {

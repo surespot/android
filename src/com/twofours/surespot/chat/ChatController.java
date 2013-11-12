@@ -191,7 +191,7 @@ public class ChatController {
 					}
 
 					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
-					SurespotLog.v(TAG, "Starting another task in: " + timerInterval);
+					SurespotLog.v(TAG, "Starting another task in: %d", timerInterval);
 
 					mReconnectTask = new ReconnectTask();
 					if (mBackgroundTimer == null) {
@@ -2043,47 +2043,23 @@ public class ChatController {
 	public void deleteMessage(final SurespotMessage message) {
 		// if it's on the server, send delete control message otherwise just delete it locally
 		if (message.getId() != null) {
-			// SurespotControlMessage dmessage = new SurespotControlMessage();
-			// String me = IdentityController.getLoggedInUser();
-			// dmessage.setFrom(me);
-			// dmessage.setType("message");
-			// dmessage.setAction("delete");
 
-			// dmessage.setData(ChatUtils.getSpot(message));
-			// dmessage.setMoreData(message.getId().toString());
-			// dmessage.setLocalId(me + Integer.toString(getLatestMessageControlId(message.getOtherUser()) + 1));
-
-			// sendControlMessage(dmessage);
-
-			// String spot = ChatUtils.getSpot(message);
 			final ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
 			setProgress("delete", true);
 			if (chatAdapter != null) {
 				mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new AsyncHttpResponseHandler() {
 					@Override
-					public void onSuccess(int statusCode, String content) {
-						// MainActivity.getMainHandler().post(new Runnable() {
-						//
-						// @Override
-						// public void run() {
+					public void onSuccess(int statusCode, String content) {						
 						deleteMessageInternal(chatAdapter, message, true);
 						setProgress("delete", false);
-						// }
-						// });
-
 					}
 
 					@Override
 					public void onFailure(Throwable error, String content) {
 						SurespotLog.i(TAG, error, "deleteMessage");
-						// MainActivity.getMainHandler().post(new Runnable() {
-						//
-						// @Override
-						// public void run() {
 						setProgress("delete", false);
 						Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_message));
-						// }
-						// });
+
 					}
 
 				});
