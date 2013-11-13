@@ -23,3 +23,5 @@ local.properties
 .project
 /proguard
 .google_apis/
+
+*.DS_Store
