@@ -937,7 +937,7 @@ public class IdentityController {
 		// if we have the latest version locally, if we don't then this user has
 		// been revoked from a different device
 		// and should not be used on this device anymore
-		if (username.equals(getLoggedInUser()) && version.compareTo(getOurLatestVersion()) > 0) {
+		if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion()))) {
 			SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
 			// bad news

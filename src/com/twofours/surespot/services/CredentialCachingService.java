@@ -74,7 +74,7 @@ public class CredentialCachingService extends Service {
 				SurespotLog.v(TAG, "keyPairCacheLoader getting latest version");
 				String latestVersion = getLatestVersionIfPresent(key.getUsername());
 
-				if (latestVersion == null || version.compareTo(latestVersion) > 0) {
+				if (latestVersion == null || (Integer.parseInt(version) > Integer.parseInt(latestVersion))) {
 					SurespotLog.v(TAG, "keyPairCacheLoader setting latestVersion, username: %s, version: %s", key.getUsername(), version);
 					mLatestVersions.put(key.getUsername(), version);
 				}
@@ -276,7 +276,7 @@ public class CredentialCachingService extends Service {
 	public synchronized void updateLatestVersion(String username, String version) {
 		if (username != null && version != null) {
 			String latestVersion = getLatestVersionIfPresent(username);
-			if (latestVersion == null || version.compareTo(latestVersion) > 0) {
+			if (latestVersion == null || (Integer.parseInt(version) > Integer.parseInt(latestVersion))) {
 				mLatestVersions.put(username, version);
 			}
 		}

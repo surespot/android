@@ -21,7 +21,7 @@ public class SurespotIdentity {
 	}
 
 	public void addKeyPairs(String version, KeyPair keyPairDH, KeyPair keyPairDSA) {
-		if (mLatestVersion == null || version.compareTo(mLatestVersion) > 0) {
+		if (mLatestVersion == null || (Integer.parseInt(version) >  Integer.parseInt(mLatestVersion))) {
 			mLatestVersion = version;
 		}
 

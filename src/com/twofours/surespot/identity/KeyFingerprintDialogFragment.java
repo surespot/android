@@ -83,7 +83,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 		Collections.sort(myItems, new Comparator<HashMap<String, String>>() {
 			@Override
 			public int compare(HashMap<String, String> lhs, HashMap<String, String> rhs) {
-				return rhs.get("version").compareTo(lhs.get("version"));
+				return (Integer.parseInt(rhs.get("version")) > Integer.parseInt(lhs.get("version")) ? 1 : -1);
 			}
 		});
 
@@ -122,7 +122,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 						Collections.sort(items, new Comparator<HashMap<String, String>>() {
 							@Override
 							public int compare(HashMap<String, String> lhs, HashMap<String, String> rhs) {
-								return rhs.get("version").compareTo(lhs.get("version"));
+								return Integer.parseInt(rhs.get("version")) > Integer.parseInt(lhs.get("version")) ? 1 : -1;
 							}
 						});
 					}
