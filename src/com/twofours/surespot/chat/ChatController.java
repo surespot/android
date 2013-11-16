@@ -472,13 +472,8 @@ public class ChatController {
 
 			SurespotLog.v(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
-
-			// String sMessage = message.toJSONObject().toString();
+			
 			sMessageList.put(message.toJSONObject());
-
-			// enqueueMessage(message);
-			// sendMessages();
-
 		}
 
 		socket.send(sMessageList.toString());
@@ -528,12 +523,8 @@ public class ChatController {
 			if (isMessageReadyToSend(message)) {
 				iterator.remove();
 				sendMessage(message);
-			}
-			else {
-				break;
-			}
+			}			
 		}
-
 	}
 
 	private boolean isMessageReadyToSend(SurespotMessage message) {
@@ -1288,12 +1279,7 @@ public class ChatController {
 			else
 				if (message.getAction().equals("added")) {
 					user = message.getData();
-					mFriendAdapter.addNewFriend(user);
-					ChatAdapter chatAdapter = mChatAdapters.get(user);
-
-					if (chatAdapter != null) {
-						chatAdapter.userDeleted(false);
-					}
+					mFriendAdapter.addNewFriend(user);					
 				}
 				else
 					if (message.getAction().equals("invite")) {
@@ -1392,7 +1378,7 @@ public class ChatController {
 
 			// i'll delete all your messages then
 			if (chatAdapter != null) {
-				chatAdapter.userDeleted(true);
+				chatAdapter.userDeleted();
 				if (notify) {
 					chatAdapter.notifyDataSetChanged();
 				}
@@ -1781,7 +1767,9 @@ public class ChatController {
 
 			Friend friend = mFriendAdapter.getFriend(username);
 			if (friend != null) {
-				chatAdapter.userDeleted(friend.isDeleted());
+				if (friend.isDeleted()) {
+					chatAdapter.userDeleted();
+				}
 			}
 
 			SurespotLog.v(TAG, "getChatAdapter created chat adapter for: %s", username);

@@ -64,7 +64,7 @@ public class ChatAdapter extends BaseAdapter {
 
 	public void setAllLoadedCallback(IAsyncCallback<Boolean> callback) {
 		mAllLoadedCallback = callback;
-	}	
+	}
 
 	public ArrayList<SurespotMessage> getMessages() {
 		return mMessages;
@@ -385,7 +385,7 @@ public class ChatAdapter extends BaseAdapter {
 					chatMessageViewHolder.imageView.setVisibility(View.GONE);
 					chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
 					chatMessageViewHolder.messageSize.setVisibility(View.GONE);
-					
+
 					if (type == TYPE_US) {
 						chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
 					}
@@ -586,10 +586,8 @@ public class ChatAdapter extends BaseAdapter {
 		}
 	}
 
-	public void userDeleted(boolean delete) {
-		if (delete) {
-			deleteTheirMessages(Integer.MAX_VALUE);
-		}
+	public void userDeleted() {
+		deleteTheirMessages(Integer.MAX_VALUE);
 	}
 
 	// the first time we load the listview doesn't know
