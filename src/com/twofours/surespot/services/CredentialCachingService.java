@@ -186,8 +186,8 @@ public class CredentialCachingService extends Service {
 		}
 
 		for (SharedSecretKey key : mSharedSecrets.asMap().keySet()) {
-			if (key.getTheirUsername().equals(username)) {
-				SurespotLog.v(TAG, "invalidating shared secret cache entry for: %s", username);
+			if (key.getOurUsername().equals(mLoggedInUser) && key.getTheirUsername().equals(username)) {
+				SurespotLog.v(TAG, "invalidating shared secret cache entry for our username: %s, theirusername: %s",mLoggedInUser, username);
 				mSharedSecrets.invalidate(key);
 			}
 		}
