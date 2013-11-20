@@ -389,8 +389,8 @@ public class NetworkController {
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public void getEarlierMessages(String room, Integer id, AsyncHttpResponseHandler responseHandler) {
-		get("/messages/" + room + "/before/" + id, null, responseHandler);
+	public void getEarlierMessages(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
+		get("/messages/" + username + "/before/" + id, null, responseHandler);
 	}
 
 	public void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
@@ -502,14 +502,9 @@ public class NetworkController {
 		}
 	}
 
-	
-	
 	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
 			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
-		
-	
-		
-		
+
 		new AsyncTask<Void, Void, HttpResponse>() {
 
 			@Override
@@ -517,7 +512,7 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);				
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);
 				if (fileInputStream == null) {
 					SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
 					return null;
@@ -625,8 +620,6 @@ public class NetworkController {
 	public InputStream getFileStream(Context context, final String url) {
 
 		// SurespotLog.v(TAG, "getting file stream");
-		
-		
 
 		HttpGet httpGet = new HttpGet(url);
 		HttpResponse response = null;

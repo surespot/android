@@ -309,9 +309,9 @@ public class StateController {
 
 	public static void wipeUserState(Context context, String username, String otherUsername) {
 		String publicKeyDir = FileUtils.getPublicKeyDir(context) + File.separator + otherUsername;
-		String room = ChatUtils.getSpot(username, otherUsername);
 		FileUtils.deleteRecursive(new File(publicKeyDir));
-
+		
+		String room = ChatUtils.getSpot(username, otherUsername);
 		String messageFile = FileUtils.getStateDir(context) + File.separator + username + File.separator + "messages_" + room
 				+ STATE_EXTENSION;
 		File file = new File(messageFile);
