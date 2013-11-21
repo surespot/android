@@ -47,7 +47,6 @@ import com.twofours.surespot.ui.UIUtils;
 public class IdentityController {
 	private static final String TAG = "IdentityController";
 	public static final String IDENTITY_EXTENSION = ".ssi";
-	public static final String IDENTITY_DELETED_EXTENSION = ".dsi";
 	public static final String PUBLICKEYPAIR_EXTENSION = ".spk";
 	public static final String CACHE_IDENTITY_ID = "_cache_identity";
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
@@ -291,7 +290,7 @@ public class IdentityController {
 		mHasIdentity = false;
 
 		boolean isLoggedIn = false;
-		if (username.equals(IdentityController.getLoggedInUser())) {
+		if (username.equals(getLoggedInUser())) {
 			isLoggedIn = true;
 		}
 
@@ -320,21 +319,8 @@ public class IdentityController {
 			identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
 			file = new File(identityFilename);
 			file.delete();
-
-			// create deleted file so we can remove the
-			// com.twofours.surespot.backup if there is one
-			String deletedFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_DELETED_EXTENSION;
-			try {
-				new File(deletedFilename).createNewFile();
-			}
-			catch (IOException e) {
-				SurespotLog.e(TAG, e, "could not create deleted identity file: %s", deletedFilename);
-			}
-
 		}
-
-		// SurespotApplication.mBackupManager.dataChanged();
-
+		
 		if (isLoggedIn) {
 			UIUtils.launchMainActivityDeleted(context);
 		}
