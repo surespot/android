@@ -56,6 +56,7 @@ public class CredentialCachingService extends Service {
 					MainActivity.class), 0);
 			notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
 					getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
+			notification.priority = Notification.PRIORITY_MIN;			
 		}
 		else {
 			notification = new Notification(0, null, System.currentTimeMillis());
