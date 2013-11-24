@@ -396,18 +396,15 @@ public class SignupActivity extends SherlockActivity {
 															switch (statusCode) {
 															case 429:
 																Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
-																userText.setText("");
 																userText.requestFocus();
 																break;
 
 															case 409:
 																Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
-																userText.setText("");
 																userText.requestFocus();
 																setUsernameValidity(false);
 																break;
 															case 403:
-																// future use
 																Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
 																break;
 															default:
