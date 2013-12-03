@@ -617,7 +617,7 @@ public class NetworkController {
 		}.execute();
 	}
 
-	public InputStream getFileStream(Context context, final String url) {
+	public InputStream  getFileStream(Context context, final String url) {
 
 		// SurespotLog.v(TAG, "getting file stream");
 
@@ -626,7 +626,7 @@ public class NetworkController {
 		try {
 			response = mCachingHttpClient.execute(httpGet, new BasicHttpContext());
 			HttpEntity resEntity = response.getEntity();
-			if (response.getStatusLine().getStatusCode() == 200) {
+			if (response.getStatusLine().getStatusCode() == 200) {		
 				return resEntity.getContent();
 			}
 		}
@@ -636,15 +636,7 @@ public class NetworkController {
 
 		}
 		finally {
-			httpGet.releaseConnection();
-			if (response != null) {
-				try {
-					EntityUtils.consume(response.getEntity());
-				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "postFileStream");
-				}
-			}
+			httpGet.releaseConnection();			
 		}
 		return null;
 	}
