@@ -182,49 +182,44 @@ public class IdentityController {
 					callback.handleResponse(null, null);
 				}
 
-				final File exportDir = FileUtils.getIdentityExportDir();
-				if (FileUtils.ensureDir(exportDir.getPath())) {
-					byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+				byte[] saltyBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
 
-					String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
-					// do OOB verification
-					MainActivity.getNetworkController().validate(username, dPassword,
-							EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
-								public void onSuccess(int statusCode, String content) {
+				String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
+				// do OOB verification
+				MainActivity.getNetworkController().validate(username, dPassword,
+						EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
+							public void onSuccess(int statusCode, String content) {
 
-									callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
-								}
+								callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
+							}
 
-								public void onFailure(Throwable error) {
+							public void onFailure(Throwable error) {
 
-									if (error instanceof HttpResponseException) {
-										int statusCode = ((HttpResponseException) error).getStatusCode();
-										// would use 401 but we're intercepting
-										// those
-										// and I don't feel like special casing
-										// it
-										switch (statusCode) {
-										case 403:
-											callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
-											break;
-										case 404:
-											callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
-											break;
+								if (error instanceof HttpResponseException) {
+									int statusCode = ((HttpResponseException) error).getStatusCode();
+									// would use 401 but we're intercepting
+									// those
+									// and I don't feel like special casing
+									// it
+									switch (statusCode) {
+									case 403:
+										callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
+										break;
+									case 404:
+										callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
+										break;
 
-										default:
-											SurespotLog.i(TAG, error, "exportIdentity");
-											callback.handleResponse(null, null);
-										}
-									}
-									else {
+									default:
+										SurespotLog.i(TAG, error, "exportIdentity");
 										callback.handleResponse(null, null);
 									}
 								}
-							});
-				}
-				else {
-					callback.handleResponse(null, null);
-				}
+								else {
+									callback.handleResponse(null, null);
+								}
+							}
+						});
+
 				return null;
 			}
 
@@ -320,7 +315,7 @@ public class IdentityController {
 			file = new File(identityFilename);
 			file.delete();
 		}
-		
+
 		if (isLoggedIn) {
 			UIUtils.launchMainActivityDeleted(context);
 		}
@@ -498,8 +493,8 @@ public class IdentityController {
 
 								default:
 									SurespotLog.i(TAG, error, "importIdentity");
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
-											false));
+									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name,
+											finalusername), false));
 								}
 							}
 							else {
@@ -590,7 +585,7 @@ public class IdentityController {
 	}
 
 	public static void exportIdentity(final Context context, String username, final String password, final IAsyncCallback<String> callback) {
-		final SurespotIdentity identity = getIdentity(context, username, password);		
+		final SurespotIdentity identity = getIdentity(context, username, password);
 		if (identity == null) {
 			callback.handleResponse(null);
 			return;

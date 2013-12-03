@@ -21,7 +21,6 @@ public class IdentityOperationResult {
 	}
 
 	public IdentityOperationResult(String resultText, Boolean resultSuccess) {
-		super();
 		this.mResultText = resultText;
 		this.mResultSuccess = resultSuccess;
 	}
