@@ -175,6 +175,7 @@ public class NetworkController {
 			params.put("referrers", referrers);
 		}
 		params.put("version", version);
+		params.put("platform", "android");
 		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
 
 		// get the gcm id
@@ -301,6 +302,7 @@ public class NetworkController {
 		params.put("password", password);
 		params.put("authSig", signature);
 		params.put("version", version);
+		params.put("platform", "android");
 
 		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
 
