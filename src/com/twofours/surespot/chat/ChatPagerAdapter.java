@@ -149,7 +149,12 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return null;
 		}
 		else {
-			return mChatNames.get(position - 1);
+			if (position <= mChatNames.size()) {
+				return mChatNames.get(position - 1);
+			}
+			else {
+				return null;
+			}
 		}
 	}
 
