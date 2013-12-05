@@ -167,9 +167,10 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 				mCurTransaction = mFragmentManager.beginTransaction();
 			}
 
-			mCurTransaction.remove(fragment);
-			notifyDataSetChanged();
+			mCurTransaction.remove(fragment);			
 		}
+		
+		notifyDataSetChanged();
 	}
 
 	public long getItemId(int position) {
