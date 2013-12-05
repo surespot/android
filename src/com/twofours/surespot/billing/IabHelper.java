@@ -267,7 +267,8 @@ public class IabHelper {
 			logDebug("Unbinding from service.");
 			try {
 				// this pukes on phones without google apis with NPE here
-				if (mContext != null)
+				// http://stackoverflow.com/questions/15658132/in-app-billing-v3-illegalargumentexception-service-not-registered
+				if (mContext != null && mService != null)
 					mContext.unbindService(mServiceConn);
 			}
 			catch (Exception e) {
