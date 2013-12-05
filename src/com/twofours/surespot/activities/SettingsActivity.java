@@ -104,7 +104,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 		}
 							
 		final  Dialog dialog = preferenceScreen.getDialog();
-		if (dialog != null) {
+		if (dialog != null && dialog.getActionBar() != null) {
 			// Inialize the action bar
 			dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
 
