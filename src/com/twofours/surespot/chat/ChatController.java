@@ -90,6 +90,7 @@ public class ChatController {
 	private SocketIO socket;
 	private int mRetries = 0;
 	private Timer mBackgroundTimer;
+	private Object BACKGROUND_TIMER_LOCK = new Object();
 
 	private IOCallback mSocketCallback;
 
@@ -186,18 +187,23 @@ public class ChatController {
 				// kick off another task
 				if (mRetries < MAX_RETRIES) {
 
-					if (mReconnectTask != null) {
-						mReconnectTask.cancel();
-					}
-
 					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
 					SurespotLog.v(TAG, "Starting another task in: %d", timerInterval);
 
-					mReconnectTask = new ReconnectTask();
-					if (mBackgroundTimer == null) {
-						mBackgroundTimer = new Timer("backgroundTimer");
+					synchronized (BACKGROUND_TIMER_LOCK) {
+						if (mReconnectTask != null) {
+							mReconnectTask.cancel();
+						}
+
+						if (!mPaused) {
+							ReconnectTask reconnectTask = new ReconnectTask();
+							if (mBackgroundTimer == null) {
+								mBackgroundTimer = new Timer("backgroundTimer");
+							}
+							mBackgroundTimer.schedule(reconnectTask, timerInterval);
+							mReconnectTask = reconnectTask;
+						}
 					}
-					mBackgroundTimer.schedule(mReconnectTask, timerInterval);
 				}
 				else {
 					// TODO tell user
@@ -219,16 +225,18 @@ public class ChatController {
 				setOnWifi();
 				mRetries = 0;
 
-				if (mBackgroundTimer != null) {
-					mBackgroundTimer.cancel();
-					mBackgroundTimer = null;
-				}
+				synchronized (BACKGROUND_TIMER_LOCK) {
 
-				if (mReconnectTask != null && mReconnectTask.cancel()) {
-					SurespotLog.v(TAG, "Cancelled reconnect timer.");
-					mReconnectTask = null;
-				}
+					if (mBackgroundTimer != null) {
+						mBackgroundTimer.cancel();
+						mBackgroundTimer = null;
+					}
 
+					if (mReconnectTask != null && mReconnectTask.cancel()) {
+						SurespotLog.v(TAG, "Cancelled reconnect timer.");
+						mReconnectTask = null;
+					}
+				}
 				connected();
 
 			}
@@ -472,7 +480,7 @@ public class ChatController {
 
 			SurespotLog.v(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
-			
+
 			sMessageList.put(message.toJSONObject());
 		}
 
@@ -511,8 +519,10 @@ public class ChatController {
 	}
 
 	private synchronized void sendMessages() {
-		if (mBackgroundTimer == null) {
-			mBackgroundTimer = new Timer("backgroundTimer");
+		synchronized (BACKGROUND_TIMER_LOCK) {
+			if (mBackgroundTimer == null) {
+				mBackgroundTimer = new Timer("backgroundTimer");
+			}
 		}
 
 		SurespotLog.v(TAG, "Sending: " + mSendBuffer.size() + " messages.");
@@ -523,7 +533,7 @@ public class ChatController {
 			if (isMessageReadyToSend(message)) {
 				iterator.remove();
 				sendMessage(message);
-			}			
+			}
 		}
 	}
 
@@ -1114,8 +1124,8 @@ public class ChatController {
 					JSONArray controlMessages = response.optJSONArray("controlMessages");
 					if (controlMessages != null) {
 						handleControlMessages(username, controlMessages);
-					}					
-					
+					}
+
 					String messages = response.optString("messages", null);
 
 					// don't update messages if we didn't query for them
@@ -1123,7 +1133,7 @@ public class ChatController {
 					if (fetchMessageId > -1 || forceMessageUpdate) {
 						handleMessages(username, messages);
 					}
-				
+
 					setProgress(username, false);
 
 				}
@@ -1279,7 +1289,7 @@ public class ChatController {
 			else
 				if (message.getAction().equals("added")) {
 					user = message.getData();
-					mFriendAdapter.addNewFriend(user);					
+					mFriendAdapter.addNewFriend(user);
 				}
 				else
 					if (message.getAction().equals("invite")) {
@@ -1729,14 +1739,17 @@ public class ChatController {
 
 		disconnect();
 
-		if (mBackgroundTimer != null) {
-			mBackgroundTimer.cancel();
-			mBackgroundTimer = null;
-		}
-		if (mReconnectTask != null) {
-			boolean cancel = mReconnectTask.cancel();
-			mReconnectTask = null;
-			SurespotLog.v(TAG, "Cancelled reconnect task: " + cancel);
+		synchronized (BACKGROUND_TIMER_LOCK) {
+
+			if (mBackgroundTimer != null) {
+				mBackgroundTimer.cancel();
+				mBackgroundTimer = null;
+			}
+			if (mReconnectTask != null) {
+				boolean cancel = mReconnectTask.cancel();
+				mReconnectTask = null;
+				SurespotLog.v(TAG, "Cancelled reconnect task: " + cancel);
+			}
 		}
 
 		// socket = null;
@@ -2037,7 +2050,7 @@ public class ChatController {
 			if (chatAdapter != null) {
 				mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new AsyncHttpResponseHandler() {
 					@Override
-					public void onSuccess(int statusCode, String content) {						
+					public void onSuccess(int statusCode, String content) {
 						deleteMessageInternal(chatAdapter, message, true);
 						setProgress("delete", false);
 					}
