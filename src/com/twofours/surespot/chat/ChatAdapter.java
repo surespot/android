@@ -596,15 +596,18 @@ public class ChatAdapter extends BaseAdapter {
 	// so we know when they're done, and when they are
 	// we can scroll to where we need to be
 	public void checkLoaded() {
-		if (!mLoaded) {
-			for (SurespotMessage message : mMessages) {
-				if (message.isLoading() && !message.isLoaded()) {
-					return;
-				}
-			}
+		synchronized (mMessages) {
+			if (!mLoaded) {
 
-			mAllLoadedCallback.handleResponse(true);
-			mLoaded = true;
+				for (SurespotMessage message : mMessages) {
+					if (message.isLoading() && !message.isLoaded()) {
+						return;
+					}
+				}
+
+				mAllLoadedCallback.handleResponse(true);
+				mLoaded = true;
+			}
 		}
 	}
 
