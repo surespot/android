@@ -170,7 +170,7 @@ public class ContactPickerActivity extends SherlockActivity {
 		if (mSelectedType != ExternalInviteActivity.SHARE_EMAIL) {
 			cur = getContactPhones();
 
-			if (cur.getCount() > 0) {
+			if (cur != null && cur.getCount() > 0) {
 
 				while (cur.moveToNext()) {
 
@@ -208,13 +208,13 @@ public class ContactPickerActivity extends SherlockActivity {
 					}
 
 				}
+				cur.close();
 			}
 
-			cur.close();
 		}
 		else {
 			cur = getContactEmails();
-			if (cur.getCount() > 0) {
+			if (cur != null && cur.getCount() > 0) {
 
 				while (cur.moveToNext()) {
 
@@ -255,8 +255,8 @@ public class ContactPickerActivity extends SherlockActivity {
 
 					}
 				}
+				cur.close();
 			}
-			cur.close();
 		}
 
 		ArrayList<ContactData> contactsList = new ArrayList<ContactData>(contacts.size());
