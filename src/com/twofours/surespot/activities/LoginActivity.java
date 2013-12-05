@@ -210,77 +210,76 @@ public class LoginActivity extends SherlockActivity {
 					if (idSig != null) {
 
 						NetworkController networkController = new NetworkController(LoginActivity.this, null);
-						networkController.login(username, idSig.derivedPassword, idSig.signature, SurespotApplication.getVersion(),
-								SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken(),
-								new CookieResponseHandler() {
-									@Override
-									public void onSuccess(int responseCode, String arg0, Cookie cookie) {
-										IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
+						networkController.login(username, idSig.derivedPassword, idSig.signature, SurespotApplication.getBillingController()
+								.getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
+							@Override
+							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
+								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
 
-										Intent intent = getIntent();
-										Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
-										newIntent.setAction(intent.getAction());
-										newIntent.setType(intent.getType());
-										Bundle extras = intent.getExtras();
-										if (extras != null) {
-											newIntent.putExtras(extras);
-										}
+								Intent intent = getIntent();
+								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
+								newIntent.setAction(intent.getAction());
+								newIntent.setType(intent.getType());
+								Bundle extras = intent.getExtras();
+								if (extras != null) {
+									newIntent.putExtras(extras);
+								}
 
-										// if we logged in as someone else, remove the notification intent extras as we are no longer special
-										// we are just an ordinary login now with no magical powers
-										String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
-										if (notificationType != null) {
-											String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
-											if (!messageTo.equals(username)) {
-												SurespotLog.v(TAG,
-														"user has elected to login as a different user than the notification, removing relevant intent extras");
-												newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
-												newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
-												newIntent.removeExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+								// if we logged in as someone else, remove the notification intent extras as we are no longer special
+								// we are just an ordinary login now with no magical powers
+								String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
+								if (notificationType != null) {
+									String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+									if (!messageTo.equals(username)) {
+										SurespotLog.v(TAG,
+												"user has elected to login as a different user than the notification, removing relevant intent extras");
+										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+										newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
+										newIntent.removeExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-												Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
-											}
-										}
-
-										Utils.logIntent(TAG, newIntent);
-										Utils.clearIntent(intent);
-
-										startActivity(newIntent);
-										InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-										imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
-										finish();
-
+										Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
 									}
+								}
 
-									@Override
-									public void onFailure(Throwable arg0, String message) {
-										SurespotLog.i(TAG, arg0, message);
+								Utils.logIntent(TAG, newIntent);
+								Utils.clearIntent(intent);
 
-										if (arg0 instanceof HttpResponseException) {
-											HttpResponseException error = (HttpResponseException) arg0;
-											int statusCode = error.getStatusCode();
-											switch (statusCode) {
-											case 401:
-												Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
-												break;
-											case 403:
-												Utils.makeToast(LoginActivity.this, getString(R.string.login_update));
-												break;
-											default:
-												Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
-											}
-										}
-										else {
-											Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
-										}
-										pwText.setText("");
+								startActivity(newIntent);
+								InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+								imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
+								finish();
+
+							}
+
+							@Override
+							public void onFailure(Throwable arg0, String message) {
+								SurespotLog.i(TAG, arg0, message);
+
+								if (arg0 instanceof HttpResponseException) {
+									HttpResponseException error = (HttpResponseException) arg0;
+									int statusCode = error.getStatusCode();
+									switch (statusCode) {
+									case 401:
+										Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
+										break;
+									case 403:
+										Utils.makeToast(LoginActivity.this, getString(R.string.login_update));
+										break;
+									default:
+										Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
 									}
+								}
+								else {
+									Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
+								}
+								pwText.setText("");
+							}
 
-									@Override
-									public void onFinish() {
-										mMpd.decrProgress();
-									}
-								});
+							@Override
+							public void onFinish() {
+								mMpd.decrProgress();
+							}
+						});
 					}
 					else {
 						mMpd.decrProgress();

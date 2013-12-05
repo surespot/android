@@ -40,6 +40,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotCachingHttpClient;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -163,7 +164,7 @@ public class NetworkController {
 		}
 	}
 
-	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers, String version,
+	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers, 
 			String voiceMessagingPurchaseToken, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
@@ -174,7 +175,7 @@ public class NetworkController {
 		if (!TextUtils.isEmpty(referrers)) {
 			params.put("referrers", referrers);
 		}
-		params.put("version", version);
+		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
 		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
 
@@ -279,6 +280,14 @@ public class NetworkController {
 		params.put("authSig", authSignature);
 		params.put("tokenSig", tokenSignature);
 		params.put("keyVersion", keyVersion);
+		params.put("version", SurespotApplication.getVersion());
+		params.put("platform", "android");
+		
+		String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+	
+		if (gcmIdReceived != null) {
+			params.put("gcmId", gcmIdReceived);
+		}
 
 		post("/keys", new RequestParams(params), asyncHttpResponseHandler);
 	}
@@ -295,13 +304,13 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, String version, String voiceMessagingPurchaseToken,
+	public void login(String username, String password, String signature, String voiceMessagingPurchaseToken,
 			final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("authSig", signature);
-		params.put("version", version);
+		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
 
 		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
@@ -309,9 +318,12 @@ public class NetworkController {
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
+		
+		SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
+			
 
 		boolean gcmUpdatedTemp = false;
-		// update the gcmid if it differs
+		// update the gcmid if it false
 		if (gcmIdReceived != null) {
 
 			params.put("gcmId", gcmIdReceived);
@@ -320,6 +332,7 @@ public class NetworkController {
 				gcmUpdatedTemp = true;
 			}
 		}
+	
 
 		// just be javascript already
 		final boolean gcmUpdated = gcmUpdatedTemp;
