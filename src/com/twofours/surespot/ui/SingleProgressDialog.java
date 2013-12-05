@@ -104,7 +104,7 @@ public class SingleProgressDialog {
 		}
 		SurespotLog.v(TAG, "hide");
 
-		if (mSingleProgressDialog.isShowing()) {
+		if (mSingleProgressDialog != null && mSingleProgressDialog.isShowing()) {
 			try {
 				mSingleProgressDialog.dismiss();
 			}
