@@ -51,7 +51,8 @@ public class ImageCaptureHandler implements Parcelable {
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
 
 			activity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			SurespotLog.w(TAG, "capture", e);
 		}
 
@@ -64,7 +65,16 @@ public class ImageCaptureHandler implements Parcelable {
 					@Override
 					public void handleResponse(Boolean errorHandled) {
 						if (!errorHandled) {
-							Utils.makeToast(activity, activity.getString(R.string.could_not_upload_image));
+							Runnable runnable = new Runnable() {
+
+								@Override
+								public void run() {
+									Utils.makeToast(activity, activity.getString(R.string.could_not_upload_image));
+
+								}
+							};
+
+							activity.runOnUiThread(runnable);
 						}
 					}
 				});
