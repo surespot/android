@@ -186,7 +186,13 @@ public class IdentityController {
 
 				String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
 				// do OOB verification
-				MainActivity.getNetworkController().validate(username, dPassword,
+				NetworkController networkController = MainActivity.getNetworkController();
+				
+				if (networkController == null) {
+					networkController = new NetworkController(context, null);
+				}
+				
+				networkController.validate(username, dPassword,
 						EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
 							public void onSuccess(int statusCode, String content) {
 
