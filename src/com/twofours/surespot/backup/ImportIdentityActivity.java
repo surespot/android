@@ -129,19 +129,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 				final String user = map.get("name");
 
-				if (IdentityController.identityFileExists(ImportIdentityActivity.this, user)) {
-					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.restore_identity_already_exists));
-
-					if (mMode == MODE_DRIVE) {
-						finish();
-					}
-					return;
-				}
+				
 
 				// make sure file we're going to save to is writable
 				// before we
 				// start
-				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user, false)) {
+				if (!IdentityController.ensureIdentityFile(ImportIdentityActivity.this, user, true)) {
 					Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_restore_identity_name, user));
 					if (mMode == MODE_DRIVE) {
 						finish();
