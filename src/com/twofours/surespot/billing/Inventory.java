@@ -66,7 +66,7 @@ public class Inventory {
     List<String> getAllOwnedSkus() {
         return new ArrayList<String>(mPurchaseMap.keySet());
     }
-    
+
     /** Returns a list of all owned product IDs of a given type */
     List<String> getAllOwnedSkus(String itemType) {
         List<String> result = new ArrayList<String>();

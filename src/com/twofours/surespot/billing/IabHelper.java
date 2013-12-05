@@ -252,6 +252,7 @@ public class IabHelper {
 		};
 
 		Intent serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+		serviceIntent.setPackage("com.android.vending");
 		if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
 			// service available to handle that Intent
 			mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
@@ -273,15 +274,17 @@ public class IabHelper {
 		mSetupDone = false;
 		if (mServiceConn != null) {
 			logDebug("Unbinding from service.");
-			try {
-				// this pukes on phones without google apis with NPE here
-				// http://stackoverflow.com/questions/15658132/in-app-billing-v3-illegalargumentexception-service-not-registered
-				if (mContext != null && mService != null)
-					mContext.unbindService(mServiceConn);
-			}
-			catch (Exception e) {
-			}
+			if (mContext != null && mService != null) {
+				try {
+					// this pukes on phones without google apis with NPE here
+					// http://stackoverflow.com/questions/15658132/in-app-billing-v3-illegalargumentexception-service-not-registered
 
+					mContext.unbindService(mServiceConn);
+				}
+				catch (Exception e) {
+
+				}
+			}
 		}
 		mDisposed = true;
 		mContext = null;
