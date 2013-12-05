@@ -880,8 +880,9 @@ public class IdentityController {
 		return SurespotApplication.getCachingService().getLatestVersion(username);
 	}
 
-	public static String getOurLatestVersion() {
-		return SurespotApplication.getCachingService().getIdentity().getLatestVersion();
+	public static String getOurLatestVersion() 
+	{
+		return SurespotApplication.getCachingService() == null ? null : SurespotApplication.getCachingService().getIdentity().getLatestVersion();
 	}
 
 	public static String getOurLatestVersion(String username) {
