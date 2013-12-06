@@ -308,8 +308,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
 								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
 			}
-			
-				
+
 		}
 	}
 
@@ -733,7 +732,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			SurespotLog.v(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-			Utils.configureActionBar(this,"", IdentityController.getLoggedInUser(), true);
+			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
 			mSet = true;
 			Utils.clearIntent(intent);
 			Utils.logIntent(TAG, intent);
@@ -790,23 +789,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.onResume();
 		}
-		startWatchingExternalStorage();
-		
-		
-		//reset preference config for adapters
-		SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-		ImageView imageView = (ImageView) findViewById(R.id.backgroundImage);
-		String backgroundImageUrl = sp.getString("pref_background_image",null);
-		
-		if (backgroundImageUrl != null) {
-			SurespotLog.v(TAG, "setting background image %s", backgroundImageUrl);	
-			imageView.setImageURI(Uri.parse(backgroundImageUrl));
-			SurespotConfiguration.setBackgroundImageSet(true);		
-		}
-		else {
-			imageView.setImageDrawable(null);
-			SurespotConfiguration.setBackgroundImageSet(false);
-		}					
+		startWatchingExternalStorage();			
+		setBackgroundImage();
 	}
 
 	@Override
@@ -1850,5 +1834,24 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	public void onLowMemory() {
 		MessageImageDownloader.evictCache();
+	}
+
+	private void setBackgroundImage() {
+		// reset preference config for adapters
+		SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+		ImageView imageView = (ImageView) findViewById(R.id.backgroundImage);
+		String backgroundImageUrl = sp.getString("pref_background_image", null);
+
+		if (backgroundImageUrl != null) {
+			SurespotLog.v(TAG, "setting background image %s", backgroundImageUrl);
+						
+			imageView.setImageURI(Uri.parse(backgroundImageUrl));			
+			imageView.setAlpha(150);
+			SurespotConfiguration.setBackgroundImageSet(true);
+		}
+		else {
+			imageView.setImageDrawable(null);
+			SurespotConfiguration.setBackgroundImageSet(false);
+		}
 	}
 }

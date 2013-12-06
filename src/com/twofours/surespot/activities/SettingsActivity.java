@@ -1,10 +1,17 @@
 package com.twofours.surespot.activities;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +30,7 @@ import android.widget.LinearLayout;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -70,7 +78,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 			mBgImagePref = prefMgr.findPreference("pref_background_image");
 
-			final String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
+			String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
 			if (TextUtils.isEmpty(bgImageUri)) {
 				mBgImagePref.setTitle(R.string.pref_title_background_image_select);
 			}
@@ -81,6 +89,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			mBgImagePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
+					String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
 					if (TextUtils.isEmpty(bgImageUri)) {
 						Intent intent = new Intent();
 						intent.setType("image/*");
@@ -91,6 +100,10 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					else {
 						mBgImagePref.setTitle("select background image");
 						Editor editor = prefMgr.getSharedPreferences().edit();
+						SurespotLog.v(TAG, "removing background image file: %s", bgImageUri);
+						File file = new File(bgImageUri);
+						file.delete();
+						SurespotLog.v(TAG, "background image file exists: %b", file.exists());
 						editor.remove("pref_background_image");
 						editor.commit();
 						SurespotConfiguration.setBackgroundImageSet(false);
@@ -194,16 +207,97 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 		if (resultCode == RESULT_OK) {
 			Uri uri = data.getData();
 
-			SharedPreferences preferences = getPreferenceManager().getSharedPreferences();
-			SharedPreferences.Editor editor = preferences.edit();
-			String uriString = uri.toString();
-			SurespotLog.v(TAG, "selected image url: %s", uriString);
+			File imageFile = compressImage(uri, -1);
 
-			editor.putString("pref_background_image", uriString);
-			editor.commit();
+			if (imageFile != null) {
+				SharedPreferences preferences = getPreferenceManager().getSharedPreferences();
+				SharedPreferences.Editor editor = preferences.edit();
 
-			mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
-			SurespotConfiguration.setBackgroundImageSet(true);
+				SurespotLog.v(TAG, "compressed image path: %s", imageFile.getAbsolutePath());
+				editor.putString("pref_background_image", imageFile.getAbsolutePath());
+				editor.commit();
+
+				mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
+				SurespotConfiguration.setBackgroundImageSet(true);
+			}
+		}
+	}
+
+	private File compressImage(final Uri uri, final int rotate) {
+		final Uri finalUri;
+		File file = null;
+		try {
+			file = File.createTempFile("background", "image");
+			// if it's an external image save it first
+			if (uri.getScheme().startsWith("http")) {
+				FileOutputStream fos = new FileOutputStream(file);
+				InputStream is = new URL(uri.toString()).openStream();
+				byte[] buffer = new byte[1024];
+				int len;
+				while ((len = is.read(buffer)) != -1) {
+					fos.write(buffer, 0, len);
+				}
+
+				fos.close();
+				finalUri = Uri.fromFile(file);
+			}
+			else {
+				finalUri = uri;
+			}
+		}
+		catch (IOException e1) {
+			SurespotLog.w(TAG, e1, "compressImage");
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
+				}
+			};
+
+			this.runOnUiThread(runnable);
+			return null;
+		}
+
+		// scale, compress and save the image
+		int maxDimension = SurespotConstants.MESSAGE_IMAGE_DIMENSION;
+
+		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(SettingsActivity.this, finalUri, rotate, maxDimension);
+		try {
+
+			if (file != null && bitmap != null) {
+				SurespotLog.v(TAG, "compressingImage to: %s", file);
+				FileOutputStream fos = new FileOutputStream(file);
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
+				fos.close();
+				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
+				return file;
+			}
+			else {
+				Runnable runnable = new Runnable() {
+
+					@Override
+					public void run() {
+						Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
+					}
+				};
+
+				this.runOnUiThread(runnable);
+				return null;
+			}
+		}
+		catch (IOException e) {
+			SurespotLog.w(TAG, e, "compressImage");
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
+				}
+			};
+
+			this.runOnUiThread(runnable);
+			return null;
 		}
 	}
 }

@@ -10,19 +10,10 @@
         android:id="@+id/main_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/transparent" />
-
-    <FrameLayout
-        android:id="@+id/progressBar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" >
-
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
-    </FrameLayout>
+        android:background="@android:color/transparent"
+        android:cacheColorHint="#00000000"
+        android:divider="@drawable/list_divider_holo_light"
+        android:overScrollFooter="@null" />
 
     <ScrollView
         android:id="@+id/main_list_empty"

@@ -10,9 +10,7 @@
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.6"
-        android:scaleType="centerCrop"
-         >
+        android:scaleType="centerCrop">
     </ImageView>
 
     <com.viewpagerindicator.TitlePageIndicator
