@@ -47,6 +47,7 @@ import ch.boye.httpclientandroidlib.Header;
 import ch.boye.httpclientandroidlib.HttpStatus;
 import ch.boye.httpclientandroidlib.HttpVersion;
 import ch.boye.httpclientandroidlib.StatusLine;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.impl.client.cache.HeapResource;
@@ -1049,11 +1050,24 @@ public class ChatController {
 			}
 
 			@Override
-			public void onFailure(Throwable error, String content) {
+			public void onFailure(Throwable arg0, String content) {
 				// setMessagesLoading(false);
-				SurespotLog.i(TAG, error, "loading latest messages failed");
-				Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
+				SurespotLog.i(TAG, arg0, "loading latest messages failed");
 				setProgress(null, false);
+				
+				if (arg0 instanceof HttpResponseException) {
+					HttpResponseException error = (HttpResponseException) arg0;
+					int statusCode = error.getStatusCode();
+					switch (statusCode) {
+					case 401:
+						//don't show toast on 401 as we are going to be going bye bye
+						return;
+					}
+				}
+				
+				Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
+				
+				
 			}
 		});
 
@@ -2185,18 +2199,21 @@ public class ChatController {
 					@Override
 					public void onSuccess(int statusCode, String status) {
 						setProgress("shareable", false);
-						
-						if (status == null) { return; }
-												
-						SurespotLog.v(TAG, "setting message sharable via http: %s", status);						
+
+						if (status == null) {
+							return;
+						}
+
+						SurespotLog.v(TAG, "setting message sharable via http: %s", status);
 						if (status.equals("shareable")) {
-							message.setShareable(true);	
+							message.setShareable(true);
 						}
-						else if (status.equals("notshareable")) {
-							message.setShareable(false);
-						}
-						
-						chatAdapter.notifyDataSetChanged();					
+						else
+							if (status.equals("notshareable")) {
+								message.setShareable(false);
+							}
+
+						chatAdapter.notifyDataSetChanged();
 					}
 
 					@Override
