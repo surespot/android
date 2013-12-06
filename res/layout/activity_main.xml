@@ -71,6 +71,7 @@
 
         <EditText
             android:id="@+id/etInvite"
+            android:background="@android:color/transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:imeActionLabel="@string/invite"
@@ -83,6 +84,7 @@
         </EditText>
 
         <EditText
+            android:background="@android:color/transparent"
             android:id="@+id/etMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
