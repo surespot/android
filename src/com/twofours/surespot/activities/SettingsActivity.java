@@ -260,7 +260,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 		}
 
 		// scale, compress and save the image
-		int maxDimension = SurespotConstants.MESSAGE_IMAGE_DIMENSION;
+		int maxDimension = 400;
 
 		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(SettingsActivity.this, finalUri, rotate, maxDimension);
 		try {
