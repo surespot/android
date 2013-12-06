@@ -69,6 +69,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// shoved it in shared prefs
 		SurespotLog.v(TAG, "Received gcm id, saving it in shared prefs.");
 		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.GCM_ID_RECEIVED, id);
+		Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.APP_VERSION, SurespotApplication.getVersion());
 		GCMRegistrar.setRegisteredOnServer(context, true);
 		// TODO retries?
 		if (IdentityController.hasLoggedInUser()) {

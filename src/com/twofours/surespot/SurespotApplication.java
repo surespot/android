@@ -14,6 +14,7 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -23,7 +24,9 @@ import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.services.CredentialCachingService;
 
 @ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
@@ -104,19 +107,33 @@ public class SurespotApplication extends Application {
 		ACRA.init(this);
 		EmojiParser.init(this);
 
+		PackageManager manager = this.getPackageManager();
+		PackageInfo info = null;
+
+		try {
+			info = manager.getPackageInfo(this.getPackageName(), 0);
+			mVersion = info.versionName;
+		}
+		catch (NameNotFoundException e) {
+			mVersion = "unknown";
+		}
+		
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
 		mStateController = new StateController(this);
+		
+		
 		try {
 			// device without GCM throws exception
 			GCMRegistrar.checkDevice(this);
 			GCMRegistrar.checkManifest(this);
-
+			
+			
 			// final String regId = GCMRegistrar.getRegistrationId(this);
 			boolean registered = GCMRegistrar.isRegistered(this);
 			boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
-			if (!registered || !registeredOnServer) {
+			if (versionChanged(this) || !registered || !registeredOnServer) {
 				SurespotLog.v(TAG, "Registering for GCM.");
 				GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
 			}
@@ -128,26 +145,30 @@ public class SurespotApplication extends Application {
 			SurespotLog.w(TAG, "onCreate", e);
 		}
 
-		PackageManager manager = this.getPackageManager();
-		PackageInfo info = null;
-
-		try {
-			info = manager.getPackageInfo(this.getPackageName(), 0);
-			mVersion = info.versionName;
-		}
-		catch (NameNotFoundException e) {
-			mVersion = "unknown";
-		}
+		
 
 		// NetworkController.unregister(this, regId);
 
 		SurespotLog.v(TAG, "starting cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 
-		startService(cacheIntent);
+		startService(cacheIntent);		
+		mBillingController = new BillingController(this);				
+	}
+	
+	private boolean versionChanged(Context context) {
+	 	   
+	    // Check if app was updated; if so, it must clear the registration ID
+	    // since the existing regID is not guaranteed to work with the new
+	    // app version.
 		
-		mBillingController = new BillingController(this);
-				
+		String registeredVersion = Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.APP_VERSION);		
+		SurespotLog.v(TAG, "registeredversion: %s, currentVersion: %s", registeredVersion, getVersion());
+	    if (!getVersion().equals(registeredVersion)) {
+	        SurespotLog.i(TAG, "App version changed.");
+	        return true;
+	    }
+	    return false;
 	}
 
 	public static CredentialCachingService getCachingService() {
@@ -170,6 +191,5 @@ public class SurespotApplication extends Application {
 		return mBillingController;
 	}
 	
-
 
 }
