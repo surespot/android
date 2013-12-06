@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -204,7 +205,8 @@ public class FriendAdapter extends BaseAdapter {
 
 			friendViewHolder.friendActive = convertView.findViewById(R.id.friendActive);
 			friendViewHolder.friendInactive = convertView.findViewById(R.id.friendInactive);
-			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
+			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);					
+			friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));			
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
 			friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
