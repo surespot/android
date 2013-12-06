@@ -72,7 +72,13 @@ public class SignupActivity extends SherlockActivity {
 		setContentView(R.layout.activity_signup);
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);
 
-		mNetworkController = new NetworkController(SignupActivity.this, null);
+		try {
+			mNetworkController = new NetworkController(SignupActivity.this, null);
+		}
+		catch (Exception e) {
+			this.finish();
+			return;
+		}
 
 		TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
 		tvSignupHelp.setMovementMethod(LinkMovementMethod.getInstance());
@@ -238,7 +244,7 @@ public class SignupActivity extends SherlockActivity {
 					Utils.makeToast(SignupActivity.this, getString(R.string.user_exists_error));
 				}
 
-				userText.requestFocus();				
+				userText.requestFocus();
 			}
 		});
 	}
@@ -327,98 +333,98 @@ public class SignupActivity extends SherlockActivity {
 
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
-										mNetworkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers, SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken(),
-												new CookieResponseHandler() {
+										mNetworkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers, SurespotApplication
+												.getBillingController().getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
 
-													@Override
-													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
-														confirmPwText.setText("");
-														pwText.setText("");
+											@Override
+											public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
+												confirmPwText.setText("");
+												pwText.setText("");
 
-														if (statusCode == 201) {
-															// save key pair now
-															// that we've created
-															// a
-															// user successfully
-															new AsyncTask<Void, Void, Void>() {
+												if (statusCode == 201) {
+													// save key pair now
+													// that we've created
+													// a
+													// user successfully
+													new AsyncTask<Void, Void, Void>() {
 
-																@Override
-																protected Void doInBackground(Void... params) {
-																	Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
-																	IdentityController.createIdentity(SignupActivity.this, username, password, salt,
-																			keyPair[0], keyPair[1], cookie);
-																	return null;
-																}
-
-																protected void onPostExecute(Void result) {
-
-																	// SurespotApplication.getUserData().setUsername(username);
-																	Intent newIntent = new Intent(SignupActivity.this, MainActivity.class);
-																	Intent intent = getIntent();
-																	newIntent.setAction(intent.getAction());
-																	newIntent.setType(intent.getType());
-																	Bundle extras = intent.getExtras();
-																	if (extras != null) {
-																		newIntent.putExtras(extras);
-																	}
-																	//set a flag showing we just created a user
-																	newIntent.putExtra("userWasCreated", true);
-																	newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-																	startActivity(newIntent);
-																	Utils.clearIntent(intent);
-																	mMpd.decrProgress();
-																	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-																	imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
-																	finish();
-																	setUsernameValidity(true);																	
-																};
-															}.execute();
-
-														}
-														else {
-															SurespotLog.w(TAG, "201 not returned on user create.");
-															//confirmPwText.setText("");
-															//pwText.setText("");
-															pwText.requestFocus();
-															//setUsernameValidity(false);
+														@Override
+														protected Void doInBackground(Void... params) {
+															Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
+															IdentityController.createIdentity(SignupActivity.this, username, password, salt, keyPair[0],
+																	keyPair[1], cookie);
+															return null;
 														}
 
-													}
+														protected void onPostExecute(Void result) {
 
-													public void onFailure(Throwable arg0, String arg1) {
-														SurespotLog.i(TAG, arg0, "signup: %s", arg1);
-														mMpd.decrProgress();
-														if (arg0 instanceof HttpResponseException) {
-															HttpResponseException error = (HttpResponseException) arg0;
-															int statusCode = error.getStatusCode();
-
-															switch (statusCode) {
-															case 429:
-																Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
-																userText.requestFocus();
-																break;
-
-															case 409:
-																Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
-																userText.requestFocus();
-																setUsernameValidity(false);
-																break;
-															case 403:
-																Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
-																break;
-															default:
-																Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
+															// SurespotApplication.getUserData().setUsername(username);
+															Intent newIntent = new Intent(SignupActivity.this, MainActivity.class);
+															Intent intent = getIntent();
+															newIntent.setAction(intent.getAction());
+															newIntent.setType(intent.getType());
+															Bundle extras = intent.getExtras();
+															if (extras != null) {
+																newIntent.putExtras(extras);
 															}
+															// set a flag showing we just created a user
+															newIntent.putExtra("userWasCreated", true);
+															newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+															startActivity(newIntent);
+															Utils.clearIntent(intent);
+															mMpd.decrProgress();
+															InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+															imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
+															finish();
+															setUsernameValidity(true);
+														};
+													}.execute();
 
-														}
-														else {
-															Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
-														}
-														//confirmPwText.setText("");
-														//pwText.setText("");
-														
+												}
+												else {
+													SurespotLog.w(TAG, "201 not returned on user create.");
+													// confirmPwText.setText("");
+													// pwText.setText("");
+													pwText.requestFocus();
+													// setUsernameValidity(false);
+												}
+
+											}
+
+											public void onFailure(Throwable arg0, String arg1) {
+												SurespotLog.i(TAG, arg0, "signup: %s", arg1);
+												mMpd.decrProgress();
+												if (arg0 instanceof HttpResponseException) {
+													HttpResponseException error = (HttpResponseException) arg0;
+													int statusCode = error.getStatusCode();
+
+													switch (statusCode) {
+													case 429:
+														Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
+														userText.requestFocus();
+														break;
+
+													case 409:
+														Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
+														userText.requestFocus();
+														setUsernameValidity(false);
+														break;
+													case 403:
+														Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
+														break;
+													default:
+														Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 													}
-												});
+
+												}
+												else {
+													Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
+												}
+												// confirmPwText.setText("");
+												// pwText.setText("");
+
+											}
+										});
 									};
 								}.execute();
 							}
@@ -447,7 +453,7 @@ public class SignupActivity extends SherlockActivity {
 					Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
 				}
 
-				//userText.setText("");
+				// userText.setText("");
 				// confirmPwText.setText("");
 				// pwText.setText("");
 				userText.requestFocus();
@@ -492,7 +498,7 @@ public class SignupActivity extends SherlockActivity {
 			return false;
 		}
 	}
-	
+
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
@@ -502,7 +508,6 @@ public class SignupActivity extends SherlockActivity {
 
 		return super.onKeyUp(keyCode, event);
 	}
-
 
 	private void launchImport() {
 		Intent intent = new Intent(this, ImportIdentityActivity.class);

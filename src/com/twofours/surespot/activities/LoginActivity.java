@@ -60,7 +60,7 @@ public class LoginActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		Utils.configureActionBar(this, "",getString(R.string.login), false);
+		Utils.configureActionBar(this, "", getString(R.string.login), false);
 
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
@@ -209,7 +209,16 @@ public class LoginActivity extends SherlockActivity {
 				protected void onPostExecute(final IdSig idSig) {
 					if (idSig != null) {
 
-						NetworkController networkController = new NetworkController(LoginActivity.this, null);
+						NetworkController networkController = MainActivity.getNetworkController();
+						if (networkController == null) {
+							try {
+								networkController = new NetworkController(LoginActivity.this, null);
+							}
+							catch (Exception e) {
+								LoginActivity.this.finish();
+								return;
+							}
+						}
 						networkController.login(username, idSig.derivedPassword, idSig.signature, SurespotApplication.getBillingController()
 								.getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
 							@Override

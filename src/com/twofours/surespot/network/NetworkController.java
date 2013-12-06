@@ -9,6 +9,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -92,7 +93,7 @@ public class NetworkController {
 		}
 	}
 
-	public NetworkController(Context context, final IAsyncCallbackTuple<String, Boolean> m401Handler) {
+	public NetworkController(Activity context, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws  Exception {
 		SurespotLog.v(TAG, "constructor");
 		mContext = context;
 
@@ -103,8 +104,7 @@ public class NetworkController {
 			mCookieStore.addCookie(cookie);
 		}
 
-		try {
-
+		try {			
 			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context);
 			mClient = new AsyncHttpClient(mContext);
 			mSyncClient = new SyncHttpClient(mContext) {
@@ -116,9 +116,10 @@ public class NetworkController {
 			};
 		}
 		catch (IOException e) {
-			// TODO tell user shit is fucked
-			throw new RuntimeException("Fatal error, could not create http clients..is storage space available?", e);
+			Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
+			throw new Exception("Fatal error, could not create http clients..is storage space available?", e);				
 		}
+				
 
 		HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
 

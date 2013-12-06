@@ -69,9 +69,15 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 				}
 				else {
-					NetworkController networkController = MainActivity.getNetworkController();
+					NetworkController networkController = MainActivity.getNetworkController();					
 					if (networkController == null) {
-						networkController = new NetworkController(ExternalInviteActivity.this, null);
+						try {
+							networkController = new NetworkController(ExternalInviteActivity.this, null);							
+						}
+						catch (Exception e) {
+							ExternalInviteActivity.this.finish();
+							return;
+						}
 					}
 					UIUtils.sendInvitation(ExternalInviteActivity.this, networkController, mSelectedType, null, false);
 				}

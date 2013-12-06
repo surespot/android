@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -170,7 +171,8 @@ public class IdentityController {
 		return null;
 	}
 
-	public static void getExportIdentity(final Context context, final String username, final String password, final IAsyncCallbackTuple<byte[], String> callback) {
+	public static void getExportIdentity(final Activity context, final String username, final String password,
+			final IAsyncCallbackTuple<byte[], String> callback) {
 
 		new AsyncTask<Void, Void, Void>() {
 
@@ -187,13 +189,18 @@ public class IdentityController {
 				String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
 				// do OOB verification
 				NetworkController networkController = MainActivity.getNetworkController();
-				
 				if (networkController == null) {
-					networkController = new NetworkController(context, null);
+					try {
+						networkController = new NetworkController(context, null);
+					}
+					catch (Exception e) {
+						context.finish();
+						return null;
+					}
 				}
-				
-				networkController.validate(username, dPassword,
-						EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
+
+				networkController.validate(username, dPassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword),
+						new AsyncHttpResponseHandler() {
 							public void onSuccess(int statusCode, String content) {
 
 								callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
@@ -443,7 +450,7 @@ public class IdentityController {
 
 	}
 
-	public static void importIdentity(final Context context, File exportDir, String username, final String password,
+	public static void importIdentity(final Activity context, File exportDir, String username, final String password,
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = loadIdentity(context, false, username, password + EXPORT_IDENTITY_ID);
 		if (identity != null) {
@@ -453,9 +460,17 @@ public class IdentityController {
 			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
 			NetworkController networkController = MainActivity.getNetworkController();
+
 			if (networkController == null) {
-				networkController = new NetworkController(context, null);
+				try {
+					networkController = new NetworkController(context, null);
+				}
+				catch (Exception e) {
+					context.finish();
+					return;
+				}
 			}
+
 			networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
 					new AsyncHttpResponseHandler() {
 						@Override
@@ -517,7 +532,7 @@ public class IdentityController {
 
 	}
 
-	public static void importIdentityBytes(final Context context, final String username, final String password, byte[] identityBytes,
+	public static void importIdentityBytes(final Activity context, final String username, final String password, byte[] identityBytes,
 			final IAsyncCallback<IdentityOperationResult> callback) {
 		final SurespotIdentity identity = decryptIdentity(identityBytes, username, password + EXPORT_IDENTITY_ID, true);
 		if (identity != null) {
@@ -527,12 +542,19 @@ public class IdentityController {
 
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
-				networkController = new NetworkController(context, null);
+				try {
+					networkController = new NetworkController(context, null);
+				}
+				catch (Exception e) {
+					context.finish();
+					return;
+				}
 			}
+
 			networkController.validate(username, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword),
 					new AsyncHttpResponseHandler() {
 						@Override
-						public void onSuccess(int statusCode, String content) {							
+						public void onSuccess(int statusCode, String content) {
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
@@ -880,8 +902,7 @@ public class IdentityController {
 		return SurespotApplication.getCachingService().getLatestVersion(username);
 	}
 
-	public static String getOurLatestVersion() 
-	{
+	public static String getOurLatestVersion() {
 		return SurespotApplication.getCachingService() == null ? null : SurespotApplication.getCachingService().getIdentity().getLatestVersion();
 	}
 

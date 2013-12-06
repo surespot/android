@@ -82,7 +82,13 @@ public class ContactPickerActivity extends SherlockActivity {
 				ArrayList<String> selectedContacts = getSelectedContactData();
 				NetworkController networkController = MainActivity.getNetworkController();
 				if (networkController == null) {
-					networkController = new NetworkController(ContactPickerActivity.this, null);
+					try {
+						networkController = new NetworkController(ContactPickerActivity.this, null);
+					}
+					catch (Exception e) {
+						ContactPickerActivity.this.finish();
+						return;
+					}
 				}
 				UIUtils.sendInvitation(ContactPickerActivity.this, networkController, mSelectedType, selectedContacts, true);
 			}

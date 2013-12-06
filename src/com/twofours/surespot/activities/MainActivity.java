@@ -252,7 +252,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// created fragments have a chat controller instance
 
 			mMainHandler = new Handler(getMainLooper());
-			mNetworkController = new NetworkController(MainActivity.this, m401Handler);
+
+			try {
+				mNetworkController = new NetworkController(MainActivity.this, null);
+			}
+			catch (Exception e) {
+				finish();
+				return;
+			}
+
 			mBillingController = SurespotApplication.getBillingController();
 
 			mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler,
