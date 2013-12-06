@@ -4,12 +4,13 @@
     android:id="@+id/chatLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:layerType="hardware"
     tools:context=".ChatActivity" >
 
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent"        
         android:scaleType="centerCrop">
     </ImageView>
 
@@ -77,6 +78,7 @@
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:maxHeight="150dp"
             android:minHeight="45dp"
+            
             android:singleLine="true" >
         </EditText>
 
