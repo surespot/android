@@ -431,6 +431,8 @@ public class ChatController {
 					@Override
 					public void onSuccess(int statusCode, String arg0) {
 						getFriendAdapter().addFriendInvited(mAutoInviteData.getUsername());
+						// scroll to home page
+						setCurrentChat(null);
 						mAutoInviteData = null;
 
 					}
