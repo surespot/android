@@ -179,6 +179,7 @@ public class ChatController {
 					SurespotLog.v(TAG,"got 403 from websocket");
 					socket = null;
 					logout();
+					mCallback401.handleResponse(null, false);
 					return;
 				}
 
