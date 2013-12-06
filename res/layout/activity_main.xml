@@ -27,7 +27,7 @@
         app:selectedColor="@color/surespotBlue"
         app:topPadding="0dp" />
 
-    <android.support.v4.view.ViewPager
+    <com.twofours.surespot.ui.FixedViewPager
         android:id="@+id/pager"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
