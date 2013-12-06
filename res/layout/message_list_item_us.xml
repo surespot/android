@@ -66,10 +66,10 @@
                 android:id="@+id/messageTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="2dp"
+                android:layout_marginLeft="7dp"
                 android:layout_marginRight="2dp"
                 android:textColor="@android:color/black"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:visibility="visible" />
 
             <TextView
@@ -79,15 +79,16 @@
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
                 android:gravity="right"
-                android:textSize="12sp" />
+                android:textSize="10sp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/messageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="2dp"
-            android:layout_marginLeft="2dp"
+            android:layout_marginLeft="7dp"
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textColor="@android:color/black"
