@@ -69,8 +69,7 @@
         android:layout_toRightOf="@+id/fButtons" >
 
         <EditText
-            android:id="@+id/etInvite"
-            android:background="@android:color/transparent"
+            android:id="@+id/etInvite"            
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:imeActionLabel="@string/invite"
@@ -81,8 +80,7 @@
             android:singleLine="true" >
         </EditText>
 
-        <EditText
-            android:background="@android:color/transparent"
+        <EditText            
             android:id="@+id/etMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

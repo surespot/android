@@ -668,6 +668,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 
+		// we like the underline in ICS
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			mEtMessage.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+			mEtInvite.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+		}
+
 	}
 
 	private boolean needsLogin(Intent intent) {
@@ -789,7 +795,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.onResume();
 		}
-		startWatchingExternalStorage();			
+		startWatchingExternalStorage();
 		setBackgroundImage();
 	}
 
@@ -1844,9 +1850,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		if (backgroundImageUrl != null) {
 			SurespotLog.v(TAG, "setting background image %s", backgroundImageUrl);
-						
-			imageView.setImageURI(Uri.parse(backgroundImageUrl));			
-			imageView.setAlpha(150);
+
+			imageView.setImageURI(Uri.parse(backgroundImageUrl));
+			imageView.setAlpha(125);
 			SurespotConfiguration.setBackgroundImageSet(true);
 		}
 		else {
