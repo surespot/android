@@ -19,7 +19,6 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
-import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
@@ -51,30 +50,6 @@ public class FriendFragment extends SherlockFragment {
 			mMainAdapter.setItemListeners(mClickListener, mLongClickListener);
 
 			mListView.setAdapter(mMainAdapter);
-
-			if (!mMainAdapter.isLoaded()) {
-				SurespotLog.v(TAG, "setting progressbarvisible");
-				view.findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
-			}
-
-			SurespotLog.v(TAG, "friend adapter set, : " + mMainAdapter);
-			SurespotLog.v(TAG, "setting loading callback");
-			mMainAdapter.setLoadingCallback(new IAsyncCallback<Boolean>() {
-
-				@Override
-				public void handleResponse(final Boolean loading) {
-
-					if (!loading) {
-						if (mTimer != null) {
-							mTimer.cancel();
-							mTimer = null;
-						}
-
-						SurespotLog.v(TAG, "tearing progress down");
-						view.findViewById(R.id.progressBar).setVisibility(View.GONE);
-					}
-				}
-			});
 		}
 
 		return view;
