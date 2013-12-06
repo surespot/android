@@ -176,9 +176,9 @@ public class ChatController {
 			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
+					SurespotLog.v(TAG,"got 403 from websocket");
 					socket = null;
 					logout();
-					mCallback401.handleResponse(mContext.getString(R.string.could_not_login_to_server), false);
 					return;
 				}
 
@@ -1054,20 +1054,19 @@ public class ChatController {
 				// setMessagesLoading(false);
 				SurespotLog.i(TAG, arg0, "loading latest messages failed");
 				setProgress(null, false);
-				
+
 				if (arg0 instanceof HttpResponseException) {
 					HttpResponseException error = (HttpResponseException) arg0;
 					int statusCode = error.getStatusCode();
 					switch (statusCode) {
 					case 401:
-						//don't show toast on 401 as we are going to be going bye bye
+						// don't show toast on 401 as we are going to be going bye bye
 						return;
 					}
 				}
-				
+
 				Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
-				
-				
+
 			}
 		});
 
