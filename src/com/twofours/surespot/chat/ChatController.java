@@ -2181,10 +2181,20 @@ public class ChatController {
 				setProgress("shareable", true);
 				mNetworkController.setMessageShareable(to, message.getId(), !message.isShareable(), new AsyncHttpResponseHandler() {
 					@Override
-					public void onSuccess(int statusCode, String content) {
-						message.setShareable(!message.isShareable());
-						chatAdapter.notifyDataSetChanged();
+					public void onSuccess(int statusCode, String status) {
 						setProgress("shareable", false);
+						
+						if (status == null) { return; }
+												
+						SurespotLog.v(TAG, "setting message sharable via http: %s", status);						
+						if (status.equals("shareable")) {
+							message.setShareable(true);	
+						}
+						else if (status.equals("notshareable")) {
+							message.setShareable(false);
+						}
+						
+						chatAdapter.notifyDataSetChanged();					
 					}
 
 					@Override

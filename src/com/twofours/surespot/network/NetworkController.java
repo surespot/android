@@ -683,6 +683,7 @@ public class NetworkController {
 	}
 
 	public void setMessageShareable(String username, Integer id, boolean shareable, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.v(TAG, "setMessageSharable %b", shareable);
 		RequestParams params = new RequestParams("shareable", shareable);
 		put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
 
