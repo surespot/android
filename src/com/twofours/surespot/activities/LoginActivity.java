@@ -60,7 +60,7 @@ public class LoginActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		Utils.configureActionBar(this, getString(R.string.login), "", false);
+		Utils.configureActionBar(this, "",getString(R.string.login), false);
 
 		SurespotLog.v(TAG, "binding cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
