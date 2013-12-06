@@ -6,6 +6,15 @@
     android:layout_height="fill_parent"
     tools:context=".ChatActivity" >
 
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.6"
+        android:scaleType="centerCrop"
+         >
+    </ImageView>
+
     <com.viewpagerindicator.TitlePageIndicator
         android:id="@+id/indicator"
         android:layout_width="fill_parent"
@@ -115,8 +124,8 @@
             android:layout_gravity="center"
             android:src="@drawable/ic_btn_speak_now" >
         </ImageView>
-        
-         <ImageView
+
+        <ImageView
             android:id="@+id/ivHome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

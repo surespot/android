@@ -69,6 +69,7 @@ import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.MainActivityLayout;
 import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -307,6 +308,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
 								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
 			}
+			
+				
 		}
 	}
 
@@ -788,6 +791,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mChatController.onResume();
 		}
 		startWatchingExternalStorage();
+		
+		
+		//reset preference config for adapters
+		SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+		ImageView imageView = (ImageView) findViewById(R.id.backgroundImage);
+		String backgroundImageUrl = sp.getString("pref_background_image",null);
+		
+		if (backgroundImageUrl != null) {
+			SurespotLog.v(TAG, "setting background image %s", backgroundImageUrl);	
+			imageView.setImageURI(Uri.parse(backgroundImageUrl));
+			SurespotConfiguration.setBackgroundImageSet(true);		
+		}
+		else {
+			imageView.setImageDrawable(null);
+			SurespotConfiguration.setBackgroundImageSet(false);
+		}					
 	}
 
 	@Override

@@ -62,6 +62,9 @@
             android:title="@string/notifications_led" />
     </PreferenceScreen>
     <PreferenceScreen android:title="@string/pref_title_options" >
+          <Preference
+            android:key="pref_background_image"
+            android:title="@string/pref_title_background_image_select" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_message"

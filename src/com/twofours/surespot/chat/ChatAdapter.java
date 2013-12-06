@@ -37,8 +37,8 @@ public class ChatAdapter extends BaseAdapter {
 	private final static int TYPE_THEM = 1;
 	private boolean mLoading;
 	private IAsyncCallback<Boolean> mAllLoadedCallback;
-	private boolean mDebugMode;
 	private boolean mCheckingSequence;
+	private boolean mDebugMode;
 	private int mCurrentScrollPositionId;
 	private MessageDecryptor mMessageDecryptor;
 	private MessageImageDownloader mMessageImageDownloader;
@@ -49,13 +49,13 @@ public class ChatAdapter extends BaseAdapter {
 	public ChatAdapter(Context context) {
 		SurespotLog.v(TAG, "Constructor.");
 		mContext = context;
+
 		SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 		mDebugMode = pm.getBoolean("pref_debug_mode", false);
-		// pm.getBoolean("pref_hide_deleted_messages", false);
+		
 		mMessageDecryptor = new MessageDecryptor(this);
 		mMessageImageDownloader = new MessageImageDownloader(this);
 		mMessageVoiceDownloader = new VoiceMessageDownloader(this);
-
 	}
 
 	public void doneCheckingSequence() {
@@ -242,6 +242,7 @@ public class ChatAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// SurespotLog.v(TAG, "getView, pos: " + position);
 		final int type = getItemViewType(position);
+		boolean bgImageSet = SurespotConfiguration.isBackgroundImageSet();
 		ChatMessageViewHolder chatMessageViewHolder = null;
 
 		// check type again based on http://stackoverflow.com/questions/12018997/why-does-getview-return-wrong-convertview-objects-on-separatedlistadapter
@@ -302,6 +303,10 @@ public class ChatAdapter extends BaseAdapter {
 
 		final SurespotMessage item = (SurespotMessage) getItem(position);
 
+		chatMessageViewHolder.tvText.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+		chatMessageViewHolder.tvTime.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+		chatMessageViewHolder.messageSize.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+
 		SurespotLog.v(TAG, "rendering item: %s", item);
 
 		if (item.getErrorStatus() > 0) {
@@ -342,6 +347,7 @@ public class ChatAdapter extends BaseAdapter {
 
 		if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 			chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
+
 			chatMessageViewHolder.voiceView.setVisibility(View.GONE);
 			chatMessageViewHolder.messageSize.setVisibility(View.GONE);
 			chatMessageViewHolder.imageView.setVisibility(View.GONE);
@@ -646,4 +652,5 @@ public class ChatAdapter extends BaseAdapter {
 			}
 		}
 	}
+
 }
