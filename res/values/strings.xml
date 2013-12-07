@@ -70,7 +70,7 @@
     <string name="crash_dialog_text">We must confess that an unexpected error has occurred.\n\nPlease help us to fix the issue by touching OK to send an error report containing no personally identifying information.</string>
     <string name="crash_dialog_comment_prompt">You can add your comments about the problem below if you like:</string>
     <string name="crash_dialog_ok_toast">Thank you!</string>
-    <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click %s to install the android app and invite me as a friend."</string>
+    <string name="external_invite_message">"I'd like to chat with you privately via surespot. Click %s to install the app and invite me as a friend."</string>
     <string name="help_backupIdentities1">"Because surespot uses encryption keys that are never uploaded to our servers, if you lose your phone, or uninstall then re-install the app, or wipe the app's data, you will not be able to login unless you have backed up your identity."</string>
     <string name="help_backupIdentities2">"Surespot can use Google Drive and/or Device Storage for backing up your identity. These options are in the identity management settings."</string>
     <string name="help_backup_what"><![CDATA["This will export a copy of the selected identity encrypted with <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES-GCM</a> with a key derived from your password through a <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
@@ -110,7 +110,7 @@
     <string name="login_max_identities_reached">Sorry, you have already created the maximum number of identities (%d).\n\nIdentities can be deleted in the identity management settings after logging in.</string>
     <string name="local_cache_cleared">local cache cleared</string>
     <string name="qr_pre_username_help">scanning this QR code will invite</string>
-    <string name="qr_post_username_help">to be a friend on surespot, installing surespot from the play store if necessary</string>    
+    <string name="qr_post_username_help">to be a friend on surespot, installing surespot if necessary</string>    
     <string name="send">send</string>
     <string name="main_action_bar_right">to</string>
     <string name="could_not_upload_friend_image">could not upload friend image</string>
@@ -210,7 +210,7 @@
     <string name="error_message_throttled">error sending message: throttled</string>
     <string name="error_message_generic">error sending message</string>
     <string name="error_message_resend">sending failed - long press to resend</string>
-    <string name="via_google_play_in_app_purchase">VIA GOOGLE PLAY IN APP PURCHASE</string>
+    <string name="via_google_play_in_app_purchase">VIA IN APP PURCHASE</string>
     <string name="via_paypal">VIA PAYPAL</string>
     <string name="pwyl_send_to_dialog_title">send to?</string>
     <string name="open_link_in_browser">open link in browser</string>
@@ -239,7 +239,7 @@
     <string name="invite_text">"Press the button to select phone numbers and launch your sms app. (Please [touch here] if contacts fail to populate in your sms app)."</string>
     <string name="touch_invite_button">"Press the button to select application to invite with, eg. facebook, twitter."</string>
     <string name="phone_number">phone number</string>
-    <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices (ie. lost or stolen phones) will no longer be able to access surespot using the selected identity.</string>
+    <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices will no longer be able to access surespot using the selected identity.</string>
     <string name="username">username</string>
     <string name="create_identity">create identity</string>
     <string name="options">options</string>
