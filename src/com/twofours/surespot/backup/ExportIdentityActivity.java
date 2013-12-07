@@ -142,7 +142,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			}
 		});
 
-		mDriveHelper = new DriveHelper(this, true);
+		mDriveHelper = new DriveHelper(getApplicationContext(), true);
 		Button exportToGoogleDriveButton = (Button) findViewById(R.id.bBackupDrive);
 
 		exportToGoogleDriveButton.setOnClickListener(new OnClickListener() {

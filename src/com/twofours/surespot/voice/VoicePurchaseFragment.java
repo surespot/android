@@ -157,7 +157,7 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		};
 		
 
-		mBillingController.setup(getActivity(), true, mBillingSetupResponseHandler);
+		mBillingController.setup(getActivity().getApplicationContext(), true, mBillingSetupResponseHandler);
 
 		return view;
 

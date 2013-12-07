@@ -325,7 +325,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setupBilling() {
 		mBillingController = SurespotApplication.getBillingController();
-		mBillingController.setup(this, true, null);
+		mBillingController.setup(getApplicationContext(), true, null);
 	}
 
 	private boolean processIntent(Intent intent) {

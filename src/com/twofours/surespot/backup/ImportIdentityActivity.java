@@ -99,7 +99,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		}
 
-		mDriveHelper = new DriveHelper(this, mMode == MODE_NORMAL);
+		mDriveHelper = new DriveHelper(getApplicationContext(), mMode == MODE_NORMAL);
 
 		Account account = mDriveHelper.getDriveAccount();
 		mAccountNameDisplay = (TextView) findViewById(R.id.restoreDriveAccount);
@@ -732,12 +732,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 		catch (UserRecoverableAuthIOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-			try {
+			//try {
 				startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
-			}
-			catch (NullPointerException npe) {
-				return null;
-			}
+//			}
+//			catch (NullPointerException npe) {
+//				return null;
+//			}
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");

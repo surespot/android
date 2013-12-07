@@ -90,7 +90,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 		};
 
 		showProgress();
-		mBillingController.setup(this, false, mBillingResponseHandler);
+		mBillingController.setup(getApplicationContext(), false, mBillingResponseHandler);
 
 	}
 
