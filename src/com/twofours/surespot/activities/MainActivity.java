@@ -805,6 +805,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		startWatchingExternalStorage();
 		setBackgroundImage();
+		setEditTextHints();
 	}
 
 	@Override
@@ -1867,5 +1868,27 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			imageView.setImageDrawable(null);
 			SurespotConfiguration.setBackgroundImageSet(false);
 		}
+	}
+
+	private void setEditTextHints() {
+		// stop showing hints after 5 times
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		int messageHintShown = sp.getInt("messageHintShown", 0);
+		int inviteHintShown = sp.getInt("inviteHintShown", 0);
+
+		if (messageHintShown++ < 6) {			
+			mEtMessage.setHint(R.string.message_hint);
+
+		}
+
+		if (inviteHintShown++ < 6) {			
+			mEtInvite.setHint(R.string.invite_hint);
+		}
+
+		Editor editor = sp.edit();
+		editor.putInt("messageHintShown", messageHintShown);
+		editor.putInt("inviteHintShown", inviteHintShown);
+		editor.commit();
+
 	}
 }
