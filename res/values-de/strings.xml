@@ -9,7 +9,6 @@
   <string name="title_activity_signup">Registrieren</string>
   <string name="title_activity_friends">Kontakte</string>
   <string name="title_activity_notifications">Benachrichtigungen</string>
-  <string name="hello_world">Hallo Welt!</string>
   <string name="export_sd">Lokale Sicherung ausführen</string>
   <string name="import_sd">vom lokalen Datenträger wiederherstellen</string>
   <string name="title_activity_chat">Chat</string>

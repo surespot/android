@@ -9,7 +9,6 @@
     <string name="title_activity_signup">signup</string>
     <string name="title_activity_friends">friends</string>
     <string name="title_activity_notifications">notifications</string>
-    <string name="hello_world">Hello world!</string>
     <string name="export_sd">Execute Device Storage Backup</string>
     <string name="import_sd">Restore from Device Storage</string>
     <string name="title_activity_chat">chat</string>
