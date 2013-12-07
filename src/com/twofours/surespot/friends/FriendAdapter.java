@@ -206,7 +206,7 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder.friendActive = convertView.findViewById(R.id.friendActive);
 			friendViewHolder.friendInactive = convertView.findViewById(R.id.friendInactive);
 			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);					
-			friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));			
+						
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
 			friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
@@ -220,6 +220,7 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.statusLayout.setTag(friend);
 		friendViewHolder.tvName.setText(friend.getName());
+		friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));
 
 		if (!TextUtils.isEmpty(friend.getImageUrl())) {
 			FriendImageDownloader.download(friendViewHolder.avatarImage, friend);
