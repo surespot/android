@@ -36,11 +36,16 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 	private IAsyncCallback<Integer> mBillingSetupResponseHandler;
 	private IAsyncCallback<Integer> mBillingPurchaseResponseHandler;
 	private Dialog mDialog;
-	private int mBillingState = -1;
 	private CheckBox mCBDontShow;
 	private TextView mTVPurchase;
 	private Button mBPurchase;
 	private boolean mCameFromButton;
+	private String billing_getting_inventory;
+	private String billing_unavailable_title;
+	private String billing_unavailable_message;
+	private String billing_error;
+	private String purchase_voice_title;
+	private String voice_messaging_purchase_1;
 
 	public static SherlockDialogFragment newInstance(boolean comingFromButton) {
 		SurespotLog.v(TAG, "newInstance");
@@ -55,13 +60,10 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
 		SurespotLog.v(TAG, "onCreateView");
 
 		super.onCreateView(inflater, container, savedInstanceState);
-
-		if (savedInstanceState != null) {
-			mBillingState = savedInstanceState.getInt("billingState", -1);
-		}
 
 		mDialog = getDialog();
 		mCameFromButton = getArguments().getBoolean("cameFromButton");
@@ -88,10 +90,28 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 
 		mBillingController = SurespotApplication.getBillingController();
 
+		// get the strings
+		if (savedInstanceState == null) {
+			billing_getting_inventory = getString(R.string.billing_getting_inventory);
+			billing_unavailable_title = getString(R.string.billing_unavailable_title);
+			billing_unavailable_message = getString(R.string.billing_unavailable_message);
+			billing_error = getString(R.string.billing_error);
+			purchase_voice_title = getString(R.string.purchase_voice_title);
+			voice_messaging_purchase_1 = getString(R.string.voice_messaging_purchase_1);
+		}
+		else {
+			billing_getting_inventory = savedInstanceState.getString("billing_getting_inventory");
+			billing_unavailable_title = savedInstanceState.getString("billing_unavailable_title");
+			billing_unavailable_message = savedInstanceState.getString("billing_unavailable_message");
+			billing_error = savedInstanceState.getString("billing_error");
+			purchase_voice_title = savedInstanceState.getString("purchase_voice_title");
+			voice_messaging_purchase_1 = savedInstanceState.getString("voice_messaging_purchase_1");
+		}
+
 		mBillingPurchaseResponseHandler = new IAsyncCallback<Integer>() {
 
 			@Override
-			public void handleResponse(Integer response) {				
+			public void handleResponse(Integer response) {
 				switch (response) {
 				case IabHelper.BILLING_RESPONSE_RESULT_OK:
 					if (isAdded()) {
@@ -100,13 +120,13 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 					break;
 
 				case BillingController.BILLING_QUERYING_INVENTORY:
-					if (isAdded()) {
-						Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
-					}
+					Utils.makeToast(getActivity(), billing_getting_inventory);
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-					mDialog.setTitle(R.string.billing_unavailable_title);
-					mTVPurchase.setText(R.string.billing_unavailable_message);
+
+					mDialog.setTitle(billing_unavailable_title);
+					mTVPurchase.setText(billing_unavailable_message);
+
 					mBPurchase.setVisibility(View.GONE);
 					if (mCameFromButton) {
 						mCBDontShow.setVisibility(View.VISIBLE);
@@ -115,8 +135,8 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 					break;
 				case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
 				case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
+					Utils.makeToast(getActivity(), billing_error);
 					if (isAdded()) {
-						Utils.makeToast(getActivity(), getString(R.string.billing_error));
 						dismissAllowingStateLoss();
 					}
 
@@ -131,15 +151,11 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 
 			@Override
 			public void handleResponse(Integer response) {
-				SurespotLog.v(TAG, "setup response: %d", response);
-				mBillingState = response;
-				setBillingState(mBillingState);
+				SurespotLog.v(TAG, "setup response: %d", response);			
+				setBillingState(response);
 			}
 		};
-
-		if (mBillingState > -1) {
-			setBillingState(mBillingState);
-		}
+		
 
 		mBillingController.setup(getActivity(), true, mBillingSetupResponseHandler);
 
@@ -150,8 +166,10 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 	private void setBillingState(int state) {
 		switch (state) {
 		case IabHelper.BILLING_RESPONSE_RESULT_OK:
-			mDialog.setTitle(R.string.purchase_voice_title);
-			mTVPurchase.setText(R.string.voice_messaging_purchase_1);
+
+			mDialog.setTitle(purchase_voice_title);
+			mTVPurchase.setText(voice_messaging_purchase_1);
+
 			mBPurchase.setOnClickListener(VoicePurchaseFragment.this);
 			if (mCameFromButton) {
 				mCBDontShow.setVisibility(View.VISIBLE);
@@ -160,12 +178,13 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 			break;
 
 		case BillingController.BILLING_QUERYING_INVENTORY:
-			if (isAdded()) {
-				Utils.makeToast(getActivity(), getString(R.string.billing_getting_inventory));
-			}
+
+			Utils.makeToast(getActivity(), billing_getting_inventory);
+
 			break;
 		case IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE:
-			mDialog.setTitle(R.string.billing_unavailable_title);
+
+			mDialog.setTitle(billing_unavailable_title);
 			mTVPurchase.setText(R.string.billing_unavailable_message);
 			mBPurchase.setVisibility(View.GONE);
 			if (mCameFromButton) {
@@ -175,8 +194,9 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 			break;
 		case IabHelper.BILLING_RESPONSE_RESULT_ERROR:
 		case IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR:
+
+			Utils.makeToast(getActivity(), billing_error);
 			if (isAdded()) {
-				Utils.makeToast(getActivity(), getString(R.string.billing_error));
 				dismissAllowingStateLoss();
 			}
 
@@ -197,6 +217,19 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		Editor e = sp.edit();
 		e.putBoolean("pref_suppress_voice_purchase_ask", isChecked);
 		e.commit();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle arg0) {
+		super.onSaveInstanceState(arg0);
+
+		//save the strings so shit doesn't puke on async return calls RM#392		
+		arg0.putString("billing_getting_inventory", billing_getting_inventory);
+		arg0.putString("billing_unavailable_title", billing_unavailable_title);
+		arg0.putString("billing_unavailable_message", billing_unavailable_message);
+		arg0.putString("billing_error", billing_error);
+		arg0.putString("purchase_voice_title", purchase_voice_title);
+		arg0.putString("voice_messaging_purchase_1", voice_messaging_purchase_1);
 	}
 
 	@Override
