@@ -76,7 +76,7 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+						AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
@@ -87,6 +87,7 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 										}
 									};
 								});
+						mActivity.setChildDialog(dialog);
 					}
 					else {
 						mActivity.getChatController().deleteMessage(mMessage);
@@ -119,6 +120,5 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 		if (activity != null) {
 			activity.setButtonText();
 		}
-	}
-
+	}	
 }

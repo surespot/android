@@ -1,5 +1,6 @@
 package com.twofours.surespot.activities;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,6 +39,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 	private int mSelectedType;
 	private View mbInvite;
 	private View mbNext;
+	private AlertDialog mQRDialog;
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -69,10 +71,10 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 				}
 				else {
-					NetworkController networkController = MainActivity.getNetworkController();					
+					NetworkController networkController = MainActivity.getNetworkController();
 					if (networkController == null) {
 						try {
-							networkController = new NetworkController(ExternalInviteActivity.this, null);							
+							networkController = new NetworkController(ExternalInviteActivity.this, null);
 						}
 						catch (Exception e) {
 							ExternalInviteActivity.this.finish();
@@ -122,7 +124,7 @@ public class ExternalInviteActivity extends SherlockActivity {
 
 			@Override
 			public void onClick(View v) {
-				UIUtils.showQRDialog(ExternalInviteActivity.this);
+				mQRDialog = UIUtils.showQRDialog(ExternalInviteActivity.this);
 			}
 		});
 
@@ -199,4 +201,13 @@ public class ExternalInviteActivity extends SherlockActivity {
 		super.onSaveInstanceState(outState);
 		outState.putInt("type", mSelectedType);
 	}
-};
+
+	@Override
+	protected void onPause() {
+
+		super.onPause();
+		if (mQRDialog != null && mQRDialog.isShowing()) {
+			mQRDialog.dismiss();
+		}
+	}
+}

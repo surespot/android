@@ -37,7 +37,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 	private SurespotMessage mMessage;
 	private ArrayList<String> mItems;
 	private Observer mMessageObserver;
-
+	
 	public static SherlockDialogFragment newInstance(SurespotMessage message) {
 		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
@@ -182,7 +182,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+						AlertDialog adialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
@@ -193,7 +193,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 										}
 									};
 								});
-					}
+						mActivity.setChildDialog(adialog);					}
 					else {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
@@ -231,5 +231,5 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 			mMessage.addObserver(mMessageObserver);
 		}
 		return dialog;
-	}
+	}	
 }

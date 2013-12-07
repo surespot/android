@@ -9,6 +9,7 @@ import java.util.zip.GZIPOutputStream;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -66,13 +67,12 @@ public class ExportIdentityActivity extends SherlockActivity {
 	public static final String[] ACCOUNT_TYPE = new String[] { GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE };
 	private SingleProgressDialog mSpd;
 	private SingleProgressDialog mSpdBackupDir;
+	private AlertDialog mDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_export_identity);
-		
-		
 
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.backup), true);
 		final String identityDir = FileUtils.getIdentityExportDir().toString();
@@ -81,7 +81,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 		Spannable s1 = new SpannableString(getString(R.string.help_backupIdentities1));
 		s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		tvBackupWarning.setText(s1);
-		
+
 		final TextView tvPath = (TextView) findViewById(R.id.backupLocalLocation);
 		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
 
@@ -94,17 +94,18 @@ public class ExportIdentityActivity extends SherlockActivity {
 		}
 
 		mSpinner.setAdapter(adapter);
-		
+
 		String backupUsername = getIntent().getStringExtra("backupUsername");
 		getIntent().removeExtra("backupUsername");
-		
+
 		mSpinner.setSelection(adapter.getPosition(backupUsername == null ? IdentityController.getLoggedInUser() : backupUsername));
 		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-				String identityFile = identityDir + File.separator + IdentityController.caseInsensitivize(adapter.getItem(position)) + IdentityController.IDENTITY_EXTENSION;
+				String identityFile = identityDir + File.separator + IdentityController.caseInsensitivize(adapter.getItem(position))
+						+ IdentityController.IDENTITY_EXTENSION;
 				tvPath.setText(identityFile);
 			}
 
@@ -125,8 +126,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 			public void onClick(View v) {
 				// TODO progress
 				final String user = (String) mSpinner.getSelectedItem();
-				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user), getString(R.string.enter_password_for, user),
-						new IAsyncCallback<String>() {
+				mDialog = UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
 								if (!TextUtils.isEmpty(result)) {
@@ -172,7 +173,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 				chooseAccount(true);
 			}
-		});		
+		});
 	}
 
 	// //////// Local
@@ -204,7 +205,6 @@ public class ExportIdentityActivity extends SherlockActivity {
 			SurespotLog.i(TAG, e, "chooseAccount");
 		}
 
-		
 	}
 
 	private void removeAccount() {
@@ -274,8 +274,8 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 				SurespotLog.d(TAG, "identity file id: %s", identityDirId);
 				final String user = (String) mSpinner.getSelectedItem();
-				UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user), getString(R.string.enter_password_for, user),
-						new IAsyncCallback<String>() {
+				mDialog = UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(final String password) {
 								if (!TextUtils.isEmpty(password)) {
@@ -408,7 +408,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			byte[] gzIdData = out.toByteArray();
 
 			ByteArrayContent content = new ByteArrayContent("application/octet-stream", gzIdData);
-			String caseInsensitiveUsername = IdentityController.caseInsensitivize(username); 
+			String caseInsensitiveUsername = IdentityController.caseInsensitivize(username);
 			String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
 
 			// see if identity exists
@@ -433,7 +433,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			pr.setId(idDirId);
 			ArrayList<ParentReference> parent = new ArrayList<ParentReference>(1);
 			parent.add(pr);
-			file.setParents(parent);			
+			file.setParents(parent);
 			file.setTitle(filename);
 			file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
 
@@ -530,7 +530,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 			t2 = (TextView) view.findViewById(R.id.helpBackup4);
 			t2.setText(R.string.help_backup_drive2);
 
-			UIUtils.showHelpDialog(this, R.string.surespot_help, view, false);
+			mDialog = UIUtils.showHelpDialog(this, R.string.surespot_help, view, false);
 			return true;
 
 		default:
@@ -539,4 +539,11 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();
+		}
+	}
 }

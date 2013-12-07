@@ -1,7 +1,5 @@
 package com.twofours.surespot.chat;
 
-import org.spongycastle.crypto.StreamBlockCipher;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -80,7 +78,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 					SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
-						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+						AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
@@ -91,7 +89,9 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 										}
 									};
 								});
+						mActivity.setChildDialog(dialog);
 					}
+					
 					else {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
@@ -105,5 +105,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
+	
+	
 
 }

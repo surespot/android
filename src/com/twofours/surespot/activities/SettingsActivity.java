@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -41,6 +42,7 @@ import com.twofours.surespot.ui.UIUtils;
 public class SettingsActivity extends SherlockPreferenceActivity {
 	private static final String TAG = "SettingsActivity";
 	private Preference mBgImagePref;
+	private AlertDialog mHelpDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +73,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
-					UIUtils.showHelpDialog(SettingsActivity.this, false);
+					mHelpDialog = UIUtils.showHelpDialog(SettingsActivity.this, false);
 					return true;
 				}
 			});
@@ -298,6 +300,14 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 
 			this.runOnUiThread(runnable);
 			return null;
+		}
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (mHelpDialog != null && mHelpDialog.isShowing()) {
+			mHelpDialog.dismiss();
 		}
 	}
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -42,6 +43,7 @@ public class ManageKeysActivity extends SherlockActivity {
 	private static final String TAG = "ManageKeysActivity";
 	private List<String> mIdentityNames;
 	private MultiProgressDialog mMpd;
+	private AlertDialog mDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +85,7 @@ public class ManageKeysActivity extends SherlockActivity {
 					return;
 				}
 
-				UIUtils.passwordDialog(ManageKeysActivity.this, getString(R.string.create_new_keys_for, user),
+				mDialog = UIUtils.passwordDialog(ManageKeysActivity.this, getString(R.string.create_new_keys_for, user),
 						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
@@ -227,5 +229,13 @@ public class ManageKeysActivity extends SherlockActivity {
 			return super.onOptionsItemSelected(item);
 		}
 
+	}
+	
+	@Override
+	public void onPause() {		
+		super.onPause();
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();		
+		}
 	}
 }

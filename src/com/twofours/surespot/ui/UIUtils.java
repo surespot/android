@@ -74,7 +74,7 @@ public class UIUtils {
 
 	private static final String TAG = "UIUtils";
 
-	public static void passwordDialog(Context context, String title, String message, final IAsyncCallback<String> callback) {
+	public static AlertDialog passwordDialog(Context context, String title, String message, final IAsyncCallback<String> callback) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(context);
 		alert.setTitle(title);
 		alert.setMessage(message);
@@ -107,28 +107,39 @@ public class UIUtils {
 		ad.setCanceledOnTouchOutside(false);
 		ad.setView(editText, 0, 0, 0, 0);
 		ad.show();
+		return ad;
 	}
 
-	public static void createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText, String negativeButtonText,
+	public static AlertDialog createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText, String negativeButtonText,
 			final IAsyncCallback<Boolean> callback) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		builder.setMessage(message).setTitle(title).setPositiveButton(positiveButtonText, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				callback.handleResponse(true);
-
-			}
-		}).setNegativeButton(negativeButtonText, new OnClickListener() {
-
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				callback.handleResponse(false);
+				if (callback != null) {
+					callback.handleResponse(true);
+				}
 
 			}
 		});
 
-		builder.create().show();
+		if (!TextUtils.isEmpty(negativeButtonText)) {
+			builder.setNegativeButton(negativeButtonText, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (callback != null) {
+						callback.handleResponse(false);
+					}
+
+				}
+			});
+		}
+
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		
+		return dialog;
 
 	}
 
@@ -154,7 +165,7 @@ public class UIUtils {
 			statusText = context.getString(R.string.error_message_throttled);
 			break;
 		case 500:
-			
+
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 				statusText = context.getString(R.string.error_message_generic);
 			}
@@ -381,7 +392,7 @@ public class UIUtils {
 		}
 	}
 
-	public static void showQRDialog(Activity activity) {
+	public static AlertDialog showQRDialog(Activity activity) {
 		LayoutInflater inflator = activity.getLayoutInflater();
 		View dialogLayout = inflator.inflate(R.layout.qr_invite_layout, null, false);
 		TextView tvQrInviteText = (TextView) dialogLayout.findViewById(R.id.tvQrInviteText);
@@ -405,7 +416,7 @@ public class UIUtils {
 		}
 		catch (WriterException e) {
 			SurespotLog.w(TAG, e, "generate invite QR");
-			return;
+			return null;
 
 		}
 
@@ -413,9 +424,10 @@ public class UIUtils {
 		AlertDialog dialog = builder.create();
 		dialog.setView(dialogLayout, 0, 0, 0, 0);
 		dialog.show();
+		return dialog;
 	}
 
-	public static void showHelpDialog(final Activity activity, int titleStringId, View view, final boolean firstTime) {
+	public static AlertDialog showHelpDialog(final Activity activity, int titleStringId, View view, final boolean firstTime) {
 		// show help dialog
 		AlertDialog.Builder b = new Builder(activity);
 		b.setIcon(R.drawable.surespot_logo).setTitle(activity.getString(titleStringId));
@@ -449,7 +461,7 @@ public class UIUtils {
 		AlertDialog ad = b.create();
 		ad.setView(view, 0, 0, 0, 0);
 		ad.show();
-
+		return ad;
 	}
 
 	public static void showKeyFingerprintsDialog(MainActivity activity, String name) {
@@ -495,7 +507,7 @@ public class UIUtils {
 		return "";
 	}
 
-	public static void showHelpDialog(Activity context, boolean firstTime) {
+	public static AlertDialog showHelpDialog(Activity context, boolean firstTime) {
 		View view = LayoutInflater.from(context).inflate(R.layout.dialog_help, null);
 		if (firstTime) {
 			TextView helpAgreement = (TextView) view.findViewById(R.id.helpAgreement);
@@ -504,7 +516,7 @@ public class UIUtils {
 		}
 
 		UIUtils.setHelpLinks(context, view);
-		showHelpDialog(context, R.string.surespot_help, view, firstTime);
+		return showHelpDialog(context, R.string.surespot_help, view, firstTime);
 	}
 
 	public static void updateDateAndSize(SurespotMessage message, View parentView) {
@@ -609,5 +621,17 @@ public class UIUtils {
 			else
 				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
+	}
+
+	public static void showWhatsNewDialog(Activity context, boolean firstTime) {
+		View view = LayoutInflater.from(context).inflate(R.layout.dialog_help, null);
+		if (firstTime) {
+			TextView helpAgreement = (TextView) view.findViewById(R.id.helpAgreement);
+			UIUtils.setHtml(context, helpAgreement, R.string.help_agreement);
+			helpAgreement.setVisibility(View.VISIBLE);
+		}
+
+		UIUtils.setHelpLinks(context, view);
+		showHelpDialog(context, R.string.surespot_help, view, firstTime);
 	}
 }

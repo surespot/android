@@ -36,6 +36,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 	private BillingController mBillingController;
 	private IAsyncCallback<Integer> mBillingResponseHandler;
 	private ImageView mHomeImageView;
+	private AlertDialog mDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -193,7 +194,8 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		});
 
-		builder.create().show();
+		mDialog = builder.create();
+		mDialog.show();
 	}
 
 	public void onBitcoinClipboard(View arg0) {
@@ -247,7 +249,8 @@ public class BillingActivity extends SherlockFragmentActivity {
 
 		});
 
-		builder.create().show();
+		mDialog = builder.create();
+		mDialog.show();
 
 	}
 
@@ -325,6 +328,14 @@ public class BillingActivity extends SherlockFragmentActivity {
 		BillingController bc = SurespotApplication.getBillingController();
 		if (bc != null) {
 			bc.dispose();
+		}
+	}
+	
+	@Override
+	public void onPause() {		
+		super.onPause();
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();		
 		}
 	}
 }

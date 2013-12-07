@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -133,6 +134,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mIvVoice;
 	private ImageView mIvSend;
 	private ImageView mIvHome;
+	private AlertDialog mHelpDialog;
+	private AlertDialog mDialog;	
 
 	private BillingController mBillingController;
 
@@ -616,7 +619,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			@Override
 			public void onClick(View v) {
-				UIUtils.showQRDialog(MainActivity.this);
+				mDialog = UIUtils.showQRDialog(MainActivity.this);
 			}
 		});
 
@@ -791,7 +794,19 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			Editor editor = sp.edit();
 			editor.remove("helpShown");
 			editor.commit();
-			UIUtils.showHelpDialog(this, true);
+			mHelpDialog = UIUtils.showHelpDialog(this, true);
+		}
+
+		// if this is the first time the app has been run, or they just created a user, show the help screen
+
+		boolean whatsNewShown = sp.getBoolean("whatsNewShown", false);
+
+		if (!whatsNewShown) {
+			Editor editor = sp.edit();
+			editor.putBoolean("whatsNewShown", true);
+			editor.commit();
+			mDialog = UIUtils.createAndShowConfirmationDialog(this, "New Feature-set background image. (setting->options)",
+					"What's new for version 43 the place to be", "ok", null, null);
 		}
 	}
 
@@ -820,7 +835,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		BillingController bc = SurespotApplication.getBillingController();
 		if (bc != null) {
 			bc.dispose();
+		}
 
+		if (mHelpDialog != null && mHelpDialog.isShowing()) {
+			mHelpDialog.dismiss();
+		}
+
+		
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();
 		}
 	}
 
@@ -1073,7 +1096,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 			boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 			if (confirm) {
-				UIUtils.createAndShowConfirmationDialog(this, getString(R.string.delete_all_confirmation), getString(R.string.delete_all_title),
+				mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.delete_all_confirmation), getString(R.string.delete_all_title),
 						getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 							public void handleResponse(Boolean result) {
 								if (result) {
@@ -1876,12 +1899,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		int messageHintShown = sp.getInt("messageHintShown", 0);
 		int inviteHintShown = sp.getInt("inviteHintShown", 0);
 
-		if (messageHintShown++ < 6) {			
+		if (messageHintShown++ < 6) {
 			mEtMessage.setHint(R.string.message_hint);
 
 		}
 
-		if (inviteHintShown++ < 6) {			
+		if (inviteHintShown++ < 6) {
 			mEtInvite.setHint(R.string.invite_hint);
 		}
 
@@ -1890,5 +1913,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		editor.putInt("inviteHintShown", inviteHintShown);
 		editor.commit();
 
+	}
+	
+	public void setChildDialog(AlertDialog childDialog) {
+		mDialog = childDialog;
 	}
 }

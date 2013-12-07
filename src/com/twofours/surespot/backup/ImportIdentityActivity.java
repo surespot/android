@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -71,6 +72,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 	private static final int MODE_DRIVE = 1;
 	private ViewSwitcher mSwitcher;
 	private SimpleAdapter mDriveAdapter;
+	private AlertDialog mDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +144,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 					return;
 				}
 
-				UIUtils.passwordDialog(ImportIdentityActivity.this, getString(R.string.restore_identity, user), getString(R.string.enter_password_for, user),
+				mDialog = UIUtils.passwordDialog(ImportIdentityActivity.this, getString(R.string.restore_identity, user), getString(R.string.enter_password_for, user),
 						new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(final String password) {
@@ -861,6 +863,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-
+	}
+	
+	@Override
+	public void onPause() {		
+		super.onPause();
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();		
+		}
 	}
 }

@@ -3,6 +3,7 @@ package com.twofours.surespot.friends;
 import java.lang.reflect.Field;
 import java.util.Timer;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -32,6 +33,7 @@ public class FriendFragment extends SherlockFragment {
 	// private ChatController mChatController;
 	private ListView mListView;
 	private Timer mTimer;
+	private AlertDialog mDialog;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
@@ -114,7 +116,7 @@ public class FriendFragment extends SherlockFragment {
 						SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 						boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 						if (confirm) {
-							UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
+							mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
 									getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
 									new IAsyncCallback<Boolean>() {
 										public void handleResponse(Boolean result) {
@@ -131,7 +133,7 @@ public class FriendFragment extends SherlockFragment {
 					}
 					else {
 						if (selection.equals(getString(R.string.menu_delete_friend))) {
-							UIUtils.createAndShowConfirmationDialog(activity, getMainActivity()
+							mDialog = UIUtils.createAndShowConfirmationDialog(activity, getMainActivity()
 									.getString(R.string.delete_friend_confirmation, friend.getName()),
 									getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
 									new IAsyncCallback<Boolean>() {
@@ -170,5 +172,13 @@ public class FriendFragment extends SherlockFragment {
 	    } catch (IllegalAccessException e) {
 	        throw new RuntimeException(e);
 	    }
+	}
+	
+	@Override
+	public void onPause() {		
+		super.onPause();
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();		
+		}
 	}
 }

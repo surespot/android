@@ -3,6 +3,7 @@ package com.twofours.surespot.identity;
 import java.security.PrivateKey;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -30,6 +31,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 	private List<String> mIdentityNames;
 	private Spinner mSpinner;
 	private MultiProgressDialog mMpd;
+	private AlertDialog mDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				final String user = (String) mSpinner.getSelectedItem();
-				UIUtils.passwordDialog(DeleteIdentityActivity.this, getString(R.string.delete_identity_user, user),
+				mDialog = UIUtils.passwordDialog(DeleteIdentityActivity.this, getString(R.string.delete_identity_user, user),
 						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
@@ -188,6 +190,14 @@ public class DeleteIdentityActivity extends SherlockActivity {
 			this.keyVersion = keyVersion;
 		}
 
+	}
+	
+	@Override
+	public void onPause() {		
+		super.onPause();
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();		
+		}
 	}
 
 }
