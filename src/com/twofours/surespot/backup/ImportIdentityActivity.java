@@ -131,8 +131,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 				final String user = map.get("name");
 
-				
-
 				// make sure file we're going to save to is writable
 				// before we
 				// start
@@ -144,8 +142,8 @@ public class ImportIdentityActivity extends SherlockActivity {
 					return;
 				}
 
-				mDialog = UIUtils.passwordDialog(ImportIdentityActivity.this, getString(R.string.restore_identity, user), getString(R.string.enter_password_for, user),
-						new IAsyncCallback<String>() {
+				mDialog = UIUtils.passwordDialog(ImportIdentityActivity.this, getString(R.string.restore_identity, user),
+						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(final String password) {
 								if (!TextUtils.isEmpty(password)) {
@@ -229,7 +227,6 @@ public class ImportIdentityActivity extends SherlockActivity {
 			rbRestoreLocal.setTag("local");
 			rbRestoreLocal.setChecked(true);
 			mShowingLocal = true;
-			
 
 			rbRestoreDrive.setTag("drive");
 
@@ -332,8 +329,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 			for (File file : sortedFiles.values()) {
 				long lastModTime = file.lastModified();
-				String date = DateFormat.getDateFormat(this).format(lastModTime) + " "
-						+ DateFormat.getTimeFormat(this).format(lastModTime);
+				String date = DateFormat.getDateFormat(this).format(lastModTime) + " " + DateFormat.getTimeFormat(this).format(lastModTime);
 
 				HashMap<String, String> map = new HashMap<String, String>();
 				map.put("name", IdentityController.getIdentityNameFromFile(file));
@@ -479,7 +475,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 		}
 		catch (UserRecoverableAuthIOException e) {
-			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			try {
+				startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			}
+			catch (NullPointerException npe) {
+			}
 			return;
 
 		}
@@ -583,7 +583,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 					}
 				});
 				return;
-			
+
 			}
 
 			List<ChildReference> refs = fileList.getItems();
@@ -631,7 +631,11 @@ public class ImportIdentityActivity extends SherlockActivity {
 			}
 		}
 		catch (UserRecoverableAuthIOException e) {
-			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			try {
+				startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			}
+			catch (NullPointerException npe) {
+			}
 			return;
 		}
 		catch (IOException e) {
@@ -728,7 +732,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 		}
 		catch (UserRecoverableAuthIOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			try {
+				startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			}
+			catch (NullPointerException npe) {
+				return null;
+			}
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
@@ -864,12 +873,12 @@ public class ImportIdentityActivity extends SherlockActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
 	@Override
-	public void onPause() {		
+	public void onPause() {
 		super.onPause();
 		if (mDialog != null && mDialog.isShowing()) {
-			mDialog.dismiss();		
+			mDialog.dismiss();
 		}
 	}
 }

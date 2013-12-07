@@ -372,7 +372,12 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 		}
 		catch (UserRecoverableAuthIOException e) {
-			startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			try {
+				startActivityForResult(e.getIntent(), SurespotConstants.IntentRequestCodes.REQUEST_GOOGLE_AUTH);
+			}
+			catch (NullPointerException npe) {
+				return null;
+			}
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
