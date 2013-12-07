@@ -29,10 +29,10 @@ If you would like to contribute/improve a translation:
 
 THANK YOU TO OUR CONTRIBUTORS:
 
-Jean Schmitt, repat, mrbiber, for the German translations
-Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher for the Spanish translations
-sharkyiwc for the French translations
-lgasp, dickhead, Mauriziopz for the Italian translations
+Jean Schmitt, repat, mrbiber, gehfab for the German translations
+Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, vndtta for the Spanish translations
+sharkyiwc and boing for the French translations
+lgasp, dickhead, Mauriziopz, mangholb and riky for the Italian translations
 
 
 
