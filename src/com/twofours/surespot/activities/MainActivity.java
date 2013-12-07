@@ -135,7 +135,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mIvSend;
 	private ImageView mIvHome;
 	private AlertDialog mHelpDialog;
-	private AlertDialog mDialog;	
+	private AlertDialog mDialog;
 
 	private BillingController mBillingController;
 
@@ -805,8 +805,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			Editor editor = sp.edit();
 			editor.putBoolean("whatsNewShown", true);
 			editor.commit();
-			mDialog = UIUtils.createAndShowConfirmationDialog(this, "New Feature-set background image. (setting->options)",
-					"What's new for version 43 the place to be", "ok", null, null);
+			mDialog = UIUtils
+					.createAndShowConfirmationDialog(
+							this,
+							getString(R.string.whats_new_43_message),
+							getString(R.string.whats_new_43_title), getString(R.string.ok), null, null);
 		}
 	}
 
@@ -821,6 +824,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		startWatchingExternalStorage();
 		setBackgroundImage();
 		setEditTextHints();
+
 	}
 
 	@Override
@@ -841,7 +845,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mHelpDialog.dismiss();
 		}
 
-		
 		if (mDialog != null && mDialog.isShowing()) {
 			mDialog.dismiss();
 		}
@@ -1914,7 +1917,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		editor.commit();
 
 	}
-	
+
 	public void setChildDialog(AlertDialog childDialog) {
 		mDialog = childDialog;
 	}
