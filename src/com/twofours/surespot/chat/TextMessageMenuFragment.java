@@ -1,11 +1,15 @@
 package com.twofours.surespot.chat;
 
+import org.spongycastle.crypto.StreamBlockCipher;
+
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.SpannableString;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
@@ -24,12 +28,14 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject().toString());
+		
+		//plain text is not converted to json string so store it separately
+		args.putString("messageText", message.getPlainData().toString());
 		f.setArguments(args);
 
 		return f;
 	}
 
-	
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -39,34 +45,58 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		if (messageString != null) {
 			mMessage = SurespotMessage.toSurespotMessage(messageString);
 		}
-
 		
-		mMenuItemArray = new String[1];
-		mMenuItemArray[0] = getString(R.string.menu_delete_message);
+		final String messageText = getArguments().getString("messageText");
+
+		mMenuItemArray = new String[2];
+		mMenuItemArray[0] = getString(R.string.menu_copy);
+		mMenuItemArray[1] = getString(R.string.menu_delete_message);
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
+			@SuppressWarnings("deprecation")
+			@SuppressLint("NewApi")
 			public void onClick(final DialogInterface dialogi, int which) {
 				if (mMessage == null) {
 					return;
 				}
-
-				SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-				boolean confirm = sp.getBoolean("pref_delete_message", true);
-				if (confirm) {
-					UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
-							getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
-								public void handleResponse(Boolean result) {
-									if (result) {
-										mActivity.getChatController().deleteMessage(mMessage);
-									}
-									else {
-										dialogi.cancel();
-									}
-								};
-							});
+				
+				if (getActivity() == null) {
+					return;
 				}
-				else {
-					mActivity.getChatController().deleteMessage(mMessage);
+
+				switch (which) {
+				case 0:
+					int sdk = android.os.Build.VERSION.SDK_INT;
+					if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+					    android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+					    clipboard.setText(new SpannableString(messageText));
+					} else {
+					    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE); 
+					    android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text",messageText);
+					    clipboard.setPrimaryClip(clip);
+					}
+					break;
+				case 1:
+					SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					boolean confirm = sp.getBoolean("pref_delete_message", true);
+					if (confirm) {
+						UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+									public void handleResponse(Boolean result) {
+										if (result) {
+											mActivity.getChatController().deleteMessage(mMessage);
+										}
+										else {
+											dialogi.cancel();
+										}
+									};
+								});
+					}
+					else {
+						mActivity.getChatController().deleteMessage(mMessage);
+					}
+					break;
+
 				}
 
 			}
@@ -75,7 +105,5 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
-
-	
 
 }
