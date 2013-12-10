@@ -193,11 +193,9 @@
     <string name="could_not_delete_identity">could not delete identity</string>
     <string name="identity_deleted">identity deleted</string>
     <string name="backup">backup</string>
-    <string name="backup_identity">backup identity %s</string>
-    <string name="newer_identity_exists">identity not restored as a newer version of the identity you are trying to restore already exists</string>
+    <string name="backup_identity">backup identity %s</string>   
     <string name="backed_up_identity_to_path">backed up identity %1$s to %2$s</string>
-    <string name="restore">restore</string>
-    <string name="restore_identity_already_exists">not restoring identity as it already exists</string>
+    <string name="restore">restore</string>    
     <string name="restore_identity">restore identity %s</string>
     <string name="assign">assign</string>
     <string name="could_not_load_image">could not load image</string>

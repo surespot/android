@@ -474,19 +474,7 @@ public class IdentityController {
 			networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
 					new AsyncHttpResponseHandler() {
 						@Override
-						public void onSuccess(int statusCode, String content) {
-
-							// should never happen
-							SurespotIdentity existingIdentity = loadIdentity(context, true, finalusername, password + CACHE_IDENTITY_ID);
-							if (existingIdentity != null) {
-								int importVersion = Integer.parseInt(identity.getLatestVersion());
-								int existingVersion = Integer.parseInt(existingIdentity.getLatestVersion());
-								if (importVersion <= existingVersion) {
-									callback.handleResponse(new IdentityOperationResult(context.getString(R.string.newer_identity_exists), false));
-									return;
-								}
-							}
-
+						public void onSuccess(int statusCode, String content) {						
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));

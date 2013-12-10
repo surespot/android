@@ -194,10 +194,8 @@
   <string name="identity_deleted">Profil gelöscht</string>
   <string name="backup">Sichern</string>
   <string name="backup_identity">Profil %s sichern</string>
-  <string name="newer_identity_exists">Profil wurde nicht wiederhergestellt, da eine neuere Version des Profil bereits existiert</string>
   <string name="backed_up_identity_to_path">Profil %1$s gesichert nach %2$s</string>
   <string name="restore">wiederherstellen</string>
-  <string name="restore_identity_already_exists">Profil wurde nicht wiederhergestellt da es bereits existiert</string>
   <string name="restore_identity">Profil %s wiederherstellen</string>
   <string name="assign">zuweisen</string>
   <string name="could_not_load_image">Bild konnte nicht geladen werden</string>

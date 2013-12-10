@@ -193,11 +193,9 @@
   <string name="could_not_delete_identity">No se ha podido borrar el perfil</string>
   <string name="identity_deleted">Perfil borrado</string>
   <string name="backup">Exportar</string>
-  <string name="backup_identity">Exportar perfil %s</string>
-  <string name="newer_identity_exists">Perfil no restaurado, ya existe una versión más actual del perfil que intentas restaurar</string>
+  <string name="backup_identity">Exportar perfil %s</string>  
   <string name="backed_up_identity_to_path">Exportar perfil %1$s a %2$s</string>
-  <string name="restore">restaurar</string>
-  <string name="restore_identity_already_exists">Perfil no restaurado, ya existe</string>
+  <string name="restore">restaurar</string> 
   <string name="restore_identity">Restaurar perfil %s</string>
   <string name="assign">Asignar</string>
   <string name="could_not_load_image">No se puede cargar la imagen</string>

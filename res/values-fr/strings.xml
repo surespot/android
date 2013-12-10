@@ -193,11 +193,9 @@
   <string name="could_not_delete_identity">impossible de supprimer l\'identité</string>
   <string name="identity_deleted">identité supprimée</string>
   <string name="backup">sauvegarde</string>
-  <string name="backup_identity">sauvegarder l\'identité %s</string>
-  <string name="newer_identity_exists">l\'identité n\'a pas été restaurée car une identité plus récente que celle que vous essayez de restaurer existe déjà</string>
+  <string name="backup_identity">sauvegarder l\'identité %s</string>  
   <string name="backed_up_identity_to_path">sauvegarde l\'identité %1$s en %2$s</string>
-  <string name="restore">restaurer</string>
-  <string name="restore_identity_already_exists">pas de restauration de l\'identité car elle existe déjà</string>
+  <string name="restore">restaurer</string>  
   <string name="restore_identity">restauration de l\'identité %s</string>
   <string name="assign">affecter</string>
   <string name="could_not_load_image">Impossible de charger l\'image</string>

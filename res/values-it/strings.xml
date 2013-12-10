@@ -193,11 +193,9 @@
   <string name="could_not_delete_identity">cancellazione identità non riuscita</string>
   <string name="identity_deleted">identità cancellata</string>
   <string name="backup">backup</string>
-  <string name="backup_identity">backup identità %s</string>
-  <string name="newer_identity_exists">identità non ripristinata perché esiste già una versione più recente dell\'identità che hai tentato di ripristinare</string>
+  <string name="backup_identity">backup identità %s</string>  
   <string name="backed_up_identity_to_path">eseguito il backup dell\'identità %1$s in %2$s</string>
   <string name="restore">ripristina</string>
-  <string name="restore_identity_already_exists">identità non ripristinata perché esiste già</string>
   <string name="restore_identity">ripristina l\'identità %s</string>
   <string name="assign">assegna</string>
   <string name="could_not_load_image">caricamento immagine non riuscito</string>
