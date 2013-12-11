@@ -29,6 +29,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.ui.UIUtils;
 
 public class VoicePurchaseFragment extends SherlockDialogFragment implements OnClickListener, OnCheckedChangeListener {
 	private static final String TAG = "VoicePurchaseFragment";
@@ -168,7 +169,10 @@ public class VoicePurchaseFragment extends SherlockDialogFragment implements OnC
 		case IabHelper.BILLING_RESPONSE_RESULT_OK:
 
 			mDialog.setTitle(purchase_voice_title);
-			mTVPurchase.setText(voice_messaging_purchase_1);
+			//mTVPurchase.setText(voice_messaging_purchase_1);
+			if (getActivity() != null) {
+				UIUtils.setHtml(getActivity(), mTVPurchase, voice_messaging_purchase_1);
+			}
 
 			mBPurchase.setOnClickListener(VoicePurchaseFragment.this);
 			if (mCameFromButton) {

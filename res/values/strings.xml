@@ -310,7 +310,7 @@
     <string name="billing_error">billing error</string>
     <string name="pref_billing">purchases</string>
     <string name="suppress_voice_purchase">"don't ask me to buy voice messaging (closes tab instead)"</string>
-    <string name="voice_messaging_purchase_1">"Add voice messaging to your surespot and make encrypted communication even easier! Simply hold down the microphone button to record and release to send. Because sometimes it is easier to say it than type it."</string>
+    <string name="voice_messaging_purchase_1"><![CDATA["Add voice messaging to your surespot and make encrypted communication even easier! Simply hold down the microphone button to record and release to send. Because sometimes it is easier to say it than type it. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
     <string name="voice_messaging_purchase_button">"touch here to buy for $1.99"</string>
     <string name="voice_message_suppress_purchase_ask">"don't ask me again"</string>
     <string name="pref_suppress_voice_purchase_ask_title">"don't ask me again"</string>
