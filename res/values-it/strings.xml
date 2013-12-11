@@ -10,7 +10,7 @@
   <string name="title_activity_friends">amici</string>
   <string name="title_activity_notifications">notifiche</string>
   <string name="export_sd">Esegui backup su archivio locale</string>
-  <string name="import_sd">Ripristina dalla memoria locale del dispositivo</string>
+  <string name="import_sd">Ripristina dalla Memoria del Dispositivo</string>
   <string name="title_activity_chat">chat</string>
   <string name="title_activity_image_view">visualizza immagine</string>
   <string name="title_activity_image_select">selezione immagine</string>
@@ -22,7 +22,7 @@
   <string name="delete_identity_user">elimina identità: %s</string>
   <string name="import_identities">ripristina identità...</string>
   <string name="create_identity_label">crea nuova identità...</string>
-  <string name="no_identity_exported">nessuna identità di backup salvata</string>
+  <string name="no_identity_exported">nessun backup di identità salvato</string>
   <string name="no_identity_imported">nessuna identità ripristinata</string>
   <string name="no_identity_deleted">nessuna identità eliminata</string>
   <string name="identity_imported_successfully">identità ripristinata correttamente</string>
@@ -42,10 +42,10 @@
   <string name="assign_image">assegna immagine</string>
   <string name="logout">esci</string>
   <string name="settings">impostazioni</string>
-  <string name="welcome_to_surespot"><![CDATA["Benvenuto a surespot! Dati inviati usando questa app sono cifrati <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">da estremo a estremo</a> tramite codifica a <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">chiave simmetrica</a> (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) usando chiavi generate con 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
+  <string name="welcome_to_surespot"><![CDATA["Benvenuto a surespot! I dati inviati usando questa app sono cifrati <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> tramite codifica a <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">chiave simmetrica</a> (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES</a>) usando chiavi generate con 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
   <string name="no_friends">Nessun amico... per ora. Invita utenti di surespot inserendo il loro nome utente qui sotto.</string>
   <string name="help_invite">Invita utenti surespot inserendo il loro nome utente nella sezione home.</string>
-  <string name="invite_contacts">Usa l\'opzione di menu \'invita contatti\' per invitare utenti con codice QR, email, sms o altre applicazioni.</string>
+  <string name="invite_contacts">Usa l\'opzione \'invita contatti\' nel menu per invitare utenti con codice QR, email, sms o altre applicazioni.</string>
   <string name="navigate_between_chat_tabs">Naviga tra le schede trascinando.</string>
   <string name="help_holdmessage">Tieni premuto su un messaggio per visualizzare le opzioni.</string>
   <string name="help_holdfriend">Tieni premuto su un amico per visualizzare le opzioni.</string>
@@ -80,10 +80,10 @@
   <string name="help_messageHistory">Surespot salva una cronologia di 1000 messaggi. Quando raggiungi il limite di 1000 messaggi, i tuoi messaggi più vecchi verranno cancellati, così che avrai sempre 1000 messaggi (criptati) salvati sul server. Naturalmente puoi cancellare uno qualunque dei tuoi messaggi in ogni momento.</string>
   <string name="title_activity_about">informazioni su surespot</string>
   <string name="about_about"><![CDATA["surespot - una produzione 2fours"]]></string>
-  <string name="about_website"><![CDATA["Visita il sito di surespot <a href="https://www.surespot.me">https://www.surespot.me</a> per avere più informazioni, compresi i <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">termini di servizio</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">la privacy policy</a>, e <a href="https://www.surespot.me/documents/threat.html">l'analisi dei dati e delle minacce</a>."]]></string>
+  <string name="about_website"><![CDATA["Visita il sito di surespot <a href="https://www.surespot.me">https://www.surespot.me</a> per avere più informazioni, compresi i <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">termini di servizio</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">la politica della privacy</a>, e <a href="https://www.surespot.me/documents/threat.html">l'analisi dei dati e delle minacce</a>."]]></string>
   <string name="about_opensource"><![CDATA["Surespot è 100% open source e la tua partecipazione è benvenuta - guarda il codice sorgente su github all'indirizzo <a href="https://github.com/surespot">https://github.com/surespot</a>."]]></string>
   <string name="about_tech"><![CDATA["Per una visione più tecnica su come funziona surespot clicca <a href="https://www.surespot.me/documents/how_surespot_works.html">qui</a>."]]></string>
-  <string name="about_support"><![CDATA["Per domande o supporto <a href="https://www.surespot.me/support.html>clicca qui</a> oppure manda un\'email a <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
+  <string name="about_support"><![CDATA["Per domande o supporto <a href="https://www.surespot.me/support.html>clicca qui</a> oppure manda un'email a <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: nuovo messaggio da %2$s</string>
   <string name="notification_invite">%1$s: invito da %2$s</string>
@@ -102,10 +102,10 @@
   <string name="sms">sms</string>
   <string name="social">sociale</string>
   <string name="unknown">sconosciuto</string>
-  <string name="login">entra</string>
+  <string name="login">log in</string>
   <string name="login_progress">login in corso</string>
   <string name="login_check_password">Impossibile effettuare il login, assicurati che la password sia corretta.</string>
-  <string name="login_try_again_later">Errore nel login, riprovare più tardi.</string>
+  <string name="login_try_again_later">Errore nel login, riprova più tardi.</string>
   <string name="login_max_identities_reached">Spiacente, hai superato il limite di identità che puoi creare (%d). \n\nLe identità possono essere eliminate nelle impostazioni di gestione identità dopo aver eseguito l\'accesso.</string>
   <string name="local_cache_cleared">cache locale svuotata</string>
   <string name="qr_pre_username_help">la lettura del codice QR inviterà</string>
@@ -127,15 +127,15 @@
   <string name="keys">chiavi</string>
   <string name="generating_keys_progress">generazione e caricamento delle nuove chiavi</string>
   <string name="backup_identities_again_keys">Poiché le chiavi della tua identità cambieranno, fai il backup di questa identità dopo aver completato l\'operazione.</string>
-  <string name="backup_identities_again_password">Poiché sarà cambiata la tua password dell\'identità, fai il backup di questa identità dopo aver completato l\'operazione.</string>
+  <string name="backup_identities_again_password">Poiché verrà cambiata la tua password dell\'identità, fai il backup di questa identità dopo aver completato l\'operazione.</string>
   <string name="create_new_keys_for">crea nuove chiavi per %s</string>
   <string name="enter_password_for">inserisci la password di surespot per %s</string>
   <!--anything in [] for the string below will fire the onclick listener to open the restore activity-->
   <string name="enter_username_and_password">Inserisci username e password, oppure [ripristina un\'identità] dal menu.</string>
   <string name="usernames_case_sensitive">Gli username sono case-sensitive</string>
   <string name="aware_username_password">quindi ricordati di questo quando li condividi con altri. La password deve essere lunga almeno 8 caratteri e contenere simboli.</string>
-  <string name="warning_password_reset">ATTENZIONE: Non esiste NESSUN MODO per ripristinare la tua password o nome utente in surespot, quindi assicurati di ricordarteli!</string>
-  <string name="create_user_progress">creazione di un utente e generazione di un paio di chiavi</string>
+  <string name="warning_password_reset">ATTENZIONE: Non esiste NESSUN MODO per ripristinare la tua password o username in surespot, quindi assicurati di ricordarteli!</string>
+  <string name="create_user_progress">creazione di un utente e generando la coppia di chiavi</string>
   <string name="create">crea</string>
   <string name="passwords_do_not_match">le password non corrispondono</string>
   <string name="username_exists">L\'username esiste già, per favore scegline un altro.</string>
@@ -145,8 +145,8 @@
   <string name="pay">paga</string>
   <string name="what_you_like">quello che vuoi</string>
   <string name="billing_could_not_enable">Impossibile abilitare il pagamento tramite applicazione</string>
-  <string name="billing_purchase_error">Errore, transizione non completata.</string>
-  <string name="billing_paypal_link_email_subject">link per la donazione libera via paypal</string>
+  <string name="billing_purchase_error">Errore, acquisto non completato.</string>
+  <string name="billing_paypal_link_email_subject">link per la donazione libera con paypal</string>
   <string name="billing_paypal_link_email_body">Grazie per la donazione per surespot! Il link paypal è:</string>
   <string name="none">niente</string>
   <string name="pwyl_paypal_send_to_self">link email a te stesso</string>
@@ -166,7 +166,7 @@
   <string name="could_not_delete_friend">cancellazione dell\'amico non riuscita</string>
   <string name="could_not_set_message_lock_state">impossibile settare il messaggio nello stato \"bloccato\"</string>
   <string name="menu_save_to_gallery">salva nella galleria</string>
-  <string name="menu_resend_message">re-invia messaggio</string>
+  <string name="menu_resend_message">reinvia messaggio</string>
   <string name="menu_lock">blocca</string>
   <string name="menu_unlock">sblocca</string>
   <string name="image_saved_to_gallery">immagine salvata nella galleria</string>
@@ -174,8 +174,8 @@
   <string name="delete_message_confirmation_title">sei sicuro di voler cancellare questo messaggio?</string>
   <string name="message_error_decrypting_message">ERRORE NEL DECRITTARE IL MESSAGGIO</string>
   <string name="could_not_respond_to_invite">Risposta all\'invito non riuscita, riprova più tardi.</string>
-  <string name="friend_status_is_deleted">è cancellato</string>
-  <string name="friend_status_is_invited">è invitato</string>
+  <string name="friend_status_is_deleted">è stato cancellato</string>
+  <string name="friend_status_is_invited">è stato invitato</string>
   <string name="friend_status_is_inviting">sta invitando</string>
   <string name="menu_close_tab">chiudi scheda</string>
   <string name="menu_assign_image">assegna un\'immagine</string>
@@ -193,12 +193,14 @@
   <string name="could_not_delete_identity">cancellazione identità non riuscita</string>
   <string name="identity_deleted">identità cancellata</string>
   <string name="backup">backup</string>
-  <string name="backup_identity">backup identità %s</string>  
+  <string name="backup_identity">backup identità %s</string>
+  <string name="newer_identity_exists">identità non ripristinata perché esiste già una versione più recente dell\'identità che hai tentato di ripristinare</string>
   <string name="backed_up_identity_to_path">eseguito il backup dell\'identità %1$s in %2$s</string>
   <string name="restore">ripristina</string>
+  <string name="restore_identity_already_exists">identità non ripristinata perché esiste già</string>
   <string name="restore_identity">ripristina l\'identità %s</string>
   <string name="assign">assegna</string>
-  <string name="could_not_load_image">caricamento immagine non riuscito</string>
+  <string name="could_not_load_image">impossibile caricare l\'immagine</string>
   <string name="image">immagine</string>
   <string name="pan_and_zoom">muovi e fai zoom</string>
   <string name="done">fatto</string>
@@ -207,13 +209,13 @@
   <string name="error_message_throttled">errore nell\'invio del messaggio: throttled</string>
   <string name="error_message_generic">errore nell\'invio del messaggio</string>
   <string name="error_message_resend">invio fallito - tieni premuto per reinviare</string>
-  <string name="via_google_play_in_app_purchase">ACQUISTO APPLICAZIONE TRAMITE GOOGLE PLAY</string>
+  <string name="via_google_play_in_app_purchase">VIA AQUISTO IN-APP DI GOOGLE PLAY</string>
   <string name="via_paypal">VIA PAYPAL</string>
   <string name="pwyl_send_to_dialog_title">inviare a?</string>
   <string name="open_link_in_browser">apri link nel browser</string>
   <string name="send_link_in_email">invia link email a te stesso</string>
   <string name="via_bitcoin">VIA BITCOIN</string>
-  <string name="copy_address_to_clipboard">copia l\'indirizzo nella cartella</string>
+  <string name="copy_address_to_clipboard">copia l\'indirizzo nella clipboard</string>
   <string name="send_address_and_qr_code_in_email">mandati via mail l\'indirizzo ed il codice QR</string>
   <string name="open_bitcoin_wallet">apri il portafoglio bitcoin (se supportato)</string>
   <string name="select_identity">seleziona l\'identità</string>
@@ -226,7 +228,7 @@
   <string name="delete_identity_message_warning">Cancellando un\'identità tutti i messaggi mandati da tale identità saranno cancellati. Questa operazione non può essere annullata.</string>
   <string name="identity_colon">identità:</string>
   <string name="backup_location_note">Nota: questa potrebbe essere o meno la scheda SD rimovibile, a seconda del tuo dispositivo.</string>
-  <string name="invite_others">Invita altri a comunicare con te privatamente via surespot condividendo un link di auto-invito con loro.</string>
+  <string name="invite_others">Invita altri a comunicare con te privatamente tramite surespot condividendo con loro un link di invito automatico.</string>
   <string name="invite_reassurance">Le informazioni associate al tuo contatto non sono memorizzate, caricate o usate in nessun altro modo.</string>
   <string name="invite_via_email">invita via email</string>
   <string name="invite_via_text_message">invita via sms</string>
@@ -238,21 +240,21 @@
   <string name="phone_number">numero di telefono</string>
   <string name="generate_new_keypairs">Genera una nuova coppia di chiavi per l\'identità selezionata e revoca la coppia attuale. Tutti gli altri dispositivi (per es. i telefoni persi o rubati) non potranno più accedere a surespot con l\'identità selezionata.</string>
   <string name="username">username</string>
-  <string name="create_identity">crea un\'identità</string>
+  <string name="create_identity">crea identità</string>
   <string name="options">opzioni</string>
-  <string name="clear_local_cache">svuota la cache locale</string>
+  <string name="clear_local_cache">svuota cache locale</string>
   <string name="delete_all_messages">cancella tutti i messaggi</string>
   <string name="pay_what_you_like">donazione libera</string>
   <string name="pref_title_general">generale</string>
   <string name="pref_title_about_surespot">informazioni su surespot</string>
   <string name="pref_title_help">aiuto</string>
   <string name="pref_title_confirmations">conferme</string>
-  <string name="pref_title_delete_message">cancella il messaggio</string>
+  <string name="pref_title_delete_message">cancella messaggio</string>
   <string name="pref_title_delete_all_messages">cancella tutti i messaggi</string>
   <string name="pref_title_identity_management">gestione identità</string>
   <string name="pref_title_change_password">cambia password...</string>
   <string name="pref_title_alternate_sms_invite_to">invito SMS alternativo \'a\'</string>
-  <string name="pref_title_silent_error_reporting">rapporto di errore silenzioso </string>
+  <string name="pref_title_silent_error_reporting">segnalazione di errore silenziosa</string>
   <string name="pref_title_message_debug_mode">modalità di debug del messaggio</string>
   <string name="pref_title_debug">debug</string>
   <string name="pref_title_options">opzioni</string>
@@ -264,10 +266,10 @@
   <string name="pref_summary_regen_keys">Per i paranoici.</string>
   <string name="pref_summary_alternate_sms_delimiter">È necessario abilitarla su alcuni dispositivi per riempire correttamente il campo \'a\' dell\'sms quando sono stati selezionati contatti multipli da invitare.</string>
   <string name="pref_summary_message_debug_mode">Mostra più informazioni sui messaggi per scopi di debug.</string>
-  <string name="menu_invite_contacts">Invita i contatti</string>
-  <string name="pref_title_delete_identity">Cancella l\'identità...</string>
+  <string name="menu_invite_contacts">invita contatti</string>
+  <string name="pref_title_delete_identity">cancella l\'identità...</string>
   <string name="delete_identity">cancella l\'identità</string>
-  <string name="surespot_help">help di surespot</string>
+  <string name="surespot_help">aiuto di surespot</string>
   <string name="backup_drive_button">Fai il backup su Google Drive</string>
   <string name="could_not_backup_identity_to_google_drive">Backup dell\'identità su Google Drive non riuscito</string>
   <string name="identity_successfully_backed_up_to_google_drive">Backup dell\'identità su Google Drive riuscito</string>
@@ -279,19 +281,19 @@
   <string name="re_add_google_account">Sfortunatamente il token Google non è più valido e sarà necessario rimuovere e reinserire l\'account Google dalle impostazioni del dispositivo.</string>
   <string name="progress_restoring_identity">ripristino identità</string>
   <string name="progress_loading_identities">caricamento dei backup delle identitlà</string>
-  <string name="progress_backup_identity_drive">backup dell\'identità</string>
+  <string name="progress_backup_identity_drive">backup identità in corso</string>
   <string name="progress_drive_dir_check">controllo delle cartelle con identità di surespot</string>
   <string name="no_drive_identities">Nessun backup delle identità caricato da Google Drive</string>
   <string name="no_local_identities">Nessun backup delle identità trovato sulla Memoria del Dispositivo</string>
-  <string name="identity_name">nome dell\'identità</string>
+  <string name="identity_name">nome identità</string>
   <string name="last_backed_up">ultimo backup</string>
   <string name="last_modified">ultima modifica</string>
   <string name="help">aiuto</string>
   <string name="menu_import">importa</string>
   <string name="backup_device">BACKUP IDENTITÀ SU MEMORIA LOCALE</string>
-  <string name="backup_drive">BACKUP DELL\'IDENTITÀ SU GOOGLE DRIVE</string>
+  <string name="backup_drive">BACKUP IDENTITÀ SU GOOGLE DRIVE</string>
   <string name="let_me_select">lasciami scegliere</string>
-  <string name="could_not_import_identity_drive_404">Caricamento dell\'identità non riuscita - assicurati di aver scelto lo stesso account Google che stavi usando per Google Drive.</string>
+  <string name="could_not_import_identity_drive_404">Caricamento identità non riuscito - assicurati di aver scelto lo stesso account Google che stavi usando per Google Drive.</string>
   <string name="pick_same_drive_account">Scegli lo stesso account che stavi usando per Google Drive:</string>
   <string name="about">a proposito di...</string>
   <string name="unauthorized">non autorizzato</string>
@@ -301,7 +303,7 @@
   <string name="public_key_fingerprints">firma digitale della chiave pubblica</string>
   <string name="loading">caricamento...</string>
   <string name="device_does_not_support_google_drive">Dispositivo non configurato per Google Drive.</string>
-  <string name="login_update">aggiorna surespot per connetterti</string>
+  <string name="login_update">aggiorna surespot per effettuare il login</string>
   <string name="help_agreement"><![CDATA["Cliccando OK accetti i  <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">termini di servizio</a> di surespot."]]></string>
   <string name="billing_payment_required_voice">messaggi vocali di surespot non acquistati</string>
   <string name="billing_getting_inventory">scarico lista di acquisti, riprova tra qualche secondo</string>
@@ -311,16 +313,16 @@
   <string name="pref_billing">acquisti</string>
   <string name="suppress_voice_purchase">non chiedermi più di acquistare i messaggi vocali (chiude la scheda)</string>
   <string name="voice_messaging_purchase_1">Aggiungi i messaggi vocali a surespot per rendere la comunicazione crittografata ancora più facile! Basta tenere premuto il bottone del microfono per registrare e rilasciarlo per inviare. Perché ogni tanto è più facile a dirsi che a scriversi.</string>
-  <string name="voice_messaging_purchase_button">tocca qua per acquistare a €1.99</string>
-  <string name="voice_message_suppress_purchase_ask">non chiedere più</string>
-  <string name="pref_suppress_voice_purchase_ask_title">non chiedere più</string>
-  <string name="pref_suppress_voice_purchase_ask_summary">non chiedere più di acquistare i messaggi vocali</string>
+  <string name="voice_messaging_purchase_button">tocca qua per acquistare a $1.99</string>
+  <string name="voice_message_suppress_purchase_ask">non chiedermelo più</string>
+  <string name="pref_suppress_voice_purchase_ask_title">non chiedermelo più</string>
+  <string name="pref_suppress_voice_purchase_ask_summary">non chiedermi più di acquistare i messaggi vocali</string>
   <string name="menu_purchase_voice_messaging">acquista messaggi vocali</string>
   <string name="purchase_voice_title">acquista messaggi vocali</string>
   <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">È necessario aggiornare surespot per ascoltare questo messaggio vocale.</a>"]]></string>
   <string name="user_exists_throttled">troppi tentativi, riprova più tardi</string>
-  <string name="user_exists_error">errore durante il controllo del nome utente</string>
-  <string name="user_exists_progress">controllo del nome utente</string>
+  <string name="user_exists_error">errore durante il controllo dell\'username</string>
+  <string name="user_exists_progress">controllo username</string>
   <string name="caching_service_notification_title">surespot</string>
   <string name="caching_service_notification_message">spostamento nella cache per prestazioni migliori</string>
   <string name="voice_help_1">Tieni premuto il bottone del microfono per registrare un messaggio vocale, rilascialo per inviarlo.</string>
