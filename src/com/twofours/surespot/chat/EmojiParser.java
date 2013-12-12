@@ -52,17 +52,22 @@ public class EmojiParser {
 
 		addCharToResMapping("2764", R.drawable.heart);
 		mUncategorized.put(0x2764, null);
-		addCharToResMapping("1F600", R.drawable.grin);
-		addCharToResMapping("1F601", R.drawable.grinning);
+		addCharToResMapping("1F600", R.drawable.grin);		
+		addCharToResMapping("1F603", R.drawable.grinning);
 		addCharToResMapping("1F602", R.drawable.face_with_tear_of_joy);
-		addCharToResMapping("1F603", R.drawable.smiley);
+				
+		//doesn't look right on ios, remove and remap incoming
+		//addCharToResMapping("1F603", R.drawable.smiley);
+		mCodepointToIndex.put(("\\u1F601").toLowerCase(), 2);
 		addCharToResMapping("1F604", R.drawable.smile);
 		addCharToResMapping("1F605", R.drawable.sweat_smile);
 		addCharToResMapping("1F606", R.drawable.laughing);
 		addCharToResMapping("1F609", R.drawable.wink);
 		addCharToResMapping("1F60A", R.drawable.satisfied);
 		addCharToResMapping("1F60B", R.drawable.face_savouring_delicious_food);
-		addCharToResMapping("1F60C", R.drawable.relieved);
+		//doesn't look right on ios, remove and remap incoming
+		mCodepointToIndex.put(("\\u1F60C").toLowerCase(), 13);
+		// addCharToResMapping("1F60C", R.drawable.relieved);
 		addCharToResMapping("1F60D", R.drawable.heart_eyes);
 		addCharToResMapping("1F60F", R.drawable.smirk);
 		addCharToResMapping("F0002", R.drawable.blush);
@@ -86,7 +91,9 @@ public class EmojiParser {
 		addCharToResMapping("1F61E", R.drawable.disappointed_face);
 		addCharToResMapping("1F61F", R.drawable.worried);
 		addCharToResMapping("F0003", R.drawable.drunk);
-		addCharToResMapping("F0004", R.drawable.wink2);
+		//doesn't look right on ios, remove and remap incoming
+		// addCharToResMapping("F0004", R.drawable.wink2);
+		mCodepointToIndex.put(("\\uF0004").toLowerCase(), 25);
 		addCharToResMapping("F0005", R.drawable.smiling_face);
 
 		addCharToResMapping("1F620", R.drawable.angry_face);
@@ -133,7 +140,8 @@ public class EmojiParser {
 		addCharToResMapping("1F64D", R.drawable.person_frowning);
 		addCharToResMapping("1F64E", R.drawable.person_with_pouting_face);
 		addCharToResMapping("1F64F", R.drawable.person_with_folded_hands);
-		addCharToResMapping("F0000", R.drawable.dancer);
+		addCharToResMapping("1F483", R.drawable.dancer);
+		mCodepointToIndex.put(("\\uF0000").toLowerCase(), 71);
 		addCharToResMapping("F0007", R.drawable.ninja);
 
 		addCharToResMapping("1F46A", R.drawable.family);
@@ -301,6 +309,7 @@ public class EmojiParser {
 		}
 		mEmojiChars.add(chars);
 		mEmojiRes.add(id);
+
 		mCodepointToIndex.put(("\\u" + chars).toLowerCase(), mEmojiCount++);
 	}
 
