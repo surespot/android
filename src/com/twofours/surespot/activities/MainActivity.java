@@ -808,8 +808,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mDialog = UIUtils
 					.createAndShowConfirmationDialog(
 							this,
-							getString(R.string.whats_new_43_message),
-							getString(R.string.whats_new_43_title), getString(R.string.ok), null, null);
+							getString(R.string.whats_new_44_message),
+							getString(R.string.whats_new_44_title), getString(R.string.ok), null, null);
 		}
 	}
 
