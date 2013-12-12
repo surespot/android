@@ -310,7 +310,7 @@
   <string name="billing_error">error durante el cobro</string>
   <string name="pref_billing">compras</string>
   <string name="suppress_voice_purchase">no me preguntes si quiero comprar el servicio de mensajería por voz (cierra la pestaña)</string>
-  <string name="voice_messaging_purchase_1">Añade la opcion de mensajería por voz a  tu Sursepot y haz más fáciles aun tus comunicaciones encriptadas! Simplemente mantén pulsado el boton del micrófono para grabar y suéltalo para enviar.\nPorque a veces es más facil decirlo que escribirlo.</string>
+  <string name="voice_messaging_purchase_1"><![CDATA["Añade la opcion de mensajería por voz a  tu Sursepot y haz más fáciles aun tus comunicaciones encriptadas! Simplemente mantén pulsado el boton del micrófono para grabar y suéltalo para enviar.\nPorque a veces es más facil decirlo que escribirlo. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
   <string name="voice_messaging_purchase_button">pulsa aquí para comprar por 1.99$</string>
   <string name="voice_message_suppress_purchase_ask">no volver a preguntar</string>
   <string name="pref_suppress_voice_purchase_ask_title">no volver a preguntar</string>

@@ -310,7 +310,7 @@
   <string name="billing_error">erreur de paiement</string>
   <string name="pref_billing">achats</string>
   <string name="suppress_voice_purchase">ne pas me demander d\'acheter les messages vocaux (ferme l\'onglet)</string>
-  <string name="voice_messaging_purchase_1">Ajoutez la messagerie vocale à votre surespot et rendez la communication cryptée encore plus facile ! Il suffit de maintenir enfoncé le bouton du microphone pour enregistrer et le relâcher pour envoyer. Parce que parfois il est plus facile de le dire que de le taper.</string>
+  <string name="voice_messaging_purchase_1"><![CDATA["Ajoutez la messagerie vocale à votre surespot et rendez la communication cryptée encore plus facile ! Il suffit de maintenir enfoncé le bouton du microphone pour enregistrer et le relâcher pour envoyer. Parce que parfois il est plus facile de le dire que de le taper. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
   <string name="voice_messaging_purchase_button">cliquez ici pour acheter pour $1.99</string>
   <string name="voice_message_suppress_purchase_ask">ne plus me demander</string>
   <string name="pref_suppress_voice_purchase_ask_title">ne plus me demander</string>
