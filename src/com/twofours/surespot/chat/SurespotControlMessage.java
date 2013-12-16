@@ -12,7 +12,6 @@ public class SurespotControlMessage {
 	private String mData;
 	private String mMoreData;
 	private Integer mId;
-	private String mLocalId;
 	private String mFrom;
 
 	public String getType() {
@@ -55,14 +54,6 @@ public class SurespotControlMessage {
 		mId = id;
 	}
 
-	public String getLocalId() {
-		return mLocalId;
-	}
-
-	public void setLocalId(String localId) {
-		mLocalId = localId;
-	}
-
 	public String getFrom() {
 		return mFrom;
 	}
@@ -74,15 +65,14 @@ public class SurespotControlMessage {
 	public static SurespotControlMessage toSurespotControlMessage(JSONObject jsonMessage) throws JSONException {
 		SurespotControlMessage controlMessage = new SurespotControlMessage();
 
-		
 		controlMessage.setType(jsonMessage.getString("type"));
 		controlMessage.setId(jsonMessage.getInt("id"));
 		controlMessage.setAction(jsonMessage.getString("action"));
 		controlMessage.setData(jsonMessage.getString("data"));
-		
+
 		controlMessage.setFrom(jsonMessage.optString("from"));
 		controlMessage.setMoreData(jsonMessage.optString("moredata", null));
-		controlMessage.setLocalId(jsonMessage.optString("localid", null));
+
 		return controlMessage;
 	}
 
@@ -100,10 +90,6 @@ public class SurespotControlMessage {
 				message.put("moredata", this.getMoreData());
 			}
 
-			if (this.getLocalId() != null) {
-				message.put("localid", this.getLocalId());
-			}
-
 			return message;
 		}
 		catch (JSONException e) {
@@ -112,16 +98,15 @@ public class SurespotControlMessage {
 		return null;
 
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((mId == null) ? 0 : mId.hashCode());
-		result = prime * result + ((mLocalId == null) ? 0 : mLocalId.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
@@ -137,28 +122,21 @@ public class SurespotControlMessage {
 			return true;
 		}
 		else {
-			if (this.getLocalId() != null && rhs.getLocalId() != null && this.getLocalId().equals(rhs.getLocalId())) {
-				return true;
-			}
-			else {
-				return false;
-			}			
+			return false;
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\nSurespotControlMessage:\n");
-		sb.append("\tid: " + getId() + "\n");		
+		sb.append("\tid: " + getId() + "\n");
 		sb.append("\tfrom: " + getFrom() + "\n");
 		sb.append("\taction: " + getAction() + "\n");
-		sb.append("\tlocalId: " + getLocalId() + "\n");		
 		sb.append("\tdata: " + getData() + "\n");
 		sb.append("\tmoreData: " + getMoreData() + "\n");
-		
+
 		return sb.toString();
 	}
-
 
 }
