@@ -176,7 +176,7 @@ public class ChatController {
 			public synchronized void onError(SocketIOException socketIOException) {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
-					SurespotLog.v(TAG,"got 403 from websocket");
+					SurespotLog.v(TAG, "got 403 from websocket");
 					socket = null;
 					logout();
 					mCallback401.handleResponse(null, false);
@@ -1368,7 +1368,28 @@ public class ChatController {
 								}
 
 							}
+							else
+								if (message.getAction().equals("friendImage")) {
+									String friendName = message.getData();
+									Friend friend = mFriendAdapter.getFriend(friendName);
 
+									if (friend != null) {
+
+										String moreData = message.getMoreData();
+										JSONObject jsonData = null;
+										try {
+											jsonData = new JSONObject(moreData);
+											String iv = jsonData.getString("iv");
+											String url = jsonData.getString("url");
+											String version = jsonData.getString("version");
+											setImageUrl(friendName, url, version, iv);
+										}
+										catch (JSONException e) {
+											SurespotLog.e(TAG, e, "could not parse friend image control message json");
+
+										}
+									}
+								}
 		if (notify) {
 			mFriendAdapter.notifyDataSetChanged();
 			saveFriends();
