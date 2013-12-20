@@ -272,25 +272,25 @@ public class MessageImageDownloader {
 				}
 			}
 
-			if (bitmap != null) {
+			mMessage.setLoaded(true);
+			mMessage.setLoading(false);
 
-				final Bitmap finalBitmap = bitmap;
+			final Bitmap finalBitmap = bitmap;
 
-				MessageImageDownloader.addBitmapToCache(mMessage.getData(), bitmap);
+			if (imageViewReference != null) {
+				final ImageView imageView = imageViewReference.get();
+				final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+				// Change bitmap only if this process is still associated with it
+				// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+				if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
+					mHandler.post(new Runnable() {
 
-				mMessage.setLoaded(true);
-				mMessage.setLoading(false);
+						@Override
+						public void run() {
 
-				if (imageViewReference != null) {
-					final ImageView imageView = imageViewReference.get();
-					final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-					// Change bitmap only if this process is still associated with it
-					// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-					if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
-						mHandler.post(new Runnable() {
+							if (finalBitmap != null) {
 
-							@Override
-							public void run() {
+								MessageImageDownloader.addBitmapToCache(mMessage.getData(), finalBitmap);
 
 								Drawable drawable = imageView.getDrawable();
 								if (drawable instanceof DownloadedDrawable) {
@@ -307,11 +307,15 @@ public class MessageImageDownloader {
 
 								UIUtils.updateDateAndSize(mMessage, (View) imageView.getParent());
 								mChatAdapter.checkLoaded();
-
 							}
-						});
-					}
+							else {
+								//TODO set error image
+								imageView.setImageDrawable(null);
+							}
+						}
+					});
 				}
+
 			}
 
 		}
@@ -378,7 +382,7 @@ public class MessageImageDownloader {
 
 			// make sure we're not using the bitmaps before we recycle
 			for (ImageView view : mImageViews.keySet()) {
-				//don't evict visible bitmaps
+				// don't evict visible bitmaps
 				if (!view.isShown()) {
 					view.setImageDrawable(null);
 				}

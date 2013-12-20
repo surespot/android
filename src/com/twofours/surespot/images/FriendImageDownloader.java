@@ -230,23 +230,21 @@ public class FriendImageDownloader {
 				}
 			}
 
-			if (bitmap != null) {
+			final Bitmap finalBitmap = bitmap;
+			if (imageViewReference != null) {
+				final ImageView imageView = imageViewReference.get();
+				final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+				// Change bitmap only if this process is still associated with it
+				// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+				if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
 
-				final Bitmap finalBitmap = bitmap;
+					mHandler.post(new Runnable() {
 
-				FriendImageDownloader.addBitmapToCache(mFriend.getImageUrl(), bitmap);
+						@Override
+						public void run() {
+							if (finalBitmap != null) {
 
-				if (imageViewReference != null) {
-					final ImageView imageView = imageViewReference.get();
-					final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-					// Change bitmap only if this process is still associated with it
-					// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-					if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
-
-						mHandler.post(new Runnable() {
-
-							@Override
-							public void run() {
+								FriendImageDownloader.addBitmapToCache(mFriend.getImageUrl(), finalBitmap);
 
 								Drawable drawable = imageView.getDrawable();
 								if (drawable instanceof DownloadedDrawable) {
@@ -269,13 +267,16 @@ public class FriendImageDownloader {
 								SurespotLog.v(TAG, "setting image for %s", mFriend.getName());
 								imageView.setImageBitmap(finalBitmap);
 								// imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
-
 							}
-						});
-					}
+							else {
+								// todo set error bitmap
+								imageView.setImageDrawable(null);
+							}
+
+						}
+					});
 				}
 			}
-
 		}
 	}
 
