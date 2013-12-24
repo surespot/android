@@ -78,9 +78,9 @@ public class IdentityController {
 	}
 
 	public static void updatePassword(Context context, String username, String currentPassword, String newPassword, String newSalt) {
-		SurespotIdentity identity = getIdentity(context, username, currentPassword);
-		identity.setSalt(newSalt);
+		SurespotIdentity identity = getIdentity(context, username, currentPassword);		
 		if (identity != null) {
+			identity.setSalt(newSalt);
 			saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
 		}
 	}
