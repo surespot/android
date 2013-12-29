@@ -38,6 +38,7 @@
 
     <application
         android:name="com.twofours.surespot.SurespotApplication"
+        android:allowBackup="true"
         android:icon="@drawable/surespotlauncher"
         android:label="surespot"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar" >
