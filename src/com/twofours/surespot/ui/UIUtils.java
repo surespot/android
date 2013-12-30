@@ -374,7 +374,7 @@ public class UIUtils {
 	}
 
 	private static String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
-		String url = "http://192.168.10.68:8080/autoinvite/" + username + "/" + typeToString(type);
+		String url = "https://server.surespot.me/autoinvite/" + username + "/" + typeToString(type);
 		return url;
 	}
 
@@ -403,7 +403,7 @@ public class UIUtils {
 		Spannable s1 = new SpannableString(user);
 		s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		String inviteUrl = "http://192.168.10.68:8080/autoinvite/" + user + "/qr_droid";
+		String inviteUrl = "https://server.surespot.me/autoinvite/" + user + "/qr_droid";
 		// String qrImageUrl = "https://chart.googleapis.com/chart?cht=qr&chl=" + inviteUrl + "&chs=300x300&chld=Q|0";
 
 		tvQrInviteText.setText(TextUtils.concat(activity.getString(R.string.qr_pre_username_help), " ", s1, " ",

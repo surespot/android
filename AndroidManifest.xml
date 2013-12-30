@@ -98,9 +98,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="192.168.10.68"
+                    android:host="server.surespot.me"
                     android:pathPrefix="/autoinvite"
-                    android:scheme="http" />
+                    android:scheme="https" />
             </intent-filter>
         </activity>
         <activity
