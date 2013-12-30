@@ -38,6 +38,7 @@ public class SurespotApplication extends Application {
 	private static StateController mStateController = null;
 	private static String mVersion;
 	private static BillingController mBillingController;
+	private static String mUserAgent;
 
 	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -118,6 +119,8 @@ public class SurespotApplication extends Application {
 			mVersion = "unknown";
 		}
 		
+		mUserAgent = "surespot/" + SurespotApplication.getVersion() + " (Android)";
+		
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
@@ -153,7 +156,9 @@ public class SurespotApplication extends Application {
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 
 		startService(cacheIntent);		
-		mBillingController = new BillingController(this);				
+		mBillingController = new BillingController(this);	
+		
+		
 	}
 	
 	private boolean versionChanged(Context context) {
@@ -191,5 +196,8 @@ public class SurespotApplication extends Application {
 		return mBillingController;
 	}
 	
+	public static String getUserAgent() {
+		return mUserAgent;
+	}
 
 }
