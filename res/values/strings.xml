@@ -303,7 +303,7 @@
     <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
     <string name="login_update">please update surespot to log in</string>
     <string name="help_agreement"><![CDATA["By touching OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
-    <string name="billing_payment_required_voice">surepot voice message not purchased</string>
+    <string name="billing_payment_required_voice">surespot voice message not purchased</string>
     <string name="billing_getting_inventory">getting purchase inventory, please try again in a second</string>
     <string name="billing_unavailable_message">you must have a Google account on your device to purchase voice messaging</string>
     <string name="billing_unavailable_title">billing unavailable</string>

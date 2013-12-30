@@ -161,7 +161,10 @@ public class NetworkController {
 			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-
+			
+			mClient.setUserAgent(SurespotApplication.getUserAgent());
+			mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
+			mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());		
 		}
 	}
 
