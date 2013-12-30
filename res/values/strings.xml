@@ -336,5 +336,6 @@
     <string name="message_hint">enter message</string>
     <string name="invite_hint">invite user</string>
     <string name="whats_new_44_message">New Features!\n\nSet background image (via settings->options).\n\nCopy message text (via long press on message).\n\nMultiple device support (use the same identity across multiple devices).\n\nThank you for your continued support! Have you experienced the convenience of voice messaging yet?</string>
-    <string name="whats_new_44_title">Version 44</string>      
+    <string name="whats_new_44_title">Version 44</string>
+    <string name="recording_cancelled">recording cancelled</string>      
 </resources>

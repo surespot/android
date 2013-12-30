@@ -561,7 +561,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 									send = false;
 
-									Utils.makeToast(MainActivity.this, "recording cancelled");
+									Utils.makeToast(MainActivity.this, getString(R.string.recording_cancelled));
 
 								}
 
