@@ -506,7 +506,7 @@ public class ChatUtils {
 	}
 
 	public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message,
-			final IAsyncCallback<Boolean> callback) {
+			final IAsyncCallback<Integer> callback) {
 
 		// upload encrypted file to server
 		FileInputStream uploadStream = null;
@@ -515,22 +515,22 @@ public class ChatUtils {
 				uploadStream = new FileInputStream(new File(new URI(message.getData())));
 			}
 			else {
-				callback.handleResponse(false);
+				callback.handleResponse(500);
 			}
 		}
 		catch (IllegalArgumentException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-			callback.handleResponse(false);
+			callback.handleResponse(500);
 			return;
 		}
 		catch (FileNotFoundException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-			callback.handleResponse(false);
+			callback.handleResponse(500);
 			return;
 		}
 		catch (URISyntaxException e) {
 			SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-			callback.handleResponse(false);
+			callback.handleResponse(500);
 			return;
 		}
 
@@ -540,7 +540,7 @@ public class ChatUtils {
 					@Override
 					public void handleResponse(Integer statusCode) {
 						SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-						callback.handleResponse(statusCode == 200);
+						callback.handleResponse(statusCode);
 					}
 				});
 	}
