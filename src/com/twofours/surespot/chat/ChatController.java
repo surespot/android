@@ -2257,14 +2257,18 @@ public class ChatController {
 		message.setAlreadySent(false);
 		chatAdapter.notifyDataSetChanged();
 		setProgress("resend", true);
-		ChatUtils.resendFileMessage(mContext, mNetworkController, message, new IAsyncCallback<Boolean>() {
+		ChatUtils.resendFileMessage(mContext, mNetworkController, message, new IAsyncCallback<Integer>() {
 
 			@Override
-			public void handleResponse(Boolean result) {
+			public void handleResponse(Integer result) {
 				setProgress("resend", false);
-				if (!result) {
-					message.setErrorStatus(500);
+				if (result == 200) {					
+					message.setErrorStatus(0);
 				}
+				else {
+					message.setErrorStatus(result);
+				}
+				
 
 				message.setAlreadySent(true);
 				chatAdapter.notifyDataSetChanged();
