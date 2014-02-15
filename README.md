@@ -15,7 +15,7 @@ corporations and authorities have taken with our communications. We created sure
 If you support this work and appreciate surespot please show it and consider donating your time or money.
 In turn, we will pass along support to the Electronic Frontier Foundation (EFF) who work tirelessly to defend your digital rights.
 
-[![donation](https://chatsecure.org/static/images/paypal_donate.png)](https://www.surespot.me/contribute.html)
+[![donation](https://www.surespot.me/images/contribute-button.png)](https://www.surespot.me/contribute.html)
 
 
 Localization
