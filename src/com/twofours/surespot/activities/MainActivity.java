@@ -189,7 +189,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		Intent intent = getIntent();
 		Utils.logIntent(TAG, intent);
 
-
 		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 		mOrientation = getResources().getConfiguration().orientation;
 
@@ -1088,15 +1087,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// }.execute();
 			return true;
 		case R.id.menu_invite_external:
-
-			new AsyncTask<Void, Void, Void>() {
-				protected Void doInBackground(Void... params) {
-
-					Intent intent = new Intent(MainActivity.this, ExternalInviteActivity.class);
-					startActivity(intent);
-					return null;
-				}
-			}.execute();
+			UIUtils.sendInvitation(MainActivity.this, mNetworkController);
 			return true;
 		case R.id.menu_clear_messages:
 			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);

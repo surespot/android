@@ -79,12 +79,7 @@
             android:defaultValue="false"
             android:key="pref_suppress_voice_purchase_ask"
             android:summary="@string/pref_suppress_voice_purchase_ask_summary"
-            android:title="@string/pref_suppress_voice_purchase_ask_title" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_alternate_text_delimiter"
-            android:summary="@string/pref_summary_alternate_sms_delimiter"
-            android:title="@string/pref_title_alternate_sms_invite_to" />
+            android:title="@string/pref_suppress_voice_purchase_ask_title" />       
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_debug_mode"

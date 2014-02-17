@@ -3,7 +3,6 @@ package com.twofours.surespot.ui;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.List;
 
 import org.json.JSONObject;
 import org.spongycastle.util.encoders.Hex;
@@ -25,7 +24,6 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -55,7 +53,6 @@ import android.widget.TextView;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.ExternalInviteActivity;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -110,8 +107,8 @@ public class UIUtils {
 		return ad;
 	}
 
-	public static AlertDialog createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText, String negativeButtonText,
-			final IAsyncCallback<Boolean> callback) {
+	public static AlertDialog createAndShowConfirmationDialog(Context context, String message, String title, String positiveButtonText,
+			String negativeButtonText, final IAsyncCallback<Boolean> callback) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		builder.setMessage(message).setTitle(title).setPositiveButton(positiveButtonText, new OnClickListener() {
 
@@ -138,7 +135,7 @@ public class UIUtils {
 
 		AlertDialog dialog = builder.create();
 		dialog.show();
-		
+
 		return dialog;
 
 	}
@@ -283,9 +280,8 @@ public class UIUtils {
 		UIUtils.setHtml(context, tvWelcome, R.string.welcome_to_surespot);
 	}
 
-	public static void sendInvitation(final Activity context, NetworkController networkController, final int type, final List<String> contacts,
-			final boolean finish) {
-		final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser(), type, true);
+	public static void sendInvitation(final Activity context, NetworkController networkController) {
+		final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser());
 		SurespotLog.v(TAG, "auto invite url length %d:, url: %s ", longUrl.length(), longUrl);
 
 		final SingleProgressDialog progressDialog = new SingleProgressDialog(context, context.getString(R.string.invite_progress_text), 750);
@@ -295,77 +291,41 @@ public class UIUtils {
 			public void onSuccess(int statusCode, JSONObject response) {
 				String sUrl = response.optString("id", null);
 				if (!TextUtils.isEmpty(sUrl)) {
-					launchInviteApp(context, progressDialog, type, sUrl, contacts, finish);
+					launchInviteApp(context, progressDialog, sUrl);
 				}
 				else {
-					launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
+					launchInviteApp(context, progressDialog, longUrl);
 				}
 			};
 
 			public void onFailure(Throwable e, JSONObject errorResponse) {
 				SurespotLog.i(TAG, e, "getShortUrl, error: %s", errorResponse);
-				launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
+				launchInviteApp(context, progressDialog, longUrl);
 			};
 
 			@Override
 			public void onFailure(Throwable error, String content) {
 				SurespotLog.i(TAG, error, "getShortUrl, content: %s", content);
-				launchInviteApp(context, progressDialog, type, longUrl, contacts, finish);
+				launchInviteApp(context, progressDialog, longUrl);
 			}
 		});
 
 	}
 
-	private static void launchInviteApp(Activity context, SingleProgressDialog progressDialog, int type, String url, List<String> contacts, boolean finish) {
+	private static void launchInviteApp(Activity context, SingleProgressDialog progressDialog, String url) {
 		try {
 			Intent intent = null;
 			String message = context.getString(R.string.external_invite_message, url);
-			switch (type) {
 
-			case ExternalInviteActivity.SHARE_EMAIL:
-				intent = new Intent(Intent.ACTION_SENDTO);
-				// intent.setType("text/plain");
-				intent.setData(Uri.parse("mailto:"));
-				// intent.putExtra(Intent.EXTRA_EMAIL, new String[] { });
-				intent.putExtra(Intent.EXTRA_EMAIL, contacts.toArray(new String[contacts.size()]));
-				intent.putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.invitation_email_subject));
-				intent.putExtra(Intent.EXTRA_TEXT, message);
-
-				break;
-			case ExternalInviteActivity.SHARE_SMS:
-				intent = new Intent(Intent.ACTION_VIEW);
-				intent.setType("vnd.android-dir/mms-sms");
-
-				// some devices (samsung) sms app don't like semi-colon delimiter
-				// http://stackoverflow.com/questions/9721714/android-passing-multiple-numbers-to-sms-intent
-				SharedPreferences sp = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-				boolean altDelimiter = sp.getBoolean("pref_alternate_text_delimiter", false);
-				String delimiter = altDelimiter ? "," : ";";
-
-				StringBuilder addressString = new StringBuilder();
-				for (String address : contacts) {
-					addressString.append(address + delimiter);
-				}
-				intent.putExtra("address", addressString.toString());
-				intent.putExtra("sms_body", message);
-
-				break;
-			case ExternalInviteActivity.SHARE_SOCIAL:
-				intent = new Intent(Intent.ACTION_SEND);
-				intent.setType("text/plain");
-				intent.putExtra(Intent.EXTRA_TEXT, message);
-
-				break;
-			}
+			intent = new Intent(Intent.ACTION_SEND);
+			intent.setType("text/plain");
+			intent.putExtra(Intent.EXTRA_TEXT, message);
 
 			if (intent != null) {
 				context.startActivity(intent);
 			}
-			if (finish) {
-				context.finish();
-			}
-			progressDialog.hide();
 
+			progressDialog.hide();
 		}
 		catch (ActivityNotFoundException e) {
 			progressDialog.hide();
@@ -373,23 +333,8 @@ public class UIUtils {
 		}
 	}
 
-	private static String buildExternalInviteUrl(String username, int type, boolean autoInvite) {
-		String url = "https://server.surespot.me/autoinvite/" + username + "/" + typeToString(type);
-		return url;
-	}
-
-	private static String typeToString(int type) {
-		switch (type) {
-		case ExternalInviteActivity.SHARE_EMAIL:
-			return "email";
-		case ExternalInviteActivity.SHARE_SMS:
-			return "sms";
-
-		case ExternalInviteActivity.SHARE_SOCIAL:
-			return "social";
-		default:
-			return "unknown";
-		}
+	private static String buildExternalInviteUrl(String username) {
+		return "https://server.surespot.me/autoinvite/" + username + "/social";
 	}
 
 	public static AlertDialog showQRDialog(Activity activity) {

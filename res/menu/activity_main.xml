@@ -26,7 +26,7 @@
             <item
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/blue_heart"
-                android:title="@string/menu_invite_contacts"/>
+                android:title="@string/share_invite_link"/>
             <item
                 android:id="@+id/menu_purchase_voice"
                 android:icon="@drawable/gold_heart"

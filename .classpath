@@ -24,7 +24,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SSLWebSocket"/>
 	<classpathentry excluding="com/twofours/surespot/activities/StartupActivity.java|com/twofours/surespot/chat/ChatActivity.java|com/twofours/surespot/friends/FriendActivity.java|com/twofours/surespot/voice/VoiceMessagePlayer.java|com/twofours/surespot/voice/VoiceMessageContainer.java" kind="src" path="src"/>
-	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/google-play-services_lib"/>
+	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
