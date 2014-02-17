@@ -145,6 +145,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		super.onNewIntent(intent);
 		SurespotLog.v(TAG, "onNewIntent.");
 		Utils.logIntent(TAG, intent);
+
+		setIntent(intent);
+
 		// handle case where we deleted the identity we were logged in as
 		boolean deleted = intent.getBooleanExtra("deleted", false);
 
@@ -185,6 +188,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		Intent intent = getIntent();
 		Utils.logIntent(TAG, intent);
+
 
 		mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
 		mOrientation = getResources().getConfiguration().orientation;
@@ -805,11 +809,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			Editor editor = sp.edit();
 			editor.putBoolean("whatsNewShown", true);
 			editor.commit();
-			mDialog = UIUtils
-					.createAndShowConfirmationDialog(
-							this,
-							getString(R.string.whats_new_44_message),
-							getString(R.string.whats_new_44_title), getString(R.string.ok), null, null);
+			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_44_message), getString(R.string.whats_new_44_title),
+					getString(R.string.ok), null, null);
 		}
 	}
 
@@ -821,6 +822,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mChatController != null) {
 			mChatController.onResume();
 		}
+
 		startWatchingExternalStorage();
 		setBackgroundImage();
 		setEditTextHints();
@@ -829,6 +831,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	protected void onPause() {
+		SurespotLog.v(TAG, "onPause");
 		super.onPause();
 		if (mChatController != null) {
 			mChatController.onPause();

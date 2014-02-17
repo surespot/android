@@ -1752,6 +1752,8 @@ public class ChatController {
 		SurespotLog.v(TAG, "onResume, mPaused: %b", mPaused);
 		if (mPaused) {
 			mPaused = false;
+			
+			
 
 			setProgress(null, true);
 			// getFriendsAndIds();
@@ -1768,7 +1770,7 @@ public class ChatController {
 	}
 
 	public synchronized void onPause() {
-		SurespotLog.v(TAG, "onResume, mPaused: %b", mPaused);
+		SurespotLog.v(TAG, "onPause, mPaused: %b", mPaused);
 		if (!mPaused) {
 			mPaused = true;
 			saveState(null);

@@ -70,7 +70,7 @@
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
             android:label="@string/title_activity_main"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize|stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
