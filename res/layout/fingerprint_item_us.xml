@@ -54,9 +54,9 @@
 
                 <com.twofours.surespot.ui.ExpandableHeightGridView
                     android:id="@+id/dhFingerprint"
-                    android:layout_width="90dp"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
-                    android:columnWidth="20dp"
+                    android:columnWidth="25dp"
                     android:gravity="center"
                     android:listSelector="@android:color/transparent"
                     android:numColumns="4"
@@ -88,9 +88,9 @@
 
                 <com.twofours.surespot.ui.ExpandableHeightGridView
                     android:id="@+id/dsaFingerprint"
-                    android:layout_width="90dp"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
-                    android:columnWidth="20dp"
+                    android:columnWidth="25dp"
                     android:gravity="center"
                     android:listSelector="@android:color/transparent"
                     android:numColumns="4"
