@@ -324,5 +324,7 @@
     <string name="whats_new_44_title">Version 44</string>
     <string name="recording_cancelled">recording cancelled</string>
     <string name="share_invite_link">share invite link</string>
-    <string name="share_link_help">"Use the 'share invite link' menu option to share a link via email, sms, twitter, or other social media, that when clicked will install surespot / invite you as a friend in surespot"</string>      
+    <string name="share_link_help">"Use the 'share invite link' menu option to share a link via email, sms, twitter, or other social media, that when clicked will install surespot / invite you as a friend in surespot"</string>
+    <string name="pref_stop_cache_logout_title">kill cache on logout</string>
+    <string name="pref_stop_cache_logout_summary">kills the background cache service on logout</string>      
 </resources>

@@ -77,6 +77,11 @@
             android:title="@string/pref_title_delete_all_messages" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="pref_stop_cache_logout"
+            android:summary="@string/pref_stop_cache_logout_summary"
+            android:title="@string/pref_stop_cache_logout_title" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="pref_suppress_voice_purchase_ask"
             android:summary="@string/pref_suppress_voice_purchase_ask_summary"
             android:title="@string/pref_suppress_voice_purchase_ask_title" />       

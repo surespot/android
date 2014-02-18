@@ -6,10 +6,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -21,6 +24,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -31,6 +35,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.ui.UIUtils;
 
+@SuppressLint("NewApi")
 public class CredentialCachingService extends Service {
 	private static final String TAG = "CredentialCachingService";
 
@@ -45,7 +50,7 @@ public class CredentialCachingService extends Service {
 
 	@Override
 	public void onCreate() {
-		SurespotLog.v(TAG, "onCreate");
+		SurespotLog.i(TAG, "onCreate");
 
 		// in 4.3 and above they decide to fuck us by showing the notification
 		// so make the text meaningful at least
@@ -87,7 +92,7 @@ public class CredentialCachingService extends Service {
 		CacheLoader<SharedSecretKey, byte[]> secretCacheLoader = new CacheLoader<SharedSecretKey, byte[]>() {
 			@Override
 			public byte[] load(SharedSecretKey key) throws Exception {
-				SurespotLog.v(TAG, "secretCacheLoader, ourVersion: %s, theirUsername: %s, theirVersion: %s", key.getOurVersion(), key.getTheirUsername(),
+				SurespotLog.i(TAG, "secretCacheLoader, ourVersion: %s, theirUsername: %s, theirVersion: %s", key.getOurVersion(), key.getTheirUsername(),
 						key.getTheirVersion());
 
 				try {
@@ -123,7 +128,7 @@ public class CredentialCachingService extends Service {
 	}
 
 	public synchronized void login(SurespotIdentity identity, Cookie cookie) {
-		SurespotLog.v(TAG, "Logging in: %s", identity.getUsername());
+		SurespotLog.i(TAG, "Logging in: %s", identity.getUsername());
 		mLoggedInUser = identity.getUsername();
 		this.mCookies.put(identity.getUsername(), cookie);
 		updateIdentity(identity);
@@ -217,9 +222,19 @@ public class CredentialCachingService extends Service {
 
 	public synchronized void logout() {
 		if (mLoggedInUser != null) {
-			SurespotLog.v(TAG, "Logging out: %s", mLoggedInUser);
+			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
+			
+			SharedPreferences sp = getSharedPreferences(mLoggedInUser, Context.MODE_PRIVATE);
+			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+			
 			clearIdentityData(mLoggedInUser, false);
 			mLoggedInUser = null;
+								
+			if (stopCache) {
+				SurespotLog.i(TAG, "stopping cache");
+				stopSelf();
+				SurespotApplication.setCachingService(null);
+			}
 		}
 	}
 
@@ -243,7 +258,7 @@ public class CredentialCachingService extends Service {
 
 	@Override
 	public void onDestroy() {
-		SurespotLog.v(TAG, "onDestroy");
+		SurespotLog.i(TAG, "onDestroy");
 	}
 
 	/**

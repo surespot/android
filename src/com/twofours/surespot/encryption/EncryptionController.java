@@ -236,7 +236,6 @@ public class EncryptionController {
 			SurespotLog.e(TAG, e, "sign");
 		}
 		return false;
-
 	}
 
 	public static byte[] generateSharedSecretSync(PrivateKey privateKey, PublicKey publicKey) {
@@ -247,14 +246,13 @@ public class EncryptionController {
 			ka.doPhase(publicKey, true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			// SurespotLog.d(TAG, username + " shared Key: " + new String(ChatUtils.base64Encode(new
-			// BigInteger(sharedSecret).toByteArray())));
+			SurespotLog.i(TAG, "generated shared Key");
 			return sharedSecret;
 
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
-			SurespotLog.v(TAG, icle, "generateSharedSecretSync");
+			SurespotLog.i(TAG, icle, "generateSharedSecretSync");
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, e, "generateSharedSecretSync");
@@ -289,7 +287,7 @@ public class EncryptionController {
 							break;
 						}
 						bos.write(buf, 0, i);
-					//	SurespotLog.v(TAG, "encrypted " + i + " bytes");
+						// SurespotLog.v(TAG, "encrypted " + i + " bytes");
 					}
 
 					// cos.close();
@@ -346,7 +344,7 @@ public class EncryptionController {
 					int i = 0;
 
 					while ((i = cis.read(buf)) != -1) {
-						//SurespotLog.v(TAG, "decrypted " + i + " bytes");
+						// SurespotLog.v(TAG, "decrypted " + i + " bytes");
 						bos.write(buf, 0, i);
 					}
 

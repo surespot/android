@@ -423,7 +423,7 @@ public class NetworkController {
 	}
 
 	public String getKeyVersionSync(String username) {
-
+		SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
 		return mSyncClient.get(mBaseUrl + "/keyversion/" + username);
 
 	}
