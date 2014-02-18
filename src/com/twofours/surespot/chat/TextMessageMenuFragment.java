@@ -26,9 +26,11 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject().toString());
-		
-		//plain text is not converted to json string so store it separately
-		args.putString("messageText", message.getPlainData().toString());
+
+		// plain text is not converted to json string so store it separately
+		if (message.getPlainData() != null) {
+			args.putString("messageText", message.getPlainData().toString());
+		}
 		f.setArguments(args);
 
 		return f;
@@ -43,7 +45,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		if (messageString != null) {
 			mMessage = SurespotMessage.toSurespotMessage(messageString);
 		}
-		
+
 		final String messageText = getArguments().getString("messageText");
 
 		mMenuItemArray = new String[2];
@@ -57,21 +59,25 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 				if (mMessage == null) {
 					return;
 				}
-				
+
 				if (getActivity() == null) {
 					return;
 				}
 
 				switch (which) {
 				case 0:
-					int sdk = android.os.Build.VERSION.SDK_INT;
-					if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-					    android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-					    clipboard.setText(new SpannableString(messageText));
-					} else {
-					    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE); 
-					    android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text",messageText);
-					    clipboard.setPrimaryClip(clip);
+					if (messageText != null) {
+						int sdk = android.os.Build.VERSION.SDK_INT;
+						if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+							android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+							clipboard.setText(new SpannableString(messageText));
+						}
+						else {
+							android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(
+									Context.CLIPBOARD_SERVICE);
+							android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text", messageText);
+							clipboard.setPrimaryClip(clip);
+						}
 					}
 					break;
 				case 1:
@@ -91,7 +97,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 								});
 						mActivity.setChildDialog(dialog);
 					}
-					
+
 					else {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
@@ -105,7 +111,5 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
-	
-	
 
 }
