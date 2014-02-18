@@ -485,7 +485,7 @@ public class ChatController {
 			SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
 			message.setResendId(lastMessageID);
 
-			sMessageList.put(message.toJSONObject());
+			sMessageList.put(message.toJSONObjectSocket());
 		}
 
 		socket.send(sMessageList.toString());
@@ -551,7 +551,7 @@ public class ChatController {
 		mResendBuffer.add(message);
 		if (getState() == STATE_CONNECTED) {
 			SurespotLog.d(TAG, "sendmessage, socket: %s", socket);
-			JSONObject json = message.toJSONObject();
+			JSONObject json = message.toJSONObjectSocket();
 			SurespotLog.d(TAG, "sendmessage, json: %s", json);
 			String s = json.toString();
 			SurespotLog.d(TAG, "sendmessage, message string: %s", s);

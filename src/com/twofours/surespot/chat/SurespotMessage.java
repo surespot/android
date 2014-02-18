@@ -253,6 +253,30 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		return null;
 
 	}
+	
+	public JSONObject toJSONObjectSocket() {
+		JSONObject message = new JSONObject();
+
+		try {
+			message.put("to", this.getTo());
+			message.put("from", this.getFrom());
+			message.put("toVersion", this.getToVersion());
+			message.put("fromVersion", this.getFromVersion());
+			message.put("iv", this.getIv());
+			message.put("data", this.getData());									
+
+			if (this.getResendId() != null) {
+				message.put("resendId", this.getResendId());
+			}
+				
+			return message;
+		}
+		catch (JSONException e) {
+			SurespotLog.w(TAG, "toJSONObjectSocket", e);
+		}
+		return null;
+
+	}
 
 	@Override
 	public int hashCode() {
