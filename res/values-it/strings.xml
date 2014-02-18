@@ -317,6 +317,6 @@
     <string name="voice_help_4">I nuovi messaggi vocali verranno riprodotti automaticamente nella scheda di chat aperta.</string>
     <string name="close">chiudi</string>
     <string name="no_audio_detected">nessun suono rilevato - messaggio vocale non inviato</string>
-    <string name="share_invite_link">condividi link dell'invito</string>
+    <string name="share_invite_link">"condividi link dell'invito"</string>
     <string name="share_link_help">"Usa l'opzione \"condividi link dell'invito\" per condividere un link via email, sms, twitter, o altri social network, che installeranno surespot / ti inviteranno come amico su surespot quando verranno cliccati"</string>
 </resources>
