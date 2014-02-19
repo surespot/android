@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -395,21 +396,24 @@ public class NetworkController {
 		get("/friends", null, responseHandler);
 	}
 
-	public void getMessageData(String user, Integer messageId, Integer controlId, AsyncHttpResponseHandler responseHandler) {
+	public void getMessageData(String user, Integer messageId, Integer controlId, JsonHttpResponseHandler responseHandler) {
 		int mId = messageId;
 		int cId = controlId;
 
-		get("/messagedata/" + user + "/" + mId + "/" + cId, null, responseHandler);
+		get("/messagedataopt/" + user + "/" + mId + "/" + cId, null, responseHandler);
 
 	}
-
-	public void getLatestIds(int userControlId, JsonHttpResponseHandler responseHandler) {
-		get("/latestids/" + userControlId, null, responseHandler);
+	
+	public void getLatestData(int userControlId, JSONArray spotIds, JsonHttpResponseHandler responseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("spotIds", spotIds.toString());
+		
+		post("/optdata/" + userControlId, new RequestParams(params), responseHandler);
 	}
 
 	// if we have an id get the messages since the id, otherwise get the last x
-	public void getEarlierMessages(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
-		get("/messages/" + username + "/before/" + id, null, responseHandler);
+	public void getEarlierMessages(String username, Integer id, JsonHttpResponseHandler responseHandler) {
+		get("/messagesopt/" + username + "/before/" + id, null, responseHandler);
 	}
 
 	public void getLastMessageIds(JsonHttpResponseHandler responseHandler) {

@@ -423,7 +423,7 @@ public class ChatController {
 
 	private void connected() {
 
-		getFriendsAndIds();
+		getFriendsAndData();
 		resendMessages();
 
 		// if we need to invite someone then do it
@@ -875,44 +875,7 @@ public class ChatController {
 		}
 	}
 
-	// private void handleLocalData(ChatAdapter chatAdapter, SurespotMessage message) {
-	// SurespotLog.d(TAG, "handleLocalData");
-	// SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
-	//
-	// // if the data is different we haven't updated the http cache with data we sent
-	// if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData()) && localMessage.getInlineData() != null) {
-	// // add the remote cache entry for the new url
-	//
-	// byte[] imageData = localMessage.getInlineData();
-	//
-	// String remoteUri = message.getData();
-	// HeapResource resource = new HeapResource(imageData);
-	// Date date = new Date();
-	// String sDate = DateUtils.formatDate(date);
-	//
-	// Header[] cacheHeaders = new Header[3];
-	//
-	// // create fake cache entry
-	// cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
-	// cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
-	// cacheHeaders[2] = new BasicHeader("Date", sDate);
-	//
-	// HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
-	//
-	// SurespotLog.d(TAG, "creating http cache entry for: %s", remoteUri);
-	// mNetworkController.addCacheEntry(remoteUri, cacheEntry);
-	//
-	// // update message to point to real location
-	// localMessage.setData(remoteUri);
-	//
-	// // clear out the inline data as we should still have the decrypted plain data
-	// localMessage.setInlineData(null);
-	//
-	// }
-	// }
-
 	// message handling shiznit
-
 	void loadEarlierMessages(final String username, final IAsyncCallback<Boolean> callback) {
 
 		// mLoading = true;
@@ -947,7 +910,7 @@ public class ChatController {
 
 						try {
 							for (int i = jsonArray.length() - 1; i >= 0; i--) {
-								JSONObject jsonMessage = new JSONObject(jsonArray.getString(i));
+								JSONObject jsonMessage = jsonArray.getJSONObject(i);
 								message = SurespotMessage.toSurespotMessage(jsonMessage);
 								chatAdapter.insertMessage(message, false);
 							}
@@ -984,45 +947,60 @@ public class ChatController {
 		}
 	}
 
-	private void getLatestIds() {
-		SurespotLog.d(TAG, "getLatestIds");
+	private void getLatestData() {
+		SurespotLog.d(TAG, "getLatestData");
 		// setMessagesLoading(true);
 
-		mNetworkController.getLatestIds(mLatestUserControlId, new JsonHttpResponseHandler() {
+		JSONArray spotIds = new JSONArray();
+		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
+			JSONObject spot = new JSONObject();
+			String username = entry.getKey();
+			try {
+				spot.put("u", username);
+				LatestIdPair p = getPreConnectIds(username);
+				spot.put("m", p.latestMessageId);
+				spot.put("cm", p.latestControlMessageId);
+				spotIds.put(spot);
+			}
+			catch (JSONException e) {
+				continue;
+			}
+		}
+
+		mNetworkController.getLatestData(mLatestUserControlId, spotIds, new JsonHttpResponseHandler() {
 
 			@Override
 			public void onSuccess(int statusCode, final JSONObject jsonResponse) {
-				SurespotLog.d(TAG, "getlatestIds success, response: %s, statusCode: %d", jsonResponse, statusCode);
-				JSONArray conversationIds = jsonResponse.optJSONArray("conversationIds");
+				SurespotLog.d(TAG, "getlatestData success, response: %s, statusCode: %d", jsonResponse, statusCode);
+				JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
 
 				Friend friend = null;
 				if (conversationIds != null) {
-					for (int i = 0; i < conversationIds.length(); i++) {
+					Iterator i = conversationIds.keys();
+					while (i.hasNext()) {
+						String spot = (String) i.next();
 						try {
-							JSONObject jsonObject = conversationIds.getJSONObject(i);
-							String spot = jsonObject.getString("conversation");
-							Integer availableId = jsonObject.getInt("id");
+							Integer availableId = conversationIds.getInt(spot);
 							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
 							// update available ids
 							friend = mFriendAdapter.getFriend(user);
 							if (friend != null) {
 								friend.setAvailableMessageId(availableId);
 							}
-
 						}
-						catch (JSONException e) {
-							SurespotLog.w(TAG, "getlatestIds", e);
+						catch (Exception e) {
+							SurespotLog.w(TAG, e, "getlatestData");
 						}
 					}
 				}
 
-				JSONArray controlIds = jsonResponse.optJSONArray("controlIds");
+				JSONObject controlIds = jsonResponse.optJSONObject("controlIds");
 				if (controlIds != null) {
-					for (int i = 0; i < controlIds.length(); i++) {
+					Iterator i = conversationIds.keys();
+					while (i.hasNext()) {
+						String spot = (String) i.next();
 						try {
-							JSONObject jsonObject = controlIds.getJSONObject(i);
-							String spot = jsonObject.getString("conversation");
-							Integer availableId = jsonObject.getInt("id");
+							Integer availableId = controlIds.getInt(spot);
 							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
 							// update available ids
 							friend = mFriendAdapter.getFriend(user);
@@ -1031,7 +1009,7 @@ public class ChatController {
 							}
 						}
 						catch (JSONException e) {
-							SurespotLog.w(TAG, "getlatestIds", e);
+							SurespotLog.w(TAG, e, "getlatestData");
 						}
 					}
 				}
@@ -1041,13 +1019,36 @@ public class ChatController {
 					handleControlMessages(IdentityController.getLoggedInUser(), userControlMessages);
 				}
 
+				JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
+				if (messageDatas != null) {
+					for (int i = 0; i < messageDatas.length(); i++) {
+						try {
+							JSONObject messageData = messageDatas.getJSONObject(i);
+							String friendName = messageData.getString("username");
+
+							JSONArray controlMessages = messageData.getJSONArray("controlMessages");
+							if (controlMessages != null) {
+								handleControlMessages(friendName, controlMessages);
+							}
+
+							JSONArray messages = messageData.getJSONArray("messages");
+							if (messages != null) {
+								handleMessages(friendName, messages);
+							}
+
+						}
+						catch (JSONException e) {
+							SurespotLog.w(TAG, e, "getlatestData");
+						}
+					}
+				}
+
 				if (friend != null) {
 					mFriendAdapter.sort();
 					mFriendAdapter.notifyDataSetChanged();
 				}
 
-				getLatestMessagesAndControls(true);
-
+				setProgress(null, false);
 			}
 
 			@Override
@@ -1078,13 +1079,16 @@ public class ChatController {
 		public int latestControlMessageId;
 	}
 
-	private void getLatestMessagesAndControls(boolean forceMessageUpdate) {
-		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			getLatestMessagesAndControls(entry.getKey(), forceMessageUpdate);
+	private LatestIdPair getPreConnectIds(String username) {
+		LatestIdPair idPair = mPreConnectIds.get(username);
+
+		if (idPair == null) {
+			idPair = new LatestIdPair();
+			idPair.latestControlMessageId = 0;
+			idPair.latestMessageId = 0;
 		}
 
-		// done with "global" updates
-		setProgress(null, false);
+		return idPair;
 	}
 
 	private LatestIdPair getLatestIds(String username) {
@@ -1142,7 +1146,7 @@ public class ChatController {
 						handleControlMessages(username, controlMessages);
 					}
 
-					String messages = response.optString("messages", null);
+					JSONArray messages = response.optJSONArray("messages");
 
 					// don't update messages if we didn't query for them
 					// this prevents setting message state to error before we get the true result
@@ -1483,7 +1487,7 @@ public class ChatController {
 		}
 	}
 
-	private void handleMessages(String username, String jsonMessageString) {
+	private void handleMessages(String username, JSONArray jsonMessages) {
 		SurespotLog.d(TAG, "%s: handleMessages", username);
 		final ChatAdapter chatAdapter = mChatAdapters.get(username);
 		if (chatAdapter == null) {
@@ -1491,17 +1495,16 @@ public class ChatController {
 		}
 
 		// if we received new messages
-		if (jsonMessageString != null) {
+		if (jsonMessages != null) {
 
 			int sentByMeCount = 0;
 
 			SurespotMessage lastMessage = null;
 			try {
-				JSONArray jsonUM = new JSONArray(jsonMessageString);
-				SurespotLog.d(TAG, "%s: loaded: %d messages from the server: %s", username, jsonUM.length(), jsonMessageString);
-				for (int i = 0; i < jsonUM.length(); i++) {
+				SurespotLog.d(TAG, "%s: loaded: %d messages from the server", username, jsonMessages.length());
+				for (int i = 0; i < jsonMessages.length(); i++) {
 
-					lastMessage = SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i)));
+					lastMessage = SurespotMessage.toSurespotMessage(jsonMessages.getJSONObject(i));
 					boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
 
 					if (myMessage) {
@@ -1752,8 +1755,6 @@ public class ChatController {
 		SurespotLog.d(TAG, "onResume, mPaused: %b", mPaused);
 		if (mPaused) {
 			mPaused = false;
-			
-			
 
 			setProgress(null, true);
 			// getFriendsAndIds();
@@ -2264,13 +2265,12 @@ public class ChatController {
 			@Override
 			public void handleResponse(Integer result) {
 				setProgress("resend", false);
-				if (result == 200) {					
+				if (result == 200) {
 					message.setErrorStatus(0);
 				}
 				else {
 					message.setErrorStatus(result);
 				}
-				
 
 				message.setAlreadySent(true);
 				chatAdapter.notifyDataSetChanged();
@@ -2291,7 +2291,7 @@ public class ChatController {
 		return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
 	}
 
-	private void getFriendsAndIds() {
+	private void getFriendsAndData() {
 		if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
 			mFriendAdapter.setLoading(true);
 			// get the list of friends
@@ -2328,7 +2328,7 @@ public class ChatController {
 						mFriendAdapter.setLoading(false);
 					}
 
-					getLatestIds();
+					getLatestData();
 				}
 
 				@Override
@@ -2343,7 +2343,7 @@ public class ChatController {
 			});
 		}
 		else {
-			getLatestIds();
+			getLatestData();
 		}
 	}
 
