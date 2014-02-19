@@ -317,5 +317,6 @@
     <string name="no_audio_detected">no se ha capturado ningún sonido - no se enviará el mensaje de voz</string>
     <string name="share_invite_link">Enlace invition cuota</string>
     <string name="share_link_help">"Use la opción de menú \"Enlace invition cuota\" para compartir un enlace por correo electrónico, SMS, Twitter, o otros medios sociales. Cuando se hace clic en el enlace que se instalará surespot / invitas como amigo en surespot"</string>
-
+	<string name="pref_stop_cache_logout_title">matar caché al cierre de sesión</string>
+    <string name="pref_stop_cache_logout_summary">mata al servicio de caché al cierre de session</string>
 </resources>
