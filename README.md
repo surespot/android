@@ -1,11 +1,9 @@
-android
+android    [![Google Play](https://www.surespot.me/images/google-play.png)](https://play.google.com/store/apps/details?id=com.twofours.surespot) 
 =======
 surespot
 =========
 
 surespot is a mobile messaging application that secures all messages using end-to-end encryption.
-Download surespot from [![Google Play](https://www.surespot.me/images/google-play.png)](https://play.google.com/store/apps/details?id=com.twofours.surespot) 
-
 
 Contribute
 =========
