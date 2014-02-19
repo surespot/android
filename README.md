@@ -4,6 +4,7 @@ surespot
 =========
 
 surespot is a mobile messaging application that secures all messages using end-to-end encryption.
+Download surespot from [Google Play](https://play.google.com/store/apps/details?id=com.twofours.surespot) 
 
 
 Contribute
@@ -24,16 +25,15 @@ Localization
 If you would like to contribute/improve a translation:
 
  1. Visit our [Transifex project page](https://www.transifex.com/projects/p/surespot) and make an account if you don't have one already.
- 2. Go to the resources tab [strings.xml](https://www.transifex.com/projects/p/surespot/resources/) to add a new language or improve an existing translation.
+ 2. Go to the [resources tab](https://www.transifex.com/projects/p/surespot/resources/) to add a new language or improve an existing translation.
 
 
 THANK YOU TO OUR CONTRIBUTORS:
 
-Jean Schmitt, repat, mrbiber, gehfab for the German translations
-Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, vndtta for the Spanish translations
+Jean Schmitt, repat, mrbiber, leibi,gehfab for the German translations
+Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, Manuel Perez, vndtta for the Spanish translations
 sharkyiwc and boing for the French translations
-lgasp, dickhead, Mauriziopz, mangholb and riky for the Italian translations
-
+lgasp, dickhead, Mauriziopz, mangholb and riky, besa, for the Italian translations
 
 
 License
@@ -41,7 +41,7 @@ License
 
 	Software License Agreement (GPLv3+)
 
-	Copyright (c) 2012, 2fours. All rights reserved.
+	Copyright (c) 2012-14, 2fours. All rights reserved.
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
