@@ -28,10 +28,10 @@ If you would like to contribute/improve a translation:
 
 THANK YOU TO OUR CONTRIBUTORS:
 
-Jean Schmitt, repat, mrbiber, leibi,gehfab for the German translations
-Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, Manuel Perez, vndtta for the Spanish translations
-sharkyiwc and boing for the French translations
-lgasp, dickhead, Mauriziopz, mangholb and riky, besa, for the Italian translations
+Jean Schmitt, repat, mrbiber, leibi,gehfab for the German translations.
+Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, Manuel Perez, vndtta for the Spanish translations.
+sharkyiwc and boing for the French translations.
+lgasp, dickhead, Mauriziopz, mangholb and riky, besa, for the Italian translations.
 
 
 License
