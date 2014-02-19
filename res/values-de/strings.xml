@@ -317,5 +317,6 @@
     <string name="no_audio_detected">Keine Tonaufnahme erkannt. Die Sprachmitteilung wird nicht gesendet.</string>
     <string name="share_invite_link">aktien laden Link</string>
     <string name="share_link_help">"Verwenden Sie den Menüpunkt 'aktien beladen-Link', um einen Link per E-Mail, SMS, Twitter oder andere Social-Media-Aktien, dass, wenn darauf geklickt wird installiert surespot / laden Sie als Freund in surespot"</string>
-
+ 	<string name="pref_stop_cache_logout_title">töten Cache bei Logout</string>
+    <string name="pref_stop_cache_logout_summary">tötet den Cache-Service bei der Abmeldung</string>      
 </resources>

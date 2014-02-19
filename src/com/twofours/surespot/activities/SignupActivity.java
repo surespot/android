@@ -65,6 +65,7 @@ public class SignupActivity extends SherlockActivity {
 	private View mUsernameValid;
 	private View mUsernameInvalid;
 	private Menu mMenuOverflow;
+	private boolean mLoggedIn = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +98,7 @@ public class SignupActivity extends SherlockActivity {
 		mUsernameValid = findViewById(R.id.ivUsernameValid);
 		mUsernameInvalid = findViewById(R.id.ivUsernameInvalid);
 
-		SurespotLog.v(TAG, "binding cache service");
+		SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
@@ -375,6 +376,7 @@ public class SignupActivity extends SherlockActivity {
 															mMpd.decrProgress();
 															InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 															imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
+															mLoggedIn = true;
 															finish();
 															setUsernameValidity(true);
 														};
@@ -467,6 +469,14 @@ public class SignupActivity extends SherlockActivity {
 
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
+		}
+
+		if (!mLoggedIn && isTaskRoot()) {
+			if (SurespotApplication.getCachingService() != null) {
+				SurespotLog.i(TAG, "stopping cache");
+				SurespotApplication.getCachingService().stopSelf();
+				SurespotApplication.setCachingService(null);
+			}
 		}
 	}
 

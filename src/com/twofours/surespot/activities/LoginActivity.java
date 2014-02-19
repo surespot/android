@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -55,6 +56,7 @@ public class LoginActivity extends SherlockActivity {
 	private boolean mLoginAttempted;
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
+	private boolean mLoggedIn = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +64,7 @@ public class LoginActivity extends SherlockActivity {
 		setContentView(R.layout.activity_login);
 		Utils.configureActionBar(this, "", getString(R.string.login), false);
 
-		SurespotLog.v(TAG, "binding cache service");
+		SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
@@ -256,6 +258,7 @@ public class LoginActivity extends SherlockActivity {
 								startActivity(newIntent);
 								InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 								imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
+								mLoggedIn = true;
 								finish();
 
 							}
@@ -374,10 +377,25 @@ public class LoginActivity extends SherlockActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
 
+		if (!mLoggedIn) {
+			String lastUser = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_USER);
+			SharedPreferences sp = getSharedPreferences(lastUser, Context.MODE_PRIVATE);
+			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+
+			if (stopCache) {
+
+				if (SurespotApplication.getCachingService() != null) {
+					SurespotLog.i(TAG, "stopping cache");
+					SurespotApplication.getCachingService().stopSelf();
+					SurespotApplication.setCachingService(null);
+				}
+			}
+		}
 	}
 
 	@Override

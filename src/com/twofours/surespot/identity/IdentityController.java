@@ -665,7 +665,7 @@ public class IdentityController {
 
 		PublicKeys keys = loadPublicKeyPair(username, version);
 		if (keys != null) {
-			SurespotLog.v(TAG, "loaded public keys from disk");
+			SurespotLog.i(TAG, "loaded public keys from disk for username %s", username);
 			return keys;
 		}
 
@@ -689,7 +689,7 @@ public class IdentityController {
 				PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
 
 				savePublicKeyPair(username, version, json.toString());
-				SurespotLog.v(TAG, "loaded public keys from server");
+				SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
 				return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
 			}
 			catch (JSONException e) {

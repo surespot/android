@@ -94,8 +94,7 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
-
-	private static CredentialCachingService mCredentialCachingService = null;
+	
 	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController;
 
@@ -143,7 +142,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onNewIntent(Intent intent) {
 
 		super.onNewIntent(intent);
-		SurespotLog.v(TAG, "onNewIntent.");
+		SurespotLog.d(TAG, "onNewIntent.");
 		Utils.logIntent(TAG, intent);
 
 		setIntent(intent);
@@ -156,7 +155,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
 				// otherwise show the signup activity
 
-				SurespotLog.v(TAG, "I was deleted and there are no other users so starting signup activity.");
+				SurespotLog.d(TAG, "I was deleted and there are no other users so starting signup activity.");
 				Intent newIntent = new Intent(this, SignupActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(newIntent);
@@ -164,7 +163,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 			else {
 
-				SurespotLog.v(TAG, "I was deleted and there are different users so starting login activity.");
+				SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
 				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
 				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(newIntent);
@@ -184,7 +183,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		SurespotLog.v(TAG, "onCreate");
+		SurespotLog.d(TAG, "onCreate");
 
 		Intent intent = getIntent();
 		Utils.logIntent(TAG, intent);
@@ -204,14 +203,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			@Override
 			public void handleResponse(final String message, final Boolean timedOut) {
-				SurespotLog.v(TAG, "Got 401, checking authorization.");
+				SurespotLog.d(TAG, "Got 401, checking authorization.");
 				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
 
 					// if we just timed out, don't blow away the cookie or go to login screen
 					MainActivity.this.getNetworkController().setUnauthorized(true, !timedOut);
 
 					if (!timedOut) {
-						SurespotLog.v(TAG, "Got 401, launching login intent.");
+						SurespotLog.d(TAG, "Got 401, launching login intent.");
 						Intent intent = new Intent(MainActivity.this, LoginActivity.class);
 						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						startActivity(intent);
@@ -250,9 +249,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			setHomeProgress(true);
 
-			SurespotLog.v(TAG, "binding cache service");
+		
+			SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
 			Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+			startService(cacheIntent);
 			bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+			
 			// create the chat controller here if we know we're not going to need to login
 			// so that if we come back from a restart (for example a rotation), the automatically
 			// created fragments have a chat controller instance
@@ -302,7 +304,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			AutoInviteData autoInviteData = getAutoInviteData(intent);
 			if (autoInviteData != null) {
-				SurespotLog.v(TAG, "auto inviting user: %s", autoInviteData.getUsername());
+				SurespotLog.d(TAG, "auto inviting user: %s", autoInviteData.getUsername());
 			}
 
 			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteData);
@@ -336,7 +338,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
 			// otherwise show the signup activity
 
-			SurespotLog.v(TAG, "starting signup activity");
+			SurespotLog.d(TAG, "starting signup activity");
 			Intent newIntent = new Intent(this, SignupActivity.class);
 			newIntent.putExtra("autoinviteuri", intent.getData());
 			newIntent.setAction(intent.getAction());
@@ -355,15 +357,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		else {
 			if (needsLogin(intent)) {
-				SurespotLog.v(TAG, "need a (different) user, logging out");
+				SurespotLog.d(TAG, "need a (different) user, logging out");
 
-				if (mCredentialCachingService != null) {
-					if (mCredentialCachingService.getLoggedInUser() != null) {
+				CredentialCachingService ccs = SurespotApplication.getCachingService();
+				if (ccs != null) {
+					if (ccs.getLoggedInUser() != null) {
 						if (mNetworkController != null) {
 							mNetworkController.logout();
 						}
 
-						mCredentialCachingService.logout();
+						ccs.logout();
 					}
 				}
 
@@ -449,7 +452,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// set the emoji view to the keyboard height
 			mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
 
-			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
+			SurespotLog.d(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
 					.getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
 
 			setButtonText();
@@ -502,7 +505,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public boolean onLongClick(View v) {
 				//
-				SurespotLog.v(TAG, "onLongClick voice");
+				SurespotLog.d(TAG, "onLongClick voice");
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
 					// if they're deleted always close the tab
@@ -570,7 +573,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 								final boolean finalSend = send;
 
-								SurespotLog.v(TAG, "voice record up");
+								SurespotLog.d(TAG, "voice record up");
 
 								// truncates without the delay for some reason
 								mSendButton.post(new Runnable() {
@@ -695,9 +698,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
-		SurespotLog.v(TAG, "user: %s", user);
-		SurespotLog.v(TAG, "type: %s", notificationType);
-		SurespotLog.v(TAG, "messageTo: %s", messageTo);
+		SurespotLog.d(TAG, "user: %s", user);
+		SurespotLog.d(TAG, "type: %s", notificationType);
+		SurespotLog.d(TAG, "messageTo: %s", messageTo);
 
 		if ((user == null)
 				|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
@@ -710,9 +713,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-			SurespotLog.v(TAG, "caching service bound");
+			SurespotLog.d(TAG, "caching service bound");
 			CredentialCachingBinder binder = (CredentialCachingBinder) service;
-			mCredentialCachingService = binder.getService();
+			CredentialCachingService ccs = binder.getService();
+			
+			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
 			launch(getIntent());
 		}
@@ -724,7 +729,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	};
 
 	private void launch(Intent intent) {
-		// SurespotLog.v(TAG, "launch, mChatController: " + mChatController);
+		// SurespotLog.d(TAG, "launch, mChatController: " + mChatController);
 
 		String action = intent.getAction();
 		String type = intent.getType();
@@ -741,7 +746,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		// if we're coming from an invite notification, or we need to send to someone
 		// then display friends
 		if (SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
-			SurespotLog.v(TAG, "started from invite");
+			SurespotLog.d(TAG, "started from invite");
 			mSet = true;
 			Utils.clearIntent(intent);
 			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
@@ -750,7 +755,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		// message received show chat activity for user
 		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)) {
 
-			SurespotLog.v(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
+			SurespotLog.d(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
 			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
 			mSet = true;
@@ -765,7 +770,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
 			Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
-			SurespotLog.v(TAG, "started from SEND");
+			SurespotLog.d(TAG, "started from SEND");
 			// need to select a user so put the chat controller in select mode
 
 			if (mChatController != null) {
@@ -779,7 +784,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
 			String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 			if (lastName != null) {
-				SurespotLog.v(TAG, "using LAST_CHAT");
+				SurespotLog.d(TAG, "using LAST_CHAT");
 				name = lastName;
 			}
 			if (mChatController != null) {
@@ -816,7 +821,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onResume() {
 		super.onResume();
-		SurespotLog.v(TAG, "onResume");
+		SurespotLog.d(TAG, "onResume");
 
 		if (mChatController != null) {
 			mChatController.onResume();
@@ -830,7 +835,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	protected void onPause() {
-		SurespotLog.v(TAG, "onPause");
+		SurespotLog.d(TAG, "onPause");
 		super.onPause();
 		if (mChatController != null) {
 			mChatController.onPause();
@@ -854,7 +859,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
+		SurespotLog.d(TAG, "onActivityResult, requestCode: " + requestCode);
 
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
@@ -862,7 +867,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				Uri selectedImageUri = data.getData();
 
 				String to = data.getStringExtra("to");
-				SurespotLog.v(TAG, "to: " + to);
+				SurespotLog.d(TAG, "to: " + to);
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
@@ -903,7 +908,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				final String to = data.getStringExtra("to");
 
-				SurespotLog.v(TAG, "to: " + to);
+				SurespotLog.d(TAG, "to: " + to);
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
@@ -940,7 +945,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		SurespotLog.v(TAG, "onCreateOptionsMenu");
+		SurespotLog.d(TAG, "onCreateOptionsMenu");
 
 		MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.activity_main, menu);
@@ -955,7 +960,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			captureItem.setEnabled(FileUtils.isExternalStorageMounted());
 		}
 		else {
-			SurespotLog.v(TAG, "hiding capture image menu option");
+			SurespotLog.d(TAG, "hiding capture image menu option");
 			menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
 		}
 
@@ -1131,7 +1136,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		SurespotLog.v(TAG, "onDestroy");
+		SurespotLog.d(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
 		}
@@ -1171,7 +1176,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mExternalStorageReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				SurespotLog.v(TAG, "Storage: " + intent.getData());
+				SurespotLog.d(TAG, "Storage: " + intent.getData());
 				updateExternalStorageState();
 			}
 		};
@@ -1194,7 +1199,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void updateExternalStorageState() {
 		String state = Environment.getExternalStorageState();
-		SurespotLog.v(TAG, "updateExternalStorageState:  " + state);
+		SurespotLog.d(TAG, "updateExternalStorageState:  " + state);
 		if (Environment.MEDIA_MOUNTED.equals(state)) {
 			mExternalStorageAvailable = mExternalStorageWriteable = true;
 		}
@@ -1234,30 +1239,30 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onSaveInstanceState(Bundle outState) {
 
 		super.onSaveInstanceState(outState);
-		SurespotLog.v(TAG, "onSaveInstanceState");
+		SurespotLog.d(TAG, "onSaveInstanceState");
 		if (mImageCaptureHandler != null) {
-			SurespotLog.v(TAG, "onSaveInstanceState saving imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
+			SurespotLog.d(TAG, "onSaveInstanceState saving imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
 					mImageCaptureHandler.getImagePath());
 			outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
 		}
 
-		SurespotLog.v(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
+		SurespotLog.d(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
 		outState.putBoolean("keyboardShowing", mKeyboardShowing);
 
-		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing: %b", mEmojiShowing);
+		SurespotLog.d(TAG, "onSaveInstanceState saving emoji showing: %b", mEmojiShowing);
 		outState.putBoolean("emojiShowing", mEmojiShowing);
 
-		SurespotLog.v(TAG, "onSaveInstanceState saving emoji showing on chat tab: %b", mEmojiShowing);
+		SurespotLog.d(TAG, "onSaveInstanceState saving emoji showing on chat tab: %b", mEmojiShowing);
 		outState.putBoolean("emojiShowingChat", mEmojiShowing);
 
-		SurespotLog.v(TAG, "onSaveInstanceState saving keyboard showing in chat tab: %b", mKeyboardShowingOnChatTab);
+		SurespotLog.d(TAG, "onSaveInstanceState saving keyboard showing in chat tab: %b", mKeyboardShowingOnChatTab);
 		outState.putBoolean("keyboardShowingChat", mKeyboardShowingOnChatTab);
 
-		SurespotLog.v(TAG, "onSaveInstanceState saving keybard showing in home tab: %b", mKeyboardShowingOnHomeTab);
+		SurespotLog.d(TAG, "onSaveInstanceState saving keybard showing in home tab: %b", mKeyboardShowingOnHomeTab);
 		outState.putBoolean("keyboardShowingHome", mKeyboardShowingOnHomeTab);
 
 		if (mInitialHeightOffset > 0) {
-			SurespotLog.v(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
+			SurespotLog.d(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
 			outState.putInt("heightOffset", mInitialHeightOffset);
 		}
 
@@ -1266,10 +1271,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-		SurespotLog.v(TAG, "onRestoreInstanceState");
+		SurespotLog.d(TAG, "onRestoreInstanceState");
 		mImageCaptureHandler = savedInstanceState.getParcelable("imageCaptureHandler");
 		if (mImageCaptureHandler != null) {
-			SurespotLog.v(TAG, "onRestoreInstanceState restored imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
+			SurespotLog.d(TAG, "onRestoreInstanceState restored imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
 					mImageCaptureHandler.getImagePath());
 		}
 
@@ -1283,7 +1288,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			return;
 		}
 
-		SurespotLog.v(TAG, "progress status changed to: %b", inProgress);
+		SurespotLog.d(TAG, "progress status changed to: %b", inProgress);
 		if (inProgress) {
 			UIUtils.showProgressAnimation(this, mHomeImageView);
 		}
@@ -1298,7 +1303,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	public synchronized void hideSoftKeyboard() {
 
-		SurespotLog.v(TAG, "hideSoftkeyboard");
+		SurespotLog.d(TAG, "hideSoftkeyboard");
 		View view = null;
 		if (mCurrentFriend == null) {
 			view = mEtInvite;
@@ -1332,7 +1337,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	private synchronized void showSoftKeyboard() {
-		SurespotLog.v(TAG, "showSoftkeyboard");
+		SurespotLog.d(TAG, "showSoftkeyboard");
 		mKeyboardShowing = true;
 		mEmojiShowing = false;
 
@@ -1441,13 +1446,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 			if (visibility != View.VISIBLE && force) {
-				SurespotLog.v(TAG, "showEmoji,  showing emoji view");
+				SurespotLog.d(TAG, "showEmoji,  showing emoji view");
 				mEmojiView.setVisibility(View.VISIBLE);
 			}
 		}
 		else {
 			if (visibility != View.GONE && force) {
-				SurespotLog.v(TAG, "showEmoji,  hiding emoji view");
+				SurespotLog.d(TAG, "showEmoji,  hiding emoji view");
 				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 				mEmojiView.setVisibility(View.GONE);
 			}
@@ -1514,7 +1519,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
-				SurespotLog.v(TAG, "received action send, data: %s", sharedText);
+				SurespotLog.d(TAG, "received action send, data: %s", sharedText);
 				mEtMessage.append(sharedText);
 				// requestFocus();
 				// clear the intent
@@ -1528,7 +1533,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					// Utils.makeToast(getActivity(), getString(R.string.uploading_image));
 
-					SurespotLog.v(TAG, "received image data, upload image, uri: %s", imageUri);
+					SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
 					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(), true,
 							new IAsyncCallback<Boolean>() {
@@ -1570,7 +1575,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	public boolean backButtonPressed() {
 		boolean handled = false;
-		SurespotLog.v(TAG, "backButtonPressed");
+		SurespotLog.d(TAG, "backButtonPressed");
 
 		if (mEmojiShowing) {
 			showEmoji(false, true);
@@ -1588,7 +1593,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	public void onLayoutMeasure() {
-		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
+		SurespotLog.d(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
 		if (mEmojiShowing) {
 
 			if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -1730,7 +1735,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
-			SurespotLog.v(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
+			SurespotLog.d(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
 			if (mFriendHasBeenSet) {
 				if (mCurrentFriend != null && !mCurrentFriend.isDeleted()) {
 					mKeyboardShowingOnChatTab = mKeyboardShowing;
@@ -1776,7 +1781,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				// if we moved back to chat tab from home hab show the keyboard if it was showing
 				if ((mCurrentFriend == null || mCurrentFriend.isDeleted()) && mFriendHasBeenSet) {
-					SurespotLog.v(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
+					SurespotLog.d(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
 
 					showKeyboard = mKeyboardShowingOnChatTab;
 					showEmoji = mEmojiShowingOnChatTab;
@@ -1878,7 +1883,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		String backgroundImageUrl = sp.getString("pref_background_image", null);
 
 		if (backgroundImageUrl != null) {
-			SurespotLog.v(TAG, "setting background image %s", backgroundImageUrl);
+			SurespotLog.d(TAG, "setting background image %s", backgroundImageUrl);
 
 			imageView.setImageURI(Uri.parse(backgroundImageUrl));
 			imageView.setAlpha(125);
