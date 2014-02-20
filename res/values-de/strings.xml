@@ -310,8 +310,8 @@
   <string name="billing_error">Abrechnungsfehler</string>
   <string name="pref_billing">Einkäufe</string>
   <string name="suppress_voice_purchase">fragen Sie mich nicht, um Voice-Messaging-kaufen (Registerkarte schließt statt)</string>
-  <string name="voice_messaging_purchase_1"><![CDATA["In Voice-Messaging, um Ihre surespot und machen verschlüsselte Kommunikation noch einfacher! Halten Sie einfach die Mikrofontaste aufzunehmen und zu veröffentlichen, um zu senden. Denn manchmal ist es einfacher, es zu sagen, als es geben. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
-  <string name="voice_messaging_purchase_button">Berühren Sie hier, um für $ 1,99 kaufen</string>
+  <string name="voice_messaging_purchase_1"><![CDATA["Voice-Messaging macht die Kommunikation mit Surespot noch einfacher! Einfach die Mikrofontaste drücken um die Aufnahme zu starten, und loslassen um zu senden. Denn manches muss einfach mal gesagt werden. <a href="http://youtu.be/3mifzH1DXDk">Beispielvideo</a>."]]></string>
+  <string name="voice_messaging_purchase_button">Drücken Sie hier um Voice-Messaging für $ 1,99 zu kaufen</string>
   <string name="voice_message_suppress_purchase_ask">mich nicht mehr fragen</string>
   <string name="pref_suppress_voice_purchase_ask_title">mich nicht mehr fragen</string>
   <string name="pref_suppress_voice_purchase_ask_summary">aufhören, mich zu bitten, Voice-Messaging-Fähigkeit erwerben</string>
