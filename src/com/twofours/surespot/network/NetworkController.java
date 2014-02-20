@@ -749,4 +749,13 @@ public class NetworkController {
 		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
 		post("/updatePurchaseTokens", new RequestParams(params), responseHandler);
 	}
+	
+	public void assignFriendAlias(String username, String version, String data, String iv, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "assignFriendAlias, username: %s, version: %s", username, version);
+		RequestParams params = new RequestParams("data", data);
+		params.put("iv", iv);
+		params.put("version", version);
+		put("/users/" + username + "/alias", params, responseHandler);
+
+	}
 }

@@ -3,6 +3,8 @@ package com.twofours.surespot.friends;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.text.TextUtils;
+
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.common.SurespotLog;
@@ -26,6 +28,10 @@ public class Friend implements Comparable<Friend> {
 	private String mImageUrl;
 	private String mImageVersion;
 	private String mImageIv;
+	private String mAliasData;
+	private String mAliasVersion;
+	private String mAliasIv;
+	private String mAliasPlain;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
 
@@ -267,7 +273,10 @@ public class Friend implements Comparable<Friend> {
 		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
 
 		if ((theirFlags == myFlags) || (theirFlags < CHAT_ACTIVE && myFlags < CHAT_ACTIVE)) {
-			return ComparisonChain.start().compare(this.getName().toLowerCase(), another.getName().toLowerCase(), Ordering.natural()).result();
+			String myName = this.getNameOrAlias();
+			String theirName = another.getNameOrAlias();
+			
+			return ComparisonChain.start().compare(myName.toLowerCase(), theirName.toLowerCase(), Ordering.natural()).result();
 		}
 		else {
 			// sort by flag value
@@ -320,6 +329,9 @@ public class Friend implements Comparable<Friend> {
 		this.setImageUrl(friend.getImageUrl());
 		this.setImageVersion(friend.getImageVersion());
 		this.setImageIv(friend.getImageIv());
+		this.setAliasData(friend.getAliasData());
+		this.setAliasIv(friend.getAliasIv());
+		this.setAliasVersion(friend.getAliasVersion());
 		// this.setSelectedItem(friend.getSelectedItem());
 		// this.setSelectedTop(friend.getSelectedTop());
 		// this.setChatActive(friend.isChatActive());
@@ -334,6 +346,11 @@ public class Friend implements Comparable<Friend> {
 		friend.setImageUrl(jsonFriend.optString("imageUrl"));
 		friend.setImageVersion(jsonFriend.optString("imageVersion"));
 		friend.setImageIv(jsonFriend.optString("imageIv"));
+		
+		friend.setAliasData(jsonFriend.optString("aliasData"));
+		friend.setAliasVersion(jsonFriend.optString("aliasVersion"));
+		friend.setAliasIv(jsonFriend.optString("aliasIv"));
+
 
 		friend.setFlags(jsonFriend.optInt("flags"));
 		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
@@ -358,6 +375,9 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("imageVersion", this.getImageVersion());
 			jsonFriend.put("imageUrl", this.getImageUrl());
 			jsonFriend.put("imageIv", this.getImageIv());
+			jsonFriend.put("aliasVersion", this.getAliasVersion());
+			jsonFriend.put("aliasData", this.getAliasData());
+			jsonFriend.put("aliasIv", this.getAliasIv());
 
 			jsonFriend.put("selectedItem", this.getSelectedItem());
 			jsonFriend.put("selectedTop", this.getSelectedTop());
@@ -413,6 +433,42 @@ public class Friend implements Comparable<Friend> {
 
 	public int getSelectedTop() {
 		return mSelectedTop;
+	}
+
+	public String getAliasData() {
+		return mAliasData;
+	}
+
+	public void setAliasData(String aliasData) {
+		mAliasData = aliasData;
+	}
+
+	public String getAliasVersion() {
+		return mAliasVersion;
+	}
+
+	public void setAliasVersion(String aliasVersion) {
+		mAliasVersion = aliasVersion;
+	}
+
+	public String getAliasIv() {
+		return mAliasIv;
+	}
+
+	public void setAliasIv(String aliasIv) {
+		mAliasIv = aliasIv;
+	}
+
+	public String getAliasPlain() {
+		return mAliasPlain;
+	}
+
+	public void setAliasPlain(String aliasPlain) {
+		mAliasPlain = aliasPlain;
+	}
+	
+	public String getNameOrAlias() {
+		return TextUtils.isEmpty(getAliasPlain()) ? getName() : getAliasPlain(); 
 	}
 
 };

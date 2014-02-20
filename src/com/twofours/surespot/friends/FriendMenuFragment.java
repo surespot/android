@@ -60,6 +60,7 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 			if (!mFriend.isDeleted()) {
 				mItems.add(getString(R.string.verify_key_fingerprints));
 				mItems.add(getString(R.string.menu_assign_image));
+				mItems.add(getString(R.string.menu_assign_alias));
 			}
 		}
 		if (!mFriend.isInviter()) {

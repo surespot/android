@@ -74,6 +74,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
@@ -94,7 +95,7 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
-	
+
 	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController;
 
@@ -249,12 +250,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			setHomeProgress(true);
 
-		
 			SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
 			Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 			startService(cacheIntent);
 			bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-			
+
 			// create the chat controller here if we know we're not going to need to login
 			// so that if we come back from a restart (for example a rotation), the automatically
 			// created fragments have a chat controller instance
@@ -716,7 +716,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.d(TAG, "caching service bound");
 			CredentialCachingBinder binder = (CredentialCachingBinder) service;
 			CredentialCachingService ccs = binder.getService();
-			
+
 			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
 			launch(getIntent());
@@ -807,15 +807,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		// if this is the first time the app has been run, or they just created a user, show the help screen
 
-//		boolean whatsNewShown = sp.getBoolean("whatsNewShown", false);
-//
-//		if (!whatsNewShown) {
-//			Editor editor = sp.edit();
-//			editor.putBoolean("whatsNewShown", true);
-//			editor.commit();
-//			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_44_message), getString(R.string.whats_new_44_title),
-//					getString(R.string.ok), null, null);
-//		}
+		// boolean whatsNewShown = sp.getBoolean("whatsNewShown", false);
+		//
+		// if (!whatsNewShown) {
+		// Editor editor = sp.edit();
+		// editor.putBoolean("whatsNewShown", true);
+		// editor.commit();
+		// mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_44_message), getString(R.string.whats_new_44_title),
+		// getString(R.string.ok), null, null);
+		// }
 	}
 
 	@Override
@@ -998,6 +998,39 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		intent.putExtra("start", true);
 		startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE);
 
+	}
+
+	public void assignFriendAlias(final String name) {
+		// popup dialog and ask for alias
+		UIUtils.aliasDialog(this, getString(R.string.enter_alias), getString(R.string.enter_alias_for, name), new IAsyncCallback<String>() {
+
+			@Override
+			public void handleResponse(String alias) {
+
+				if (alias != null) {
+					final String version = IdentityController.getOurLatestVersion();
+					String username = IdentityController.getLoggedInUser();
+
+					byte[] iv = EncryptionController.getIv();
+					final String cipherAlias = EncryptionController.symmetricEncrypt(version, username, version, alias, iv);
+					final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
+
+					mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new AsyncHttpResponseHandler() {
+
+						@Override
+						public void onSuccess(int responseCode, String result) {
+							mChatController.setFriendAlias(name, cipherAlias, version, ivString);
+						}
+
+						@Override
+						public void onFailure(Throwable arg0, String arg1) {
+							SurespotLog.w(TAG, arg0,"error assigning friend alias: %s", arg1);
+							Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
+						}
+					});
+				}
+			}
+		});
 	}
 
 	private ImageCaptureHandler mImageCaptureHandler;

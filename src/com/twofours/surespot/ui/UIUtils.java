@@ -579,4 +579,42 @@ public class UIUtils {
 		UIUtils.setHelpLinks(context, view);
 		showHelpDialog(context, R.string.surespot_help, view, firstTime);
 	}
+	
+	public static AlertDialog aliasDialog(Context context, String title, String message, final IAsyncCallback<String> callback) {
+		AlertDialog.Builder alert = new AlertDialog.Builder(context);
+		alert.setTitle(title);
+		alert.setMessage(message);
+		final EditText editText = new EditText(context);
+		editText.setImeActionLabel(context.getString(R.string.done), EditorInfo.IME_ACTION_DONE);
+		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
+		editText.setInputType(InputType.TYPE_CLASS_TEXT);
+
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
+	
+
+		alert.setPositiveButton(R.string.ok, new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				callback.handleResponse(editText.getText().toString());
+
+			}
+		});
+
+		alert.setNegativeButton(R.string.cancel, new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				callback.handleResponse(null);
+
+			}
+		});
+
+		AlertDialog ad = alert.create();
+		ad.setCanceledOnTouchOutside(false);
+		ad.setView(editText, 0, 0, 0, 0);
+		ad.show();
+		return ad;
+	}
+
 }
