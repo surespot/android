@@ -368,7 +368,7 @@ public class ChatController {
 
 			}
 		});
-		mChatPagerAdapter.setChatNames(mFriendAdapter.getActiveChats());
+		mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
 		onResume();
 	}
 
@@ -1889,7 +1889,7 @@ public class ChatController {
 		mTabShowingCallback.handleResponse(friend);
 		if (friend != null) {
 			mCurrentChat = username;
-			mChatPagerAdapter.addChatName(username);
+			mChatPagerAdapter.addChatFriend(friend);
 			friend.setChatActive(true);
 			friend.setLastViewedMessageId(friend.getAvailableMessageId());
 
@@ -2494,6 +2494,8 @@ public class ChatController {
 			friend.setAliasVersion(version);			
 			friend.setAliasPlain(null);
 			saveFriends();
+			mChatPagerAdapter.sort();
+			mChatPagerAdapter.notifyDataSetChanged();
 			mFriendAdapter.sort();
 			mFriendAdapter.notifyDataSetChanged();			
 		}

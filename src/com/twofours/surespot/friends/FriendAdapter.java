@@ -367,16 +367,18 @@ public class FriendAdapter extends BaseAdapter {
 		return mFriends;
 	}
 
-	public synchronized ArrayList<String> getActiveChats() {
+	
+	
+	public synchronized ArrayList<Friend> getActiveChatFriends() {
 		if (mFriends == null)
 			return null;
-		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<Friend> friends = new ArrayList<Friend>();
 		for (Friend friend : mFriends) {
 			if (friend.isChatActive()) {
-				names.add(friend.getName());
+				friends.add(friend);
 			}
 		}
-		return names;
+		return friends;
 	}
 
 }
