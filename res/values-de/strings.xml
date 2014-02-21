@@ -41,22 +41,22 @@
     <string name="select_image">Bild auswählen</string>
     <string name="capture_image">Foto aufnehmen</string>
     <string name="assign_image">Bild zuordnen</string>
-    <string name="logout">abmelden</string>
+    <string name="logout">Abmelden</string>
     <string name="settings">Einstellungen</string>
     <string name="welcome_to_surespot" formatted="false"><![CDATA["Willkommen bei surespot! Daten die mit dieser App versendet werden sind mit einem <a href="https://de.wikipedia.org/wiki/Symmetrisches_Kryptosystem">Symmetrischen Kryptosystem</a> (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) <a href="https://de.wikipedia.org/wiki/Ende-zu-Ende-Verschl%C3%BCsselung">Ende-zu-Ende-verschlüsselt</a> dessen Schlüssel mit 521bit durch das <a href="https://de.wikipedia.org/wiki/Elliptic_Curve_Diffie-Hellman">Diffie-Hellman-Schlüsselaustausch</a>-Verfahren erzeugt wurden."]]></string>
-    <string name="no_friends">Keine Kontakte...für den Moment.  Um weitere surespot-user einzuladen, gib deren Benutzername unten ein.</string>
-    <string name="help_invite">Laden sie surespot-Benutzer ein, indem sie deren Benutzername auf der Startseite eingeben.</string>    
+    <string name="no_friends">Sie haben im Moment noch keine Kontakte. Um weitere surespot-Nutzer hinzu zu fügen, geben Sie deren Benutzernamen unten ein.</string>
+    <string name="help_invite">Laden Sie surespot-Benutzer ein, indem Sie deren Benutzernamen auf der Startseite eingeben.</string>
     <string name="navigate_between_chat_tabs">Wischen Sie über den Bildschirm um zwischen den Tabs zu wechseln.</string>
     <string name="help_holdmessage">Halten Sie die Nachricht gedrückt, um auf die Nachrichtenoptionen zu gelangen.</string>
     <string name="help_holdfriend">Halten Sie einen Kontakt gedrückt, um auf die Kontaktoptionen zu gelangen.</string>
-    <string name="help_imageZoom">Berühren sie das Bild, um es zu vergrößern.</string>
+    <string name="help_imageZoom">Berühren sie ein Bild, um es zu vergrößern.</string>
     <string name="incorrect_password_or_key">Falsches Passwort oder falscher Schlüssel</string>
     <string name="no_such_user">Nutzer nicht gefunden</string>
     <string name="roll_keys">Erzeuge neues Schlüsselpaar</string>
     <string name="key_management">Erzeuge neues Schlüsselpaar...</string>
     <string name="regenerate_keys">Erzeuge neues Schlüsselpaar</string>
     <string name="could_not_create_new_keys">Schlüsselpaar konnte nicht erstellt werden</string>
-    <string name="keys_created">Neue Schlüssel wurden erfolgreich erzeugt, bitte exportieren sie ihr Profil.</string>
+    <string name="keys_created">Neue Schlüssel wurden erfolgreich erzeugt, bitte exportieren Sie ihr Profil.</string>
     <string name="close_tab">Tab schließen</string>
     <string name="action_settings">Einstellungen</string>
     <string name="no_messages">Keine Mitteilungen</string>
@@ -66,10 +66,10 @@
     <string name="accept_underline"><u>akzeptieren</u></string>
     <string name="crash_toast_text">Fehler aufgetreten.</string>
     <string name="crash_dialog_title">surespot ist abgestürzt</string>
-    <string name="crash_dialog_text">Wir müssen leider eingestehen, das es einen unerwarteten Fehler gab.\n\nBitte helfen sie uns indem sie durch das tippen auf \"OK\" einen Fehlerbericht an uns senden, welcher keine Informationen beinhaltet, durch die sie identifiziert werden können.</string>
+    <string name="crash_dialog_text">Wir müssen leider eingestehen, dass es einen unerwarteten Fehler gab.\n\nBitte helfen Sie uns indem Sie durch das tippen auf \"OK\" einen Fehlerbericht an uns senden, welcher keine Informationen beinhaltet, durch die Sie identifiziert werden können.</string>
     <string name="crash_dialog_comment_prompt">Falls Sie möchten, können Sie uns einen Kommentar über das Problem mitteilen:</string>
     <string name="crash_dialog_ok_toast">Danke!</string>
-    <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie %s, um die app zu installieren und mich als Kontakt aufzunehmen.</string>
+    <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie %s, um die App zu installieren und mich als Kontakt hinzu zu fügen.</string>
     <string name="help_backupIdentities1">Falls Sie Ihr Handy verlieren oder die App deinstallieren und erneut installieren, haben Sie keinen Zugriff mehr auf Ihre Profildaten. Sie werden nicht in der Lage sein sich anzumelden, falls Sie nicht zuvor Ihr Profil exportiert haben. Die surespot-Verschlüsselungsschlüssel werden niemals auf unsere Server hochgeladen.</string>
     <string name="help_backupIdentities2">Surespot kann ihr Profil Lokal und/oder auf Google Drive exportieren. Die dazugehörigen Einstellungen befinden sich in der Profilverwaltung.</string>
     <string name="help_backup_what"><![CDATA["Exportiert eine Kopie des gewählten Profils, verschlüsselt mit <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES-GCM</a> dessen Schlüssel durch <a href="https://de.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function) von ihrem Passwort abgeleitet wurde."]]></string>
@@ -81,7 +81,7 @@
     <string name="title_activity_about">Über surespot</string>
     <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
     <string name="about_website"><![CDATA["Besuchen Sie die surespot-Website <a href="https://www.surespot.me">https://www.surespot.me</a> für weitere Informationen, einschließlich der <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">AGB</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">der Datenschutzrichtlinie</a> sowie der <a href="https://www.surespot.me/documents/threat.html">Daten- und Gefährdungsbewertung</a>."]]></string>
-    <string name="about_opensource"><![CDATA["Surespot is 100% Open Source und begrüßt ihre Mitarbeit - sehen Sie sich den Quellcode auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> an."]]></string>
+    <string name="about_opensource"><![CDATA["Surespot is 100% Open Source und begrüßt Ihre Mitarbeit - sehen Sie sich den Quellcode auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> an."]]></string>
     <string name="about_tech"><![CDATA["Für einen mehr technischen Überblick wie surespot funktioniert bitte klicken Sie <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a>."]]></string>
     <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine E-Mail an <a href="mailto:support@2fours.com">support@2fours.com</a> schreiben.]]></string>
     <string name="notification_title">surespot</string>
@@ -103,7 +103,7 @@
     <string name="unknown">Unbekannt</string>
     <string name="login">anmelden</string>
     <string name="login_progress">Anmeldevorgang läuft</string>
-    <string name="login_check_password">Anmeldung fehlgeschlagen, bitte überprüfe ob das Passwort korrekt ist.</string>
+    <string name="login_check_password">Anmeldung fehlgeschlagen, bitte überprüfen Sie ob das Passwort korrekt ist.</string>
     <string name="login_try_again_later">Fehler bei der Anmeldung, bitte versuchen Sie es später.</string>
     <string name="login_max_identities_reached">Entschuldigung, Sie haben bereits die maximale Anzahl an Profilen erstellt (%d).\n\nProfile können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
     <string name="local_cache_cleared">Lokaler Cache gelöscht</string>
@@ -130,19 +130,19 @@
     <string name="create_new_keys_for">Neues Schlüsselpar für %s erstellen</string>
     <string name="enter_password_for">Geben Sie das surespot Passwort für %s ein</string>
     <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
-    <string name="enter_username_and_password">Bitte geben Sie einen Benutzernamen und Passwort, oder [ein Profil wiederherstellen] aus dem Menü.</string>
-    <string name="usernames_case_sensitive">Groß-und Kleinschreibung beim Benutzername beachten</string>
-    <string name="aware_username_password">so sich dessen bewusst sein, wenn sie mit anderen teilen. Das Passwort sollte mindestens 8 Zeichen lang und enthalten Symbole sein.</string>
-    <string name="warning_password_reset">ACHTUNG: Es gibt ABSOLUT KEINE MÖGLICHKEIT dein Passwort oder Benutzernamen in surespot zurückzusetzen!</string>
+    <string name="enter_username_and_password">Bitte geben Sie einen Benutzernamen und Passwort ein oder wählen [ein Profil wiederherstellen] aus dem Menü aus.</string>
+    <string name="usernames_case_sensitive">Groß-und Kleinschreibung beim Benutzername beachten,</string>
+    <string name="aware_username_password">bitte auch darauf achten, wenn Sie ihn an andere weiter geben. Das Passwort sollte mindestens 8 Zeichen lang und Symbole enthalten.</string>
+    <string name="warning_password_reset">ACHTUNG: Es gibt ABSOLUT KEINE MÖGLICHKEIT Ihre Passwort oder Ihren Benutzernamen in surespot zurückzusetzen!</string>
     <string name="create_user_progress">Erstelle Benutzerprofil und generiere Schlüsselpaare</string>
     <string name="create">Erstellen</string>
     <string name="passwords_do_not_match">Passwörter stimmen nicht überein</string>
-    <string name="username_exists">Benutzername existiert bereits, bitte wählen sie einen neuen.</string>
+    <string name="username_exists">Benutzername existiert bereits, bitte wählen Sie einen neuen.</string>
     <string name="user_creation_throttled">Zu viele Benutzeranfragen, versuchen Sie es später erneut</string>
     <string name="signup_update">Bitte aktualisieren Sie surespot um einen neuen Benutzer zu erstellen</string>
-    <string name="could_not_create_user">Benutzer konnte nicht erstellt werden, versuchen sie es später erneut</string>
+    <string name="could_not_create_user">Benutzer konnte nicht erstellt werden, versuchen Sie es später erneut</string>
     <string name="pay">bezahlen</string>
-    <string name="what_you_like">was Ihnen gefällt</string>
+    <string name="what_you_like">so viel wie Sie wollen</string>
     <string name="billing_could_not_enable">Konnte In-App Bezahlung nicht aktivieren.</string>
     <string name="billing_purchase_error">Fehler, Kauf konnte nicht abgeschlossen werden.</string>
     <string name="billing_paypal_link_email_subject">PayPal Link zum unterstützen von surespot</string>
@@ -157,9 +157,9 @@
     <string name="message_sending">versenden...</string>
     <string name="message_loading_and_decrypting">laden und entschlüsseln...</string>
     <string name="could_not_login_to_server">Anmeldung am Server fehlgeschlagen</string>
-    <string name="could_not_connect_to_server">Verbindung zu server fehlgeschlagen</string>
+    <string name="could_not_connect_to_server">Verbindung zum Server fehlgeschlagen</string>
     <string name="autoinvite_user_exists">Ihre Kontaktliste enthält bereits %s</string>
-    <string name="loading_latest_messages_failed">Laden neuesten Mitteilungen gescheitert</string>
+    <string name="loading_latest_messages_failed">Laden der neuesten Mitteilungen gescheitert</string>
     <string name="could_not_delete_message">Mitteilung konnte nicht gelöscht werden</string>
     <string name="could_not_delete_messages">Mitteilungen konnten nicht gelöscht werden</string>
     <string name="could_not_delete_friend">Kontakt konnte nicht gelöscht werden</string>
@@ -224,8 +224,8 @@
     <string name="select_all">Alle auswählen</string>
 	<string name="delete_identity_message_warning">Das Löschen eines Profils löscht alle Nachrichten die von diesem Profil aus versendet wurden, auch bei den Empfängern. Dieser Vorgang kann nicht rückgängig gemacht werden.</string>
 	<string name="identity_colon">Profil:</string>
-    <string name="backup_location_note">Hinweis: Dieses kann oder kann nicht der austauschbaren SD-Karte je nach Gerät sein.</string>
-    <string name="generate_new_keypairs">Neues privates Schlüsselpaar für die ausgewählte Profil generieren und das aktuelle Schlüsselpaar verwerfen. Alle anderen Geräte (z.B. verlorene oder gestohlene Telefone) sind somit nicht mehr in der Lage, auf das ausgewählte surespot Profil zuzugreifen.</string>
+    <string name="backup_location_note">Hinweis: Dieses kann, je nach Gerät, die austauschbaren SD-Karte sein.</string>
+    <string name="generate_new_keypairs">Neues privates Schlüsselpaar für das ausgewählte Profil generieren und das aktuelle Schlüsselpaar verwerfen. Alle anderen Geräte (z.B. verlorene oder gestohlene Telefone) sind somit nicht mehr in der Lage, auf das ausgewählte surespot Profil zuzugreifen.</string>
     <string name="username">Benutzername</string>
     <string name="create_identity">Profil erstellen</string>
     <string name="options">Optionen</string>
@@ -233,8 +233,8 @@
     <string name="delete_all_messages">Alle Mitteilungen löschen</string>
     <string name="pay_what_you_like">surespot unterstützen</string>
     <string name="pref_title_general">Allgemein</string>
-    <string name="pref_title_about_surespot">über surespot</string>
-    <string name="pref_title_help">hilfe</string>
+    <string name="pref_title_about_surespot">Über surespot</string>
+    <string name="pref_title_help">Hilfe</string>
     <string name="pref_title_confirmations">Bestätigungen</string>
     <string name="pref_title_delete_message">Mitteilung löschen</string>
     <string name="pref_title_delete_all_messages">Alle Mitteilungen löschen</string>
@@ -246,8 +246,8 @@
     <string name="pref_title_options">Optionen</string>
     <string name="pref_summary_delete_message">Bestätigung bevor eine Mitteilung gelöscht wird</string>
     <string name="pref_summary_delete_all_messages">Bestätigung bevor alle Mitteilungen gelöscht werden</string>
-    <string name="pref_summary_export_identity">Sichern Sie Ihr Profil auf dem Lokalen Datenträger oder Google Drive.</string>
-    <string name="pref_summary_import_identity">Stellen Sie Ihr Profil vom Lokalen Datenträger oder Google Drive wieder her.</string>
+    <string name="pref_summary_export_identity">Sichern Sie Ihr Profil auf dem lokalen Datenträger oder Google Drive.</string>
+    <string name="pref_summary_import_identity">Stellen Sie Ihr Profil vom lokalen Datenträger oder Google Drive wieder her.</string>
     <string name="pref_summary_delete_identity">Die Löschung eines Profils kann nicht rückgängig gemacht werden.</string>
     <string name="pref_summary_regen_keys">Für die Paranoiden</string>
     <string name="pref_summary_message_debug_mode">Zeigt mehr Informationen zu den Mitteiungen für Entwicklungs-Zwecke an.</string>   
@@ -257,12 +257,12 @@
     <string name="backup_drive_button">Google Drive Export ausführen</string>
     <string name="could_not_backup_identity_to_google_drive">Google Drive Export konnte nicht ausgeführt werden</string>
     <string name="identity_successfully_backed_up_to_google_drive">Google Drive Export erfolgreich</string>
-    <string name="restore_local">Wiederherstellung vom Lokalen Datenträger</string>
+    <string name="restore_local">Wiederherstellung vom lokalen Datenträger</string>
     <string name="restore_drive">Wiederherstellung von Google Drive</string>
     <string name="could_not_list_identities_from_google_drive">Konnte die Profil-Liste nicht vom Google Drive laden</string>
     <string name="no_google_account_selected">Kein Google Account ausgewählt</string>
     <string name="select_google_drive_account">Auswählen</string>
-    <string name="re_add_google_account">Leider ist das Google-Token nicht mehr gültig. Entfernen Sie dies und fügen es erneut Ihrm Google-Konto in den Geräteeinstellungen hinzu.</string>
+    <string name="re_add_google_account">Leider ist das Google-Token nicht mehr gültig. Entfernen Sie dies und fügen es erneut Ihrem Google-Konto in den Geräteeinstellungen hinzu.</string>
     <string name="progress_restoring_identity">Profil wiederherstellen</string>
     <string name="progress_loading_identities">Profil Backups werden geladen</string>
     <string name="progress_backup_identity_drive">Profil wird exportiert</string>
@@ -287,31 +287,31 @@
     <string name="public_key_fingerprints">öffentlicher Schlüssel</string>
     <string name="loading">Laden...</string>
     <string name="device_does_not_support_google_drive">Gerät nicht für Google Drive konfiguriert</string>
-    <string name="login_update">Bitte aktualisiere surespot, damit du dich anmelden kannst</string>
+    <string name="login_update">Bitte aktualisieren Sie surespot, damit Sie sich anmelden können</string>
     <string name="help_agreement"><![CDATA["Durch einen Klick auf OK erklären Sie Ihr Einverständnis zu den <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">AGB</a>."]]></string>
     <string name="billing_payment_required_voice">surespot Sprachnachrichten wurde nicht gekauft</string>
-    <string name="billing_getting_inventory">immer gekauft Inventar, versuchen Sie es erneut in einer zweiten</string>
-    <string name="billing_unavailable_message">Sie müssen ein Google-Konto auf Ihrem Gerät haben, um Voice-Messaging-Kauf</string>
+    <string name="billing_getting_inventory">Verkäufe werden abgerufen, bitte versuchen Sie es in einigen Sekunden erneut</string>
+    <string name="billing_unavailable_message">Sie müssen ein Google-Konto auf Ihrem Gerät haben, um Sprachnachrichten kaufen zu können</string>
     <string name="billing_unavailable_title">Abrechnung nicht verfügbar</string>
     <string name="billing_error">Abrechnungsfehler</string>
     <string name="pref_billing">Einkäufe</string>
-    <string name="suppress_voice_purchase">fragen Sie mich nicht, um Voice-Messaging-kaufen (Registerkarte schließt statt)</string>
-    <string name="voice_messaging_purchase_1"><![CDATA["In Voice-Messaging, um Ihre surespot und machen verschlüsselte Kommunikation noch einfacher! Halten Sie einfach die Mikrofontaste aufzunehmen und zu veröffentlichen, um zu senden. Denn manchmal ist es einfacher, es zu sagen, als es geben. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
+    <string name="suppress_voice_purchase">fragen Sie mich nicht mehr, ob ich Sprachnachrichten kaufe will (Registerkarte stattdessen schließen)</string>
+    <string name="voice_messaging_purchase_1"><![CDATA["Schalten Sie Sprachnachrichten für surespot frei und machen dadurch verschlüsselte Kommunikation noch einfacher! Halten Sie einfach die Mikrofontaste gedrückt um aufzunehmen und lassen dann los um sie zu senden. Manchmal ist es einfacher, es zu sagen, als es schreiben. <a href="http://youtu.be/3mifzH1DXDk">Video Demonstration</a>."]]></string>
     <string name="voice_messaging_purchase_button">Berühren Sie hier, um für $ 1,99 kaufen</string>
     <string name="voice_message_suppress_purchase_ask">mich nicht mehr fragen</string>
     <string name="pref_suppress_voice_purchase_ask_title">mich nicht mehr fragen</string>
     <string name="pref_suppress_voice_purchase_ask_summary">aufhören, mich zu bitten, Voice-Messaging-Fähigkeit erwerben</string>
-    <string name="menu_purchase_voice_messaging">Sprachnachricht kaufen</string>
-    <string name="purchase_voice_title">Sprachnachricht kaufen</string>
-    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">Du musst surespot updaten um diese Sprachnachricht anhören zu können.</a>"]]></string>
-    <string name="user_exists_throttled">Zu viele Versuche, bitte versuche es später erneut.</string>
+    <string name="menu_purchase_voice_messaging">Sprachnachrichten kaufen</string>
+    <string name="purchase_voice_title">Sprachnachrichten kaufen</string>
+    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">Sie müssen surespot updaten um diese Sprachnachricht anhören zu können.</a>"]]></string>
+    <string name="user_exists_throttled">Zu viele Versuche, bitte versuchen Sie es später erneut.</string>
     <string name="user_exists_error">Fehler bei der Überprüfung des Benutzernamens</string>
     <string name="user_exists_progress">Benutzername wird überprüft</string>
     <string name="caching_service_notification_title">surespot</string>
     <string name="caching_service_notification_message">caching für maximale Leistung</string>
     <string name="voice_help_1">Halte die Mikrofontaste gedrückt um eine Sprachnachricht aufzunehmen. Beim loslassen der Taste wird die Nachricht gesendet.</string>
-    <string name="voice_help_2">Um die Aufnahme zu ziehen weg von Taste und Freisetzung abzubrechen.</string>
-    <string name="voice_help_3">Tippen Sie auf eine Sprachnachricht zu spielen, wieder berühren zu stoppen.</string>
+    <string name="voice_help_2">Um die Aufnahme ab zu brechen den Finger von der Taste weg ziehen.</string>
+    <string name="voice_help_3">Tippen Sie auf eine Sprachnachricht um sie ab spielen, nochmaliges tippen beendet das Abspielen.</string>
     <string name="voice_help_4">Neue Sprachnachrichten werden automatisch im offenen Chat-Tab abgespielt.</string>
     <string name="close">schließen</string>
     <string name="no_audio_detected">Keine Tonaufnahme erkannt. Die Sprachmitteilung wird nicht gesendet.</string>
