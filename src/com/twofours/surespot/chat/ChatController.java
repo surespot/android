@@ -1026,12 +1026,12 @@ public class ChatController {
 							JSONObject messageData = messageDatas.getJSONObject(i);
 							String friendName = messageData.getString("username");
 
-							JSONArray controlMessages = messageData.getJSONArray("controlMessages");
+							JSONArray controlMessages = messageData.optJSONArray("controlMessages");
 							if (controlMessages != null) {
 								handleControlMessages(friendName, controlMessages);
 							}
 
-							JSONArray messages = messageData.getJSONArray("messages");
+							JSONArray messages = messageData.optJSONArray("messages");
 							if (messages != null) {
 								handleMessages(friendName, messages);
 							}
@@ -2302,7 +2302,7 @@ public class ChatController {
 					ArrayList<Friend> friends = new ArrayList<Friend>();
 					try {
 						mLatestUserControlId = jsonObject.getInt("userControlId");
-						JSONArray friendsArray = jsonObject.getJSONArray("friends");
+						JSONArray friendsArray = jsonObject.optJSONArray("friends");
 
 						if (friendsArray != null) {
 							for (int i = 0; i < friendsArray.length(); i++) {
