@@ -370,4 +370,10 @@ public class FriendAdapter extends BaseAdapter {
 		return names;
 	}
 
+	public synchronized int getFriendCount() {
+		if (mFriends == null) return 0;
+		return mFriends.size();
+		
+	}
+
 }

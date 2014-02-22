@@ -2402,8 +2402,16 @@ public class ChatController {
 		}
 	}
 
-	public synchronized void setMode(int mode) {
+	public synchronized boolean setMode(int mode) {
+		//can only select a user if we have users
+		if (mode == MODE_SELECT) {
+			if (mFriendAdapter.getFriendCount() == 0) {
+				return false;
+			}
+		}
+		
 		mMode = mode;
+		return true;
 	}
 
 	public int getMode() {

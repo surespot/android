@@ -94,7 +94,7 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
-	
+
 	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController;
 
@@ -249,12 +249,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			setHomeProgress(true);
 
-		
 			SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
 			Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 			startService(cacheIntent);
 			bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-			
+
 			// create the chat controller here if we know we're not going to need to login
 			// so that if we come back from a restart (for example a rotation), the automatically
 			// created fragments have a chat controller instance
@@ -716,7 +715,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.d(TAG, "caching service bound");
 			CredentialCachingBinder binder = (CredentialCachingBinder) service;
 			CredentialCachingService ccs = binder.getService();
-			
+
 			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
 			launch(getIntent());
@@ -769,15 +768,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
-			Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
-			SurespotLog.d(TAG, "started from SEND");
 			// need to select a user so put the chat controller in select mode
 
 			if (mChatController != null) {
-				mChatController.setCurrentChat(null);
-				mChatController.setMode(ChatController.MODE_SELECT);
+				// see if we can set the mode
+				if (mChatController.setMode(ChatController.MODE_SELECT)) {
+					Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
+					SurespotLog.d(TAG, "started from SEND");
+
+					mChatController.setCurrentChat(null);
+					mSet = true;
+				}
+				else {
+					Utils.clearIntent(intent);	
+				}
 			}
-			mSet = true;
 		}
 
 		if (!mSet) {
