@@ -318,5 +318,7 @@
     <string name="share_invite_link">aktien laden Link</string>
     <string name="share_link_help">"Verwenden Sie den Menüpunkt 'aktien beladen-Link', um einen Link per E-Mail, SMS, Twitter oder andere Social-Media-Aktien, dass, wenn darauf geklickt wird installiert surespot / laden Sie als Freund in surespot"</string>
  	<string name="pref_stop_cache_logout_title">töten Cache bei Logout</string>
-    <string name="pref_stop_cache_logout_summary">tötet den Cache-Service bei der Abmeldung</string>      
+    <string name="pref_stop_cache_logout_summary">tötet den Cache-Service bei der Abmeldung</string>     
+    <string name="whats_new_46_message">Neue Eigenschaften!\n\nLösche Cache beim Abmelden Einstellung (via Einstellung->Optionen).\n\nREAD_CONTACTS Berechtigung wurde entfernt.\n\nNetzwerk Optimierung.\n\nDanke für die Unterstützung von surespot!</string>
+    <string name="whats_new_46_title">Version 46</string> 
 </resources>
