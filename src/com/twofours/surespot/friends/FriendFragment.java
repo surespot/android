@@ -1,12 +1,12 @@
 package com.twofours.surespot.friends;
 
 import java.lang.reflect.Field;
-import java.util.Timer;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,7 +14,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
@@ -31,20 +33,41 @@ public class FriendFragment extends SherlockFragment {
 	protected static final String TAG = "FriendFragment";
 	// private MultiProgressDialog mMpdInviteFriend;
 	// private ChatController mChatController;
-	private ListView mListView;
-	private Timer mTimer;
+	private ListView mListView;	
 	private AlertDialog mDialog;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
 		final View view = inflater.inflate(R.layout.friend_fragment, container, false);
 
+		Button tvShareLink = (Button) view.findViewById(R.id.tvShareInvite);
+		tvShareLink.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+		tvShareLink.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				UIUtils.sendInvitation(getActivity(), MainActivity.getNetworkController());
+				
+			}
+		});
+
+		Button tvHelp = (Button) view.findViewById(R.id.tvHelp);
+		tvHelp.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
+		tvHelp.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				mDialog = UIUtils.showHelpDialog(getActivity(), false);
+				
+			}
+		});
 		// mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
 
 		mListView = (ListView) view.findViewById(R.id.main_list);
 		mListView.setEmptyView(view.findViewById(R.id.main_list_empty));
 
-		UIUtils.setHelpLinks(getActivity(), view);
+		TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
+		UIUtils.setHtml(getActivity(), tvWelcome, R.string.welcome_to_surespot);
 
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
