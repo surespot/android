@@ -42,7 +42,7 @@
   <string name="assign_image">affecter image</string>
   <string name="logout">déconnecter</string>
   <string name="settings">paramètres</string>
-  <string name="welcome_to_surespot"><![CDATA["Bienvenue dans surespot! Les données envoyées par cette application sont cryptées <a href="http://fr.wikipedia.org/wiki/Principe_de_bout-à-bout">de bout-en-bout</a> par cryptage à <a href="http://fr.wikipedia.org/wiki/Cryptographie_symétrique">clé symétrique</a> (<a href="http://fr.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bits AES-GCM</a>) utilisant des clés de 521 bits <a href="https://fr.wikipedia.org/wiki/Echange_de_clés_Diffie-Hellman">à secret partagée ECDH</a>."]]></string>
+  <string name="welcome_to_surespot"><![CDATA["Bienvenue dans surespot! Les données envoyées par cette application sont chiffées <a href="http://fr.wikipedia.org/wiki/Principe_de_bout-à-bout">de bout-en-bout</a> par chiffrement à <a href="http://fr.wikipedia.org/wiki/Cryptographie_symétrique">clé symétrique</a> (<a href="http://fr.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bits AES-GCM</a>) utilisant des clés de 521 bits <a href="https://fr.wikipedia.org/wiki/Echange_de_clés_Diffie-Hellman">à secret partagée ECDH</a>."]]></string>
   <string name="no_friends">Aucun ami... pour l\'instant. Inviter des utilisateurs sur surespot en saisissant leur nom d\'utilisateur ci-dessous.</string>
   <string name="help_invite">Inviter des utilisateurs sur surespot en saisissant leur nom d\'utilisateur sur l\'onglet \'maison\'.</string>
   <string name="invite_contacts">Utilisez l\'option \'inviter des contacts\' du menu pour inviter des utilisateurs via un QR code, courriel, message texte ou d\'autres applications.</string>
@@ -70,14 +70,14 @@
   <string name="crash_dialog_comment_prompt">Vous pouvez ajouter vos commentaires sur le problème, si vous le souhaitez:</string>
   <string name="crash_dialog_ok_toast">Merci!</string>
   <string name="external_invite_message">Je voudrais discuter avec toi en privé via surespot. Clique %s pour installer l\'application et invite-moi en ami.</string>
-  <string name="help_backupIdentities1">Parce-que surespot utilise des clés de cryptage qui ne sont jamais transférées sur nos serveurs, si vous perdez votre téléphone ou désinstallez puis réinstallez l\'application, ou effacez les données de l\'application, vous ne serez plus en mesure de vous connecter à moins d\'avoir sauvegardé votre identité.</string>
+  <string name="help_backupIdentities1">Parce-que surespot utilise des clés de chiffrement qui ne sont jamais transférées sur nos serveurs, si vous perdez votre téléphone ou désinstallez puis réinstallez l\'application, ou effacez les données de l\'application, vous ne serez plus en mesure de vous connecter à moins d\'avoir sauvegardé votre identité.</string>
   <string name="help_backupIdentities2">Surespot peut utiliser Google Drive et/ou le stockage de l\'appareil pour sauvegarder votre identité. Ces options sont disponibles dans les paramètres de gestion d\'identité.</string>
-  <string name="help_backup_what"><![CDATA["Ceci va exporter une copie de l'identité sélectionnée, cryptée avec <a href="http://fr.wikipedia.org/wiki/Advanced_Encryption_Standard#Recommandations_de_la_NSA">256 bit AES-GCM</a>, dont la clé est dérivée de votre mot de passe grâce à <a href="http://www.artiflo.net/2009/08/pbkdf2-et-generation-des-cles-de-chiffrement-de-disque/">PBKDF2</a> (Password Based Key Derivation Function, fonction de dérivation d'un mot de passe basé sur une clé)"]]></string>
+  <string name="help_backup_what"><![CDATA["Ceci va exporter une copie de l'identité sélectionnée, chiffrée avec <a href="http://fr.wikipedia.org/wiki/Advanced_Encryption_Standard#Recommandations_de_la_NSA">256 bit AES-GCM</a>, dont la clé est dérivée de votre mot de passe grâce à <a href="http://www.artiflo.net/2009/08/pbkdf2-et-generation-des-cles-de-chiffrement-de-disque/">PBKDF2</a> (Password Based Key Derivation Function, fonction de dérivation d'un mot de passe basé sur une clé)"]]></string>
   <string name="help_backup_local">Pour une sécurité maximale, nous vous recommandons d\'utiliser la sauvegarde sur le stockage de l\'appareil. Une fois sauvegardé, le fichier d\'identité doit ensuite être copié (ou déplacé) de votre appareil vers un emplacement de sauvegarde sécurisé, de sorte qu\'il puisse être restauré en cas de ré-installation de l\'application, de suppression des données, de perte/vol de l\'appareil ou toute autre perte de données.</string>
   <string name="help_backup_drive1"><![CDATA["Si vous choisissez de sauvegarder votre identité sur Google Drive, vous devez stocker une copie de vos <a href="http://fr.wikipedia.org/wiki/Cryptographie_asymétrique">clés privées</a> sur les serveurs de Google Drive. Si une personne accède aux serveurs de Google Drive et tente de décrypter votre fichier d'identité avec une <a href="http://fr.wikipedia.org/wiki/Attaque_par_force_brute">attaque par force brute</a>, il faut savoir que la <a href="http://fr.wikipedia.org/wiki/Politique_des_mots_de_passe">qualité</a> de votre mot de passe déterminera finalement la difficulté pour le trouver."]]></string>
   <string name="help_backup_drive2">Vos identités seront enregistrées sur Google Drive dans le répertoire \'surespot identity backups\'. Les identités peuvent être restaurées depuis l\'écran de création d\'utilisateur ou dans les paramètres de gestion d\'identité.</string>
   <string name="pwyl_text"><![CDATA["Surespot est sans publicité et libre de 'data mining'.<br><br>Serveurs et stockage ont un coût; vos dons vous assure que vous n'avez pas à payer pour surespot.<br><br>Nous donnerons un pourcentage à l' <a href="https://www.eff.org/issues/privacy">EFF</a> afin qu'ils puissent continuer, au nom de tous, à se battre pour nos libertés électroniques."]]></string>
-  <string name="help_messageHistory">surespot a un historique de 1000 messages. Une fois que vous atteignez 1000 messages, vos anciens messages seront supprimés de sorte que vous n\'aurez jamais plus de 1000 messages (cryptés) stockés sur le serveur. Bien sûr, à tout moment, vous pouvez supprimer un ou tous vos messages.</string>
+  <string name="help_messageHistory">surespot a un historique de 1000 messages. Une fois que vous atteignez 1000 messages, vos anciens messages seront supprimés de sorte que vous n\'aurez jamais plus de 1000 messages (chiffrés) stockés sur le serveur. Bien sûr, à tout moment, vous pouvez supprimer un ou tous vos messages.</string>
   <string name="title_activity_about">A propos de surespot</string>
   <string name="about_about"><![CDATA["surespot - une production 2fours"]]></string>
   <string name="about_website"><![CDATA["Pour plus d'information, veuillez visitez le site Web de surespot sur <a href="https://www.surespot.me">https://www.surespot.me</a>, y compris les <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">conditions d'utilisation</a>, la <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">politique de confidentialité</a>, ainsi que <a href="https://www.surespot.me/documents/threat.html">données et analyse de menace</a>."]]></string>
@@ -156,7 +156,7 @@
   <string name="billing_bitcoin_email_body_qr">Le QR code peut être visionné ici: %s</string>
   <string name="could_not_open_bitcoin_wallet">impossible d\'ouvrir le portefeuille bitcoin</string>
   <string name="message_sending">envoi en cours...</string>
-  <string name="message_loading_and_decrypting">chargement et décryptage ...</string>
+  <string name="message_loading_and_decrypting">chargement et déchiffrement ...</string>
   <string name="could_not_login_to_server">impossible de s\'identifier sur le serveur</string>
   <string name="could_not_connect_to_server">impossible de se connecter au serveur</string>
   <string name="autoinvite_user_exists">votre liste d\'amis contient déjà %s</string>
@@ -172,7 +172,7 @@
   <string name="image_saved_to_gallery">image sauvée dans la galerie</string>
   <string name="error_saving_image_to_gallery">erreur lors de la sauvegarde de l\'image dans la galerie</string>
   <string name="delete_message_confirmation_title">êtes-vous sûr de vouloir supprimer ce message?</string>
-  <string name="message_error_decrypting_message">ERREUR DECRYPTAGE DU MESSAGE</string>
+  <string name="message_error_decrypting_message">ERREUR DÉCHIFFREMENT DU MESSAGE</string>
   <string name="could_not_respond_to_invite">Impossible de répondre à l\'invitation, veuillez réessayer plus tard.</string>
   <string name="friend_status_is_deleted">est supprimé</string>
   <string name="friend_status_is_invited">est invité</string>
@@ -310,7 +310,7 @@
   <string name="billing_error">erreur de paiement</string>
   <string name="pref_billing">achats</string>
   <string name="suppress_voice_purchase">ne pas me demander d\'acheter les messages vocaux (ferme l\'onglet)</string>
-  <string name="voice_messaging_purchase_1"><![CDATA["Ajoutez la messagerie vocale à votre surespot et rendez la communication cryptée encore plus facile ! Il suffit de maintenir enfoncé le bouton du microphone pour enregistrer et le relâcher pour envoyer. Parce que parfois il est plus facile de le dire que de le taper. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
+  <string name="voice_messaging_purchase_1"><![CDATA["Ajoutez la messagerie vocale à votre surespot et rendez la communication chiffrée encore plus facile ! Il suffit de maintenir enfoncé le bouton du microphone pour enregistrer et le relâcher pour envoyer. Parce que parfois il est plus facile de le dire que de le taper. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
   <string name="voice_messaging_purchase_button">cliquez ici pour acheter pour $1.99</string>
   <string name="voice_message_suppress_purchase_ask">ne plus me demander</string>
   <string name="pref_suppress_voice_purchase_ask_title">ne plus me demander</string>
