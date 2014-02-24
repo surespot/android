@@ -86,7 +86,7 @@
     <string name="notification_title">surespot</string>
     <string name="notification_message">"%1$s: new message from %2$s"</string>
     <string name="notification_invite">"%1$s: friend invite from %2$s"</string>
-    <string name="notification_invite_accept">%1$s: %2$s has accepted your friend invite"</string>
+    <string name="notification_invite_accept">%1$s: %2$s has accepted your friend invite</string>
     <string name="about_version">"version: %s"</string>
     <string name="surespot">surespot</string>
     <string name="about_action_bar_right">about</string>
