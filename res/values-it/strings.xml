@@ -325,6 +325,6 @@
   <string name="share_link_help">Usa l\'opzione del menu \"Condividi il link di invito\" per condividere il link via email, sms, twitter o altri social network, che quando sarà cliccato installerà surespot/inviterà l\'amico</string>
   <string name="pref_stop_cache_logout_title">Elimina la cache al logout</string>
   <string name="pref_stop_cache_logout_summary">Elimina il servizio cache al logout</string>
-  <string name="whats_new_46_message">Nuove funzionalità!\n\nImpostazione per eliminare la cache al logout (su impostazioni&gt;opzioni)\n\nRimosso il permesso di leggere i contatti\n\nOttimizzazioni di rete\n\nGrazie per il tuo supporto continuo!</string>
-  <string name="whats_new_46_title">Versione 46</string>
+  <string name="whats_new_47_message">Nuove funzionalità!\n\nImpostazione per eliminare la cache al logout (su impostazioni&gt;opzioni)\n\nRimosso il permesso di leggere i contatti\n\nOttimizzazioni di rete\n\nGrazie per il tuo supporto continuo!</string>
+  <string name="whats_new_47_title">Versione 47</string>
 </resources>

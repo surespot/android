@@ -325,6 +325,6 @@
   <string name="share_link_help">Benutze die Menüfunktion \'Einladung teilen\' um einen Link per Mail, SMS, Twitter oder ein anderes soziales Netzwerk zu versenden, welcher beim anklicken surespot installiert und den Empfänger als Freund in surespot einlädt.</string>
   <string name="pref_stop_cache_logout_title">Lösche Zwischenspeicher nach dem Logout</string>
   <string name="pref_stop_cache_logout_summary">Beendet die Zwischenspeicher-Hintergrundanwendung beim Logout</string>
-  <string name="whats_new_46_message">Neue Funktionen!\n\nZwischenspeicher bei Logout löschen ( über Einstellungen-&gt;Optionen ).\n\n\"Zugriff auf Kontaktdaten\" Berechtigung entfernt.\n\nNetzwerkoptimierungen.\n\nDanke für Ihre weitere Unterstützung!</string>
-  <string name="whats_new_46_title">Version 46</string>
+  <string name="whats_new_47_message">Neue Funktionen!\n\nZwischenspeicher bei Logout löschen ( über Einstellungen-&gt;Optionen ).\n\n\"Zugriff auf Kontaktdaten\" Berechtigung entfernt.\n\nNetzwerkoptimierungen.\n\nDanke für Ihre weitere Unterstützung!</string>
+  <string name="whats_new_47_title">Version 47</string>
 </resources>
