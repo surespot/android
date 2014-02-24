@@ -1,10 +1,9 @@
-android
+android    [![Google Play](https://www.surespot.me/images/google-play.png)](https://play.google.com/store/apps/details?id=com.twofours.surespot) 
 =======
 surespot
 =========
 
 surespot is a mobile messaging application that secures all messages using end-to-end encryption.
-
 
 Contribute
 =========
@@ -15,7 +14,7 @@ corporations and authorities have taken with our communications. We created sure
 If you support this work and appreciate surespot please show it and consider donating your time or money.
 In turn, we will pass along support to the Electronic Frontier Foundation (EFF) who work tirelessly to defend your digital rights.
 
-[![donation](https://chatsecure.org/static/images/paypal_donate.png)](https://www.surespot.me/contribute.html)
+[![donation](https://www.surespot.me/images/contribute-button.png)](https://www.surespot.me/contribute.html)
 
 
 Localization
@@ -24,16 +23,15 @@ Localization
 If you would like to contribute/improve a translation:
 
  1. Visit our [Transifex project page](https://www.transifex.com/projects/p/surespot) and make an account if you don't have one already.
- 2. Go to the resources tab [strings.xml](https://www.transifex.com/projects/p/surespot/resources/) to add a new language or improve an existing translation.
+ 2. Go to the [resources tab](https://www.transifex.com/projects/p/surespot/resources/) to add a new language or improve an existing translation.
 
 
 THANK YOU TO OUR CONTRIBUTORS:
 
-Jean Schmitt, repat, mrbiber, gehfab for the German translations
-Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, vndtta for the Spanish translations
-sharkyiwc and boing for the French translations
-lgasp, dickhead, Mauriziopz, mangholb and riky for the Italian translations
-
+* Jean Schmitt, repat, mrbiber, leibi,gehfab for the German translations.
+* Jorge Iván Andrés Contreras Pereira, Cesar Schulzbacher, Manuel Perez, vndtta for the Spanish translations.
+* sharkyiwc and boing for the French translations.
+* lgasp, dickhead, Mauriziopz, mangholb and riky, besa, for the Italian translations.
 
 
 License
@@ -41,7 +39,7 @@ License
 
 	Software License Agreement (GPLv3+)
 
-	Copyright (c) 2012, 2fours. All rights reserved.
+	Copyright (c) 2012-14, 2fours. All rights reserved.
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
