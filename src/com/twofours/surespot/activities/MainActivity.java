@@ -261,7 +261,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mMainHandler = new Handler(getMainLooper());
 
 			try {
-				mNetworkController = new NetworkController(MainActivity.this, null);
+				mNetworkController = new NetworkController(MainActivity.this, m401Handler);
 			}
 			catch (Exception e) {
 				finish();
