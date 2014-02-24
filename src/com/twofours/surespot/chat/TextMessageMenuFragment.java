@@ -46,7 +46,13 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 			mMessage = SurespotMessage.toSurespotMessage(messageString);
 		}
 
-		final String messageText = getArguments().getString("messageText");
+		String messageText = getArguments().getString("messageText");
+		if (messageText == null) {
+			messageText = "";
+		}
+		
+		final String finalMessageText = messageText;
+			
 
 		mMenuItemArray = new String[2];
 		mMenuItemArray[0] = getString(R.string.menu_copy);
@@ -66,16 +72,16 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 
 				switch (which) {
 				case 0:
-					if (messageText != null) {
+					if (finalMessageText != null) {
 						int sdk = android.os.Build.VERSION.SDK_INT;
 						if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
 							android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-							clipboard.setText(new SpannableString(messageText));
+							clipboard.setText(new SpannableString(finalMessageText));
 						}
 						else {
 							android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(
 									Context.CLIPBOARD_SERVICE);
-							android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text", messageText);
+							android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text", finalMessageText);
 							clipboard.setPrimaryClip(clip);
 						}
 					}
