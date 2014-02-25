@@ -725,12 +725,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private void launch(Intent intent) {
 		// SurespotLog.d(TAG, "launch, mChatController: " + mChatController);
 										
-		if (mChatController != null) {
-			AutoInviteData autoInviteData = getAutoInviteData(intent);
-			if (autoInviteData != null) {
-				SurespotLog.d(TAG, "auto inviting user: %s", autoInviteData.getUsername());
-			}
-			mChatController.setAutoInviteData(autoInviteData);
+		if (mChatController != null) {			
+			mChatController.setAutoInviteData(getAutoInviteData(intent));
 		}
 
 		String action = intent.getAction();

@@ -224,7 +224,7 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				SurespotLog.d(TAG, "socket.io connection established");
-				setState(STATE_CONNECTED);
+				
 				setOnWifi();
 				mRetries = 0;
 
@@ -241,7 +241,7 @@ public class ChatController {
 					}
 				}
 				connected();
-
+				setState(STATE_CONNECTED);
 			}
 
 			@Override
@@ -429,19 +429,16 @@ public class ChatController {
 	}
 
 	private void connected() {
-
 		getFriendsAndData();
-		resendMessages();
-		handleAutoInvite();
-
+		resendMessages();		
 	}
 	
 	private void handleAutoInvite() {
 		
 		// if we need to invite someone then do it
 		if (mAutoInviteData != null && !mHandlingAutoInvite) {
-			if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {
-				
+			if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {				
+				SurespotLog.d(TAG, "auto inviting user: %s", mAutoInviteData.getUsername());				
 				mNetworkController.invite(mAutoInviteData.getUsername(), mAutoInviteData.getSource(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String arg0) {
@@ -1058,7 +1055,8 @@ public class ChatController {
 					mFriendAdapter.sort();
 					mFriendAdapter.notifyDataSetChanged();
 				}
-
+				
+				handleAutoInvite();			
 				setProgress(null, false);
 			}
 
