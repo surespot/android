@@ -968,12 +968,14 @@ public class ChatController {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 			JSONObject spot = new JSONObject();
 			String username = entry.getKey();
-			try {
-				spot.put("u", username);
+			try {				
 				LatestIdPair p = getPreConnectIds(username);
-				spot.put("m", p.latestMessageId);
-				spot.put("cm", p.latestControlMessageId);
-				spotIds.put(spot);
+				if (p != null) {
+					spot.put("u", username);
+					spot.put("m", p.latestMessageId);
+					spot.put("cm", p.latestControlMessageId);				
+					spotIds.put(spot);
+				}
 			}
 			catch (JSONException e) {
 				continue;
