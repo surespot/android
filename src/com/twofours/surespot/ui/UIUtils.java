@@ -1,5 +1,7 @@
 package com.twofours.surespot.ui;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -282,6 +284,11 @@ public class UIUtils {
 
 	public static void sendInvitation(final Activity context, NetworkController networkController) {
 		final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser());
+		if (longUrl == null) {			
+			Utils.makeLongToast(context, context.getString(R.string.could_not_create_invite_link));
+			return;
+		}
+		
 		SurespotLog.v(TAG, "auto invite url length %d:, url: %s ", longUrl.length(), longUrl);
 
 		final SingleProgressDialog progressDialog = new SingleProgressDialog(context, context.getString(R.string.invite_progress_text), 750);
@@ -334,7 +341,14 @@ public class UIUtils {
 	}
 
 	private static String buildExternalInviteUrl(String username) {
-		return "https://server.surespot.me/autoinvite/" + username + "/social";
+		try {
+			return "https://server.surespot.me/autoinvite/" + URLEncoder.encode(username, "UTF-8") + "/social";
+		}
+		catch (UnsupportedEncodingException e) {
+			SurespotLog.w(TAG, e, "error encoding auto invite url");
+			
+		}
+		return null;
 	}
 
 	public static AlertDialog showQRDialog(Activity activity) {
@@ -348,8 +362,14 @@ public class UIUtils {
 		Spannable s1 = new SpannableString(user);
 		s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		String inviteUrl = "https://server.surespot.me/autoinvite/" + user + "/qr_droid";
-		// String qrImageUrl = "https://chart.googleapis.com/chart?cht=qr&chl=" + inviteUrl + "&chs=300x300&chld=Q|0";
+		String inviteUrl = null;
+		try {
+			inviteUrl = "https://server.surespot.me/autoinvite/" + URLEncoder.encode(user, "UTF-8")  + "/qr_droid";
+		}
+		catch (UnsupportedEncodingException e) {
+			SurespotLog.w(TAG, e, "error encoding auto invite url");
+			return null;
+		}				
 
 		tvQrInviteText.setText(TextUtils.concat(activity.getString(R.string.qr_pre_username_help), " ", s1, " ",
 				activity.getString(R.string.qr_post_username_help)));
