@@ -285,7 +285,7 @@ public class UIUtils {
 	public static void sendInvitation(final Activity context, NetworkController networkController) {
 		final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser());
 		if (longUrl == null) {			
-			Utils.makeLongToast(context, context.getString(R.string.could_not_create_invite_link));
+			Utils.makeLongToast(context, context.getString(R.string.invite_no_application_found));
 			return;
 		}
 		
@@ -368,6 +368,7 @@ public class UIUtils {
 		}
 		catch (UnsupportedEncodingException e) {
 			SurespotLog.w(TAG, e, "error encoding auto invite url");
+			Utils.makeLongToast(activity, activity.getString(R.string.invite_no_application_found));
 			return null;
 		}				
 
