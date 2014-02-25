@@ -548,7 +548,10 @@ public class EncryptionController {
 	 * @return
 	 */
 	public static String symmetricDecryptSyncPK(final String password, final byte[] cipherData) {
-
+		if (cipherData == null) {
+			return null;
+		}
+		
 		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
 		byte[] cipherBytes = new byte[cipherData.length - IV_LENGTH - SALT_LENGTH];
