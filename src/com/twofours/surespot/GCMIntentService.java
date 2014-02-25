@@ -163,11 +163,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 			// add the message if it came in the GCM
 			String message = intent.getStringExtra("message");
 			if (message != null) {
-
-				SurespotMessage sm = SurespotMessage.toSurespotMessage(message);
-				sm.setGcm(true);
+				SurespotMessage sm = SurespotMessage.toSurespotMessage(message);				
 				if (sm != null) {
-					//see if we can add it to existing chat controller
+					sm.setGcm(true);
+					// see if we can add it to existing chat controller
 					ChatController chatController = MainActivity.getChatController();
 					boolean added = false;
 					if (chatController != null) {
@@ -178,22 +177,24 @@ public class GCMIntentService extends GCMBaseIntentService {
 						}
 					}
 
-					//if not add it directly
+					// if not add it directly
 					if (!added) {
 						SurespotLog.v(TAG, "adding gcm message directly");
-						
+
 						ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
 						if (!messages.contains(sm)) {
 							messages.add(sm);
+							added = true;
 							SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
 						}
 					}
-				}
-				
-			}
 
-			generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
-					context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+					if (added) {
+						generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
+								context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+					}
+				}
+			}
 			return;
 		}
 

@@ -2503,14 +2503,13 @@ public class ChatController {
 				// @Override
 				// public void run() {
 				try {
-					applyControlMessages(chatAdapter, message, false, true, false);
+					return applyControlMessages(chatAdapter, message, false, true, false);
 				}
 				catch (SurespotMessageSequenceException e) {
 				}
 				// }
 				// });
-
-				return true;
+				return false;
 			}
 		}
 	}
