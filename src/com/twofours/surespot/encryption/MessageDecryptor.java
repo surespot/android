@@ -22,11 +22,13 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.ui.UIUtils;
 
 /**
@@ -106,6 +108,12 @@ public class MessageDecryptor {
 				// set plaintext in messageso we don't have to decrypt again
 				plainData = EmojiParser.getInstance().addEmojiSpans(plainText.toString());
 				mMessage.setPlainData(plainData);
+			}
+			else {
+				//error decrypting
+				SurespotLog.d(TAG, "could not decrypt message");
+				plainData = mChatAdapter.getContext().getString(R.string.message_error_decrypting_message);
+				mMessage.setPlainData(plainData);				
 			}
 
 			mMessage.setLoading(false);

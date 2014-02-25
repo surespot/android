@@ -86,7 +86,7 @@
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: neue Mitteilung von %2$s</string>
   <string name="notification_invite">%1$s: Kontaktanfrage von %2$s</string>
-  <string name="notification_invite_accept">%1$s: %2$s hat die Kontaktanfrage akzeptiert</string>
+  <string name="notification_invite_accept">%1$s: %2$s hat Ihre Einladung akzeptiert</string>
   <string name="about_version">Version: %s</string>
   <string name="surespot">surespot</string>
   <string name="about_action_bar_right">Über</string>
@@ -325,6 +325,7 @@
   <string name="share_link_help">Benutze die Menüfunktion \'Einladung teilen\' um einen Link per Mail, SMS, Twitter oder ein anderes soziales Netzwerk zu versenden, welcher beim anklicken surespot installiert und den Empfänger als Freund in surespot einlädt.</string>
   <string name="pref_stop_cache_logout_title">Lösche Zwischenspeicher nach dem Logout</string>
   <string name="pref_stop_cache_logout_summary">Beendet die Zwischenspeicher-Hintergrundanwendung beim Logout</string>
-  <string name="whats_new_47_message">Neue Funktionen!\n\nZwischenspeicher bei Logout löschen ( über Einstellungen-&gt;Optionen ).\n\n\"Zugriff auf Kontaktdaten\" Berechtigung entfernt.\n\nNetzwerkoptimierungen.\n\nDanke für Ihre weitere Unterstützung!</string>
-  <string name="whats_new_47_title">Version 47</string>
+  <string name="whats_new_47_message">Neue Funktionen!\n\nCache beim ausloggen löschen (via Einstellungen-&gt;Optionen).\n\nBerechtigung READ_CONTACTS gelöscht.\n\nNetzwerk Optimierungen.\n\nDanke für Ihre andauernde Unterstützung!</string>
+  <string name="whats_new_47_title">version 47</string>
+  <string name="could_not_load_public_keys">Öffentliche Schlüssel konnten nicht geladen werden</string>
 </resources>

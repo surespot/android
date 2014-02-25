@@ -614,6 +614,11 @@ public class ChatController {
 							EmojiParser parser = EmojiParser.getInstance();
 							message.setPlainData(parser.addEmojiSpans(plainText));
 						}
+						else {
+							//error decrypting
+							SurespotLog.d(TAG, "could not decrypt message");
+							message.setPlainData(mContext.getString(R.string.message_error_decrypting_message));
+						}
 					}
 
 					else {

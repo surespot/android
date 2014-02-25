@@ -170,7 +170,7 @@
     <string name="image_saved_to_gallery">image saved to gallery</string>
     <string name="error_saving_image_to_gallery">error saving image to gallery</string>
     <string name="delete_message_confirmation_title">are you sure you wish to delete this message?</string>
-    <string name="message_error_decrypting_message">ERROR DECRYPTING MESSAGE</string>
+    <string name="message_error_decrypting_message">Error decrypting message</string>
     <string name="could_not_respond_to_invite">Could not respond to invite, please try again later.</string>
     <string name="friend_status_is_deleted">is deleted</string>
     <string name="friend_status_is_invited">is invited</string>
@@ -327,5 +327,5 @@
     <string name="pref_stop_cache_logout_summary">kills the cache service on logout</string>
     <string name="whats_new_47_message">New Features!\n\nKill cache on logout setting (via settings->options).\n\nRemoved READ_CONTACTS permission.\n\nNetwork optimizations.\n\nThank you for your continued support!</string>
     <string name="whats_new_47_title">Version 47</string>
-    <string name="could_not_load_public_keys">could not load public keys></string>         
+    <string name="could_not_load_public_keys">could not load public keys</string>         
 </resources>
