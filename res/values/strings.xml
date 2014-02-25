@@ -326,5 +326,6 @@
     <string name="pref_stop_cache_logout_title">kill cache on logout</string>
     <string name="pref_stop_cache_logout_summary">kills the cache service on logout</string>
     <string name="whats_new_47_message">New Features!\n\nKill cache on logout setting (via settings->options).\n\nRemoved READ_CONTACTS permission.\n\nNetwork optimizations.\n\nThank you for your continued support!</string>
-    <string name="whats_new_47_title">Version 47</string>         
+    <string name="whats_new_47_title">Version 47</string>
+    <string name="could_not_load_public_keys">could not load public keys></string>         
 </resources>

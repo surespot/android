@@ -20,6 +20,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.ui.ExpandableHeightListView;
@@ -102,6 +103,16 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 				
 				//get latest version from server							
 				String latestVersion = MainActivity.getNetworkController().getKeyVersionSync(mUsername);
+				if (latestVersion == null) {
+					activity = getActivity();
+					if (activity == null) {
+						return null;
+					}
+					
+					Utils.makeToast(activity, activity.getString(R.string.could_not_load_public_keys));
+					return null;
+				}
+				
 				int maxVersion = Integer.parseInt(latestVersion);
 				List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
 				if (maxVersion > 0) {
@@ -109,6 +120,11 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 						String sVer = String.valueOf(ver);
 						PublicKeys pubkeys = IdentityController.getPublicKeyPair(mUsername, sVer);
 
+						if (pubkeys == null) {
+							Utils.makeToast(activity, activity.getString(R.string.could_not_load_public_keys));
+							return null;
+						}
+						
 						byte[] encodedDHPubKey = pubkeys.getDHKey().getEncoded();
 						byte[] encodedDSAPubKey = pubkeys.getDSAKey().getEncoded();
 
