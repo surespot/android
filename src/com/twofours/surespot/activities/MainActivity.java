@@ -171,7 +171,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		}
 		else {
-			if (!processIntent(intent)) {
+			if (!processIntent(intent)) {			
 				setupBilling();
 				launch(intent);
 			}
@@ -300,14 +300,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mKeyboardStateHandler = new KeyboardStateHandler();
 			mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
-
-			AutoInviteData autoInviteData = getAutoInviteData(intent);
-			if (autoInviteData != null) {
-				SurespotLog.d(TAG, "auto inviting user: %s", autoInviteData.getUsername());
-			}
-
-			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems, autoInviteData);
-
+		
+			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
+			
 			setupChatControls();
 
 			if (savedInstanceState != null) {
@@ -729,6 +724,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void launch(Intent intent) {
 		// SurespotLog.d(TAG, "launch, mChatController: " + mChatController);
+										
+		if (mChatController != null) {
+			AutoInviteData autoInviteData = getAutoInviteData(intent);
+			if (autoInviteData != null) {
+				SurespotLog.d(TAG, "auto inviting user: %s", autoInviteData.getUsername());
+			}
+			mChatController.setAutoInviteData(autoInviteData);
+		}
 
 		String action = intent.getAction();
 		String type = intent.getType();

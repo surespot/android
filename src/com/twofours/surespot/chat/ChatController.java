@@ -129,6 +129,7 @@ public class ChatController {
 	private IAsyncCallback<Void> mSendIntentCallback;
 	private IAsyncCallback<Friend> mTabShowingCallback;
 	private AutoInviteData mAutoInviteData;
+	private boolean mHandlingAutoInvite;
 
 	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallbackTuple<String, Boolean> m401Handler,
 			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
@@ -347,10 +348,9 @@ public class ChatController {
 	}
 
 	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
-	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems, AutoInviteData autoInviteData) {
+	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems) {
 		mChatPagerAdapter = new ChatPagerAdapter(mContext, mFragmentManager);
-		mMenuItems = menuItems;
-		mAutoInviteData = autoInviteData;
+		mMenuItems = menuItems;		
 
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
@@ -370,6 +370,13 @@ public class ChatController {
 		});
 		mChatPagerAdapter.setChatNames(mFriendAdapter.getActiveChats());
 		onResume();
+	}
+	
+	public void setAutoInviteData(AutoInviteData autoInviteData) {
+		mAutoInviteData = autoInviteData;
+		if (getState() == STATE_CONNECTED) {
+			handleAutoInvite();
+		}
 	}
 
 	private void connect() {
@@ -425,10 +432,16 @@ public class ChatController {
 
 		getFriendsAndData();
 		resendMessages();
+		handleAutoInvite();
 
+	}
+	
+	private void handleAutoInvite() {
+		
 		// if we need to invite someone then do it
-		if (mAutoInviteData != null) {
+		if (mAutoInviteData != null && !mHandlingAutoInvite) {
 			if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {
+				
 				mNetworkController.invite(mAutoInviteData.getUsername(), mAutoInviteData.getSource(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String arg0) {
@@ -444,9 +457,7 @@ public class ChatController {
 				Utils.makeToast(mContext, mContext.getString(R.string.autoinvite_user_exists, mAutoInviteData.getUsername()));
 				mAutoInviteData = null;
 			}
-
-		}
-
+		}		
 	}
 
 	private void resendMessages() {
