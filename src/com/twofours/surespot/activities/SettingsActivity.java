@@ -100,7 +100,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 								SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 					}
 					else {
-						mBgImagePref.setTitle("select background image");
+						mBgImagePref.setTitle(getString(R.string.pref_title_background_image_select));
 						Editor editor = prefMgr.getSharedPreferences().edit();
 						SurespotLog.v(TAG, "removing background image file: %s", bgImageUri);
 						File file = new File(bgImageUri);
