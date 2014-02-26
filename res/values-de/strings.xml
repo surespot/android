@@ -25,7 +25,7 @@
   <string name="no_identity_exported">Noch kein Profil exportiert</string>
   <string name="no_identity_imported">Profil Import gescheitert </string>
   <string name="no_identity_deleted">Profil nicht gelöscht</string>
-  <string name="identity_imported_successfully">Profil erfolgreich importiert</string>
+  <string name="identity_imported_successfully">Profil %s erfolgreich importiert</string>
   <string name="could_not_import_identity">Profil konnte nicht importiert werden</string>
   <string name="could_not_restore_identity_name">Profil %s konnte nicht importiert werden</string>
   <string name="notifications_title">Push-Benachrichtigungen</string>

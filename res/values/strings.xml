@@ -25,7 +25,7 @@
     <string name="no_identity_exported">no identity backed up</string>
     <string name="no_identity_imported">no identity restored</string>
     <string name="no_identity_deleted">no identity deleted</string>
-    <string name="identity_imported_successfully">identity restored successfully</string>
+    <string name="identity_imported_successfully">identity %s restored successfully</string>
     <string name="could_not_import_identity">could not restore identity</string>
     <string name="could_not_restore_identity_name">could not restore identity %s</string>
     <string name="notifications_title">push notifications</string>

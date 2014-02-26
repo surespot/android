@@ -25,7 +25,7 @@
   <string name="no_identity_exported">Nessun backup salvato</string>
   <string name="no_identity_imported">Nessuna identità è stata ripristinata</string>
   <string name="no_identity_deleted">Nessuna identità è stata eliminata</string>
-  <string name="identity_imported_successfully">Identità ripristinata correttamente</string>
+  <string name="identity_imported_successfully">Identità ripristinata correttamente %s</string>
   <string name="could_not_import_identity">Impossibile ripristinare l\'identità</string>
   <string name="could_not_restore_identity_name">Impossibile ripristinare l\'identità %s</string>
   <string name="notifications_title">Notifiche push</string>

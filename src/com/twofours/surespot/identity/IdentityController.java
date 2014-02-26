@@ -420,11 +420,11 @@ public class IdentityController {
 			String name = jsonIdentity.getString("username");
 			String salt = jsonIdentity.getString("salt");
 
-			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", name, salt);
-			if (checkCase && !name.equals(username) || (!checkCase && !name.toLowerCase().equals(username.toLowerCase()))) {
-				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username), "internal identity did not match");
-				return null;
-			}
+//			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", name, salt);
+//			if (checkCase && !name.equals(username) || (!checkCase && !name.toLowerCase().equals(username.toLowerCase()))) {
+//				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username), "internal identity did not match");
+//				return null;
+//			}
 
 			SurespotIdentity si = new SurespotIdentity(name, salt);
 
@@ -477,7 +477,7 @@ public class IdentityController {
 						public void onSuccess(int statusCode, String content) {						
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername), true));
 							}
 							else {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
@@ -526,6 +526,7 @@ public class IdentityController {
 		if (identity != null) {
 
 			byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
+			final String finalusername = identity.getUsername();
 			String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
 			NetworkController networkController = MainActivity.getNetworkController();
@@ -539,13 +540,13 @@ public class IdentityController {
 				}
 			}
 
-			networkController.validate(username, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dpassword),
+			networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
 					new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully), true));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername), true));
 							}
 							else {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),

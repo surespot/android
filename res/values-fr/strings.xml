@@ -26,7 +26,7 @@
     <string name="no_identity_exported">aucune identité sauvegardée</string>
     <string name="no_identity_imported">aucune identité restaurée</string>
     <string name="no_identity_deleted">aucune identité supprimée</string>
-    <string name="identity_imported_successfully">identité restaurée avec succès</string>
+    <string name="identity_imported_successfully">identité %s restaurée avec succès</string>
     <string name="could_not_import_identity">impossible de restaurer l\'identité</string>
     <string name="could_not_restore_identity_name">impossible de restaurer l\'identité %s</string>
     <string name="notifications_title">push notifications</string>
