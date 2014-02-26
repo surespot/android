@@ -91,7 +91,7 @@ public class LoginActivity extends SherlockActivity {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					//
 					login();
-					handled = false;
+					handled = true;
 				}
 				return handled;
 			}
