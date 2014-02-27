@@ -62,9 +62,10 @@
             android:title="@string/notifications_led" />
     </PreferenceScreen>
     <PreferenceScreen android:title="@string/pref_title_options" >
-          <Preference
+        <Preference
             android:key="pref_background_image"
             android:title="@string/pref_title_background_image_select" />
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_message"
@@ -77,19 +78,26 @@
             android:title="@string/pref_title_delete_all_messages" />
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="pref_stop_cache_logout"
-            android:summary="@string/pref_stop_cache_logout_summary"
-            android:title="@string/pref_stop_cache_logout_title" />
-        <CheckBoxPreference
-            android:defaultValue="false"
             android:key="pref_suppress_voice_purchase_ask"
             android:summary="@string/pref_suppress_voice_purchase_ask_summary"
-            android:title="@string/pref_suppress_voice_purchase_ask_title" />       
+            android:title="@string/pref_suppress_voice_purchase_ask_title" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_debug_mode"
             android:summary="@string/pref_summary_message_debug_mode"
             android:title="@string/pref_title_message_debug_mode" />
+    </PreferenceScreen>
+    <PreferenceScreen android:title="@string/pref_title_global_options" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_enable_keystore_control"
+            android:summary="@string/pref_summary_enable_keystore"
+            android:title="@string/pref_title_enable_keystore" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_stop_cache_logout_control"
+            android:summary="@string/pref_stop_cache_logout_summary"
+            android:title="@string/pref_stop_cache_logout_title" />
     </PreferenceScreen>
 
 </PreferenceScreen>

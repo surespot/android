@@ -17,11 +17,17 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.nick.androidkeystore.android.security.KeyStore;
+import org.nick.androidkeystore.android.security.KeyStoreJb43;
+import org.nick.androidkeystore.android.security.KeyStoreKk;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.util.Log;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
@@ -53,6 +59,7 @@ public class IdentityController {
 	public static final String EXPORT_IDENTITY_ID = "_export_identity";
 	public static final Object IDENTITY_FILE_LOCK = new Object();
 	private static boolean mHasIdentity;
+	private static KeyStore mKs;
 
 	private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie) {
 		// load the identity
@@ -78,7 +85,7 @@ public class IdentityController {
 	}
 
 	public static void updatePassword(Context context, String username, String currentPassword, String newPassword, String newSalt) {
-		SurespotIdentity identity = getIdentity(context, username, currentPassword);		
+		SurespotIdentity identity = getIdentity(context, username, currentPassword);
 		if (identity != null) {
 			identity.setSalt(newSalt);
 			saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
@@ -420,11 +427,11 @@ public class IdentityController {
 			String name = jsonIdentity.getString("username");
 			String salt = jsonIdentity.getString("salt");
 
-//			SurespotLog.w(TAG, "loaded identity: %s, salt: %s", name, salt);
-//			if (checkCase && !name.equals(username) || (!checkCase && !name.toLowerCase().equals(username.toLowerCase()))) {
-//				SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username), "internal identity did not match");
-//				return null;
-//			}
+			// SurespotLog.w(TAG, "loaded identity: %s, salt: %s", name, salt);
+			// if (checkCase && !name.equals(username) || (!checkCase && !name.toLowerCase().equals(username.toLowerCase()))) {
+			// SurespotLog.e(TAG, new RuntimeException("internal identity: " + name + " did not match: " + username), "internal identity did not match");
+			// return null;
+			// }
 
 			SurespotIdentity si = new SurespotIdentity(name, salt);
 
@@ -474,10 +481,11 @@ public class IdentityController {
 			networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
 					new AsyncHttpResponseHandler() {
 						@Override
-						public void onSuccess(int statusCode, String content) {						
+						public void onSuccess(int statusCode, String content) {
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername), true));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
+										true));
 							}
 							else {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
@@ -546,7 +554,8 @@ public class IdentityController {
 						public void onSuccess(int statusCode, String content) {
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 							if (file != null) {
-								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername), true));
+								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
+										true));
 							}
 							else {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
@@ -987,6 +996,71 @@ public class IdentityController {
 		}
 
 		return sb.toString();
+	}
+
+	private static final boolean IS_JB43 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+	private static final boolean IS_JB = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+	private static final boolean IS_KK = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+	public static final String OLD_UNLOCK_ACTION = "android.credentials.UNLOCK";
+
+	public static final String UNLOCK_ACTION = "com.android.credentials.UNLOCK";
+	public static final String RESET_ACTION = "com.android.credentials.RESET";
+
+	public static void initKeystore() {
+		if (mKs == null) {
+			if (IS_KK) {
+				mKs = KeyStoreKk.getInstance();
+			}
+			else
+				if (IS_JB43) {
+					mKs = KeyStoreJb43.getInstance();
+				}
+				else {
+					mKs = KeyStore.getInstance();
+				}
+		}
+	}
+
+	public static void destroyKeystore() {
+		if (mKs != null) {
+			String[] keys = mKs.saw("");
+			for (String key : keys) {
+				mKs.delete(key);
+			}
+			mKs = null;
+		}
+	}
+
+	private static void unlock(Activity activity) {
+		if (mKs.state() == KeyStore.State.UNLOCKED) {
+			return;
+		}
+
+		try {
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+				activity.startActivity(new Intent(OLD_UNLOCK_ACTION));
+			}
+			else {
+				activity.startActivity(new Intent(UNLOCK_ACTION));
+			}
+		}
+		catch (ActivityNotFoundException e) {
+			Log.e(TAG, "No UNLOCK activity: " + e.getMessage(), e);
+			Utils.makeLongToast(activity, activity.getString(R.string.keystore_not_supported));
+
+			return;
+		}
+	}
+
+	public static byte[] getStoredPasswordForIdentity(Activity activity, String username) {
+		unlock(activity);
+		return mKs.get(username);
+	}
+
+	public static boolean storePasswordForIdentity(Activity activity, String username, String password) {
+		unlock(activity);
+		return mKs.put(username, password.getBytes());
 	}
 
 }

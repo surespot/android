@@ -242,7 +242,7 @@
     <string name="pref_title_silent_error_reporting">silent error reporting</string>
     <string name="pref_title_message_debug_mode">message debug mode</string>
     <string name="pref_title_debug">debug</string>
-    <string name="pref_title_options">options</string>
+    <string name="pref_title_options">identity options</string>
     <string name="pref_summary_delete_message">confirm before deleting a message</string>
     <string name="pref_summary_delete_all_messages">confirm before deleting all messages</string>
     <string name="pref_summary_export_identity">Backup your identity to Device Storage or Google Drive.</string>
@@ -327,5 +327,10 @@
     <string name="pref_stop_cache_logout_summary">kills the cache service on logout</string>
     <string name="whats_new_47_message">New Features!\n\nKill cache on logout setting (via settings->options).\n\nRemoved READ_CONTACTS permission.\n\nNetwork optimizations.\n\nThank you for your continued support!</string>
     <string name="whats_new_47_title">Version 49</string>
-    <string name="could_not_load_public_keys">could not load public keys</string>         
+    <string name="could_not_load_public_keys">could not load public keys</string>
+    <string name="keystore_not_supported">keystore not supported</string>
+    <string name="pref_title_enable_keystore">enable keystore</string>
+    <string name="pref_summary_enable_keystore">allows saving of passwords in the device keystore</string>
+    <string name="pref_title_global_options">global options</string>
+    
 </resources>

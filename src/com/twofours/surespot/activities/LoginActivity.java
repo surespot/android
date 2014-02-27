@@ -57,10 +57,13 @@ public class LoginActivity extends SherlockActivity {
 	private boolean mCacheServiceBound;
 	private Menu mMenuOverflow;
 	private boolean mLoggedIn = false;
+	private EditText mEtPassword;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		IdentityController.initKeystore();
+
 		setContentView(R.layout.activity_login);
 		Utils.configureActionBar(this, "", getString(R.string.surespot), false);
 
@@ -82,9 +85,9 @@ public class LoginActivity extends SherlockActivity {
 			}
 		});
 
-		EditText editText = (EditText) findViewById(R.id.etPassword);
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
-		editText.setOnEditorActionListener(new OnEditorActionListener() {
+		mEtPassword = (EditText) findViewById(R.id.etPassword);
+		mEtPassword.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH) });
+		mEtPassword.setOnEditorActionListener(new OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				boolean handled = false;
@@ -133,8 +136,8 @@ public class LoginActivity extends SherlockActivity {
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				((EditText) LoginActivity.this.findViewById(R.id.etPassword)).setText("");
-
+				// ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).setText("");
+				updatePassword();
 			}
 
 			@Override
@@ -226,6 +229,7 @@ public class LoginActivity extends SherlockActivity {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
+								IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
 
 								Intent intent = getIntent();
 								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
@@ -382,9 +386,8 @@ public class LoginActivity extends SherlockActivity {
 			unbindService(mConnection);
 		}
 
-		if (!mLoggedIn) {
-			String lastUser = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_USER);
-			SharedPreferences sp = getSharedPreferences(lastUser, Context.MODE_PRIVATE);
+		if (!mLoggedIn) {			
+			SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
 			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
 
 			if (stopCache) {
@@ -407,4 +410,17 @@ public class LoginActivity extends SherlockActivity {
 
 		return super.onKeyUp(keyCode, event);
 	}
+
+	private void updatePassword() {
+		String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
+
+		byte[] password = IdentityController.getStoredPasswordForIdentity(this, username);
+		if (password != null) {
+			mEtPassword.setText(new String(password));
+		}
+		else {
+			mEtPassword.setText(null);
+		}
+	}
+
 }

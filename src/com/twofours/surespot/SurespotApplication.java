@@ -60,8 +60,7 @@ public class SurespotApplication extends Application {
 	 * An {@link Executor} that can be used to execute tasks in parallel.
 	 */
 	public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS, sPoolWorkQueue,
-			sThreadFactory);
-	;
+			sThreadFactory);;
 
 	public void onCreate() {
 		super.onCreate();
@@ -106,6 +105,7 @@ public class SurespotApplication extends Application {
 		// }
 
 		ACRA.init(this);
+
 		EmojiParser.init(this);
 
 		PackageManager manager = this.getPackageManager();
@@ -118,21 +118,19 @@ public class SurespotApplication extends Application {
 		catch (NameNotFoundException e) {
 			mVersion = "unknown";
 		}
-		
+
 		mUserAgent = "surespot/" + SurespotApplication.getVersion() + " (Android)";
-		
+
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
 		mStateController = new StateController(this);
-		
-		
+
 		try {
 			// device without GCM throws exception
 			GCMRegistrar.checkDevice(this);
 			GCMRegistrar.checkManifest(this);
-			
-			
+
 			// final String regId = GCMRegistrar.getRegistrationId(this);
 			boolean registered = GCMRegistrar.isRegistered(this);
 			boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
@@ -148,32 +146,29 @@ public class SurespotApplication extends Application {
 			SurespotLog.w(TAG, "onCreate", e);
 		}
 
-		
-
 		// NetworkController.unregister(this, regId);
 
 		SurespotLog.v(TAG, "starting cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 
-		startService(cacheIntent);		
-		mBillingController = new BillingController(this);	
-		
-		
+		startService(cacheIntent);
+		mBillingController = new BillingController(this);
+
 	}
-	
+
 	private boolean versionChanged(Context context) {
-	 	   
-	    // Check if app was updated; if so, it must clear the registration ID
-	    // since the existing regID is not guaranteed to work with the new
-	    // app version.
-		
-		String registeredVersion = Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.APP_VERSION);		
+
+		// Check if app was updated; if so, it must clear the registration ID
+		// since the existing regID is not guaranteed to work with the new
+		// app version.
+
+		String registeredVersion = Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.APP_VERSION);
 		SurespotLog.v(TAG, "registeredversion: %s, currentVersion: %s", registeredVersion, getVersion());
-	    if (!getVersion().equals(registeredVersion)) {
-	        SurespotLog.i(TAG, "App version changed.");
-	        return true;
-	    }
-	    return false;
+		if (!getVersion().equals(registeredVersion)) {
+			SurespotLog.i(TAG, "App version changed.");
+			return true;
+		}
+		return false;
 	}
 
 	public static CredentialCachingService getCachingService() {
@@ -191,11 +186,11 @@ public class SurespotApplication extends Application {
 	public static String getVersion() {
 		return mVersion;
 	}
-	
+
 	public static BillingController getBillingController() {
 		return mBillingController;
 	}
-	
+
 	public static String getUserAgent() {
 		return mUserAgent;
 	}

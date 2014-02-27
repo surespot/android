@@ -16,6 +16,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
@@ -111,6 +112,55 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 						SurespotConfiguration.setBackgroundImageSet(false);
 					}
 
+					return true;
+				}
+			});
+			
+			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+			
+			//global overrides
+			final CheckBoxPreference stopCachePref = (CheckBoxPreference) prefMgr.findPreference("pref_stop_cache_logout_control");
+			stopCachePref.setChecked(stopCache);
+			SurespotLog.d(TAG,"read kill cache on logout: %b", stopCache);
+			
+			stopCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					boolean newChecked = stopCachePref.isChecked();
+					//stopCachePref.setChecked(newChecked);
+					SurespotLog.d(TAG,"set kill cache on logout: %b", newChecked);
+					Editor ed = sp.edit(); 
+					ed.putBoolean("pref_stop_cache_logout", newChecked);
+					ed.commit();
+					return true;
+				}
+			});
+			
+									
+			//global overrides
+			boolean enableKeystore = sp.getBoolean("pref_enable_keystore", false);
+			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
+			enableKeystorePref.setChecked(enableKeystore);
+			SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);
+			
+			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					boolean newChecked = enableKeystorePref.isChecked();
+															
+					//enableKeystorePref.setChecked(newChecked);
+					Editor ed =sp.edit(); 
+					ed.putBoolean("pref_enable_keystore", newChecked);
+					SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);
+					ed.commit();
+					
+					if (newChecked) {
+						IdentityController.initKeystore();
+					}
+					else {
+						IdentityController.destroyKeystore();
+					}
 					return true;
 				}
 			});

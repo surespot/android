@@ -10,12 +10,12 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat.Builder;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
@@ -224,8 +224,9 @@ public class CredentialCachingService extends Service {
 		if (mLoggedInUser != null) {
 			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
 			
-			SharedPreferences sp = getSharedPreferences(mLoggedInUser, Context.MODE_PRIVATE);
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+			SurespotLog.d(TAG,"read kill cache on logout: %b", stopCache);
 			
 			clearIdentityData(mLoggedInUser, false);
 			mLoggedInUser = null;
