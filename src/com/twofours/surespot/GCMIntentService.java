@@ -229,7 +229,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 				generateSystemNotification(context, title, message, tag, IntentRequestCodes.SYSTEM_NOTIFICATION);
 			}
 		}
-
 	}
 
 	private void generateNotification(Context context, String type, String from, String to, String title, String message, String tag, int id) {
@@ -244,7 +243,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		// need to use same builder for only alert once to work:
 		// http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
-		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(true).setContentText(message);
+		mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(false).setContentText(message);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
 		Intent mainIntent = null;
