@@ -1370,21 +1370,19 @@ public class ChatController {
 											// they've been deleted, just remove the invite flags
 											friend.setInviter(false);
 											friend.setInvited(false);
-										}
-
-										// clear any associated invite notification
-										String loggedInUser = IdentityController.getLoggedInUser();
-										if (loggedInUser != null) {
-											mNotificationManager.cancel(loggedInUser + ":" + friendName,
-													SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-										}
-
+										}									
 									}
 									// they really deleted us boo hoo
 									else {
 										handleDeleteUser(friendName, message.getMoreData(), notify);
 									}
+								}
 
+								// clear any associated invite notification								
+								String loggedInUser = IdentityController.getLoggedInUser();
+								if (loggedInUser != null) {
+									mNotificationManager.cancel(loggedInUser + ":" + friendName,
+											SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 								}
 
 							}
