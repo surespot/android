@@ -115,9 +115,8 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					return true;
 				}
 			});
-			
-			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+						
+			boolean stopCache = Utils.getSharedPrefsBoolean(this,"pref_stop_cache_logout");
 			
 			//global overrides
 			final CheckBoxPreference stopCachePref = (CheckBoxPreference) prefMgr.findPreference("pref_stop_cache_logout_control");
@@ -129,17 +128,15 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				public boolean onPreferenceClick(Preference preference) {
 					boolean newChecked = stopCachePref.isChecked();
 					//stopCachePref.setChecked(newChecked);
-					SurespotLog.d(TAG,"set kill cache on logout: %b", newChecked);
-					Editor ed = sp.edit(); 
-					ed.putBoolean("pref_stop_cache_logout", newChecked);
-					ed.commit();
+					SurespotLog.d(TAG,"set kill cache on logout: %b", newChecked);					
+					Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_stop_cache_logout", newChecked);
 					return true;
 				}
 			});
 			
 									
 			//global overrides
-			boolean enableKeystore = sp.getBoolean("pref_enable_keystore", false);
+			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
 			enableKeystorePref.setChecked(enableKeystore);
 			SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);
@@ -148,12 +145,9 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
 					boolean newChecked = enableKeystorePref.isChecked();
-															
-					//enableKeystorePref.setChecked(newChecked);
-					Editor ed =sp.edit(); 
-					ed.putBoolean("pref_enable_keystore", newChecked);
-					SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);
-					ed.commit();
+																				
+					SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);									
+					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
 					
 					if (newChecked) {
 						IdentityController.initKeystore();

@@ -15,7 +15,6 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat.Builder;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
@@ -28,6 +27,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
@@ -224,7 +224,7 @@ public class CredentialCachingService extends Service {
 		if (mLoggedInUser != null) {
 			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
 			
-			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			SharedPreferences sp = Utils.getGlobalSharedPrefs(getApplicationContext());
 			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
 			SurespotLog.d(TAG,"read kill cache on logout: %b", stopCache);
 			

@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="10dip"
+        android:padding="10dp"
         tools:context=".LoginActivity" >
 
         <TextView
@@ -20,8 +20,8 @@
             android:id="@+id/spinnerUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dip"
-            android:layout_marginTop="5dip"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="5dp"
             android:imeOptions="actionNext" />
 
         <TextView
@@ -34,10 +34,19 @@
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dip"            
+            android:layout_marginTop="5dp"
             android:imeOptions="actionDone"
             android:inputType="textPassword|textNoSuggestions"
             android:singleLine="true" />
+
+        <CheckBox
+            android:id="@+id/cbSavePassword"
+            android:text="@string/store_password_in_keychain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+             >
+        </CheckBox>
 
         <Button
             android:id="@+id/bLogin"
@@ -46,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="10dip"
+            android:layout_marginTop="10dp"
             android:text="@string/login"
             android:textColor="@color/surespotBlue" />
 

@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
@@ -798,31 +797,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		setButtonText();
 
-		// if this is the first time the app has been run, or they just created a user, show the help screen
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean helpShown = sp.getBoolean("helpShownAgain", false);
-
+		// if this is the first time the app has been run, or they just created a user, show the help screen		
+		boolean helpShown = Utils.getSharedPrefsBoolean(this,"helpShownAgain");
 		if (!helpShown || userWasCreated) {
-			Editor editor = sp.edit();
-			editor.remove("helpShown");
-			editor.commit();
+			Utils.removePref(this,  "helpShown");
 			mHelpDialog = UIUtils.showHelpDialog(this, true);
 		}
 
 		// if this is the first time the app has been run, or they just created a user, show the help screen
 
-		boolean whatsNewShown = sp.getBoolean("whatsNewShown47", false);
-
+		boolean whatsNewShown = Utils.getSharedPrefsBoolean(this,"whatsNewShown47");
 		if (!whatsNewShown) {
-			Editor editor = sp.edit();
-			editor.putBoolean("whatsNewShown47", true);
-			editor.remove("whatsNewShown");
-			editor.remove("whatsNewShown46");			
-			editor.commit();
+			
+			Utils.putSharedPrefsBoolean(this, "whatsNewShown47", true);
+			Utils.removePref(this, "whatsNewShown");
+			Utils.removePref(this, "whatsNewShown46");						
 			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_47_message), getString(R.string.whats_new_47_title),
-					getString(R.string.ok), null, null);
-			
-			
+					getString(R.string.ok), null, null);						
 		}
 	}
 
@@ -1905,7 +1896,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setEditTextHints() {
 		// stop showing hints after 5 times
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences sp = Utils.getGlobalSharedPrefs(this);
 		int messageHintShown = sp.getInt("messageHintShown", 0);
 		int inviteHintShown = sp.getInt("inviteHintShown", 0);
 

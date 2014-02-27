@@ -1033,6 +1033,7 @@ public class IdentityController {
 	}
 
 	private static void unlock(Activity activity) {
+		initKeystore();
 		if (mKs.state() == KeyStore.State.UNLOCKED) {
 			return;
 		}
@@ -1061,6 +1062,12 @@ public class IdentityController {
 	public static boolean storePasswordForIdentity(Activity activity, String username, String password) {
 		unlock(activity);
 		return mKs.put(username, password.getBytes());
+	}
+
+	public static void clearStoredPasswordForIdentity(LoginActivity activity, String username) {
+		unlock(activity);
+		mKs.delete(username);
+		
 	}
 
 }

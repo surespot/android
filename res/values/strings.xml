@@ -332,5 +332,6 @@
     <string name="pref_title_enable_keystore">enable keystore</string>
     <string name="pref_summary_enable_keystore">allows saving of passwords in the device keystore</string>
     <string name="pref_title_global_options">global options</string>
+    <string name="store_password_in_keychain">store password in keychain</string>
     
 </resources>

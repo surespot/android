@@ -12,12 +12,14 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -58,11 +60,16 @@ public class LoginActivity extends SherlockActivity {
 	private Menu mMenuOverflow;
 	private boolean mLoggedIn = false;
 	private EditText mEtPassword;
+	private CheckBox mCbSavePassword;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		IdentityController.initKeystore();
+
+		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this,  SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+		if (keystoreEnabled) {
+			IdentityController.initKeystore();
+		}
 
 		setContentView(R.layout.activity_login);
 		Utils.configureActionBar(this, "", getString(R.string.surespot), false);
@@ -101,6 +108,20 @@ public class LoginActivity extends SherlockActivity {
 
 		});
 
+		mCbSavePassword = (CheckBox) findViewById(R.id.cbSavePassword);
+		mCbSavePassword.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+				// make sure keystore inited
+				if (mCbSavePassword.isChecked()) {
+					IdentityController.initKeystore();
+				}
+
+				Utils.putSharedPrefsBoolean(LoginActivity.this,SurespotConstants.PrefNames.KEYSTORE_ENABLED, mCbSavePassword.isChecked());				
+			}
+		});
 	}
 
 	@Override
@@ -229,7 +250,21 @@ public class LoginActivity extends SherlockActivity {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
-								IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
+								
+								boolean enableKeystore = Utils.getSharedPrefsBoolean(LoginActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+
+								if (enableKeystore) {
+
+									// if we're saving the password in the key store then do it
+									boolean keysaveChecked = mCbSavePassword.isChecked();
+
+									if (keysaveChecked) {
+										IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
+									}
+									else {
+										IdentityController.clearStoredPasswordForIdentity(LoginActivity.this, username);
+									}
+								}
 
 								Intent intent = getIntent();
 								Intent newIntent = new Intent(LoginActivity.this, MainActivity.class);
@@ -386,7 +421,7 @@ public class LoginActivity extends SherlockActivity {
 			unbindService(mConnection);
 		}
 
-		if (!mLoggedIn) {			
+		if (!mLoggedIn) {
 			SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
 			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
 
@@ -413,13 +448,23 @@ public class LoginActivity extends SherlockActivity {
 
 	private void updatePassword() {
 		String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
+		
+		boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 
-		byte[] password = IdentityController.getStoredPasswordForIdentity(this, username);
+		byte[] password = null;
+		if (enableKeystore) {
+			password = IdentityController.getStoredPasswordForIdentity(this, username);
+		}
+
 		if (password != null) {
-			mEtPassword.setText(new String(password));
+			String storedPassword = new String(password);
+			mEtPassword.setText(storedPassword);
+			mEtPassword.setSelection(storedPassword.length());
+			mCbSavePassword.setChecked(true);
 		}
 		else {
 			mEtPassword.setText(null);
+			mCbSavePassword.setChecked(false);
 		}
 	}
 
