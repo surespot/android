@@ -326,6 +326,6 @@
   <string name="pref_stop_cache_logout_title">Lösche Zwischenspeicher nach dem Logout</string>
   <string name="pref_stop_cache_logout_summary">Beendet die Zwischenspeicher-Hintergrundanwendung beim Logout</string>
   <string name="whats_new_47_message">Neue Funktionen!\n\nCache beim ausloggen löschen (via Einstellungen-&gt;Optionen).\n\nBerechtigung READ_CONTACTS gelöscht.\n\nNetzwerk Optimierungen.\n\nDanke für Ihre andauernde Unterstützung!</string>
-  <string name="whats_new_47_title">version 47</string>
+  <string name="whats_new_47_title">version 49</string>
   <string name="could_not_load_public_keys">Öffentliche Schlüssel konnten nicht geladen werden</string>
 </resources>
