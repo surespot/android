@@ -153,7 +153,11 @@ public class GCMIntentService extends GCMBaseIntentService {
 			SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
 					sameUser, tabOpenToUser);
 
-			if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && !paused) {
+			if (!hasLoggedInUser) {
+				return;
+			}
+			
+			if (isScreenOn && sameUser && tabOpenToUser && !paused) {
 				SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
 				return;
 			}
