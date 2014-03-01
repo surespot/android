@@ -97,7 +97,7 @@ public class CredentialCachingService extends Service {
 
 				try {
 					PublicKey publicKey = mPublicIdentities.get(new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
-					return EncryptionController.generateSharedSecretSync(IdentityController.getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion())
+					return EncryptionController.generateSharedSecretSync(getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion())
 							.getPrivate(), publicKey);
 				}
 				catch (InvalidCacheLoadException e) {

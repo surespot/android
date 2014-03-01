@@ -340,10 +340,6 @@ public class IdentityController {
 
 	}
 
-	public static SurespotIdentity getIdentity(String username) {
-		return SurespotApplication.getCachingService().getIdentity(username);
-	}
-
 	public static SurespotIdentity getIdentity() {
 		return SurespotApplication.getCachingService().getIdentity();
 	}
