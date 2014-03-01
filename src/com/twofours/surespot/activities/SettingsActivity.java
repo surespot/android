@@ -136,30 +136,31 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			
 									
 			//global overrides
-			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
-			enableKeystorePref.setChecked(enableKeystore);
-			SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);
-			
-			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					boolean newChecked = enableKeystorePref.isChecked();
-																				
-					SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);									
-					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
-					
-					if (newChecked) {
-						IdentityController.initKeystore(SettingsActivity.this);
-						IdentityController.unlock(SettingsActivity.this, null, null);
-					}
-					else {
-						//TODO warn user that this will blow their passwords away
-						IdentityController.destroyKeystore();
-					}
-					return true;
-				}
-			});
+//			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+//			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
+//			enableKeystorePref.setChecked(enableKeystore);
+//			SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);			
+//			enableKeystorePref.setEnabled(false);
+//			
+//			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//				@Override
+//				public boolean onPreferenceClick(Preference preference) {
+//					boolean newChecked = enableKeystorePref.isChecked();
+//																				
+//					SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);									
+//					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
+//					
+//					if (newChecked) {
+//						IdentityController.initKeystore(SettingsActivity.this);
+//						IdentityController.unlock(SettingsActivity.this, null, null);
+//					}
+//					else {
+//						//TODO warn user that this will blow their passwords away
+//						IdentityController.destroyKeystore();
+//					}
+//					return true;
+//				}
+//			});
 		}
 	}
 

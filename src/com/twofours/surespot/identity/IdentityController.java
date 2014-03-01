@@ -22,7 +22,6 @@ import org.nick.androidkeystore.android.security.KeyStoreJb43;
 import org.nick.androidkeystore.android.security.KeyStoreKk;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -1063,6 +1062,7 @@ public class IdentityController {
 		}
 
 		Intent intent = new Intent(activity, SurespotKeystoreActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 		if (username != null) {
 			intent.putExtra("username", username);
 		}
