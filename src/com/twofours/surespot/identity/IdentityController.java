@@ -27,7 +27,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.util.Log;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
@@ -1007,7 +1006,8 @@ public class IdentityController {
 	public static final String UNLOCK_ACTION = "com.android.credentials.UNLOCK";
 	public static final String RESET_ACTION = "com.android.credentials.RESET";
 
-	public static void initKeystore() {
+	public static void initKeystore(Activity activity) {
+		SurespotLog.d(TAG, "initKeyStore");
 		if (mKs == null) {
 			if (IS_KK) {
 				mKs = KeyStoreKk.getInstance();
@@ -1019,55 +1019,98 @@ public class IdentityController {
 				else {
 					mKs = KeyStore.getInstance();
 				}
+
 		}
+	}
+
+	public static KeyStore getKeystore() {
+		return mKs;
 	}
 
 	public static void destroyKeystore() {
 		if (mKs != null) {
-			String[] keys = mKs.saw("");
-			for (String key : keys) {
-				mKs.delete(key);
-			}
-			mKs = null;
+			new AsyncTask<Void, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(Void... arg0) {
+					String[] keys = mKs.saw("");
+					for (String key : keys) {
+						boolean success = mKs.delete(key);
+						SurespotLog.d(TAG, String.format("delete key '%s' success: %s", key, success));
+						if (!success && IS_JB) {
+							success = mKs.delKey(key);
+							SurespotLog.d(TAG, String.format("delKey '%s' success: %s", key, success));
+						}
+					}
+					mKs = null;
+					return null;
+
+				}
+			}.execute();
 		}
 	}
 
-	private static void unlock(Activity activity) {
-		initKeystore();
+	public static boolean isKeystoreUnlocked(Activity activity) {
+		if (mKs == null)
+			return false;
+		return mKs.state() == KeyStore.State.UNLOCKED;
+	}
+
+	public static void unlock(Activity activity, String username, String password) {
+		SurespotLog.d(TAG, "unlock");
 		if (mKs.state() == KeyStore.State.UNLOCKED) {
 			return;
 		}
 
-		try {
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-				activity.startActivity(new Intent(OLD_UNLOCK_ACTION));
-			}
-			else {
-				activity.startActivity(new Intent(UNLOCK_ACTION));
-			}
+		Intent intent = new Intent(activity, SurespotKeystoreActivity.class);
+		if (username != null) {
+			intent.putExtra("username", username);
 		}
-		catch (ActivityNotFoundException e) {
-			Log.e(TAG, "No UNLOCK activity: " + e.getMessage(), e);
-			Utils.makeLongToast(activity, activity.getString(R.string.keystore_not_supported));
 
-			return;
+		if (password != null) {
+			intent.putExtra("password", password);
 		}
+		activity.startActivity(intent);
+
 	}
 
 	public static byte[] getStoredPasswordForIdentity(Activity activity, String username) {
-		unlock(activity);
-		return mKs.get(username);
+		SurespotLog.d(TAG, "getStoredPasswordForIdentity: %s", username);
+		if (activity != null && username != null) {
+			if (isKeystoreUnlocked(activity)) {
+				return mKs.get(username);
+			}
+		}
+
+		return null;
 	}
 
 	public static boolean storePasswordForIdentity(Activity activity, String username, String password) {
-		unlock(activity);
-		return mKs.put(username, password.getBytes());
+		if (activity == null)
+			return false;
+
+		if (isKeystoreUnlocked(activity)) {
+			if (username != null && password != null) {
+				Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
+				return mKs.put(username, password.getBytes());
+			}
+		}
+		else {
+			initKeystore(activity);
+			unlock(activity, username, password);
+		}
+
+		return false;
 	}
 
-	public static void clearStoredPasswordForIdentity(LoginActivity activity, String username) {
-		unlock(activity);
-		mKs.delete(username);
-		
+	public static boolean clearStoredPasswordForIdentity(LoginActivity activity, String username) {
+		if (activity != null && username != null) {
+			if (isKeystoreUnlocked(activity)) {
+				return mKs.delete(username);
+			}
+		}
+
+		return false;
 	}
 
 }

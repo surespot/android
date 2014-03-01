@@ -66,10 +66,12 @@ public class LoginActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this,  SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-		if (keystoreEnabled) {
-			IdentityController.initKeystore();
-		}
+		SurespotLog.d(TAG, "onCreate");
+
+		 boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+		 if (keystoreEnabled) {
+			 IdentityController.initKeystore(this);
+		 }
 
 		setContentView(R.layout.activity_login);
 		Utils.configureActionBar(this, "", getString(R.string.surespot), false);
@@ -116,10 +118,13 @@ public class LoginActivity extends SherlockActivity {
 
 				// make sure keystore inited
 				if (mCbSavePassword.isChecked()) {
-					IdentityController.initKeystore();
+					SurespotLog.d(TAG, "initing keystore");
+					IdentityController.storePasswordForIdentity(LoginActivity.this, getSelectedUsername(), mEtPassword.getText().toString());
+				}
+				else {
+					IdentityController.clearStoredPasswordForIdentity(LoginActivity.this, getSelectedUsername());
 				}
 
-				Utils.putSharedPrefsBoolean(LoginActivity.this,SurespotConstants.PrefNames.KEYSTORE_ENABLED, mCbSavePassword.isChecked());				
 			}
 		});
 	}
@@ -149,10 +154,7 @@ public class LoginActivity extends SherlockActivity {
 			to = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_USER);
 		}
 
-		if (to != null && mIdentityNames.contains(to)) {
-			spinner.setSelection(adapter.getPosition(to));
-		}
-
+		
 		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
@@ -166,7 +168,10 @@ public class LoginActivity extends SherlockActivity {
 
 			}
 		});
-
+		
+		if (to != null && mIdentityNames.contains(to)) {
+			spinner.setSelection(adapter.getPosition(to));
+		}
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -206,7 +211,7 @@ public class LoginActivity extends SherlockActivity {
 			return;
 		}
 
-		final String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
+		final String username = getSelectedUsername();
 		final EditText pwText = (EditText) LoginActivity.this.findViewById(R.id.etPassword);
 
 		final String password = pwText.getText().toString();
@@ -250,7 +255,7 @@ public class LoginActivity extends SherlockActivity {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
-								
+								mLoggedIn = true;
 								boolean enableKeystore = Utils.getSharedPrefsBoolean(LoginActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 
 								if (enableKeystore) {
@@ -261,9 +266,7 @@ public class LoginActivity extends SherlockActivity {
 									if (keysaveChecked) {
 										IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
 									}
-									else {
-										IdentityController.clearStoredPasswordForIdentity(LoginActivity.this, username);
-									}
+
 								}
 
 								Intent intent = getIntent();
@@ -297,7 +300,7 @@ public class LoginActivity extends SherlockActivity {
 								startActivity(newIntent);
 								InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 								imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
-								mLoggedIn = true;
+
 								finish();
 
 							}
@@ -447,25 +450,34 @@ public class LoginActivity extends SherlockActivity {
 	}
 
 	private void updatePassword() {
-		String username = mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
 		
-		boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+		String username = getSelectedUsername();
 
+		boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+		SurespotLog.d(TAG, "updatePassword, username: %s, keystore enabled: %b", username, enableKeystore);
 		byte[] password = null;
 		if (enableKeystore) {
 			password = IdentityController.getStoredPasswordForIdentity(this, username);
-		}
 
-		if (password != null) {
-			String storedPassword = new String(password);
-			mEtPassword.setText(storedPassword);
-			mEtPassword.setSelection(storedPassword.length());
-			mCbSavePassword.setChecked(true);
+			if (password != null) {
+				String storedPassword = new String(password);
+				mEtPassword.setText(storedPassword);
+				mEtPassword.setSelection(storedPassword.length());
+				mCbSavePassword.setChecked(true);
+			}
+			else {
+				mEtPassword.setText(null);
+				mCbSavePassword.setChecked(false);
+			}
 		}
 		else {
-			mEtPassword.setText(null);
 			mCbSavePassword.setChecked(false);
 		}
+			
+	}
+
+	private String getSelectedUsername() {
+		return mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
 	}
 
 }

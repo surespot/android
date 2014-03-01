@@ -150,9 +150,11 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
 					
 					if (newChecked) {
-						IdentityController.initKeystore();
+						IdentityController.initKeystore(SettingsActivity.this);
+						IdentityController.unlock(SettingsActivity.this, null, null);
 					}
 					else {
+						//TODO warn user that this will blow their passwords away
 						IdentityController.destroyKeystore();
 					}
 					return true;

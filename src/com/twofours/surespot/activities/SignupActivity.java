@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -343,6 +344,7 @@ public class SignupActivity extends SherlockActivity {
 												pwText.setText("");
 
 												if (statusCode == 201) {
+													mLoggedIn = true;
 													// save key pair now
 													// that we've created
 													// a
@@ -358,7 +360,7 @@ public class SignupActivity extends SherlockActivity {
 														}
 
 														protected void onPostExecute(Void result) {
-
+															
 															// SurespotApplication.getUserData().setUsername(username);
 															Intent newIntent = new Intent(SignupActivity.this, MainActivity.class);
 															Intent intent = getIntent();
@@ -376,7 +378,7 @@ public class SignupActivity extends SherlockActivity {
 															mMpd.decrProgress();
 															InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 															imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
-															mLoggedIn = true;
+															
 															finish();
 															setUsernameValidity(true);
 														};
@@ -472,10 +474,16 @@ public class SignupActivity extends SherlockActivity {
 		}
 
 		if (!mLoggedIn && isTaskRoot()) {
-			if (SurespotApplication.getCachingService() != null) {
-				SurespotLog.i(TAG, "stopping cache");
-				SurespotApplication.getCachingService().stopSelf();
-				SurespotApplication.setCachingService(null);
+			SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+
+			if (stopCache) {
+
+				if (SurespotApplication.getCachingService() != null) {
+					SurespotLog.i(TAG, "stopping cache");
+					SurespotApplication.getCachingService().stopSelf();
+					SurespotApplication.setCachingService(null);
+				}
 			}
 		}
 	}
