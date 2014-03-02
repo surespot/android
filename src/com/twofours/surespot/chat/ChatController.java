@@ -593,6 +593,7 @@ public class ChatController {
 		SurespotLog.d(TAG, "handleMessage %s", message);
 		final String otherUser = message.getOtherUser();
 
+		if(IdentityController.getLoggedInUser()){
 		final ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 
 		// if the adapter is open add the message
@@ -784,7 +785,7 @@ public class ChatController {
 				mFriendAdapter.notifyDataSetChanged();
 			}
 		}
-
+	}
 	}
 
 	private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
