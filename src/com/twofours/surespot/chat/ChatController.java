@@ -224,7 +224,7 @@ public class ChatController {
 			@Override
 			public void onConnect() {
 				SurespotLog.d(TAG, "socket.io connection established");
-				
+
 				setOnWifi();
 				mRetries = 0;
 
@@ -350,7 +350,7 @@ public class ChatController {
 	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
 	public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems) {
 		mChatPagerAdapter = new ChatPagerAdapter(mContext, mFragmentManager);
-		mMenuItems = menuItems;		
+		mMenuItems = menuItems;
 
 		mViewPager = viewPager;
 		mViewPager.setAdapter(mChatPagerAdapter);
@@ -371,7 +371,7 @@ public class ChatController {
 		mChatPagerAdapter.setChatNames(mFriendAdapter.getActiveChats());
 		onResume();
 	}
-	
+
 	public void setAutoInviteData(AutoInviteData autoInviteData) {
 		mAutoInviteData = autoInviteData;
 		if (getState() == STATE_CONNECTED) {
@@ -400,13 +400,11 @@ public class ChatController {
 
 		Cookie cookie = IdentityController.getCookie();
 
-		if (cookie == null) {
-			return;
-		}
-
 		try {
 			HashMap<String, String> headers = new HashMap<String, String>();
-			headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
+			if (cookie != null) {
+				headers.put("cookie", cookie.getName() + "=" + cookie.getValue());
+			}
 			socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
 			socket.connect(mSocketCallback);
 		}
@@ -430,15 +428,15 @@ public class ChatController {
 
 	private void connected() {
 		getFriendsAndData();
-		resendMessages();		
+		resendMessages();
 	}
-	
+
 	private void handleAutoInvite() {
-		
+
 		// if we need to invite someone then do it
 		if (mAutoInviteData != null && !mHandlingAutoInvite) {
-			if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {				
-				SurespotLog.d(TAG, "auto inviting user: %s", mAutoInviteData.getUsername());				
+			if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {
+				SurespotLog.d(TAG, "auto inviting user: %s", mAutoInviteData.getUsername());
 				mNetworkController.invite(mAutoInviteData.getUsername(), mAutoInviteData.getSource(), new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String arg0) {
@@ -454,7 +452,7 @@ public class ChatController {
 				Utils.makeToast(mContext, mContext.getString(R.string.autoinvite_user_exists, mAutoInviteData.getUsername()));
 				mAutoInviteData = null;
 			}
-		}		
+		}
 	}
 
 	private void resendMessages() {
@@ -615,7 +613,7 @@ public class ChatController {
 							message.setPlainData(parser.addEmojiSpans(plainText));
 						}
 						else {
-							//error decrypting
+							// error decrypting
 							SurespotLog.d(TAG, "could not decrypt message");
 							message.setPlainData(mContext.getString(R.string.message_error_decrypting_message));
 						}
@@ -968,12 +966,12 @@ public class ChatController {
 		for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 			JSONObject spot = new JSONObject();
 			String username = entry.getKey();
-			try {				
+			try {
 				LatestIdPair p = getPreConnectIds(username);
 				if (p != null) {
 					spot.put("u", username);
 					spot.put("m", p.latestMessageId);
-					spot.put("cm", p.latestControlMessageId);				
+					spot.put("cm", p.latestControlMessageId);
 					spotIds.put(spot);
 				}
 			}
@@ -1062,8 +1060,8 @@ public class ChatController {
 					mFriendAdapter.sort();
 					mFriendAdapter.notifyDataSetChanged();
 				}
-				
-				handleAutoInvite();			
+
+				handleAutoInvite();
 				setProgress(null, false);
 			}
 
@@ -1370,7 +1368,7 @@ public class ChatController {
 											// they've been deleted, just remove the invite flags
 											friend.setInviter(false);
 											friend.setInvited(false);
-										}									
+										}
 									}
 									// they really deleted us boo hoo
 									else {
@@ -1378,7 +1376,7 @@ public class ChatController {
 									}
 								}
 
-								// clear any associated invite notification								
+								// clear any associated invite notification
 								String loggedInUser = IdentityController.getLoggedInUser();
 								if (loggedInUser != null) {
 									mNotificationManager.cancel(loggedInUser + ":" + friendName,
@@ -2417,13 +2415,13 @@ public class ChatController {
 	}
 
 	public synchronized boolean setMode(int mode) {
-		//can only select a user if we have users
+		// can only select a user if we have users
 		if (mode == MODE_SELECT) {
 			if (mFriendAdapter.getFriendCount() == 0) {
 				return false;
 			}
 		}
-		
+
 		mMode = mode;
 		return true;
 	}
