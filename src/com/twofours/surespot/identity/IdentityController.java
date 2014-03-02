@@ -1045,9 +1045,10 @@ public class IdentityController {
 		}
 	}
 
-	public static boolean isKeystoreUnlocked(Activity activity) {
-		if (mKs == null)
+	public static boolean isKeystoreUnlocked() {
+		if (mKs == null) {
 			return false;
+		}
 		return mKs.state() == KeyStore.State.UNLOCKED;
 	}
 
@@ -1070,11 +1071,15 @@ public class IdentityController {
 
 	}
 
-	public static byte[] getStoredPasswordForIdentity(Activity activity, String username) {
+	public static String getStoredPasswordForIdentity(String username) {
 		SurespotLog.d(TAG, "getStoredPasswordForIdentity: %s", username);
-		if (activity != null && username != null) {
-			if (isKeystoreUnlocked(activity)) {
-				return mKs.get(username);
+
+		if (username != null) {
+			if (isKeystoreUnlocked()) {
+				byte[] secret = mKs.get(username);
+				if (secret != null) {
+					return new String(secret);
+				}
 			}
 		}
 
@@ -1085,7 +1090,7 @@ public class IdentityController {
 		if (activity == null)
 			return false;
 
-		if (isKeystoreUnlocked(activity)) {
+		if (isKeystoreUnlocked()) {
 			if (username != null && password != null) {
 				Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
 				return mKs.put(username, password.getBytes());
@@ -1101,7 +1106,7 @@ public class IdentityController {
 
 	public static boolean clearStoredPasswordForIdentity(LoginActivity activity, String username) {
 		if (activity != null && username != null) {
-			if (isKeystoreUnlocked(activity)) {
+			if (isKeystoreUnlocked()) {
 				return mKs.delete(username);
 			}
 		}

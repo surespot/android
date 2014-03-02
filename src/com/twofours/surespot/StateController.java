@@ -1,13 +1,19 @@
 package com.twofours.surespot;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,12 +33,15 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
+import com.twofours.surespot.services.CredentialCachingService.VersionMap;
 
 public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
 	private static final String UNSENT_MESSAGES = "unsentMessages";
 	private static final String FRIENDS = "friends";
 	private static final String STATE_EXTENSION = ".sss";
+	private static final String SECRETS_EXTENSION = ".sse";
 	private static final String TAG = "StateController";
 	private Context mContext;
 
@@ -40,7 +49,7 @@ public class StateController {
 		public int userControlId;
 		public List<Friend> friends;
 	}
-	
+
 	public StateController(Context context) {
 		mContext = context;
 	}
@@ -177,11 +186,11 @@ public class StateController {
 		return messages;
 
 	}
-	
+
 	public synchronized void saveMessages(String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
-		saveMessages(IdentityController.getLoggedInUser(), spot, messages, currentScrollPosition);	
+		saveMessages(IdentityController.getLoggedInUser(), spot, messages, currentScrollPosition);
 	}
-	
+
 	public synchronized void saveMessages(String user, String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
 		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		if (filename != null) {
@@ -196,8 +205,8 @@ public class StateController {
 				}
 
 				SurespotLog.v(TAG, "saving %s messages", saveSize);
-				String sMessages = ChatUtils.chatMessagesToJson(
-						messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize)).toString();
+				String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize))
+						.toString();
 				try {
 					FileUtils.writeFile(filename, sMessages);
 				}
@@ -214,7 +223,7 @@ public class StateController {
 	public ArrayList<SurespotMessage> loadMessages(String spot) {
 		return loadMessages(IdentityController.getLoggedInUser(), spot);
 	}
-	
+
 	public ArrayList<SurespotMessage> loadMessages(String user, String spot) {
 		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
@@ -233,7 +242,7 @@ public class StateController {
 			if (sMessages != null) {
 				Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sMessages).iterator();
 				while (iterator.hasNext()) {
-					SurespotMessage message = iterator.next();									
+					SurespotMessage message = iterator.next();
 					message.setAlreadySent(true);
 					messages.add(message);
 				}
@@ -244,12 +253,12 @@ public class StateController {
 	}
 
 	private String getFilename(String filename) {
-		String user = IdentityController.getLoggedInUser();	
+		String user = IdentityController.getLoggedInUser();
 		return getFilename(user, filename);
 	}
-	
+
 	private String getFilename(String user, String filename) {
-	
+
 		if (user != null) {
 			String dir = FileUtils.getStateDir(mContext) + File.separator + user;
 			if (FileUtils.ensureDir(dir)) {
@@ -310,12 +319,69 @@ public class StateController {
 	public static void wipeUserState(Context context, String username, String otherUsername) {
 		String publicKeyDir = FileUtils.getPublicKeyDir(context) + File.separator + otherUsername;
 		FileUtils.deleteRecursive(new File(publicKeyDir));
-		
+
 		String room = ChatUtils.getSpot(username, otherUsername);
-		String messageFile = FileUtils.getStateDir(context) + File.separator + username + File.separator + "messages_" + room
-				+ STATE_EXTENSION;
+		String messageFile = FileUtils.getStateDir(context) + File.separator + username + File.separator + "messages_" + room + STATE_EXTENSION;
 		File file = new File(messageFile);
 		file.delete();
 
+	}
+
+	public void saveSharedSecrets(Context context, String username, Map<SharedSecretKey, byte[]> secrets) {
+		Map<String, byte[]> map = new HashMap<String, byte[]>();
+
+		for (SharedSecretKey key : secrets.keySet()) {
+			String skey = key.getOurUsername() + ":" + key.getOurVersion() + ":" + key.getTheirUsername() + ":" + key.getTheirVersion();
+			SurespotLog.d("saving shared secret: %s", skey);
+			map.put(skey, secrets.get(key));
+		}
+
+		String filename = FileUtils.getSecretsDir(context) + File.separator + username + SECRETS_EXTENSION;
+
+		FileOutputStream fos;
+		try {
+			fos = new FileOutputStream(filename);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			oos.writeObject(map);
+			oos.close();
+		}
+
+		catch (IOException e) {
+			SurespotLog.e(TAG, e, "error sharing saved secrets for %s", username);
+		}
+	}
+
+	public Map<SharedSecretKey, byte[]> loadSharedSecrets(Context context, String username) {
+
+		String filename = FileUtils.getSecretsDir(context) + File.separator + username + SECRETS_EXTENSION;
+		FileInputStream fis;
+		Map<String, byte[]> loadedMap = null;
+		try {
+			fis = new FileInputStream(filename);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			loadedMap = (Map<String, byte[]>) ois.readObject();
+			ois.close();
+		}		
+		catch (IOException e) {
+			SurespotLog.e(TAG, e, "error loading saved secrets for %s", username);
+			return null;
+		}
+		catch (ClassNotFoundException e) {
+			SurespotLog.e(TAG, e, "error loading saved secrets for %s", username);
+			return null;
+		}
+		
+
+		Map<SharedSecretKey, byte[]> map = new HashMap<SharedSecretKey, byte[]>();
+
+		for (String key : loadedMap.keySet()) {
+			String[] split = key.split(":");
+
+			SharedSecretKey ssk = new SharedSecretKey(new VersionMap(split[0], split[1]), new VersionMap(split[2], split[3]));
+			SurespotLog.d("loading shared secret: %s", key);
+			map.put(ssk, loadedMap.get(key));
+		}
+
+		return map;
 	}
 }

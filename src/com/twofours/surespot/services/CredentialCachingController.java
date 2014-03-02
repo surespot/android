@@ -36,7 +36,7 @@ import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.ui.UIUtils;
 
 @SuppressLint("NewApi")
-public class CredentialCachingService extends Service {
+public class CredentialCachingController extends Service {
 	private static final String TAG = "CredentialCachingService";
 
 	private final IBinder mBinder = new CredentialCachingBinder();
@@ -48,6 +48,9 @@ public class CredentialCachingService extends Service {
 	private LoadingCache<SharedSecretKey, byte[]> mSharedSecrets;
 	private LoadingCache<String, String> mLatestVersions;
 
+	
+	//public CredentialCachingController(String username, String password)
+	
 	@Override
 	public void onCreate() {
 		SurespotLog.i(TAG, "onCreate");
@@ -147,7 +150,7 @@ public class CredentialCachingService extends Service {
 
 			if (password != null) {
 				Map<SharedSecretKey, byte[]> secrets = mSharedSecrets.asMap();
-				SurespotApplication.getStateController().saveSharedSecrets(this, mLoggedInUser, secrets);
+		//		SurespotApplication.getStateController().saveSharedSecrets(this, mLoggedInUser, secrets);
 			}
 
 		}
@@ -261,8 +264,8 @@ public class CredentialCachingService extends Service {
 	}
 
 	public class CredentialCachingBinder extends Binder {
-		public CredentialCachingService getService() {
-			return CredentialCachingService.this;
+		public CredentialCachingController getService() {
+			return CredentialCachingController.this;
 		}
 	}
 

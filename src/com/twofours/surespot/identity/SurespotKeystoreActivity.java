@@ -79,11 +79,11 @@ public class SurespotKeystoreActivity extends Activity {
 		SurespotLog.d(TAG, "received activity result, requestCode: %d, resultcode; %d, data: %s", requestCode, resultCode, data);
 		Utils.logIntent(TAG, data);
 
-		boolean unlocked = IdentityController.isKeystoreUnlocked(this);
+		boolean unlocked = IdentityController.isKeystoreUnlocked();
 		
 		SurespotLog.d(TAG, "keystore unlocked: %b", unlocked);
 
-		if (IdentityController.isKeystoreUnlocked(this)) {
+		if (IdentityController.isKeystoreUnlocked()) {
 			if (mUsername != null && mPassword != null) {
 				IdentityController.getKeystore().put(mUsername, mPassword.getBytes());
 			}
