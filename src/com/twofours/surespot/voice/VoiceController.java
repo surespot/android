@@ -41,7 +41,7 @@ public class VoiceController {
 	private static String mUsername = null;
 
 	public static final int SEND_THRESHOLD = 3000;
-	public static final int MAX_TIME = 500000;
+	public static final int MAX_TIME = 120000;
 	public static final int INTERVAL = 50;
 
 	private static RehearsalAudioRecorder mRecorder = null;
