@@ -176,8 +176,7 @@ public class NetworkController {
 		}
 	}
 
-	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers,
-			String voiceMessagingPurchaseToken, final CookieResponseHandler responseHandler) {
+	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -189,7 +188,7 @@ public class NetworkController {
 		}
 		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
-		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
+		addVoiceMessagingPurchaseTokens( params);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -325,7 +324,7 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, String voiceMessagingPurchaseToken, final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -333,7 +332,7 @@ public class NetworkController {
 		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
 
-		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
+		addVoiceMessagingPurchaseTokens(params);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -399,8 +398,10 @@ public class NetworkController {
 
 	}
 
-	private void addVoiceMessagingPurchaseTokens(String voiceMessagingPurchaseToken, Map<String, String> params) {
+	private void addVoiceMessagingPurchaseTokens(Map<String, String> params) {
+		String voiceMessagingPurchaseToken = SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken();
 		if (params != null && !TextUtils.isEmpty(voiceMessagingPurchaseToken)) {
+			SurespotLog.d(TAG,"adding voice messaging purchase tokens");
 			// build purchase token json object string
 			JSONObject jPurchaseTokens = new JSONObject();
 			try {
@@ -429,6 +430,9 @@ public class NetworkController {
 	public void getLatestData(int userControlId, JSONArray spotIds, JsonHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("spotIds", spotIds.toString());
+		
+		//update voice tokens, we may have just switched user
+		addVoiceMessagingPurchaseTokens(params);
 
 		post("/optdata/" + userControlId, new RequestParams(params), responseHandler);
 	}
@@ -766,9 +770,9 @@ public class NetworkController {
 
 	}
 
-	public void updateVoiceMessagingPurchaseToken(String voiceMessagingPurchaseToken, final AsyncHttpResponseHandler responseHandler) {
+	public void updateVoiceMessagingPurchaseToken(final AsyncHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
-		addVoiceMessagingPurchaseTokens(voiceMessagingPurchaseToken, params);
+		addVoiceMessagingPurchaseTokens(params);
 		post("/updatePurchaseTokens", new RequestParams(params), responseHandler);
 	}
 }

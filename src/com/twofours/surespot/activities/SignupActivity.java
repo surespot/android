@@ -335,8 +335,7 @@ public class SignupActivity extends SherlockActivity {
 
 										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
-										mNetworkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers, SurespotApplication
-												.getBillingController().getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
+										mNetworkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers, new CookieResponseHandler() {
 
 											@Override
 											public void onSuccess(int statusCode, String arg0, final Cookie cookie) {

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -38,9 +37,8 @@ public class NetworkHelper {
 						
 						String signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);
 						
-						networkController.login(username, dPassword, signature, SurespotApplication.getBillingController()
-								.getVoiceMessagingPurchaseToken(),new CookieResponseHandler() {
-							
+						networkController.login(username, dPassword, signature, new CookieResponseHandler() {
+							 
 							@Override
 							public void onSuccess(int responseCode, String result, Cookie cookie) {
 								SurespotLog.d(TAG, "successfully re-logged in: %s", username);

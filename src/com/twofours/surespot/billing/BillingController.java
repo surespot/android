@@ -276,7 +276,7 @@ public class BillingController {
 			NetworkController networkController = MainActivity.getNetworkController();
 			// TODO tell user if we can't update the token on the server tell them to login
 			if (networkController != null) {
-				networkController.updateVoiceMessagingPurchaseToken(token, new AsyncHttpResponseHandler() {
+				networkController.updateVoiceMessagingPurchaseToken(new AsyncHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, String content) {
 						SurespotLog.v(TAG, "successfully updated voice messaging token");
@@ -288,7 +288,7 @@ public class BillingController {
 	}
 
 	public synchronized String getVoiceMessagingPurchaseToken() {
-		SurespotLog.v(TAG, "got purchase token: %s", mVoiceMessagePurchaseToken);
+		SurespotLog.v(TAG, "getting purchase token: %s", mVoiceMessagePurchaseToken);
 		return mVoiceMessagePurchaseToken;
 	}
 

@@ -252,8 +252,7 @@ public class LoginActivity extends SherlockActivity {
 								return;
 							}
 						}
-						networkController.login(username, idSig.derivedPassword, idSig.signature, SurespotApplication.getBillingController()
-								.getVoiceMessagingPurchaseToken(), new CookieResponseHandler() {
+						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
 								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
