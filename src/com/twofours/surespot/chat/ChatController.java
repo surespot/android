@@ -134,8 +134,9 @@ public class ChatController {
 	private boolean mHandlingAutoInvite;
 	private String mUsername;
 
-	public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm, IAsyncCallbackTuple<String, Boolean> m401Handler,
-			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
+	public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm,
+			IAsyncCallbackTuple<String, Boolean> m401Handler, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
+			IAsyncCallback<Friend> tabShowingCallback) {
 		SurespotLog.d(TAG, "constructor: %s", username);
 		mContext = context;
 		mUsername = username;
@@ -183,15 +184,15 @@ public class ChatController {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					SurespotLog.d(TAG, "got 403 from websocket");
-										
+
 					reAuthing = NetworkHelper.reLogin(mContext, mNetworkController, mUsername, new CookieResponseHandler() {
-						
+
 						@Override
 						public void onSuccess(int responseCode, String result, Cookie cookie) {
 							connect();
-							
+
 						}
-						
+
 						@Override
 						public void onFailure(Throwable error, String content) {
 							socket = null;
@@ -209,8 +210,9 @@ public class ChatController {
 						return;
 					}
 				}
-				
-				if (reAuthing) return;
+
+				if (reAuthing)
+					return;
 
 				SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
 
@@ -916,73 +918,75 @@ public class ChatController {
 
 	// message handling shiznit
 	void loadEarlierMessages(final String username, final IAsyncCallback<Boolean> callback) {
+		if (mConnectionState == STATE_CONNECTED) {
 
-		// mLoading = true;
-		// get the list of messages
+			// mLoading = true;
+			// get the list of messages
 
-		Integer firstMessageId = mEarliestMessage.get(username);
-		if (firstMessageId == null) {
-			firstMessageId = getEarliestMessageId(username);
-			mEarliestMessage.put(username, firstMessageId);
-		}
-		// else {
-		// firstMessageId -= 60;
-		// if (firstMessageId < 1) {
-		// firstMessageId = 1;
-		// }
-		// }
+			Integer firstMessageId = mEarliestMessage.get(username);
+			if (firstMessageId == null) {
+				firstMessageId = getEarliestMessageId(username);
+				mEarliestMessage.put(username, firstMessageId);
+			}
+			// else {
+			// firstMessageId -= 60;
+			// if (firstMessageId < 1) {
+			// firstMessageId = 1;
+			// }
+			// }
 
-		if (firstMessageId != null) {
+			if (firstMessageId != null) {
 
-			if (firstMessageId > 1) {
+				if (firstMessageId > 1) {
 
-				SurespotLog.d(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
-				// final int fMessageId = firstMessageId;
-				final ChatAdapter chatAdapter = mChatAdapters.get(username);
+					SurespotLog.d(TAG, username + ": asking server for messages before messageId: " + firstMessageId);
+					// final int fMessageId = firstMessageId;
+					final ChatAdapter chatAdapter = mChatAdapters.get(username);
 
-				mNetworkController.getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(final JSONArray jsonArray) {
+					mNetworkController.getEarlierMessages(username, firstMessageId, new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(final JSONArray jsonArray) {
 
-						// if (getActivity() != null) {
-						SurespotMessage message = null;
+							// if (getActivity() != null) {
+							SurespotMessage message = null;
 
-						try {
-							for (int i = jsonArray.length() - 1; i >= 0; i--) {
-								JSONObject jsonMessage = jsonArray.getJSONObject(i);
-								message = SurespotMessage.toSurespotMessage(jsonMessage);
-								chatAdapter.insertMessage(message, false);
+							try {
+								for (int i = jsonArray.length() - 1; i >= 0; i--) {
+									JSONObject jsonMessage = jsonArray.getJSONObject(i);
+									message = SurespotMessage.toSurespotMessage(jsonMessage);
+									chatAdapter.insertMessage(message, false);
+								}
 							}
+							catch (JSONException e) {
+								SurespotLog.e(TAG, e, "%s: error creating chat message", username);
+							}
+
+							SurespotLog.d(TAG, "%s: loaded: %d earlier messages from the server.", username, jsonArray.length());
+							if (message != null) {
+								mEarliestMessage.put(username, message.getId());
+								// chatAdapter.notifyDataSetChanged();
+							}
+
+							// chatAdapter.setLoading(false);
+							callback.handleResponse(jsonArray.length() > 0);
+
 						}
-						catch (JSONException e) {
-							SurespotLog.e(TAG, e, "%s: error creating chat message", username);
+
+						@Override
+						public void onFailure(Throwable error, String content) {
+							SurespotLog.i(TAG, error, "%s: getEarlierMessages", username);
+							// chatAdapter.setLoading(false);
+							callback.handleResponse(false);
 						}
+					});
+				}
+				else {
+					SurespotLog.d(TAG, "%s: getEarlierMessages: no more messages.", username);
+					callback.handleResponse(false);
+					// ChatFragment.this.mNoEarlierMessages = true;
+				}
 
-						SurespotLog.d(TAG, "%s: loaded: %d earlier messages from the server.", username, jsonArray.length());
-						if (message != null) {
-							mEarliestMessage.put(username, message.getId());
-							// chatAdapter.notifyDataSetChanged();
-						}
-
-						// chatAdapter.setLoading(false);
-						callback.handleResponse(jsonArray.length() > 0);
-
-					}
-
-					@Override
-					public void onFailure(Throwable error, String content) {
-						SurespotLog.i(TAG, error, "%s: getEarlierMessages", username);
-						// chatAdapter.setLoading(false);
-						callback.handleResponse(false);
-					}
-				});
 			}
-			else {
-				SurespotLog.d(TAG, "%s: getEarlierMessages: no more messages.", username);
-				callback.handleResponse(false);
-				// ChatFragment.this.mNoEarlierMessages = true;
-			}
-
 		}
 	}
 
@@ -1654,8 +1658,6 @@ public class ChatController {
 	public synchronized void loadMessages(String username, boolean replace) {
 		SurespotLog.d(TAG, "loadMessages: " + username);
 
-	
-
 		if (!TextUtils.isEmpty(mUsername)) {
 			String spot = ChatUtils.getSpot(mUsername, username);
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
@@ -1676,7 +1678,8 @@ public class ChatController {
 			for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 				String them = entry.getKey();
 				String spot = ChatUtils.getSpot(mUsername, them);
-				SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(), entry.getValue().getCurrentScrollPositionId());
+				SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(),
+						entry.getValue().getCurrentScrollPositionId());
 			}
 		}
 	}
