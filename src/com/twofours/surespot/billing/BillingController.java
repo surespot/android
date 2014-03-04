@@ -69,7 +69,7 @@ public class BillingController {
 								SurespotLog.v(TAG, "In-app Billing is a go, querying inventory");
 								
 								try {
-									mIabHelper.queryInventoryAsync(mGotInventoryListener);
+									mIabHelper.queryInventoryAsync(false, mGotInventoryListener);
 									synchronized (BillingController.this) {
 										mQuerying = true;
 									}
@@ -135,6 +135,7 @@ public class BillingController {
 			}
 
 			if (result.isFailure()) {
+				SurespotLog.d(TAG, "Query inventory was a failure: %s",result);
 				return;
 			}
 
@@ -149,7 +150,7 @@ public class BillingController {
 				List<Purchase> consumables = new ArrayList<Purchase>(owned.size());
 
 				for (Purchase purchase : owned) {
-					SurespotLog.v(TAG, "has purchased sku: %s, state: %d, token: %s", purchase.getSku(), purchase.getPurchaseState(), purchase.getToken());
+					SurespotLog.d(TAG, "has purchased sku: %s, state: %d, token: %s", purchase.getSku(), purchase.getPurchaseState(), purchase.getToken());
 
 					if (purchase.getSku().equals(SurespotConstants.Products.VOICE_MESSAGING)) {						
 						if (purchase.getPurchaseState() == 0) {
