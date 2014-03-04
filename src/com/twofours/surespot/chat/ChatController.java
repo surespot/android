@@ -132,11 +132,13 @@ public class ChatController {
 	private IAsyncCallback<Friend> mTabShowingCallback;
 	private AutoInviteData mAutoInviteData;
 	private boolean mHandlingAutoInvite;
+	private String mUsername;
 
-	public ChatController(Context context, NetworkController networkController, FragmentManager fm, IAsyncCallbackTuple<String, Boolean> m401Handler,
+	public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm, IAsyncCallbackTuple<String, Boolean> m401Handler,
 			IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback, IAsyncCallback<Friend> tabShowingCallback) {
-		SurespotLog.d(TAG, "constructor: " + this);
+		SurespotLog.d(TAG, "constructor: %s", username);
 		mContext = context;
+		mUsername = username;
 		mNetworkController = networkController;
 
 		mCallback401 = m401Handler;
@@ -148,7 +150,7 @@ public class ChatController {
 		mChatAdapters = new HashMap<String, ChatAdapter>();
 		mFriendAdapter = new FriendAdapter(mContext);
 		mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
-		loadState();
+		loadState(mUsername);
 
 		mFragmentManager = fm;
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -181,9 +183,8 @@ public class ChatController {
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					SurespotLog.d(TAG, "got 403 from websocket");
-					
-					final String username = IdentityController.getLastLoggedInUser(mContext);
-					reAuthing = NetworkHelper.reLogin(mContext, mNetworkController, username, new CookieResponseHandler() {
+										
+					reAuthing = NetworkHelper.reLogin(mContext, mNetworkController, mUsername, new CookieResponseHandler() {
 						
 						@Override
 						public void onSuccess(int responseCode, String result, Cookie cookie) {
@@ -425,7 +426,7 @@ public class ChatController {
 
 		}
 
-		Cookie cookie = IdentityController.getCookie();
+		Cookie cookie = IdentityController.getCookieForUser(mUsername);
 
 		try {
 			HashMap<String, String> headers = new HashMap<String, String>();
@@ -1021,7 +1022,7 @@ public class ChatController {
 						String spot = (String) i.next();
 						try {
 							Integer availableId = conversationIds.getInt(spot);
-							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
+							String user = ChatUtils.getOtherSpotUser(spot, mUsername);
 							// update available ids
 							friend = mFriendAdapter.getFriend(user);
 							if (friend != null) {
@@ -1041,7 +1042,7 @@ public class ChatController {
 						String spot = (String) i.next();
 						try {
 							Integer availableId = controlIds.getInt(spot);
-							String user = ChatUtils.getOtherSpotUser(spot, IdentityController.getLoggedInUser());
+							String user = ChatUtils.getOtherSpotUser(spot, mUsername);
 							// update available ids
 							friend = mFriendAdapter.getFriend(user);
 							if (friend != null) {
@@ -1056,7 +1057,7 @@ public class ChatController {
 
 				JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
 				if (userControlMessages != null) {
-					handleControlMessages(IdentityController.getLoggedInUser(), userControlMessages);
+					handleControlMessages(mUsername, userControlMessages);
 				}
 
 				JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
@@ -1270,7 +1271,7 @@ public class ChatController {
 		}
 		else
 			if (message.getType().equals("message")) {
-				String otherUser = ChatUtils.getOtherSpotUser(message.getData(), IdentityController.getLoggedInUser());
+				String otherUser = ChatUtils.getOtherSpotUser(message.getData(), mUsername);
 				Friend friend = mFriendAdapter.getFriend(otherUser);
 
 				if (chatAdapter == null) {
@@ -1284,7 +1285,7 @@ public class ChatController {
 						chatAdapter.addControlMessage(message);
 					}
 
-					boolean controlFromMe = message.getFrom().equals(IdentityController.getLoggedInUser());
+					boolean controlFromMe = message.getFrom().equals(mUsername);
 					if (message.getAction().equals("delete")) {
 						int messageId = Integer.parseInt(message.getMoreData());
 						SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
@@ -1404,7 +1405,7 @@ public class ChatController {
 								}
 
 								// clear any associated invite notification
-								String loggedInUser = IdentityController.getLoggedInUser();
+								String loggedInUser = mUsername;
 								if (loggedInUser != null) {
 									mNotificationManager.cancel(loggedInUser + ":" + friendName,
 											SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
@@ -1442,7 +1443,7 @@ public class ChatController {
 
 	private void handleDeleteUser(String deletedUser, String deleter, boolean notify) {
 		SurespotLog.d(TAG, "handleDeleteUser,  deletedUser: %s, deleter: %s", deletedUser, deleter);
-		String username = IdentityController.getLoggedInUser();
+		String username = mUsername;
 
 		Friend friend = mFriendAdapter.getFriend(deletedUser);
 
@@ -1515,7 +1516,7 @@ public class ChatController {
 				mNetworkController.purgeCacheUrl(dMessage.getData());
 			}
 
-			boolean myMessage = dMessage.getFrom().equals(IdentityController.getLoggedInUser());
+			boolean myMessage = dMessage.getFrom().equals(mUsername);
 
 			// if i sent the delete, or it's not my message then delete it
 			// (if someone else deleted my message we don't care)
@@ -1544,7 +1545,7 @@ public class ChatController {
 				for (int i = 0; i < jsonMessages.length(); i++) {
 
 					lastMessage = SurespotMessage.toSurespotMessage(jsonMessages.getJSONObject(i));
-					boolean myMessage = lastMessage.getFrom().equals(IdentityController.getLoggedInUser());
+					boolean myMessage = lastMessage.getFrom().equals(mUsername);
 
 					if (myMessage) {
 						if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
@@ -1653,16 +1654,16 @@ public class ChatController {
 	public synchronized void loadMessages(String username, boolean replace) {
 		SurespotLog.d(TAG, "loadMessages: " + username);
 
-		String loggedInUser = IdentityController.getLoggedInUser();
+	
 
-		if (!TextUtils.isEmpty(loggedInUser)) {
-			String spot = ChatUtils.getSpot(loggedInUser, username);
+		if (!TextUtils.isEmpty(mUsername)) {
+			String spot = ChatUtils.getSpot(mUsername, username);
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
 			if (replace) {
-				chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(spot));
+				chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(mUsername, spot));
 			}
 			else {
-				chatAdapter.addOrUpdateMessages(SurespotApplication.getStateController().loadMessages(spot));
+				chatAdapter.addOrUpdateMessages(SurespotApplication.getStateController().loadMessages(mUsername, spot));
 			}
 		}
 
@@ -1671,11 +1672,11 @@ public class ChatController {
 	private synchronized void saveMessages() {
 		// save last 30? messages
 		SurespotLog.d(TAG, "saveMessages");
-		if (IdentityController.getLoggedInUser() != null) {
+		if (mUsername != null) {
 			for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
 				String them = entry.getKey();
-				String spot = ChatUtils.getSpot(IdentityController.getLoggedInUser(), them);
-				SurespotApplication.getStateController().saveMessages(spot, entry.getValue().getMessages(), entry.getValue().getCurrentScrollPositionId());
+				String spot = ChatUtils.getSpot(mUsername, them);
+				SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(), entry.getValue().getCurrentScrollPositionId());
 			}
 		}
 	}
@@ -1686,7 +1687,7 @@ public class ChatController {
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
 
 		if (chatAdapter != null) {
-			SurespotApplication.getStateController().saveMessages(ChatUtils.getSpot(IdentityController.getLoggedInUser(), username), chatAdapter.getMessages(),
+			SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
 					chatAdapter.getCurrentScrollPositionId());
 		}
 
@@ -1695,11 +1696,11 @@ public class ChatController {
 	private void saveUnsentMessages() {
 		mResendBuffer.addAll(mSendBuffer);
 		// SurespotLog.d(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-		SurespotApplication.getStateController().saveUnsentMessages(mResendBuffer);
+		SurespotApplication.getStateController().saveUnsentMessages(mUsername, mResendBuffer);
 	}
 
 	private void loadUnsentMessages() {
-		Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages().iterator();
+		Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages(mUsername).iterator();
 		while (iterator.hasNext()) {
 			mResendBuffer.add(iterator.next());
 		}
@@ -1741,12 +1742,12 @@ public class ChatController {
 	}
 
 	private void saveFriends() {
-		SurespotApplication.getStateController().saveFriends(mLatestUserControlId, mFriendAdapter.getFriends());
+		SurespotApplication.getStateController().saveFriends(mUsername, mLatestUserControlId, mFriendAdapter.getFriends());
 	}
 
-	private void loadState() {
+	private void loadState(String username) {
 		SurespotLog.d(TAG, "loadState");
-		FriendState fs = SurespotApplication.getStateController().loadFriends();
+		FriendState fs = SurespotApplication.getStateController().loadFriends(username);
 
 		List<Friend> friends = null;
 		if (fs != null) {
@@ -1805,7 +1806,7 @@ public class ChatController {
 			connect();
 			mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
-			clearMessageNotification(IdentityController.getLoggedInUser(), mCurrentChat);
+			clearMessageNotification(mUsername, mCurrentChat);
 		}
 	}
 
@@ -1893,7 +1894,7 @@ public class ChatController {
 	public synchronized void setCurrentChat(final String username) {
 
 		SurespotLog.d(TAG, "setCurrentChat: %s", username);
-		String loggedInUser = IdentityController.getLoggedInUser();
+		String loggedInUser = mUsername;
 		if (loggedInUser == null) {
 			return;
 		}
@@ -2228,7 +2229,7 @@ public class ChatController {
 			mNetworkController.deleteFriend(username, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String content) {
-					handleDeleteUser(username, IdentityController.getLoggedInUser(), true);
+					handleDeleteUser(username, mUsername, true);
 					setProgress("deleteFriend", false);
 				}
 
@@ -2525,7 +2526,7 @@ public class ChatController {
 	// called from GCM service
 	public boolean addMessageExternal(final SurespotMessage message) {
 		// might not be same user so check that to is the currently logged in user
-		boolean sameUser = message.getTo().equals(IdentityController.getLoggedInUser());
+		boolean sameUser = message.getTo().equals(mUsername);
 		if (!sameUser) {
 			return false;
 		}

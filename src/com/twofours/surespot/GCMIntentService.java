@@ -92,7 +92,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				return;
 			}
 
-			Cookie cookie = IdentityController.getCookie();
+			Cookie cookie = IdentityController.getCookieForUser(IdentityController.getLoggedInUser());
 			if (cookie != null) {
 
 				CookieStore cookieStore = new BasicCookieStore();

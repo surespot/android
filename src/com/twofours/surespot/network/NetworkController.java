@@ -94,18 +94,26 @@ public class NetworkController {
 		}
 	}
 
-	public NetworkController(Activity context, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws  Exception {
+	// public synchronized void setCookie(String username, Cookie cookie) {
+	// mCookieStore.clear();
+	// mCookieStore.addCookie(cookie);
+	// }
+
+	public NetworkController(Activity context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
 		SurespotLog.v(TAG, "constructor");
 		mContext = context;
 
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
 		mCookieStore = new BasicCookieStore();
-		Cookie cookie = IdentityController.getCookie();
-		if (cookie != null) {
-			mCookieStore.addCookie(cookie);
+
+		if (username != null) {
+			Cookie cookie = IdentityController.getCookieForUser(username);
+			if (cookie != null) {
+				mCookieStore.addCookie(cookie);
+			}
 		}
 
-		try {			
+		try {
 			mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context);
 			mClient = new AsyncHttpClient(mContext);
 			mSyncClient = new SyncHttpClient(mContext) {
@@ -118,9 +126,8 @@ public class NetworkController {
 		}
 		catch (IOException e) {
 			Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
-			throw new Exception("Fatal error, could not create http clients..is storage space available?", e);				
+			throw new Exception("Fatal error, could not create http clients..is storage space available?", e);
 		}
-				
 
 		HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
 
@@ -162,14 +169,14 @@ public class NetworkController {
 			mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
 			mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-			
+
 			mClient.setUserAgent(SurespotApplication.getUserAgent());
 			mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
-			mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());		
+			mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());
 		}
 	}
 
-	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers, 
+	public void addUser(final String username, String password, String publicKeyDH, String publicKeyECDSA, String signature, String referrers,
 			String voiceMessagingPurchaseToken, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
@@ -287,9 +294,9 @@ public class NetworkController {
 		params.put("keyVersion", keyVersion);
 		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
-		
+
 		String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-	
+
 		if (gcmIdReceived != null) {
 			params.put("gcmId", gcmIdReceived);
 		}
@@ -309,8 +316,7 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, String voiceMessagingPurchaseToken,
-			final CookieResponseHandler responseHandler) {
+	public void login(String username, String password, String signature, String voiceMessagingPurchaseToken, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -323,9 +329,8 @@ public class NetworkController {
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
-		
+
 		SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
-			
 
 		boolean gcmUpdatedTemp = false;
 		// update the gcmid if it false
@@ -337,7 +342,6 @@ public class NetworkController {
 				gcmUpdatedTemp = true;
 			}
 		}
-	
 
 		// just be javascript already
 		final boolean gcmUpdated = gcmUpdatedTemp;
@@ -403,11 +407,11 @@ public class NetworkController {
 		get("/messagedataopt/" + user + "/" + mId + "/" + cId, null, responseHandler);
 
 	}
-	
+
 	public void getLatestData(int userControlId, JSONArray spotIds, JsonHttpResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("spotIds", spotIds.toString());
-		
+
 		post("/optdata/" + userControlId, new RequestParams(params), responseHandler);
 	}
 
@@ -640,7 +644,7 @@ public class NetworkController {
 		}.execute();
 	}
 
-	public InputStream  getFileStream(Context context, final String url) {
+	public InputStream getFileStream(Context context, final String url) {
 
 		// SurespotLog.v(TAG, "getting file stream");
 
@@ -649,7 +653,7 @@ public class NetworkController {
 		try {
 			response = mCachingHttpClient.execute(httpGet, new BasicHttpContext());
 			HttpEntity resEntity = response.getEntity();
-			if (response.getStatusLine().getStatusCode() == 200) {		
+			if (response.getStatusLine().getStatusCode() == 200) {
 				return resEntity.getContent();
 			}
 		}
@@ -659,7 +663,7 @@ public class NetworkController {
 
 		}
 		finally {
-			httpGet.releaseConnection();			
+			httpGet.releaseConnection();
 		}
 		return null;
 	}

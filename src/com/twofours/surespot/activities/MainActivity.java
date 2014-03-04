@@ -392,7 +392,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						}
 						else {
 
-							SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+							SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
 							boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
 
 							// if they have purchased voice or don't want to be bugged anymore or the user they are on is deleted
@@ -434,7 +434,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 							}
 							else {
 								//
-								SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+								SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
 								boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
 								if (dontAskDontTell) {
 									mChatController.closeTab();
@@ -635,7 +635,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private String getLaunchUser() {
 		Intent intent = getIntent();
-		// String user = IdentityController.getLoggedInUser();
+		// String user = mUser;
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
@@ -650,10 +650,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
 				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
 
-			// if we have password saved, login
-			// NetworkHelper.reLogin(this, mNetworkController, username, cookieResponseHandler);
 			user = messageTo;
-
+			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
 		}
 		else {
 			String lastUser = IdentityController.getLastLoggedInUser(this);
@@ -687,7 +685,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	};
 
 	private void postServiceProcess() {
-		if (!SurespotApplication.getCachingService().canHasSession(mUser)) {
+		if (!SurespotApplication.getCachingService().setSession(this, mUser)) {
 			launchLogin();
 			return;
 		}
@@ -714,7 +712,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mMainHandler = new Handler(getMainLooper());
 
 		try {
-			mNetworkController = new NetworkController(MainActivity.this, m401Handler);
+			mNetworkController = new NetworkController(MainActivity.this, mUser, m401Handler);
 		}
 		catch (Exception e) {
 			finish();
@@ -723,7 +721,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mBillingController = SurespotApplication.getBillingController();
 
-		mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler, new IAsyncCallback<Boolean>() {
+		mChatController = new ChatController(MainActivity.this, mUser, mNetworkController, getSupportFragmentManager(), m401Handler, new IAsyncCallback<Boolean>() {
 			@Override
 			public void handleResponse(Boolean inProgress) {
 				setHomeProgress(inProgress);
@@ -784,7 +782,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.d(TAG, "started from invite");
 			mSet = true;
 			Utils.clearIntent(intent);
-			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
+			Utils.configureActionBar(this, "", mUser, true);
 		}
 
 		// message received show chat activity for user
@@ -792,7 +790,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			SurespotLog.d(TAG, "started from message, to: " + messageTo + ", from: " + messageFrom);
 			name = messageFrom;
-			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
+			Utils.configureActionBar(this, "", mUser, true);
 			mSet = true;
 			Utils.clearIntent(intent);
 			Utils.logIntent(TAG, intent);
@@ -822,7 +820,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (!mSet) {
-			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
+			Utils.configureActionBar(this, "", mUser, true);
 			String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
 			if (lastName != null) {
 				SurespotLog.d(TAG, "using LAST_CHAT");
@@ -1145,7 +1143,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			UIUtils.sendInvitation(MainActivity.this, mNetworkController);
 			return true;
 		case R.id.menu_clear_messages:
-			SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+			SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
 			boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 			if (confirm) {
 				mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.delete_all_confirmation), getString(R.string.delete_all_title),
@@ -1565,7 +1563,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (action.equals(Intent.ACTION_SEND)) {
-			Utils.configureActionBar(this, "", IdentityController.getLoggedInUser(), true);
+			Utils.configureActionBar(this, "", mUser, true);
 
 			if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
 				String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
@@ -1670,7 +1668,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		final String friend = mEtInvite.getText().toString();
 
 		if (friend.length() > 0) {
-			if (friend.equals(IdentityController.getLoggedInUser())) {
+			if (friend.equals(mUser)) {
 				// TODO let them be friends with themselves?
 				Utils.makeToast(this, getString(R.string.friend_self_error));
 				return;
@@ -1744,7 +1742,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				}
 				else {
 					mIvInvite.setVisibility(View.GONE);
-					SharedPreferences sp = getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
 					boolean dontAsk = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
 
 					if (dontAsk) {
@@ -1928,7 +1926,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void setBackgroundImage() {
 		// reset preference config for adapters
-		SharedPreferences sp = MainActivity.this.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+		SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
 		ImageView imageView = (ImageView) findViewById(R.id.backgroundImage);
 		String backgroundImageUrl = sp.getString("pref_background_image", null);
 

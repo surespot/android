@@ -75,7 +75,7 @@ public class SignupActivity extends SherlockActivity {
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);
 
 		try {
-			mNetworkController = new NetworkController(SignupActivity.this, null);
+			mNetworkController = new NetworkController(SignupActivity.this,null, null);
 		}
 		catch (Exception e) {
 			this.finish();

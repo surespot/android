@@ -30,7 +30,6 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.Friend;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
@@ -54,8 +53,8 @@ public class StateController {
 		mContext = context;
 	}
 
-	public FriendState loadFriends() {
-		String filename = getFilename(FRIENDS);
+	public FriendState loadFriends(String username) {
+		String filename = getFilename(username, FRIENDS);
 		ArrayList<Friend> friends = new ArrayList<Friend>();
 		if (filename != null) {
 			String sFriendsJson = null;
@@ -99,8 +98,8 @@ public class StateController {
 		return null;
 	}
 
-	public synchronized void saveFriends(int latestUserControlId, List<Friend> friends) {
-		String filename = getFilename(FRIENDS);
+	public synchronized void saveFriends(String username, int latestUserControlId, List<Friend> friends) {
+		String filename = getFilename(username, FRIENDS);
 		if (filename != null) {
 			if (friends != null && friends.size() > 0) {
 
@@ -133,8 +132,8 @@ public class StateController {
 		}
 	}
 
-	public synchronized void saveUnsentMessages(Collection<SurespotMessage> messages) {
-		String filename = getFilename(UNSENT_MESSAGES);
+	public synchronized void saveUnsentMessages(String username, Collection<SurespotMessage> messages) {
+		String filename = getFilename(username, UNSENT_MESSAGES);
 		if (filename != null) {
 			if (messages != null) {
 				if (messages.size() > 0) {
@@ -159,8 +158,8 @@ public class StateController {
 
 	}
 
-	public List<SurespotMessage> loadUnsentMessages() {
-		String filename = getFilename(UNSENT_MESSAGES);
+	public List<SurespotMessage> loadUnsentMessages(String username) {
+		String filename = getFilename(username, UNSENT_MESSAGES);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		if (filename != null) {
 			String sUnsentMessages = null;
@@ -185,10 +184,6 @@ public class StateController {
 		}
 		return messages;
 
-	}
-
-	public synchronized void saveMessages(String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
-		saveMessages(IdentityController.getLoggedInUser(), spot, messages, currentScrollPosition);
 	}
 
 	public synchronized void saveMessages(String user, String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
@@ -220,10 +215,6 @@ public class StateController {
 		}
 	}
 
-	public ArrayList<SurespotMessage> loadMessages(String spot) {
-		return loadMessages(IdentityController.getLoggedInUser(), spot);
-	}
-
 	public ArrayList<SurespotMessage> loadMessages(String user, String spot) {
 		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
@@ -252,10 +243,10 @@ public class StateController {
 		return messages;
 	}
 
-	private String getFilename(String filename) {
-		String user = IdentityController.getLoggedInUser();
-		return getFilename(user, filename);
-	}
+	// private String getFilename(String filename) {
+	// String user = IdentityController.getLoggedInUser();
+	// return getFilename(user, filename);
+	// }
 
 	private String getFilename(String user, String filename) {
 

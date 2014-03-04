@@ -97,11 +97,11 @@ public abstract class SurespotFragmentPagerAdapter extends PagerAdapter {
 
         Fragment fragment = mFragmentManager.findFragmentByTag(name);
         if (fragment != null) {
-            SurespotLog.v(TAG, "Attaching item #" + itemId + ": f=" + fragment);
+            SurespotLog.d(TAG, "Attaching item #" + itemId + ": f=" + fragment);
             mCurTransaction.attach(fragment);
         } else {
             fragment = getItem(position);
-            SurespotLog.v(TAG, "Adding item #" + itemId + ": f=" + fragment);
+            SurespotLog.d(TAG, "Adding item #" + itemId + ": f=" + fragment);
             mCurTransaction.add(container.getId(), fragment,
                     makeFragmentName(container.getId(), itemId));
         }

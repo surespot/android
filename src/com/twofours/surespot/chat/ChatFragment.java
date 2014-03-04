@@ -71,7 +71,7 @@ public class ChatFragment extends SherlockFragment {
 		super.onCreate(savedInstanceState);
 		setUsername(getArguments().getString("username"));
 		TAG = TAG + ":" + getUsername();
-		SurespotLog.v(TAG, "onCreate");
+		SurespotLog.d(TAG, "onCreate");
 
 	}
 

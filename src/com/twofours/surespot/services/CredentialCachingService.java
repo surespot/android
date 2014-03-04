@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
@@ -80,7 +81,7 @@ public class CredentialCachingService extends Service {
 
 				try {
 					PublicKey publicKey = mPublicIdentities.get(new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
-					return EncryptionController.generateSharedSecretSync(getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion()).getPrivate(),
+					return EncryptionController.generateSharedSecretSync(getIdentity(null, key.getOurUsername(), null).getKeyPairDH(key.getOurVersion()).getPrivate(),
 							publicKey);
 				}
 				catch (InvalidCacheLoadException e) {
@@ -142,31 +143,41 @@ public class CredentialCachingService extends Service {
 		// TODO load cache data from disk
 	}
 
-	public void refreshCookie(String username, Cookie cookie) {
-		this.mCookies.put(username, cookie);
-	}
+//	public void refreshCookie(String username, Cookie cookie) {
+//		this.mCookies.put(username, cookie);
+//	}
 	
-	public boolean canHasSession(String username) {
-		SurespotLog.d(TAG, "canHasSession: %s", username);
-
-
+	public boolean setSession(Context context, String username) {
+		SurespotLog.d(TAG, "setSession: %s", username);
+		
+		//need identity + cookie
+		//see if we have the identity 
+		SurespotIdentity identity = getIdentity(context, username, null);		
+		boolean hasIdentity = identity != null;
+		
+		SurespotLog.d(TAG,"hasIdentity: %b", hasIdentity);
+		
+		boolean hasAWayOfGettingCookie = false;
 		Cookie cookie = getCookie(username);
-
 		Date date = new Date();
 		Date expire = new Date(date.getTime() - 60 * 60 * 1000);
 		
 		//if the cookie expires within the hour make them login again
 		if (cookie != null && !cookie.isExpired(expire)) {
-			SurespotLog.d(TAG, "cookie is not expired, we can has session");
-			return true;
+			hasAWayOfGettingCookie = true;
+			SurespotLog.d(TAG,"we have non expired cookie");
 		}
-		else {
-			String password = IdentityController.getStoredPasswordForIdentity(username);
-			boolean hasPassword = password != null;
-			//TODO load encrypted secret data from disk
-			SurespotLog.d(TAG, "hasPassword: %b", hasPassword);
-			return hasPassword;
+				
+		if (!hasAWayOfGettingCookie) {
+			hasAWayOfGettingCookie = IdentityController.getStoredPasswordForIdentity(username) != null;
+			SurespotLog.d(TAG,"do we have a password: %b", hasAWayOfGettingCookie);
 		}
+		
+		boolean sessionSet = hasAWayOfGettingCookie && hasIdentity;
+		if (sessionSet) {
+			mLoggedInUser = username;		
+		}
+		return sessionSet;
 	}
 
 	private void saveSharedSecrets() {
@@ -220,12 +231,27 @@ public class CredentialCachingService extends Service {
 
 	}
 
-	public SurespotIdentity getIdentity() {
-		return getIdentity(mLoggedInUser);
+	public SurespotIdentity getIdentity(Context context) {
+		return getIdentity(context, mLoggedInUser, null);
 	}
 
-	public SurespotIdentity getIdentity(String username) {
-		return mIdentities.get(username);
+	public SurespotIdentity getIdentity(Context context, String username, String password) {
+		SurespotIdentity identity = mIdentities.get(username);
+		if (identity == null && context != null) {
+			//if we have the password load it
+			if (password == null) {
+				password = IdentityController.getStoredPasswordForIdentity(username);
+				//derive the password
+				
+			}
+			if (password != null) {
+				identity = IdentityController.loadIdentity(context,username, password);
+				if (identity != null) {
+					updateIdentity(identity);
+				}
+			}
+		}
+		return identity;
 	}
 
 	public void clearUserData(String username) {

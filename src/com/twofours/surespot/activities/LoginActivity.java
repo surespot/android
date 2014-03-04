@@ -68,17 +68,20 @@ public class LoginActivity extends SherlockActivity {
 
 		SurespotLog.d(TAG, "onCreate");
 
-		 boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-		 if (keystoreEnabled) {
-			 IdentityController.initKeystore(this);
-		 }
+		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+		if (keystoreEnabled) {
+			IdentityController.initKeystore(this);
+		}
 
 		setContentView(R.layout.activity_login);
 		Utils.configureActionBar(this, "", getString(R.string.surespot), false);
 
-		SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
-		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+		CredentialCachingService ccs = SurespotApplication.getCachingService();
+		if (ccs == null) {
+			SurespotLog.d(TAG, "binding cache service, service is null");
+			Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+			bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+		}
 
 		Utils.logIntent(TAG, getIntent());
 
@@ -154,7 +157,6 @@ public class LoginActivity extends SherlockActivity {
 			to = IdentityController.getLastLoggedInUser(this);
 		}
 
-		
 		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
@@ -168,7 +170,7 @@ public class LoginActivity extends SherlockActivity {
 
 			}
 		});
-		
+
 		if (to != null && mIdentityNames.contains(to)) {
 			spinner.setSelection(adapter.getPosition(to));
 		}
@@ -243,7 +245,7 @@ public class LoginActivity extends SherlockActivity {
 						NetworkController networkController = MainActivity.getNetworkController();
 						if (networkController == null) {
 							try {
-								networkController = new NetworkController(LoginActivity.this, null);
+								networkController = new NetworkController(LoginActivity.this, null, null);
 							}
 							catch (Exception e) {
 								LoginActivity.this.finish();
@@ -450,7 +452,7 @@ public class LoginActivity extends SherlockActivity {
 	}
 
 	private void updatePassword() {
-		
+
 		String username = getSelectedUsername();
 
 		boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
@@ -459,7 +461,7 @@ public class LoginActivity extends SherlockActivity {
 		if (enableKeystore) {
 			password = IdentityController.getStoredPasswordForIdentity(username);
 
-			if (password != null) {				
+			if (password != null) {
 				mEtPassword.setText(password);
 				mEtPassword.setSelection(password.length());
 				mCbSavePassword.setChecked(true);
@@ -472,7 +474,7 @@ public class LoginActivity extends SherlockActivity {
 		else {
 			mCbSavePassword.setChecked(false);
 		}
-			
+
 	}
 
 	private String getSelectedUsername() {

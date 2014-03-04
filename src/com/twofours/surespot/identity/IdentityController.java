@@ -72,7 +72,6 @@ public class IdentityController {
 			SurespotLog.w(TAG, "getIdentity null");
 		}
 	}
-	
 
 	public static synchronized void createIdentity(final Context context, final String username, final String password, final String salt,
 			final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
@@ -197,7 +196,7 @@ public class IdentityController {
 				NetworkController networkController = MainActivity.getNetworkController();
 				if (networkController == null) {
 					try {
-						networkController = new NetworkController(context, null);
+						networkController = new NetworkController(context, null, null);
 					}
 					catch (Exception e) {
 						context.finish();
@@ -342,16 +341,25 @@ public class IdentityController {
 	}
 
 	public static SurespotIdentity getIdentity() {
-		return SurespotApplication.getCachingService().getIdentity();
+		return getIdentity(null,null,null);
 	}
 
 	public static SurespotIdentity getIdentity(Context context, String username, String password) {
-		SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(username);
-		if (identity == null) {
-			identity = loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
+		if (username == null) {
+			username = getLastLoggedInUser(context);
 		}
+		
+		SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(context, username, password);
+//		if (identity == null) {
+//			identity = loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
+//		}
 		return identity;
 
+	}
+	
+	public synchronized static SurespotIdentity loadIdentity(Context context, String username, String password) {
+		return loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
+	
 	}
 
 	private synchronized static SurespotIdentity loadIdentity(Context context, boolean internal, String username, String password) {
@@ -465,7 +473,7 @@ public class IdentityController {
 
 			if (networkController == null) {
 				try {
-					networkController = new NetworkController(context, null);
+					networkController = new NetworkController(context, null, null);
 				}
 				catch (Exception e) {
 					context.finish();
@@ -535,7 +543,7 @@ public class IdentityController {
 			NetworkController networkController = MainActivity.getNetworkController();
 			if (networkController == null) {
 				try {
-					networkController = new NetworkController(context, null);
+					networkController = new NetworkController(context, null, null);
 				}
 				catch (Exception e) {
 					context.finish();
@@ -871,18 +879,20 @@ public class IdentityController {
 			return null;
 		}
 	}
-	
+
 	public static String getLastLoggedInUser(Context context) {
-		return Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER);	
+		return Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER);
 	}
 
-	public static Cookie getCookie() {
+	public static Cookie getCookieForUser(String username) {
 		Cookie cookie = null;
 		CredentialCachingService service = SurespotApplication.getCachingService();
 		if (service != null) {
-			String user = service.getLoggedInUser();
-			if (user != null) {
-				cookie = SurespotApplication.getCachingService().getCookie(user);
+
+			if (username != null) {
+				SurespotLog.d(TAG, "getting cookie for %s", username);
+
+				cookie = SurespotApplication.getCachingService().getCookie(username);
 			}
 		}
 		return cookie;
@@ -900,11 +910,11 @@ public class IdentityController {
 	}
 
 	public static String getOurLatestVersion() {
-		return SurespotApplication.getCachingService() == null ? null : SurespotApplication.getCachingService().getIdentity().getLatestVersion();
+		return SurespotApplication.getCachingService() == null ? null : SurespotApplication.getCachingService().getIdentity(null).getLatestVersion();
 	}
 
 	public static String getOurLatestVersion(String username) {
-		return SurespotApplication.getCachingService().getIdentity(username).getLatestVersion();
+		return SurespotApplication.getCachingService().getIdentity(null, username, null).getLatestVersion();
 
 	}
 
