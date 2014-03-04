@@ -81,8 +81,8 @@ public class CredentialCachingService extends Service {
 
 				try {
 					PublicKey publicKey = mPublicIdentities.get(new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
-					return EncryptionController.generateSharedSecretSync(getIdentity(null, key.getOurUsername(), null).getKeyPairDH(key.getOurVersion()).getPrivate(),
-							publicKey);
+					return EncryptionController.generateSharedSecretSync(getIdentity(null, key.getOurUsername(), null).getKeyPairDH(key.getOurVersion())
+							.getPrivate(), publicKey);
 				}
 				catch (InvalidCacheLoadException e) {
 					SurespotLog.w(TAG, e, "secretCacheLoader");
@@ -109,26 +109,33 @@ public class CredentialCachingService extends Service {
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
 		mLatestVersions = CacheBuilder.newBuilder().build(versionCacheLoader);
 		mIdentities = new HashMap<String, SurespotIdentity>(5);
+		
+		Notification notification = null;
 
-		// if we're not using the keychain then use this as a foreground service
-		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-		if (!keystoreEnabled) {
-			// in 4.3 and above they decide to fuck us by showing the notification
-			// so make the text meaningful at least
-			Notification notification = null;
+		//if we're < 4.3 then start foreground service
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+			
+			// if we're not using the keychain in 4.3+ start as a foreground service 
+			if (!keystoreEnabled) {
+				
+				// in 4.3 and above they decide to fuck us by showing the notification
+				// so make the text meaningful at least
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
 				PendingIntent contentIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.BACKGROUND_CACHE_NOTIFICATION, new Intent(
 						this, MainActivity.class), 0);
 				notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
 						getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
-				notification.priority = Notification.PRIORITY_MIN;
+				notification.priority = Notification.PRIORITY_MIN;				
 			}
-			else {
-				notification = new Notification(0, null, System.currentTimeMillis());
-				notification.flags |= Notification.FLAG_NO_CLEAR;
-			}
-
+		}
+		else {
+			notification = new Notification(0, null, System.currentTimeMillis());
+			notification.flags |= Notification.FLAG_NO_CLEAR;
+			
+		}
+		
+		if (notification != null) {
 			startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
 		}
 
@@ -143,39 +150,35 @@ public class CredentialCachingService extends Service {
 		// TODO load cache data from disk
 	}
 
-//	public void refreshCookie(String username, Cookie cookie) {
-//		this.mCookies.put(username, cookie);
-//	}
-	
 	public boolean setSession(Context context, String username) {
 		SurespotLog.d(TAG, "setSession: %s", username);
-		
-		//need identity + cookie
-		//see if we have the identity 
-		SurespotIdentity identity = getIdentity(context, username, null);		
+
+		// need identity + cookie
+		// see if we have the identity
+		SurespotIdentity identity = getIdentity(context, username, null);
 		boolean hasIdentity = identity != null;
-		
-		SurespotLog.d(TAG,"hasIdentity: %b", hasIdentity);
-		
+
+		SurespotLog.d(TAG, "hasIdentity: %b", hasIdentity);
+
 		boolean hasAWayOfGettingCookie = false;
 		Cookie cookie = getCookie(username);
 		Date date = new Date();
 		Date expire = new Date(date.getTime() - 60 * 60 * 1000);
-		
-		//if the cookie expires within the hour make them login again
+
+		// if the cookie expires within the hour make them login again
 		if (cookie != null && !cookie.isExpired(expire)) {
 			hasAWayOfGettingCookie = true;
-			SurespotLog.d(TAG,"we have non expired cookie");
+			SurespotLog.d(TAG, "we have non expired cookie");
 		}
-				
+
 		if (!hasAWayOfGettingCookie) {
 			hasAWayOfGettingCookie = IdentityController.getStoredPasswordForIdentity(username) != null;
-			SurespotLog.d(TAG,"do we have a password: %b", hasAWayOfGettingCookie);
+			SurespotLog.d(TAG, "do we have a password: %b", hasAWayOfGettingCookie);
 		}
-		
+
 		boolean sessionSet = hasAWayOfGettingCookie && hasIdentity;
 		if (sessionSet) {
-			mLoggedInUser = username;		
+			mLoggedInUser = username;
 		}
 		return sessionSet;
 	}
@@ -238,14 +241,14 @@ public class CredentialCachingService extends Service {
 	public SurespotIdentity getIdentity(Context context, String username, String password) {
 		SurespotIdentity identity = mIdentities.get(username);
 		if (identity == null && context != null) {
-			//if we have the password load it
+			// if we have the password load it
 			if (password == null) {
 				password = IdentityController.getStoredPasswordForIdentity(username);
-				//derive the password
-				
+				// derive the password
+
 			}
 			if (password != null) {
-				identity = IdentityController.loadIdentity(context,username, password);
+				identity = IdentityController.loadIdentity(context, username, password);
 				if (identity != null) {
 					updateIdentity(identity);
 				}
@@ -530,7 +533,5 @@ public class CredentialCachingService extends Service {
 			return true;
 		}
 	}
-
-	
 
 }

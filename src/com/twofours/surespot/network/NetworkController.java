@@ -100,7 +100,7 @@ public class NetworkController {
 	// }
 
 	public NetworkController(Activity context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
-		SurespotLog.v(TAG, "constructor");
+		SurespotLog.d(TAG, "constructor username: %s", username);
 		mContext = context;
 
 		mBaseUrl = SurespotConfiguration.getBaseUrl();
@@ -204,6 +204,15 @@ public class NetworkController {
 
 		// just be javascript already
 		final boolean gcmUpdated = gcmUpdatedTemp;
+		
+		for (Cookie c : mCookieStore.getCookies()) {
+
+			if (c.getName().equals("connect.sid")) {
+				SurespotLog.d(TAG, "signup, clearing cookie: %s", c);
+			}
+		}
+		
+		mCookieStore.clear();
 
 		post("/users", new RequestParams(params), new AsyncHttpResponseHandler() {
 
@@ -306,9 +315,9 @@ public class NetworkController {
 
 	private static Cookie extractConnectCookie(CookieStore cookieStore) {
 		for (Cookie c : cookieStore.getCookies()) {
-			// System.out.println("Cookie name: " + c.getName() + " value: " +
-			// c.getValue());
+
 			if (c.getName().equals("connect.sid")) {
+				SurespotLog.d(TAG, "extracted cookie: %s", c);
 				return c;
 			}
 		}
@@ -342,6 +351,15 @@ public class NetworkController {
 				gcmUpdatedTemp = true;
 			}
 		}
+
+		for (Cookie c : mCookieStore.getCookies()) {
+
+			if (c.getName().equals("connect.sid")) {
+				SurespotLog.d(TAG, "login, clearing cookie: %s", c);
+			}
+		}
+		
+		mCookieStore.clear();
 
 		// just be javascript already
 		final boolean gcmUpdated = gcmUpdatedTemp;

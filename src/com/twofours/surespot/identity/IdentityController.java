@@ -893,6 +893,8 @@ public class IdentityController {
 				SurespotLog.d(TAG, "getting cookie for %s", username);
 
 				cookie = SurespotApplication.getCachingService().getCookie(username);
+				
+				SurespotLog.d(TAG,"returning cookie: %s", cookie);
 			}
 		}
 		return cookie;
