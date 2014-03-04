@@ -1,6 +1,7 @@
 package com.twofours.surespot.services;
 
 import java.security.PublicKey;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -79,8 +80,8 @@ public class CredentialCachingService extends Service {
 
 				try {
 					PublicKey publicKey = mPublicIdentities.get(new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
-					return EncryptionController.generateSharedSecretSync(getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion())
-							.getPrivate(), publicKey);					
+					return EncryptionController.generateSharedSecretSync(getIdentity(key.getOurUsername()).getKeyPairDH(key.getOurVersion()).getPrivate(),
+							publicKey);
 				}
 				catch (InvalidCacheLoadException e) {
 					SurespotLog.w(TAG, e, "secretCacheLoader");
@@ -139,6 +140,33 @@ public class CredentialCachingService extends Service {
 		updateIdentity(identity);
 
 		// TODO load cache data from disk
+	}
+
+	public void refreshCookie(String username, Cookie cookie) {
+		this.mCookies.put(username, cookie);
+	}
+	
+	public boolean canHasSession(String username) {
+		SurespotLog.d(TAG, "canHasSession: %s", username);
+
+
+		Cookie cookie = getCookie(username);
+
+		Date date = new Date();
+		Date expire = new Date(date.getTime() - 60 * 60 * 1000);
+		
+		//if the cookie expires within the hour make them login again
+		if (cookie != null && !cookie.isExpired(expire)) {
+			SurespotLog.d(TAG, "cookie is not expired, we can has session");
+			return true;
+		}
+		else {
+			String password = IdentityController.getStoredPasswordForIdentity(username);
+			boolean hasPassword = password != null;
+			//TODO load encrypted secret data from disk
+			SurespotLog.d(TAG, "hasPassword: %b", hasPassword);
+			return hasPassword;
+		}
 	}
 
 	private void saveSharedSecrets() {
@@ -244,7 +272,7 @@ public class CredentialCachingService extends Service {
 			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
 
 			saveSharedSecrets();
-			
+
 			SharedPreferences sp = Utils.getGlobalSharedPrefs(getApplicationContext());
 			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
 			SurespotLog.d(TAG, "read kill cache on logout: %b", stopCache);
@@ -267,8 +295,8 @@ public class CredentialCachingService extends Service {
 	}
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {		
-		return START_STICKY;		
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		return START_STICKY;
 	}
 
 	@Override
@@ -341,7 +369,6 @@ public class CredentialCachingService extends Service {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			// result = prime * result + getOuterType().hashCode();
 			result = prime * result + ((mUsername == null) ? 0 : mUsername.hashCode());
 			result = prime * result + ((mVersion == null) ? 0 : mVersion.hashCode());
 			return result;
@@ -356,8 +383,6 @@ public class CredentialCachingService extends Service {
 			if (!(obj instanceof VersionMap))
 				return false;
 			VersionMap other = (VersionMap) obj;
-			// if (!getOuterType().equals(other.getOuterType()))
-			// return false;
 			if (mUsername == null) {
 				if (other.mUsername != null)
 					return false;
@@ -374,11 +399,6 @@ public class CredentialCachingService extends Service {
 					return false;
 			return true;
 		}
-
-		// private CredentialCachingService getOuterType() {
-		// return CredentialCachingService.this;
-		// }
-
 	}
 
 	private static class PublicKeyPairKey {
@@ -400,7 +420,6 @@ public class CredentialCachingService extends Service {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			// result = prime * result + getOuterType().hashCode();
 			result = prime * result + ((mVersionMap == null) ? 0 : mVersionMap.hashCode());
 			return result;
 		}
@@ -414,8 +433,6 @@ public class CredentialCachingService extends Service {
 			if (!(obj instanceof PublicKeyPairKey))
 				return false;
 			PublicKeyPairKey other = (PublicKeyPairKey) obj;
-			// if (!getOuterType().equals(other.getOuterType()))
-			// return false;
 			if (mVersionMap == null) {
 				if (other.mVersionMap != null)
 					return false;
@@ -425,11 +442,6 @@ public class CredentialCachingService extends Service {
 					return false;
 			return true;
 		}
-
-		// private CredentialCachingService getOuterType() {
-		// return CredentialCachingService.this;
-		// }
-
 	}
 
 	public static class SharedSecretKey {
@@ -461,7 +473,6 @@ public class CredentialCachingService extends Service {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			// result = prime * result + getOuterType().hashCode();
 			result = prime * result + ((mOurVersionMap == null) ? 0 : mOurVersionMap.hashCode());
 			result = prime * result + ((mTheirVersionMap == null) ? 0 : mTheirVersionMap.hashCode());
 			return result;
@@ -476,8 +487,6 @@ public class CredentialCachingService extends Service {
 			if (!(obj instanceof SharedSecretKey))
 				return false;
 			SharedSecretKey other = (SharedSecretKey) obj;
-			// if (!getOuterType().equals(other.getOuterType()))
-			// return false;
 			if (mOurVersionMap == null) {
 				if (other.mOurVersionMap != null)
 					return false;
@@ -494,13 +503,8 @@ public class CredentialCachingService extends Service {
 					return false;
 			return true;
 		}
-		//
-		// private CredentialCachingService getOuterType() {
-		// return CredentialCachingService.this;
-		// }
-
 	}
-	
+
 	
 
 }

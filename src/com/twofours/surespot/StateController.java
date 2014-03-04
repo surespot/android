@@ -330,10 +330,14 @@ public class StateController {
 	public void saveSharedSecrets(Context context, String username, Map<SharedSecretKey, byte[]> secrets) {
 		Map<String, byte[]> map = new HashMap<String, byte[]>();
 
+		//TODO encrypt
 		for (SharedSecretKey key : secrets.keySet()) {
-			String skey = key.getOurUsername() + ":" + key.getOurVersion() + ":" + key.getTheirUsername() + ":" + key.getTheirVersion();
-			SurespotLog.d("saving shared secret: %s", skey);
-			map.put(skey, secrets.get(key));
+			//save only secreds for this user
+			if (key.getOurUsername().equals(username)) {
+				String skey = key.getOurUsername() + ":" + key.getOurVersion() + ":" + key.getTheirUsername() + ":" + key.getTheirVersion();
+				SurespotLog.d("saving shared secret: %s", skey);
+				map.put(skey, secrets.get(key));
+			}
 		}
 
 		String filename = FileUtils.getSecretsDir(context) + File.separator + username + SECRETS_EXTENSION;
@@ -361,7 +365,7 @@ public class StateController {
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			loadedMap = (Map<String, byte[]>) ois.readObject();
 			ois.close();
-		}		
+		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "error loading saved secrets for %s", username);
 			return null;
@@ -370,7 +374,6 @@ public class StateController {
 			SurespotLog.e(TAG, e, "error loading saved secrets for %s", username);
 			return null;
 		}
-		
 
 		Map<SharedSecretKey, byte[]> map = new HashMap<SharedSecretKey, byte[]>();
 

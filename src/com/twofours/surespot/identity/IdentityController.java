@@ -72,6 +72,7 @@ public class IdentityController {
 			SurespotLog.w(TAG, "getIdentity null");
 		}
 	}
+	
 
 	public static synchronized void createIdentity(final Context context, final String username, final String password, final String salt,
 			final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
@@ -869,6 +870,10 @@ public class IdentityController {
 		else {
 			return null;
 		}
+	}
+	
+	public static String getLastLoggedInUser(Context context) {
+		return Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER);	
 	}
 
 	public static Cookie getCookie() {

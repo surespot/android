@@ -134,6 +134,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ImageView mIvHome;
 	private AlertDialog mHelpDialog;
 	private AlertDialog mDialog;
+	private String mUser;
+	private boolean mLaunched;
+	private boolean mResumed;
 
 	private BillingController mBillingController;
 
@@ -170,9 +173,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		}
 		else {
-			if (!processIntent(intent)) {			
+			if (!needsSignup()) {
 				setupBilling();
-				launch(intent);
+				launch();
 			}
 		}
 
@@ -183,6 +186,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		super.onCreate(savedInstanceState);
 
 		SurespotLog.d(TAG, "onCreate");
+
+		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+		if (keystoreEnabled) {
+			IdentityController.initKeystore(this);
+		}
 
 		Intent intent = getIntent();
 		Utils.logIntent(TAG, intent);
@@ -232,157 +240,68 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		};
 
-		if (!processIntent(intent)) {
-			setupBilling();
+		if (!needsSignup()) {
 
-			// set volume control buttons
-			setVolumeControlStream(AudioManager.STREAM_MUSIC);
+			String user = getLaunchUser();
 
-			// we're loading so build the ui
-			setContentView(R.layout.activity_main);
-
-			mHomeImageView = (ImageView) findViewById(android.R.id.home);
-			if (mHomeImageView == null) {
-				mHomeImageView = (ImageView) findViewById(R.id.abs__home);
+			if (user == null) {
+				launchLogin();
 			}
+			else {
 
-			setHomeProgress(true);
+				mUser = user;
 
-			SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
-			Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-			startService(cacheIntent);
-			bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+				if (savedInstanceState != null) {
 
-			// create the chat controller here if we know we're not going to need to login
-			// so that if we come back from a restart (for example a rotation), the automatically
-			// created fragments have a chat controller instance
+					mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
+					mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
+					mEmojiShowingOnChatTab = savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);
+					mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
+					mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
 
-			mMainHandler = new Handler(getMainLooper());
+					SurespotLog
+							.v(TAG,
+									"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
+									mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
+				}
 
-			try {
-				mNetworkController = new NetworkController(MainActivity.this, m401Handler);
-			}
-			catch (Exception e) {
-				finish();
-				return;
-			}
-
-			mBillingController = SurespotApplication.getBillingController();
-
-			mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler,
-					new IAsyncCallback<Boolean>() {
-						@Override
-						public void handleResponse(Boolean inProgress) {
-							setHomeProgress(inProgress);
-						}
-					}, new IAsyncCallback<Void>() {
-
-						@Override
-						public void handleResponse(Void result) {
-							handleSendIntent();
-
-						}
-					}, new IAsyncCallback<Friend>() {
-
-						@Override
-						public void handleResponse(Friend result) {
-							handleTabChange(result);
-
-						}
-					});
-
-			mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
-			mActivityLayout.setOnSoftKeyboardListener(this);
-			mActivityLayout.setMainActivity(this);
-
-			final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
-
-			mKeyboardStateHandler = new KeyboardStateHandler();
-			mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
-		
-			mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
-			
-			setupChatControls();
-
-			if (savedInstanceState != null) {
-
-				mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
-				mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
-				mEmojiShowingOnChatTab = savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);
-				mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
-				mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
-
-				SurespotLog
-						.v(TAG,
-								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
-								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
+				CredentialCachingService ccs = SurespotApplication.getCachingService();
+				if (ccs == null) {
+					SurespotLog.d(TAG, "binding cache service");
+					Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+					startService(cacheIntent);
+					bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+				}
+				else {
+					SurespotLog.d(TAG, "cache service already instantiated");
+					postServiceProcess();
+				}
 			}
 
 		}
+	}
+
+	private void launchLogin() {
+		Intent intent = getIntent();
+		Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
+		newIntent.putExtra("autoinviteuri", intent.getData());
+		newIntent.setAction(intent.getAction());
+		newIntent.setType(intent.getType());
+
+		Bundle extras = intent.getExtras();
+		if (extras != null) {
+			newIntent.putExtras(extras);
+		}
+
+		newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+		startActivity(newIntent);
+		finish();
 	}
 
 	private void setupBilling() {
 		mBillingController = SurespotApplication.getBillingController();
 		mBillingController.setup(getApplicationContext(), true, null);
-	}
-
-	private boolean processIntent(Intent intent) {
-		// if we have any users or we don't need to create a user, figure out if we need to login
-		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
-			// otherwise show the signup activity
-
-			SurespotLog.d(TAG, "starting signup activity");
-			Intent newIntent = new Intent(this, SignupActivity.class);
-			newIntent.putExtra("autoinviteuri", intent.getData());
-			newIntent.setAction(intent.getAction());
-			newIntent.setType(intent.getType());
-
-			Bundle extras = intent.getExtras();
-			if (extras != null) {
-				newIntent.putExtras(extras);
-			}
-
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(newIntent);
-
-			finish();
-			return true;
-		}
-		else {
-			if (needsLogin(intent)) {
-				SurespotLog.d(TAG, "need a (different) user, logging out");
-
-				CredentialCachingService ccs = SurespotApplication.getCachingService();
-				if (ccs != null) {
-					if (ccs.getLoggedInUser() != null) {
-						if (mNetworkController != null) {
-							mNetworkController.logout();
-						}
-
-						ccs.logout();
-					}
-				}
-
-				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
-				newIntent.putExtra("autoinviteuri", intent.getData());
-				newIntent.setAction(intent.getAction());
-				newIntent.setType(intent.getType());
-
-				Bundle extras = intent.getExtras();
-				if (extras != null) {
-					newIntent.putExtras(extras);
-				}
-
-				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-				startActivity(newIntent);
-				finish();
-				return true;
-
-			}
-		}
-
-		return false;
 	}
 
 	private AutoInviteData getAutoInviteData(Intent intent) {
@@ -686,22 +605,67 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	}
 
-	private boolean needsLogin(Intent intent) {
-		String user = IdentityController.getLoggedInUser();
+	private boolean needsSignup() {
+		Intent intent = getIntent();
+		// if we have any users or we don't need to create a user, figure out if we need to login
+		if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
+
+			// otherwise show the signup activity
+
+			SurespotLog.d(TAG, "starting signup activity");
+			Intent newIntent = new Intent(this, SignupActivity.class);
+			newIntent.putExtra("autoinviteuri", intent.getData());
+			newIntent.setAction(intent.getAction());
+			newIntent.setType(intent.getType());
+
+			Bundle extras = intent.getExtras();
+			if (extras != null) {
+				newIntent.putExtras(extras);
+			}
+
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(newIntent);
+
+			finish();
+			return true;
+		}
+
+		return false;
+	}
+
+	private String getLaunchUser() {
+		Intent intent = getIntent();
+		// String user = IdentityController.getLoggedInUser();
 		String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 		String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 
-		SurespotLog.d(TAG, "user: %s", user);
+		// SurespotLog.d(TAG, "user: %s", user);
 		SurespotLog.d(TAG, "type: %s", notificationType);
 		SurespotLog.d(TAG, "messageTo: %s", messageTo);
 
-		if ((user == null)
-				|| ((SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
-						|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
-							.equals(notificationType)) && (!messageTo.equals(user)))) {
-			return true;
+		String user = null;
+		// if started with user from intent
+
+		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+				|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
+				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
+
+			// if we have password saved, login
+			// NetworkHelper.reLogin(this, mNetworkController, username, cookieResponseHandler);
+			user = messageTo;
+
 		}
-		return false;
+		else {
+			String lastUser = IdentityController.getLastLoggedInUser(this);
+			if (lastUser == null) {
+				return null;
+			}
+			else {
+				user = lastUser;
+			}
+		}
+
+		return user;
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -712,7 +676,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
-			launch(getIntent());
+
+			postServiceProcess();
 		}
 
 		@Override
@@ -721,10 +686,83 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	};
 
-	private void launch(Intent intent) {
-		// SurespotLog.d(TAG, "launch, mChatController: " + mChatController);
-										
-		if (mChatController != null) {			
+	private void postServiceProcess() {
+		if (!SurespotApplication.getCachingService().canHasSession(mUser)) {
+			launchLogin();
+			return;
+		}
+
+		setupBilling();
+
+		// set volume control buttons
+		setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+		// we're loading so build the ui
+		setContentView(R.layout.activity_main);
+
+		mHomeImageView = (ImageView) findViewById(android.R.id.home);
+		if (mHomeImageView == null) {
+			mHomeImageView = (ImageView) findViewById(R.id.abs__home);
+		}
+
+		setHomeProgress(true);
+
+		// create the chat controller here if we know we're not going to need to login
+		// so that if we come back from a restart (for example a rotation), the automatically
+		// created fragments have a chat controller instance
+
+		mMainHandler = new Handler(getMainLooper());
+
+		try {
+			mNetworkController = new NetworkController(MainActivity.this, m401Handler);
+		}
+		catch (Exception e) {
+			finish();
+			return;
+		}
+
+		mBillingController = SurespotApplication.getBillingController();
+
+		mChatController = new ChatController(MainActivity.this, mNetworkController, getSupportFragmentManager(), m401Handler, new IAsyncCallback<Boolean>() {
+			@Override
+			public void handleResponse(Boolean inProgress) {
+				setHomeProgress(inProgress);
+			}
+		}, new IAsyncCallback<Void>() {
+
+			@Override
+			public void handleResponse(Void result) {
+				handleSendIntent();
+
+			}
+		}, new IAsyncCallback<Friend>() {
+
+			@Override
+			public void handleResponse(Friend result) {
+				handleTabChange(result);
+
+			}
+		});
+
+		mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
+		mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
+		mActivityLayout.setMainActivity(MainActivity.this);
+
+		final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
+
+		mKeyboardStateHandler = new KeyboardStateHandler();
+		mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
+
+		mChatController.init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
+
+		setupChatControls();
+		launch();
+	}
+
+	private void launch() {
+		SurespotLog.d(TAG, "launch");
+		Intent intent = getIntent();
+		if (mChatController != null) {
 			mChatController.setAutoInviteData(getAutoInviteData(intent));
 		}
 
@@ -778,7 +816,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					mSet = true;
 				}
 				else {
-					Utils.clearIntent(intent);	
+					Utils.clearIntent(intent);
 				}
 			}
 		}
@@ -797,24 +835,27 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		setButtonText();
 
-		// if this is the first time the app has been run, or they just created a user, show the help screen		
-		boolean helpShown = Utils.getSharedPrefsBoolean(this,"helpShownAgain");
+		// if this is the first time the app has been run, or they just created a user, show the help screen
+		boolean helpShown = Utils.getSharedPrefsBoolean(this, "helpShownAgain");
 		if (!helpShown || userWasCreated) {
-			Utils.removePref(this,  "helpShown");
+			Utils.removePref(this, "helpShown");
 			mHelpDialog = UIUtils.showHelpDialog(this, true);
 		}
 
 		// if this is the first time the app has been run, or they just created a user, show the help screen
 
-		boolean whatsNewShown = Utils.getSharedPrefsBoolean(this,"whatsNewShown47");
+		boolean whatsNewShown = Utils.getSharedPrefsBoolean(this, "whatsNewShown47");
 		if (!whatsNewShown) {
-			
+
 			Utils.putSharedPrefsBoolean(this, "whatsNewShown47", true);
 			Utils.removePref(this, "whatsNewShown");
-			Utils.removePref(this, "whatsNewShown46");						
+			Utils.removePref(this, "whatsNewShown46");
 			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_47_message), getString(R.string.whats_new_47_title),
-					getString(R.string.ok), null, null);						
+					getString(R.string.ok), null, null);
 		}
+		resume();
+		mLaunched = true;
+
 	}
 
 	@Override
@@ -822,6 +863,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		super.onResume();
 		SurespotLog.d(TAG, "onResume");
 
+		if (mLaunched && !mResumed) {
+
+			resume();
+		}
+	}
+
+	private void resume() {
+		SurespotLog.d(TAG, "resume");
+		mResumed = true;
 		if (mChatController != null) {
 			mChatController.onResume();
 		}
@@ -854,6 +904,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mDialog != null && mDialog.isShowing()) {
 			mDialog.dismiss();
 		}
+		mResumed = false;
 	}
 
 	@Override

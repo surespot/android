@@ -73,9 +73,11 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
+import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.NetworkHelper;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatController {
@@ -175,14 +177,39 @@ public class ChatController {
 
 			@Override
 			public synchronized void onError(SocketIOException socketIOException) {
+				boolean reAuthing = false;
 				// socket.io returns 403 for can't login
 				if (socketIOException.getHttpStatus() == 403) {
 					SurespotLog.d(TAG, "got 403 from websocket");
-					socket = null;
-					logout();
-					mCallback401.handleResponse(null, false);
-					return;
+					
+					final String username = IdentityController.getLastLoggedInUser(mContext);
+					reAuthing = NetworkHelper.reLogin(mContext, mNetworkController, username, new CookieResponseHandler() {
+						
+						@Override
+						public void onSuccess(int responseCode, String result, Cookie cookie) {
+							connect();
+							
+						}
+						
+						@Override
+						public void onFailure(Throwable error, String content) {
+							socket = null;
+							logout();
+							mCallback401.handleResponse(null, false);
+							return;
+						}
+					});
+
+					if (!reAuthing) {
+
+						socket = null;
+						logout();
+						mCallback401.handleResponse(null, false);
+						return;
+					}
 				}
+				
+				if (reAuthing) return;
 
 				SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
 

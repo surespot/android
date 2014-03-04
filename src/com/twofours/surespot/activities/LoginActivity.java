@@ -151,7 +151,7 @@ public class LoginActivity extends SherlockActivity {
 		// select last user if there was one
 		String to = getIntent().getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
 		if (to == null) {
-			to = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_USER);
+			to = IdentityController.getLastLoggedInUser(this);
 		}
 
 		
