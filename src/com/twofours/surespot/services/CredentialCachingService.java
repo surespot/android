@@ -13,7 +13,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -328,20 +327,9 @@ public class CredentialCachingService extends Service {
 		if (mLoggedInUser != null) {
 			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
 
-			saveSharedSecrets();
-
-			SharedPreferences sp = Utils.getGlobalSharedPrefs(getApplicationContext());
-			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
-			SurespotLog.d(TAG, "read kill cache on logout: %b", stopCache);
-
+			saveSharedSecrets();		
 			clearIdentityData(mLoggedInUser, true);
 			mLoggedInUser = null;
-
-			if (stopCache) {
-				SurespotLog.i(TAG, "stopping cache");
-				stopSelf();
-				SurespotApplication.setCachingService(null);
-			}
 		}
 	}
 
