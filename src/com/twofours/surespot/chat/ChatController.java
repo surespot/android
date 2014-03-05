@@ -1165,19 +1165,18 @@ public class ChatController {
 	}
 
 	private void getLatestMessagesAndControls(final String username, boolean forceMessageUpdate) {
-
 		LatestIdPair ids = getLatestIds(username);
-
 		getLatestMessagesAndControls(username, ids.latestMessageId, ids.latestControlMessageId, forceMessageUpdate);
-
 	}
 
 	private void getLatestMessagesAndControls(String username, int messageId, boolean forceMessageUpdate) {
 		getLatestMessagesAndControls(username, messageId, -1, forceMessageUpdate);
-
 	}
 
 	private void getLatestMessagesAndControls(final String username, final int fetchMessageId, int fetchControlMessageId, final boolean forceMessageUpdate) {
+		if (getState() != STATE_CONNECTED) {
+			return;
+		}
 		SurespotLog.d(TAG, "getLatestMessagesAndControls: name %s, fetchMessageId: %d, fetchControlMessageId: %d", username, fetchMessageId,
 				fetchControlMessageId);
 		if (fetchMessageId > -1 || fetchControlMessageId > -1) {

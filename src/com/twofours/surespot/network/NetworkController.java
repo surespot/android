@@ -320,6 +320,7 @@ public class NetworkController {
 	}
 
 	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "login username: %s", username);
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -423,6 +424,7 @@ public class NetworkController {
 	}
 
 	public void getLatestData(int userControlId, JSONArray spotIds, JsonHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "getLatestData userControlId: %d", userControlId);
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("spotIds", spotIds.toString());
 		
