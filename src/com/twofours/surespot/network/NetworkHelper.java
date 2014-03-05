@@ -42,7 +42,7 @@ public class NetworkHelper {
 							@Override
 							public void onSuccess(int responseCode, String result, Cookie cookie) {
 								SurespotLog.d(TAG, "successfully re-logged in: %s", username);
-								IdentityController.userLoggedIn(context, identity, cookie);
+								IdentityController.userLoggedIn(context, identity, cookie, password);
 								cookieResponseHandler.onSuccess(responseCode, result, cookie);								
 							}
 							

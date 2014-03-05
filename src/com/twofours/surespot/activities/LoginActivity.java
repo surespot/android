@@ -255,7 +255,7 @@ public class LoginActivity extends SherlockActivity {
 						networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
 							@Override
 							public void onSuccess(int responseCode, String arg0, Cookie cookie) {
-								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie);
+								IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie, password);
 								mLoggedIn = true;
 								boolean enableKeystore = Utils.getSharedPrefsBoolean(LoginActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 

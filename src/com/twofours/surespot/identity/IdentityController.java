@@ -59,12 +59,12 @@ public class IdentityController {
 	private static boolean mHasIdentity;
 	private static KeyStore mKs;
 
-	private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie) {
+	private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie, String password) {
 		// load the identity
 		if (identity != null) {
 			Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, identity.getUsername());
 			Utils.putSharedPrefsString(context, "referrer", null);
-			SurespotApplication.getCachingService().login(identity, cookie);
+			SurespotApplication.getCachingService().login(identity, cookie, password);
 			// if we're logging in we probably didn't just buy it
 			SurespotApplication.getBillingController().clearJustPurchased();
 		}
@@ -78,7 +78,7 @@ public class IdentityController {
 		SurespotIdentity identity = new SurespotIdentity(username, salt);
 		identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
 		saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
-		setLoggedInUser(context, identity, cookie);
+		setLoggedInUser(context, identity, cookie, password);
 
 	}
 
@@ -810,8 +810,8 @@ public class IdentityController {
 
 	}
 
-	public static void userLoggedIn(Context context, SurespotIdentity identity, Cookie cookie) {
-		setLoggedInUser(context, identity, cookie);
+	public static void userLoggedIn(Context context, SurespotIdentity identity, Cookie cookie, String password) {
+		setLoggedInUser(context, identity, cookie, password);
 	}
 
 	public static void logout() {
