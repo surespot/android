@@ -316,7 +316,7 @@ public class IdentityController {
 			SurespotApplication.getCachingService().logout();
 		}
 
-		
+		clearStoredPasswordForIdentity(username);
 
 		MainActivity.getNetworkController().clearCache();
 		StateController.wipeState(context, username);
@@ -1121,8 +1121,8 @@ public class IdentityController {
 		return false;
 	}
 
-	public static boolean clearStoredPasswordForIdentity(LoginActivity activity, String username) {
-		if (activity != null && username != null) {
+	public static boolean clearStoredPasswordForIdentity(String username) {
+		if (username != null) {
 			if (isKeystoreUnlocked()) {
 				return mKs.delete(username);
 			}
