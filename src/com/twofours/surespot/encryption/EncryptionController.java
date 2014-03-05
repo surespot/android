@@ -50,7 +50,8 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class EncryptionController {
-	private static final int PBKDF_ROUNDS = 1000;
+	private static final int PBKDF_ROUNDS_LEGACY = 1000;
+	private static final int PBKDF_ROUNDS = 5000;
 	private static final int BUFFER_SIZE = 1024;
 	private static final String TAG = "EncryptionController";
 	private static final int AES_KEY_LENGTH = 32;
@@ -588,9 +589,13 @@ public class EncryptionController {
 		return null;
 
 	}
-
+	
 	public static byte[][] derive(String password) {
-		int iterationCount = PBKDF_ROUNDS;
+		return derive(password, PBKDF_ROUNDS_LEGACY);
+	
+	}
+
+	public static byte[][] derive(String password, int iterationCount) {		
 		int saltLength = SALT_LENGTH;
 		int keyLength = AES_KEY_LENGTH * 8;
 
@@ -608,9 +613,12 @@ public class EncryptionController {
 		derived[1] = keyBytes;
 		return derived;
 	}
-
+	
 	public static byte[] derive(String password, byte[] salt) {
-		int iterationCount = PBKDF_ROUNDS;
+		return derive(password, salt, PBKDF_ROUNDS_LEGACY);
+	}
+	
+	public static byte[] derive(String password, byte[] salt, int iterationCount) {		
 		int keyLength = AES_KEY_LENGTH * 8;
 
 		byte[] keyBytes = null;
@@ -620,6 +628,93 @@ public class EncryptionController {
 		keyBytes = ((KeyParameter) gen.generateDerivedParameters(keyLength)).getKey();
 
 		return keyBytes;
+	}
+	
+	public static byte[] encryptData(final String password, final byte[] plaindata) {
+
+		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
+		byte[] iv = new byte[IV_LENGTH];
+		mSecureRandom.nextBytes(iv);
+		ParametersWithIV ivParams;
+		try {
+			byte[][] derived = EncryptionController.derive(password, PBKDF_ROUNDS);
+			ivParams = new ParametersWithIV(new KeyParameter(derived[1], 0, AES_KEY_LENGTH), iv);
+
+			ccm.reset();
+			ccm.init(true, ivParams);
+
+			
+			byte[] buf = new byte[ccm.getOutputSize(plaindata.length)];
+
+			int len = ccm.processBytes(plaindata, 0, plaindata.length, buf, 0);
+
+			len += ccm.doFinal(buf, len);
+
+			byte[] returnBuffer = new byte[IV_LENGTH + SALT_LENGTH + buf.length];
+
+			System.arraycopy(iv, 0, returnBuffer, 0, IV_LENGTH);
+			System.arraycopy(derived[0], 0, returnBuffer, IV_LENGTH, SALT_LENGTH);
+			System.arraycopy(buf, 0, returnBuffer, IV_LENGTH + SALT_LENGTH, buf.length);
+
+			return returnBuffer;
+
+		}
+		catch (InvalidCacheLoadException icle) {
+			// will occur if couldn't load key
+			SurespotLog.v(TAG, icle, "encryptData");
+		}
+		catch (Exception e) {
+			SurespotLog.w(TAG, e, "encryptData");
+		}
+		return null;
+
+	}
+
+	/**
+	 * Derive key from password
+	 * 
+	 * @return
+	 */
+	public static byte[] decryptData(final String password, final byte[] cipherData) {
+		if (cipherData == null) {
+			return null;
+		}
+		
+		GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
+
+		byte[] cipherBytes = new byte[cipherData.length - IV_LENGTH - SALT_LENGTH];
+		byte[] iv = new byte[IV_LENGTH];
+		byte[] salt = new byte[SALT_LENGTH];
+		ParametersWithIV ivParams = null;
+		try {
+			System.arraycopy(cipherData, 0, iv, 0, IV_LENGTH);
+			System.arraycopy(cipherData, IV_LENGTH, salt, 0, SALT_LENGTH);
+			System.arraycopy(cipherData, IV_LENGTH + SALT_LENGTH, cipherBytes, 0, cipherData.length - IV_LENGTH - SALT_LENGTH);
+
+			byte[] derived = derive(password, salt, PBKDF_ROUNDS);
+			if (derived == null) {
+				return null;
+			}
+			ivParams = new ParametersWithIV(new KeyParameter(derived, 0, AES_KEY_LENGTH), iv);
+
+			ccm.reset();
+			ccm.init(false, ivParams);
+
+			byte[] buf = new byte[ccm.getOutputSize(cipherBytes.length)];
+
+			int len = ccm.processBytes(cipherBytes, 0, cipherBytes.length, buf, 0);
+
+			len += ccm.doFinal(buf, len);
+			return buf;
+		}
+		catch (InvalidCipherTextException e) {
+			SurespotLog.i(TAG, e, "decryptData");
+		}
+		catch (Exception e) {
+			SurespotLog.w(TAG, e, "decryptData");
+		}
+		return null;
+
 	}
 
 }

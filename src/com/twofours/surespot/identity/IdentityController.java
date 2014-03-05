@@ -320,7 +320,7 @@ public class IdentityController {
 			String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
 			File file = new File(identityFilename);
 			file.delete();
-
+						
 			// delete export identity
 			final File exportDir = FileUtils.getIdentityExportDir();
 
@@ -350,16 +350,11 @@ public class IdentityController {
 		}
 		
 		SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(context, username, password);
-//		if (identity == null) {
-//			identity = loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
-//		}
 		return identity;
-
 	}
 	
 	public synchronized static SurespotIdentity loadIdentity(Context context, String username, String password) {
-		return loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);
-	
+		return loadIdentity(context, true, username, password + CACHE_IDENTITY_ID);	
 	}
 
 	private synchronized static SurespotIdentity loadIdentity(Context context, boolean internal, String username, String password) {

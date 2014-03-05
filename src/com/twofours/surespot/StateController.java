@@ -1,7 +1,8 @@
 package com.twofours.surespot;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -42,7 +44,7 @@ public class StateController {
 	private static final String FRIENDS = "friends";
 	private static final String COOKIE = "cookie";
 	private static final String STATE_EXTENSION = ".sss";
-	private static final String SECRETS_EXTENSION = ".sse";
+	private static final String SECRETS = "secrets";
 	private static final String TAG = "StateController";
 	private Context mContext;
 
@@ -315,54 +317,83 @@ public class StateController {
 
 	}
 
-	public void saveSharedSecrets(Context context, String username, String password, Map<SharedSecretKey, byte[]> secrets) {
-		Map<String, byte[]> map = new HashMap<String, byte[]>();
+	public void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {
+		if (username == null || password == null || secrets == null) {
+			return;
+		}
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {								
+				String filename = getFilename(username, SECRETS);				
+				Map<String, byte[]> map = new HashMap<String, byte[]>();
 
-		// TODO encrypt
-		for (SharedSecretKey key : secrets.keySet()) {
-			// save only secreds for this user
-			if (key.getOurUsername().equals(username)) {
-				String skey = key.getOurUsername() + ":" + key.getOurVersion() + ":" + key.getTheirUsername() + ":" + key.getTheirVersion();
-				SurespotLog.d(TAG, "saving shared secret: %s", skey);
-				map.put(skey, secrets.get(key));
+				for (SharedSecretKey key : secrets.keySet()) {
+					// save only secrets for this user
+					if (key.getOurUsername().equals(username)) {
+						String skey = key.getOurUsername() + ":" + key.getOurVersion() + ":" + key.getTheirUsername() + ":" + key.getTheirVersion();
+						map.put(skey, secrets.get(key));
+					}
+				}
+				
+				try {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					ObjectOutputStream oos = new ObjectOutputStream(baos);
+					oos.writeObject(map);
+					oos.close();
+					baos.close();
+
+					byte[] encryptedSecrets = EncryptionController.encryptData(password, baos.toByteArray());
+
+					FileOutputStream fos = new FileOutputStream(filename);
+					fos.write(encryptedSecrets);
+					fos.close();
+
+					SurespotLog.d(TAG, "saved shared secrets for: %s", username);
+				}
+				catch (IOException e) {
+					SurespotLog.e(TAG, e, "error saving shared secrets for %s", username);
+				}
+				return null;
 			}
-		}
+		}.execute();
 
-		String filename = FileUtils.getSecretsDir(context) + File.separator + username + SECRETS_EXTENSION;
-
-		FileOutputStream fos;
-		try {
-			fos = new FileOutputStream(filename);
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-			oos.writeObject(map);
-			oos.close();
-		}
-
-		catch (IOException e) {
-			SurespotLog.e(TAG, e, "error saving shared secrets for %s", username);
-		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<SharedSecretKey, byte[]> loadSharedSecrets(Context context, String username, String password) {
+	public Map<SharedSecretKey, byte[]> loadSharedSecrets(String username, String password) {
+		if (username == null || password == null) {
+			return null;
+		}			
 
-		String filename = FileUtils.getSecretsDir(context) + File.separator + username + SECRETS_EXTENSION;		
+		String filename = getFilename(username, SECRETS);
+
+		File file = new File(filename);
+		if (!file.exists()) {
+			return null;
+		}
+
 		Map<String, byte[]> loadedMap = null;
 		try {
-			FileInputStream fis = new FileInputStream(filename);
-			ObjectInputStream ois = new ObjectInputStream(fis);
+			byte[] encryptedSecretData = FileUtils.readFileNoGzip(filename);
+			byte[] secretData = EncryptionController.decryptData(password, encryptedSecretData);
+
+			if (secretData == null) {
+				return null;
+			}
+
+			ByteArrayInputStream bais = new ByteArrayInputStream(secretData);
+			ObjectInputStream ois = new ObjectInputStream(bais);
 			loadedMap = (Map<String, byte[]>) ois.readObject();
 			ois.close();
-			fis.close();
 		}
 		catch (IOException e) {
-			SurespotLog.e(TAG, e, "error loading saved secrets for %s", username);
+			SurespotLog.e(TAG, e, "error loading shared secrets for %s", username);
 			return null;
 		}
 		catch (ClassNotFoundException e) {
-			SurespotLog.e(TAG, e, "error loading saved secrets for %s", username);
+			SurespotLog.e(TAG, e, "error loading shared secrets for %s", username);
 			return null;
-		}		
+		}
 
 		Map<SharedSecretKey, byte[]> map = new HashMap<SharedSecretKey, byte[]>();
 
@@ -370,10 +401,10 @@ public class StateController {
 			String[] split = key.split(":");
 
 			SharedSecretKey ssk = new SharedSecretKey(new VersionMap(split[0], split[1]), new VersionMap(split[2], split[3]));
-			SurespotLog.d(TAG, "loading shared secret: %s", key);
 			map.put(ssk, loadedMap.get(key));
 		}
 
+		SurespotLog.d(TAG, "loaded shared secrets for: %s", username);
 		return map;
 	}
 
@@ -381,52 +412,68 @@ public class StateController {
 		if (username == null || password == null) {
 			return null;
 		}
-		
-		String filename = getFilename(username, COOKIE);		
-		
+
+		String filename = getFilename(username, COOKIE);
+
 		if (!new File(filename).exists()) {
 			return null;
 		}
-		
-		SurespotLog.d(TAG, "loading cookie for username: %s", username);
+
 		Cookie cookie = null;
 		try {
-			FileInputStream fis = new FileInputStream(filename);
-			ObjectInputStream ois = new ObjectInputStream(fis);
+			byte[] encryptedCookieData = FileUtils.readFileNoGzip(filename);
+			byte[] cookieData = EncryptionController.decryptData(password, encryptedCookieData);
+
+			if (cookieData == null) {
+				return null;
+			}
+
+			ByteArrayInputStream bais = new ByteArrayInputStream(cookieData);
+			ObjectInputStream ois = new ObjectInputStream(bais);
 			cookie = (Cookie) ois.readObject();
 			ois.close();
-			fis.close();
+			SurespotLog.d(TAG, "loaded cookie for username: %s", username);
 			return cookie;
 		}
 		catch (IOException e) {
-			SurespotLog.e(TAG, e, "error loading cookie for %s", username);		
+			SurespotLog.e(TAG, e, "error loading cookie for %s", username);
 			return null;
 		}
 		catch (ClassNotFoundException e) {
 			SurespotLog.e(TAG, e, "error loading cookie for %s", username);
 			return null;
-		}		
+		}
 	}
 
-	public void saveCookie(String username, String password, Cookie cookie) {
+	public void saveCookie(final String username, final String password, final Cookie cookie) {
 		if (username == null || password == null || cookie == null) {
 			return;
 		}
-		
-		SurespotLog.d(TAG, "saving cookie for username: %s, cookie: %s", username, cookie);
-		
-		String filename = getFilename(username, COOKIE);
 
-		FileOutputStream fos;
-		try {
-			fos = new FileOutputStream(filename);
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-			oos.writeObject(cookie);
-			oos.close();
-		}
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {				
+				String filename = getFilename(username, COOKIE);
+				try {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					ObjectOutputStream oos = new ObjectOutputStream(baos);
+					oos.writeObject(cookie);
+					oos.close();
+					baos.close();
 
-		catch (IOException e) {
-			SurespotLog.e(TAG, e, "error saving cookie for %s", username);
-		}
+					byte[] encryptedCookie = EncryptionController.encryptData(password, baos.toByteArray());
+
+					FileOutputStream fos = new FileOutputStream(filename);
+					fos.write(encryptedCookie);
+					fos.close();
+					SurespotLog.d(TAG, "saved cookie for username: %s, cookie: %s", username, cookie);
+				}
+
+				catch (IOException e) {
+					SurespotLog.e(TAG, e, "error saving cookie for %s", username);
+				}
+				return null;
+			}
+		}.execute();
 	}
 }

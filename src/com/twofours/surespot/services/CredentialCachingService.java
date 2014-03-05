@@ -147,7 +147,7 @@ public class CredentialCachingService extends Service {
 		// load cache data from disk
 		if (password != null) {
 
-			Map<SharedSecretKey, byte[]> secrets = SurespotApplication.getStateController().loadSharedSecrets(this, identity.getUsername(), password);
+			Map<SharedSecretKey, byte[]> secrets = SurespotApplication.getStateController().loadSharedSecrets(identity.getUsername(), password);
 			if (secrets != null) {
 				mSharedSecrets.putAll(secrets);
 			}
@@ -170,7 +170,7 @@ public class CredentialCachingService extends Service {
 	public boolean setSession(Context context, String username) {
 		SurespotLog.d(TAG, "setSession: %s", username);
 
-		// need identity + cookie
+		// need identity + cookie or password
 		// see if we have the identity
 		SurespotIdentity identity = getIdentity(context, username, null);
 		boolean hasIdentity = identity != null;
@@ -195,7 +195,7 @@ public class CredentialCachingService extends Service {
 		if (sessionSet) {
 			mLoggedInUser = username;
 			if (hasPassword) {
-				Map<SharedSecretKey, byte[]> secrets = SurespotApplication.getStateController().loadSharedSecrets(this, username, password);
+				Map<SharedSecretKey, byte[]> secrets = SurespotApplication.getStateController().loadSharedSecrets(username, password);
 				if (secrets != null) {
 					mSharedSecrets.putAll(secrets);
 				}
@@ -209,7 +209,7 @@ public class CredentialCachingService extends Service {
 			String password = getPassword(mLoggedInUser);
 			if (password != null) {
 				Map<SharedSecretKey, byte[]> secrets = mSharedSecrets.asMap();
-				SurespotApplication.getStateController().saveSharedSecrets(this, mLoggedInUser, password, secrets);
+				SurespotApplication.getStateController().saveSharedSecrets(mLoggedInUser, password, secrets);
 			}
 		}
 	}
