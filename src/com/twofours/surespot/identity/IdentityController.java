@@ -485,11 +485,10 @@ public class IdentityController {
 					new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
-							
-							updateKeychainPassword(context, finalusername, password);
-							
+							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);																												
 							if (file != null) {
+								updateKeychainPassword(context, finalusername, password);								
+								SurespotApplication.getCachingService().updateIdentity(identity, true);
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
 										true));
 							}
@@ -558,9 +557,10 @@ public class IdentityController {
 					new AsyncHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, String content) {
-							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
-							updateKeychainPassword(context, finalusername, password);
-							if (file != null) {
+							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);							
+							if (file != null) {								
+								updateKeychainPassword(context, finalusername, password);
+								SurespotApplication.getCachingService().updateIdentity(identity, true);
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
 										true));
 							}
@@ -934,12 +934,8 @@ public class IdentityController {
 			// TODO give user other options to save it
 			SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
 		}
-
-		// if we're logged in update the identity in the cache
-		if (getLoggedInUser().equals(username)) {
-			SurespotApplication.getCachingService().updateIdentity(identity);
-		}
-
+		
+		SurespotApplication.getCachingService().updateIdentity(identity, true);		
 	}
 
 	public static void updateLatestVersion(Context context, String username, String version) {

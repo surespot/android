@@ -108,7 +108,7 @@ public class CredentialCachingService extends Service {
 		mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
 		mLatestVersions = CacheBuilder.newBuilder().build(versionCacheLoader);
 		mIdentities = new HashMap<String, SurespotIdentity>(5);
-		
+
 		Notification notification = null;
 
 		// if we're < 4.3 then start foreground service
@@ -158,11 +158,11 @@ public class CredentialCachingService extends Service {
 		mLoggedInUser = identity.getUsername();
 		this.mCookies.put(identity.getUsername(), cookie);
 
-		updateIdentity(identity);
+		updateIdentity(identity, false);
 	}
 
 	private String getPassword(String username) {
-		String password = IdentityController.getStoredPasswordForIdentity(username);		
+		String password = IdentityController.getStoredPasswordForIdentity(username);
 		return password;
 	}
 
@@ -213,18 +213,21 @@ public class CredentialCachingService extends Service {
 		}
 	}
 
-	public void updateIdentity(SurespotIdentity identity) {
-		this.mIdentities.put(identity.getUsername(), identity);
-		// add all my identity's public keys to the cache
+	public void updateIdentity(SurespotIdentity identity, boolean onlyIfExists) {
+		boolean update = mIdentities.containsKey(identity.getUsername()) || !onlyIfExists;
+		if (update) {
+			SurespotLog.d(TAG, "updating identity: %s", identity.getUsername());
+			this.mIdentities.put(identity.getUsername(), identity);
+			// add all my identity's public keys to the cache
 
-		Iterator<PrivateKeyPairs> iterator = identity.getKeyPairs().iterator();
-		while (iterator.hasNext()) {
-			PrivateKeyPairs pkp = iterator.next();
-			String version = pkp.getVersion();
-			this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)),
-					new PublicKeys(version, identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic(), 0));
+			Iterator<PrivateKeyPairs> iterator = identity.getKeyPairs().iterator();
+			while (iterator.hasNext()) {
+				PrivateKeyPairs pkp = iterator.next();
+				String version = pkp.getVersion();
+				this.mPublicIdentities.put(new PublicKeyPairKey(new VersionMap(identity.getUsername(), version)), new PublicKeys(version, identity
+						.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic(), 0));
+			}
 		}
-
 	}
 
 	public String getLoggedInUser() {
@@ -277,7 +280,7 @@ public class CredentialCachingService extends Service {
 			if (password != null) {
 				identity = IdentityController.loadIdentity(context, username, password);
 				if (identity != null) {
-					updateIdentity(identity);
+					updateIdentity(identity, false);
 				}
 			}
 		}
@@ -327,7 +330,7 @@ public class CredentialCachingService extends Service {
 		if (mLoggedInUser != null) {
 			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
 
-			saveSharedSecrets();		
+			saveSharedSecrets();
 			clearIdentityData(mLoggedInUser, true);
 			mLoggedInUser = null;
 		}
