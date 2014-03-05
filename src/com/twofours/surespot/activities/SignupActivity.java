@@ -473,8 +473,7 @@ public class SignupActivity extends SherlockActivity {
 		}
 
 		if (!mLoggedIn && isTaskRoot()) {
-			SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
-			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+			boolean stopCache = Utils.getSharedPrefsBoolean(this,"pref_stop_cache_logout");
 
 			if (stopCache) {
 

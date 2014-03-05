@@ -94,11 +94,6 @@ public class NetworkController {
 		}
 	}
 
-	// public synchronized void setCookie(String username, Cookie cookie) {
-	// mCookieStore.clear();
-	// mCookieStore.addCookie(cookie);
-	// }
-
 	public NetworkController(Activity context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
 		SurespotLog.d(TAG, "constructor username: %s", username);
 		mContext = context;
@@ -188,7 +183,7 @@ public class NetworkController {
 		}
 		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
-		addVoiceMessagingPurchaseTokens( params);
+		addVoiceMessagingPurchaseTokens(params);
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);

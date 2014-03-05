@@ -70,7 +70,7 @@ public class LoginActivity extends SherlockActivity {
 
 		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 		if (keystoreEnabled) {
-			IdentityController.initKeystore(this);
+			IdentityController.initKeystore();
 		}
 
 		setContentView(R.layout.activity_login);
@@ -161,7 +161,6 @@ public class LoginActivity extends SherlockActivity {
 
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				// ((EditText) LoginActivity.this.findViewById(R.id.etPassword)).setText("");
 				updatePassword();
 			}
 
@@ -425,9 +424,8 @@ public class LoginActivity extends SherlockActivity {
 			unbindService(mConnection);
 		}
 
-		if (!mLoggedIn) {
-			SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
-			boolean stopCache = sp.getBoolean("pref_stop_cache_logout", false);
+		if (!mLoggedIn) {			
+			boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
 
 			if (stopCache) {
 

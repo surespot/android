@@ -87,8 +87,11 @@ public class IdentityController {
 		if (identity != null) {
 			identity.setSalt(newSalt);
 			saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
+			updateKeychainPassword(context, username, newPassword);
 		}
+		
 	}
+	
 
 	private static synchronized String saveIdentity(Context backupContext, boolean internal, SurespotIdentity identity, String password) {
 		String identityDir = null;
@@ -481,6 +484,9 @@ public class IdentityController {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
+							
+							updateKeychainPassword(context, finalusername, password);
+							
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
 										true));
@@ -551,6 +557,7 @@ public class IdentityController {
 						@Override
 						public void onSuccess(int statusCode, String content) {
 							String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
+							updateKeychainPassword(context, finalusername, password);
 							if (file != null) {
 								callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
 										true));
@@ -1013,7 +1020,7 @@ public class IdentityController {
 	public static final String UNLOCK_ACTION = "com.android.credentials.UNLOCK";
 	public static final String RESET_ACTION = "com.android.credentials.RESET";
 
-	public static void initKeystore(Activity activity) {
+	public static void initKeystore() {
 		SurespotLog.d(TAG, "initKeyStore");
 		if (mKs == null) {
 			if (IS_KK) {
@@ -1064,7 +1071,7 @@ public class IdentityController {
 		return mKs.state() == KeyStore.State.UNLOCKED;
 	}
 
-	public static void unlock(Activity activity, String username, String password) {
+	public static void unlock(Context activity, String username, String password) {
 		SurespotLog.d(TAG, "unlock");
 		if (mKs.state() == KeyStore.State.UNLOCKED) {
 			return;
@@ -1098,7 +1105,7 @@ public class IdentityController {
 		return null;
 	}
 
-	public static boolean storePasswordForIdentity(Activity activity, String username, String password) {
+	public static boolean storePasswordForIdentity(Context activity, String username, String password) {
 		if (activity == null)
 			return false;
 
@@ -1109,7 +1116,7 @@ public class IdentityController {
 			}
 		}
 		else {
-			initKeystore(activity);
+			initKeystore();
 			unlock(activity, username, password);
 		}
 
@@ -1124,6 +1131,14 @@ public class IdentityController {
 		}
 
 		return false;
+	}
+	
+	private static void updateKeychainPassword(Context context, String username, String password) {
+		//update stored password if we have one
+		String storedPassword = getStoredPasswordForIdentity(username);
+		if (storedPassword != null) {
+			storePasswordForIdentity(context, username, password);
+		}		
 	}
 
 }
