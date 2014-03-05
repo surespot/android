@@ -231,6 +231,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
 					mDriveHelper.setDriveAccount(accountName);
 					mAccountNameDisplay.setText(accountName);
+					backupIdentityDrive(true);
 				}
 			}
 			break;
