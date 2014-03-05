@@ -646,9 +646,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		String user = null;
 		// if started with user from intent
 
-		if (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+		if (!TextUtils.isEmpty(messageTo) && (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
 				|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
-				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType)) {
+				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType))) {
 
 			user = messageTo;
 			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
