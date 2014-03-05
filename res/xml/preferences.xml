@@ -40,31 +40,32 @@
             </intent>
         </Preference>
     </PreferenceScreen>
-    <PreferenceScreen android:title="@string/notifications_title" >
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="pref_notifications_enabled"
-            android:title="@string/notifications_enabled" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:dependency="pref_notifications_enabled"
-            android:key="pref_notifications_sound"
-            android:title="@string/notifications_sound" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:dependency="pref_notifications_enabled"
-            android:key="pref_notifications_vibration"
-            android:title="@string/notifications_vibration" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:dependency="pref_notifications_enabled"
-            android:key="pref_notifications_led"
-            android:title="@string/notifications_led" />
-    </PreferenceScreen>
     <PreferenceScreen android:title="@string/pref_title_options" >
         <Preference
             android:key="pref_background_image"
             android:title="@string/pref_title_background_image_select" />
+
+        <PreferenceScreen android:title="@string/notifications_title" >
+            <CheckBoxPreference
+                android:defaultValue="true"
+                android:key="pref_notifications_enabled"
+                android:title="@string/notifications_enabled" />
+            <CheckBoxPreference
+                android:defaultValue="true"
+                android:dependency="pref_notifications_enabled"
+                android:key="pref_notifications_sound"
+                android:title="@string/notifications_sound" />
+            <CheckBoxPreference
+                android:defaultValue="true"
+                android:dependency="pref_notifications_enabled"
+                android:key="pref_notifications_vibration"
+                android:title="@string/notifications_vibration" />
+            <CheckBoxPreference
+                android:defaultValue="true"
+                android:dependency="pref_notifications_enabled"
+                android:key="pref_notifications_led"
+                android:title="@string/notifications_led" />
+        </PreferenceScreen>
 
         <CheckBoxPreference
             android:defaultValue="true"
@@ -88,11 +89,14 @@
             android:title="@string/pref_title_message_debug_mode" />
     </PreferenceScreen>
     <PreferenceScreen android:title="@string/pref_title_global_options" >
-    <!--     <CheckBoxPreference
+
+        <!--
+             <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_enable_keystore_control"
             android:summary="@string/pref_summary_enable_keystore"
-            android:title="@string/pref_title_enable_keystore" /> -->
+            android:title="@string/pref_title_enable_keystore" />
+        -->
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_stop_cache_logout_control"
