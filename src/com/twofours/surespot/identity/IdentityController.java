@@ -313,7 +313,7 @@ public class IdentityController {
 		SurespotApplication.getCachingService().clearIdentityData(username, true);
 
 		if (isLoggedIn) {
-			SurespotApplication.getCachingService().logout();
+			SurespotApplication.getCachingService().logout(true);
 		}
 
 		clearStoredPasswordForIdentity(username);
@@ -825,7 +825,7 @@ public class IdentityController {
 			}
 			CredentialCachingService cache = SurespotApplication.getCachingService();
 			if (cache != null) {
-				cache.logout();
+				cache.logout(false);
 			}
 		}
 	}

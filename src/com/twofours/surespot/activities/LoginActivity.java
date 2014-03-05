@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -125,7 +124,7 @@ public class LoginActivity extends SherlockActivity {
 					IdentityController.storePasswordForIdentity(LoginActivity.this, getSelectedUsername(), mEtPassword.getText().toString());
 				}
 				else {
-					IdentityController.clearStoredPasswordForIdentity(LoginActivity.this, getSelectedUsername());
+					IdentityController.clearStoredPasswordForIdentity(getSelectedUsername());
 				}
 
 			}

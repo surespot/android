@@ -326,11 +326,14 @@ public class CredentialCachingService extends Service {
 		}
 	}
 
-	public synchronized void logout() {
+	public synchronized void logout(boolean deleted) {
 		if (mLoggedInUser != null) {
 			SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
 
-			saveSharedSecrets();
+			if (!deleted) {
+				saveSharedSecrets();
+			}
+			
 			clearIdentityData(mLoggedInUser, true);
 			mLoggedInUser = null;
 		}
