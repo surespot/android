@@ -174,11 +174,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 		else {
 			if (!needsSignup()) {
-				setupBilling();
-				launch();
+				processLaunch();
 			}
 		}
-
 	}
 
 	@Override
@@ -241,44 +239,50 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		};
 
 		if (!needsSignup()) {
+			if (savedInstanceState != null) {
 
-			String user = getLaunchUser();
+				mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
+				mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
+				mEmojiShowingOnChatTab = savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);
+				mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
+				mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
 
-			if (user == null) {
-				launchLogin();
+				SurespotLog
+						.v(TAG,
+								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
+								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
+			}
+
+			
+			processLaunch();
+		
+		}
+	}
+	
+	private void processLaunch() {
+		String user = getLaunchUser();
+
+		if (user == null) {
+			launchLogin();
+		}
+		else {
+
+			mUser = user;
+
+			
+			CredentialCachingService ccs = SurespotApplication.getCachingService();
+			if (ccs == null) {
+				SurespotLog.d(TAG, "binding cache service");
+				Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+				startService(cacheIntent);
+				bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 			}
 			else {
-
-				mUser = user;
-
-				if (savedInstanceState != null) {
-
-					mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
-					mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
-					mEmojiShowingOnChatTab = savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);
-					mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
-					mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
-
-					SurespotLog
-							.v(TAG,
-									"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
-									mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
-				}
-
-				CredentialCachingService ccs = SurespotApplication.getCachingService();
-				if (ccs == null) {
-					SurespotLog.d(TAG, "binding cache service");
-					Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-					startService(cacheIntent);
-					bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-				}
-				else {
-					SurespotLog.d(TAG, "cache service already instantiated");
-					postServiceProcess();
-				}
+				SurespotLog.d(TAG, "cache service already instantiated");
+				postServiceProcess();
 			}
-
 		}
+
 	}
 
 	private void launchLogin() {
