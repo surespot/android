@@ -331,7 +331,10 @@ public class StateController {
 					// save only secrets for this user
 					if (key.getOurUsername().equals(username)) {
 						String skey = key.getOurUsername() + ":" + key.getOurVersion() + ":" + key.getTheirUsername() + ":" + key.getTheirVersion();
-						map.put(skey, secrets.get(key));
+						byte[] value =  secrets.get(key);
+						if (value != null) {
+							map.put(skey, value);
+						}
 					}
 				}
 				
@@ -370,7 +373,7 @@ public class StateController {
 		File file = new File(filename);
 		if (!file.exists()) {
 			return null;
-		}
+		} 
 
 		Map<String, byte[]> loadedMap = null;
 		try {
@@ -401,7 +404,10 @@ public class StateController {
 			String[] split = key.split(":");
 
 			SharedSecretKey ssk = new SharedSecretKey(new VersionMap(split[0], split[1]), new VersionMap(split[2], split[3]));
-			map.put(ssk, loadedMap.get(key));
+			byte[] value = loadedMap.get(key);
+			if (value != null) {
+				map.put(ssk, value);
+			}
 		}
 
 		SurespotLog.d(TAG, "loaded shared secrets for: %s", username);
@@ -433,16 +439,17 @@ public class StateController {
 			cookie = (Cookie) ois.readObject();
 			ois.close();
 			SurespotLog.d(TAG, "loaded cookie for username: %s", username);
-			return cookie;
+			if (cookie != null) {
+				return cookie;
+			}
 		}
 		catch (IOException e) {
-			SurespotLog.e(TAG, e, "error loading cookie for %s", username);
-			return null;
+			SurespotLog.e(TAG, e, "error loading cookie for %s", username);			
 		}
 		catch (ClassNotFoundException e) {
-			SurespotLog.e(TAG, e, "error loading cookie for %s", username);
-			return null;
+			SurespotLog.e(TAG, e, "error loading cookie for %s", username);			
 		}
+		return null;
 	}
 
 	public void saveCookie(final String username, final String password, final Cookie cookie) {
