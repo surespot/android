@@ -87,7 +87,9 @@ public class ChatController {
 	private static final int STATE_CONNECTED = 1;
 	private static final int STATE_DISCONNECTED = 2;
 
-	private static final int MAX_RETRIES = 16;
+	private static final int MAX_RETRIES = 60;
+	// maximum time before reconnecting in seconds
+	private static final int MAX_RETRY_DELAY = 30;
 
 	private final StatusLine mImageStatusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "");
 	private SocketIO socket;
@@ -190,15 +192,25 @@ public class ChatController {
 						@Override
 						public void onSuccess(int responseCode, String result, Cookie cookie) {
 							connect();
-
 						}
 
 						@Override
-						public void onFailure(Throwable error, String content) {
-							socket = null;
-							logout();
-							mCallback401.handleResponse(null, false);
-							return;
+						public void onFailure(Throwable arg0, String content) {
+							// if we got http error bail
+//							if (arg0 instanceof HttpResponseException) {
+//								HttpResponseException error = (HttpResponseException) arg0;
+//								int statusCode = error.getStatusCode();
+//								SurespotLog.i(TAG, error, "http error on relogin - bailing, status: %d, message: %s", statusCode, error.getMessage());
+
+								socket = null;
+								logout();
+								mCallback401.handleResponse(null, false);
+								return;
+//							}
+//
+//							// if it's not an http error try again
+//							SurespotLog.i(TAG, arg0, "non http error on relogin - reconnecting, message: %s", arg0.getMessage());
+//							connect();
 						}
 					});
 
@@ -219,9 +231,9 @@ public class ChatController {
 				setOnWifi();
 				// kick off another task
 				if (mRetries < MAX_RETRIES) {
-
-					int timerInterval = (int) (Math.pow(2, mRetries++) * 1000);
-					SurespotLog.d(TAG, "Starting another task in: %d", timerInterval);
+					
+					int timerInterval = generateInterval(mRetries++);
+					SurespotLog.d(TAG, "try %d starting another task in: %d", mRetries-1, timerInterval);
 
 					synchronized (BACKGROUND_TIMER_LOCK) {
 						if (mReconnectTask != null) {
@@ -375,6 +387,17 @@ public class ChatController {
 			}
 		};
 
+	}
+
+	private int generateInterval(int k) {
+		int timerInterval = (int) (Math.pow(2, k) * 1000);
+		if (timerInterval > MAX_RETRY_DELAY * 1000) {
+			timerInterval = MAX_RETRY_DELAY * 1000;
+		}
+
+		int reconnectTime = (int) (Math.random() * timerInterval);
+		SurespotLog.d(TAG, "generated reconnect time: %d for k: %d", reconnectTime, k);
+		return reconnectTime;
 	}
 
 	// this has to be done outside of the contructor as it creates fragments, which need chat controller instance
