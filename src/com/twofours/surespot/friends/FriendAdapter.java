@@ -37,6 +37,7 @@ public class FriendAdapter extends BaseAdapter {
 	private NotificationManager mNotificationManager;
 	private OnClickListener mClickListener;
 	private OnLongClickListener mLongClickListener;
+	private FriendAliasDecryptor mFriendAliasDecryptor;
 	private boolean mLoading;
 	private boolean mLoaded;
 
@@ -50,6 +51,7 @@ public class FriendAdapter extends BaseAdapter {
 
 	public FriendAdapter(Context context) {
 		mContext = context;
+		mFriendAliasDecryptor = new FriendAliasDecryptor(this);
 
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -205,8 +207,8 @@ public class FriendAdapter extends BaseAdapter {
 
 			friendViewHolder.friendActive = convertView.findViewById(R.id.friendActive);
 			friendViewHolder.friendInactive = convertView.findViewById(R.id.friendInactive);
-			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);					
-						
+			friendViewHolder.tvName = (TextView) convertView.findViewById(R.id.friendName);
+
 			friendViewHolder.vgInvite = convertView.findViewById(R.id.inviteLayout);
 			friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
 			friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
@@ -219,15 +221,21 @@ public class FriendAdapter extends BaseAdapter {
 		}
 
 		friendViewHolder.statusLayout.setTag(friend);
-		friendViewHolder.tvName.setText(friend.getName());
-		friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));
+
+		friendViewHolder.tvName.setText(friend.getNameOrAlias());
+		// if alias not decrypted decrypt it
+		if (TextUtils.isEmpty(friend.getAliasPlain()) && !TextUtils.isEmpty(friend.getAliasIv())) {
+			mFriendAliasDecryptor.decrypt(friendViewHolder.tvName, friend);
+		}
+
+		friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(
+				SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));
 
 		if (!TextUtils.isEmpty(friend.getImageUrl())) {
 			FriendImageDownloader.download(friendViewHolder.avatarImage, friend);
 		}
 		else {
-			friendViewHolder.avatarImage.setImageDrawable(friendViewHolder.avatarImage.getResources().getDrawable(
-					android.R.drawable.sym_def_app_icon));
+			friendViewHolder.avatarImage.setImageDrawable(friendViewHolder.avatarImage.getResources().getDrawable(android.R.drawable.sym_def_app_icon));
 		}
 
 		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.isDeleted()) {
@@ -310,7 +318,8 @@ public class FriendAdapter extends BaseAdapter {
 							}
 						}
 					}
-					mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+					mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname,
+							SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 					Collections.sort(mFriends);
 					notifyDataSetChanged();
 				}
@@ -338,7 +347,7 @@ public class FriendAdapter extends BaseAdapter {
 		public View friendInactive;
 	}
 
-	public synchronized  void sort() {
+	public synchronized void sort() {
 		if (mFriends != null) {
 			Collections.sort(mFriends);
 		}
@@ -358,16 +367,18 @@ public class FriendAdapter extends BaseAdapter {
 		return mFriends;
 	}
 
-	public synchronized ArrayList<String> getActiveChats() {
+	
+	
+	public synchronized ArrayList<Friend> getActiveChatFriends() {
 		if (mFriends == null)
 			return null;
-		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<Friend> friends = new ArrayList<Friend>();
 		for (Friend friend : mFriends) {
 			if (friend.isChatActive()) {
-				names.add(friend.getName());
+				friends.add(friend);
 			}
 		}
-		return names;
+		return friends;
 	}
 
 	public synchronized int getFriendCount() {

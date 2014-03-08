@@ -129,46 +129,51 @@ public class FriendFragment extends SherlockFragment {
 				activity.uploadFriendImage(friend.getName());
 			}
 			else {
-				if (selection.equals(getString(R.string.verify_key_fingerprints))) {
-					UIUtils.showKeyFingerprintsDialog(activity, friend.getName());
+				if (selection.equals(getString(R.string.menu_assign_alias))) {
+					activity.assignFriendAlias(friend.getName());
 				}
 				else {
-
-					if (selection.equals(getString(R.string.menu_delete_all_messages))) {
-
-						SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-						boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
-						if (confirm) {
-							mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
-									getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
-									new IAsyncCallback<Boolean>() {
-										public void handleResponse(Boolean result) {
-											if (result) {
-												activity.getChatController().deleteMessages(friend);
-											}
-
-										};
-									});
-						}
-						else {
-							activity.getChatController().deleteMessages(friend);
-						}
+					if (selection.equals(getString(R.string.verify_key_fingerprints))) {
+						UIUtils.showKeyFingerprintsDialog(activity, friend.getName());
 					}
 					else {
-						if (selection.equals(getString(R.string.menu_delete_friend))) {
-							mDialog = UIUtils.createAndShowConfirmationDialog(activity, getMainActivity()
-									.getString(R.string.delete_friend_confirmation, friend.getName()),
-									getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
-									new IAsyncCallback<Boolean>() {
-										public void handleResponse(Boolean result) {
-											if (result) {
-												activity.getChatController().deleteFriend(friend);
-											}
-											else {
-												dialogi.cancel();
-											}
-										};
-									});
+
+						if (selection.equals(getString(R.string.menu_delete_all_messages))) {
+
+							SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+							boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+							if (confirm) {
+								mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation), getMainActivity()
+										.getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
+										new IAsyncCallback<Boolean>() {
+											public void handleResponse(Boolean result) {
+												if (result) {
+													activity.getChatController().deleteMessages(friend);
+												}
+
+											};
+										});
+							}
+							else {
+								activity.getChatController().deleteMessages(friend);
+							}
+						}
+						else {
+							if (selection.equals(getString(R.string.menu_delete_friend))) {
+								mDialog = UIUtils.createAndShowConfirmationDialog(activity,
+										getMainActivity().getString(R.string.delete_friend_confirmation, friend.getName()),
+										getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
+										new IAsyncCallback<Boolean>() {
+											public void handleResponse(Boolean result) {
+												if (result) {
+													activity.getChatController().deleteFriend(friend);
+												}
+												else {
+													dialogi.cancel();
+												}
+											};
+										});
+							}
 						}
 					}
 				}
@@ -180,28 +185,30 @@ public class FriendFragment extends SherlockFragment {
 	private MainActivity getMainActivity() {
 		return (MainActivity) getActivity();
 	}
-	
+
 	@Override
 	public void onDetach() {
-	    super.onDetach();
+		super.onDetach();
 
-	    try {
-	        Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-	        childFragmentManager.setAccessible(true);
-	        childFragmentManager.set(this, null);
+		try {
+			Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
+			childFragmentManager.setAccessible(true);
+			childFragmentManager.set(this, null);
 
-	    } catch (NoSuchFieldException e) {
-	        throw new RuntimeException(e);
-	    } catch (IllegalAccessException e) {
-	        throw new RuntimeException(e);
-	    }
+		}
+		catch (NoSuchFieldException e) {
+			throw new RuntimeException(e);
+		}
+		catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
+
 	@Override
-	public void onPause() {		
+	public void onPause() {
 		super.onPause();
 		if (mDialog != null && mDialog.isShowing()) {
-			mDialog.dismiss();		
+			mDialog.dismiss();
 		}
 	}
 }

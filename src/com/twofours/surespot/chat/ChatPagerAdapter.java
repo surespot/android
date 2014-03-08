@@ -1,6 +1,7 @@
 package com.twofours.surespot.chat;
 
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -9,15 +10,16 @@ import android.support.v4.app.FragmentManager;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.ui.SurespotFragmentPagerAdapter;
 import com.viewpagerindicator.IconProvider;
 
 public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements IconProvider {
 
-	private static final String TAG = "ChatPagerAdapter";
-	private ArrayList<String> mChatNames;
-
+	private static final String TAG = "ChatPagerAdapter";	
+	private ArrayList<Friend> mChatFriends;
+	
 	private static String mHomeName;
 
 	public ChatPagerAdapter(Context context, FragmentManager fm) {
@@ -38,7 +40,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return ff;
 		}
 		else {
-			String name = mChatNames.get(i - 1);
+			String name = mChatFriends.get(i - 1).getName();
 			ChatFragment cf = ChatFragment.newInstance(name);
 			SurespotLog.v(TAG, "created new chat fragment: " + cf);
 
@@ -60,7 +62,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		ChatFragment chatFragment = (ChatFragment) object;
 
 		String user = chatFragment.getUsername();
-		int index = mChatNames.indexOf(user);
+		int index = getFriendIndex(user);
 
 		if (index == -1) {
 			SurespotLog.v(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
@@ -71,13 +73,27 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return index + 1;
 		}
 	}
+	
+	private synchronized int getFriendIndex(String username) {
+		ListIterator<Friend> iterator = mChatFriends.listIterator();
+		
+		while (iterator.hasNext()) {
+			if (iterator.next().getName().equals(username)) {
+				return iterator.nextIndex()-1;
+			}
+		}
+		
+		return -1;
+	}
+	
+
 
 	@Override
 	public int getCount() {
-		if (mChatNames == null) {
+		if (mChatFriends == null) {
 			return 0;
 		}
-		return mChatNames.size() + 1;
+		return mChatFriends.size() + 1;
 	}
 
 	@Override
@@ -86,43 +102,54 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return mHomeName;
 		}
 		else {
-			if (mChatNames.size() > position - 1) {
-				return mChatNames.get(position - 1);
+			if (mChatFriends.size() > position - 1) {
+				
+				
+				return mChatFriends.get(position - 1).getNameOrAlias();
 			}
 		}
 		return null;
 
 	}
+	
+	
 
-	public void addChatName(String username) {
-		if (!mChatNames.contains(username)) {
-			mChatNames.add(username);
+	public void addChatFriend(Friend friend) {
+		if (!mChatFriends.contains(friend)) {
+			mChatFriends.add(friend);
 			sort();
 			this.notifyDataSetChanged();
 		}
 	}
 
-	public void setChatNames(ArrayList<String> names) {
-
-		mChatNames = names;
-
+	public void setChatFriends(ArrayList<Friend> friends) {
+		mChatFriends = friends;		
 		sort();
 		this.notifyDataSetChanged();
-
 	}
 
-	private synchronized void sort() {
+	public synchronized void sort() {
 
-		mChatNames = new ArrayList<String>(Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(mChatNames));
+		mChatFriends =  new ArrayList<Friend>(new Ordering<Friend>() {
+
+			@Override
+			public int compare(Friend arg0, Friend arg1) {
+				return arg0.getNameOrAlias().toLowerCase().compareTo(arg1.getNameOrAlias().toLowerCase());
+			}
+			
+			
+		}.immutableSortedCopy(mChatFriends));
 	}
 
+	
+	
 	public boolean containsChat(String username) {
-		return mChatNames.contains(username);
+		return getFriendIndex(username) > -1;
 	}
 
 	public int getChatFragmentPosition(String username) {
 
-		return mChatNames.indexOf(username) + 1;
+		return getFriendIndex(username) + 1;
 
 	}
 
@@ -140,17 +167,15 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 	// return Utils.makePagerFragmentName(R.id.pager, getItemId(position + 1));
 	// }
 
-	public ArrayList<String> getChatNames() {
-		return mChatNames;
-	}
+
 
 	public String getChatName(int position) {
 		if (position == 0) {
 			return null;
 		}
 		else {
-			if (position <= mChatNames.size()) {
-				return mChatNames.get(position - 1);
+			if (position <= mChatFriends.size()) {
+				return mChatFriends.get(position - 1).getNameOrAlias();
 			}
 			else {
 				return null;
@@ -159,9 +184,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 	}
 
 	public void removeChat(int viewId, int index) {
-		String name = mChatNames.remove(index - 1);
+		Friend friend = mChatFriends.remove(index - 1);
 
-		String fragname = makeFragmentName(viewId, name.hashCode());
+		String fragname = makeFragmentName(viewId, friend.getName().hashCode());
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
 
 		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
@@ -173,6 +198,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			}
 
 			mCurTransaction.remove(fragment);			
+			mCurTransaction.commit();
 		}
 		
 		notifyDataSetChanged();
@@ -183,7 +209,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return mHomeName.hashCode();
 		}
 		else {
-			return mChatNames.get(position - 1).hashCode();
+			return mChatFriends.get(position - 1).getName().hashCode();
 		}
 	}
 
@@ -197,4 +223,5 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return IconProvider.NO_ICON;
 		}
 	}
+	
 }

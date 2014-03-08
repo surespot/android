@@ -421,7 +421,7 @@ public class ChatController {
 
 			}
 		});
-		mChatPagerAdapter.setChatNames(mFriendAdapter.getActiveChats());
+		mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
 		onResume();
 	}
 
@@ -1460,6 +1460,28 @@ public class ChatController {
 										}
 									}
 								}
+								else
+									if (message.getAction().equals("friendAlias")) {
+										String friendName = message.getData();
+										Friend friend = mFriendAdapter.getFriend(friendName);
+
+										if (friend != null) {
+
+											String moreData = message.getMoreData();
+											JSONObject jsonData = null;
+											try {
+												jsonData = new JSONObject(moreData);
+												String iv = jsonData.getString("iv");
+												String data = jsonData.getString("data");
+												String version = jsonData.getString("version");
+												setFriendAlias(friendName, data, version, iv);
+											}
+											catch (JSONException e) {
+												SurespotLog.e(TAG, e, "could not parse friend alias control message json");
+
+											}
+										}
+									}
 		if (notify) {
 			mFriendAdapter.notifyDataSetChanged();
 			saveFriends();
@@ -1932,7 +1954,7 @@ public class ChatController {
 		mTabShowingCallback.handleResponse(friend);
 		if (friend != null) {
 			mCurrentChat = username;
-			mChatPagerAdapter.addChatName(username);
+			mChatPagerAdapter.addChatFriend(friend);
 			friend.setChatActive(true);
 			friend.setLastViewedMessageId(friend.getAvailableMessageId());
 
@@ -2372,9 +2394,7 @@ public class ChatController {
 						if (friendsArray != null) {
 							for (int i = 0; i < friendsArray.length(); i++) {
 								JSONObject jsonFriend = friendsArray.getJSONObject(i);
-								// String name = jsonFriend.getString("name");
-								// jsonFriend.put("name", name);
-								// jsonFriend.put("flags", jsonFriend.getInt("flags"));
+
 								Friend friend = Friend.toFriend(jsonFriend);
 								friends.add(friend);
 
@@ -2537,6 +2557,22 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
+	
+	public void setFriendAlias(String name, String data, String version, String iv) {
+		Friend friend = mFriendAdapter.getFriend(name);
+		if (friend != null) {
+			
+			friend.setAliasData(data);
+			friend.setAliasIv(iv);
+			friend.setAliasVersion(version);			
+			friend.setAliasPlain(null);
+			saveFriends();
+			mChatPagerAdapter.sort();
+			mChatPagerAdapter.notifyDataSetChanged();
+			mFriendAdapter.sort();
+			mFriendAdapter.notifyDataSetChanged();			
+		}
+	}
 
 	public SurespotMessage getLiveMessage(SurespotMessage message) {
 		String otherUser = message.getOtherUser();
@@ -2577,5 +2613,9 @@ public class ChatController {
 				return false;
 			}
 		}
+	}
+
+	public String getAliasedName(String name) {		
+		return mFriendAdapter.getFriend(name).getNameOrAlias();		
 	}
 }

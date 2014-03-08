@@ -332,4 +332,8 @@
     <string name="pref_title_global_options">global options</string>
     <string name="store_password_in_keychain">store password in keychain</string>
     
+    <string name="menu_assign_alias">assign alias</string>
+    <string name="could_not_assign_friend_alias">could not assign friend alias</string>
+    <string name="enter_alias">enter alias</string>
+    <string name="enter_alias_for">"enter alias for %s"</string>      
 </resources>
