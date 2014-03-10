@@ -445,8 +445,10 @@ public class LoginActivity extends SherlockActivity {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-			return true;
+			if (mMenuOverflow != null) {
+				mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+				return true;
+			}
 		}
 
 		return super.onKeyUp(keyCode, event);
