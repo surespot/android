@@ -310,8 +310,8 @@ public class IdentityController {
 			isLoggedIn = true;
 		}
 		
-		SurespotApplication.getCachingService().clearIdentityData(username, true);
-
+		SurespotApplication.getCachingService().clearIdentityData(username, true);	
+		
 		if (isLoggedIn) {
 			SurespotApplication.getCachingService().logout(true);
 		}
@@ -1069,23 +1069,15 @@ public class IdentityController {
 		return mKs.state() == KeyStore.State.UNLOCKED;
 	}
 
-	public static void unlock(Context activity, String username, String password) {
+	public static void unlock(Context activity) {
 		SurespotLog.d(TAG, "unlock");
 		if (mKs.state() == KeyStore.State.UNLOCKED) {
 			return;
 		}
 
 		Intent intent = new Intent(activity, SurespotKeystoreActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-		if (username != null) {
-			intent.putExtra("username", username);
-		}
-
-		if (password != null) {
-			intent.putExtra("password", password);
-		}
+		intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);		
 		activity.startActivity(intent);
-
 	}
 
 	public static String getStoredPasswordForIdentity(String username) {
@@ -1115,7 +1107,7 @@ public class IdentityController {
 		}
 		else {
 			initKeystore();
-			unlock(activity, username, password);
+			unlock(activity);
 		}
 
 		return false;

@@ -115,52 +115,51 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 					return true;
 				}
 			});
-						
-			boolean stopCache = Utils.getSharedPrefsBoolean(this,"pref_stop_cache_logout");
-			
-			//global overrides
+
+			boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
+
+			// global overrides
 			final CheckBoxPreference stopCachePref = (CheckBoxPreference) prefMgr.findPreference("pref_stop_cache_logout_control");
 			stopCachePref.setChecked(stopCache);
-			SurespotLog.d(TAG,"read kill cache on logout: %b", stopCache);
-			
+			SurespotLog.d(TAG, "read kill cache on logout: %b", stopCache);
+
 			stopCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
 					boolean newChecked = stopCachePref.isChecked();
-					//stopCachePref.setChecked(newChecked);
-					SurespotLog.d(TAG,"set kill cache on logout: %b", newChecked);					
+					// stopCachePref.setChecked(newChecked);
+					SurespotLog.d(TAG, "set kill cache on logout: %b", newChecked);
 					Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_stop_cache_logout", newChecked);
 					return true;
 				}
 			});
-			
-									
-			//global overrides
-//			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-//			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
-//			enableKeystorePref.setChecked(enableKeystore);
-//			SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);			
-//			enableKeystorePref.setEnabled(false);
-//			
-//			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-//				@Override
-//				public boolean onPreferenceClick(Preference preference) {
-//					boolean newChecked = enableKeystorePref.isChecked();
-//																				
-//					SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);									
-//					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
-//					
-//					if (newChecked) {
-//						IdentityController.initKeystore(SettingsActivity.this);
-//						IdentityController.unlock(SettingsActivity.this, null, null);
-//					}
-//					else {
-//						//TODO warn user that this will blow their passwords away
-//						IdentityController.destroyKeystore();
-//					}
-//					return true;
-//				}
-//			});
+
+			// global overrides
+			// boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+			// final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
+			// enableKeystorePref.setChecked(enableKeystore);
+			// SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);
+			// enableKeystorePref.setEnabled(false);
+			//
+			// enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			// @Override
+			// public boolean onPreferenceClick(Preference preference) {
+			// boolean newChecked = enableKeystorePref.isChecked();
+			//
+			// SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);
+			// Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
+			//
+			// if (newChecked) {
+			// IdentityController.initKeystore(SettingsActivity.this);
+			// IdentityController.unlock(SettingsActivity.this, null, null);
+			// }
+			// else {
+			// //TODO warn user that this will blow their passwords away
+			// IdentityController.destroyKeystore();
+			// }
+			// return true;
+			// }
+			// });
 		}
 	}
 
@@ -266,7 +265,13 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				editor.putString("pref_background_image", imageFile.getAbsolutePath());
 				editor.commit();
 
-				mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
+				if (mBgImagePref == null) {
+					mBgImagePref = getPreferenceManager().findPreference("pref_background_image");
+				}
+
+				if (mBgImagePref != null) {
+					mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
+				}
 				SurespotConfiguration.setBackgroundImageSet(true);
 			}
 		}
@@ -349,7 +354,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			return null;
 		}
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
