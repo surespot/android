@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -60,6 +61,8 @@ public class LoginActivity extends SherlockActivity {
 	private boolean mLoggedIn = false;
 	private EditText mEtPassword;
 	private CheckBox mCbSavePassword;
+	private boolean mKeystoreNeededUnlocking;
+	private String mUnlockingUser;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +124,9 @@ public class LoginActivity extends SherlockActivity {
 				// make sure keystore inited
 				if (mCbSavePassword.isChecked()) {
 					SurespotLog.d(TAG, "initing keystore");
-					IdentityController.storePasswordForIdentity(LoginActivity.this, getSelectedUsername(), mEtPassword.getText().toString());
+					mUnlockingUser = getSelectedUsername();
+					mKeystoreNeededUnlocking = !IdentityController
+							.storePasswordForIdentity(LoginActivity.this, mUnlockingUser, mEtPassword.getText().toString());
 				}
 				else {
 					IdentityController.clearStoredPasswordForIdentity(getSelectedUsername());
@@ -423,7 +428,7 @@ public class LoginActivity extends SherlockActivity {
 			unbindService(mConnection);
 		}
 
-		if (!mLoggedIn) {			
+		if (!mLoggedIn) {
 			boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
 
 			if (stopCache) {
@@ -448,7 +453,6 @@ public class LoginActivity extends SherlockActivity {
 	}
 
 	private void updatePassword() {
-
 		String username = getSelectedUsername();
 
 		boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
@@ -463,18 +467,39 @@ public class LoginActivity extends SherlockActivity {
 				mCbSavePassword.setChecked(true);
 			}
 			else {
-				mEtPassword.setText(null);
-				mCbSavePassword.setChecked(false);
+				// if we needed to unlock the keystore don't change the password and check status, and store password in keychain now
+				if (mKeystoreNeededUnlocking && username.equals(mUnlockingUser)) {
+
+					boolean unlocked = IdentityController.isKeystoreUnlocked();
+
+					if (unlocked) {
+						SurespotLog.d(TAG, "keystore now unlocked, saving password for %s", username);
+						password = mEtPassword.getText().toString();
+						if (!TextUtils.isEmpty(password)) {
+							IdentityController.storePasswordForIdentity(this, username, password);
+						}						
+					}
+					//if it's not unlocked uncheck save password
+					else {
+						mCbSavePassword.setChecked(false);
+					}
+					
+					mKeystoreNeededUnlocking = false;
+					mUnlockingUser = null;
+				}
+				else {
+					mEtPassword.setText(null);
+					mCbSavePassword.setChecked(false);
+				}
+
 			}
 		}
 		else {
 			mCbSavePassword.setChecked(false);
 		}
-
 	}
 
 	private String getSelectedUsername() {
 		return mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
 	}
-
 }

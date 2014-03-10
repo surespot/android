@@ -16,26 +16,13 @@ import com.twofours.surespot.common.Utils;
 public class SurespotKeystoreActivity extends Activity {
 
 	private static final String TAG = "SurespotKeystoreActivity";
-	private String mUsername;
-	private String mPassword;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		Utils.logIntent(TAG, getIntent());
-		
-		if (savedInstanceState != null)  {
-			mUsername = savedInstanceState.getString("username");
-			mPassword = savedInstanceState.getString("password");					
-		}
-		else {
-			mUsername = getIntent().getStringExtra("username");
-			mPassword = getIntent().getStringExtra("password");
-		}
-				
+		Utils.logIntent(TAG, getIntent());			
 		this.unlock(this);
-
 	}
 
 	private void unlock(Activity activity) {
@@ -45,10 +32,7 @@ public class SurespotKeystoreActivity extends Activity {
 			return;
 		}
 		if (keystore.state() == KeyStore.State.UNLOCKED) {
-			Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
-			if (mUsername != null && mPassword != null) {
-				keystore.put(mUsername, mPassword.getBytes());
-			}
+			Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);	
 			finish();
 			return;
 		}
@@ -62,7 +46,7 @@ public class SurespotKeystoreActivity extends Activity {
 				intent = new Intent(IdentityController.UNLOCK_ACTION);
 			}
 			Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
-			this.startActivityForResult(intent, 100);
+			this.startActivity(intent);
 		}
 		catch (ActivityNotFoundException e) {
 			SurespotLog.e(TAG, e, "No UNLOCK activity: %s", e.getMessage());
@@ -72,40 +56,4 @@ public class SurespotKeystoreActivity extends Activity {
 			return;
 		}
 	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		SurespotLog.d(TAG, "received activity result, requestCode: %d, resultcode; %d, data: %s", requestCode, resultCode, data);
-		Utils.logIntent(TAG, data);
-
-		boolean unlocked = IdentityController.isKeystoreUnlocked();
-		
-		SurespotLog.d(TAG, "keystore unlocked: %b", unlocked);
-
-		if (IdentityController.isKeystoreUnlocked()) {
-			if (mUsername != null && mPassword != null) {
-				IdentityController.getKeystore().put(mUsername, mPassword.getBytes());
-			}
-		}
-		else {			
-			Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
-		}
-		finish();
-
-	}
-	
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		if (mUsername != null) {
-			outState.putString("username", mUsername);
-		}
-		if (mPassword != null) {
-			outState.putString("password", mPassword);
-		}
-
-	}
-	
-
 }
