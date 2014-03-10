@@ -310,8 +310,8 @@ public class IdentityController {
 			isLoggedIn = true;
 		}
 		
-		SurespotApplication.getCachingService().clearIdentityData(username, true);
-
+		SurespotApplication.getCachingService().clearIdentityData(username, true);	
+		
 		if (isLoggedIn) {
 			SurespotApplication.getCachingService().logout(true);
 		}
