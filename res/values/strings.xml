@@ -333,4 +333,8 @@
     <string name="could_not_assign_friend_alias">could not assign friend alias</string>
     <string name="enter_alias">enter alias</string>
     <string name="enter_alias_for">"enter alias for %s"</string>
+    <string name="menu_remove_friend_image">"remove image"</string>
+    <string name="menu_remove_friend_alias">"remove alias"</string>
+    <string name="could_not_remove_friend_image">"could not remove friend image"</string>
+    <string name="could_not_remove_friend_alias">"could not remove friend alias"</string>
 </resources>

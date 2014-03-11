@@ -781,4 +781,14 @@ public class NetworkController {
 		put("/users/" + username + "/alias", params, responseHandler);
 
 	}
+	
+	public void deleteFriendAlias(String username, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "deleteFriendAlias, username: %s", username);
+		delete("/users/" + username + "/alias", responseHandler);
+	}
+	
+	public void deleteFriendImage(String username, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "deleteFriendImage, username: %s", username);
+		delete("/users/" + username + "/image", responseHandler);
+	}
 }

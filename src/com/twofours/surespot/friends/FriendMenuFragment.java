@@ -59,21 +59,34 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 			mItems.add(getString(R.string.menu_delete_all_messages));
 			if (!mFriend.isDeleted()) {
 				mItems.add(getString(R.string.verify_key_fingerprints));
-				mItems.add(getString(R.string.menu_assign_image));
-				mItems.add(getString(R.string.menu_assign_alias));
+
+				// if we have image assigned, show remove instead
+				if (mFriend.hasFriendImageAssigned()) {
+					mItems.add(getString(R.string.menu_remove_friend_image));
+				}
+				else {
+					mItems.add(getString(R.string.menu_assign_image));
+				}
+
+				if (mFriend.hasFriendAliasAssigned()) {
+					mItems.add(getString(R.string.menu_remove_friend_alias));
+				}
+				else {
+					mItems.add(getString(R.string.menu_assign_alias));
+				}
+
 			}
 		}
 		if (!mFriend.isInviter()) {
 			mItems.add(getString(R.string.menu_delete_friend));
-
 		}
 
 		builder.setItems(mItems.toArray(new String[mItems.size()]), new DialogInterface.OnClickListener() {
 			public void onClick(final DialogInterface dialogi, int which) {
 				if (mFriend == null || mSelectionCallback == null)
 					return;
-					
-				String itemText = mItems.get(which);			
+
+				String itemText = mItems.get(which);
 				mSelectionCallback.handleResponse(dialogi, mFriend, itemText);
 			}
 		});

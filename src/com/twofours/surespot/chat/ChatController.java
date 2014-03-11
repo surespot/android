@@ -421,11 +421,10 @@ public class ChatController {
 
 			}
 		});
-	
 
-		mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());	
+		mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
 		mFriendAdapter.registerFriendAliasChangedCallback(new IAsyncCallback<Void>() {
-			
+
 			@Override
 			public void handleResponse(Void result) {
 				mChatPagerAdapter.sort();
@@ -433,7 +432,7 @@ public class ChatController {
 				mIndicator.notifyDataSetChanged();
 			}
 		});
-		
+
 		onResume();
 	}
 
@@ -1458,17 +1457,24 @@ public class ChatController {
 									if (friend != null) {
 
 										String moreData = message.getMoreData();
-										JSONObject jsonData = null;
-										try {
-											jsonData = new JSONObject(moreData);
-											String iv = jsonData.getString("iv");
-											String url = jsonData.getString("url");
-											String version = jsonData.getString("version");
-											setImageUrl(friendName, url, version, iv);
-										}
-										catch (JSONException e) {
-											SurespotLog.e(TAG, e, "could not parse friend image control message json");
 
+										if (moreData != null) {
+
+											JSONObject jsonData = null;
+											try {
+												jsonData = new JSONObject(moreData);
+												String iv = jsonData.getString("iv");
+												String url = jsonData.getString("url");
+												String version = jsonData.getString("version");
+												setImageUrl(friendName, url, version, iv);
+											}
+											catch (JSONException e) {
+												SurespotLog.e(TAG, e, "could not parse friend image control message json");
+
+											}
+										}
+										else {
+											removeFriendImage(friendName);
 										}
 									}
 								}
@@ -1480,17 +1486,22 @@ public class ChatController {
 										if (friend != null) {
 
 											String moreData = message.getMoreData();
-											JSONObject jsonData = null;
-											try {
-												jsonData = new JSONObject(moreData);
-												String iv = jsonData.getString("iv");
-												String data = jsonData.getString("data");
-												String version = jsonData.getString("version");
-												setFriendAlias(friendName, data, version, iv);
-											}
-											catch (JSONException e) {
-												SurespotLog.e(TAG, e, "could not parse friend alias control message json");
 
+											if (moreData != null) {
+												JSONObject jsonData = null;
+												try {
+													jsonData = new JSONObject(moreData);
+													String iv = jsonData.getString("iv");
+													String data = jsonData.getString("data");
+													String version = jsonData.getString("version");
+													setFriendAlias(friendName, data, version, iv);
+												}
+												catch (JSONException e) {
+													SurespotLog.e(TAG, e, "could not parse friend alias control message json");
+												}
+											}
+											else {
+												removeFriendAlias(friendName);
 											}
 										}
 									}
@@ -1992,7 +2003,7 @@ public class ChatController {
 		}
 
 		mFriendAdapter.sort();
-		mFriendAdapter.notifyDataSetChanged();		
+		mFriendAdapter.notifyDataSetChanged();
 
 		// set menu item enable state
 		enableMenuItems(friend);
@@ -2576,29 +2587,28 @@ public class ChatController {
 			friend.setAliasData(data);
 			friend.setAliasIv(iv);
 			friend.setAliasVersion(version);
-			
+
 			new AsyncTask<Void, Void, String>() {
 
 				@Override
 				protected String doInBackground(Void... params) {
 					String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
 							friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
-					
+
 					return plainText;
 				}
-				
-				protected void onPostExecute(String plainAlias) {
-					
 
-					friend.setAliasPlain(plainAlias);				
+				protected void onPostExecute(String plainAlias) {
+
+					friend.setAliasPlain(plainAlias);
 					saveFriends();
 					mChatPagerAdapter.sort();
-					mChatPagerAdapter.notifyDataSetChanged();			
+					mChatPagerAdapter.notifyDataSetChanged();
 					mIndicator.notifyDataSetChanged();
 					mFriendAdapter.sort();
 					mFriendAdapter.notifyDataSetChanged();
-				}				
-			}.execute();					
+				}
+			}.execute();
 		}
 	}
 
@@ -2645,5 +2655,40 @@ public class ChatController {
 
 	public String getAliasedName(String name) {
 		return mFriendAdapter.getFriend(name).getNameOrAlias();
+	}
+
+	public void removeFriendAlias(String name) {
+		final Friend friend = mFriendAdapter.getFriend(name);
+		if (friend != null) {
+			friend.setAliasData(null);
+			friend.setAliasIv(null);
+			friend.setAliasVersion(null);
+			friend.setAliasPlain(null);
+			saveFriends();
+			mChatPagerAdapter.sort();
+			mChatPagerAdapter.notifyDataSetChanged();
+			mIndicator.notifyDataSetChanged();
+			mFriendAdapter.sort();
+			mFriendAdapter.notifyDataSetChanged();
+		}
+	}
+
+	public void removeFriendImage(String name) {
+		final Friend friend = mFriendAdapter.getFriend(name);
+		if (friend != null) {
+			String oldUrl = friend.getImageUrl();
+			if (!TextUtils.isEmpty(oldUrl)) {
+				mNetworkController.removeCacheEntry(oldUrl);
+			}
+			friend.setImageIv(null);
+			friend.setImageUrl(null);
+			friend.setImageVersion(null);
+			saveFriends();
+			mChatPagerAdapter.sort();
+			mChatPagerAdapter.notifyDataSetChanged();
+			mIndicator.notifyDataSetChanged();
+			mFriendAdapter.sort();
+			mFriendAdapter.notifyDataSetChanged();
+		}
 	}
 }

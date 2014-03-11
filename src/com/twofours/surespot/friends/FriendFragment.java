@@ -33,7 +33,7 @@ public class FriendFragment extends SherlockFragment {
 	protected static final String TAG = "FriendFragment";
 	// private MultiProgressDialog mMpdInviteFriend;
 	// private ChatController mChatController;
-	private ListView mListView;	
+	private ListView mListView;
 	private AlertDialog mDialog;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,22 +43,22 @@ public class FriendFragment extends SherlockFragment {
 		Button tvShareLink = (Button) view.findViewById(R.id.tvShareInvite);
 		tvShareLink.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 		tvShareLink.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				UIUtils.sendInvitation(getActivity(), MainActivity.getNetworkController());
-				
+
 			}
 		});
 
 		Button tvHelp = (Button) view.findViewById(R.id.tvHelp);
 		tvHelp.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 		tvHelp.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				mDialog = UIUtils.showHelpDialog(getActivity(), false);
-				
+
 			}
 		});
 		// mMpdInviteFriend = new MultiProgressDialog(this.getActivity(), "inviting friend", 750);
@@ -124,62 +124,73 @@ public class FriendFragment extends SherlockFragment {
 			activity.getChatController().closeTab(friend.getName());
 		}
 		else {
-
 			if (selection.equals(getString(R.string.menu_assign_image))) {
 				activity.uploadFriendImage(friend.getName());
 			}
 			else {
-				if (selection.equals(getString(R.string.menu_assign_alias))) {
-					activity.assignFriendAlias(friend.getName());
+				if (selection.equals(getString(R.string.menu_remove_friend_image))) {
+					activity.removeFriendImage(friend.getName());
 				}
 				else {
-					if (selection.equals(getString(R.string.verify_key_fingerprints))) {
-						UIUtils.showKeyFingerprintsDialog(activity, friend.getName(), friend.getAliasPlain());
+					if (selection.equals(getString(R.string.menu_assign_alias))) {
+						activity.assignFriendAlias(friend.getName());
 					}
 					else {
+						if (selection.equals(getString(R.string.menu_remove_friend_alias))) {
+							activity.removeFriendAlias(friend.getName());
+						}
 
-						if (selection.equals(getString(R.string.menu_delete_all_messages))) {
-
-							SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-							boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
-							if (confirm) {
-								mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation), getMainActivity()
-										.getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
-										new IAsyncCallback<Boolean>() {
-											public void handleResponse(Boolean result) {
-												if (result) {
-													activity.getChatController().deleteMessages(friend);
-												}
-
-											};
-										});
+						else {
+							if (selection.equals(getString(R.string.verify_key_fingerprints))) {
+								UIUtils.showKeyFingerprintsDialog(activity, friend.getName(), friend.getAliasPlain());
 							}
 							else {
-								activity.getChatController().deleteMessages(friend);
-							}
-						}
-						else {
-							if (selection.equals(getString(R.string.menu_delete_friend))) {
-								mDialog = UIUtils.createAndShowConfirmationDialog(activity,
-										getMainActivity().getString(R.string.delete_friend_confirmation,  UIUtils.buildAliasString(friend.getName(), friend.getAliasPlain())),
-										getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
-										new IAsyncCallback<Boolean>() {
-											public void handleResponse(Boolean result) {
-												if (result) {
-													activity.getChatController().deleteFriend(friend);
-												}
-												else {
-													dialogi.cancel();
-												}
-											};
-										});
+
+								if (selection.equals(getString(R.string.menu_delete_all_messages))) {
+
+									SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+									boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+									if (confirm) {
+										mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
+												getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
+												new IAsyncCallback<Boolean>() {
+													public void handleResponse(Boolean result) {
+														if (result) {
+															activity.getChatController().deleteMessages(friend);
+														}
+
+													};
+												});
+									}
+									else {
+										activity.getChatController().deleteMessages(friend);
+									}
+								}
+								else {
+									if (selection.equals(getString(R.string.menu_delete_friend))) {
+										mDialog = UIUtils.createAndShowConfirmationDialog(
+												activity,
+												getMainActivity().getString(R.string.delete_friend_confirmation,
+														UIUtils.buildAliasString(friend.getName(), friend.getAliasPlain())),
+												getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
+												new IAsyncCallback<Boolean>() {
+													public void handleResponse(Boolean result) {
+														if (result) {
+															activity.getChatController().deleteFriend(friend);
+														}
+														else {
+															dialogi.cancel();
+														}
+													};
+												});
+									}
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-
 	}
 
 	private MainActivity getMainActivity() {

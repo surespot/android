@@ -470,5 +470,15 @@ public class Friend implements Comparable<Friend> {
 	public String getNameOrAlias() {
 		return TextUtils.isEmpty(getAliasPlain()) ? getName() : getAliasPlain(); 
 	}
+	
+	public boolean hasFriendImageAssigned() {
+		return !TextUtils.isEmpty(getImageIv()) && !TextUtils.isEmpty(getImageVersion()) && !TextUtils.isEmpty(getImageUrl());
+	}
+	
+	public boolean hasFriendAliasAssigned() {
+		return !TextUtils.isEmpty(getAliasIv()) && !TextUtils.isEmpty(getAliasVersion()) && !TextUtils.isEmpty(getAliasData());
+	}
+	
+	
 
 };

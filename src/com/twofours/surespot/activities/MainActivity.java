@@ -2006,4 +2006,37 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public void setChildDialog(AlertDialog childDialog) {
 		mDialog = childDialog;
 	}
+	
+	public void removeFriendImage(final String name) {
+		mNetworkController.deleteFriendImage(name, new AsyncHttpResponseHandler() {
+
+			@Override
+			public void onSuccess(int responseCode, String result) {
+				mChatController.removeFriendImage(name);
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				SurespotLog.w(TAG, arg0,"error removing friend image: %s", arg1);
+				Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
+			}
+		});
+	}
+
+	public void removeFriendAlias(final String name) {
+		mNetworkController.deleteFriendAlias(name, new AsyncHttpResponseHandler() {
+
+			@Override
+			public void onSuccess(int responseCode, String result) {
+				mChatController.removeFriendAlias(name);
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				SurespotLog.w(TAG, arg0,"error removing friend alias: %s", arg1);
+				Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
+			}
+		});
+	}
+
 }
