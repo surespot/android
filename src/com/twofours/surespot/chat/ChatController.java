@@ -2505,7 +2505,7 @@ public class ChatController {
 
 	public void enableMenuItems(Friend friend) {
 		boolean enabled = mMode != MODE_SELECT && mCurrentChat != null;
-		SurespotLog.d(TAG, "enableMenuItems, enabled: %b", enabled);
+		SurespotLog.v(TAG, "enableMenuItems, enabled: %b", enabled);
 
 		boolean isDeleted = false;
 		if (friend != null) {

@@ -370,7 +370,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// set the emoji view to the keyboard height
 			mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
 
-			SurespotLog.d(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
+			SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
 					.getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
 
 			setButtonText();
@@ -1679,7 +1679,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	public void onLayoutMeasure() {
-		SurespotLog.d(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
+		SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
 		if (mEmojiShowing) {
 
 			if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {

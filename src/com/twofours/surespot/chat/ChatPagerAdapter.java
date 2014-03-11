@@ -29,11 +29,11 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 	@Override
 	public Fragment getItem(int i) {
-		SurespotLog.v(TAG, "getItem, I: " + i);
+		SurespotLog.d(TAG, "getItem, I: " + i);
 		if (i == 0) {
 
 			FriendFragment ff = new FriendFragment();
-			SurespotLog.v(TAG, "created new friend fragment: " + ff);
+			SurespotLog.d(TAG, "created new friend fragment: " + ff);
 
 			// ff.setRetainInstance(true);
 
@@ -42,7 +42,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		else {
 			String name = mChatFriends.get(i - 1).getName();
 			ChatFragment cf = ChatFragment.newInstance(name);
-			SurespotLog.v(TAG, "created new chat fragment: " + cf);
+			SurespotLog.d(TAG, "created new chat fragment: " + cf);
 
 			// cf.setRetainInstance(true);
 
@@ -53,9 +53,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 	@Override
 	public int getItemPosition(Object object) {
-		SurespotLog.v(TAG, "getItemPosition, object: " + object.getClass().getName());
+		SurespotLog.d(TAG, "getItemPosition, object: " + object.getClass().getName());
 		if (object instanceof FriendFragment) {
-			SurespotLog.v(TAG, "getItemPosition, returning 0");
+			SurespotLog.d(TAG, "getItemPosition, returning 0");
 			return 0;
 		}
 
@@ -65,11 +65,11 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		int index = getFriendIndex(user);
 
 		if (index == -1) {
-			SurespotLog.v(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
+			SurespotLog.d(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
 			return POSITION_NONE;
 		}
 		else {
-			SurespotLog.v(TAG, "getItemPosition, returning " + (index + 1) + " for: " + user);
+			SurespotLog.d(TAG, "getItemPosition, returning " + (index + 1) + " for: " + user);
 			return index + 1;
 		}
 	}
@@ -79,7 +79,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		
 		while (iterator.hasNext()) {
 			if (iterator.next().getName().equals(username)) {
-				return iterator.nextIndex()-1;
+				int index = iterator.previousIndex();
+				SurespotLog.d(TAG, "friend index for %s: %d", username, index);
+				return index;
 			}
 		}
 		
@@ -103,9 +105,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		}
 		else {
 			if (mChatFriends.size() > position - 1) {
-				
-				
-				return mChatFriends.get(position - 1).getNameOrAlias();
+				String title = mChatFriends.get(position - 1).getNameOrAlias(); 
+				SurespotLog.d(TAG, "returning title %s for position %d",  title, position);
+				return title;
 			}
 		}
 		return null;
@@ -175,7 +177,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		}
 		else {
 			if (position <= mChatFriends.size()) {
-				return mChatFriends.get(position - 1).getNameOrAlias();
+				return mChatFriends.get(position - 1).getName();
 			}
 			else {
 				return null;
@@ -189,7 +191,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		String fragname = makeFragmentName(viewId, friend.getName().hashCode());
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
 
-		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
+		// SurespotLog.d(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());
 		if (fragment != null) {
 			// blow the fragment away
@@ -198,7 +200,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			}
 
 			mCurTransaction.remove(fragment);			
-			mCurTransaction.commit();
+		//	mCurTransaction.commit();
 		}
 		
 		notifyDataSetChanged();
