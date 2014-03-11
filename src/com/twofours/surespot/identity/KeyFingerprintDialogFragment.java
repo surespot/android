@@ -10,6 +10,7 @@ import java.util.List;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,13 +30,15 @@ import com.twofours.surespot.ui.UIUtils;
 public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 	private static final String TAG = "KeyFingerprintDialogFragment";
 	private String mUsername;
+	private String mAlias;
 
-	public static KeyFingerprintDialogFragment newInstance(String username) {
+	public static KeyFingerprintDialogFragment newInstance(String username, String alias) {
 		KeyFingerprintDialogFragment f = new KeyFingerprintDialogFragment();
 
 		// Supply num input as an argument.
 		Bundle args = new Bundle();
 		args.putString("username", username);
+		args.putString("alias", alias);
 		f.setArguments(args);
 
 		return f;
@@ -47,6 +50,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 		super.onCreate(savedInstanceState);
 		setStyle(STYLE_NO_TITLE, 0);
 		mUsername = getArguments().getString("username");
+		mAlias = getArguments().getString("alias");
 	}
 
 	@Override
@@ -177,10 +181,12 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 		if (meFirst) {
 			tvALabel.setText(identity.getUsername());
-			tvBLabel.setText(mUsername);
+			String bLabelText = TextUtils.isEmpty(mAlias) ? mUsername : mAlias + " (" + mUsername + ")";
+			tvBLabel.setText(bLabelText);
 		}
 		else {
-			tvALabel.setText(mUsername);
+			String aLabelText = TextUtils.isEmpty(mAlias) ? mUsername : mAlias + " (" + mUsername + ")";
+			tvALabel.setText(aLabelText);
 			tvBLabel.setText(identity.getUsername());
 
 		}

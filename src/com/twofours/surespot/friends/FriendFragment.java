@@ -134,7 +134,7 @@ public class FriendFragment extends SherlockFragment {
 				}
 				else {
 					if (selection.equals(getString(R.string.verify_key_fingerprints))) {
-						UIUtils.showKeyFingerprintsDialog(activity, friend.getName());
+						UIUtils.showKeyFingerprintsDialog(activity, friend.getName(), friend.getAliasPlain());
 					}
 					else {
 
