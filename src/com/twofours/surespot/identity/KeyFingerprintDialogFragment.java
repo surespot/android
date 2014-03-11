@@ -10,7 +10,6 @@ import java.util.List;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -181,11 +180,11 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 		if (meFirst) {
 			tvALabel.setText(identity.getUsername());
-			String bLabelText = TextUtils.isEmpty(mAlias) ? mUsername : mAlias + " (" + mUsername + ")";
+			String bLabelText = UIUtils.buildAliasString(mUsername, mAlias);
 			tvBLabel.setText(bLabelText);
 		}
 		else {
-			String aLabelText = TextUtils.isEmpty(mAlias) ? mUsername : mAlias + " (" + mUsername + ")";
+			String aLabelText = UIUtils.buildAliasString(mUsername, mAlias);
 			tvALabel.setText(aLabelText);
 			tvBLabel.setText(identity.getUsername());
 

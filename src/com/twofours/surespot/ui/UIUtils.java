@@ -630,5 +630,9 @@ public class UIUtils {
 		ad.show();
 		return ad;
 	}
+	
+	public static String buildAliasString(String username, String alias) {
+		return TextUtils.isEmpty(alias) ? username : alias + " (" + username + ")";
+	}
 
 }

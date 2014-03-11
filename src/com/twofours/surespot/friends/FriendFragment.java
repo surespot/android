@@ -161,7 +161,7 @@ public class FriendFragment extends SherlockFragment {
 						else {
 							if (selection.equals(getString(R.string.menu_delete_friend))) {
 								mDialog = UIUtils.createAndShowConfirmationDialog(activity,
-										getMainActivity().getString(R.string.delete_friend_confirmation, friend.getName()),
+										getMainActivity().getString(R.string.delete_friend_confirmation,  UIUtils.buildAliasString(friend.getName(), friend.getAliasPlain())),
 										getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
 										new IAsyncCallback<Boolean>() {
 											public void handleResponse(Boolean result) {
