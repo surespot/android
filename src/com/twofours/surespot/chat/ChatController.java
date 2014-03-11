@@ -197,20 +197,20 @@ public class ChatController {
 						@Override
 						public void onFailure(Throwable arg0, String content) {
 							// if we got http error bail
-//							if (arg0 instanceof HttpResponseException) {
-//								HttpResponseException error = (HttpResponseException) arg0;
-//								int statusCode = error.getStatusCode();
-//								SurespotLog.i(TAG, error, "http error on relogin - bailing, status: %d, message: %s", statusCode, error.getMessage());
+							// if (arg0 instanceof HttpResponseException) {
+							// HttpResponseException error = (HttpResponseException) arg0;
+							// int statusCode = error.getStatusCode();
+							// SurespotLog.i(TAG, error, "http error on relogin - bailing, status: %d, message: %s", statusCode, error.getMessage());
 
-								socket = null;
-								logout();
-								mCallback401.handleResponse(null, false);
-								return;
-//							}
-//
-//							// if it's not an http error try again
-//							SurespotLog.i(TAG, arg0, "non http error on relogin - reconnecting, message: %s", arg0.getMessage());
-//							connect();
+							socket = null;
+							logout();
+							mCallback401.handleResponse(null, false);
+							return;
+							// }
+							//
+							// // if it's not an http error try again
+							// SurespotLog.i(TAG, arg0, "non http error on relogin - reconnecting, message: %s", arg0.getMessage());
+							// connect();
 						}
 					});
 
@@ -231,9 +231,9 @@ public class ChatController {
 				setOnWifi();
 				// kick off another task
 				if (mRetries < MAX_RETRIES) {
-					
+
 					int timerInterval = generateInterval(mRetries++);
-					SurespotLog.d(TAG, "try %d starting another task in: %d", mRetries-1, timerInterval);
+					SurespotLog.d(TAG, "try %d starting another task in: %d", mRetries - 1, timerInterval);
 
 					synchronized (BACKGROUND_TIMER_LOCK) {
 						if (mReconnectTask != null) {
@@ -421,7 +421,17 @@ public class ChatController {
 
 			}
 		});
-		mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
+	
+
+		mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());	
+		mFriendAdapter.registerFriendAliasChangedCallback(new IAsyncCallback<Void>() {
+			
+			@Override
+			public void handleResponse(Void result) {
+				mIndicator.notifyDataSetChanged();
+			}
+		});
+		
 		onResume();
 	}
 
@@ -2557,20 +2567,20 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
-	
+
 	public void setFriendAlias(String name, String data, String version, String iv) {
 		Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
-			
+
 			friend.setAliasData(data);
 			friend.setAliasIv(iv);
-			friend.setAliasVersion(version);			
+			friend.setAliasVersion(version);
 			friend.setAliasPlain(null);
 			saveFriends();
 			mChatPagerAdapter.sort();
 			mChatPagerAdapter.notifyDataSetChanged();
 			mFriendAdapter.sort();
-			mFriendAdapter.notifyDataSetChanged();			
+			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -2615,7 +2625,7 @@ public class ChatController {
 		}
 	}
 
-	public String getAliasedName(String name) {		
-		return mFriendAdapter.getFriend(name).getNameOrAlias();		
+	public String getAliasedName(String name) {
+		return mFriendAdapter.getFriend(name).getNameOrAlias();
 	}
 }

@@ -88,6 +88,7 @@ public class FriendAliasDecryptor {
 							textView.setText(finalPlainData);	
 							mFriendAdapter.sort();
 							mFriendAdapter.notifyDataSetChanged();
+							mFriendAdapter.notifyFriendAliasChanged();
 						}
 					});
 				}

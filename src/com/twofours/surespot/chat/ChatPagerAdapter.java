@@ -18,8 +18,7 @@ import com.viewpagerindicator.IconProvider;
 public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements IconProvider {
 
 	private static final String TAG = "ChatPagerAdapter";	
-	private ArrayList<Friend> mChatFriends;
-	
+	private ArrayList<Friend> mChatFriends;	
 	private static String mHomeName;
 
 	public ChatPagerAdapter(Context context, FragmentManager fm) {
@@ -224,6 +223,5 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		else {
 			return IconProvider.NO_ICON;
 		}
-	}
-	
+	}		
 }

@@ -40,6 +40,7 @@ public class FriendAdapter extends BaseAdapter {
 	private FriendAliasDecryptor mFriendAliasDecryptor;
 	private boolean mLoading;
 	private boolean mLoaded;
+	private IAsyncCallback<Void> mFriendAliasChangedCallback;
 
 	public boolean isLoaded() {
 		return mLoaded;
@@ -387,4 +388,14 @@ public class FriendAdapter extends BaseAdapter {
 		
 	}
 
+	
+	public void registerFriendAliasChangedCallback(IAsyncCallback<Void> iAsyncCallback) {
+		mFriendAliasChangedCallback = iAsyncCallback;		
+	}
+	
+	public void notifyFriendAliasChanged() {
+		if (mFriendAliasChangedCallback != null) {			
+			mFriendAliasChangedCallback.handleResponse(null);			
+		}
+	}
 }
