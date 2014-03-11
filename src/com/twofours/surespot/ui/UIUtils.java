@@ -603,7 +603,7 @@ public class UIUtils {
 		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
 		editText.setInputType(InputType.TYPE_CLASS_TEXT);
 
-		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter() });
+		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitOrSpaceInputFilter() });
 	
 
 		alert.setPositiveButton(R.string.ok, new OnClickListener() {
