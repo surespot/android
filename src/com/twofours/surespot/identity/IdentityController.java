@@ -29,6 +29,8 @@ import android.os.Build;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
@@ -345,8 +347,8 @@ public class IdentityController {
 
 	}
 
-	public static SurespotIdentity getIdentity() {
-		return getIdentity(null,null,null);
+	public static SurespotIdentity getIdentity(Context context) {
+		return getIdentity(context,null,null);
 	}
 
 	public static SurespotIdentity getIdentity(Context context, String username, String password) {
@@ -778,7 +780,7 @@ public class IdentityController {
 
 			@Override
 			public int compare(String lhs, String rhs) {
-				return lhs.compareToIgnoreCase(rhs);
+				return ComparisonChain.start().compare(lhs.toLowerCase(), rhs.toLowerCase(), Ordering.natural()).result();
 			}
 		});
 		return identityNames;

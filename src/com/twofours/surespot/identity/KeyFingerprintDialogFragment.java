@@ -65,7 +65,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 
 
 		final List<HashMap<String, String>> myItems = new ArrayList<HashMap<String, String>>();
-		final SurespotIdentity identity = IdentityController.getIdentity();
+		final SurespotIdentity identity = IdentityController.getIdentity(getActivity());
 		final boolean meFirst = ComparisonChain.start().compare(identity.getUsername().toLowerCase(), mUsername.toLowerCase(), Ordering.natural()).result() < 0;
 
 		for (PrivateKeyPairs pkp : identity.getKeyPairs()) {
