@@ -428,6 +428,8 @@ public class ChatController {
 			
 			@Override
 			public void handleResponse(Void result) {
+				mChatPagerAdapter.sort();
+				mChatPagerAdapter.notifyDataSetChanged();
 				mIndicator.notifyDataSetChanged();
 			}
 		});
@@ -1990,7 +1992,7 @@ public class ChatController {
 		}
 
 		mFriendAdapter.sort();
-		mFriendAdapter.notifyDataSetChanged();
+		mFriendAdapter.notifyDataSetChanged();		
 
 		// set menu item enable state
 		enableMenuItems(friend);
@@ -2569,18 +2571,34 @@ public class ChatController {
 	}
 
 	public void setFriendAlias(String name, String data, String version, String iv) {
-		Friend friend = mFriendAdapter.getFriend(name);
+		final Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
-
 			friend.setAliasData(data);
 			friend.setAliasIv(iv);
 			friend.setAliasVersion(version);
-			friend.setAliasPlain(null);
-			saveFriends();
-			mChatPagerAdapter.sort();
-			mChatPagerAdapter.notifyDataSetChanged();
-			mFriendAdapter.sort();
-			mFriendAdapter.notifyDataSetChanged();
+			
+			new AsyncTask<Void, Void, String>() {
+
+				@Override
+				protected String doInBackground(Void... params) {
+					String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+							friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
+					
+					return plainText;
+				}
+				
+				protected void onPostExecute(String plainAlias) {
+					
+
+					friend.setAliasPlain(plainAlias);				
+					saveFriends();
+					mChatPagerAdapter.sort();
+					mChatPagerAdapter.notifyDataSetChanged();			
+					mIndicator.notifyDataSetChanged();
+					mFriendAdapter.sort();
+					mFriendAdapter.notifyDataSetChanged();
+				}				
+			}.execute();					
 		}
 	}
 

@@ -70,10 +70,10 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 
 		builder.setItems(mItems.toArray(new String[mItems.size()]), new DialogInterface.OnClickListener() {
 			public void onClick(final DialogInterface dialogi, int which) {
-				if (mFriend == null)
+				if (mFriend == null || mSelectionCallback == null)
 					return;
 					
-				String itemText = mItems.get(which);
+				String itemText = mItems.get(which);			
 				mSelectionCallback.handleResponse(dialogi, mFriend, itemText);
 			}
 		});
