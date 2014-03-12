@@ -8,7 +8,6 @@ import java.util.List;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -143,9 +142,7 @@ public class FriendAdapter extends BaseAdapter {
 			SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
 			mFriends.clear();
 			mFriends.addAll(friends);
-			sort();
-			notifyDataSetChanged();
-			decryptAliases();			
+			decryptAliases();
 		}
 	}
 
@@ -163,36 +160,24 @@ public class FriendAdapter extends BaseAdapter {
 				incumbent.update(friend);
 			}
 		}
-		sort();
-		notifyDataSetChanged();
-		decryptAliases();		
+		decryptAliases();
 	}
 
 	private void decryptAliases() {
 		SurespotLog.d(TAG, "decryptAliases");
-		new AsyncTask<Void, Void, Void>() {
-			@Override
-			protected Void doInBackground(Void... params) {
-				for (Friend friend : mFriends) {
-					if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
-						String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
-								friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
+		for (Friend friend : getActiveChatFriends()) {
+			if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
+				String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+						friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
 
-						SurespotLog.d(TAG, "setting alias for %s", friend.getName());
-						friend.setAliasPlain(plainText);					
-					}
-				}
-
-				return null;
+				SurespotLog.d(TAG, "setting alias for %s", friend.getName());
+				friend.setAliasPlain(plainText);
 			}
-
-			protected void onPostExecute(Void result) {
-				sort();
-				notifyDataSetChanged();
-				notifyFriendAliasChanged();
-			};
-		}.execute();
-
+		}
+	
+		sort();
+		notifyDataSetChanged();
+		notifyFriendAliasChanged();
 	}
 
 	@Override
