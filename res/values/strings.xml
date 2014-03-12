@@ -338,8 +338,8 @@
     <string name="menu_remove_friend_alias">"remove alias"</string>
     <string name="could_not_remove_friend_image">"could not remove friend image"</string>
     <string name="could_not_remove_friend_alias">"could not remove friend alias"</string>
-    <string name="disable_keystore_message">Disabling the keystore will clear all stored passwords. Are you sure?</string>
-    <string name="disable_keystore_title">Disable keystore?</string>
-    <string name="pref_title_enable_keystore">keystore enabled</string>
+    <string name="disable_keystore_message">Disabling the keychain will clear all stored passwords. Are you sure?</string>
+    <string name="disable_keystore_title">Disable keychain?</string>
+    <string name="pref_title_enable_keystore">keychain enabled</string>
     <string name="pref_summary_enable_keystore">enable by electing to save password on login screen</string>
 </resources>
