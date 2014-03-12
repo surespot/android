@@ -1090,7 +1090,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	public void assignFriendAlias(final String name) {
 		// popup dialog and ask for alias
-		UIUtils.aliasDialog(this, getString(R.string.enter_alias), getString(R.string.enter_alias_for, name), new IAsyncCallback<String>() {
+		UIUtils.aliasDialog(this,name, getString(R.string.enter_alias), getString(R.string.enter_alias_for, name), new IAsyncCallback<String>() {
 
 			@Override
 			public void handleResponse(String alias) {
