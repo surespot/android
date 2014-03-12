@@ -138,6 +138,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private String mUser;
 	private boolean mLaunched;
 	private boolean mResumed;
+	private boolean mUnlocking = false;
+	private boolean mPaused = false;
 
 	private BillingController mBillingController;
 
@@ -189,6 +191,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 		if (keystoreEnabled) {
 			IdentityController.initKeystore();
+			if (!IdentityController.unlock(this)) {
+				// we have to launch the unlock activity
+				// so set a flag we can check in onresume and delay network until that point
+			
+				SurespotLog.d(TAG, "launching unlock activity");
+				mUnlocking = true;
+			}
 		}
 
 		Intent intent = getIntent();
@@ -239,7 +248,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		};
 
-
 		if (!needsSignup()) {
 			if (savedInstanceState != null) {
 
@@ -255,12 +263,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
 			}
 
-			
 			processLaunch();
-		
+
 		}
 	}
-	
+
 	private void processLaunch() {
 		String user = getLaunchUser();
 
@@ -271,7 +278,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mUser = user;
 
-			
 			CredentialCachingService ccs = SurespotApplication.getCachingService();
 			if (ccs == null) {
 				SurespotLog.d(TAG, "binding cache service");
@@ -281,13 +287,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 			else {
 				SurespotLog.d(TAG, "cache service already instantiated");
-				postServiceProcess();
+				if (!mUnlocking) {
+					SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
+					postServiceProcess();
+				}
+				else {
+					SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
+				}
 			}
 		}
 
 	}
 
 	private void launchLogin() {
+		SurespotLog.d(TAG, "launchLogin");
 		Intent intent = getIntent();
 		Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
 		newIntent.putExtra("autoinviteuri", intent.getData());
@@ -652,9 +665,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		String user = null;
 		// if started with user from intent
 
-		if (!TextUtils.isEmpty(messageTo) && (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
-				|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType)
-				|| SurespotConstants.IntentFilters.INVITE_RESPONSE.equals(notificationType))) {
+		if (!TextUtils.isEmpty(messageTo)
+				&& (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
+						|| SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
+							.equals(notificationType))) {
 
 			user = messageTo;
 			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
@@ -669,6 +683,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		}
 
+		SurespotLog.d(TAG, "got launch user: %s", user);
 		return user;
 	}
 
@@ -681,7 +696,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
 
-			postServiceProcess();
+			if (!mUnlocking) {
+				SurespotLog.d(TAG, "caching service calling postServiceProcess");
+				postServiceProcess();
+			}
+			else {
+				SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
+			}
 		}
 
 		@Override
@@ -727,26 +748,27 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mBillingController = SurespotApplication.getBillingController();
 
-		mChatController = new ChatController(MainActivity.this, mUser, mNetworkController, getSupportFragmentManager(), m401Handler, new IAsyncCallback<Boolean>() {
-			@Override
-			public void handleResponse(Boolean inProgress) {
-				setHomeProgress(inProgress);
-			}
-		}, new IAsyncCallback<Void>() {
+		mChatController = new ChatController(MainActivity.this, mUser, mNetworkController, getSupportFragmentManager(), m401Handler,
+				new IAsyncCallback<Boolean>() {
+					@Override
+					public void handleResponse(Boolean inProgress) {
+						setHomeProgress(inProgress);
+					}
+				}, new IAsyncCallback<Void>() {
 
-			@Override
-			public void handleResponse(Void result) {
-				handleSendIntent();
+					@Override
+					public void handleResponse(Void result) {
+						handleSendIntent();
 
-			}
-		}, new IAsyncCallback<Friend>() {
+					}
+				}, new IAsyncCallback<Friend>() {
 
-			@Override
-			public void handleResponse(Friend result) {
-				handleTabChange(result);
+					@Override
+					public void handleResponse(Friend result) {
+						handleTabChange(result);
 
-			}
-		});
+					}
+				});
 
 		mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
 		mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
@@ -848,15 +870,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		// if this is the first time the app has been run, or they just created a user, show the help screen
 
-//		boolean whatsNewShown = Utils.getSharedPrefsBoolean(this, "whatsNewShown47");
-//		if (!whatsNewShown) {
-//
-//			Utils.putSharedPrefsBoolean(this, "whatsNewShown47", true);
-//			Utils.removePref(this, "whatsNewShown");
-//			Utils.removePref(this, "whatsNewShown46");
-//			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_47_message), getString(R.string.whats_new_47_title),
-//					getString(R.string.ok), null, null);
-//		}
+		// boolean whatsNewShown = Utils.getSharedPrefsBoolean(this, "whatsNewShown47");
+		// if (!whatsNewShown) {
+		//
+		// Utils.putSharedPrefsBoolean(this, "whatsNewShown47", true);
+		// Utils.removePref(this, "whatsNewShown");
+		// Utils.removePref(this, "whatsNewShown46");
+		// mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_47_message), getString(R.string.whats_new_47_title),
+		// getString(R.string.ok), null, null);
+		// }
 		resume();
 		mLaunched = true;
 	}
@@ -864,10 +886,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	protected void onResume() {
 		super.onResume();
-		SurespotLog.d(TAG, "onResume");
+		SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
+
+		// if we had to unlock and we're resuming for a 2nd time and we have the caching service
+		if (mUnlocking && mPaused == true) {
+			SurespotLog.d(TAG, "setting mUnlocking to false");
+			mUnlocking = false;
+
+			if (SurespotApplication.getCachingService() != null) {
+
+				SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
+				postServiceProcess();
+			}
+		}
 
 		if (mLaunched && !mResumed) {
-
 			resume();
 		}
 	}
@@ -887,8 +920,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	@Override
 	protected void onPause() {
-		SurespotLog.d(TAG, "onPause");
 		super.onPause();
+		SurespotLog.d(TAG, "onPause");
+
+		mPaused = true;
 		if (mChatController != null) {
 			mChatController.onPause();
 		}
@@ -1077,7 +1112,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 						@Override
 						public void onFailure(Throwable arg0, String arg1) {
-							SurespotLog.w(TAG, arg0,"error assigning friend alias: %s", arg1);
+							SurespotLog.w(TAG, arg0, "error assigning friend alias: %s", arg1);
 							Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
 						}
 					});
@@ -2006,7 +2041,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	public void setChildDialog(AlertDialog childDialog) {
 		mDialog = childDialog;
 	}
-	
+
 	public void removeFriendImage(final String name) {
 		mNetworkController.deleteFriendImage(name, new AsyncHttpResponseHandler() {
 
@@ -2017,7 +2052,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			@Override
 			public void onFailure(Throwable arg0, String arg1) {
-				SurespotLog.w(TAG, arg0,"error removing friend image: %s", arg1);
+				SurespotLog.w(TAG, arg0, "error removing friend image: %s", arg1);
 				Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
 			}
 		});
@@ -2033,7 +2068,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			@Override
 			public void onFailure(Throwable arg0, String arg1) {
-				SurespotLog.w(TAG, arg0,"error removing friend alias: %s", arg1);
+				SurespotLog.w(TAG, arg0, "error removing friend alias: %s", arg1);
 				Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
 			}
 		});

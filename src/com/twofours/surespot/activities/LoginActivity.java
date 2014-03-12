@@ -73,6 +73,7 @@ public class LoginActivity extends SherlockActivity {
 		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 		if (keystoreEnabled) {
 			IdentityController.initKeystore();
+			IdentityController.unlock(this);
 		}
 
 		setContentView(R.layout.activity_login);
@@ -461,7 +462,7 @@ public class LoginActivity extends SherlockActivity {
 		SurespotLog.d(TAG, "updatePassword, username: %s, keystore enabled: %b", username, enableKeystore);
 		String password = null;
 		if (enableKeystore) {
-			password = IdentityController.getStoredPasswordForIdentity(username);
+			password = IdentityController.getStoredPasswordForIdentity(LoginActivity.this, username);
 
 			if (password != null) {
 				mEtPassword.setText(password);

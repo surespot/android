@@ -1066,31 +1066,39 @@ public class IdentityController {
 
 	public static boolean isKeystoreUnlocked() {
 		if (mKs == null) {
+			initKeystore();						
+		}		
+		if (mKs == null) {
 			return false;
 		}
 		return mKs.state() == KeyStore.State.UNLOCKED;
 	}
 
-	public static void unlock(Context activity) {
+	public static boolean unlock(Context activity) {
 		SurespotLog.d(TAG, "unlock");
 		if (mKs.state() == KeyStore.State.UNLOCKED) {
-			return;
+			return true;
 		}
 
 		Intent intent = new Intent(activity, SurespotKeystoreActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);		
 		activity.startActivity(intent);
+		return false;
 	}
 
-	public static String getStoredPasswordForIdentity(String username) {
+	public static String getStoredPasswordForIdentity(Context context, String username) {
 		SurespotLog.d(TAG, "getStoredPasswordForIdentity: %s", username);
 
 		if (username != null) {
 			if (isKeystoreUnlocked()) {
 				byte[] secret = mKs.get(username);
 				if (secret != null) {
+					SurespotLog.d(TAG, "getStoredPasswordForIdentity...found password for %s", username);
 					return new String(secret);
 				}
+			}
+			else {
+				SurespotLog.d(TAG, "getStoredPasswordForIdentity...keystore locked");		
 			}
 		}
 
@@ -1107,8 +1115,7 @@ public class IdentityController {
 				return mKs.put(username, password.getBytes());
 			}
 		}
-		else {
-			initKeystore();
+		else {		
 			unlock(activity);
 		}
 
@@ -1127,7 +1134,7 @@ public class IdentityController {
 	
 	private static void updateKeychainPassword(Context context, String username, String password) {
 		//update stored password if we have one
-		String storedPassword = getStoredPasswordForIdentity(username);
+		String storedPassword = getStoredPasswordForIdentity(context, username);
 		if (storedPassword != null) {
 			storePasswordForIdentity(context, username, password);
 		}		

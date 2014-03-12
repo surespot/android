@@ -18,7 +18,7 @@ public class NetworkHelper {
 		String pw = null;
 		
 		if (username != null) {
-			pw = IdentityController.getStoredPasswordForIdentity(username);						 
+			pw = IdentityController.getStoredPasswordForIdentity(context, username);						 
 		}
 		final String password = pw;
 		if (username != null && password != null) {
