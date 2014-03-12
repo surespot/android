@@ -251,7 +251,6 @@ public class ChatController {
 					}
 				}
 				else {
-					// TODO tell user
 					SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
 					mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server), true);
 				}

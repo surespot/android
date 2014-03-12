@@ -8,6 +8,7 @@ import java.util.List;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -143,6 +145,7 @@ public class FriendAdapter extends BaseAdapter {
 			mFriends.addAll(friends);
 			sort();
 			notifyDataSetChanged();
+			decryptAliases();			
 		}
 	}
 
@@ -160,9 +163,36 @@ public class FriendAdapter extends BaseAdapter {
 				incumbent.update(friend);
 			}
 		}
-
 		sort();
 		notifyDataSetChanged();
+		decryptAliases();		
+	}
+
+	private void decryptAliases() {
+		SurespotLog.d(TAG, "decryptAliases");
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				for (Friend friend : mFriends) {
+					if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
+						String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+								friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
+
+						SurespotLog.d(TAG, "setting alias for %s", friend.getName());
+						friend.setAliasPlain(plainText);					
+					}
+				}
+
+				return null;
+			}
+
+			protected void onPostExecute(Void result) {
+				sort();
+				notifyDataSetChanged();
+				notifyFriendAliasChanged();
+			};
+		}.execute();
+
 	}
 
 	@Override
@@ -225,14 +255,14 @@ public class FriendAdapter extends BaseAdapter {
 
 		friendViewHolder.tvName.setText(friend.getNameOrAlias());
 		// if alias not decrypted decrypt it
-		if (TextUtils.isEmpty(friend.getAliasPlain()) && !TextUtils.isEmpty(friend.getAliasIv())) {
+		if (TextUtils.isEmpty(friend.getAliasPlain()) && friend.hasFriendAliasAssigned()) {
 			mFriendAliasDecryptor.decrypt(friendViewHolder.tvName, friend);
 		}
 
 		friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(
 				SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));
 
-		if (!TextUtils.isEmpty(friend.getImageUrl())) {
+		if (friend.hasFriendImageAssigned()) {
 			FriendImageDownloader.download(friendViewHolder.avatarImage, friend);
 		}
 		else {
@@ -368,8 +398,6 @@ public class FriendAdapter extends BaseAdapter {
 		return mFriends;
 	}
 
-	
-	
 	public synchronized ArrayList<Friend> getActiveChatFriends() {
 		if (mFriends == null)
 			return null;
@@ -383,19 +411,19 @@ public class FriendAdapter extends BaseAdapter {
 	}
 
 	public synchronized int getFriendCount() {
-		if (mFriends == null) return 0;
+		if (mFriends == null)
+			return 0;
 		return mFriends.size();
-		
+
 	}
 
-	
 	public void registerFriendAliasChangedCallback(IAsyncCallback<Void> iAsyncCallback) {
-		mFriendAliasChangedCallback = iAsyncCallback;		
+		mFriendAliasChangedCallback = iAsyncCallback;
 	}
-	
+
 	public void notifyFriendAliasChanged() {
-		if (mFriendAliasChangedCallback != null) {			
-			mFriendAliasChangedCallback.handleResponse(null);			
+		if (mFriendAliasChangedCallback != null) {
+			mFriendAliasChangedCallback.handleResponse(null);
 		}
 	}
 }

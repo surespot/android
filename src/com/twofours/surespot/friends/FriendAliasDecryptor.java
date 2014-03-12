@@ -3,6 +3,7 @@ package com.twofours.surespot.friends;
 import java.lang.ref.WeakReference;
 
 import android.os.Handler;
+import android.text.TextUtils;
 import android.widget.TextView;
 
 import com.twofours.surespot.SurespotApplication;
@@ -14,6 +15,7 @@ public class FriendAliasDecryptor {
 	private static final String TAG = "FriendAliasDecryptor";
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 	private FriendAdapter mFriendAdapter;
+
 	public FriendAliasDecryptor(FriendAdapter friendAdapter) {
 		mFriendAdapter = friendAdapter;
 	}
@@ -28,12 +30,15 @@ public class FriendAliasDecryptor {
 	 *            The ImageView to bind the downloaded image to.
 	 */
 	public void decrypt(TextView textView, Friend friend) {
-
-		DecryptionTask task = new DecryptionTask(textView, friend);
-		DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
-		textView.setTag(decryptionTaskWrapper);
-		SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
-
+		if (TextUtils.isEmpty(friend.getAliasPlain())) {
+			DecryptionTask task = new DecryptionTask(textView, friend);
+			DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
+			textView.setTag(decryptionTaskWrapper);
+			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
+		}
+		else {
+			textView.setText(friend.getAliasPlain());
+		}
 	}
 
 	/**
@@ -85,7 +90,7 @@ public class FriendAliasDecryptor {
 
 						@Override
 						public void run() {
-							textView.setText(finalPlainData);	
+							textView.setText(finalPlainData);
 							mFriendAdapter.sort();
 							mFriendAdapter.notifyDataSetChanged();
 							mFriendAdapter.notifyFriendAliasChanged();
