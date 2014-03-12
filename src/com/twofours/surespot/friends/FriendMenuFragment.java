@@ -14,6 +14,7 @@ import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
+import com.twofours.surespot.ui.UIUtils;
 
 public class FriendMenuFragment extends SherlockDialogFragment {
 	protected static final String TAG = "FriendMenuFragment";
@@ -90,6 +91,8 @@ public class FriendMenuFragment extends SherlockDialogFragment {
 				mSelectionCallback.handleResponse(dialogi, mFriend, itemText);
 			}
 		});
+		
+		builder.setTitle(UIUtils.buildAliasString(mFriend.getName(), mFriend.getAliasPlain()));
 
 		AlertDialog dialog = builder.create();
 		return dialog;
