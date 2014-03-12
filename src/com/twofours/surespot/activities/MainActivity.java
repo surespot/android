@@ -73,7 +73,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
@@ -194,7 +193,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (!IdentityController.unlock(this)) {
 				// we have to launch the unlock activity
 				// so set a flag we can check in onresume and delay network until that point
-			
+
 				SurespotLog.d(TAG, "launching unlock activity");
 				mUnlocking = true;
 			}
@@ -1086,39 +1085,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		intent.putExtra("start", true);
 		startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE);
 
-	}
-
-	public void assignFriendAlias(final String name) {
-		// popup dialog and ask for alias
-		UIUtils.aliasDialog(this,name, getString(R.string.enter_alias), getString(R.string.enter_alias_for, name), new IAsyncCallback<String>() {
-
-			@Override
-			public void handleResponse(String alias) {
-
-				if (alias != null) {
-					final String version = IdentityController.getOurLatestVersion();
-					String username = IdentityController.getLoggedInUser();
-
-					byte[] iv = EncryptionController.getIv();
-					final String cipherAlias = EncryptionController.symmetricEncrypt(version, username, version, alias, iv);
-					final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
-
-					mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new AsyncHttpResponseHandler() {
-
-						@Override
-						public void onSuccess(int responseCode, String result) {
-							mChatController.setFriendAlias(name, cipherAlias, version, ivString);
-						}
-
-						@Override
-						public void onFailure(Throwable arg0, String arg1) {
-							SurespotLog.w(TAG, arg0, "error assigning friend alias: %s", arg1);
-							Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
-						}
-					});
-				}
-			}
-		});
 	}
 
 	private ImageCaptureHandler mImageCaptureHandler;
@@ -2042,36 +2008,49 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mDialog = childDialog;
 	}
 
-	public void removeFriendImage(final String name) {
-		mNetworkController.deleteFriendImage(name, new AsyncHttpResponseHandler() {
+	public void assignFriendAlias(final String name) {
+		// popup dialog and ask for alias
+		UIUtils.aliasDialog(this, name, getString(R.string.enter_alias), getString(R.string.enter_alias_for, name), new IAsyncCallback<String>() {
 
 			@Override
-			public void onSuccess(int responseCode, String result) {
-				mChatController.removeFriendImage(name);
+			public void handleResponse(String alias) {
+
+				if (alias != null) {
+					mChatController.assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
+
+						@Override
+						public void handleResponse(Boolean result) {
+							if (!result) {
+								Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
+							}
+						}
+					});
+				}
 			}
+		});
+	}
+
+	public void removeFriendImage(final String name) {
+		mChatController.removeFriendImage(name, new IAsyncCallback<Boolean>() {
 
 			@Override
-			public void onFailure(Throwable arg0, String arg1) {
-				SurespotLog.w(TAG, arg0, "error removing friend image: %s", arg1);
-				Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
+			public void handleResponse(Boolean result) {
+				if (!result) {
+					Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
+				}
 			}
 		});
 	}
 
 	public void removeFriendAlias(final String name) {
-		mNetworkController.deleteFriendAlias(name, new AsyncHttpResponseHandler() {
+		mChatController.removeFriendAlias(name, new IAsyncCallback<Boolean>() {
 
 			@Override
-			public void onSuccess(int responseCode, String result) {
-				mChatController.removeFriendAlias(name);
-			}
-
-			@Override
-			public void onFailure(Throwable arg0, String arg1) {
-				SurespotLog.w(TAG, arg0, "error removing friend alias: %s", arg1);
-				Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
+			public void handleResponse(Boolean result) {
+				if (!result) {
+					Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
+				}
 			}
 		});
 	}
-
 }

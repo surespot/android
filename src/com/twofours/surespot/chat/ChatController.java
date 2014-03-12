@@ -2656,7 +2656,7 @@ public class ChatController {
 		return mFriendAdapter.getFriend(name).getNameOrAlias();
 	}
 
-	public void removeFriendAlias(String name) {
+	private void removeFriendAlias(String name) {
 		final Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
 			friend.setAliasData(null);
@@ -2671,8 +2671,29 @@ public class ChatController {
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
+	
+	public void removeFriendAlias(final String name, final IAsyncCallback<Boolean> iAsyncCallback) {
+		setProgress("removeFriendAlias", true);
+		mNetworkController.deleteFriendAlias(name, new AsyncHttpResponseHandler() {
 
-	public void removeFriendImage(String name) {
+			@Override
+			public void onSuccess(int responseCode, String result) {
+				removeFriendAlias(name);
+				setProgress("removeFriendAlias", false);
+				iAsyncCallback.handleResponse(true);
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				SurespotLog.w(TAG, arg0, "error removing friend alias: %s", arg1);
+				setProgress("removeFriendAlias", false);
+				iAsyncCallback.handleResponse(false);
+			}
+		});
+
+	}
+	
+	private void removeFriendImage(String name) {
 		final Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
 			String oldUrl = friend.getImageUrl();
@@ -2689,5 +2710,54 @@ public class ChatController {
 			mFriendAdapter.sort();
 			mFriendAdapter.notifyDataSetChanged();
 		}
+	}
+	
+	public void removeFriendImage(final String name, final IAsyncCallback<Boolean> iAsyncCallback) {
+		setProgress("removeFriendImage", true);
+		mNetworkController.deleteFriendImage(name, new AsyncHttpResponseHandler() {
+
+			@Override
+			public void onSuccess(int responseCode, String result) {
+				removeFriendImage(name);
+				setProgress("removeFriendImage", false);
+				iAsyncCallback.handleResponse(true);
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				SurespotLog.w(TAG, arg0, "error removing friend image: %s", arg1);
+				setProgress("removeFriendImage", false);
+				iAsyncCallback.handleResponse(false);
+			}
+		});
+
+	}
+
+	public void assignFriendAlias(final String name, String alias, final IAsyncCallback<Boolean> iAsyncCallback) {
+		setProgress("assignFriendAlias", true);
+		final String version = IdentityController.getOurLatestVersion();
+		String username = IdentityController.getLoggedInUser();
+
+		byte[] iv = EncryptionController.getIv();
+		final String cipherAlias = EncryptionController.symmetricEncrypt(version, username, version, alias, iv);
+		final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
+
+		mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new AsyncHttpResponseHandler() {
+
+			@Override
+			public void onSuccess(int responseCode, String result) {
+				setFriendAlias(name, cipherAlias, version, ivString);
+				setProgress("assignFriendAlias", false);
+				iAsyncCallback.handleResponse(true);
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String arg1) {
+				SurespotLog.w(TAG, arg0, "error assigning friend alias: %s", arg1);
+				setProgress("assignFriendAlias", false);
+				iAsyncCallback.handleResponse(false);
+			}
+		});
+		
 	}
 }
