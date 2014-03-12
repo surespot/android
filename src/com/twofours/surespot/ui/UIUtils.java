@@ -601,7 +601,9 @@ public class UIUtils {
 		final EditText editText = new EditText(context);
 		editText.setImeActionLabel(context.getString(R.string.done), EditorInfo.IME_ACTION_DONE);
 		editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
-		editText.setInputType(InputType.TYPE_CLASS_TEXT);		
+		editText.setInputType(InputType.TYPE_CLASS_TEXT);
+		editText.setText(name);
+		editText.setSelection(name.length(), name.length());
 		editText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitOrSpaceInputFilter() });
 		
 		alert.setPositiveButton(R.string.ok, new OnClickListener() {
