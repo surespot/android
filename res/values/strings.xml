@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">surespot</string>
     <string name="friends">friends</string>
     <string name="menu_settings">settings</string>
@@ -44,7 +45,7 @@
     <string name="settings">settings</string>
     <string name="welcome_to_surespot"><![CDATA["Welcome to surespot! Data sent using this app is <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> encrypted with <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">symmetric-key</a> encryption (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) using keys created with 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
     <string name="no_friends">"No friends...yet. Invite surespot users by entering their username below."</string>
-    <string name="help_invite">"Invite surespot users by entering their username on the home tab."</string>    
+    <string name="help_invite">"Invite surespot users by entering their username on the home tab."</string>
     <string name="navigate_between_chat_tabs">Navigate between tabs by swiping.</string>
     <string name="help_holdmessage">Hold on a message for message options.</string>
     <string name="help_holdfriend">Hold on a friend for friend options.</string>
@@ -92,7 +93,7 @@
     <string name="about_action_bar_right">about</string>
     <string name="identity">identity</string>
     <string name="invite">invite</string>
-    <string name="no_contact_data_selected_or_entered">no contact data selected or entered</string>    
+    <string name="no_contact_data_selected_or_entered">no contact data selected or entered</string>
     <string name="invitation_email_subject">Invitation to chat with me privately via surespot</string>
     <string name="invite_no_application_found">No application found to handle invite.</string>
     <string name="invite_progress_text">creating invitation</string>
@@ -107,7 +108,7 @@
     <string name="login_max_identities_reached">Sorry, you have already created the maximum number of identities (%d).\n\nIdentities can be deleted in the identity management settings after logging in.</string>
     <string name="local_cache_cleared">local cache cleared</string>
     <string name="qr_pre_username_help">scanning this QR code will invite</string>
-    <string name="qr_post_username_help">to be a friend on surespot, installing surespot if necessary</string>    
+    <string name="qr_post_username_help">to be a friend on surespot, installing surespot if necessary</string>
     <string name="send">send</string>
     <string name="main_action_bar_right">to</string>
     <string name="could_not_upload_friend_image">could not upload friend image</string>
@@ -128,7 +129,7 @@
     <string name="backup_identities_again_password">Since your identity password will have changed, please backup this identity after the operation completes successfully.</string>
     <string name="create_new_keys_for">create new keys for %s</string>
     <string name="enter_password_for">enter surespot password for %s</string>
-        <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
+    <!-- anything in [] for the string below will fire the onclick listener to open the restore activity -->
     <string name="enter_username_and_password">Please enter a username and password, or [restore an identity] from the menu.</string>
     <string name="usernames_case_sensitive">Usernames are case sensitive</string>
     <string name="aware_username_password">so be aware of this when sharing them with others. The password should be at least 8 characters long and contain symbols.</string>
@@ -191,9 +192,9 @@
     <string name="could_not_delete_identity">could not delete identity</string>
     <string name="identity_deleted">identity deleted</string>
     <string name="backup">backup</string>
-    <string name="backup_identity">backup identity %s</string>   
+    <string name="backup_identity">backup identity %s</string>
     <string name="backed_up_identity_to_path">backed up identity %1$s to %2$s</string>
-    <string name="restore">restore</string>    
+    <string name="restore">restore</string>
     <string name="restore_identity">restore identity %s</string>
     <string name="assign">assign</string>
     <string name="could_not_load_image">could not load image</string>
@@ -238,7 +239,7 @@
     <string name="pref_title_delete_message">delete message</string>
     <string name="pref_title_delete_all_messages">delete all messages</string>
     <string name="pref_title_identity_management">identity management</string>
-    <string name="pref_title_change_password">change password...</string>    
+    <string name="pref_title_change_password">change password...</string>
     <string name="pref_title_silent_error_reporting">silent error reporting</string>
     <string name="pref_title_message_debug_mode">message debug mode</string>
     <string name="pref_title_debug">debug</string>
@@ -248,8 +249,8 @@
     <string name="pref_summary_export_identity">Backup your identity to Device Storage or Google Drive.</string>
     <string name="pref_summary_import_identity">Restore your identity from Device Storage or Google Drive.</string>
     <string name="pref_summary_delete_identity">Deleting an identity can not be undone.</string>
-    <string name="pref_summary_regen_keys">For the paranoid.</string>    
-    <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>    
+    <string name="pref_summary_regen_keys">For the paranoid.</string>
+    <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
     <string name="surespot_help">surespot help</string>
@@ -319,7 +320,7 @@
     <string name="error_surespot_could_not_create_http_clients">surespot could not create http clients..is storage space available? Shutting down.</string>
     <string name="menu_copy">copy</string>
     <string name="message_hint">enter message</string>
-    <string name="invite_hint">invite user</string>    
+    <string name="invite_hint">invite user</string>
     <string name="recording_cancelled">recording cancelled</string>
     <string name="share_invite_link">share invite link</string>
     <string name="share_link_help">"Use the 'share invite link' menu option to share a link via email, sms, twitter, or other social media, that when clicked will install surespot / invite you as a friend in surespot"</string>
@@ -328,7 +329,7 @@
     <string name="could_not_load_public_keys">could not load public keys</string>
     <string name="keystore_not_supported">keychain not supported</string>
     <string name="pref_title_global_options">global options</string>
-    <string name="store_password_in_keychain">store password in keychain</string>    
+    <string name="store_password_in_keychain">store password in keychain</string>
     <string name="menu_assign_alias">assign alias</string>
     <string name="could_not_assign_friend_alias">could not assign friend alias</string>
     <string name="enter_alias">enter alias</string>
@@ -337,4 +338,8 @@
     <string name="menu_remove_friend_alias">"remove alias"</string>
     <string name="could_not_remove_friend_image">"could not remove friend image"</string>
     <string name="could_not_remove_friend_alias">"could not remove friend alias"</string>
+    <string name="disable_keystore_message">Disabling the keystore will clear all stored passwords. Are you sure?</string>
+    <string name="disable_keystore_title">Disable keystore?</string>
+    <string name="pref_title_enable_keystore">keystore enabled</string>
+    <string name="pref_summary_enable_keystore">enable by electing to save password on login screen</string>
 </resources>

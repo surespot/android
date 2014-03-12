@@ -72,8 +72,7 @@ public class LoginActivity extends SherlockActivity {
 
 		boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 		if (keystoreEnabled) {
-			IdentityController.initKeystore();
-			IdentityController.unlock(this);
+			IdentityController.initKeystore();			
 		}
 
 		setContentView(R.layout.activity_login);

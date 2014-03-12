@@ -38,6 +38,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 public class SettingsActivity extends SherlockPreferenceActivity {
@@ -127,7 +128,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
 					boolean newChecked = stopCachePref.isChecked();
-					// stopCachePref.setChecked(newChecked);
 					SurespotLog.d(TAG, "set kill cache on logout: %b", newChecked);
 					Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_stop_cache_logout", newChecked);
 					return true;
@@ -135,31 +135,43 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			});
 
 			// global overrides
-			// boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-			// final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
-			// enableKeystorePref.setChecked(enableKeystore);
-			// SurespotLog.d(TAG,"read keystore enabled: %b", enableKeystore);
-			// enableKeystorePref.setEnabled(false);
-			//
-			// enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-			// @Override
-			// public boolean onPreferenceClick(Preference preference) {
-			// boolean newChecked = enableKeystorePref.isChecked();
-			//
-			// SurespotLog.d(TAG,"set keystore enabled: %b", newChecked);
-			// Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
-			//
-			// if (newChecked) {
-			// IdentityController.initKeystore(SettingsActivity.this);
-			// IdentityController.unlock(SettingsActivity.this, null, null);
-			// }
-			// else {
-			// //TODO warn user that this will blow their passwords away
-			// IdentityController.destroyKeystore();
-			// }
-			// return true;
-			// }
-			// });
+			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
+			enableKeystorePref.setChecked(enableKeystore);
+			SurespotLog.d(TAG, "read keystore enabled: %b", enableKeystore);
+			
+			//only let them disable it here, they enable it from login screen by clicking save checkbox			
+			enableKeystorePref.setEnabled(enableKeystore);
+
+			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					boolean newChecked = enableKeystorePref.isChecked();
+
+					SurespotLog.d(TAG, "set keystore enabled: %b", newChecked);
+					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
+
+					if (newChecked) {
+						//shouldn't happen
+						IdentityController.initKeystore();
+						IdentityController.unlock(SettingsActivity.this);
+					}
+					else {
+						UIUtils.createAndShowConfirmationDialog(SettingsActivity.this, getString(R.string.disable_keystore_message),
+								getString(R.string.disable_keystore_title), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+
+									@Override
+									public void handleResponse(Boolean result) {
+										if (result) {
+											IdentityController.destroyKeystore();
+											enableKeystorePref.setEnabled(false);
+										}
+									}
+								});
+					}
+					return true;
+				}
+			});
 		}
 	}
 
