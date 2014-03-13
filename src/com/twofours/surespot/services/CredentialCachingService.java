@@ -118,14 +118,20 @@ public class CredentialCachingService extends Service {
 			// if we're not using the keychain in 4.3+ start as a foreground service
 			if (!keystoreEnabled) {
 
-				// in 4.3 and above they decide to fuck us by showing the notification
-				// so make the text meaningful at least
-
-				PendingIntent contentIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.BACKGROUND_CACHE_NOTIFICATION, new Intent(
-						this, MainActivity.class), 0);
-				notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
-						getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
-				notification.priority = Notification.PRIORITY_MIN;
+				// if this is the first time using the app don't use foreground service
+				boolean alreadyPrevented = Utils.getSharedPrefsBoolean(this, "firstTimePreventedForegroundService");
+				if (alreadyPrevented) {
+					// in 4.3 and above they decide to fuck us by showing the notification
+					// so make the text meaningful at least
+					PendingIntent contentIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.BACKGROUND_CACHE_NOTIFICATION,
+							new Intent(this, MainActivity.class), 0);
+					notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
+							getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
+					notification.priority = Notification.PRIORITY_MIN;
+				}
+				else {
+					Utils.putSharedPrefsBoolean(this, "firstTimePreventedForegroundService", true);
+				}
 			}
 		}
 		else {
@@ -333,7 +339,7 @@ public class CredentialCachingService extends Service {
 			if (!deleted) {
 				saveSharedSecrets();
 			}
-			
+
 			clearIdentityData(mLoggedInUser, true);
 			mLoggedInUser = null;
 		}
