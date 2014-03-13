@@ -2653,7 +2653,11 @@ public class ChatController {
 	}
 
 	public String getAliasedName(String name) {
-		return mFriendAdapter.getFriend(name).getNameOrAlias();
+		Friend friend = mFriendAdapter.getFriend(name);
+		if (friend != null) {
+			return friend.getNameOrAlias();
+		}
+		return null;
 	}
 
 	private void removeFriendAlias(String name) {

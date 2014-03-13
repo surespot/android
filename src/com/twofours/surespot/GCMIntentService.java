@@ -190,8 +190,27 @@ public class GCMIntentService extends GCMBaseIntentService {
 					}
 
 					if (added) {
-						generateNotification(context, IntentFilters.MESSAGE_RECEIVED, from, to, context.getString(R.string.notification_title),
-								context.getString(R.string.notification_message, to, from), to + ":" + spot, IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+						//String password = IdentityController.getStoredPasswordForIdentity(this, to);
+						//SurespotLog.d(TAG, "GOT PASSWORD: %s",  password);
+						
+						
+						String fromName = null;
+						//get friend name if we can otherwise no name 
+						if (sameUser && chatController != null) {
+							fromName = chatController.getAliasedName(from);
+						}
+						
+						generateNotification(
+								context, 
+								IntentFilters.MESSAGE_RECEIVED, 
+								from, 
+								to, 
+								context.getString(R.string.notification_title),
+								TextUtils.isEmpty(fromName) ? 
+										context.getString(R.string.notification_message_no_from, to) : 
+										context.getString(R.string.notification_message, to, fromName), 
+								to + ":" + spot, 
+								IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
 					}
 				}
 			}
@@ -203,9 +222,25 @@ public class GCMIntentService extends GCMBaseIntentService {
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
 			}
-
-			generateNotification(context, IntentFilters.INVITE_REQUEST, from, to, context.getString(R.string.notification_title),
-					context.getString(R.string.notification_invite, to, from), to + ":" + from, IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+			ChatController chatController = MainActivity.getChatController();
+			boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+			String fromName = null;
+			//get friend name if we can otherwise no name 
+			if (sameUser && chatController != null) {
+				fromName = chatController.getAliasedName(from);
+			}
+			
+			generateNotification(
+					context, 
+					IntentFilters.INVITE_REQUEST, 
+					from, 
+					to, 
+					context.getString(R.string.notification_title),					
+					TextUtils.isEmpty(fromName) ? 
+							context.getString(R.string.notification_invite_no_from, to) : 
+							context.getString(R.string.notification_invite, to, fromName),
+					to + ":" + from, 
+					IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			return;
 		}
 
@@ -215,8 +250,25 @@ public class GCMIntentService extends GCMBaseIntentService {
 				return;
 			}
 
-			generateNotification(context, IntentFilters.INVITE_RESPONSE, from, to, context.getString(R.string.notification_title),
-					context.getString(R.string.notification_invite_accept, to, from), to, IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+			ChatController chatController = MainActivity.getChatController();
+			boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+			String fromName = null;
+			//get friend name if we can otherwise no name 
+			if (sameUser && chatController != null) {
+				fromName = chatController.getAliasedName(from);
+			}
+			
+			generateNotification(
+					context, 
+					IntentFilters.INVITE_RESPONSE, 
+					from, 
+					to, 
+					context.getString(R.string.notification_title),
+					TextUtils.isEmpty(fromName) ? 
+							context.getString(R.string.notification_invite_accept_no_from, to) : 
+							context.getString(R.string.notification_invite_accept, to, fromName),
+					to, 
+					IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
 			return;
 		}
 
