@@ -85,8 +85,8 @@
     <string name="about_tech"><![CDATA["For a more technical overview of how surespot works please touch <a href="https://www.surespot.me/documents/how_surespot_works.html">here</a>."]]></string>
     <string name="about_support"><![CDATA["For questions or support please <a href="https://www.surespot.me/support.html>touch here</a> or email <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
     <string name="notification_title">surespot</string>
-    <string name="notification_message">"%1$s: new message from %2$s."</string>
-    <string name="notification_invite">"%1$s: friend invite from %2$s."</string>
+    <string name="notification_message">"%1$s: New message from %2$s."</string>
+    <string name="notification_invite">"%1$s: Friend invite from %2$s."</string>
     <string name="notification_invite_accept">%1$s: %2$s has accepted your friend invite.</string>
     <string name="about_version">"version: %s"</string>
     <string name="surespot">surespot</string>
@@ -342,7 +342,7 @@
     <string name="disable_keystore_title">Disable keychain?</string>
     <string name="pref_title_enable_keystore">keychain enabled</string>
     <string name="pref_summary_enable_keystore">enable by electing to save password on login screen</string>
-    <string name="notification_message_no_from">"%s: new message received."</string>
-    <string name="notification_invite_no_from">"%s: friend invite received."</string>
-    <string name="notification_invite_accept_no_from">%s: friend invite accepted."</string>
+    <string name="notification_message_no_from">%s: New message received.</string>
+    <string name="notification_invite_no_from">%s: Friend invite received.</string>
+    <string name="notification_invite_accept_no_from">%s: Friend invite accepted.</string>
 </resources>

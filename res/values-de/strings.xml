@@ -25,7 +25,7 @@
   <string name="no_identity_exported">Noch kein Profil exportiert</string>
   <string name="no_identity_imported">Profil Import gescheitert </string>
   <string name="no_identity_deleted">Profil nicht gelöscht</string>
-  <string name="identity_imported_successfully">Profil %s erfolgreich importiert</string>
+  <string name="identity_imported_successfully">Profil %s erfolgreich wiederhergestellt</string>
   <string name="could_not_import_identity">Profil konnte nicht importiert werden</string>
   <string name="could_not_restore_identity_name">Profil %s konnte nicht importiert werden</string>
   <string name="notifications_title">Push-Benachrichtigungen</string>
@@ -33,17 +33,17 @@
   <string name="notifications_sound">Ton</string>
   <string name="notifications_led">LED</string>
   <string name="notifications_enabled">aktiviert</string>
-  <string name="camera_init">Kamera starten</string>
+  <string name="camera_init">Kamera wird eingeschaltet</string>
   <string name="uploading_image">Bild wird hochgeladen</string>
   <string name="could_not_upload_image">Bild konnte nicht geladen werden</string>
   <string name="image_successfully_uploaded">Bild wurde erfolgreich geladen</string>
-  <string name="select_image">Bild auswählen</string>
+  <string name="select_image">Bildauswahl</string>
   <string name="capture_image">Foto aufnehmen</string>
   <string name="assign_image">Bild zuordnen</string>
   <string name="logout">abmelden</string>
   <string name="settings">Einstellungen</string>
   <string name="welcome_to_surespot" formatted="false"><![CDATA["Willkommen bei surespot!  Daten die mit dieser App versendet werden sind mit einem <a href="https://de.wikipedia.org/wiki/Symmetrisches_Kryptosystem">Symmetrischen Kryptosystem</a> (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) <a href="https://de.wikipedia.org/wiki/Ende-zu-Ende-Verschl%C3%BCsselung">Ende-zu-Ende</a>-verschlüsselt, dessen Schlüssel mit 521 bit durch das <a href="https://de.wikipedia.org/wiki/Elliptic_Curve_Diffie-Hellman">Diffie-Hellman-Schlüsselaustausch</a>-Verfahren erzeugt wurden."]]></string>
-  <string name="no_friends">Im Moment sind noch keine Kontakte registriert.  Um weitere surespot-Benutzer einzuladen,  bitte deren Benutzername unten eingeben.</string>
+  <string name="no_friends">Bisher noch keine Kontakte gespeichert. Um surespot-Benutzer einzuladen, bitte Benutzernamen unten eingeben.</string>
   <string name="help_invite">surespot-Benutzer können eingeladen werden, indem deren Benutzernamen auf der Startseite eingeben wird.</string>
   <string name="navigate_between_chat_tabs">Tab-Wechsel mit horizontalem Streichen über den Bildschirm.</string>
   <string name="help_holdmessage">Für Nachrichtenoptionen die Nachricht gedrückt halten.</string>
@@ -68,7 +68,7 @@
   <string name="crash_dialog_text">Wir müssen leider eingestehen, das es einen unerwarteten Fehler gab.\n\nEs hilft uns sehr, wenn durch das Tippen auf \"OK\" ein Fehlerbericht an uns gesendet wird. Es werden keine Personen bezogene Daten übermittelt.</string>
   <string name="crash_dialog_comment_prompt">Optional kann uns einen Kommentar über das Problem mitgeteilt werden:</string>
   <string name="crash_dialog_ok_toast">Danke !</string>
-  <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chaten. Klicken Sie auf %s, um die Android-App zu installieren und mich als Kontakt aufzunehmen.</string>
+  <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie auf %s, um die Android-App zu installieren und mich als Kontakt aufzunehmen.</string>
   <string name="help_backupIdentities1">Falls das Gerät verloren oder die App nach Deinstallation erneut installiert wird, sind die Profildaten verloren. Um sich trotzdem anzumelden, können vorher exportierte Profildaten wieder importiert werden. Die surespot Verschlüsselungsdaten werden zu keinem Zeitpunkt auf unsere Server gespeichert.</string>
   <string name="help_backupIdentities2">Surespot kann das Benutzerprofil auf dem Speicher des Gerätes und/oder auf Google Drive sichern. Die dazugehörigen Einstellungen befinden sich in der Profilverwaltung.</string>
   <string name="help_backup_what"><![CDATA["Die Sicherheitskopie des gewählten Profils ist verschlüsselt mit <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">256 bit AES-GCM</a>, dessen Schlüssel durch <a href="https://de.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function) vom Passwort abgeleitet werden."]]></string>
@@ -80,13 +80,13 @@
   <string name="title_activity_about">Über surespot</string>
   <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
   <string name="about_website"><![CDATA["Die surespot-Website <a href="https://www.surespot.me">https://www.surespot.me</a> enthält weitere Informationen, einschließlich der <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">AGB</a>, der <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">Datenschutzrichtlinien</a> sowie der <a href="https://www.surespot.me/documents/threat.html">Daten- und Gefährdungsbewertung</a>."]]></string>
-  <string name="about_opensource"><![CDATA["Surespot is 100% Open Source und begrüßt ihre Mitarbeit - sehen Sie sich den Quellcode auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> an."]]></string>
+  <string name="about_opensource"><![CDATA["Surespot ist 100% open source und begrüßt jede Mitarbeit - Der Quellcode kann auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> angesehen werden."]]></string>
   <string name="about_tech"><![CDATA["Den eher technischen Überblick wie surespot funktioniert, kann <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a> nachgelesen werden."]]></string>
   <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine E-Mail an <a href="mailto:support@2fours.com">support@2fours.com</a> schreiben.]]></string>
   <string name="notification_title">surespot</string>
-  <string name="notification_message">%1$s: neue Mitteilung von %2$s</string>
-  <string name="notification_invite">%1$s: Kontaktanfrage von %2$s</string>
-  <string name="notification_invite_accept">%1$s: %2$s hat Ihre Einladung akzeptiert</string>
+  <string name="notification_message">%1$s: neue Nachricht von %2$s.</string>
+  <string name="notification_invite">%1$s: Kontaktanfrage von %2$s.</string>
+  <string name="notification_invite_accept">%1$s: %2$s hat deine Kontaktanfrage akzeptiert.</string>
   <string name="about_version">Version: %s</string>
   <string name="surespot">surespot</string>
   <string name="about_action_bar_right">Über</string>
@@ -142,7 +142,7 @@
   <string name="could_not_create_user">Benutzer konnte nicht erstellt werden, bitte später erneut versuchen</string>
   <string name="pay">bezahlen</string>
   <string name="what_you_like">was gefällt</string>
-  <string name="billing_could_not_enable">Konnte In-App Bezahlung nicht aktivieren.</string>
+  <string name="billing_could_not_enable">In-App Bezahlung konnte nicht aktiviert werden. </string>
   <string name="billing_purchase_error">Fehler, Kauf konnte nicht abgeschlossen werden.</string>
   <string name="billing_paypal_link_email_subject">PayPal Link zur freiwilligen Unterstützung von surespot</string>
   <string name="billing_paypal_link_email_body">Vielen Dank für die Unterstützung von surespot! Der PayPal Link ist wie folgt:</string>
@@ -170,7 +170,7 @@
   <string name="image_saved_to_gallery">Bild erfolgreich in der Galerie gespeichert</string>
   <string name="error_saving_image_to_gallery">Fehler beim Abspeichern des Bildes in der Galerie</string>
   <string name="delete_message_confirmation_title">Soll diese Mitteilung wirklich gelöscht werden?</string>
-  <string name="message_error_decrypting_message">FEHLER BEI DER ENTSCHLÜSSELUNG DER MITTEILUNG</string>
+  <string name="message_error_decrypting_message">Fehler beim Entschlüsseln der Mitteilung </string>
   <string name="could_not_respond_to_invite">Konnte auf die Kontaktanfrage nicht antworten, bitte später erneut versuchen.</string>
   <string name="friend_status_is_deleted">ist gelöscht</string>
   <string name="friend_status_is_invited">ist eingeladen</string>
@@ -185,7 +185,7 @@
   <string name="change_password_actionbar_right">Ändern</string>
   <string name="change_password_progress">Passwort wird geändert</string>
   <string name="could_not_change_password">Passwort konnte nicht geändert werden</string>
-  <string name="password_changed">Passwort wurde geändert. Bitte das Profil neu sichern.</string>
+  <string name="password_changed">Passwort wurde geändert, bitte erneut Backup erstellen</string>
   <string name="delete">löschen</string>
   <string name="delete_identity_progress">Profil löschen</string>
   <string name="could_not_delete_identity">Profil konnte nicht gelöscht werden</string>
@@ -198,7 +198,7 @@
   <string name="assign">zuweisen</string>
   <string name="could_not_load_image">Bild konnte nicht geladen werden</string>
   <string name="image">Bild</string>
-  <string name="pan_and_zoom">Verschieben und Größe ändern</string>
+  <string name="pan_and_zoom">schwenken und zoomen</string>
   <string name="done">erledigt</string>
   <string name="message_error_invalid">Fehler beim Senden der Mitteilung: Mitteilung ungültig</string>
   <string name="message_error_unauthorized">Fehler beim Senden der Mitteilung: nicht autorisiert</string>
@@ -242,7 +242,7 @@
   <string name="pref_title_silent_error_reporting">Fehlerbenachrichtigung im Hintergrund</string>
   <string name="pref_title_message_debug_mode">Mitteilung im Debug Modus</string>
   <string name="pref_title_debug">Entwickler-Optionen</string>
-  <string name="pref_title_options">Optionen</string>
+  <string name="pref_title_options">Profileinstellungen</string>
   <string name="pref_summary_delete_message">Bestätigung bevor eine Mitteilung gelöscht wird</string>
   <string name="pref_summary_delete_all_messages">Bestätigung bevor alle Mitteilungen gelöscht werden</string>
   <string name="pref_summary_export_identity">Des Profil sollte auf dem Lokalen Datenträger oder Google Drive gesichert werden.</string>
@@ -290,7 +290,7 @@
   <string name="help_agreement"><![CDATA["Bitte durch den Klick auf OK das Einverständnis zu den <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">AGB</a> zu bestätigen."]]></string>
   <string name="billing_payment_required_voice">surespot Sprachnachrichtenfunktion wurde nicht gekauft</string>
   <string name="billing_getting_inventory">Lade Einkaufsliste. Bitte gleich nochmal versuchen.</string>
-  <string name="billing_unavailable_message">Es wird die Registrierung eines Google-Profils auf dem Gerät benötigt, um die Sprachnachrichtenfunktion zu kaufen.</string>
+  <string name="billing_unavailable_message">Es wird die Registrierung eines Google-Kontos auf dem Gerät benötigt, um die Sprachnachrichtenfunktion zu kaufen.</string>
   <string name="billing_unavailable_title">Abrechnung nicht verfügbar</string>
   <string name="billing_error">Abrechnungsfehler</string>
   <string name="pref_billing">Einkäufe</string>
@@ -316,16 +316,32 @@
   <string name="no_audio_detected">Keine Tonaufnahme erkannt. Die Sprachmitteilung wird nicht gesendet.</string>
   <string name="pref_title_background_image_select">Hintergrundbild auswählen</string>
   <string name="pref_title_background_image_remove">Hintergrundbild entfernen</string>
-  <string name="error_surespot_could_not_create_http_clients">surespot konnte keine HTTP-Clients erstellen. Ist nicht genügend Speicherplatz verfügbar? Anwendung wird geschlossen.</string>
+  <string name="error_surespot_could_not_create_http_clients">surespot konnte keine HTTP-Clients erstellen. Ist genügend Speicherplatz verfügbar? Anwendung wird geschlossen.</string>
   <string name="menu_copy">kopieren</string>
   <string name="message_hint">Nachricht eingeben</string>
   <string name="invite_hint">Kontakt einladen</string>
   <string name="recording_cancelled">Aufnahme abgebrochen</string>
-  <string name="share_invite_link">Einladung teilen</string>
-  <string name="share_link_help">Benutze die Menüfunktion \'Einladung teilen\' um einen Link per Mail, SMS, Twitter oder ein anderes soziales Netzwerk zu versenden, welcher beim anklicken surespot installiert und den Empfänger als Freund in surespot einlädt.</string>
+  <string name="share_invite_link">Freunde einladen</string>
+  <string name="share_link_help">Über den Menüpunkt \"Freunde einladen\" kann ein Link per Mail, SMS, Twitter, Facebook oder anderen sozialen Netzwerken versendet werden, über den der Empfänger aufgefordert wird surespot zu installieren. Für eine Kontaktanfrage muss der Link nach Installation von surespot erneut geöffnet werden. Sollte surespot bei dem Empfänger bereits installiert sein und der Link geöffnet, wird nur die Kontaktanfrage verschickt.</string>
   <string name="pref_stop_cache_logout_title">Lösche Zwischenspeicher nach dem Logout</string>
-  <string name="pref_stop_cache_logout_summary">Beendet die Zwischenspeicher-Hintergrundanwendung beim Logout</string>
-  <string name="whats_new_47_message">Neue Funktionen!\n\nCache beim ausloggen löschen (via Einstellungen-&gt;Optionen).\n\nBerechtigung READ_CONTACTS gelöscht.\n\nNetzwerk Optimierungen.\n\nDanke für Ihre andauernde Unterstützung!</string>
-  <string name="whats_new_47_title">version 49</string>
+  <string name="pref_stop_cache_logout_summary">Beendet den Zwischenspeicher-Dienst beim Logout</string>
   <string name="could_not_load_public_keys">Öffentliche Schlüssel konnten nicht geladen werden</string>
+  <string name="keystore_not_supported">Funktion \"Schlüsselbund\" wird nicht unterstützt</string>
+  <string name="pref_title_global_options">Allgemeine Optionen</string>
+  <string name="store_password_in_keychain">Passwort im Schlüsselbund speichern</string>
+  <string name="menu_assign_alias">Benutzername zuordnen</string>
+  <string name="could_not_assign_friend_alias">Konnte Benutzername nicht zuordnen</string>
+  <string name="enter_alias">Benutzername eingeben</string>
+  <string name="enter_alias_for">Gebe Benutzername für %s ein</string>
+  <string name="menu_remove_friend_image">Bild entfernen</string>
+  <string name="menu_remove_friend_alias">Benutzername entfernen</string>
+  <string name="could_not_remove_friend_image">Konnte Kontaktbild nicht entfernen</string>
+  <string name="could_not_remove_friend_alias">Konnte Benutzername nicht entfernen</string>
+  <string name="disable_keystore_message">Deaktivierung des Schlüsselbundes löscht alle gespeicherten Passworte. Bist Du sicher, dass Du den Schlüsselbund deaktivieren möchtest?</string>
+  <string name="disable_keystore_title">Schlüsselbund deaktivieren?</string>
+  <string name="pref_title_enable_keystore">Schlüsselbund aktiviert.</string>
+  <string name="pref_summary_enable_keystore">Passworte werden beim Anmelden gespeichert, wenn Du dies mit dieser Auswahl aktivierst.</string>
+  <string name="notification_message_no_from">%s: neue Nachricht erhalten.</string>
+  <string name="notification_invite_no_from">%s: Kontaktanfrage erhalten.</string>
+  <string name="notification_invite_accept_no_from">%s: Kontaktanfrage akzeptiert.</string>
 </resources>

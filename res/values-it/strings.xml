@@ -25,7 +25,7 @@
   <string name="no_identity_exported">Nessun backup salvato</string>
   <string name="no_identity_imported">Nessuna identità è stata ripristinata</string>
   <string name="no_identity_deleted">Nessuna identità è stata eliminata</string>
-  <string name="identity_imported_successfully">Identità ripristinata correttamente %s</string>
+  <string name="identity_imported_successfully">identità %s ripristinata con successo</string>
   <string name="could_not_import_identity">Impossibile ripristinare l\'identità</string>
   <string name="could_not_restore_identity_name">Impossibile ripristinare l\'identità %s</string>
   <string name="notifications_title">Notifiche push</string>
@@ -85,8 +85,8 @@
   <string name="about_support"><![CDATA["Per domande o supporto <a href="https://www.surespot.me/support.html>clicca qui</a> oppure manda un\'email a <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: nuovo messaggio da %2$s</string>
-  <string name="notification_invite">%1$s: invito da %2$s</string>
-  <string name="notification_invite_accept">%1$s: %2$s ha accettato il tuo invito</string>
+  <string name="notification_invite">%1$s: richiesta d\'amicizia da %2$s</string>
+  <string name="notification_invite_accept">%1$s: %2$s ha accettato la tua richiesta d\'amicizia.</string>
   <string name="about_version">Versione: %s</string>
   <string name="surespot">surespot</string>
   <string name="about_action_bar_right">Informazioni su</string>
@@ -170,7 +170,7 @@
   <string name="image_saved_to_gallery">Immagine salvata nella galleria</string>
   <string name="error_saving_image_to_gallery">Errore nel salvataggio dell\'immagine nella galleria</string>
   <string name="delete_message_confirmation_title">Sei sicuro di voler cancellare questo messaggio?</string>
-  <string name="message_error_decrypting_message">ERRORE NEL DECRITTARE IL MESSAGGIO</string>
+  <string name="message_error_decrypting_message">Errore nel decrittare il messaggio</string>
   <string name="could_not_respond_to_invite">Risposta all\'invito non riuscita, riprova più tardi.</string>
   <string name="friend_status_is_deleted">è stato cancellato</string>
   <string name="friend_status_is_invited">è stato invitato</string>
@@ -242,7 +242,7 @@
   <string name="pref_title_silent_error_reporting">Segnalazione di errore silenziosa</string>
   <string name="pref_title_message_debug_mode">Modalità di debug dei messaggi</string>
   <string name="pref_title_debug">Debug</string>
-  <string name="pref_title_options">Opzioni</string>
+  <string name="pref_title_options">Opzioni identità</string>
   <string name="pref_summary_delete_message">Conferma prima di cancellare un messaggio</string>
   <string name="pref_summary_delete_all_messages">Conferma prima di cancellare tutti i messaggi</string>
   <string name="pref_summary_export_identity">Backup della tua identità nella memoria del dispositivo o su Google Drive</string>
@@ -324,7 +324,24 @@
   <string name="share_invite_link">Condividi il link di invito</string>
   <string name="share_link_help">Usa l\'opzione del menu \"Condividi il link di invito\" per condividere il link via email, sms, twitter o altri social network, che quando sarà cliccato installerà surespot/inviterà l\'amico</string>
   <string name="pref_stop_cache_logout_title">Elimina la cache al logout</string>
-  <string name="pref_stop_cache_logout_summary">Elimina il servizio cache al logout</string>
-  <string name="whats_new_47_message">Nuove funzionalità!\n\nImpostazione per eliminare la cache al logout (su impostazioni&gt;opzioni)\n\nRimosso il permesso di leggere i contatti\n\nOttimizzazioni di rete\n\nGrazie per il tuo supporto continuo!</string>
-  <string name="whats_new_47_title">Versione 49</string>
+  <string name="pref_stop_cache_logout_summary">Termina il servizio cache al logout</string>
+  <string name="could_not_load_public_keys">Impossibile caricare le chiavi pubbliche</string>
+  <string name="keystore_not_supported">Portachiavi non supportato</string>
+  <string name="pref_title_global_options">Opzioni globali</string>
+  <string name="store_password_in_keychain">Salva la password nel portachiavi</string>
+  <string name="menu_assign_alias">Assegna nome</string>
+  <string name="could_not_assign_friend_alias">Impossibile assegnare un nome all\'amico</string>
+  <string name="enter_alias">Inserisci il nome</string>
+  <string name="enter_alias_for">Inserisci un nome per %s</string>
+  <string name="menu_remove_friend_image">Rimuovi immagine</string>
+  <string name="menu_remove_friend_alias">Rimuovi nome</string>
+  <string name="could_not_remove_friend_image">Impossibile rimuovere l\'immagine dell\'amico</string>
+  <string name="could_not_remove_friend_alias">Impossibile rimuovere il nome dell\'amico</string>
+  <string name="disable_keystore_message">Disattivando il portachiavi si cancelleranno tutte le password memorizzate. Sei sicuro?</string>
+  <string name="disable_keystore_title">Disattivare il portachiavi?</string>
+  <string name="pref_title_enable_keystore">Portachiavi attivato</string>
+  <string name="pref_summary_enable_keystore">attivalo scegliendo di memorizzare la password al login</string>
+  <string name="notification_message_no_from">%s: nuovo messaggio ricevuto</string>
+  <string name="notification_invite_no_from">%s: hai ricevuto una richiesta d\'amicizia.</string>
+  <string name="notification_invite_accept_no_from">%s: richiesta d\'amicizia accettata.</string>
 </resources>
