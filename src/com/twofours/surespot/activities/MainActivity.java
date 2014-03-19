@@ -673,13 +673,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
 		}
 		else {
-			String lastUser = IdentityController.getLastLoggedInUser(this);
-			if (lastUser == null) {
-				return null;
-			}
-			else {
-				user = lastUser;
-			}
+			user = IdentityController.getLastLoggedInUser(this);
 		}
 
 		SurespotLog.d(TAG, "got launch user: %s", user);
@@ -2015,17 +2009,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public void handleResponse(String alias) {
 
-				if (alias != null) {
-					mChatController.assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
+				mChatController.assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
 
-						@Override
-						public void handleResponse(Boolean result) {
-							if (!result) {
-								Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
-							}
+					@Override
+					public void handleResponse(Boolean result) {
+						if (!result) {
+							Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
 						}
-					});
-				}
+					}
+				});
 			}
 		});
 	}

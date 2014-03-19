@@ -2738,6 +2738,8 @@ public class ChatController {
 	}
 
 	public void assignFriendAlias(final String name, String alias, final IAsyncCallback<Boolean> iAsyncCallback) {
+		if (TextUtils.isEmpty(name) || TextUtils.isEmpty(alias)) return;
+		
 		setProgress("assignFriendAlias", true);
 		final String version = IdentityController.getOurLatestVersion();
 		String username = IdentityController.getLoggedInUser();
