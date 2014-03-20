@@ -1,13 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <Preference android:title="@string/pref_title_about_surespot" >
-        <intent android:action="com.twofours.surespot.activities.AboutActivity" >
-        </intent>
-    </Preference>
-    <Preference
-        android:key="pref_help"
-        android:title="@string/pref_title_help" >
-    </Preference>
+ 
 
     <PreferenceScreen android:title="@string/pref_title_identity_management" >
         <Preference android:title="@string/pref_title_change_password" >
@@ -100,5 +93,13 @@
             android:summary="@string/pref_stop_cache_logout_summary"
             android:title="@string/pref_stop_cache_logout_title" />
     </PreferenceScreen>
-
+    <Preference
+        android:key="pref_help"
+        android:title="@string/pref_title_help" >
+    </Preference>
+   <Preference android:title="@string/pref_title_about_surespot" >
+        <intent android:action="com.twofours.surespot.activities.AboutActivity" >
+        </intent>
+    </Preference>
+    
 </PreferenceScreen>
