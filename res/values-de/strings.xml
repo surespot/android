@@ -84,8 +84,8 @@
   <string name="about_tech"><![CDATA["Den eher technischen Überblick wie surespot funktioniert, kann <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a> nachgelesen werden."]]></string>
   <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine E-Mail an <a href="mailto:support@2fours.com">support@2fours.com</a> schreiben.]]></string>
   <string name="notification_title">surespot</string>
-  <string name="notification_message">%1$s: neue Nachricht von %2$s.</string>
-  <string name="notification_invite">%1$s: Kontaktanfrage von %2$s.</string>
+  <string name="notification_message">%1$s: Neue Nachricht von %2$s.</string>
+  <string name="notification_invite">%1$s: Kontakteinladung von %2$s.</string>
   <string name="notification_invite_accept">%1$s: %2$s hat deine Kontaktanfrage akzeptiert.</string>
   <string name="about_version">Version: %s</string>
   <string name="surespot">surespot</string>
@@ -341,7 +341,9 @@
   <string name="disable_keystore_title">Schlüsselbund deaktivieren?</string>
   <string name="pref_title_enable_keystore">Schlüsselbund aktiviert.</string>
   <string name="pref_summary_enable_keystore">Passworte werden beim Anmelden gespeichert, wenn Du dies mit dieser Auswahl aktivierst.</string>
-  <string name="notification_message_no_from">%s: neue Nachricht erhalten.</string>
+  <string name="notification_message_no_from">%s: Neue Nachricht empfangen.</string>
   <string name="notification_invite_no_from">%s: Kontaktanfrage erhalten.</string>
   <string name="notification_invite_accept_no_from">%s: Kontaktanfrage akzeptiert.</string>
+  <string name="whats_new_57_message">Neue Funktionen!\n\nPasswort im Schlüsselbund speichern.\n\nAlias für Kontakte (im Home-Tab lange auf den Kontakt drücken)\n\nVerbessere Verbindungsverwaltung.\n\nDanke für die Unterstützung durch eure spenden!</string>
+  <string name="whats_new_57_title">Version 57</string>
 </resources>

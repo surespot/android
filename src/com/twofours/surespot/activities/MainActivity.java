@@ -863,15 +863,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		// if this is the first time the app has been run, or they just created a user, show the help screen
 
-		// boolean whatsNewShown = Utils.getSharedPrefsBoolean(this, "whatsNewShown47");
-		// if (!whatsNewShown) {
-		//
-		// Utils.putSharedPrefsBoolean(this, "whatsNewShown47", true);
-		// Utils.removePref(this, "whatsNewShown");
-		// Utils.removePref(this, "whatsNewShown46");
-		// mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_47_message), getString(R.string.whats_new_47_title),
-		// getString(R.string.ok), null, null);
-		// }
+		boolean whatsNewShown = Utils.getSharedPrefsBoolean(this, "whatsNewShown57");
+		if (!whatsNewShown) {
+
+			Utils.putSharedPrefsBoolean(this, "whatsNewShown57", true);
+			Utils.removePref(this, "whatsNewShown");
+			Utils.removePref(this, "whatsNewShown46");
+			Utils.removePref(this, "whatsNewShown47");
+			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_57_message), getString(R.string.whats_new_57_title),
+					getString(R.string.ok), null, null);
+		}
 		resume();
 		mLaunched = true;
 	}

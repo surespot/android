@@ -129,7 +129,7 @@
   <string name="create_new_keys_for">Crear nuevas claves para %s</string>
   <string name="enter_password_for">Introducir contraseña surespot para %s</string>
   <!--anything in [] for the string below will fire the onclick listener to open the restore activity-->
-  <string name="enter_username_and_password">Introduce usuario y contraseña o [Recuperar perfil] desde el menú.</string>
+  <string name="enter_username_and_password">Introduce usuario y contraseña o pulsa [Restaurar perfil] en el menú.</string>
   <string name="usernames_case_sensitive">Los nombres de usuario son sensibles a mayúsculas</string>
   <string name="aware_username_password">así que ten cuidado cuando las compartas con otros. La contraseña debería tener al menos 8 caracteres y contener símbolos intercalados.</string>
   <string name="warning_password_reset">ATENCIÓN: No es posible restablecer la contraseña en Surespot por lo que ¡asegúrate de recordarla!</string>
@@ -242,7 +242,7 @@
   <string name="pref_title_silent_error_reporting">Informe silencioso de errores</string>
   <string name="pref_title_message_debug_mode">Modo depuración de mensaje</string>
   <string name="pref_title_debug">Depuración</string>
-  <string name="pref_title_options">Opciones del Perfil</string>
+  <string name="pref_title_options">Opciones del perfil</string>
   <string name="pref_summary_delete_message">Confirmar antes de borrar un mensaje</string>
   <string name="pref_summary_delete_all_messages">Pedir confirmación antes de borrar todos los mensajes</string>
   <string name="pref_summary_export_identity">Copia de seguridad de tu perfil en Almacenamiento Local o en Google Drive.</string>
@@ -294,7 +294,7 @@
   <string name="billing_unavailable_title">no está disponible el servicio de cobro</string>
   <string name="billing_error">error durante el cobro</string>
   <string name="pref_billing">compras</string>
-  <string name="suppress_voice_purchase">no me preguntes si quiero comprar el servicio de mensajería por voz (cierra la pestaña)</string>
+  <string name="suppress_voice_purchase">No me preguntes si quiero comprar el servicio de mensajería por voz (cierra la pestaña)</string>
   <string name="voice_messaging_purchase_1"><![CDATA["!Añade la opción de mensajería por voz a surespot y haz tu comunicación privada aún más fáci! Simplemente mantén pulsado el botón del micrófono para grabar y suéltalo para enviar. Porque a veces es más fácil decirlo que escribirlo. <ahref="http://youtu.be/3mifzH1DXDk"> Ver vídeo demostrativo</a>."]]></string>
   <string name="voice_messaging_purchase_button">pulsa aquí para comprar por 1.99$</string>
   <string name="voice_message_suppress_purchase_ask">no volver a preguntar</string>
@@ -343,5 +343,7 @@
   <string name="pref_summary_enable_keystore">activo al seleccionar guardar la contraseña en la pantalla de inicio</string>
   <string name="notification_message_no_from">%s: tienes un mensaje nuevo.</string>
   <string name="notification_invite_no_from">%s: tienes una invitación nueva.</string>
-  <string name="notification_invite_accept_no_from">%s: solicitud de contacto aceptada.</string>
+  <string name="notification_invite_accept_no_from">%s: Invitación de contacto aceptada.</string>
+  <string name="whats_new_57_message">¡Nuevas características!\n\nGuardar clave en llavero.\n\nAlias de contactos (mantener pulsado el contacto en el Inicio).\n\nMejoras en el manejo de reconexión.\n\n!Gracias por ayudar al proyecto con vuestras donaciones!</string>
+  <string name="whats_new_57_title">Versión 57</string>
 </resources>

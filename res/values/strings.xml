@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
     <string name="app_name">surespot</string>
@@ -345,4 +345,6 @@
     <string name="notification_message_no_from">%s: New message received.</string>
     <string name="notification_invite_no_from">%s: Friend invite received.</string>
     <string name="notification_invite_accept_no_from">%s: Friend invite accepted.</string>
+    <string name="whats_new_57_message">New features!\n\nSave password in keychain.\n\nFriend aliases (long press on friend name on home tab).\n\nImproved reconnect handling.\n\nThank you for funding this project through your donations!</string>
+    <string name="whats_new_57_title">Version 57</string>
 </resources>

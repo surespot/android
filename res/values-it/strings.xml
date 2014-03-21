@@ -71,7 +71,7 @@
   <string name="external_invite_message">Vorrei chattare in privato con te su surespot. Clicca %s per installare l\'app e invitarmi come amico.</string>
   <string name="help_backupIdentities1">Poiché surespot usa chiavi cifrate che non sono mai caricate sui nostri server, se perdi il tuo telefono, o disinstalli e reinstalli l\'app, o cancelli i dati dell\'app, non potrai ricollegarti senza aver fatto un backup dell\'identità in precedenza.</string>
   <string name="help_backupIdentities2">surespot può effettuare il backup dell\'identità su Google Drive e/o sulla memoria del dispositivo. Queste opzioni sono nelle impostazioni dell\'identità.</string>
-  <string name="help_backup_what"><![CDATA["Facendo ciò, verrà esportata una copia dell'identità selezionata, cifrata con <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">AES a 256 bit</a> con una chiave che deriva dalla tua password attraverso la funzione <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
+  <string name="help_backup_what"><![CDATA["Facendo ciò, verrà esportata una copia dell'identità selezionata, cifrata con <a href="http://www.eetimes.com/design/embedded-internet-design/4372428/How-secure-is-AES-against-brute-force-attacks-">AES-GCM a 256 bit</a> con una chiave che deriva dalla tua password attraverso la funzione <a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF</a> (Password Based Key Derivation Function)"]]></string>
   <string name="help_backup_local">Per la massima sicurezza, è consigliato effettuare il backup nella memoria interna. Una volta effettuato il backup, sarebbe meglio copiare (o spostare) il file di identità dal dispositivo in un luogo sicuro affinché possa essere ripristinato nel caso i dati vengano persi con la disinstallazione dell\'app, l\'eliminazione manuale dei dati, o il dispositivo venga perso o rubato.</string>
   <string name="help_backup_drive1"><![CDATA["Se esegui il backup dell'identità su Google Drive, una copia delle tue <a href="https://it.wikipedia.org/wiki/Crittografia_asimmetrica">chiavi private</a> sarà registrata nei server di Google Drive. Chiunque potrebbe riuscire ad accedere ai server di Google Drive e tentare di decifrare il tuo file di identità usando il <a href="https://it.wikipedia.org/wiki/Brute_force">metodo di forza bruta</a>, e solo la<a href="https://en.wikipedia.org/wiki/Password_strength">robustezza</a> della tua password può garantire la protezione della tua identità."]]></string>
   <string name="help_backup_drive2">Le tue identità saranno salvate su Google Drive nella cartella \"surespot identity backups.\" Le identità possono essere ripristinate dalla schermata di creazione utente o nelle impostazioni di gestione delle identità.</string>
@@ -84,9 +84,9 @@
   <string name="about_tech"><![CDATA["Per una visione più tecnica su come funziona surespot clicca <a href="https://www.surespot.me/documents/how_surespot_works.html">qui</a>."]]></string>
   <string name="about_support"><![CDATA["Per domande o supporto <a href="https://www.surespot.me/support.html>clicca qui</a> oppure manda un\'email a <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
   <string name="notification_title">surespot</string>
-  <string name="notification_message">%1$s: nuovo messaggio da %2$s</string>
-  <string name="notification_invite">%1$s: richiesta d\'amicizia da %2$s</string>
-  <string name="notification_invite_accept">%1$s: %2$s ha accettato la tua richiesta d\'amicizia.</string>
+  <string name="notification_message">%1$s: Nuovo messaggio da %2$s.</string>
+  <string name="notification_invite">%1$s: Invito da %2$s.</string>
+  <string name="notification_invite_accept">%1$s: %2$s ha accettato il tuo invito.</string>
   <string name="about_version">Versione: %s</string>
   <string name="surespot">surespot</string>
   <string name="about_action_bar_right">Informazioni su</string>
@@ -341,7 +341,9 @@
   <string name="disable_keystore_title">Disattivare il portachiavi?</string>
   <string name="pref_title_enable_keystore">Portachiavi attivato</string>
   <string name="pref_summary_enable_keystore">attivalo scegliendo di memorizzare la password al login</string>
-  <string name="notification_message_no_from">%s: nuovo messaggio ricevuto</string>
-  <string name="notification_invite_no_from">%s: hai ricevuto una richiesta d\'amicizia.</string>
-  <string name="notification_invite_accept_no_from">%s: richiesta d\'amicizia accettata.</string>
+  <string name="notification_message_no_from">%s: Nuovo messaggio ricevuto.</string>
+  <string name="notification_invite_no_from">%s: Nuovo invito ricevuto.</string>
+  <string name="notification_invite_accept_no_from">%s: Invito accettato.</string>
+  <string name="whats_new_57_message">Nuove funzionalità!\n\nSalva la password nel portachiavi.\n\nAssegna dei nomi ai tuoi amici (tieni premuto sul nome dell\'amico nella home).\n\nMigliorata la gestione della connessione.\n\nGrazie per aver aiutato surespot con le vostre donazioni!</string>
+  <string name="whats_new_57_title">Versione 57</string>
 </resources>
