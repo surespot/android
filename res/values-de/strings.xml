@@ -197,7 +197,6 @@
   <string name="restore_identity">Profil %s wiederherstellen</string>
   <string name="assign">zuweisen</string>
   <string name="could_not_load_image">Bild konnte nicht geladen werden</string>
-  <string name="image">Bild</string>
   <string name="pan_and_zoom">schwenken und zoomen</string>
   <string name="done">erledigt</string>
   <string name="message_error_invalid">Fehler beim Senden der Mitteilung: Mitteilung ungültig</string>

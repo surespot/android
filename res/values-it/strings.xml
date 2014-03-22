@@ -196,8 +196,7 @@
   <string name="restore">Ripristina</string>
   <string name="restore_identity">Ripristina un\'identità %s</string>
   <string name="assign">Assegna</string>
-  <string name="could_not_load_image">Impossibile caricare l\'immagine</string>
-  <string name="image">Immagine</string>
+  <string name="could_not_load_image">Impossibile caricare l\'immagine</string>  
   <string name="pan_and_zoom">Muovi e fai zoom</string>
   <string name="done">Fatto</string>
   <string name="message_error_invalid">Errore nell\'invio del messaggio: messaggio invalido</string>

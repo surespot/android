@@ -40,7 +40,7 @@ public class ImageViewActivity extends SherlockActivity {
 		}
 
 		setContentView(R.layout.activity_image_view);
-		Utils.configureActionBar(this, getString(R.string.image), getString(R.string.pan_and_zoom), true);
+		Utils.configureActionBar(this, "", getString(R.string.pan_and_zoom), true);
 
 		String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
 

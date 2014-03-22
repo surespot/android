@@ -196,8 +196,7 @@
   <string name="restore">restaurar</string>
   <string name="restore_identity">Restaurar perfil %s</string>
   <string name="assign">Asignar</string>
-  <string name="could_not_load_image">No se puede cargar la imagen</string>
-  <string name="image">imagen</string>
+  <string name="could_not_load_image">No se puede cargar la imagen</string> 
   <string name="pan_and_zoom">mover y hacer zoom</string>
   <string name="done">hecho</string>
   <string name="message_error_invalid">Error al enviar el mensaje: mensaje no válido</string>

@@ -197,8 +197,7 @@
     <string name="restore">restaurer</string>
     <string name="restore_identity">restauration de l\'identité %s</string>
     <string name="assign">affecter</string>
-    <string name="could_not_load_image">Impossible de charger l\'image</string>
-    <string name="image">image</string>
+    <string name="could_not_load_image">Impossible de charger l\'image</string>    
     <string name="pan_and_zoom">déplacement et zoom</string>
     <string name="done">fini</string>
     <string name="message_error_invalid">erreur d\'envoi de message: message non valide</string>
