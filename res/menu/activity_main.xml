@@ -40,13 +40,13 @@
                 android:title="@string/pay_what_you_like">
             </item>
             <item
-                android:id="@+id/menu_logout_bar"
-                android:icon="@drawable/ic_lock_power_off"
-                android:title="@string/logout"/>
-            <item
                 android:id="@+id/menu_settings_bar"
                 android:icon="@drawable/ic_menu_preferences"
                 android:title="@string/settings"/>
+            <item
+                android:id="@+id/menu_logout_bar"
+                android:icon="@drawable/ic_lock_power_off"
+                android:title="@string/logout"/>
         </menu>
     </item>
 
