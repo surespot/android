@@ -229,7 +229,7 @@
   <string name="options">Optionen</string>
   <string name="clear_local_cache">Lokalen Cache löschen</string>
   <string name="delete_all_messages">Alle Mitteilungen löschen</string>
-  <string name="pay_what_you_like">surespot freiwillig unterstützen</string>
+  <string name="pay_what_you_like">freiwillig unterstützen</string>
   <string name="pref_title_general">Allgemein</string>
   <string name="pref_title_about_surespot">Über surespot</string>
   <string name="pref_title_help">Hilfe</string>
