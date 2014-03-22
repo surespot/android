@@ -81,7 +81,7 @@
   <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
   <string name="about_website"><![CDATA["Die surespot-Website <a href="https://www.surespot.me">https://www.surespot.me</a> enthält weitere Informationen, einschließlich der <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">AGB</a>, der <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">Datenschutzrichtlinien</a> sowie der <a href="https://www.surespot.me/documents/threat.html">Daten- und Gefährdungsbewertung</a>."]]></string>
   <string name="about_opensource"><![CDATA["Surespot ist 100% open source und begrüßt jede Mitarbeit - Der Quellcode kann auf github unter <a href="https://github.com/surespot">https://github.com/surespot</a> angesehen werden."]]></string>
-  <string name="about_tech"><![CDATA["Den eher technischen Überblick wie surespot funktioniert, kann <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a> nachgelesen werden."]]></string>
+  <string name="about_tech"><![CDATA["Der eher technischen Überblick wie surespot funktioniert, kann <a href="https://www.surespot.me/documents/how_surespot_works.html">hier</a> nachgelesen werden."]]></string>
   <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine E-Mail an <a href="mailto:support@2fours.com">support@2fours.com</a> schreiben.]]></string>
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: Neue Nachricht von %2$s.</string>
