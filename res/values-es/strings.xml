@@ -299,7 +299,7 @@
   <string name="voice_message_suppress_purchase_ask">no volver a preguntar</string>
   <string name="pref_suppress_voice_purchase_ask_title">no volver a preguntar</string>
   <string name="pref_suppress_voice_purchase_ask_summary">dejar de preguntar por la compra de la mensajería por voz</string>
-  <string name="menu_purchase_voice_messaging">comprar el servicio de mensajería por voz</string>
+  <string name="menu_purchase_voice_messaging">Voz de compra</string>
   <string name="purchase_voice_title">compra del servicio de mensajería por voz</string>
   <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">Debes actualizar surespot para escuchar este mensaje de voz.</a>"]]></string>
   <string name="user_exists_throttled">demasiados intentos, inténtalo más tarde.</string>
@@ -320,7 +320,7 @@
   <string name="message_hint">Introducir mensaje</string>
   <string name="invite_hint">Invitar usuario</string>
   <string name="recording_cancelled">Grabación cancelada</string>
-  <string name="share_invite_link">Compartir enlace de invitación</string>
+  <string name="share_invite_link">Enlace invition cuota</string>
   <string name="share_link_help">Usa \"Compartir enlace de invitación\" del menú de opciones para compartir un enlace vía correo, SMS, Twitter o cualquier otra red social, que al pulsarlo instale surespot y envíe una invitación para unirse a tus contactos de surespot.</string>
   <string name="pref_stop_cache_logout_title">Borrar caché al salir</string>
   <string name="pref_stop_cache_logout_summary">Borra la memoria caché al salir</string>
