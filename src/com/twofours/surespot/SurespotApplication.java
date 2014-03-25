@@ -23,6 +23,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.EmojiParser;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -153,7 +154,8 @@ public class SurespotApplication extends Application {
 
 		startService(cacheIntent);
 		mBillingController = new BillingController(this);
-
+						
+		FileUtils.wipeImageCaptureDir(this);
 	}
 
 	private boolean versionChanged(Context context) {

@@ -1,5 +1,8 @@
 package com.twofours.surespot.activities;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -946,7 +949,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		switch (requestCode) {
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
 			if (resultCode == RESULT_OK) {
-				Uri selectedImageUri = data.getData();
+				final Uri selectedImageUri = data.getData();
 
 				String to = data.getStringExtra("to");
 				SurespotLog.d(TAG, "to: " + to);
@@ -956,6 +959,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean errorHandled) {
+							//delete local image
+							try {
+								File file = new File(new URI(selectedImageUri.toString()));
+								SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
+							}
+							catch (URISyntaxException e) {
+							}
+							
 							if (!errorHandled) {
 
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
@@ -986,7 +997,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE:
 			if (resultCode == Activity.RESULT_OK) {
-				Uri selectedImageUri = data.getData();
+				final Uri selectedImageUri = data.getData();
 
 				final String to = data.getStringExtra("to");
 
@@ -995,8 +1006,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
 					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
+						
 						@Override
 						public void handleResponse(String url, String version, String iv) {
+							try {
+								File file = new File(new URI(selectedImageUri.toString()));
+								SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
+							}
+							catch (URISyntaxException e) {							
+							}
+							
 							if (mChatController == null || url == null) {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 							}
