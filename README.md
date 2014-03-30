@@ -73,6 +73,7 @@ Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) This pro
 * [android-asyn-http](https://github.com/loopj/android-async-http) - Apache License 2.0
 * [socket.io-java-client](https://github.com/gottox/socket.io-java-client) - Copyright 2012 Enno Boland <eb@s01.de>
 * [ImageViewZoom](https://github.com/sephiroth74/ImageViewZoom) - Copyright Alessandro Crugnola - alessandro.crugnola@gmail.com
+* [android-keystore](https://github.com/nelenkov/android-keystore/blob/master/LICENSE) - Apache License 2.0 Copyright 2012 Nikolay Elenkov
 * [DiskLruCache](https://github.com/JakeWharton/DiskLruCache) - Apache License 2.0
 * [Android-ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator) - Copyright 2012 Jake Wharton,
   Copyright 2011 Patrik Åkerfeldt, Copyright 2011 Francisco Figueiredo Jr., Licensed under the Apache License, Version 2.0
