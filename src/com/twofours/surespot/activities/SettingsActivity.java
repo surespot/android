@@ -146,15 +146,16 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
-					boolean newChecked = enableKeystorePref.isChecked();
+					final boolean newChecked = enableKeystorePref.isChecked();
 
 					SurespotLog.d(TAG, "set keystore enabled: %b", newChecked);
-					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
+					
 
 					if (newChecked) {
 						//shouldn't happen
 						IdentityController.initKeystore();
 						IdentityController.unlock(SettingsActivity.this);
+						Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
 					}
 					else {
 						UIUtils.createAndShowConfirmationDialog(SettingsActivity.this, getString(R.string.disable_keystore_message),
@@ -163,8 +164,12 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 									@Override
 									public void handleResponse(Boolean result) {
 										if (result) {
+											Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
 											IdentityController.destroyKeystore();
 											enableKeystorePref.setEnabled(false);
+										}
+										else {
+											enableKeystorePref.setChecked(true);
 										}
 									}
 								});
