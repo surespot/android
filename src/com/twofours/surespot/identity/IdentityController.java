@@ -84,14 +84,12 @@ public class IdentityController {
 
 	}
 
-	public static void updatePassword(Context context, String username, String currentPassword, String newPassword, String newSalt) {
-		SurespotIdentity identity = getIdentity(context, username, currentPassword);
+	public static void updatePassword(Context context, SurespotIdentity identity, String username, String currentPassword, String newPassword, String newSalt) {
 		if (identity != null) {
 			identity.setSalt(newSalt);
 			saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
 			updateKeychainPassword(context, username, newPassword);
-		}
-		
+		}		
 	}
 	
 
@@ -926,8 +924,13 @@ public class IdentityController {
 
 	}
 
-	public static void rollKeys(Context context, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {
-		SurespotIdentity identity = getIdentity(context, username, password);
+	public static void rollKeys(Context context, SurespotIdentity identity, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {		
+		if (identity == null) {
+			// TODO give user other options to save it
+			SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
+			return;
+		}
+		
 		identity.addKeyPairs(keyVersion, keyPairDH, keyPairsDSA);
 		String idFile = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
 		// big problems if we can't save it, but shouldn't happen as we create

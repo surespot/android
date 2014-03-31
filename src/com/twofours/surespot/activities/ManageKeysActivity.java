@@ -122,7 +122,7 @@ public class ManageKeysActivity extends SherlockActivity {
 	private void rollKeys(final String username, final String password) {
 
 		mMpd.incrProgress();
-		SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
+		final SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
 
 		if (identity == null) {
 			mMpd.decrProgress();
@@ -181,7 +181,7 @@ public class ManageKeysActivity extends SherlockActivity {
 									result.keyVersion, new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// save the key pairs
-											IdentityController.rollKeys(ManageKeysActivity.this, username, password, result.keyVersion,
+											IdentityController.rollKeys(ManageKeysActivity.this, identity, username, password, result.keyVersion,
 													result.keyPairs[0], result.keyPairs[1]);
 											mMpd.decrProgress();
 											Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.keys_created));

@@ -109,7 +109,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		}
 
 		mMpd.incrProgress();
-		SurespotIdentity identity = IdentityController.getIdentity(this, username, currentPassword);
+		final SurespotIdentity identity = IdentityController.getIdentity(this, username, currentPassword);
 
 		if (identity == null) {
 			mMpd.decrProgress();
@@ -167,7 +167,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 									result.tokenSig, result.keyVersion, new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// update the password
-											IdentityController.updatePassword(ChangePasswordActivity.this, username, currentPassword,
+											IdentityController.updatePassword(ChangePasswordActivity.this, identity, username, currentPassword,
 													newPassword, result.salt);
 											resetFields();
 											mMpd.decrProgress();

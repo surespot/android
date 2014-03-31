@@ -344,5 +344,5 @@
   <string name="notification_invite_no_from">%s: tienes una invitación nueva.</string>
   <string name="notification_invite_accept_no_from">%s: Invitación de contacto aceptada.</string>
   <string name="whats_new_57_message">¡Nuevas características!\n\nGuardar clave en llavero.\n\nAlias de contactos (mantener pulsado el contacto en el Inicio).\n\nMejoras en el manejo de reconexión.\n\n!Gracias por ayudar al proyecto con vuestras donaciones!</string>
-  <string name="whats_new_57_title">Versión 57</string>
+  <string name="whats_new_57_title">Versión 58</string>
 </resources>
