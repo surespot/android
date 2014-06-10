@@ -181,6 +181,8 @@ public class EncryptionController {
 
 	public static String sign(PrivateKey privateKey, byte[] data, byte[] derivedPassword) {
 		try {
+			// 20140610 - v6 - If we're actually using a 521-bit agreement value from ECDH, even if it's on 
+			// a P521, wouldn't that drop 265 bits of the agreed-on value? 
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 
 			// throw some random data in there so the signature is different every time
