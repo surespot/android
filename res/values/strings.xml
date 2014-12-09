@@ -228,7 +228,7 @@
     <string name="username">username</string>
     <string name="create_identity">create identity</string>
     <string name="options">options</string>
-    <string name="clear_local_cache">resync with server</string>
+    <string name="clear_local_cache">clear local cache</string>
     <string name="delete_all_messages">delete all messages</string>
     <string name="pay_what_you_like">pay what you like</string>
     <string name="pref_title_general">general</string>
