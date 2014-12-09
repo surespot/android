@@ -16,7 +16,7 @@ import android.util.Log;
 
 public class FfmpegController {
 
-	File fileBinDir;
+	File mFileBinDir;
 	Context mContext;
 	private String ffmpegBin;
 
@@ -25,33 +25,43 @@ public class FfmpegController {
 	public FfmpegController(Context context) throws FileNotFoundException, IOException {
 		mContext = context;
 
-		checkBinary();
+		//copy PIE ffmpeg binary if we're on lollipop
+		if (android.os.Build.VERSION.SDK_INT < 21) {
+			checkBinary(false);
+		}
+		else {
+			checkBinary(true);
+		}
 
 	}
 
-	private void checkBinary() throws FileNotFoundException, IOException {
-		fileBinDir = mContext.getDir("bin", 0);
-		File fileBin = new File(fileBinDir, "ffmpeg");
+	private void checkBinary(boolean pie) throws FileNotFoundException, IOException {
+		mFileBinDir = mContext.getDir("bin", 0);
+		File fileBin = new File(mFileBinDir, "ffmpeg" + (pie ? "pie" : ""));
 
 		if (!fileBin.exists()) {
-			BinaryInstaller bi = new BinaryInstaller(mContext, fileBinDir);
-			bi.installFromRaw();
+			BinaryInstaller bi = new BinaryInstaller(mContext, mFileBinDir);
+			bi.installFromRaw(pie);
 		}
 
 		ffmpegBin = fileBin.getCanonicalPath();
 
 	}
 
-	private void execFFMPEG(List<String> cmd, ShellCallback sc, File fileExec) throws IOException, InterruptedException {
 
-		String ffmpegBin = new File(fileBinDir, "ffmpeg").getCanonicalPath();
+	private void execFFMPEG(List<String> cmd, ShellCallback sc, File fileExec) throws IOException, InterruptedException {
+		String binary = "ffmpeg";
+		if (android.os.Build.VERSION.SDK_INT >= 21) {
+			binary += "pie";
+		}
+		String ffmpegBin = new File(mFileBinDir, binary).getCanonicalPath();
 		Runtime.getRuntime().exec("chmod 777 " + ffmpegBin);
 
 		execProcess(cmd, sc, fileExec);
 	}
 
 	private void execFFMPEG(List<String> cmd, ShellCallback sc) throws IOException, InterruptedException {
-		execFFMPEG(cmd, sc, fileBinDir);
+		execFFMPEG(cmd, sc, mFileBinDir);
 	}
 
 	private int execProcess(List<String> cmds, ShellCallback sc, File fileExec) throws IOException, InterruptedException {
@@ -131,7 +141,7 @@ public class FfmpegController {
 
 		cmd.add("-b:a");
 		cmd.add("24k");
-		
+
 		cmd.add("-cutoff");
 		cmd.add("5000");
 
