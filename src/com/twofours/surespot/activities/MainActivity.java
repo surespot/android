@@ -864,18 +864,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			mHelpDialog = UIUtils.showHelpDialog(this, true);
 		}
 
-		// if this is the first time the app has been run, or they just created a user, show the help screen
+		// only lollipop fixes for 59 so don't bother showing anything
+		Utils.removePref(this, "whatsNewShown57");
+		Utils.removePref(this, "whatsNewShown46");
+		Utils.removePref(this, "whatsNewShown47");
 
-		boolean whatsNewShown = Utils.getSharedPrefsBoolean(this, "whatsNewShown57");
-		if (!whatsNewShown) {
-
-			Utils.putSharedPrefsBoolean(this, "whatsNewShown57", true);
-			Utils.removePref(this, "whatsNewShown");
-			Utils.removePref(this, "whatsNewShown46");
-			Utils.removePref(this, "whatsNewShown47");
-			mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.whats_new_57_message), getString(R.string.whats_new_57_title),
-					getString(R.string.ok), null, null);
-		}
 		resume();
 		mLaunched = true;
 	}
@@ -959,14 +952,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean errorHandled) {
-							//delete local image
+							// delete local image
 							try {
 								File file = new File(new URI(selectedImageUri.toString()));
 								SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
 							}
 							catch (URISyntaxException e) {
 							}
-							
+
 							if (!errorHandled) {
 
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
@@ -1006,16 +999,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
 					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
-						
+
 						@Override
 						public void handleResponse(String url, String version, String iv) {
 							try {
 								File file = new File(new URI(selectedImageUri.toString()));
 								SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
 							}
-							catch (URISyntaxException e) {							
+							catch (URISyntaxException e) {
 							}
-							
+
 							if (mChatController == null || url == null) {
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 							}
