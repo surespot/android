@@ -23,7 +23,7 @@
   <string name="import_identities">Profil wiederherstellen...</string>
   <string name="create_identity_label">Neues Profil anlegen...</string>
   <string name="no_identity_exported">Noch kein Profil exportiert</string>
-  <string name="no_identity_imported">Profil Import gescheitert </string>
+  <string name="no_identity_imported">Profil Import gescheitert</string>
   <string name="no_identity_deleted">Profil nicht gelöscht</string>
   <string name="identity_imported_successfully">Profil %s erfolgreich wiederhergestellt</string>
   <string name="could_not_import_identity">Profil konnte nicht importiert werden</string>
@@ -44,7 +44,7 @@
   <string name="settings">Einstellungen</string>
   <string name="welcome_to_surespot" formatted="false"><![CDATA["Willkommen bei surespot!  Daten die mit dieser App versendet werden sind mit einem <a href="https://de.wikipedia.org/wiki/Symmetrisches_Kryptosystem">Symmetrischen Kryptosystem</a> (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) <a href="https://de.wikipedia.org/wiki/Ende-zu-Ende-Verschl%C3%BCsselung">Ende-zu-Ende</a>-verschlüsselt, dessen Schlüssel mit 521 bit durch das <a href="https://de.wikipedia.org/wiki/Elliptic_Curve_Diffie-Hellman">Diffie-Hellman-Schlüsselaustausch</a>-Verfahren erzeugt wurden."]]></string>
   <string name="no_friends">Bisher noch keine Kontakte gespeichert. Um surespot-Benutzer einzuladen, bitte Benutzernamen unten eingeben.</string>
-  <string name="help_invite">surespot-Benutzer können eingeladen werden, indem deren Benutzernamen auf der Startseite eingeben wird.</string>
+  <string name="help_invite">surespot-Benutzer können eingeladen werden, indem deren Benutzernamen auf der Startseite eingegeben wird.</string>
   <string name="navigate_between_chat_tabs">Tab-Wechsel mit horizontalem Streichen über den Bildschirm.</string>
   <string name="help_holdmessage">Für Nachrichtenoptionen die Nachricht gedrückt halten.</string>
   <string name="help_holdfriend">Für Kontaktoptionen den Kontakt gedrückt halten.</string>
@@ -66,7 +66,7 @@
   <string name="crash_toast_text">Es ist ein Fehler aufgetreten.</string>
   <string name="crash_dialog_title">surespot ist abgestürzt</string>
   <string name="crash_dialog_text">Wir müssen leider eingestehen, das es einen unerwarteten Fehler gab.\n\nEs hilft uns sehr, wenn durch das Tippen auf \"OK\" ein Fehlerbericht an uns gesendet wird. Es werden keine Personen bezogene Daten übermittelt.</string>
-  <string name="crash_dialog_comment_prompt">Optional kann uns einen Kommentar über das Problem mitgeteilt werden:</string>
+  <string name="crash_dialog_comment_prompt">Optional kann uns ein Kommentar über das Problem mitgeteilt werden:</string>
   <string name="crash_dialog_ok_toast">Danke !</string>
   <string name="external_invite_message">Ich würde gerne mit Ihnen via surespot verschlüsselt chatten. Klicken Sie auf %s, um die Android-App zu installieren und mich als Kontakt aufzunehmen.</string>
   <string name="help_backupIdentities1">Falls das Gerät verloren oder die App nach Deinstallation erneut installiert wird, sind die Profildaten verloren. Um sich trotzdem anzumelden, können vorher exportierte Profildaten wieder importiert werden. Die surespot Verschlüsselungsdaten werden zu keinem Zeitpunkt auf unsere Server gespeichert.</string>
@@ -76,7 +76,7 @@
   <string name="help_backup_drive1"><![CDATA["Falls das Sichern des Profils auf Google Drive ausgewählt wird, ist eine Kopie der <a href="https://de.wikipedia.org/wiki/Asymmetrisches_Kryptosystem">Privaten Schlüssel</a> auf den Google Drive Servern gespeichert. Sollte ein Dritter irgendwie Zugang zu den Google-Drive-Servern erhalten und versuchen die Profil-Datei mittels <a href="https://de.wikipedia.org/wiki/Brute-Force">Brute-Force-Attake</a> zu entschlüsseln, sollte nicht vergessen werden, dass die <a href="https://de.wikipedia.org/wiki/Passwort">Stärke</a> des Passwortes letztlich die erfolgreiche Entschlüsselung verhindern kann."]]></string>
   <string name="help_backup_drive2">Die Profile werden auf Google Drive im Ordner \'surespot identity backups\' gespeichert. Profile können unter den Menüpunkt \'Einstellungen\' auch aus Google Drive wiederhergestellt werden.</string>
   <string name="pwyl_text"><![CDATA["surespot ist frei von Werbung und Datensammlung.<br><br>Server und Speicher kosten Geld. Eine Spende hilft dabei, dass surespot weiterhin kostenlos angeboten werden kann.<br><br>Wir werden einen Teil der Spenden an die <a href="https://www.eff.org/issues/privacy">EFF</a> weiterleiten, damit diese Organisation für die elektronische Informationsfreiheit kämpfen kann."]]></string>
-  <string name="help_messageHistory">Surespot kann derzeit 1000 verschlüsselte Mitteilungen auf dem Server speichern. Wird dieser Grenzwert erreicht, löscht der Server automatisch die älteste Mitteilungen um Platz für die neueste Mitteilungen zu schaffen. Einzelne oder alle Nachrichten können jederzeit vom Benutzer gelöscht werden.</string>
+  <string name="help_messageHistory">Surespot kann derzeit 1000 verschlüsselte Mitteilungen auf dem Server speichern. Wird dieser Grenzwert erreicht, löscht der Server automatisch die älteste Mitteilung um Platz für die neueste Mitteilung zu schaffen. Einzelne oder alle Nachrichten können jederzeit vom Benutzer gelöscht werden.</string>
   <string name="title_activity_about">Über surespot</string>
   <string name="about_about"><![CDATA["surespot - a 2fours production"]]></string>
   <string name="about_website"><![CDATA["Die surespot-Website <a href="https://www.surespot.me">https://www.surespot.me</a> enthält weitere Informationen, einschließlich der <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">AGB</a>, der <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">Datenschutzrichtlinien</a> sowie der <a href="https://www.surespot.me/documents/threat.html">Daten- und Gefährdungsbewertung</a>."]]></string>
@@ -106,7 +106,7 @@
   <string name="login_try_again_later">Fehler bei der Anmeldung, bitte später nochmal versuchen.</string>
   <string name="login_max_identities_reached">Entschuldigung, die maximale Anzahl unterschiedlicher Profile ist bereits angelegt (%d).\n\nBenutzerprofile können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
   <string name="local_cache_cleared">Lokaler Cache gelöscht</string>
-  <string name="qr_pre_username_help">Diesen QR Code zu Einladung verwenden </string>
+  <string name="qr_pre_username_help">Diesen QR Code zur Einladung verwenden</string>
   <string name="qr_post_username_help">. Falls benötigt, wird surespot aus dem Play Store installiert.</string>
   <string name="send">senden</string>
   <string name="main_action_bar_right">an</string>
@@ -142,7 +142,7 @@
   <string name="could_not_create_user">Benutzer konnte nicht erstellt werden, bitte später erneut versuchen</string>
   <string name="pay">bezahlen</string>
   <string name="what_you_like">was gefällt</string>
-  <string name="billing_could_not_enable">In-App Bezahlung konnte nicht aktiviert werden. </string>
+  <string name="billing_could_not_enable">In-App Bezahlung konnte nicht aktiviert werden.</string>
   <string name="billing_purchase_error">Fehler, Kauf konnte nicht abgeschlossen werden.</string>
   <string name="billing_paypal_link_email_subject">PayPal Link zur freiwilligen Unterstützung von surespot</string>
   <string name="billing_paypal_link_email_body">Vielen Dank für die Unterstützung von surespot! Der PayPal Link ist wie folgt:</string>
@@ -162,15 +162,15 @@
   <string name="could_not_delete_message">Mitteilung konnte nicht gelöscht werden</string>
   <string name="could_not_delete_messages">Mitteilungen konnten nicht gelöscht werden</string>
   <string name="could_not_delete_friend">Kontakt konnte nicht gelöscht werden</string>
-  <string name="could_not_set_message_lock_state">Mittteilungs-Verriegelung gescheitert</string>
-  <string name="menu_save_to_gallery">In die Galerie speichern</string>
+  <string name="could_not_set_message_lock_state">Mitteilungs-Verriegelung gescheitert</string>
+  <string name="menu_save_to_gallery">In der Galerie speichern</string>
   <string name="menu_resend_message">Mitteilung erneut versenden</string>
   <string name="menu_lock">verriegeln</string>
   <string name="menu_unlock">entriegeln</string>
   <string name="image_saved_to_gallery">Bild erfolgreich in der Galerie gespeichert</string>
   <string name="error_saving_image_to_gallery">Fehler beim Abspeichern des Bildes in der Galerie</string>
   <string name="delete_message_confirmation_title">Soll diese Mitteilung wirklich gelöscht werden?</string>
-  <string name="message_error_decrypting_message">Fehler beim Entschlüsseln der Mitteilung </string>
+  <string name="message_error_decrypting_message">Fehler beim Entschlüsseln der Mitteilung</string>
   <string name="could_not_respond_to_invite">Konnte auf die Kontaktanfrage nicht antworten, bitte später erneut versuchen.</string>
   <string name="friend_status_is_deleted">ist gelöscht</string>
   <string name="friend_status_is_invited">ist eingeladen</string>
@@ -275,7 +275,7 @@
   <string name="backup_device">PROFIL AUF LOKALEM DATENTRÄGER SICHERN</string>
   <string name="backup_drive">PROFIL AUF GOOGLE DRIVE SICHERN</string>
   <string name="let_me_select">bitte lass mich wählen</string>
-  <string name="could_not_import_identity_drive_404">Profil konnte nicht laden werden.  Bitte sicher stellen, dass das gleiche Google-Konto ausgewählt ist wie bei Google Drive.</string>
+  <string name="could_not_import_identity_drive_404">Profil konnte nicht geladen werden.  Bitte sicher stellen, dass das gleiche Google-Konto ausgewählt ist wie bei Google Drive.</string>
   <string name="pick_same_drive_account">Bitte den gleichen Benutzernamen wie bei Google Drive benutzen:</string>
   <string name="about">Über ...</string>
   <string name="unauthorized">nicht autorisiert</string>
@@ -308,7 +308,7 @@
   <string name="caching_service_notification_title">surespot</string>
   <string name="caching_service_notification_message">caching für maximale Leistung</string>
   <string name="voice_help_1">Mikrofontaste gedrückt halten, um eine Sprachnachricht aufzunehmen. Beim Loslassen der Taste wird die Nachricht gesendet.</string>
-  <string name="voice_help_2">Der Aufnahmeknopf kann weggewischt werden um die Aufnahme abzubrechen. </string>
+  <string name="voice_help_2">Der Aufnahmeknopf kann weggewischt werden um die Aufnahme abzubrechen.</string>
   <string name="voice_help_3">Auf eine Sprachnachricht tippen um diese ab zu spielen. Erneutes Tippen zum stoppen.</string>
   <string name="voice_help_4">Neue Sprachnachrichten werden automatisch im offenen Chat-Tab abgespielt.</string>
   <string name="close">schließen</string>
