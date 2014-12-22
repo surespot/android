@@ -40,8 +40,8 @@ public class VoiceController {
 	private static String mFileName = null;
 	private static String mUsername = null;
 
-	public static final int SEND_THRESHOLD = 3500;
-	public static final int MAX_TIME = 10000;
+	public static final int SEND_THRESHOLD = 3000;
+	public static final int MAX_TIME = 120000;
 	public static final int INTERVAL = 50;
 
 	private static RehearsalAudioRecorder mRecorder = null;
@@ -68,7 +68,7 @@ public class VoiceController {
 		INITIALIZING, READY, STARTED, RECORDING
 	};
 
-	private final static int[] sampleRates = { 44100, 22050 };
+	private final static int[] sampleRates = { 22050 , 44100};
 	private static State mState;
 	private static int mDuration;
 
