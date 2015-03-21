@@ -62,3 +62,12 @@
 
 
 -dontwarn sun.misc.*,javax.naming.*,javax.naming.directory.*,javax.inject.*,android.content.pm.*,com.actionbarsherlock.BuildConfig,android.webkit.WebSettings
+
+-keep class android.support.v4.app.** { *; }
+-keep interface android.support.v4.app.** { *; }
+-keep class com.actionbarsherlock.** { *; }
+-keep interface com.actionbarsherlock.** { *; }
+
+-keepattributes *Annotation*
+
+# -dontobfuscate
