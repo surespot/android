@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+    
+       <!-- PayPal -->
+    <item name="donations__paypal_user" format="string" type="string">cherie@2fours.com</item>
+    <item name="donations__paypal_currency_code" format="string" type="string">USD</item>
+
+    <!-- This value can also be translated! -->
+    <!-- Add translatable="false" if you don't want or need to translate -->
+    <string name="donations__paypal_item_name">surespot</string>
+    <string name="donations__bitcoin">17r4KsifLofqZg5FFNFrBqcck9zXnmfoVL</string>
+    
+</resources>

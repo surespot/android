@@ -1,0 +1,8 @@
+include ':imageViewTouch'
+include ':httpclientandroidlib'
+include ':surespotcommon'
+include ':sSLWebSocket'
+include ':androidasynchttp'
+include ':androidkeystore'
+include ':viewpagerindicator'
+include ':surespot'

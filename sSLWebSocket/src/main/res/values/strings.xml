@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">Echo</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_tls_enable">TLS Enable</string>
+    <string name="title_activity_main">Echo</string>
+    <string name="connect">Connect</string>
+    <string name="send">Send</string>
+    <string name="repeat">Repeat</string>
+    
+</resources>
