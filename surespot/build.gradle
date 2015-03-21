@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
         }
     }
+
+    dexOptions {
+        incremental true
+        javaMaxHeapSize "4g"
+    }
 }
 
 dependencies {
