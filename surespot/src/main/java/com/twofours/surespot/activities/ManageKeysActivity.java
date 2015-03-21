@@ -130,7 +130,8 @@ public class ManageKeysActivity extends SherlockActivity {
 			return;
 		}
 
-		final PrivateKey pk = identity.getKeyPairDSA().getPrivate();
+		//always sign with 1st dsa key
+		final PrivateKey pk = identity.getKeyPairDSA("1").getPrivate();
 
 		// create auth sig
 		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());

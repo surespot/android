@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -214,6 +215,43 @@ public class EncryptionController {
 		return null;
 
 	}
+	
+
+	//sign the username, version, and pub key with the dsa signing key
+	public static String sign(PrivateKey privateKey, String username, int version, String dhPubKey) {
+		try {
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
+
+			
+			dsa.initSign(privateKey);
+			
+			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array(); 
+			
+			dsa.update(username.getBytes());
+			dsa.update(vbuffer);
+			dsa.update(dhPubKey.getBytes());			
+
+			byte[] sig = dsa.sign();
+			
+			return new String(ChatUtils.base64Encode(sig));
+
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		return null;
+
+	}
+
 
 	public static boolean verifyPublicKey(String signature, String data) {
 		try {
