@@ -272,7 +272,7 @@ public class NetworkController {
 			params.put("longUrl", longUrl);
 			StringEntity entity = new StringEntity(params.toString());
 			entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-			mClient.post(null, "https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConstants.GOOGLE_API_KEY, entity, "application/json", responseHandler);
+			mClient.post(null, "https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey(), entity, "application/json", responseHandler);
 		}
 		catch (UnsupportedEncodingException e) {
 			SurespotLog.v(TAG, "getShortUrl", e);

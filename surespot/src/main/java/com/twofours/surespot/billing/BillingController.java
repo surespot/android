@@ -13,6 +13,7 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabSetupFinishedListener;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.identity.IdentityController;
@@ -43,7 +44,7 @@ public class BillingController {
 
 		if (!mQuerying) {
 			if (mIabHelper == null) {
-				mIabHelper = new IabHelper(context, SurespotConstants.GOOGLE_APP_LICENSE_KEY);
+				mIabHelper = new IabHelper(context, SurespotConfiguration.getGoogleApiLicenseKey());
 			}
 			try {
 				mIabHelper.startSetup(new OnIabSetupFinishedListener() {

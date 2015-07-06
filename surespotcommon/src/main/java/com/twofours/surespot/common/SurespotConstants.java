@@ -14,9 +14,6 @@ public class SurespotConstants {
 			+ "mrA8vJNUo1bAEe9dWY9FucDnZIbNNNGKh8soA9Ej7gyW9Yc6D7llh52LhscBpGd6\n" + "bX+FNZEROhIDJP2KgTTKVX+ASB0WtPT3V9AbyoAAxEse8IP5Wec5ZGQG1B/mOlGm\n"
 			+ "Z/aaRkB1bwl9eCNojpw=\n" + "-----END PUBLIC KEY-----";
 
-	public static final String GOOGLE_APP_LICENSE_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAytYzwMl/RLFQWotcjazzM/xbgqU/UCMEjBJ3QgRG2aT0B0+LCaEkq4bL1FnDvXxUmKOAfGnhn7zbFMfgrfTOOvTuioKgspLE2RLryl9K9MnAxBn2rxBv45gG2E+K97gs7qqrxfrAUTTZPfq8McXVLc3k9WWOf/pfiH25WL7ijig3CNkzJ+BP1u2KQiFltsdln7q+9tMddUWUxd8zP6c0hmCIB9DYLutfqmel0ckjfEPAhTKqsOIpryzcGLZCs2C22Qg0AllQ62ohidEIFdA0SYKp0CjO9E5NO1pM+ZnBlf/cmdEwlhuYyh26rUcZj342fNhWzwiiHIeiiedvXOOS8wIDAQAB";
-	public static final String GOOGLE_API_KEY="AIzaSyB5xMJ_9q235SEVSplqoX5VLUOb770PPrE";
-
 	// PROD
 	public static final String SERVER_PUBLIC_KEY = SERVER_PUBLIC_KEY_LOCAL;
 
