@@ -197,7 +197,7 @@ public class EncryptionController {
 			byte[] signature = new byte[random.length + sig.length];
 			System.arraycopy(random, 0, signature, 0, 16);
 			System.arraycopy(sig, 0, signature, 16, sig.length);
-			return new String(ChatUtils.base64Encode(signature));
+			return new String(ChatUtils.base64EncodeNowrap(signature));
 
 		}
 		catch (SignatureException e) {
@@ -233,7 +233,7 @@ public class EncryptionController {
 
 			byte[] sig = dsa.sign();
 			
-			return new String(ChatUtils.base64Encode(sig));
+			return new String(ChatUtils.base64EncodeNowrap(sig));
 
 		}
 		catch (SignatureException e) {

@@ -307,13 +307,12 @@ public class SignupActivity extends SherlockActivity {
 						protected String[] doInBackground(Void... params) {
 
 							String[] data = new String[4];
-							data[0] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
-							data[1] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
+							data[0] = EncryptionController.encodePublicKey(keyPair[0].getPublic());
+							data[1] = EncryptionController.encodePublicKey(keyPair[1].getPublic());
 
-							// sign the public key, username, and version so other clients can validate
-							// new protocol will only ever use the initial signing key but we
-							// will generate new ones as before to maintain backwards compatibility temporarily
+							//sign the username and password for authentication
 							data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, dPassword);
+							// sign the public key, username, and version so clients can validate
 							data[3] = EncryptionController.sign(keyPair[1].getPrivate(), username, 1, data[0]);
 							return data;
 						}

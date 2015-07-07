@@ -107,14 +107,16 @@ public class ManageKeysActivity extends SherlockActivity {
 		public String tokenSig;
 		public String authSig;
 		public String keyVersion;
+		public String clientSig;
 		public KeyPair[] keyPairs;
 
-		public RollKeysWrapper(KeyPair[] keyPairs, String tokenSig, String authSig, String keyVersion) {
+		public RollKeysWrapper(KeyPair[] keyPairs, String tokenSig, String authSig, String keyVersion, String clientSig) {
 			super();
 			this.keyPairs = keyPairs;
 			this.tokenSig = tokenSig;
 			this.authSig = authSig;
 			this.keyVersion = keyVersion;
+			this.clientSig = clientSig;
 		}
 
 	}
@@ -130,13 +132,17 @@ public class ManageKeysActivity extends SherlockActivity {
 			return;
 		}
 
-		//always sign with 1st dsa key
-		final PrivateKey pk = identity.getKeyPairDSA("1").getPrivate();
+		int iPreviousVersion = Integer.parseInt(identity.getLatestVersion(), 10) - 1;
+
+		String previousVersion =  iPreviousVersion == 0 ? "1" : Integer.toString(iPreviousVersion, 10);
+		//sign new key with previous dsa key
+		final PrivateKey previousPk = identity.getKeyPairDSA(previousVersion).getPrivate();
+		final PrivateKey latestPk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
 		byte[] saltBytes = ChatUtils.base64DecodeNowrap(identity.getSalt());
 		final String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
-		final String authSignature = EncryptionController.sign(pk, username, dPassword);
+		final String authSignature = EncryptionController.sign(latestPk, username, dPassword);
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
@@ -154,13 +160,12 @@ public class ManageKeysActivity extends SherlockActivity {
 							keyToken = response.getString("token");
 							SurespotLog.v(TAG, "received key token: " + keyToken);
 							keyVersion = response.getString("keyversion");
-						}
-						catch (JSONException e) {
+						} catch (JSONException e) {
 							return null;
 						}
 
 						// create token sig
-						final String tokenSignature = EncryptionController.sign(pk, ChatUtils.base64DecodeNowrap(keyToken),
+						final String tokenSignature = EncryptionController.sign(latestPk, ChatUtils.base64DecodeNowrap(keyToken),
 								dPassword.getBytes());
 
 						SurespotLog.v(TAG, "generatedTokenSig: " + tokenSignature);
@@ -170,7 +175,10 @@ public class ManageKeysActivity extends SherlockActivity {
 							return null;
 						}
 
-						return new RollKeysWrapper(keys, tokenSignature, authSignature, keyVersion);
+						//sign new key with old key
+						String clientSig = EncryptionController.sign(previousPk, username, Integer.parseInt(keyVersion, 10), EncryptionController.encodePublicKey(keys[0].getPublic()));
+
+						return new RollKeysWrapper(keys, tokenSignature, authSignature, keyVersion, clientSig);
 					}
 
 					protected void onPostExecute(final RollKeysWrapper result) {
@@ -179,7 +187,7 @@ public class ManageKeysActivity extends SherlockActivity {
 							MainActivity.getNetworkController().updateKeys(username, dPassword,
 									EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 									EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
-									result.keyVersion, new AsyncHttpResponseHandler() {
+									result.keyVersion, result.clientSig,  new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// save the key pairs
 											IdentityController.rollKeys(ManageKeysActivity.this, identity, username, password, result.keyVersion,
@@ -189,7 +197,9 @@ public class ManageKeysActivity extends SherlockActivity {
 											Intent intent = new Intent(ManageKeysActivity.this, ExportIdentityActivity.class);
 											intent.putExtra("backupUsername", username);
 											ManageKeysActivity.this.startActivity(intent);
-										};
+										}
+
+										;
 
 										@Override
 										public void onFailure(Throwable error, String content) {
@@ -199,13 +209,14 @@ public class ManageKeysActivity extends SherlockActivity {
 
 										}
 									});
-						}
-						else {
+						} else {
 							mMpd.decrProgress();
 							Utils.makeLongToast(ManageKeysActivity.this, getString(R.string.could_not_create_new_keys));
 						}
 
-					};
+					}
+
+					;
 				}.execute();
 
 			}

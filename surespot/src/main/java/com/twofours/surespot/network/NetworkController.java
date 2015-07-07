@@ -241,14 +241,14 @@ public class NetworkController {
 		});
 	}
 	
-	public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig2, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
+	public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
 		params.put("dhPub", publicKeyDH);
 		params.put("dsaPub", publicKeyECDSA);
 		params.put("clientSig", clientSig);
-		params.put("authSig2", authSig2);
+		params.put("authSig", authSig);
 		if (!TextUtils.isEmpty(referrers)) {
 			params.put("referrers", referrers);
 		}
@@ -312,7 +312,7 @@ public class NetworkController {
 		});
 	}
 	
-	public void getKeyToken(final String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
+	public void getKeyToken(String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -320,9 +320,13 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
-	public void getKeyToken2(JsonHttpResponseHandler jsonHttpResponseHandler) {		
-		post("/keytoken2", null, jsonHttpResponseHandler);
-	}
+//	public void getKeyToken2(final String username, String password, String authSignature, String clientSig, JsonHttpResponseHandler jsonHttpResponseHandler) {
+//		Map<String, String> params = new HashMap<String, String>();
+//		params.put("username", username);
+//		params.put("password", password);
+//		params.put("authSig", authSignature);
+//		post("/keytoken2", new RequestParams(params), jsonHttpResponseHandler);
+//	}
 
 	public void getDeleteToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
@@ -361,7 +365,7 @@ public class NetworkController {
 	}
 
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
-			String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+			String keyVersion, String clientSig, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -370,6 +374,7 @@ public class NetworkController {
 		params.put("authSig", authSignature);
 		params.put("tokenSig", tokenSignature);
 		params.put("keyVersion", keyVersion);
+		params.put("clientSig", clientSig);
 		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
 
