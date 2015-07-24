@@ -277,6 +277,35 @@ public class EncryptionController {
 		return false;
 	}
 
+
+
+	public static boolean verifySig(PublicKey sigPublicKey, String signature, String username, int version, String data) {
+		try {
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
+			dsa.initVerify(sigPublicKey);
+			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array();
+			dsa.update(username.getBytes());
+			dsa.update(vbuffer);
+			dsa.update(data.getBytes());
+			return dsa.verify(ChatUtils.base64Decode(signature));
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, e, "sign");
+
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, e, "sign");
+
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		return false;
+	}
+
 	public static byte[] generateSharedSecretSync(PrivateKey privateKey, PublicKey publicKey) {
 
 		try {

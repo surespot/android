@@ -523,11 +523,14 @@ public class NetworkController {
 		get("/conversations/ids", null, responseHandler);
 	}
 
+//	public String getPublicKeysSync(String username, String version) {
+//		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
+//	}
+
 	public String getPublicKeysSync(String username, String version) {
-
-		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
-
+		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/since/" + version);
 	}
+
 
 	public String getKeyVersionSync(String username) {
 		SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
