@@ -33,13 +33,13 @@ dependencies {
     compile project(':httpclientandroidlib')
     compile project(':androidkeystore')
     compile 'com.android.support:multidex:1.0.0'
-    compile 'com.google.android.gms:play-services:+'
+    compile 'com.google.android.gms:play-services-drive:7.5.0'
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
     compile 'com.google.code.gson:gson:2.1'
     compile 'com.google.guava:guava:14.0.1'
     compile 'com.google.protobuf:protobuf-java:2.4.1'
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.android.support:support-v4:22.2.1'
     compile files('libs/gcm.jar')
     compile files('libs/google-api-client-1.17.0-rc.jar')
     compile files('libs/google-api-client-android-1.17.0-rc.jar')
