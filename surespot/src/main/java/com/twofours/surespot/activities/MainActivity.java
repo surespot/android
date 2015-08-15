@@ -1661,9 +1661,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 	}
 
+	private void sendUsingBackgroundActivity(String username, String mimeType, String message) {
+		// pipe message SEND to background (headless) activity so that messages are sent even if the main activity is stopped
+		Intent intent = new Intent(this, BackgroundSendActivity.class);
+		intent.putExtra(BackgroundSendActivity.USER_NAME_KEY, username);
+		intent.putExtra(BackgroundSendActivity.MIME_TYPE_KEY, mimeType);
+		intent.putExtra(BackgroundSendActivity.MESSAGE_KEY, message);
+		startActivity(intent);
+	}
+
 	private void sendMessage(String username) {
 		final String message = mEtMessage.getText().toString();
-		mChatController.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
+
+		// mChatController.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
+		sendUsingBackgroundActivity(username, SurespotConstants.MimeTypes.TEXT, message);
+
 		TextKeyListener.clear(mEtMessage.getText());
 	}
 
