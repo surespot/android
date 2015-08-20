@@ -850,7 +850,7 @@ public class IdentityController {
                         }
 
                         //save some keys
-                        savePublicKeyPair(username, version, jsonKey.toString());
+                        savePublicKeyPair(username, String.valueOf(validatingVersion), jsonKey.toString());
 
                         //get next previous signing key
                         previousDsaKey = dsaKeys.get(validatingVersion);

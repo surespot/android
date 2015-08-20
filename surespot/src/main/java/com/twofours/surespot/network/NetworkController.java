@@ -320,14 +320,6 @@ public class NetworkController {
 		post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
 	}
 
-//	public void getKeyToken2(final String username, String password, String authSignature, String clientSig, JsonHttpResponseHandler jsonHttpResponseHandler) {
-//		Map<String, String> params = new HashMap<String, String>();
-//		params.put("username", username);
-//		params.put("password", password);
-//		params.put("authSig", authSignature);
-//		post("/keytoken2", new RequestParams(params), jsonHttpResponseHandler);
-//	}
-
 	public void getDeleteToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);

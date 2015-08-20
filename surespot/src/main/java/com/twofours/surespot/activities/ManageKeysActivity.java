@@ -132,11 +132,6 @@ public class ManageKeysActivity extends SherlockActivity {
 			return;
 		}
 
-		int iPreviousVersion = Integer.parseInt(identity.getLatestVersion(), 10) - 1;
-
-		String previousVersion =  iPreviousVersion == 0 ? "1" : Integer.toString(iPreviousVersion, 10);
-		//sign new key with previous dsa key
-		final PrivateKey previousPk = identity.getKeyPairDSA(previousVersion).getPrivate();
 		final PrivateKey latestPk = identity.getKeyPairDSA().getPrivate();
 
 		// create auth sig
@@ -176,7 +171,7 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						//sign new key with old key
-						String clientSig = EncryptionController.sign(previousPk, username, Integer.parseInt(keyVersion, 10), EncryptionController.encodePublicKey(keys[0].getPublic()));
+						String clientSig = EncryptionController.sign(latestPk, username, Integer.parseInt(keyVersion, 10), EncryptionController.encodePublicKey(keys[0].getPublic()));
 
 						return new RollKeysWrapper(keys, tokenSignature, authSignature, keyVersion, clientSig);
 					}
