@@ -680,7 +680,7 @@ public class IdentityController {
 //			previousKeys.add(MainActivity.getNetworkController().getPublicKeysSync(username, version));
 //		}
 //		else {
-        while (currentVersion-- > 0) {
+        while (currentVersion > 0) {
             String sCurrentVersion = Integer.toString(currentVersion, 10);
             //      int previousVersion = currentVersion - 1;
             //    String sPreviousVersion = Integer.toString((sPreviousVersion, 10);
@@ -697,6 +697,7 @@ public class IdentityController {
                 result = MainActivity.getNetworkController().getPublicKeysSync(username, sCurrentVersion);
                 keysThatNeedValidating.put(currentVersion, result);
             }
+            currentVersion--;
         }
         //	}
 
@@ -723,7 +724,7 @@ public class IdentityController {
                 PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
                 PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
 
-                JSONObject json = verifyPublicKeyPair(result);
+                json = verifyPublicKeyPair(username, version, result);
                 if (json == null) {
                     return null;
                 }
@@ -753,7 +754,7 @@ public class IdentityController {
 
 
         //attempt to load keys from disk until we have some
-        while (currentVersion-- > 0) {
+        while (currentVersion > 0) {
             String sCurrentVersion = Integer.toString(currentVersion, 10);
 
             //load keys locally
@@ -764,7 +765,7 @@ public class IdentityController {
                 validatedKeyVersion = currentVersion;
                 break;
             }
-
+            currentVersion--;
         }
         //	}
 
@@ -873,10 +874,10 @@ public class IdentityController {
     }
 
 
-    private static JSONObject verifyPublicKeyPair(String jsonKeypair) {
+    private static JSONObject verifyPublicKeyPair(String username, String version, String jsonKeypair) {
         try {
             JSONObject json = new JSONObject(jsonKeypair);
-            // String version = json.getString("version");
+            //String version = json.getString("version");
             String spubDH = json.getString("dhPub");
             String sSigDH = json.getString("dhPubSig2");
 
@@ -887,7 +888,7 @@ public class IdentityController {
 
             // verify sig against the server pk
             boolean dhVerify = EncryptionController.verifySig(
-                    EncryptionController.ServerPublicKey, sSigDH, username, version, spubDH);
+                    EncryptionController.ServerPublicKey, sSigDH, username, Integer.parseInt(version), spubDH);
             if (!dhVerify) {
                 // TODO inform user
                 // alert alert

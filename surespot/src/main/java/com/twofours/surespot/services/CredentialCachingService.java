@@ -57,7 +57,7 @@ public class CredentialCachingService extends Service {
 
 			@Override
 			public PublicKeys load(PublicKeyPairKey key) throws Exception {
-				PublicKeys keys = IdentityController.getPublicKeyPair(key.getUsername(), key.getVersion());
+				PublicKeys keys = IdentityController.getPublicKeyPair2(key.getUsername(), key.getVersion());
 				String version = keys.getVersion();
 
 				SurespotLog.v(TAG, "keyPairCacheLoader getting latest version");
