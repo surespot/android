@@ -770,7 +770,7 @@ public class IdentityController {
         //	}
 
         //if we have the keys for the version we want return them
-        if (validatedKeys != null && version.equals(validatedKeyVersion)) {
+        if (validatedKeys != null && wantedVersion == validatedKeyVersion) {
             return validatedKeys;
         } else {
             //get keys from server since the last validated version
