@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import org.nick.androidkeystore.android.security.KeyStore;
 import org.nick.androidkeystore.android.security.KeyStoreJb43;
 import org.nick.androidkeystore.android.security.KeyStoreKk;
+import org.nick.androidkeystore.android.security.KeyStoreM;
 
 import android.app.Activity;
 import android.content.Context;
@@ -1017,6 +1018,8 @@ public class IdentityController {
 	private static final boolean IS_JB43 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
 	private static final boolean IS_JB = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
 	private static final boolean IS_KK = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+	private static final boolean IS_M = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+
 
 	public static final String OLD_UNLOCK_ACTION = "android.credentials.UNLOCK";
 
@@ -1026,17 +1029,15 @@ public class IdentityController {
 	public static void initKeystore() {
 		SurespotLog.d(TAG, "initKeyStore");
 		if (mKs == null) {
-			if (IS_KK) {
+			if (IS_M) {
+				mKs = KeyStoreM.getInstance();
+			} else if (IS_KK) {
 				mKs = KeyStoreKk.getInstance();
+			} else if (IS_JB43) {
+				mKs = KeyStoreJb43.getInstance();
+			} else {
+				mKs = KeyStore.getInstance();
 			}
-			else
-				if (IS_JB43) {
-					mKs = KeyStoreJb43.getInstance();
-				}
-				else {
-					mKs = KeyStore.getInstance();
-				}
-
 		}
 	}
 
@@ -1073,6 +1074,9 @@ public class IdentityController {
 		}		
 		if (mKs == null) {
 			return false;
+		}
+		if (mKs.state() == KeyStore.State.UNINITIALIZED) {
+			// can we do anything about keystore being in uninitialized state?
 		}
 		return mKs.state() == KeyStore.State.UNLOCKED;
 	}
