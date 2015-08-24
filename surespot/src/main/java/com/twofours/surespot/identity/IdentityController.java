@@ -656,86 +656,32 @@ public class IdentityController {
         return null;
     }
 
-    public static PublicKeys getPublicKeyPair(String username, String version) {
-
-        //first time we communicate we won't have the keys saved
-        PublicKeys keys = loadPublicKeyPair(username, version);
-        if (keys != null) {
-            SurespotLog.i(TAG, "loaded public keys from disk for username %s", username);
-            return keys;
-        }
-
-        //get the previous key pair
-        int currentVersion = Integer.parseInt(version, 10);
-
-        String result = null;
-
-        PublicKeys validatedKeys = null;
-        String validatedKeyVersion = null;
-        Hashtable<Integer, String> keysThatNeedValidating = new Hashtable<Integer, String>();
-
-
-//		//previous key pair is only key pair
-//		if (previousVersion == 0) {
-//			previousKeys.add(MainActivity.getNetworkController().getPublicKeysSync(username, version));
-//		}
-//		else {
-        while (currentVersion > 0) {
-            String sCurrentVersion = Integer.toString(currentVersion, 10);
-            //      int previousVersion = currentVersion - 1;
-            //    String sPreviousVersion = Integer.toString((sPreviousVersion, 10);
-
-            //load keys locally
-            //if we have them they've been validated and we can validate any new keys we downloaded
-            keys = loadPublicKeyPair(username, sCurrentVersion);
-            if (keys != null) {
-                validatedKeys = keys;
-                validatedKeyVersion = sCurrentVersion;
-                break;
-            } else {
-                //get
-                result = MainActivity.getNetworkController().getPublicKeysSync(username, sCurrentVersion);
-                keysThatNeedValidating.put(currentVersion, result);
+    private static PublicKeys getPublicKeyPair(String username, String version, JSONObject jsonKeyPair) {
+        try {
+            String readVersion = jsonKeyPair.getString("version");
+            if (!readVersion.equals(version)) {
+                return null;
             }
-            currentVersion--;
-        }
-        //	}
 
-
-        //if we don't have any keys to validate return the validated
-        if (keysThatNeedValidating.size() == 0 && version.equals(validatedKeyVersion)) {
-            return validatedKeys;
-        }
-
-        //otherwise validate from the last validated version to the version we want
-        if (result != null) {
-
-
-            try {
-                JSONObject json = new JSONObject(result);
-
-                String readVersion = json.getString("version");
-                if (!readVersion.equals(version)) {
-                    return null;
-                }
-                String spubDH = json.getString("dhPub");
-                String spubECDSA = json.getString("dsaPub");
-
-                PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
-                PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
-
-                json = verifyPublicKeyPair(username, version, result);
-                if (json == null) {
-                    return null;
-                }
-
-                savePublicKeyPair(username, version, json.toString());
-                SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
-                return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
-            } catch (JSONException e) {
-                SurespotLog.w(TAG, e, "recreatePublicKeyPair");
+            JSONObject json = verifyPublicKeyPair(jsonKeyPair);
+            if (json == null) {
+                return null;
             }
+
+
+            String spubDH = json.getString("dhPub");
+            String spubECDSA = json.getString("dsaPub");
+
+            PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
+            PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
+
+            savePublicKeyPair(username, version, json.toString());
+            SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
+            return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
+        } catch (JSONException e) {
+            SurespotLog.w(TAG, e, "recreatePublicKeyPair");
         }
+
         return null;
     }
 
@@ -767,7 +713,6 @@ public class IdentityController {
             }
             currentVersion--;
         }
-        //	}
 
         //if we have the keys for the version we want return them
         if (validatedKeys != null && wantedVersion == validatedKeyVersion) {
@@ -789,82 +734,92 @@ public class IdentityController {
                         PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
                         dsaKeys.put(readVersion, dsaPub);
                         resultKeys.put(readVersion, jsonKeys);
-
-
                     }
 
+                    //if we have clientSig, use new validation
+                    //otherwise use old (for now until we cut off old version)
 
-                    PublicKey previousDsaKey = null;
-                    if (validatedKeys != null) {
-                        //if we have a key validated start with that
-                        previousDsaKey = validatedKeys.getDSAKey();
+                    JSONObject wantedKey = resultKeys.get(wantedVersion);
+
+                    if (!wantedKey.has("clientSig")) {
+                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v1 code", username, version);
+                        //TODO need to recheck somehow and eventually get all keys validated using v2 code
+                        return getPublicKeyPair(username, version, wantedKey);
+
                     } else {
-                        //otherwise start from ground zero
-                        previousDsaKey = dsaKeys.get(1);
+                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", username, version);
+
+                        PublicKey previousDsaKey = null;
+                        if (validatedKeys != null) {
+                            //if we have a key validated start with that
+                            previousDsaKey = validatedKeys.getDSAKey();
+                        } else {
+                            //otherwise start from ground zero
+                            previousDsaKey = dsaKeys.get(1);
+                        }
+                        //validate in order
+                        String sDhPub = null;
+                        String sDsaPub = null;
+
+                        for (int validatingVersion = validatedKeyVersion + 1; validatingVersion <= wantedVersion; validatingVersion++) {
+
+                            JSONObject jsonKey = resultKeys.get(validatingVersion);
+                            sDhPub = jsonKey.getString("dhPub");
+                            sDsaPub = jsonKey.getString("dsaPub");
+
+
+                            //validate dh and dsa against server sig
+                            boolean verified = EncryptionController.verifySig(
+                                    EncryptionController.ServerPublicKey,
+                                    resultKeys.get(validatingVersion).getString("dhPubSig2"),
+                                    username,
+                                    validatingVersion,
+                                    sDhPub
+                            );
+
+                            if (!verified) {
+                                return null;
+                            }
+
+                            verified = EncryptionController.verifySig(
+                                    EncryptionController.ServerPublicKey,
+                                    resultKeys.get(validatingVersion).getString("dsaPubSig2"),
+                                    username,
+                                    validatingVersion,
+                                    sDsaPub
+                            );
+                            if (!verified) {
+                                return null;
+                            }
+
+                            //client sig
+                            verified = EncryptionController.verifySig(
+                                    previousDsaKey,
+                                    resultKeys.get(validatingVersion).getString("clientSig"),
+                                    username,
+                                    validatingVersion,
+                                    sDhPub);
+
+                            if (!verified) {
+                                return null;
+                            }
+
+                            //save some keys
+                            savePublicKeyPair(username, String.valueOf(validatingVersion), jsonKey.toString());
+
+                            //get next previous signing key
+                            previousDsaKey = dsaKeys.get(validatingVersion);
+
+                        }
+
+                        PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", sDhPub);
+                        PublicKey dsaPub = dsaKeys.get(wantedVersion);
+
+
+                        //savePublicKeyPair(username, version, json.toString());
+                        SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", username);
+                        return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
                     }
-                    //validate in order
-                    String sDhPub = null;
-                    String sDsaPub = null;
-
-                    for (int validatingVersion = validatedKeyVersion + 1; validatingVersion <= wantedVersion; validatingVersion++) {
-
-
-                        JSONObject jsonKey = resultKeys.get(validatingVersion);
-                        sDhPub = jsonKey.getString("dhPub");
-                        sDsaPub = jsonKey.getString("dsaPub");
-
-                        //validate dh and dsa against server sig
-                        boolean verified = EncryptionController.verifySig(
-                                EncryptionController.ServerPublicKey,
-                                resultKeys.get(validatingVersion).getString("dhPubSig2"),
-                                username,
-                                validatingVersion,
-                                sDhPub
-                                );
-
-                        if (!verified) {
-                            return null;
-                        }
-
-                        verified = EncryptionController.verifySig(
-                                EncryptionController.ServerPublicKey,
-                                resultKeys.get(validatingVersion).getString("dsaPubSig2"),
-                                username,
-                                validatingVersion,
-                                sDsaPub
-                                );
-                        if (!verified) {
-                            return null;
-                        }
-
-                        //client sig
-                        verified = EncryptionController.verifySig(
-                                previousDsaKey,
-                                resultKeys.get(validatingVersion).getString("clientSig"),
-                                username,
-                                validatingVersion,
-                                sDhPub);
-
-                        if (!verified) {
-                            return null;
-                        }
-
-                        //save some keys
-                        savePublicKeyPair(username, String.valueOf(validatingVersion), jsonKey.toString());
-
-                        //get next previous signing key
-                        previousDsaKey = dsaKeys.get(validatingVersion);
-
-
-                    }
-
-                    PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", sDhPub);
-                    PublicKey dsaPub = dsaKeys.get(wantedVersion);
-
-
-                    //savePublicKeyPair(username, version, json.toString());
-                    SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", username);
-                    return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
                 } catch (JSONException e) {
                     SurespotLog.w(TAG, e, "recreatePublicKeyPair");
                 }
@@ -874,21 +829,16 @@ public class IdentityController {
     }
 
 
-    private static JSONObject verifyPublicKeyPair(String username, String version, String jsonKeypair) {
+    private static JSONObject verifyPublicKeyPair(JSONObject jsonKeypair) {
         try {
-            JSONObject json = new JSONObject(jsonKeypair);
-            //String version = json.getString("version");
-            String spubDH = json.getString("dhPub");
-            String sSigDH = json.getString("dhPubSig2");
+            String spubDH = jsonKeypair.getString("dhPub");
+            String sSigDH = jsonKeypair.getString("dhPubSig");
 
-            String spubECDSA = json.getString("dsaPub");
-            String sSigECDSA = json.getString("dsaPubSig2");
-
-            String clientSig = json.getString("clientSig");
+            String spubECDSA = jsonKeypair.getString("dsaPub");
+            String sSigECDSA = jsonKeypair.getString("dsaPubSig");
 
             // verify sig against the server pk
-            boolean dhVerify = EncryptionController.verifySig(
-                    EncryptionController.ServerPublicKey, sSigDH, username, Integer.parseInt(version), spubDH);
+            boolean dhVerify = EncryptionController.verifyPublicKey(sSigDH, spubDH);
             if (!dhVerify) {
                 // TODO inform user
                 // alert alert
@@ -907,9 +857,9 @@ public class IdentityController {
                 SurespotLog.i(TAG, "DSA key successfully verified");
             }
 
-            return json;
+            return jsonKeypair;
         } catch (JSONException e) {
-            SurespotLog.w(TAG, e, "verifyPublicKeyPair");
+            SurespotLog.w(TAG, e, "recreatePublicIdentity");
         }
         return null;
     }
