@@ -119,9 +119,9 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 				int maxVersion = Integer.parseInt(latestVersion);
 				List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
 				if (maxVersion > 0) {
-					for (int ver = 1; ver <= maxVersion; ver++) {
+					for (int ver = maxVersion; ver > 0; ver--) {
 						String sVer = String.valueOf(ver);
-						PublicKeys pubkeys = IdentityController.getPublicKeyPair(mUsername, sVer);
+						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(mUsername, sVer);
 
 						if (pubkeys == null) {
 							Utils.makeToast(activity, activity.getString(R.string.could_not_load_public_keys));

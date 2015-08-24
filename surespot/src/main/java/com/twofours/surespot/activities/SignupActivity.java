@@ -280,188 +280,150 @@ public class SignupActivity extends SherlockActivity {
 
 		mMpd.incrProgress();
 
-		// see if the user exists
-		mNetworkController.userExists(username, new AsyncHttpResponseHandler() {
+		// make sure we can create the file
+		if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
+			Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
+			userText.setText("");
+			// confirmPwText.setText("");
+			// pwText.setText("");
+			userText.requestFocus();
+			mMpd.decrProgress();
+			setUsernameValidity(false);
+			return;
+		}
+
+		byte[][] derived = EncryptionController.derive(password);
+		final String salt = new String(ChatUtils.base64EncodeNowrap(derived[0]));
+		final String dPassword = new String(ChatUtils.base64EncodeNowrap(derived[1]));
+		// generate key pair
+		// TODO don't always regenerate if the signup was not
+		// successful
+		EncryptionController.generateKeyPairs(new IAsyncCallback<KeyPair[]>() {
+
 			@Override
-			public void onSuccess(String arg1) {
-				if (arg1.equals("true")) {
-					Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
-					userText.setText("");
-					// confirmPwText.setText("");
-					// pwText.setText("");
-					userText.requestFocus();
-					setUsernameValidity(false);
-					mMpd.decrProgress();
-				}
-				else {
-					// make sure we can create the file
-					if (!IdentityController.ensureIdentityFile(SignupActivity.this, username, false)) {
-						Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
-						userText.setText("");
-						// confirmPwText.setText("");
-						// pwText.setText("");
-						userText.requestFocus();
-						mMpd.decrProgress();
-						setUsernameValidity(false);
-						return;
-					}
+			public void handleResponse(final KeyPair[] keyPair) {
+				if (keyPair != null) {
+					new AsyncTask<Void, Void, String[]>() {
+						protected String[] doInBackground(Void... params) {
 
-					byte[][] derived = EncryptionController.derive(password);
-					final String salt = new String(ChatUtils.base64EncodeNowrap(derived[0]));
-					final String dPassword = new String(ChatUtils.base64EncodeNowrap(derived[1]));
-					// generate key pair
-					// TODO don't always regenerate if the signup was not
-					// successful
-					EncryptionController.generateKeyPairs(new IAsyncCallback<KeyPair[]>() {
+							String[] data = new String[4];
+							data[0] = EncryptionController.encodePublicKey(keyPair[0].getPublic());
+							data[1] = EncryptionController.encodePublicKey(keyPair[1].getPublic());
 
-						@Override
-						public void handleResponse(final KeyPair[] keyPair) {
-							if (keyPair != null) {
-								new AsyncTask<Void, Void, String[]>() {
-									protected String[] doInBackground(Void... params) {
+							//sign the username and password for authentication
+							data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, dPassword);
+							// sign the public key, username, and version so clients can validate
+							data[3] = EncryptionController.sign(keyPair[1].getPrivate(), username, 1, data[0]);
+							return data;
+						}
 
-										String[] data = new String[3];
-										data[0] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[0].getPublic());
-										data[1] = EncryptionController.encodePublicKey((ECPublicKey) keyPair[1].getPublic());
-										data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, dPassword);
-										return data;
+						protected void onPostExecute(String[] result) {
+							String sPublicDH = result[0];
+							String sPublicECDSA = result[1];
+							String authSig = result[2];
+							String clientSig = result[3];
+
+							String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
+
+							mNetworkController.createUser2(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
+
+								@Override
+								public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
+									confirmPwText.setText("");
+									pwText.setText("");
+
+									if (statusCode == 201) {
+										mLoggedIn = true;
+										// save key pair now
+										// that we've created
+										// a
+										// user successfully
+										new AsyncTask<Void, Void, Void>() {
+
+											@Override
+											protected Void doInBackground(Void... params) {
+												Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
+												IdentityController
+														.createIdentity(SignupActivity.this, username, password, salt, keyPair[0], keyPair[1], cookie);
+												return null;
+											}
+
+											protected void onPostExecute(Void result) {
+
+												// SurespotApplication.getUserData().setUsername(username);
+												Intent newIntent = new Intent(SignupActivity.this, MainActivity.class);
+												Intent intent = getIntent();
+												newIntent.setAction(intent.getAction());
+												newIntent.setType(intent.getType());
+												Bundle extras = intent.getExtras();
+												if (extras != null) {
+													newIntent.putExtras(extras);
+												}
+												// set a flag showing we just created a user
+												newIntent.putExtra("userWasCreated", true);
+												newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+												startActivity(newIntent);
+												Utils.clearIntent(intent);
+												mMpd.decrProgress();
+												InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+												imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
+
+												finish();
+												setUsernameValidity(true);
+											};
+										}.execute();
+
+									}
+									else {
+										SurespotLog.w(TAG, "201 not returned on user create.");
+										// confirmPwText.setText("");
+										// pwText.setText("");
+										pwText.requestFocus();
+										// setUsernameValidity(false);
 									}
 
-									protected void onPostExecute(String[] result) {
-										String sPublicDH = result[0];
-										String sPublicECDSA = result[1];
-										String signature = result[2];
+								}
 
-										String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
+								public void onFailure(Throwable arg0, String arg1) {
+									SurespotLog.i(TAG, arg0, "signup: %s", arg1);
+									mMpd.decrProgress();
+									if (arg0 instanceof HttpResponseException) {
+										HttpResponseException error = (HttpResponseException) arg0;
+										int statusCode = error.getStatusCode();
 
-										mNetworkController.addUser(username, dPassword, sPublicDH, sPublicECDSA, signature, referrers,
-												new CookieResponseHandler() {
+										switch (statusCode) {
+										case 429:
+											Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
+											userText.requestFocus();
+											break;
 
-													@Override
-													public void onSuccess(int statusCode, String arg0, final Cookie cookie) {
-														confirmPwText.setText("");
-														pwText.setText("");
+										case 409:
+											Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
+											userText.requestFocus();
+											setUsernameValidity(false);
+											break;
+										case 403:
+											Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
+											break;
+										default:
+											Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
+										}
 
-														if (statusCode == 201) {
-															mLoggedIn = true;
-															// save key pair now
-															// that we've created
-															// a
-															// user successfully
-															new AsyncTask<Void, Void, Void>() {
+									}
+									else {
+										Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
+									}
+									// confirmPwText.setText("");
+									// pwText.setText("");
 
-																@Override
-																protected Void doInBackground(Void... params) {
-																	Utils.putSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS, null);
-																	IdentityController.createIdentity(SignupActivity.this, username, password, salt,
-																			keyPair[0], keyPair[1], cookie);
-																	return null;
-																}
-
-																protected void onPostExecute(Void result) {
-
-																	// SurespotApplication.getUserData().setUsername(username);
-																	Intent newIntent = new Intent(SignupActivity.this, MainActivity.class);
-																	Intent intent = getIntent();
-																	newIntent.setAction(intent.getAction());
-																	newIntent.setType(intent.getType());
-																	Bundle extras = intent.getExtras();
-																	if (extras != null) {
-																		newIntent.putExtras(extras);
-																	}
-																	// set a flag showing we just created a user
-																	newIntent.putExtra("userWasCreated", true);
-																	newIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-																	startActivity(newIntent);
-																	Utils.clearIntent(intent);
-																	mMpd.decrProgress();
-																	InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-																	imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
-
-																	finish();
-																	setUsernameValidity(true);
-																};
-															}.execute();
-
-														}
-														else {
-															SurespotLog.w(TAG, "201 not returned on user create.");
-															// confirmPwText.setText("");
-															// pwText.setText("");
-															pwText.requestFocus();
-															// setUsernameValidity(false);
-														}
-
-													}
-
-													public void onFailure(Throwable arg0, String arg1) {
-														SurespotLog.i(TAG, arg0, "signup: %s", arg1);
-														mMpd.decrProgress();
-														if (arg0 instanceof HttpResponseException) {
-															HttpResponseException error = (HttpResponseException) arg0;
-															int statusCode = error.getStatusCode();
-
-															switch (statusCode) {
-															case 429:
-																Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
-																userText.requestFocus();
-																break;
-
-															case 409:
-																Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
-																userText.requestFocus();
-																setUsernameValidity(false);
-																break;
-															case 403:
-																Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
-																break;
-															default:
-																Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
-															}
-
-														}
-														else {
-															Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
-														}
-														// confirmPwText.setText("");
-														// pwText.setText("");
-
-													}
-												});
-									};
-								}.execute();
-							}
-						}
-					});
+								}
+							});
+						};
+					}.execute();
 				}
-			}
-
-			@Override
-			public void onFailure(Throwable arg0, String content) {
-				SurespotLog.i(TAG, arg0, "userExists");
-				mMpd.decrProgress();
-				if (arg0 instanceof HttpResponseException) {
-					HttpResponseException error = (HttpResponseException) arg0;
-					int statusCode = error.getStatusCode();
-
-					switch (statusCode) {
-					case 429:
-						Utils.makeToast(SignupActivity.this, getString(R.string.user_creation_throttled));
-						break;
-					default:
-						Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
-					}
-				}
-				else {
-					Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
-				}
-
-				// userText.setText("");
-				// confirmPwText.setText("");
-				// pwText.setText("");
-				userText.requestFocus();
 			}
 		});
+
 	}
 
 	@Override

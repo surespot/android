@@ -240,8 +240,79 @@ public class NetworkController {
 			}
 		});
 	}
+	
+	public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		params.put("dhPub", publicKeyDH);
+		params.put("dsaPub", publicKeyECDSA);
+		params.put("clientSig", clientSig);
+		params.put("authSig", authSig);
+		if (!TextUtils.isEmpty(referrers)) {
+			params.put("referrers", referrers);
+		}
+		params.put("version", SurespotApplication.getVersion());
+		params.put("platform", "android");
+		addVoiceMessagingPurchaseTokens(params);
 
-	public void getKeyToken(final String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
+		// get the gcm id
+		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+
+		boolean gcmUpdatedTemp = false;
+		// update the gcmid if it differs
+		if (gcmIdReceived != null) {
+
+			params.put("gcmId", gcmIdReceived);
+			gcmUpdatedTemp = true;
+		}
+
+		// just be javascript already
+		final boolean gcmUpdated = gcmUpdatedTemp;
+		
+		for (Cookie c : mCookieStore.getCookies()) {
+
+			if (c.getName().equals("connect.sid")) {
+				SurespotLog.d(TAG, "signup, clearing cookie: %s", c);
+			}
+		}
+		
+		mCookieStore.clear();
+
+		post("/users2", new RequestParams(params), new AsyncHttpResponseHandler() {
+
+			@Override
+			public void onSuccess(int responseCode, String result) {
+				Cookie cookie = extractConnectCookie(mCookieStore);
+
+				if (cookie == null) {
+					SurespotLog.w(TAG, "did not get cookie from signup");
+					responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
+				}
+				else {
+					setUnauthorized(false, false);
+					// update shared prefs
+					if (gcmUpdated) {
+						Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+					}
+
+					responseHandler.onSuccess(responseCode, result, cookie);
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable arg0, String content) {
+				responseHandler.onFailure(arg0, content);
+			}
+
+			@Override
+			public void onFinish() {
+				responseHandler.onFinish();
+			}
+		});
+	}
+	
+	public void getKeyToken(String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -286,7 +357,7 @@ public class NetworkController {
 	}
 
 	public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
-			String keyVersion, AsyncHttpResponseHandler asyncHttpResponseHandler) {
+			String keyVersion, String clientSig, AsyncHttpResponseHandler asyncHttpResponseHandler) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("password", password);
@@ -295,6 +366,7 @@ public class NetworkController {
 		params.put("authSig", authSignature);
 		params.put("tokenSig", tokenSignature);
 		params.put("keyVersion", keyVersion);
+		params.put("clientSig", clientSig);
 		params.put("version", SurespotApplication.getVersion());
 		params.put("platform", "android");
 
@@ -304,7 +376,7 @@ public class NetworkController {
 			params.put("gcmId", gcmIdReceived);
 		}
 
-		post("/keys", new RequestParams(params), asyncHttpResponseHandler);
+		post("/keys2", new RequestParams(params), asyncHttpResponseHandler);
 	}
 
 	private static Cookie extractConnectCookie(CookieStore cookieStore) {
@@ -443,11 +515,14 @@ public class NetworkController {
 		get("/conversations/ids", null, responseHandler);
 	}
 
+//	public String getPublicKeysSync(String username, String version) {
+//		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
+//	}
+
 	public String getPublicKeysSync(String username, String version) {
-
-		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
-
+		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/since/" + version);
 	}
+
 
 	public String getKeyVersionSync(String username) {
 		SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);

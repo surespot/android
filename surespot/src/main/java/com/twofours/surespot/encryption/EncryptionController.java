@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -196,7 +197,43 @@ public class EncryptionController {
 			byte[] signature = new byte[random.length + sig.length];
 			System.arraycopy(random, 0, signature, 0, 16);
 			System.arraycopy(sig, 0, signature, 16, sig.length);
-			return new String(ChatUtils.base64Encode(signature));
+			return new String(ChatUtils.base64EncodeNowrap(signature));
+
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		return null;
+
+	}
+	
+
+	//sign the username, version, and pub key with the dsa signing key
+	public static String sign(PrivateKey privateKey, String username, int version, String dhPubKey) {
+		try {
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
+
+			
+			dsa.initSign(privateKey);
+			
+			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array(); 
+			
+			dsa.update(username.getBytes());
+			dsa.update(vbuffer);
+			dsa.update(dhPubKey.getBytes());			
+
+			byte[] sig = dsa.sign();
+			
+			return new String(ChatUtils.base64EncodeNowrap(sig));
 
 		}
 		catch (SignatureException e) {
@@ -215,10 +252,40 @@ public class EncryptionController {
 
 	}
 
+
 	public static boolean verifyPublicKey(String signature, String data) {
 		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 			dsa.initVerify(ServerPublicKey);
+			dsa.update(data.getBytes());
+			return dsa.verify(ChatUtils.base64Decode(signature));
+		}
+		catch (SignatureException e) {
+			SurespotLog.e(TAG, e, "sign");
+
+		}
+		catch (NoSuchAlgorithmException e) {
+			SurespotLog.e(TAG, e, "sign");
+
+		}
+		catch (InvalidKeyException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		catch (NoSuchProviderException e) {
+			SurespotLog.e(TAG, e, "sign");
+		}
+		return false;
+	}
+
+
+
+	public static boolean verifySig(PublicKey sigPublicKey, String signature, String username, int version, String data) {
+		try {
+			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
+			dsa.initVerify(sigPublicKey);
+			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array();
+			dsa.update(username.getBytes());
+			dsa.update(vbuffer);
 			dsa.update(data.getBytes());
 			return dsa.verify(ChatUtils.base64Decode(signature));
 		}
