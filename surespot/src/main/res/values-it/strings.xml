@@ -326,6 +326,7 @@
   <string name="pref_stop_cache_logout_summary">Termina il servizio cache al logout</string>
   <string name="could_not_load_public_keys">Impossibile caricare le chiavi pubbliche</string>
   <string name="keystore_not_supported">Portachiavi non supportato</string>
+  <string name="keystore_not_unlocked">keychain was not unlocked (TODO: ADAM: Italian)</string>
   <string name="pref_title_global_options">Opzioni globali</string>
   <string name="store_password_in_keychain">Salva la password nel portachiavi</string>
   <string name="menu_assign_alias">Assegna nome</string>

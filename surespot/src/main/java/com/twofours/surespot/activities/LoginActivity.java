@@ -1,5 +1,6 @@
 package com.twofours.surespot.activities;
 
+import java.security.InvalidKeyException;
 import java.util.List;
 
 import android.content.ComponentName;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.security.keystore.UserNotAuthenticatedException;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -42,6 +44,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
+import com.twofours.surespot.identity.SurespotKeystoreActivity;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
@@ -51,6 +54,7 @@ import com.twofours.surespot.ui.MultiProgressDialog;
 
 public class LoginActivity extends SherlockActivity {
 
+	private static final int REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS = 1;
 	private Button loginButton;
 	private static final String TAG = "LoginActivity";
 	MultiProgressDialog mMpd;
@@ -63,6 +67,7 @@ public class LoginActivity extends SherlockActivity {
 	private CheckBox mCbSavePassword;
 	private boolean mKeystoreNeededUnlocking;
 	private String mUnlockingUser;
+	private boolean mUserChallenge;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -125,15 +130,44 @@ public class LoginActivity extends SherlockActivity {
 				if (mCbSavePassword.isChecked()) {
 					SurespotLog.d(TAG, "initing keystore");
 					mUnlockingUser = getSelectedUsername();
-					mKeystoreNeededUnlocking = !IdentityController
-							.storePasswordForIdentity(LoginActivity.this, mUnlockingUser, mEtPassword.getText().toString());
+					try {
+						mKeystoreNeededUnlocking = !IdentityController.storePasswordForIdentity(LoginActivity.this, mUnlockingUser, mEtPassword.getText().toString());
+					} catch (InvalidKeyException e) {
+						LaunchKeystoreActivity();
+					}
 				}
 				else {
-					IdentityController.clearStoredPasswordForIdentity(getSelectedUsername());
+					IdentityController.clearStoredPasswordForIdentity(LoginActivity.this, getSelectedUsername());
 				}
 
 			}
 		});
+	}
+
+	private void LaunchKeystoreActivity() {
+		if (mUserChallenge == false) {
+			mUserChallenge = true;
+			Intent intent = new Intent(LoginActivity.this, SurespotKeystoreActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+			LoginActivity.this.startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+		}
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS) {
+			// Challenge completed, proceed with using cipher
+			if (resultCode == RESULT_OK) {
+				Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
+			} else {
+				// The user canceled or didn’t complete the lock screen operation. Go to error/cancellation flow.
+				Utils.makeLongToast(this, this.getString(R.string.keystore_not_unlocked));
+				Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
+				finish();
+			}
+
+			mUserChallenge = false;
+		}
 	}
 
 	@Override
@@ -268,7 +302,11 @@ public class LoginActivity extends SherlockActivity {
 									boolean keysaveChecked = mCbSavePassword.isChecked();
 
 									if (keysaveChecked) {
-										IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
+										try {
+											IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
+										} catch (InvalidKeyException e) {
+											LaunchKeystoreActivity();
+										}
 									}
 
 								}
@@ -472,13 +510,17 @@ public class LoginActivity extends SherlockActivity {
 				// if we needed to unlock the keystore don't change the password and check status, and store password in keychain now
 				if (mKeystoreNeededUnlocking && username.equals(mUnlockingUser)) {
 
-					boolean unlocked = IdentityController.isKeystoreUnlocked();
+					boolean unlocked = IdentityController.isKeystoreUnlocked(this, username);
 
 					if (unlocked) {
 						SurespotLog.d(TAG, "keystore now unlocked, saving password for %s", username);
 						password = mEtPassword.getText().toString();
 						if (!TextUtils.isEmpty(password)) {
-							IdentityController.storePasswordForIdentity(this, username, password);
+							try {
+								IdentityController.storePasswordForIdentity(this, username, password);
+							} catch (InvalidKeyException e) {
+								LaunchKeystoreActivity();
+							}
 						}						
 					}
 					//if it's not unlocked uncheck save password
