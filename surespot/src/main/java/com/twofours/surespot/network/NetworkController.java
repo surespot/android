@@ -796,4 +796,8 @@ public class NetworkController {
 		SurespotLog.d(TAG, "deleteFriendImage, username: %s", username);
 		delete("/users/" + username + "/image", responseHandler);
 	}
+
+	public void updateSigs(JSONObject sigs, AsyncHttpResponseHandler responseHandler) {
+		post("/sigs", new RequestParams("sigs", sigs.toString()), responseHandler);
+	}
 }

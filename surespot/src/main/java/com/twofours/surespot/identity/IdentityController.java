@@ -1235,22 +1235,31 @@ public class IdentityController {
         }
     }
 
-    public static void updateSignatures(Context context, String username, String password) {
+    public static JSONObject updateSignatures(Context context) {
         //iterate through all identity public keys and generate new client sigs
         SurespotIdentity identity = getIdentity(context);
         PrivateKey previousDSAKey = identity.getKeyPairDSA("1").getPrivate();
-        HashMap<Integer, String> signatures = new HashMap<>(5);
-        int latestVersion = Integer.parseInt(identity.getLatestVersion());
-        for (int i = 1; i <= latestVersion; i++) {
-            String currentVersion = Integer.toString(i);
-            KeyPair dhPair = identity.getKeyPairDH(currentVersion);
-            KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
-            String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
-            String sDsaPub = EncryptionController.encodePublicKey(dsaPair.getPublic());
+        JSONObject signatures = new JSONObject();
+        try {
+            int latestVersion = Integer.parseInt(identity.getLatestVersion());
+            for (int i = 1; i <= latestVersion; i++) {
+                String currentVersion = Integer.toString(i);
+                KeyPair dhPair = identity.getKeyPairDH(currentVersion);
+                KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
+                String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
+                String sDsaPub = EncryptionController.encodePublicKey(dsaPair.getPublic());
 
-            // sign the dh public key, username, and version so clients can validate
-            signatures.put(i, EncryptionController.sign(previousDSAKey, username, i, sDhPub, sDsaPub));
-            previousDSAKey = identity.getKeyPairDSA(Integer.toString(i-1)).getPrivate();
+                // sign the dh public key, username, and version so clients can validate
+
+                signatures.put(currentVersion, EncryptionController.sign(previousDSAKey, identity.getUsername(), i, sDhPub, sDsaPub));
+
+                if (i > 1) {
+                    previousDSAKey = identity.getKeyPairDSA(Integer.toString(i - 1)).getPrivate();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        return signatures;
     }
 }

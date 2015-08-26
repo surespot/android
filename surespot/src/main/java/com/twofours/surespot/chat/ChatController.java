@@ -1050,6 +1050,21 @@ public class ChatController {
 			@Override
 			public void onSuccess(int statusCode, final JSONObject jsonResponse) {
 				SurespotLog.d(TAG, "getlatestData success, response: %s, statusCode: %d", jsonResponse, statusCode);
+
+				//see if we need to update signatures, won't have sigs property if we need to update
+				if (!jsonResponse.has("sigs")) {
+					JSONObject sigs = IdentityController.updateSignatures(mContext);
+					mNetworkController.updateSigs(sigs, new AsyncHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, String arg0) {
+
+
+						}
+					});
+				}
+
+
+
 				JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
 
 				Friend friend = null;
