@@ -317,7 +317,7 @@ public class IdentityController {
             SurespotApplication.getCachingService().logout(true);
         }
 
-        clearStoredPasswordForIdentity(username);
+        clearStoredPasswordForIdentity(context, username);
 
         MainActivity.getNetworkController().clearCache();
         StateController.wipeState(context, username);
