@@ -773,34 +773,26 @@ public class IdentityController {
                             //validate dh and dsa against server sig
                             boolean verified = EncryptionController.verifySig(
                                     EncryptionController.ServerPublicKey,
-                                    resultKeys.get(validatingVersion).getString("dhPubSig2"),
+                                    resultKeys.get(validatingVersion).getString("serverSig"),
                                     username,
                                     validatingVersion,
-                                    sDhPub
-                            );
-
-                            if (!verified) {
-                                return null;
-                            }
-
-                            verified = EncryptionController.verifySig(
-                                    EncryptionController.ServerPublicKey,
-                                    resultKeys.get(validatingVersion).getString("dsaPubSig2"),
-                                    username,
-                                    validatingVersion,
+                                    sDhPub,
                                     sDsaPub
                             );
+
                             if (!verified) {
                                 return null;
                             }
 
                             //client sig
                             verified = EncryptionController.verifySig(
+
                                     previousDsaKey,
                                     resultKeys.get(validatingVersion).getString("clientSig"),
                                     username,
                                     validatingVersion,
-                                    sDhPub);
+                                    sDhPub,
+                                    sDsaPub);
 
                             if (!verified) {
                                 return null;

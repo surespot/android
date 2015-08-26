@@ -217,8 +217,8 @@ public class EncryptionController {
 	}
 	
 
-	//sign the username, version, and pub key with the dsa signing key
-	public static String sign(PrivateKey privateKey, String username, int version, String dhPubKey) {
+	//sign the username, version, and pub keys with the dsa signing key
+	public static String sign(PrivateKey privateKey, String username, int version, String dhPubKey, String dsaPubKey) {
 		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 
@@ -229,7 +229,8 @@ public class EncryptionController {
 			
 			dsa.update(username.getBytes());
 			dsa.update(vbuffer);
-			dsa.update(dhPubKey.getBytes());			
+			dsa.update(dhPubKey.getBytes());
+			dsa.update(dsaPubKey.getBytes());
 
 			byte[] sig = dsa.sign();
 			
@@ -278,15 +279,15 @@ public class EncryptionController {
 	}
 
 
-
-	public static boolean verifySig(PublicKey sigPublicKey, String signature, String username, int version, String data) {
+	public static boolean verifySig(PublicKey sigPublicKey, String signature, String username, int version, String data1, String data2) {
 		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 			dsa.initVerify(sigPublicKey);
 			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array();
 			dsa.update(username.getBytes());
 			dsa.update(vbuffer);
-			dsa.update(data.getBytes());
+			dsa.update(data1.getBytes());
+			dsa.update(data2.getBytes());
 			return dsa.verify(ChatUtils.base64Decode(signature));
 		}
 		catch (SignatureException e) {
