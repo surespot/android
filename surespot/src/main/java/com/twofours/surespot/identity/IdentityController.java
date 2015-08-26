@@ -1244,10 +1244,12 @@ public class IdentityController {
         for (int i = 1; i <= latestVersion; i++) {
             String currentVersion = Integer.toString(i);
             KeyPair dhPair = identity.getKeyPairDH(currentVersion);
+            KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
             String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
+            String sDsaPub = EncryptionController.encodePublicKey(dsaPair.getPublic());
 
             // sign the dh public key, username, and version so clients can validate
-            signatures.put(i, EncryptionController.sign(previousDSAKey, username, i, sDhPub));
+            signatures.put(i, EncryptionController.sign(previousDSAKey, username, i, sDhPub, sDsaPub));
             previousDSAKey = identity.getKeyPairDSA(Integer.toString(i-1)).getPrivate();
         }
     }
