@@ -7,12 +7,14 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.KeyException;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -1241,4 +1243,20 @@ public class IdentityController {
         }
     }
 
+    public static void updateSignatures(Context context, String username, String password) {
+        //iterate through all identity public keys and generate new client sigs
+        SurespotIdentity identity = getIdentity(context);
+        PrivateKey previousDSAKey = identity.getKeyPairDSA("1").getPrivate();
+        HashMap<Integer, String> signatures = new HashMap<>(5);
+        int latestVersion = Integer.parseInt(identity.getLatestVersion());
+        for (int i = 1; i <= latestVersion; i++) {
+            String currentVersion = Integer.toString(i);
+            KeyPair dhPair = identity.getKeyPairDH(currentVersion);
+            String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
+
+            // sign the dh public key, username, and version so clients can validate
+            signatures.put(i, EncryptionController.sign(previousDSAKey, username, i, sDhPub));
+            previousDSAKey = identity.getKeyPairDSA(Integer.toString(i-1)).getPrivate();
+        }
+    }
 }
