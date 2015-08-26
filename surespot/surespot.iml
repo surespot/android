@@ -87,6 +87,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/rs" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/symbols" />
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -97,6 +98,8 @@
     <orderEntry type="library" exported="" name="google-api-services-drive-v2-rev103-1.17.0-rc" level="project" />
     <orderEntry type="library" exported="" name="play-services-drive-7.5.0" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3" level="project" />
+    <orderEntry type="library" exported="" name="support-annotations-22.2.0" level="project" />
+    <orderEntry type="library" exported="" name="support-v4-22.2.0" level="project" />
     <orderEntry type="library" exported="" name="google-http-client-gson-1.19.0" level="project" />
     <orderEntry type="library" exported="" name="google-oauth-client-1.17.0-rc" level="project" />
     <orderEntry type="library" exported="" name="gcm" level="project" />
@@ -107,8 +110,6 @@
     <orderEntry type="library" exported="" name="google-api-client-1.17.0-rc" level="project" />
     <orderEntry type="library" exported="" name="play-services-base-7.5.0" level="project" />
     <orderEntry type="library" exported="" name="actionbarsherlock-4.4.0" level="project" />
-    <orderEntry type="library" exported="" name="support-v4-23.0.0" level="project" />
-    <orderEntry type="library" exported="" name="support-annotations-23.0.0" level="project" />
     <orderEntry type="module" module-name="httpclientandroidlib" exported="" />
     <orderEntry type="module" module-name="androidkeystore" exported="" />
     <orderEntry type="module" module-name="androidasynchttp" exported="" />
