@@ -5,10 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyException;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,6 +28,7 @@ import org.json.JSONObject;
 import org.nick.androidkeystore.android.security.KeyStore;
 import org.nick.androidkeystore.android.security.KeyStoreJb43;
 import org.nick.androidkeystore.android.security.KeyStoreKk;
+import org.nick.androidkeystore.android.security.KeyStoreM;
 
 import android.app.Activity;
 import android.content.Context;
@@ -56,6 +61,8 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.ui.UIUtils;
+
+import javax.crypto.SecretKey;
 
 public class IdentityController {
     private static final String TAG = "IdentityController";
@@ -310,7 +317,7 @@ public class IdentityController {
             SurespotApplication.getCachingService().logout(true);
         }
 
-        clearStoredPasswordForIdentity(username);
+        clearStoredPasswordForIdentity(context, username);
 
         MainActivity.getNetworkController().clearCache();
         StateController.wipeState(context, username);
@@ -1114,23 +1121,32 @@ public class IdentityController {
     private static final boolean IS_JB43 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
     private static final boolean IS_JB = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
     private static final boolean IS_KK = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+    private static final boolean IS_M = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 
     public static final String OLD_UNLOCK_ACTION = "android.credentials.UNLOCK";
 
     public static final String UNLOCK_ACTION = "com.android.credentials.UNLOCK";
     public static final String RESET_ACTION = "com.android.credentials.RESET";
 
+    public static Boolean USE_PUBLIC_KEYSTORE_M = false;
+
     public static void initKeystore() {
         SurespotLog.d(TAG, "initKeyStore");
         if (mKs == null) {
-            if (IS_KK) {
+            if (IS_M) {
+                // Experimental:
+                USE_PUBLIC_KEYSTORE_M = false; // using org.nick keystoreM for now, flow is not quite right with proper public API yet
+
+                if (!USE_PUBLIC_KEYSTORE_M) {
+                    mKs = KeyStoreM.getInstance();
+                }
+            } else if (IS_KK) {
                 mKs = KeyStoreKk.getInstance();
             } else if (IS_JB43) {
                 mKs = KeyStoreJb43.getInstance();
             } else {
                 mKs = KeyStore.getInstance();
             }
-
         }
     }
 
@@ -1138,7 +1154,11 @@ public class IdentityController {
         return mKs;
     }
 
+
     public static void destroyKeystore() {
+        if (USE_PUBLIC_KEYSTORE_M) {
+            AndroidMKeystoreController.destroyMKeystore();
+        }
         if (mKs != null) {
             new AsyncTask<Void, Void, Void>() {
 
@@ -1161,18 +1181,35 @@ public class IdentityController {
         }
     }
 
-    public static boolean isKeystoreUnlocked() {
+    public static boolean isKeystoreUnlocked(Context context, String username) {
+        if (USE_PUBLIC_KEYSTORE_M) {
+            try {
+                AndroidMKeystoreController.loadEncryptedPassword(context, username, true);
+            } catch (InvalidKeyException e) {
+
+            }
+            return true;
+        }
         if (mKs == null) {
             initKeystore();
         }
         if (mKs == null) {
             return false;
         }
+        if (mKs.state() == KeyStore.State.UNINITIALIZED) {
+            // can we do anything about keystore being in uninitialized state?
+        }
         return mKs.state() == KeyStore.State.UNLOCKED;
     }
 
     public static boolean unlock(Context activity) {
+
         SurespotLog.d(TAG, "unlock");
+
+        if (USE_PUBLIC_KEYSTORE_M) {
+            return true;
+        }
+
         if (mKs.state() == KeyStore.State.UNLOCKED) {
             return true;
         }
@@ -1187,13 +1224,23 @@ public class IdentityController {
         SurespotLog.d(TAG, "getStoredPasswordForIdentity: %s", username);
 
         if (username != null) {
-            if (isKeystoreUnlocked()) {
+            if (USE_PUBLIC_KEYSTORE_M) {
+                try {
+                    return AndroidMKeystoreController.loadEncryptedPassword(context, username, false);
+                }
+                catch (InvalidKeyException e) {
+                    return null;
+                }
+            }
+
+            if (isKeystoreUnlocked(context, username)) {
                 byte[] secret = mKs.get(username);
                 if (secret != null) {
                     SurespotLog.d(TAG, "getStoredPasswordForIdentity...found password for %s", username);
                     return new String(secret);
                 }
-            } else {
+            }
+            else {
                 SurespotLog.d(TAG, "getStoredPasswordForIdentity...keystore locked");
             }
         }
@@ -1201,25 +1248,42 @@ public class IdentityController {
         return null;
     }
 
-    public static boolean storePasswordForIdentity(Context activity, String username, String password) {
+    public static boolean storePasswordForIdentity(Context activity, String username, String password) throws InvalidKeyException {
         if (activity == null)
             return false;
 
-        if (isKeystoreUnlocked()) {
+        if (isKeystoreUnlocked(activity, username)) {
             if (username != null && password != null) {
                 Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
-                return mKs.put(username, password.getBytes());
+
+                if (USE_PUBLIC_KEYSTORE_M) {
+                    AndroidMKeystoreController.saveEncryptedPassword(activity, username, password);
+                }
+                else {
+                    return mKs.put(username, password.getBytes());
+                }
             }
-        } else {
+        }
+        else {
             unlock(activity);
         }
 
         return false;
     }
 
-    public static boolean clearStoredPasswordForIdentity(String username) {
+    public static boolean clearStoredPasswordForIdentity(Context context, String username) {
         if (username != null) {
-            if (isKeystoreUnlocked()) {
+            if (USE_PUBLIC_KEYSTORE_M) {
+                java.security.KeyStore ks = null;
+                try {
+                    ks = java.security.KeyStore.getInstance("AndroidKeyStore");
+                    ks.load(null);
+                    ks.deleteEntry(username);
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (isKeystoreUnlocked(context, username)) {
                 return mKs.delete(username);
             }
         }
@@ -1231,7 +1295,15 @@ public class IdentityController {
         //update stored password if we have one
         String storedPassword = getStoredPasswordForIdentity(context, username);
         if (storedPassword != null) {
-            storePasswordForIdentity(context, username, password);
+            try {
+                storePasswordForIdentity(context, username, password);
+            } catch (InvalidKeyException e) {
+                Intent intent = new Intent(context, SurespotKeystoreActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                //LoginActivity.this.startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+                context.startActivity(intent);
+                // TODO: HEREHERE: must re-store after keystore is unlocked
+            }
         }
     }
 
@@ -1258,7 +1330,7 @@ public class IdentityController {
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            SurespotLog.e(TAG, e, "error generating update signatures");
         }
         return signatures;
     }

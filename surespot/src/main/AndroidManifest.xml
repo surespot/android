@@ -3,7 +3,7 @@
 	package="com.twofours.surespot" 
 	android:versionCode="59"
 	android:versionName="59">
-	<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="18" />
+	<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="23" />
 
 	<permission android:name="com.twofours.surespot.permission.C2D_MESSAGE"
 		android:protectionLevel="signature" />

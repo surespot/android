@@ -1487,8 +1487,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					protected void onReceiveResult(int resultCode, Bundle resultData) {
 						if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
 							mKeyboardShowing = false;
-						}
-						else {
+						} else {
 							Runnable runnable = new Runnable() {
 
 								@Override
