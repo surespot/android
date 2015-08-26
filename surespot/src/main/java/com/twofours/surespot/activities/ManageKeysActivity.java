@@ -171,7 +171,7 @@ public class ManageKeysActivity extends SherlockActivity {
 						}
 
 						//sign new key with old key
-						String clientSig = EncryptionController.sign(latestPk, username, Integer.parseInt(keyVersion, 10), EncryptionController.encodePublicKey(keys[0].getPublic()));
+						String clientSig = EncryptionController.sign(latestPk, username, Integer.parseInt(keyVersion, 10), EncryptionController.encodePublicKey(keys[0].getPublic()), EncryptionController.encodePublicKey(keys[1].getPublic()));
 
 						return new RollKeysWrapper(keys, tokenSignature, authSignature, keyVersion, clientSig);
 					}

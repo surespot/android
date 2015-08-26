@@ -312,8 +312,8 @@ public class SignupActivity extends SherlockActivity {
 
 							//sign the username and password for authentication
 							data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, dPassword);
-							// sign the public key, username, and version so clients can validate
-							data[3] = EncryptionController.sign(keyPair[1].getPrivate(), username, 1, data[0]);
+							// sign the public keys, username, and version so clients can validate
+							data[3] = EncryptionController.sign(keyPair[1].getPrivate(), username, 1, data[0], data[1]);
 							return data;
 						}
 
