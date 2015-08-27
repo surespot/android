@@ -326,7 +326,6 @@
   <string name="pref_stop_cache_logout_summary">Borra la memoria caché al salir</string>
   <string name="could_not_load_public_keys">No se pudo cargar las claves públicas</string>
   <string name="keystore_not_supported">Llavero no soportado</string>
-  <string name="keystore_not_unlocked">keychain was not unlocked (TODO: ADAM: Espanol)</string>
   <string name="pref_title_global_options">Opciones generales</string>
   <string name="store_password_in_keychain">Contraseña guardada en llavero</string>
   <string name="menu_assign_alias">Asignar Alias</string>

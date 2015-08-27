@@ -53,6 +53,7 @@
     <string name="help_holdfriend">Hold on a friend for friend options.</string>
     <string name="help_imageZoom">Zoom images by touching the image.</string>
     <string name="incorrect_password_or_key">incorrect password or key</string>
+    <string name="cannot_change_to_same_password">Your new password must be different than your old one</string>
     <string name="no_such_user">no such user</string>
     <string name="roll_keys">generate new key pairs</string>
     <string name="key_management">generate new key pairs...</string>

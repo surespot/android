@@ -102,6 +102,11 @@ public class ChangePasswordActivity extends SherlockActivity {
 			return;
 		}
 
+		if (currentPassword.equals(newPassword)) {
+			Utils.makeToast(this, this.getString(R.string.cannot_change_to_same_password));
+			return;
+		}
+
 		if (!confirmPassword.equals(newPassword)) {
 			resetFields();
 			Utils.makeToast(this, getString(R.string.passwords_do_not_match));
