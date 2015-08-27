@@ -103,6 +103,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		}
 
 		if (currentPassword.equals(newPassword)) {
+			resetNewAndConfirmFields();
 			Utils.makeToast(this, this.getString(R.string.cannot_change_to_same_password));
 			return;
 		}
@@ -244,6 +245,16 @@ public class ChangePasswordActivity extends SherlockActivity {
 			this.keyVersion = keyVersion;
 		}
 
+	}
+
+	private void resetNewAndConfirmFields() {
+		final EditText etNew = (EditText) findViewById(R.id.etChangePasswordNew);
+		etNew.setText("");
+
+		final EditText etConfirm = (EditText) findViewById(R.id.etChangePasswordConfirm);
+		etConfirm.setText("");
+
+		etNew.requestFocus();
 	}
 
 	private void resetFields() {
