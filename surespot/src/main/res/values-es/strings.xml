@@ -78,11 +78,11 @@
   <string name="pwyl_text"><![CDATA["Surespot no contiene anuncios ni recolecta datos de usuario.<br><br>Los servidores y el almacenamiento cuestan dinero. Vuestros donativos aseguran que Surespot continúe siendo gratuito.<br><br>Donaremos un porcentaje a la <a href="https://www.eff.org/issues/privacy">EFF</a> para que puedan continuar luchando por nuestras libertades en la red."]]></string>
   <string name="help_messageHistory">Surespot tiene un historial de 1,000 mensajes. Una vez que llegue a 1,000 mensajes su mensaje más antiguo será borrado por lo que sólo alguna vez tiene 1,000 mensajes (cifrado) almacenados en el servidor. Por supuesto, usted puede eliminar todos y cada uno de sus mensajes en cualquier momento.</string>
   <string name="title_activity_about">Acerca de surespot</string>
-  <string name="about_about"><![CDATA["surespot - una producción de 2fours"]]></string>
+  <string name="about_about"><![CDATA["surespot"]]></string>
   <string name="about_website"><![CDATA["Visita la web de surespot en <a href="https://www.surespot.me">https://www.surespot.me</a> para mas información, incluyendo los <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">Términos del servicio</a>, <a href="https://www.surespot.me/documents/surespot_privacy_policy.html">Política de privacidad</a>, y <a href="https://www.surespot.me/documents/threat.html">Análisis de datos y amenazas</a>."]]></string>
   <string name="about_opensource"><![CDATA["Surespot es 100% software libre  y acoge con beneplácito tu participación - revisa el código fuente en github en <a href="https://github.com/surespot">https://github.com/surespot</a>."]]></string>
   <string name="about_tech"><![CDATA["Para una información más detallada sobre cómo funciona surespot haz click <a href="https://www.surespot.me/documents/how_surespot_works.html">aquí</a>."]]></string>
-  <string name="about_support"><![CDATA["Para preguntas o ayuda haz click <a href="https://www.surespot.me/support.html>aquí</a> o envía un correo a <a href="mailto:support@2fours.com">support@2fours.com</a>.]]></string>
+  <string name="about_support"><![CDATA["Para preguntas o ayuda haz click <a href="https://www.surespot.me/support.html>aquí</a> o envía un correo a <a href="mailto:support@surespot.me">support@surespot.me</a>.]]></string>
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: nuevo mensaje de %2$s.</string>
   <string name="notification_invite">%1$s: tienes una invitación de %2$s.</string>
