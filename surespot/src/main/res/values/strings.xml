@@ -194,6 +194,9 @@
     <string name="delete_identity_progress">deleting identity</string>
     <string name="could_not_delete_identity">could not delete identity</string>
     <string name="identity_deleted">identity deleted</string>
+    <string name="delete_identity_from_device_progress">deleting identity from device</string>
+    <string name="could_not_delete_identity_from_device">could not delete identity from device</string>
+    <string name="identity_deleted_from_device">identity deleted from device</string>
     <string name="backup">backup</string>
     <string name="backup_identity">backup identity %s</string>
     <string name="backed_up_identity_to_path">backed up identity %1$s to %2$s</string>
@@ -225,6 +228,7 @@
     <string name="select_none">select none</string>
     <string name="select_all">select all</string>
     <string name="delete_identity_message_warning">Deleting an identity will erase all messages that identity has sent. It can not be undone.</string>
+    <string name="delete_identity_from_device_message_warning">Deleting an identity from a device will erase the identity from the device, but not remove the identity or sent messages from the server.</string>
     <string name="identity_colon">identity:</string>
     <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your device.</string>
     <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices will no longer be able to access surespot using the selected identity.</string>
@@ -250,11 +254,14 @@
     <string name="pref_summary_delete_all_messages">confirm before deleting all messages</string>
     <string name="pref_summary_export_identity">Backup your identity to Device Storage or Google Drive.</string>
     <string name="pref_summary_import_identity">Restore your identity from Device Storage or Google Drive.</string>
-    <string name="pref_summary_delete_identity">Deleting an identity can not be undone.</string>
+    <string name="pref_summary_delete_identity">Deleting an identity cannot be undone.</string>
+    <string name="pref_summary_delete_identity_from_device">Deleting an identity from a device only deletes the identity locally.</string>
     <string name="pref_summary_regen_keys">For the paranoid.</string>
     <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
+    <string name="pref_title_delete_identity_from_device">delete identity from device...</string>
+    <string name="delete_identity_from_device">delete identity from device</string>
     <string name="surespot_help">surespot help</string>
     <string name="backup_drive_button">Execute Google Drive Backup</string>
     <string name="could_not_backup_identity_to_google_drive">Could not backup identity to Google Drive</string>
