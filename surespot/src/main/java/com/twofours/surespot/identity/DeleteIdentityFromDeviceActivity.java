@@ -26,6 +26,7 @@ import com.twofours.surespot.ui.UIUtils;
 import java.security.PrivateKey;
 import java.util.List;
 
+// TODO: base class with DeleteIdentityActivity to avoid code duplication??
 public class DeleteIdentityFromDeviceActivity extends SherlockActivity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
@@ -54,6 +55,7 @@ public class DeleteIdentityFromDeviceActivity extends SherlockActivity {
 						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
+								// TODO: ASK ADAM: NEED TO CHECK PASSWORD - is there a way to do this without a round-trip to the server?
 								if (!TextUtils.isEmpty(result)) {
 									deleteIdentity(user, result);
 								}
