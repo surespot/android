@@ -1135,7 +1135,7 @@ public class IdentityController {
         if (mKs == null) {
             if (IS_M) {
                 // Experimental:
-                USE_PUBLIC_KEYSTORE_M = false; // using org.nick keystoreM for now, flow is not quite right with proper public API yet
+                USE_PUBLIC_KEYSTORE_M = true; // using org.nick keystoreM for now, flow is not quite right with proper public API yet
 
                 if (!USE_PUBLIC_KEYSTORE_M) {
                     mKs = KeyStoreM.getInstance();

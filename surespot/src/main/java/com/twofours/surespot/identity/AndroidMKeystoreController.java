@@ -40,7 +40,7 @@ public class AndroidMKeystoreController {
                     KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT);
             KeyGenParameterSpec keySpec = builder
                     .setKeySize(256)
-                    .setBlockModes(KeyProperties.BLOCK_MODE_ECB)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                     //.setBlockModes("CBC")
                     .setRandomizedEncryptionRequired(false)
@@ -63,8 +63,8 @@ public class AndroidMKeystoreController {
                 java.security.KeyStore ks = java.security.KeyStore.getInstance("AndroidKeyStore");
                 ks.load(null);
 
-                java.security.KeyStore.SecretKeyEntry entry = (java.security.KeyStore.SecretKeyEntry)ks.getEntry(userName, null);
-                key = entry.getSecretKey();
+                //java.security.KeyStore.SecretKeyEntry entry = (java.security.KeyStore.SecretKeyEntry)ks.getEntry(userName, null);
+                //key = entry.getSecretKey();
                 byte[] encrypted = KeyStoreEncryptionController.simpleEncrypt(key, "testing");
                 byte[] decrypted = KeyStoreEncryptionController.simpleDecrypt(key, encrypted);
                 int position = decrypted.length;
@@ -87,8 +87,6 @@ public class AndroidMKeystoreController {
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (KeyStoreException e) {
-                e.printStackTrace();
-            } catch (UnrecoverableEntryException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();

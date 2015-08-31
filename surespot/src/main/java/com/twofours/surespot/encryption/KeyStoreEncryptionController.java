@@ -1,11 +1,14 @@
 package com.twofours.surespot.encryption;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
@@ -14,8 +17,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+
 
 /**
  * Created by owen on 8/24/15.
@@ -23,14 +29,16 @@ import javax.crypto.spec.SecretKeySpec;
 public class KeyStoreEncryptionController {
 
     private static SecureRandom mSecureRandom = new SurespotSecureRandom();
+    private static byte[] mIv;
 
     public static byte[] simpleEncrypt(SecretKey key, String input) throws InvalidKeyException {
-        //final byte[] iv = new byte[IV_LENGTH];
-        //mSecureRandom.nextBytes(iv);
-        //final IvParameterSpec ivParams = new IvParameterSpec(iv);
+        final byte[] iv = new byte[12];
+        mSecureRandom.nextBytes(iv);
+        mIv = iv;
+      //  final IvParameterSpec ivParams = new IvParameterSpec(iv);
 
         try {
-            return aesEncrypt(input, key, null);
+            return aesEncrypt(input, key, iv);
         } catch (BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         } catch (ShortBufferException e) {
@@ -50,12 +58,12 @@ public class KeyStoreEncryptionController {
         Cipher cipher = null;
         if(iv != null)
         {
-            cipher = Cipher.getInstance("AES/ECB/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128,iv));
         }
         else  //if(iv == null)
         {
-            cipher = Cipher.getInstance("AES/ECB/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
+            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
             cipher.init(Cipher.ENCRYPT_MODE, key);
         }
 
@@ -72,12 +80,12 @@ public class KeyStoreEncryptionController {
         Cipher cipher = null;
         if(iv != null)
         {
-            cipher = Cipher.getInstance("AES/ECB/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
-            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
+            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
+            cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
         }
         else  //if(iv == null)
         {
-            cipher = Cipher.getInstance("AES/ECB/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
+            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
         }
         byte[] bytes = cipher.doFinal(encrypted);
@@ -95,7 +103,7 @@ public class KeyStoreEncryptionController {
         final IvParameterSpec ivParams = new IvParameterSpec(iv);
 
         try {
-            byte[] bytes = aesDecrypt(input, key, null); // iv);
+            byte[] bytes = aesDecrypt(input, key, mIv); // iv);
             return bytes;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException  | InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
