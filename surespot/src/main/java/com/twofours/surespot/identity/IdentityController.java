@@ -1197,7 +1197,7 @@ public class IdentityController {
         if (USE_PUBLIC_KEYSTORE_M) {
             if (!isAndroidMKeystoreSecure(context)) {
                 // Show a message that the user hasn't set up a lock screen.
-                Utils.makeLongToast(context, "Secure lock screen hasn't set up.\n" + "Go to 'Settings -> Security -> Screenlock' to set up a lock screen");
+                Utils.makeLongToast(context, "Secure lock screen hasn't been set up.\n" + "Go to 'Settings -> Security -> Screenlock' to set up a lock screen");
             }
 
             try {
@@ -1300,7 +1300,10 @@ public class IdentityController {
                     ks.deleteEntry(username);
                 } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
                     e.printStackTrace();
+                    SurespotLog.d(TAG, "Error clearing stored password: " + e.getMessage());
+                    return false;
                 }
+                return true;
             }
             if (isKeystoreUnlocked(context, username)) {
                 return mKs.delete(username);
@@ -1319,9 +1322,7 @@ public class IdentityController {
             } catch (InvalidKeyException e) {
                 Intent intent = new Intent(context, SurespotKeystoreActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                //LoginActivity.this.startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
                 context.startActivity(intent);
-                // TODO: HEREHERE: must re-store after keystore is unlocked
             }
         }
     }
