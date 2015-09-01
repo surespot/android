@@ -21,32 +21,30 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-
-
 /**
  * Created by owen on 8/24/15.
  */
 public class KeyStoreEncryptionController {
 
     private static SecureRandom mSecureRandom = new SurespotSecureRandom();
-    private static byte[] mIv;
 
-    public static byte[] simpleEncrypt(SecretKey key, String input) throws InvalidKeyException {
+    public static EncryptedBytesAndIv simpleEncrypt(SecretKey key, String input) throws InvalidKeyException {
         final byte[] iv = new byte[12];
         mSecureRandom.nextBytes(iv);
-        mIv = iv;
-      //  final IvParameterSpec ivParams = new IvParameterSpec(iv);
+        EncryptedBytesAndIv result = new EncryptedBytesAndIv();
+        result.mIv = iv;
 
         try {
-            return aesEncrypt(input, key, iv);
-        } catch (BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (ShortBufferException e) {
+            result.mEncrypted = aesEncrypt(input, key, iv);
+            return result;
+        } catch (BadPaddingException | IllegalBlockSizeException | ShortBufferException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static byte[] aesEncrypt(String originalString, SecretKey key, byte[] iv) throws BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException, ShortBufferException {
         byte[] original = new byte[0];
         try {
@@ -55,65 +53,34 @@ public class KeyStoreEncryptionController {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        Cipher cipher = null;
-        if(iv != null)
-        {
-            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128,iv));
-        }
-        else  //if(iv == null)
-        {
-            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-        }
-
-        int outputLen=cipher.getOutputSize(original.length);
-        int toAdd = 16 - (outputLen % 16);
-        byte[] output=new byte[outputLen + toAdd];
-        output[0] = (byte)original.length;
-        System.arraycopy(original, 0, output, 1, original.length);
-        return cipher.doFinal(output);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128, iv));
+        return cipher.doFinal(original);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static byte[] aesDecrypt(byte[] encrypted, SecretKey key, byte[] iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, ShortBufferException, UnsupportedEncodingException {
 
         Cipher cipher = null;
-        if(iv != null)
-        {
-            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
-            cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
-        }
-        else  //if(iv == null)
-        {
-            cipher = Cipher.getInstance("AES/GCM/NoPadding");///CBC/PKCS7Padding");//PKCS7Padding");
-            cipher.init(Cipher.DECRYPT_MODE, key);
-        }
+
+        cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
+
         byte[] bytes = cipher.doFinal(encrypted);
-        int len = bytes[0];
-        byte[] finalBytes = new byte[len];
-        System.arraycopy(bytes,1,finalBytes,0,len);
-        String s = new String(finalBytes, "UTF8");
+        String s = new String(bytes, "UTF8");
         byte[] finalFinalBytes = android.util.Base64.decode(s, Base64.NO_WRAP);
         return finalFinalBytes;
     }
 
-    public static byte[] simpleDecrypt(SecretKey key, byte[] input) throws InvalidKeyException {
-        final byte[] iv = new byte[16];
-        mSecureRandom.nextBytes(iv);
-        final IvParameterSpec ivParams = new IvParameterSpec(iv);
+    public static byte[] simpleDecrypt(SecretKey key, byte[] input, byte[] iv) throws InvalidKeyException {
 
         try {
-            byte[] bytes = aesDecrypt(input, key, mIv); // iv);
+            byte[] bytes = aesDecrypt(input, key, iv);
             return bytes;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException  | InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (ShortBufferException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
+        } catch (ShortBufferException | UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException  | InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
 
         return null;
     }
-
 }
