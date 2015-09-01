@@ -4,6 +4,8 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.Base64;
 
+import com.twofours.surespot.common.SurespotLog;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -25,7 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Created by owen on 8/24/15.
  */
 public class KeyStoreEncryptionController {
-
+    private static final String TAG = "KeyStoreEncryptionController";
     private static SecureRandom mSecureRandom = new SurespotSecureRandom();
 
     public static EncryptedBytesAndIv simpleEncrypt(SecretKey key, String input) throws InvalidKeyException {
@@ -38,7 +40,7 @@ public class KeyStoreEncryptionController {
             result.mEncrypted = aesEncrypt(input, key, iv);
             return result;
         } catch (BadPaddingException | IllegalBlockSizeException | ShortBufferException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
+            SurespotLog.d(TAG, "Error decrypting encrypted password using Keystore key: " + e.getMessage());
         }
 
         return null;
@@ -51,7 +53,7 @@ public class KeyStoreEncryptionController {
             String s = android.util.Base64.encodeToString(originalString.getBytes("UTF8"), Base64.NO_WRAP);
             original = s.getBytes("UTF8");
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            SurespotLog.d(TAG, "Error converting to Base64 (?): " + e.getMessage());
         }
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128, iv));
@@ -78,7 +80,7 @@ public class KeyStoreEncryptionController {
             byte[] bytes = aesDecrypt(input, key, iv);
             return bytes;
         } catch (ShortBufferException | UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException  | InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
-            e.printStackTrace();
+            SurespotLog.d(TAG, "Error decrypting encrypted password: " + e.getMessage());
         }
 
         return null;
