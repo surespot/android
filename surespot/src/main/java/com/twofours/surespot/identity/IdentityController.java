@@ -31,6 +31,7 @@ import org.nick.androidkeystore.android.security.KeyStoreKk;
 import org.nick.androidkeystore.android.security.KeyStoreM;
 
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -1183,10 +1184,18 @@ public class IdentityController {
 
     public static boolean isKeystoreUnlocked(Context context, String username) {
         if (USE_PUBLIC_KEYSTORE_M) {
+            KeyguardManager mKeyguardManager = (KeyguardManager) context.getSystemService(context.KEYGUARD_SERVICE);
+            if (!mKeyguardManager.isKeyguardSecure()) {
+                // Show a message that the user hasn't set up a lock screen.
+                Utils.makeLongToast(context, "Secure lock screen hasn't set up.\n" + "Go to 'Settings -> Security -> Screenlock' to set up a lock screen");
+                return false;
+            }
+
             try {
                 AndroidMKeystoreController.loadEncryptedPassword(context, username, true);
             } catch (InvalidKeyException e) {
-
+                // at some point, we may want to use KeyguardManager.createConfirmDeviceCredentialIntent
+                // but for now, we're not setting up the key in the keystore so that it must be manually unlocked by the user
             }
             return true;
         }

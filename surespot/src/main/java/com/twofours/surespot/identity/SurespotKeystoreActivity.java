@@ -19,10 +19,6 @@ public class SurespotKeystoreActivity extends Activity {
 
 	private static final String TAG = "SurespotKeystoreActivity";
 
-	private static final int REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS = 1;
-
-	private KeyguardManager mKeyguardManager;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -31,45 +27,10 @@ public class SurespotKeystoreActivity extends Activity {
 		this.unlock(this);
 	}
 
-	@TargetApi(Build.VERSION_CODES.M)
-	private void unlockM() {
-		mKeyguardManager = (KeyguardManager) getSystemService(this.KEYGUARD_SERVICE);
-		if (!mKeyguardManager.isKeyguardSecure()) {
-			// Show a message that the user hasn't set up a lock screen.
-			// TODO: string resource
-			Utils.makeLongToast(this, "Secure lock screen hasn't set up.\n" + "Go to 'Settings -> Security -> Screenlock' to set up a lock screen");
-			return;
-		}
-		Intent intent = mKeyguardManager.createConfirmDeviceCredentialIntent(null, null);
-		if (intent != null) {
-			startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
-		}
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS) {
-			// Challenge completed, proceed with using cipher
-			if (resultCode == RESULT_OK) {
-				Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
-				setResult(resultCode);
-				finishActivity(REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
-			} else {
-				// The user canceled or didn’t complete the lock screen
-				// operation. Go to error/cancellation flow.
-				Utils.makeLongToast(this, this.getString(R.string.keystore_not_unlocked));
-				Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
-				setResult(resultCode);
-				finishActivity(REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
-			}
-		}
-	}
-
-
 	private void unlock(Activity activity) {
 
 		if (IdentityController.USE_PUBLIC_KEYSTORE_M) {
-			unlockM();
+			// nothing we can do - at some point we may want to consider falling back to non-public API and org.nick implementation
 			return;
 		}
 
