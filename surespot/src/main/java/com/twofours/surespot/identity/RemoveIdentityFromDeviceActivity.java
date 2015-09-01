@@ -1,7 +1,6 @@
 package com.twofours.surespot.identity;
 
 import android.app.AlertDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,22 +11,16 @@ import android.widget.Spinner;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
-import java.security.PrivateKey;
 import java.util.List;
 
 // TODO: base class with DeleteIdentityActivity to avoid code duplication??
-public class DeleteIdentityFromDeviceActivity extends SherlockActivity {
+public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
 	private Spinner mSpinner;
@@ -37,7 +30,7 @@ public class DeleteIdentityFromDeviceActivity extends SherlockActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_delete_identity_from_device);
+		setContentView(R.layout.activity_remove_identity_from_device);
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.delete), true);
 
 		mMpd = new MultiProgressDialog(this, getString(R.string.delete_identity_from_device_progress), 250);
@@ -51,16 +44,20 @@ public class DeleteIdentityFromDeviceActivity extends SherlockActivity {
 			@Override
 			public void onClick(View v) {
 				final String user = (String) mSpinner.getSelectedItem();
-				mDialog = UIUtils.passwordDialog(DeleteIdentityFromDeviceActivity.this, getString(R.string.delete_identity_user, user),
+				mDialog = UIUtils.passwordDialog(RemoveIdentityFromDeviceActivity.this, getString(R.string.remove_identity_user, user),
 						getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
 							@Override
 							public void handleResponse(String result) {
-								// TODO: ASK ADAM: NEED TO CHECK PASSWORD - is there a way to do this without a round-trip to the server?
 								if (!TextUtils.isEmpty(result)) {
-									deleteIdentity(user, result);
+									if (IdentityController.loadIdentity(RemoveIdentityFromDeviceActivity.this, user, result) == null) {
+										Utils.makeToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.incorrect_password_or_key));
+									}
+									else {
+										deleteIdentity(user, result);
+									}
 								}
 								else {
-									Utils.makeToast(DeleteIdentityFromDeviceActivity.this, getString(R.string.no_identity_deleted));
+									Utils.makeToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.no_identity_removed));
 								}
 							}
 						});
@@ -93,16 +90,16 @@ public class DeleteIdentityFromDeviceActivity extends SherlockActivity {
 
 		if (identity == null) {
 			mMpd.decrProgress();
-			Utils.makeLongToast(DeleteIdentityFromDeviceActivity.this, getString(R.string.could_not_delete_identity_from_device));
+			Utils.makeLongToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.could_not_remove_identity_from_device));
 			return;
 		}
 
 		// do we need to check in with the server at all?
 		// delete the identity stuff locally
-		IdentityController.deleteIdentity(DeleteIdentityFromDeviceActivity.this, username);
+		IdentityController.deleteIdentity(RemoveIdentityFromDeviceActivity.this, username);
 		refreshSpinner();
 		mMpd.decrProgress();
-		Utils.makeLongToast(DeleteIdentityFromDeviceActivity.this, getString(R.string.identity_deleted_from_device));
+		Utils.makeLongToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.identity_removed_from_device));
 	}
 
 	@Override

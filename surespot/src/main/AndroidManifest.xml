@@ -149,7 +149,7 @@
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 		</activity>
-		<activity android:name="com.twofours.surespot.identity.DeleteIdentityFromDeviceActivity"
+		<activity android:name="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity"
 				  android:noHistory="true">
 			<intent-filter>
 				<action android:name="com.twofours.surespot.identity.DeleteIdentityFromDeviceActivity" />
