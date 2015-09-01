@@ -30,15 +30,13 @@ import java.util.List;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-/**
- * Created by owen on 8/24/15.
- */
 public class AndroidMKeystoreController {
 
     private static final String TAG = "AndroidMKeystoreController";
     private static final int AUTHENTICATION_DURATION_SECONDS = 900;
 
-    public static SecretKey getSecretKey(String userName) {
+    // generates a new secret AES/GCM 256-bit key
+    public static SecretKey getSecretKey(String userName) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         if (IdentityController.USE_PUBLIC_KEYSTORE_M) {
             // key generation
             KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(userName,
@@ -51,12 +49,8 @@ public class AndroidMKeystoreController {
                     .setUserAuthenticationRequired(false)
                     .build();
             KeyGenerator kg = null;
-            try {
-                kg = KeyGenerator.getInstance("AES", "AndroidKeyStore");
-                kg.init(keySpec);
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
-                SurespotLog.d(TAG, "Error initializing KeyGenerator: " + e.getMessage());
-            }
+            kg = KeyGenerator.getInstance("AES", "AndroidKeyStore");
+            kg.init(keySpec);
 
             SecretKey key = kg.generateKey();
 
@@ -88,6 +82,7 @@ public class AndroidMKeystoreController {
         return null;
     }
 
+    // loads the password for the given userName from the keystore
     public static String loadEncryptedPassword(Context context, String userName, boolean createFakeKeyIfNoneExists) throws InvalidKeyException {
         // destroyMKeystore(); - useful if you want to blow away the keystore quickly - uncomment and run
         java.security.KeyStore ks = null;
@@ -139,28 +134,24 @@ public class AndroidMKeystoreController {
             }
 
             EncryptedBytesAndIv bytesAndIv = KeyStoreEncryptionController.simpleEncrypt(key, password);
-            byte[] encrypted = bytesAndIv.mEncrypted;
-            String encryptedPassword = android.util.Base64.encodeToString(encrypted, Base64.NO_WRAP);
-            String iv = android.util.Base64.encodeToString(bytesAndIv.mIv, Base64.NO_WRAP);
-            SharedPreferences pm = context.getSharedPreferences(userName, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = pm.edit();
-            editor.putString("encrypt_pass", encryptedPassword);
-            editor.putString("encrypt_iv", iv);
-            editor.apply();
-            /*
- 			Causes: java.lang.IllegalArgumentException: Unsupported secret key algorithm: PBEWithSHA256And128BitAES-CBC-BC
-			java.security.KeyStore.SecretKeyEntry entryOut = (java.security.KeyStore.SecretKeyEntry) ks.getEntry("aliasKey",new android.security.keystore.KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-					.setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-					.setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-					.build());
-
-			SecretKey sk = entryOut.getSecretKey();
-			*/
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableEntryException e) {
+            if (bytesAndIv != null) {
+                byte[] encrypted = bytesAndIv.mEncrypted;
+                String encryptedPassword = android.util.Base64.encodeToString(encrypted, Base64.NO_WRAP);
+                String iv = android.util.Base64.encodeToString(bytesAndIv.mIv, Base64.NO_WRAP);
+                SharedPreferences pm = context.getSharedPreferences(userName, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = pm.edit();
+                editor.putString("encrypt_pass", encryptedPassword);
+                editor.putString("encrypt_iv", iv);
+                editor.apply();
+            } else {
+                SurespotLog.d(TAG, "Unable to save encrypted password to keystore - encryption failed");
+            }
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableEntryException | InvalidAlgorithmParameterException | NoSuchProviderException e) {
             SurespotLog.d(TAG, "Error saving encrypted password: " + e.getMessage());
         }
     }
 
+    // Destroys all keys in the Android M(+) keystore
     public static void destroyMKeystore()
     {
         java.security.KeyStore ks = null;

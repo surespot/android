@@ -30,6 +30,7 @@ import org.nick.androidkeystore.android.security.KeyStoreJb43;
 import org.nick.androidkeystore.android.security.KeyStoreKk;
 import org.nick.androidkeystore.android.security.KeyStoreM;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -1182,13 +1183,21 @@ public class IdentityController {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private static boolean isAndroidMKeystoreSecure(Context context) {
+        KeyguardManager mKeyguardManager = (KeyguardManager) context.getSystemService(context.KEYGUARD_SERVICE);
+        if (!mKeyguardManager.isKeyguardSecure()) {
+            return false;
+        }
+
+        return true;
+    }
+
     public static boolean isKeystoreUnlocked(Context context, String username) {
         if (USE_PUBLIC_KEYSTORE_M) {
-            KeyguardManager mKeyguardManager = (KeyguardManager) context.getSystemService(context.KEYGUARD_SERVICE);
-            if (!mKeyguardManager.isKeyguardSecure()) {
+            if (!isAndroidMKeystoreSecure(context)) {
                 // Show a message that the user hasn't set up a lock screen.
                 Utils.makeLongToast(context, "Secure lock screen hasn't set up.\n" + "Go to 'Settings -> Security -> Screenlock' to set up a lock screen");
-                return false;
             }
 
             try {
@@ -1238,6 +1247,7 @@ public class IdentityController {
                     return AndroidMKeystoreController.loadEncryptedPassword(context, username, false);
                 }
                 catch (InvalidKeyException e) {
+                    SurespotLog.d(TAG, "InvalidKeyException loading encrypted password for %s: " + e.getMessage(), username);
                     return null;
                 }
             }

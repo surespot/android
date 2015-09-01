@@ -23,9 +23,6 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * Created by owen on 8/24/15.
- */
 public class KeyStoreEncryptionController {
     private static final String TAG = "KeyStoreEncryptionController";
     private static SecureRandom mSecureRandom = new SurespotSecureRandom();
