@@ -1196,8 +1196,8 @@ public class IdentityController {
     public static boolean isKeystoreUnlocked(Context context, String username) {
         if (USE_PUBLIC_KEYSTORE_M) {
             if (!isAndroidMKeystoreSecure(context)) {
-                // Show a message that the user hasn't set up a lock screen.
-                Utils.makeLongToast(context, "Secure lock screen hasn't been set up.\n" + "Go to 'Settings -> Security -> Screenlock' to set up a lock screen");
+                // Show a message that the user hasn't set up a lock screen, but let them continue
+                Utils.makeLongToast(context, context.getString(R.string.secure_lock_screen_not_set_up));
             }
 
             try {
