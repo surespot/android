@@ -28,7 +28,7 @@
         </Preference>
         <Preference
             android:summary="@string/pref_summary_remove_identity_from_device"
-            android:title="@string/pref_title_delete_identity_from_device" >
+            android:title="@string/pref_title_remove_identity_from_device" >
             <intent android:action="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity" >
             </intent>
         </Preference>

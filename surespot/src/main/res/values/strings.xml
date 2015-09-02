@@ -262,8 +262,8 @@
     <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>
     <string name="pref_title_delete_identity">delete identity...</string>
     <string name="delete_identity">delete identity</string>
-    <string name="pref_title_delete_identity_from_device">remove identity from device...</string>
-    <string name="delete_identity_from_device">remove identity from device</string>
+    <string name="pref_title_remove_identity_from_device">remove identity from device...</string>
+    <string name="remove_identity_from_device">remove identity from device</string>
     <string name="surespot_help">surespot help</string>
     <string name="backup_drive_button">Execute Google Drive Backup</string>
     <string name="could_not_backup_identity_to_google_drive">Could not backup identity to Google Drive</string>
@@ -285,6 +285,7 @@
     <string name="last_modified">last modified</string>
     <string name="help">help</string>
     <string name="menu_import">import</string>
+    <string name="menu_remove">remove identity</string>
     <string name="backup_device">DEVICE STORAGE IDENTITY BACKUP</string>
     <string name="backup_drive">GOOGLE DRIVE IDENTITY BACKUP</string>
     <string name="let_me_select">let me select</string>

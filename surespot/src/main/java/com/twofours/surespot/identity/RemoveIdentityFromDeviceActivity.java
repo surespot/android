@@ -31,11 +31,11 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_remove_identity_from_device);
-		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.delete), true);
+		Utils.configureActionBar(this, getString(R.string.identity), "remove", true);
 
-		mMpd = new MultiProgressDialog(this, getString(R.string.delete_identity_from_device_progress), 250);
+		mMpd = new MultiProgressDialog(this, "removing identity from device", 250);
 
-		Button deleteIdentityButton = (Button) findViewById(R.id.bDeleteIdentity);
+		Button deleteIdentityButton = (Button) findViewById(R.id.bRemoveIdentity);
 		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
 		refreshSpinner();
 

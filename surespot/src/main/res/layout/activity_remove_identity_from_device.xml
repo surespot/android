@@ -32,11 +32,11 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/bDeleteIdentity"
+        android:id="@+id/bRemoveIdentity"
         style="@style/Widget.Sherlock.ActionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/delete_identity_from_device"
+        android:text="@string/remove_identity_from_device"
         android:textColor="@color/surespotBlue"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"

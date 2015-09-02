@@ -43,6 +43,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.identity.SurespotKeystoreActivity;
 import com.twofours.surespot.network.CookieResponseHandler;
@@ -406,6 +407,17 @@ public class LoginActivity extends SherlockActivity {
 				@Override
 				protected Void doInBackground(Void... params) {
 					Intent intent = new Intent(LoginActivity.this, ImportIdentityActivity.class);
+					startActivity(intent);
+					return null;
+				}
+			}.execute();
+			return true;
+		case R.id.menu_remove_identity_bar:
+			new AsyncTask<Void, Void, Void>() {
+
+				@Override
+				protected Void doInBackground(Void... params) {
+					Intent intent = new Intent(LoginActivity.this, RemoveIdentityFromDeviceActivity.class);
 					startActivity(intent);
 					return null;
 				}
