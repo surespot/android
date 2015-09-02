@@ -230,7 +230,7 @@
     <string name="select_none">select none</string>
     <string name="select_all">select all</string>
     <string name="delete_identity_message_warning">Deleting an identity will erase all messages that identity has sent. It can not be undone.</string>
-    <string name="delete_identity_from_device_message_warning">Removing an identity from a device will remove the identity from this device, but it will not delete the identity or sent messages from the server.</string>
+    <string name="remove_identity_from_device_message_warning">Removing an identity from a device will remove the identity from this device, but it will not delete the identity or sent messages from the server.</string>
     <string name="identity_colon">identity:</string>
     <string name="backup_location_note">Note: this may or may not be the removable SD card depending on your device.</string>
     <string name="generate_new_keypairs">Generate new private key pairs for the selected identity and revoke the current pair. Any other devices will no longer be able to access surespot using the selected identity.</string>
