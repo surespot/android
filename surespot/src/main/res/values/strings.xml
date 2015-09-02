@@ -257,7 +257,7 @@
     <string name="pref_summary_export_identity">Backup your identity to Device Storage or Google Drive.</string>
     <string name="pref_summary_import_identity">Restore your identity from Device Storage or Google Drive.</string>
     <string name="pref_summary_delete_identity">Deleting an identity cannot be undone.</string>
-    <string name="pref_summary_delete_identity_from_device">Deleting an identity from a device only deletes the identity locally.</string>
+    <string name="pref_summary_remove_identity_from_device">Removing an identity from a device retains the identity on other devices.</string>
     <string name="pref_summary_regen_keys">For the paranoid.</string>
     <string name="pref_summary_message_debug_mode">Shows more information about messages for debugging purposes.</string>
     <string name="pref_title_delete_identity">delete identity...</string>
