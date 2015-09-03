@@ -20,6 +20,12 @@
                 android:title="@string/import_identities"
                 android:titleCondensed="@string/menu_import"/>
             <item
+                android:id="@+id/menu_remove_identity_bar"
+                android:icon="@drawable/ic_menu_delete"
+                android:orderInCategory="300"
+                android:title="@string/remove_identity_from_device"
+                android:titleCondensed="@string/menu_remove"/>
+            <item
                 android:id="@+id/clear_local_cache_bar"
                 android:icon="@drawable/ic_menu_delete"
                 android:orderInCategory="400"

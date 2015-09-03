@@ -27,6 +27,12 @@
             </intent>
         </Preference>
         <Preference
+            android:summary="@string/pref_summary_remove_identity_from_device"
+            android:title="@string/pref_title_remove_identity_from_device" >
+            <intent android:action="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity" >
+            </intent>
+        </Preference>
+        <Preference
             android:summary="@string/pref_summary_regen_keys"
             android:title="@string/key_management" >
             <intent android:action="com.twofours.surespot.activities.ManageKeysActivity" >
