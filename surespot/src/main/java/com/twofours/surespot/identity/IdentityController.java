@@ -30,7 +30,9 @@ import org.nick.androidkeystore.android.security.KeyStoreJb43;
 import org.nick.androidkeystore.android.security.KeyStoreKk;
 import org.nick.androidkeystore.android.security.KeyStoreM;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -1135,7 +1137,7 @@ public class IdentityController {
         if (mKs == null) {
             if (IS_M) {
                 // Experimental:
-                USE_PUBLIC_KEYSTORE_M = false; // using org.nick keystoreM for now, flow is not quite right with proper public API yet
+                USE_PUBLIC_KEYSTORE_M = true; // using org.nick keystoreM for now, flow is not quite right with proper public API yet
 
                 if (!USE_PUBLIC_KEYSTORE_M) {
                     mKs = KeyStoreM.getInstance();
@@ -1181,12 +1183,28 @@ public class IdentityController {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private static boolean isAndroidMKeystoreSecure(Context context) {
+        KeyguardManager mKeyguardManager = (KeyguardManager) context.getSystemService(context.KEYGUARD_SERVICE);
+        if (!mKeyguardManager.isKeyguardSecure()) {
+            return false;
+        }
+
+        return true;
+    }
+
     public static boolean isKeystoreUnlocked(Context context, String username) {
         if (USE_PUBLIC_KEYSTORE_M) {
+            if (!isAndroidMKeystoreSecure(context)) {
+                // Show a message that the user hasn't set up a lock screen, but let them continue
+                Utils.makeLongToast(context, context.getString(R.string.secure_lock_screen_not_set_up));
+            }
+
             try {
                 AndroidMKeystoreController.loadEncryptedPassword(context, username, true);
             } catch (InvalidKeyException e) {
-
+                // at some point, we may want to use KeyguardManager.createConfirmDeviceCredentialIntent
+                // but for now, we're not setting up the key in the keystore so that it must be manually unlocked by the user
             }
             return true;
         }
@@ -1229,6 +1247,7 @@ public class IdentityController {
                     return AndroidMKeystoreController.loadEncryptedPassword(context, username, false);
                 }
                 catch (InvalidKeyException e) {
+                    SurespotLog.d(TAG, "InvalidKeyException loading encrypted password for %s: " + e.getMessage(), username);
                     return null;
                 }
             }
@@ -1281,7 +1300,10 @@ public class IdentityController {
                     ks.deleteEntry(username);
                 } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
                     e.printStackTrace();
+                    SurespotLog.d(TAG, "Error clearing stored password: " + e.getMessage());
+                    return false;
                 }
+                return true;
             }
             if (isKeystoreUnlocked(context, username)) {
                 return mKs.delete(username);
@@ -1300,9 +1322,7 @@ public class IdentityController {
             } catch (InvalidKeyException e) {
                 Intent intent = new Intent(context, SurespotKeystoreActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                //LoginActivity.this.startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
                 context.startActivity(intent);
-                // TODO: HEREHERE: must re-store after keystore is unlocked
             }
         }
     }

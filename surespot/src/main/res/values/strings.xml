@@ -141,6 +141,7 @@
     <string name="create">create</string>
     <string name="passwords_do_not_match">passwords do not match</string>
     <string name="username_exists">That username already exists, please choose another.</string>
+    <string name="secure_lock_screen_not_set_up">Secure lock screen hasn\'t been set up.\nFor maximum security we recommend using a secure lock screen.\nGo to \'Settings -> Security -> Screenlock\' to set up a lock screen</string>
     <string name="user_creation_throttled">too many user creation attempts, try again later</string>
     <string name="signup_update">please update surespot to create a new user</string>
     <string name="could_not_create_user">could not create user, please try again later</string>
