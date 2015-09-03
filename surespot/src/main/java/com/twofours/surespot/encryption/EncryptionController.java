@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -224,8 +225,9 @@ public class EncryptionController {
 
 			
 			dsa.initSign(privateKey);
-			
-			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array(); 
+
+			ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+			byte[] vbuffer =  bb.putInt(version).array();
 			
 			dsa.update(username.getBytes());
 			dsa.update(vbuffer);
