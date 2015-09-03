@@ -285,7 +285,7 @@ public class EncryptionController {
 		try {
 			Signature dsa = Signature.getInstance("SHA256withECDSA", "SC");
 			dsa.initVerify(sigPublicKey);
-			byte[] vbuffer = ByteBuffer.allocate(4).putInt(version).array();
+			byte[] vbuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(version).array();
 			dsa.update(username.getBytes());
 			dsa.update(vbuffer);
 			dsa.update(data1.getBytes());
