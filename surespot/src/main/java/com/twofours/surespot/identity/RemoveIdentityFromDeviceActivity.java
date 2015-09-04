@@ -19,7 +19,6 @@ import com.twofours.surespot.ui.UIUtils;
 
 import java.util.List;
 
-// TODO: base class with DeleteIdentityActivity to avoid code duplication??
 public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
@@ -30,6 +29,9 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		String savedUsername = null;
+		savedUsername = getIntent().getStringExtra("selectedUsername");
+
 		setContentView(R.layout.activity_remove_identity_from_device);
 		Utils.configureActionBar(this, getString(R.string.identity), "remove", true);
 
@@ -37,7 +39,7 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 
 		Button deleteIdentityButton = (Button) findViewById(R.id.bRemoveIdentity);
 		mSpinner = (Spinner) findViewById(R.id.identitySpinner);
-		refreshSpinner();
+		refreshSpinner(savedUsername);
 
 		deleteIdentityButton.setOnClickListener(new OnClickListener() {
 
@@ -66,7 +68,7 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 		});
 	}
 
-	private void refreshSpinner() {
+	private void refreshSpinner(String savedUsername) {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
@@ -80,7 +82,12 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 		if (loggedInUser != null) {
 			mSpinner.setSelection(adapter.getPosition(loggedInUser));
 		}
-
+		else {
+			int pos = adapter.getPosition(savedUsername);
+			if (pos >= 0) {
+				mSpinner.setSelection(pos);
+			}
+		}
 	}
 
 	private void deleteIdentity(final String username, final String password) {
@@ -97,7 +104,7 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 		// do we need to check in with the server at all?
 		// delete the identity stuff locally
 		IdentityController.deleteIdentity(RemoveIdentityFromDeviceActivity.this, username);
-		refreshSpinner();
+		refreshSpinner(null);
 		mMpd.decrProgress();
 		Utils.makeLongToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.identity_removed_from_device));
 	}

@@ -418,6 +418,7 @@ public class LoginActivity extends SherlockActivity {
 				@Override
 				protected Void doInBackground(Void... params) {
 					Intent intent = new Intent(LoginActivity.this, RemoveIdentityFromDeviceActivity.class);
+					intent.putExtra("selectedUsername", getSelectedUsername());
 					startActivity(intent);
 					return null;
 				}
