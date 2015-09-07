@@ -68,12 +68,16 @@ public class Friend implements Comparable<Friend> {
 		return mAvailableMessageId;
 	}
 
-	public void setAvailableMessageId(int availableMessageId) {
+	public void setAvailableMessageId(int availableMessageId, boolean cacheClear) {
 		if (availableMessageId > 0 && isFriend() && !isDeleted()) {
 			mAvailableMessageId = availableMessageId;
 
 			// we received a message so we're not "new"
 			setNewFriend(false);
+
+			if (cacheClear) {
+				setLastViewedMessageId(availableMessageId);
+			}
 		}
 		SurespotLog.v(TAG, "setAvailableMessageId, %d, friend: %s", availableMessageId, this);
 	}
@@ -354,7 +358,7 @@ public class Friend implements Comparable<Friend> {
 
 		friend.setFlags(jsonFriend.optInt("flags"));
 		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
-		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"));	
+		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"), false);
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
 		friend.setSelectedItem(jsonFriend.optInt("selectedItem", -1));
 		friend.setSelectedTop(jsonFriend.optInt("selectedTop", 0));

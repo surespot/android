@@ -789,7 +789,7 @@ public class ChatController {
 							int messageId = message.getId();
 
 							// always update the available id
-							friend.setAvailableMessageId(messageId);
+							friend.setAvailableMessageId(messageId, false);
 
 							// if the chat is showing set the last viewed id the id of the message we just received
 							if (otherUser.equals(mCurrentChat)) {
@@ -839,7 +839,7 @@ public class ChatController {
 				int messageId = message.getId();
 
 				// always update the available id
-				friend.setAvailableMessageId(messageId);
+				friend.setAvailableMessageId(messageId, false);
 
 				mFriendAdapter.sort();
 				mFriendAdapter.notifyDataSetChanged();
@@ -1023,7 +1023,7 @@ public class ChatController {
 		}
 	}
 
-	private void getLatestData() {
+	private void getLatestData(final boolean mayBeCacheClear) {
 		SurespotLog.d(TAG, "getLatestData");
 		// setMessagesLoading(true);
 
@@ -1076,7 +1076,7 @@ public class ChatController {
 							// update available ids
 							friend = mFriendAdapter.getFriend(user);
 							if (friend != null) {
-								friend.setAvailableMessageId(availableId);
+								friend.setAvailableMessageId(availableId, mayBeCacheClear);
 							}
 						}
 						catch (Exception e) {
@@ -1124,7 +1124,7 @@ public class ChatController {
 
 							JSONArray messages = messageData.optJSONArray("messages");
 							if (messages != null) {
-								handleMessages(friendName, messages);
+								handleMessages(friendName, messages, mayBeCacheClear);
 							}
 
 						}
@@ -1242,7 +1242,7 @@ public class ChatController {
 					// don't update messages if we didn't query for them
 					// this prevents setting message state to error before we get the true result
 					if (fetchMessageId > -1 || forceMessageUpdate) {
-						handleMessages(username, messages);
+						handleMessages(username, messages, false);
 					}
 
 					setProgress(username, false);
@@ -1610,7 +1610,7 @@ public class ChatController {
 		}
 	}
 
-	private void handleMessages(String username, JSONArray jsonMessages) {
+	private void handleMessages(String username, JSONArray jsonMessages, boolean mayBeCacheClear) {
 		SurespotLog.d(TAG, "%s: handleMessages", username);
 		final ChatAdapter chatAdapter = mChatAdapters.get(username);
 		if (chatAdapter == null) {
@@ -1665,7 +1665,7 @@ public class ChatController {
 				Friend friend = mFriendAdapter.getFriend(username);
 
 				int availableId = lastMessage.getId();
-				friend.setAvailableMessageId(availableId);
+				friend.setAvailableMessageId(availableId, false);
 
 				int lastViewedId = friend.getLastViewedMessageId();
 
@@ -1680,6 +1680,10 @@ public class ChatController {
 				else {
 					// set the last viewed id to the difference caused by their messages
 					friend.setLastViewedMessageId(availableId - (delta - sentByMeCount));
+				}
+
+				if (mayBeCacheClear) {
+					friend.setLastViewedMessageId(lastMessage.getId());
 				}
 
 				mFriendAdapter.sort();
@@ -2284,8 +2288,7 @@ public class ChatController {
 					if (chatAdapter != null) {
 						chatAdapter.deleteAllMessages(finalMessageId);
 						chatAdapter.notifyDataSetChanged();
-					}
-					else {
+					} else {
 						// tell friend there's a new control message so they get it when the tab is opened
 						friend.setAvailableMessageControlId(friend.getAvailableMessageControlId() + 1);
 						saveFriends();
@@ -2422,6 +2425,7 @@ public class ChatController {
 				public void onSuccess(JSONObject jsonObject) {
 					SurespotLog.d(TAG, "getFriends success.");
 					ArrayList<Friend> friends = new ArrayList<Friend>();
+					boolean userSuddenlyHasFriends = false;
 					try {
 						mLatestUserControlId = jsonObject.getInt("userControlId");
 						JSONArray friendsArray = jsonObject.optJSONArray("friends");
@@ -2436,6 +2440,9 @@ public class ChatController {
 								SurespotLog.d(TAG, "getFriendsAndIds,  adding friend: %s", friend);
 							}
 						}
+						if (friends.size() > 0) {
+							userSuddenlyHasFriends = true;
+						}
 					}
 					catch (JSONException e) {
 						SurespotLog.e(TAG, e, "getFriendsAndIds");
@@ -2448,7 +2455,7 @@ public class ChatController {
 						mFriendAdapter.setLoading(false);
 					}
 
-					getLatestData();
+					getLatestData(userSuddenlyHasFriends);
 				}
 
 				@Override
@@ -2463,7 +2470,7 @@ public class ChatController {
 			});
 		}
 		else {
-			getLatestData();
+			getLatestData(false);
 		}
 	}
 
