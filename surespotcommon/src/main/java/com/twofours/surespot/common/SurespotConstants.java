@@ -98,6 +98,7 @@ public class SurespotConstants {
 		public final static int SYSTEM_NOTIFICATION = 14;
 		public final static int PURCHASE = 15;
 		public final static int BACKGROUND_CACHE_NOTIFICATION = 16;
+		public final static int BACKGROUND_CHAT_SERVICE_NOTIFICATION = 17;
 	}
 	
 	

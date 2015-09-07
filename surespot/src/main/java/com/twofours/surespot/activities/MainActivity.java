@@ -86,6 +86,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.ChatTransmissionService;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
@@ -106,6 +107,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private IAsyncCallbackTuple<String, Boolean> m401Handler;
 
 	private boolean mCacheServiceBound;
+	private boolean mChatTransmissionServiceBound;
 	private Menu mMenuOverflow;
 	private BroadcastReceiver mExternalStorageReceiver;
 	private boolean mExternalStorageAvailable = false;
@@ -280,6 +282,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mUser = user;
 
+			ChatTransmissionService cts = SurespotApplication.getChatTransmissionService();
+
+			if (cts == null) {
+				SurespotLog.d(TAG, "binding chat transmission service");
+				Intent chatIntent = new Intent(this, ChatTransmissionService.class);
+				startService(chatIntent);
+				bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
+			}
 			CredentialCachingService ccs = SurespotApplication.getCachingService();
 			if (ccs == null) {
 				SurespotLog.d(TAG, "binding cache service");
@@ -682,6 +692,28 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.d(TAG, "got launch user: %s", user);
 		return user;
 	}
+
+	private ServiceConnection mChatConnection = new ServiceConnection() {
+		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+			if (service instanceof ChatTransmissionService.ChatTransmissionServiceBinder) {
+				ChatTransmissionService.ChatTransmissionServiceBinder binder = (ChatTransmissionService.ChatTransmissionServiceBinder) service;
+				ChatTransmissionService cts = binder.getService();
+
+				SurespotApplication.setChatTransmissionService(cts);
+				mChatTransmissionServiceBound = true;
+
+				SurespotApplication.getChatTransmissionService().initializeService();
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+
+		}
+	};
+
+
+
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
@@ -1233,6 +1265,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.d(TAG, "onDestroy");
 		if (mCacheServiceBound && mConnection != null) {
 			unbindService(mConnection);
+		}
+
+		if (mChatTransmissionServiceBound && mChatConnection != null) {
+			unbindService(mChatConnection);
 		}
 
 		MessageImageDownloader.evictCache();

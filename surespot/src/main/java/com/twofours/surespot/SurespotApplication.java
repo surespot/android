@@ -30,6 +30,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.services.ChatTransmissionService;
 import com.twofours.surespot.services.CredentialCachingService;
 
 @ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
@@ -38,6 +39,7 @@ formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.
 public class SurespotApplication extends MultiDexApplication {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
+	private static ChatTransmissionService mChatTransmissionService;
 	private static StateController mStateController = null;
 	private static String mVersion;
 	private static BillingController mBillingController;
@@ -158,8 +160,12 @@ public class SurespotApplication extends MultiDexApplication {
 
 		SurespotLog.v(TAG, "starting cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-
 		startService(cacheIntent);
+
+		SurespotLog.v(TAG, "starting chat transmission service");
+		Intent chatIntent = new Intent(this, ChatTransmissionService.class);
+		startService(chatIntent);
+
 		mBillingController = new BillingController(this);
 						
 		FileUtils.wipeImageCaptureDir(this);
@@ -184,8 +190,16 @@ public class SurespotApplication extends MultiDexApplication {
 		return mCredentialCachingService;
 	}
 
+	public static ChatTransmissionService getChatTransmissionService () {
+		return mChatTransmissionService;
+	}
+
 	public static void setCachingService(CredentialCachingService credentialCachingService) {
 		SurespotApplication.mCredentialCachingService = credentialCachingService;
+	}
+
+	public static void setChatTransmissionService(ChatTransmissionService chatTransmissionService) {
+		SurespotApplication.mChatTransmissionService = chatTransmissionService;
 	}
 
 	public static StateController getStateController() {
