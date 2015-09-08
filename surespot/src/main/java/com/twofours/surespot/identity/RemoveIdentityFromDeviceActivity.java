@@ -55,7 +55,7 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 										Utils.makeToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.incorrect_password_or_key));
 									}
 									else {
-										deleteIdentity(user, result);
+										removeIdentity(user, result);
 									}
 								}
 								else {
@@ -90,7 +90,7 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 		}
 	}
 
-	private void deleteIdentity(final String username, final String password) {
+	private void removeIdentity(final String username, final String password) {
 
 		mMpd.incrProgress();
 		SurespotIdentity identity = IdentityController.getIdentity(this, username, password);
@@ -103,7 +103,7 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 
 		// do we need to check in with the server at all?
 		// delete the identity stuff locally
-		IdentityController.deleteIdentity(RemoveIdentityFromDeviceActivity.this, username);
+		IdentityController.deleteIdentity(RemoveIdentityFromDeviceActivity.this, username, true);
 		refreshSpinner(null);
 		mMpd.decrProgress();
 		Utils.makeLongToast(RemoveIdentityFromDeviceActivity.this, getString(R.string.identity_removed_from_device));

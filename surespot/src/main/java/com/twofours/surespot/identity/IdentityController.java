@@ -304,7 +304,7 @@ public class IdentityController {
         return identityDir;
     }
 
-    public static synchronized void deleteIdentity(Context context, String username) {
+    public static synchronized void deleteIdentity(Context context, String username, final boolean preserveBackedUpIdentity) {
         // force identity reload
         mHasIdentity = false;
 
@@ -329,17 +329,19 @@ public class IdentityController {
             File file = new File(identityFilename);
             file.delete();
 
-            // delete export identity
-            final File exportDir = FileUtils.getIdentityExportDir();
+            if (!preserveBackedUpIdentity) {
+                // delete export identity
+                final File exportDir = FileUtils.getIdentityExportDir();
 
-            // could potentially delete the wrong file so don't delete the case insensitive version
-            // identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
-            // file = new File(identityFilename);
-            // file.delete();
+                // could potentially delete the wrong file so don't delete the case insensitive version
+                // identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
+                // file = new File(identityFilename);
+                // file.delete();
 
-            identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
-            file = new File(identityFilename);
-            file.delete();
+                identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
+                file = new File(identityFilename);
+                file.delete();
+            }
         }
 
         if (isLoggedIn) {
@@ -1062,7 +1064,7 @@ public class IdentityController {
 
             // bad news
             // delete the identity file and cached data
-            deleteIdentity(context, username);
+            deleteIdentity(context, username, false);
 
             // delete identities locally?
             MainActivity.getNetworkController().setUnauthorized(true, true);
