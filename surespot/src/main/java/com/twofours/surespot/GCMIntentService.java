@@ -132,7 +132,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		String type = intent.getStringExtra("type");
 		String from = intent.getStringExtra("sentfrom");
 
-		if (type.equals("message")) {
+		if ("message".equals(type)) {
 			// make sure to is someone on this phone
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
@@ -217,7 +217,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			return;
 		}
 
-		if (type.equals("invite")) {
+		if ("invite".equals(type)) {
 			// make sure to is someone on this phone
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
@@ -244,7 +244,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			return;
 		}
 
-		if (type.equals("inviteResponse")) {
+		if ("inviteResponse".equals(type)) {
 			// make sure to is someone on this phone
 			if (!IdentityController.getIdentityNames(context).contains(to)) {
 				return;
@@ -272,7 +272,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			return;
 		}
 
-		if (type.equals("system")) {
+		if ("system".equals(type)) {
 			String tag = intent.getStringExtra("tag");
 			String title = intent.getStringExtra("title");
 			String message = intent.getStringExtra("message");
