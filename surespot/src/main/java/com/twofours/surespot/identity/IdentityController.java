@@ -1330,12 +1330,15 @@ public class IdentityController {
     public static JSONObject updateSignatures(Context context) {
         //iterate through all identity public keys and generate new client sigs
         SurespotIdentity identity = getIdentity(context);
-        PrivateKey previousDSAKey = identity.getKeyPairDSA("1").getPrivate();
+        String previousVersion = "1";
+        PrivateKey previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
         JSONObject signatures = new JSONObject();
         try {
             int latestVersion = Integer.parseInt(identity.getLatestVersion());
             for (int i = 1; i <= latestVersion; i++) {
+
                 String currentVersion = Integer.toString(i);
+                SurespotLog.d(TAG, "Signing version %s with version %s", currentVersion, previousVersion);
                 KeyPair dhPair = identity.getKeyPairDH(currentVersion);
                 KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
                 String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
@@ -1346,7 +1349,8 @@ public class IdentityController {
                 signatures.put(currentVersion, EncryptionController.sign(previousDSAKey, identity.getUsername(), i, sDhPub, sDsaPub));
 
                 if (i > 1) {
-                    previousDSAKey = identity.getKeyPairDSA(Integer.toString(i - 1)).getPrivate();
+                    previousVersion = Integer.toString(i);
+                    previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
                 }
             }
         } catch (JSONException e) {
