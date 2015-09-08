@@ -290,7 +290,7 @@ public class EncryptionController {
 			dsa.update(vbuffer);
 			dsa.update(data1.getBytes());
 			dsa.update(data2.getBytes());
-			return dsa.verify(ChatUtils.base64Decode(signature));
+			return dsa.verify(ChatUtils.base64DecodeNowrap(signature));
 		}
 		catch (SignatureException e) {
 			SurespotLog.e(TAG, e, "sign");
