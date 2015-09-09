@@ -15,7 +15,7 @@ public class SurespotConstants {
 			+ "Z/aaRkB1bwl9eCNojpw=\n" + "-----END PUBLIC KEY-----";
 
 	// PROD
-	public static final String SERVER_PUBLIC_KEY = SERVER_PUBLIC_KEY_LOCAL;
+	public static final String SERVER_PUBLIC_KEY = SERVER_PUBLIC_KEY_PROD;
 
 	public class IntentFilters {
 		public static final String INVITE_REQUEST = "invite_request_intent";
@@ -55,10 +55,10 @@ public class SurespotConstants {
 	
 
 	// PROD set to 3
-	public final static int MAX_IDENTITIES = 30;
+	public final static int MAX_IDENTITIES = 3;
 
 	// PROD false for production
-	public final static boolean LOGGING = true;
+	public final static boolean LOGGING = false;
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";
