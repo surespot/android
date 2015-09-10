@@ -304,7 +304,7 @@ public class IdentityController {
         return identityDir;
     }
 
-    public static synchronized void deleteIdentity(Context context, String username) {
+    public static synchronized void deleteIdentity(Context context, String username, final boolean preserveBackedUpIdentity) {
         // force identity reload
         mHasIdentity = false;
 
@@ -329,17 +329,19 @@ public class IdentityController {
             File file = new File(identityFilename);
             file.delete();
 
-            // delete export identity
-            final File exportDir = FileUtils.getIdentityExportDir();
+            if (!preserveBackedUpIdentity) {
+                // delete export identity
+                final File exportDir = FileUtils.getIdentityExportDir();
 
-            // could potentially delete the wrong file so don't delete the case insensitive version
-            // identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
-            // file = new File(identityFilename);
-            // file.delete();
+                // could potentially delete the wrong file so don't delete the case insensitive version
+                // identityFilename = exportDir + File.separator + username + IDENTITY_EXTENSION;
+                // file = new File(identityFilename);
+                // file.delete();
 
-            identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
-            file = new File(identityFilename);
-            file.delete();
+                identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
+                file = new File(identityFilename);
+                file.delete();
+            }
         }
 
         if (isLoggedIn) {
@@ -1062,7 +1064,7 @@ public class IdentityController {
 
             // bad news
             // delete the identity file and cached data
-            deleteIdentity(context, username);
+            deleteIdentity(context, username, false);
 
             // delete identities locally?
             MainActivity.getNetworkController().setUnauthorized(true, true);
@@ -1284,7 +1286,7 @@ public class IdentityController {
             }
         }
         else {
-            unlock(activity);
+            return unlock(activity);
         }
 
         return false;
@@ -1330,12 +1332,15 @@ public class IdentityController {
     public static JSONObject updateSignatures(Context context) {
         //iterate through all identity public keys and generate new client sigs
         SurespotIdentity identity = getIdentity(context);
-        PrivateKey previousDSAKey = identity.getKeyPairDSA("1").getPrivate();
+        String previousVersion = "1";
+        PrivateKey previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
         JSONObject signatures = new JSONObject();
         try {
             int latestVersion = Integer.parseInt(identity.getLatestVersion());
             for (int i = 1; i <= latestVersion; i++) {
+
                 String currentVersion = Integer.toString(i);
+                SurespotLog.d(TAG, "Signing version %s with version %s", currentVersion, previousVersion);
                 KeyPair dhPair = identity.getKeyPairDH(currentVersion);
                 KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
                 String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
@@ -1346,7 +1351,8 @@ public class IdentityController {
                 signatures.put(currentVersion, EncryptionController.sign(previousDSAKey, identity.getUsername(), i, sDhPub, sDsaPub));
 
                 if (i > 1) {
-                    previousDSAKey = identity.getKeyPairDSA(Integer.toString(i - 1)).getPrivate();
+                    previousVersion = Integer.toString(i);
+                    previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
                 }
             }
         } catch (JSONException e) {

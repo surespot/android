@@ -198,7 +198,7 @@ public class EncryptionController {
 			byte[] signature = new byte[random.length + sig.length];
 			System.arraycopy(random, 0, signature, 0, 16);
 			System.arraycopy(sig, 0, signature, 16, sig.length);
-			return new String(ChatUtils.base64EncodeNowrap(signature));
+			return new String(ChatUtils.base64Encode(signature));
 
 		}
 		catch (SignatureException e) {
@@ -290,7 +290,7 @@ public class EncryptionController {
 			dsa.update(vbuffer);
 			dsa.update(data1.getBytes());
 			dsa.update(data2.getBytes());
-			return dsa.verify(ChatUtils.base64Decode(signature));
+			return dsa.verify(ChatUtils.base64DecodeNowrap(signature));
 		}
 		catch (SignatureException e) {
 			SurespotLog.e(TAG, e, "sign");
