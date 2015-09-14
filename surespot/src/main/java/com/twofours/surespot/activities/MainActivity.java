@@ -54,6 +54,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
+import io.socket.IOAcknowledge;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -89,6 +90,7 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.ChatTransmissionService;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
+import com.twofours.surespot.services.ITransmissionServiceListener;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
@@ -98,7 +100,6 @@ import com.viewpagerindicator.TitlePageIndicator;
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
 
-	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController;
 
 	private static Context mContext = null;
@@ -697,6 +698,29 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
 			if (service instanceof ChatTransmissionService.ChatTransmissionServiceBinder) {
 				ChatTransmissionService.ChatTransmissionServiceBinder binder = (ChatTransmissionService.ChatTransmissionServiceBinder) service;
+				binder.setServiceListener(new ITransmissionServiceListener() {
+					@Override
+					public void connected() {
+						mChatController.connected();
+					}
+
+					@Override
+					public void reconnectFailed() {
+						mChatController.reconnectFailed();
+					}
+
+					@Override
+					public void couldNotConnectToServer() {
+						mChatController.couldNotConnectToServer();
+					}
+
+					@Override
+					public void onEventReceived(String event, IOAcknowledge ack, Object... args) {
+						mChatController.onEventReceived(event, ack, args);
+					}
+					// call implementation goes here - or maybe we have a separate class if this gets too big
+
+				});
 				ChatTransmissionService cts = binder.getService();
 
 				SurespotApplication.setChatTransmissionService(cts);
@@ -767,7 +791,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mMainHandler = new Handler(getMainLooper());
 
 		try {
-			mNetworkController = new NetworkController(MainActivity.this, mUser, m401Handler);
+			SurespotApplication.getChatTransmissionService().initNetworkController(mUser, m401Handler);
+			// WAS: mNetworkController = new NetworkController(MainActivity.this, mUser, m401Handler);
 		}
 		catch (Exception e) {
 			finish();
@@ -776,7 +801,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mBillingController = SurespotApplication.getBillingController();
 
-		mChatController = new ChatController(MainActivity.this, mUser, mNetworkController, getSupportFragmentManager(), m401Handler,
+		mChatController = new ChatController(MainActivity.this, mUser, SurespotApplication.getChatTransmissionService().getNetworkController(), getSupportFragmentManager(), m401Handler,
 				new IAsyncCallback<Boolean>() {
 					@Override
 					public void handleResponse(Boolean inProgress) {
@@ -981,7 +1006,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, SurespotApplication.getChatTransmissionService().getNetworkController(), selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean errorHandled) {
 							// delete local image
@@ -1218,7 +1243,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// }.execute();
 			return true;
 		case R.id.menu_invite_external:
-			UIUtils.sendInvitation(MainActivity.this, mNetworkController);
+			UIUtils.sendInvitation(MainActivity.this, SurespotApplication.getChatTransmissionService().getNetworkController());
 			return true;
 		case R.id.menu_clear_messages:
 			SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1275,7 +1300,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	public static NetworkController getNetworkController() {
-		return mNetworkController;
+		return SurespotApplication.getChatTransmissionService().getNetworkController();
 	}
 
 	public static Context getContext() {
@@ -1664,7 +1689,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, mNetworkController, imageUri, mCurrentFriend.getName(), true,
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, SurespotApplication.getChatTransmissionService().getNetworkController(), imageUri, mCurrentFriend.getName(), true,
 							new IAsyncCallback<Boolean>() {
 
 								@Override
@@ -1756,15 +1781,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			setHomeProgress(true);
-			mNetworkController.invite(friend, new AsyncHttpResponseHandler() {
+			SurespotApplication.getChatTransmissionService().getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) {
 					setHomeProgress(false);
 					TextKeyListener.clear(mEtInvite.getText());
 					if (mChatController.getFriendAdapter().addFriendInvited(friend)) {
 						Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
-					}
-					else {
+					} else {
 						Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
 					}
 
@@ -1777,21 +1801,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 						HttpResponseException error = (HttpResponseException) arg0;
 						int statusCode = error.getStatusCode();
 						switch (statusCode) {
-						case 404:
-							Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
-							break;
-						case 409:
-							Utils.makeToast(MainActivity.this, getString(R.string.you_are_already_friends));
-							break;
-						case 403:
-							Utils.makeToast(MainActivity.this, getString(R.string.already_invited));
-							break;
-						default:
-							SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
-							Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
+							case 404:
+								Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
+								break;
+							case 409:
+								Utils.makeToast(MainActivity.this, getString(R.string.you_are_already_friends));
+								break;
+							case 403:
+								Utils.makeToast(MainActivity.this, getString(R.string.already_invited));
+								break;
+							default:
+								SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
+								Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 						}
-					}
-					else {
+					} else {
 						SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
 						Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
 					}

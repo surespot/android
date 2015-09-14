@@ -94,7 +94,7 @@ public class NetworkController {
 		}
 	}
 
-	public NetworkController(Activity context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
+	public NetworkController(Context context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
 		SurespotLog.d(TAG, "constructor username: %s", username);
 		mContext = context;
 
