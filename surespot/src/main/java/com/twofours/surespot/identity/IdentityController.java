@@ -1286,7 +1286,7 @@ public class IdentityController {
             }
         }
         else {
-            unlock(activity);
+            return unlock(activity);
         }
 
         return false;

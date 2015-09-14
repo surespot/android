@@ -539,6 +539,7 @@ public class LoginActivity extends SherlockActivity {
 					//if it's not unlocked uncheck save password
 					else {
 						mCbSavePassword.setChecked(false);
+						Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
 					}
 					
 					mKeystoreNeededUnlocking = false;
