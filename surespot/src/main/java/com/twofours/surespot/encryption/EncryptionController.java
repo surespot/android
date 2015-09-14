@@ -318,8 +318,13 @@ public class EncryptionController {
 			byte[] sharedSecret = ka.generateSecret();
 
 			SurespotLog.i(TAG, "generated shared Key");
-			return sharedSecret;
 
+			//hash it
+			SHA256Digest digest = new SHA256Digest();
+			byte[] digested = new byte[AES_KEY_LENGTH];
+			digest.update(sharedSecret, 0, sharedSecret.length);
+			digest.doFinal(digested, 0);
+			return digested;
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
