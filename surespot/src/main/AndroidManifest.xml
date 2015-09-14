@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.twofours.surespot" 
-	android:versionCode="59"
-	android:versionName="59">
+	android:versionCode="60"
+	android:versionName="60">
 	<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="23" />
 
 	<permission android:name="com.twofours.surespot.permission.C2D_MESSAGE"
@@ -164,12 +164,6 @@
 
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.activities.ExternalInviteActivity"
-			android:label="@string/surespot" android:windowSoftInputMode="stateHidden">
-		</activity>
-		<activity android:name="com.twofours.surespot.contacts.ContactPickerActivity"
-			android:label="@string/surespot" android:noHistory="true">
 		</activity>
 		<activity android:name="com.twofours.surespot.billing.BillingActivity"
 			android:label="@string/surespot">
