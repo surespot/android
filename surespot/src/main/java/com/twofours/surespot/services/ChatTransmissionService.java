@@ -384,6 +384,7 @@ public class ChatTransmissionService extends Service {
 
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
         // TODO: HEREHERE: cleanup of existing network controller?  Is this where we might save off unsent messages to disk (for the previous user, etc)?
+        mUsername = mUser; // TODO: should this be done more explicitly/through another call?
         mNetworkController = new NetworkController(this, mUser, m401Handler);
     }
 
@@ -412,6 +413,9 @@ public class ChatTransmissionService extends Service {
 
         // TODO: HEREHERE: ASK ADAM - chat adapters - we may not want this tight coupling with a UI element/adapter
 
+        if (mListener != null) {
+            mListener.onBeforeConnect();
+        }
         // copy the latest ids so that we don't miss any if we receive new messages during the time we request messages and when the
         // connection completes (if they
         // are received out of order for some reason)
@@ -522,6 +526,10 @@ public class ChatTransmissionService extends Service {
         if (networkInfo != null) {
             mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
         }
+    }
+
+    public void clearServiceListener() {
+        ChatTransmissionService.this.mListener = null;
     }
 
     public class ChatTransmissionServiceBinder extends Binder {

@@ -192,27 +192,6 @@ public class ChatController {
 		return SurespotApplication.getChatTransmissionService().getState();
 	}
 
-	// TODO: HEREHERE - separated out UI and did not move this code down to ChatTransmissionService
-	// but this could cause problems because this connect() is not the one called when we retry connection, etc
-	private void connect() {
-		// copy the latest ids so that we don't miss any if we receive new messages during the time we request messages and when the
-		// connection completes (if they
-		// are received out of order for some reason)
-		//
-		mPreConnectIds.clear();
-		for (Map.Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-			String username = entry.getKey();
-			LatestIdPair idPair = new LatestIdPair();
-			idPair.latestMessageId = getLatestMessageId(username);
-			idPair.latestControlMessageId = getLatestMessageControlId(username);
-			SurespotLog.d(TAG, "setting preconnectids for: " + username + ", latest message id:  " + idPair.latestMessageId + ", latestcontrolid: "
-					+ idPair.latestControlMessageId);
-			mPreConnectIds.put(username, idPair);
-		}
-
-		SurespotApplication.getChatTransmissionService().connect();
-	}
-
 	// this is wired up to listen for a message from the ChatTransmissionService.  It's UI stuff
 	public void connected() {
 		getFriendsAndData();
@@ -866,6 +845,23 @@ public class ChatController {
 			catch (JSONException e) {
 				SurespotLog.w(TAG, "on messageError", e);
 			}
+		}
+	}
+
+	public void onBeforeConnect() {
+		// copy the latest ids so that we don't miss any if we receive new messages during the time we request messages and when the
+		// connection completes (if they
+		// are received out of order for some reason)
+		//
+		mPreConnectIds.clear();
+		for (Map.Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
+			String username = entry.getKey();
+			LatestIdPair idPair = new LatestIdPair();
+			idPair.latestMessageId = getLatestMessageId(username);
+			idPair.latestControlMessageId = getLatestMessageControlId(username);
+			SurespotLog.d(TAG, "setting preconnectids for: " + username + ", latest message id:  " + idPair.latestMessageId + ", latestcontrolid: "
+					+ idPair.latestControlMessageId);
+			mPreConnectIds.put(username, idPair);
 		}
 	}
 
@@ -1585,7 +1581,7 @@ public class ChatController {
 			for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
 				loadMessages(ca.getKey(), false);
 			}
-			connect();
+			SurespotApplication.getChatTransmissionService().connect();
 			// moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 			clearMessageNotification(mUsername, mCurrentChat);

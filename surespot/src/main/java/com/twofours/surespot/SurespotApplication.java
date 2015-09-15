@@ -191,6 +191,9 @@ public class SurespotApplication extends MultiDexApplication {
 	}
 
 	public static ChatTransmissionService getChatTransmissionService () {
+		if (mChatTransmissionService == null) {
+			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mChatTransmissionService"));
+		}
 		return mChatTransmissionService;
 	}
 
@@ -218,4 +221,7 @@ public class SurespotApplication extends MultiDexApplication {
 		return mUserAgent;
 	}
 
+	public static ChatTransmissionService getChatTransmissionServiceNoThrow() {
+		return mChatTransmissionService;
+	}
 }

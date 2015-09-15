@@ -8,4 +8,5 @@ public interface ITransmissionServiceListener {
     void reconnectFailed();
     void couldNotConnectToServer();
     void onEventReceived(String event, IOAcknowledge ack, Object... args);
+    void onBeforeConnect();
 }

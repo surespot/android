@@ -107,6 +107,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
 	private IAsyncCallbackTuple<String, Boolean> m401Handler;
 
+	private boolean mBindingChatTransmissionService;
 	private boolean mCacheServiceBound;
 	private boolean mChatTransmissionServiceBound;
 	private Menu mMenuOverflow;
@@ -283,10 +284,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 			mUser = user;
 
-			ChatTransmissionService cts = SurespotApplication.getChatTransmissionService();
+			ChatTransmissionService cts = SurespotApplication.getChatTransmissionServiceNoThrow();
 
-			if (cts == null) {
-				SurespotLog.d(TAG, "binding chat transmission service");
+			if (cts == null && !mBindingChatTransmissionService) {
+				mBindingChatTransmissionService = true;
+ 				SurespotLog.d(TAG, "binding chat transmission service");
 				Intent chatIntent = new Intent(this, ChatTransmissionService.class);
 				startService(chatIntent);
 				bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
@@ -718,6 +720,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					public void onEventReceived(String event, IOAcknowledge ack, Object... args) {
 						mChatController.onEventReceived(event, ack, args);
 					}
+
+					@Override
+					public void onBeforeConnect() {
+						mChatController.onBeforeConnect();
+					}
 					// call implementation goes here - or maybe we have a separate class if this gets too big
 
 				});
@@ -727,12 +734,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mChatTransmissionServiceBound = true;
 
 				SurespotApplication.getChatTransmissionService().initializeService();
+				mBindingChatTransmissionService = false;
 			}
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-
+			SurespotApplication.getChatTransmissionService().clearServiceListener();
+			SurespotApplication.setChatTransmissionService(null);
+			mChatTransmissionServiceBound = false;
 		}
 	};
 
@@ -934,6 +944,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	protected void onResume() {
 		super.onResume();
 		SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
+
+		ChatTransmissionService cts = SurespotApplication.getChatTransmissionServiceNoThrow();
+
+		if (cts == null && !mBindingChatTransmissionService) {
+			mBindingChatTransmissionService = true;
+			SurespotLog.d(TAG, "binding chat transmission service");
+			Intent chatIntent = new Intent(this, ChatTransmissionService.class);
+			startService(chatIntent);
+			bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
+		}
 
 		// if we had to unlock and we're resuming for a 2nd time and we have the caching service
 		if (mUnlocking && mPaused == true) {
@@ -1300,6 +1320,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	}
 
 	public static NetworkController getNetworkController() {
+		if (SurespotApplication.getChatTransmissionServiceNoThrow() == null) {
+			return null;
+		}
 		return SurespotApplication.getChatTransmissionService().getNetworkController();
 	}
 
