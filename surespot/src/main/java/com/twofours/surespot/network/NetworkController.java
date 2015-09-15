@@ -563,7 +563,7 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + ourVersion + "/" + user + "/" + theirVersion);
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + ourVersion + "/" + user + "/" + theirVersion);
 				if (fileInputStream == null) {
 					SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
 					return null;
@@ -619,7 +619,7 @@ public class NetworkController {
 
 				SurespotLog.v(TAG, "posting file stream");
 
-				HttpPost httppost = new HttpPost(mBaseUrl + "/images/" + user + "/" + ourVersion);
+				HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + user + "/" + ourVersion);
 
 				InputStreamBody isBody = new InputStreamBody(fileInputStream, SurespotConstants.MimeTypes.IMAGE, iv);
 				MultipartEntity reqEntity = new MultipartEntity();
@@ -783,7 +783,7 @@ public class NetworkController {
 		RequestParams params = new RequestParams("data", data);
 		params.put("iv", iv);
 		params.put("version", version);
-		put("/users/" + username + "/alias", params, responseHandler);
+		put("/users/" + username + "/alias2", params, responseHandler);
 
 	}
 	

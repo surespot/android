@@ -39,6 +39,10 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private boolean mPlayVoice = false;
 	private boolean mVoicePlayed = false;
 	private boolean mAlreadySent = false;
+
+
+
+	private boolean mHashed;
 	
 
 	public String getFrom() {
@@ -145,6 +149,14 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		}
 	}
 
+	public boolean isHashed() {
+		return mHashed;
+	}
+
+	public void setHashed(boolean hashed) {
+		this.mHashed = hashed;
+	}
+
 	public static SurespotMessage toSurespotMessage(String jsonString) {
 		JSONObject jsonObject;
 		try {
@@ -177,6 +189,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
 		chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
 		chatMessage.setVoicePlayed(jsonMessage.optBoolean("voicePlayed", false));
+		chatMessage.setHashed(jsonMessage.optBoolean("hashed", false));
 		
 		chatMessage.setGcm(jsonMessage.optBoolean("gcm", false));
 
@@ -223,6 +236,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("shareable", this.isShareable());
 			message.put("gcm", this.isGcm());
 			message.put("voicePlayed", this.isVoicePlayed());
+			message.put("hashed", this.isHashed());
 
 			if (this.getErrorStatus() > 0) {
 				message.put("errorStatus", this.getErrorStatus());
@@ -263,7 +277,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("toVersion", this.getToVersion());
 			message.put("fromVersion", this.getFromVersion());
 			message.put("iv", this.getIv());
-			message.put("data", this.getData());									
+			message.put("data", this.getData());
+			message.put("hashed", this.isHashed());
 
 			if (this.getResendId() != null) {
 				message.put("resendId", this.getResendId());
@@ -294,6 +309,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 		result = prime * result + ((mTo == null) ? 0 : mTo.hashCode());
 		result = prime * result + ((mToVersion == null) ? 0 : mToVersion.hashCode());
+		result = prime * result + (mHashed ? 1 : 0);
 
 		return result;
 	}
@@ -462,6 +478,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\tdatetime: " + getDateTime() + "\n");
 		sb.append("\tgcm: " + isGcm() + "\n");		
 		sb.append("\tvoicePlayed: " + isVoicePlayed() + "\n");
+		sb.append("\thashed: " + isHashed() + "\n");
 
 		return sb.toString();
 	}

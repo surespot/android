@@ -76,15 +76,6 @@ public class MessageImageDownloader {
 		mChatAdapter = chatAdapter;
 	}
 
-	/**
-	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
-	 * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
-	 * 
-	 * @param url
-	 *            The URL of the image to download.
-	 * @param imageView
-	 *            The ImageView to bind the downloaded image to.
-	 */
 	public void download(ImageView imageView, SurespotMessage message) {
 		Bitmap bitmap = getBitmapFromCache(message.getData());
 
@@ -222,7 +213,7 @@ public class MessageImageDownloader {
 				try {
 					inputStream = new PipedInputStream(out);
 
-					EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(),
+					EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
 							new BufferedInputStream(imageStream), out);
 
 					if (mCancelled) {
@@ -365,11 +356,6 @@ public class MessageImageDownloader {
 		}
 	}
 
-	/**
-	 * @param url
-	 *            The URL of the image that will be retrieved from the cache.
-	 * @return The cached bitmap or null if it was not found.
-	 */
 	private static Bitmap getBitmapFromCache(String key) {
 		return mBitmapCache.getBitmapFromMemCache(key);
 	}
