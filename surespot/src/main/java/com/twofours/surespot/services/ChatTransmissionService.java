@@ -55,6 +55,12 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
+// TODO: #1 - SERVICE LIFESPAN (!!) - various aspects - when is it okay to "give up and shut down"?
+// TODO: #2 - Logout/login - make sure this is handled appropriately (also closely tied to #1 and #3)
+// TODO: #3 - Chat Transmission Service should own writing out messages to disk - how does this come into play with current way ChatController iterates thru chat adapters?
+// TODO: all TODO's marked with HEREHERE - may need to chat with Adam on some, but make sure I know the inner workings before-hand
+// TODO: change all the "public" stuff back to private with controlled methods (i.e. ChatController should not be mucking with concurrent queues directly)
+// TODO: better way to interface/communicate with ChatController for things like iterating through chat adapters/grabbing messages and ids (if necessary)
 @SuppressLint("NewApi")
 public class ChatTransmissionService extends Service {
     private static final String TAG = "ChatTransmissionService";
