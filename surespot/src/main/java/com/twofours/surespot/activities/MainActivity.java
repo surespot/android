@@ -701,6 +701,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (service instanceof ChatTransmissionService.ChatTransmissionServiceBinder) {
 				ChatTransmissionService.ChatTransmissionServiceBinder binder = (ChatTransmissionService.ChatTransmissionServiceBinder) service;
 				binder.setServiceListener(new ITransmissionServiceListener() {
+					// implementation goes here - or maybe we have a separate class if this gets too big
+
 					@Override
 					public void connected() {
 						mChatController.connected();
@@ -725,8 +727,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					public void onBeforeConnect() {
 						mChatController.onBeforeConnect();
 					}
-					// call implementation goes here - or maybe we have a separate class if this gets too big
-
 				});
 				ChatTransmissionService cts = binder.getService();
 
@@ -1313,6 +1313,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		if (mChatTransmissionServiceBound && mChatConnection != null) {
+			// clear the service listener.  This lets the transmission service know it can shut down when it's done sending
+			if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+				SurespotApplication.getChatTransmissionServiceNoThrow().clearServiceListener();
+			}
 			unbindService(mChatConnection);
 		}
 

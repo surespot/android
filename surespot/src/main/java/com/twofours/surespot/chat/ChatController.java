@@ -663,6 +663,8 @@ public class ChatController {
 			}
 		}
 
+		// TODO: HEREHERE: does this need to move into the Chat Transmission Service?  It tells us when we can remove messages
+		// from the resend buffer...
 		mNetworkController.getLatestData(mLatestUserControlId, spotIds, new JsonHttpResponseHandler() {
 
 			@Override
@@ -740,6 +742,7 @@ public class ChatController {
 
 							JSONArray messages = messageData.optJSONArray("messages");
 							if (messages != null) {
+								// TODO: HEREHERE: this finally removes messages from the "resend" buffer
 								handleMessages(friendName, messages, mayBeCacheClear);
 							}
 
@@ -1497,8 +1500,7 @@ public class ChatController {
 		mChatAdapters.clear();
 		// mActiveChats.clear();
 		// mReadSinceConnected.clear();
-		// TODO: HEREHERE: ?? mResendBuffer.clear();
-		// TODO: HEREHERE: ?? mSendBuffer.clear();
+		SurespotApplication.getChatTransmissionService().userLoggedOut();
 	}
 
 	private void saveState(String username) {
@@ -1506,8 +1508,8 @@ public class ChatController {
 		SurespotLog.d(TAG, "saveState");
 
 		if (username == null) {
-			// TODO: HEREHERE: who should be in charge of saving unsent messages?  Probably the chat transmission service now...
-			SurespotApplication.getChatTransmissionService().saveUnsentMessages();
+			// TODO: HEREHERE: chat transmission service now in charge of saving unsent messages...
+			// SurespotApplication.getChatTransmissionService().saveUnsentMessages();
 			saveMessages();
 			SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
 			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);

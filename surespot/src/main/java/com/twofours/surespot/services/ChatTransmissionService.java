@@ -55,9 +55,9 @@ import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
-// TODO: #1 - SERVICE LIFESPAN (!!) - various aspects - when is it okay to "give up and shut down"?
-// TODO: #2 - Logout/login - make sure this is handled appropriately (also closely tied to #1 and #3)
-// TODO: #3 - Chat Transmission Service should own writing out messages to disk - how does this come into play with current way ChatController iterates thru chat adapters?
+// TODO: Top priority - resend needs to move into this service, but how to tease apart the use of UI element chat adapters from the actual resend work?
+// TODO: #1 - SERVICE LIFESPAN - when is it okay to "give up and shut down"?
+// TODO: #2 - Logout/login - make sure this is handled appropriately (also closely tied to #1)
 // TODO: all TODO's marked with HEREHERE - may need to chat with Adam on some, but make sure I know the inner workings before-hand
 // TODO: change all the "public" stuff back to private with controlled methods (i.e. ChatController should not be mucking with concurrent queues directly)
 // TODO: better way to interface/communicate with ChatController for things like iterating through chat adapters/grabbing messages and ids (if necessary)
@@ -319,6 +319,17 @@ public class ChatTransmissionService extends Service {
         if (mListener != null) {
             mListener.connected();
         }
+
+        // TODO: HEREHERE: process resend queue but somehow not using the chat adapters (UI elements)
+    }
+
+    // Notify the service that the user logged out
+    public void userLoggedOut() {
+        saveUnsentMessages();
+        mResendBuffer.clear();
+        mSendBuffer.clear();
+        mUsername = null;
+        shutdownConnection();
     }
 
     public void saveUnsentMessages() {
@@ -346,7 +357,7 @@ public class ChatTransmissionService extends Service {
         return reconnectTime;
     }
 
-    public void shutdown() {
+    public void shutdownConnection() {
         disconnect();
 
         synchronized (BACKGROUND_TIMER_LOCK) {
@@ -520,6 +531,8 @@ public class ChatTransmissionService extends Service {
             SurespotLog.d(TAG, "sendmessage, message string: %s", s);
 
             if (socket != null) {
+                // TODO: HEREHERE: how do we know this was successful and we can remove the message from mResendBuffer?
+                // we don't want to just keep adding messages to mResendBuffer...
                 socket.send(s);
             }
         }
@@ -561,7 +574,7 @@ public class ChatTransmissionService extends Service {
     @Override
     public void onDestroy() {
         SurespotLog.i(TAG, "onDestroy");
-        shutdown();
+        userLoggedOut();
     }
 
     public void initializeService() {
