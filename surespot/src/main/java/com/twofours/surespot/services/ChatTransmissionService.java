@@ -269,6 +269,8 @@ public class ChatTransmissionService extends Service {
 
                 // these are all receipt of information.  No need to handle them, just pass them up to the listener
                 // TODO: not sure this is totally true - handleErrorMessage(errorMessage); works with/modifies the resend buffer :P
+                // TODO: HEREHERE: nope, I was wrong - WE need to handle this.  It even tells us if our own messages were sent successfully
+                // (because we receive them back)
                 if (mListener != null) {
                     mListener.onEventReceived(event, ack, args);
                 }
@@ -555,10 +557,10 @@ public class ChatTransmissionService extends Service {
         public ChatTransmissionService getService() {
             return ChatTransmissionService.this;
         }
+    }
 
-        public void setServiceListener(ITransmissionServiceListener listener) {
-            ChatTransmissionService.this.mListener = listener;
-        }
+    public void setServiceListener(ITransmissionServiceListener listener) {
+        mListener = listener;
     }
 
     @Override

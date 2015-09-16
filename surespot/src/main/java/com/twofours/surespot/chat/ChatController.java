@@ -807,6 +807,7 @@ public class ChatController {
 		else
 		if (event.equals("message")) {
 			try {
+				// TODO: Owen note to self: we receive messages we just sent.  That's how we know a message was sent out successfully
 				JSONObject jsonMessage = new JSONObject((String) args[0]);
 				SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
 				SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);

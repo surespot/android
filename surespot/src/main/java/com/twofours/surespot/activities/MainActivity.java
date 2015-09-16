@@ -696,39 +696,41 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		return user;
 	}
 
+	private class TransmissionServiceListener implements ITransmissionServiceListener {
+		// implementation goes here - or maybe we have a separate class if this gets too big
+
+		@Override
+		public void connected() {
+			mChatController.connected();
+		}
+
+		@Override
+		public void reconnectFailed() {
+			mChatController.reconnectFailed();
+		}
+
+		@Override
+		public void couldNotConnectToServer() {
+			mChatController.couldNotConnectToServer();
+		}
+
+		@Override
+		public void onEventReceived(String event, IOAcknowledge ack, Object... args) {
+			mChatController.onEventReceived(event, ack, args);
+		}
+
+		@Override
+		public void onBeforeConnect() {
+			mChatController.onBeforeConnect();
+		}
+	}
+
 	private ServiceConnection mChatConnection = new ServiceConnection() {
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
 			if (service instanceof ChatTransmissionService.ChatTransmissionServiceBinder) {
 				ChatTransmissionService.ChatTransmissionServiceBinder binder = (ChatTransmissionService.ChatTransmissionServiceBinder) service;
-				binder.setServiceListener(new ITransmissionServiceListener() {
-					// implementation goes here - or maybe we have a separate class if this gets too big
-
-					@Override
-					public void connected() {
-						mChatController.connected();
-					}
-
-					@Override
-					public void reconnectFailed() {
-						mChatController.reconnectFailed();
-					}
-
-					@Override
-					public void couldNotConnectToServer() {
-						mChatController.couldNotConnectToServer();
-					}
-
-					@Override
-					public void onEventReceived(String event, IOAcknowledge ack, Object... args) {
-						mChatController.onEventReceived(event, ack, args);
-					}
-
-					@Override
-					public void onBeforeConnect() {
-						mChatController.onBeforeConnect();
-					}
-				});
 				ChatTransmissionService cts = binder.getService();
+				cts.setServiceListener(new TransmissionServiceListener());
 
 				SurespotApplication.setChatTransmissionService(cts);
 				mChatTransmissionServiceBound = true;
@@ -778,6 +780,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			launchLogin();
 			return;
 		}
+
+		// make sure the transmission service knows the UI is present and is listening
+		SurespotApplication.getChatTransmissionService().setServiceListener(new TransmissionServiceListener());
 
 		setupBilling();
 
