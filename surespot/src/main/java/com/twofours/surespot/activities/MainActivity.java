@@ -66,12 +66,16 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.MainActivityLayout;
 import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
+import com.twofours.surespot.chat.SurespotControlMessage;
+import com.twofours.surespot.chat.SurespotErrorMessage;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -715,13 +719,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		@Override
-		public void onEventReceived(String event, IOAcknowledge ack, Object... args) {
-			mChatController.onEventReceived(event, ack, args);
+		public void onBeforeConnect() {
+			mChatController.onBeforeConnect();
 		}
 
 		@Override
-		public void onBeforeConnect() {
-			mChatController.onBeforeConnect();
+		public void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
+			mChatController.handleControlMessage(chatAdapter, message, notify, reApplying);
+		}
+
+		@Override
+		public void handleMessage(SurespotMessage message) {
+			mChatController.handleMessage(message);
+		}
+
+		@Override
+		public void handleErrorMessage(SurespotErrorMessage errorMessage) {
+			mChatController.handleErrorMessage(errorMessage);
 		}
 	}
 

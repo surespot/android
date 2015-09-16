@@ -1,9 +1,6 @@
 package com.twofours.surespot.chat;
 
 import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -23,24 +20,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -51,7 +39,6 @@ import ch.boye.httpclientandroidlib.HttpVersion;
 import ch.boye.httpclientandroidlib.StatusLine;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
 import ch.boye.httpclientandroidlib.impl.client.cache.HeapResource;
 import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
 import ch.boye.httpclientandroidlib.message.BasicHeader;
@@ -65,7 +52,6 @@ import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -75,11 +61,9 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
-import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.services.ChatTransmissionService;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -235,7 +219,7 @@ public class ChatController {
 			// if it has an id don't send it again
 			if (message.getId() != null) {
 				// TODO: rework - shouldn't be mucking with this guy's buffer externally
-				SurespotApplication.getChatTransmissionService().mResendBuffer.remove(message);
+				SurespotApplication.getChatTransmissionService().getResendBuffer().remove(message);
 				continue;
 			}
 
@@ -268,7 +252,7 @@ public class ChatController {
 		SurespotApplication.getChatTransmissionService().socket.send(sMessageList.toString());
 	}
 
-	private void handleMessage(final SurespotMessage message) {
+	public void handleMessage(final SurespotMessage message) {
 		SurespotLog.d(TAG, "handleMessage %s", message);
 		final String otherUser = message.getOtherUser();
 
@@ -812,7 +796,8 @@ public class ChatController {
 				SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
 				SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
 				handleMessage(message);
-				SurespotApplication.getChatTransmissionService().checkAndSendNextMessage(message);
+				// TODO: Moved to chat transmission service - do we still need it here?
+				// SurespotApplication.getChatTransmissionService().checkAndSendNextMessage(message);
 
 				// see if we have deletes
 				String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
@@ -1016,7 +1001,7 @@ public class ChatController {
 		// chatAdapter.setLoading(false);
 	}
 
-	private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
+	public void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
 		// if it's a system message from another user then check version
 		if (message.getType().equals("user")) {
 			handleUserControlMessage(message, notify);
@@ -1273,16 +1258,16 @@ public class ChatController {
 		enableMenuItems(friend);
 	}
 
-	private void handleErrorMessage(SurespotErrorMessage errorMessage) {
+	public void handleErrorMessage(SurespotErrorMessage errorMessage) {
 		SurespotMessage message = null;
-		// TODO: HEREHERE: not great to be doing this here - using internals of chat tx service
-		// we might have to move error message handling back into the service
-		Iterator<SurespotMessage> iterator = SurespotApplication.getChatTransmissionService().mResendBuffer.iterator();
+
+		// this logic is also done in the chat transmission service (but after this call) so that if the UI is not available,
+		// the mResendBuffer is still updated properly
+		Iterator<SurespotMessage> iterator = SurespotApplication.getChatTransmissionService().getResendBuffer().iterator();
 		while (iterator.hasNext()) {
 			message = iterator.next();
 			if (message.getIv().equals(errorMessage.getId())) {
 				iterator.remove();
-
 				message.setErrorStatus(errorMessage.getStatus());
 				break;
 			}
@@ -1294,7 +1279,6 @@ public class ChatController {
 				chatAdapter.notifyDataSetChanged();
 			}
 		}
-
 	}
 
 	private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
@@ -1349,7 +1333,7 @@ public class ChatController {
 					boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
 
 					// TODO: HEREHERE: ick - should not modify resend buffer like this
-					SurespotApplication.getChatTransmissionService().mResendBuffer.remove(lastMessage);
+					SurespotApplication.getChatTransmissionService().getResendBuffer().remove(lastMessage);
 					if (added && myMessage) {
 						sentByMeCount++;
 					}
@@ -1935,8 +1919,8 @@ public class ChatController {
 			// remove the local message
 			String otherUser = message.getOtherUser();
 			// TODO: HEREHERE: better way or encapsulate
-			SurespotApplication.getChatTransmissionService().mResendBuffer.remove(message);
-			SurespotApplication.getChatTransmissionService().mSendBuffer.remove(message);
+			SurespotApplication.getChatTransmissionService().getResendBuffer().remove(message);
+			SurespotApplication.getChatTransmissionService().getSendBuffer().remove(message);
 
 			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 			chatAdapter.deleteMessageByIv(message.getIv());

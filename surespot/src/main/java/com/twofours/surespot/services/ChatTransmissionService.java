@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import ch.boye.httpclientandroidlib.HttpStatus;
 import ch.boye.httpclientandroidlib.HttpVersion;
@@ -69,8 +70,8 @@ public class ChatTransmissionService extends Service {
 
     private final IBinder mBinder = new ChatTransmissionServiceBinder();
     private ITransmissionServiceListener mListener;
-    public ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
-    public ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
+    private ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
+    private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
 
@@ -267,16 +268,76 @@ public class ChatTransmissionService extends Service {
             @Override
             public void on(String event, IOAcknowledge ack, Object... args) {
 
-                // these are all receipt of information.  No need to handle them, just pass them up to the listener
-                // TODO: not sure this is totally true - handleErrorMessage(errorMessage); works with/modifies the resend buffer :P
-                // TODO: HEREHERE: nope, I was wrong - WE need to handle this.  It even tells us if our own messages were sent successfully
-                // (because we receive them back)
-                if (mListener != null) {
-                    mListener.onEventReceived(event, ack, args);
+                // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
+
+                SurespotLog.d(TAG, "Server triggered event '" + event + "'");
+                if (event.equals("control")) {
+                    try {
+                        SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
+                        if (mListener != null) {
+                            mListener.handleControlMessage(null, message, true, false);
+                        }
+                        // no need to do anything here - does not involve mResendBuffer, etc
+                    }
+                    catch (JSONException e) {
+                        SurespotLog.w(TAG, "on control", e);
+                    }
                 }
+                else
+                if (event.equals("message")) {
+                    try {
+                        // TODO: Owen note to self: we receive messages we just sent.  That's how we know a message was sent out successfully
+                        JSONObject jsonMessage = new JSONObject((String) args[0]);
+                        SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
+                        SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
+                        if (mListener != null) {
+                            mListener.handleMessage(message);
+                        }
 
+                        // the UI might have already removed the message from the resend buffer.  That's okay.
+                        Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
+                        while (iterator.hasNext()) {
+                            message = iterator.next();
+                            if (message.getIv().equals(message.getId())) {
+                                iterator.remove();
+                                break;
+                            }
+                        }
+
+                        checkAndSendNextMessage(message);
+                    }
+                    catch (JSONException e) {
+                        SurespotLog.w(TAG, "on message", e);
+                    }
+                }
+                else
+                if (event.equals("messageError")) {
+                    try {
+                        JSONObject jsonMessage = (JSONObject) args[0];
+                        SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
+                        SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
+                        if (mListener != null) {
+                            mListener.handleErrorMessage(errorMessage);
+                        }
+
+                        // the UI might have already removed the message from the resend buffer.  That's okay.
+                        SurespotMessage message = null;
+
+                        Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
+                        while (iterator.hasNext()) {
+                            message = iterator.next();
+                            if (message.getIv().equals(errorMessage.getId())) {
+                                iterator.remove();
+                                message.setErrorStatus(errorMessage.getStatus());
+                                break;
+                            }
+                        }
+                    }
+                    catch (JSONException e) {
+                        SurespotLog.w(TAG, "on messageError", e);
+                    }
+                }
             }
-
         };
 
         mConnectivityReceiver = new BroadcastReceiver() {
@@ -417,6 +478,14 @@ public class ChatTransmissionService extends Service {
     }
 
     private ReconnectTask mReconnectTask;
+
+    public ConcurrentLinkedQueue<SurespotMessage> getResendBuffer() {
+        return mResendBuffer;
+    }
+
+    public ConcurrentLinkedQueue<SurespotMessage> getSendBuffer() {
+        return mSendBuffer;
+    }
 
     private class ReconnectTask extends TimerTask {
 
