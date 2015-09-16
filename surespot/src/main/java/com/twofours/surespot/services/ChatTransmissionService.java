@@ -383,7 +383,7 @@ public class ChatTransmissionService extends Service {
             mListener.connected();
         }
 
-        // TODO: HEREHERE: process resend queue but somehow not using the chat adapters (UI elements)
+        // TODO: HEREHERE: process resend queue but somehow not using the chat adapters (UI elements).  Or, is this our responsibility at all?
     }
 
     // Notify the service that the user logged out
@@ -499,25 +499,10 @@ public class ChatTransmissionService extends Service {
     public void connect() {
         SurespotLog.d(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: " + mConnectionState);
 
-        // TODO: HEREHERE: ASK ADAM - chat adapters - we may not want this tight coupling with a UI element/adapter
-
+        // gives the UI a chance to copy out pre-connect ids
         if (mListener != null) {
             mListener.onBeforeConnect();
         }
-        // copy the latest ids so that we don't miss any if we receive new messages during the time we request messages and when the
-        // connection completes (if they
-        // are received out of order for some reason)
-        //
-        /*mPreConnectIds.clear();
-        for (Map.Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-            String username = entry.getKey();
-            LatestIdPair idPair = new LatestIdPair();
-            idPair.latestMessageId = getLatestMessageId(username);
-            idPair.latestControlMessageId = getLatestMessageControlId(username);
-            SurespotLog.d(TAG, "setting preconnectids for: " + username + ", latest message id:  " + idPair.latestMessageId + ", latestcontrolid: "
-                    + idPair.latestControlMessageId);
-            mPreConnectIds.put(username, idPair);
-        }*/
 
         Cookie cookie = IdentityController.getCookieForUser(mUsername);
 
@@ -602,8 +587,6 @@ public class ChatTransmissionService extends Service {
             SurespotLog.d(TAG, "sendmessage, message string: %s", s);
 
             if (socket != null) {
-                // TODO: HEREHERE: how do we know this was successful and we can remove the message from mResendBuffer?
-                // we don't want to just keep adding messages to mResendBuffer...
                 socket.send(s);
             }
         }

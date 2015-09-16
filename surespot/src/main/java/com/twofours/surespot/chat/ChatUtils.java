@@ -119,6 +119,7 @@ public class ChatUtils {
         return chatMessage;
     }
 
+    // TODO: HEREHERE: this logic (or some part of it) now needs to move to the transmission service
     public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
                                                  final Uri imageUri, final String to, final boolean scale, final IAsyncCallback<Boolean> callback) {
 

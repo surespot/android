@@ -207,7 +207,7 @@ public class ChatController {
 	}
 
 	// TODO: HEREHERE: Talk with Adam - really causing heartburn that chat adapters and friend adapter (really, UI elements) are being
-	// used as data stores for message ids, etc
+	// used as data stores for message ids, etc.  OR - do we want the transmission service not to worry about resending messages???
 	private void resendMessages() {
 		// get the resend messages
 		SurespotMessage[] resendMessages = SurespotApplication.getChatTransmissionService().getResendMessages();
@@ -1332,7 +1332,6 @@ public class ChatController {
 
 					boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
 
-					// TODO: HEREHERE: ick - should not modify resend buffer like this
 					SurespotApplication.getChatTransmissionService().getResendBuffer().remove(lastMessage);
 					if (added && myMessage) {
 						sentByMeCount++;
@@ -1918,7 +1917,6 @@ public class ChatController {
 		else {
 			// remove the local message
 			String otherUser = message.getOtherUser();
-			// TODO: HEREHERE: better way or encapsulate
 			SurespotApplication.getChatTransmissionService().getResendBuffer().remove(message);
 			SurespotApplication.getChatTransmissionService().getSendBuffer().remove(message);
 
