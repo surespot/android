@@ -187,6 +187,8 @@ public class ChatUtils {
 
                         // save encrypted image locally until we receive server confirmation
                         String localImageDir = FileUtils.getImageUploadDir(activity);
+
+                        // TODO: HEREHERE: from here on out we don't need activity any more and can pipe this off to the transmission service
                         new File(localImageDir).mkdirs();
 
                         String localImageFilename = localImageDir + File.separator
@@ -205,6 +207,8 @@ public class ChatUtils {
                             message.setId(null);
 
                             final SurespotMessage finalMessage = message;
+
+                            // TODO: HERE: this could be a callback into the UI from Transmission service
                             activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -256,7 +260,7 @@ public class ChatUtils {
                                     return;
                                 }
 
-                                networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
+                                networkController.postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
                                         new IAsyncCallback<Integer>() {
 
                                             @Override
@@ -271,6 +275,7 @@ public class ChatUtils {
                                                         if (finalMessage != null) {
                                                             finalMessage.setErrorStatus(402);
                                                         }
+                                                        // TODO: HEREHERE: these will have to be callbacks from transmission service
                                                         chatAdapter = chatController.getChatAdapter(activity, to);
                                                         if (chatAdapter != null) {
                                                             chatAdapter.notifyDataSetChanged();
@@ -280,6 +285,7 @@ public class ChatUtils {
                                                         if (finalMessage != null) {
                                                             finalMessage.setErrorStatus(500);
                                                         }
+                                                        // TODO: HEREHERE: these will have to be callbacks from transmission service
                                                         chatAdapter = chatController.getChatAdapter(activity, to);
                                                         if (chatAdapter != null) {
                                                             chatAdapter.notifyDataSetChanged();
@@ -305,7 +311,6 @@ public class ChatUtils {
         };
 
         SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
-
     }
 
     public static void uploadFriendImageAsync(final Activity activity, final NetworkController networkController, final Uri imageUri, final String friendName,
@@ -439,7 +444,7 @@ public class ChatUtils {
                                 }
 
                                 final SurespotMessage finalMessage = message;
-                                networkController.postFileStream(activity, ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
+                                networkController.postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
                                         new IAsyncCallback<Integer>() {
 
                                             @Override
@@ -517,7 +522,7 @@ public class ChatUtils {
             return;
         }
 
-        networkController.postFileStream(context, message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
+        networkController.postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
                 message.getMimeType(), new IAsyncCallback<Integer>() {
 
                     @Override

@@ -553,7 +553,7 @@ public class NetworkController {
 		}
 	}
 
-	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
+	public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
 			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
 
 		new AsyncTask<Void, Void, HttpResponse>() {
