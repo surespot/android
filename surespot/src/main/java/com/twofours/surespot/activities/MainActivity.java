@@ -1331,12 +1331,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			unbindService(mConnection);
 		}
 
-		if (mChatTransmissionServiceBound && mChatConnection != null) {
+		if (mChatConnection != null) {
+			if (mChatTransmissionServiceBound) {
+				unbindService(mChatConnection);
+			}
+
 			// clear the service listener.  This lets the transmission service know it can shut down when it's done sending
 			if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
 				SurespotApplication.getChatTransmissionServiceNoThrow().clearServiceListener();
 			}
-			unbindService(mChatConnection);
 		}
 
 		MessageImageDownloader.evictCache();
