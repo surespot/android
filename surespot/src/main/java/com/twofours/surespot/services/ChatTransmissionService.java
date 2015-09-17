@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -29,6 +30,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
@@ -38,6 +40,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -169,13 +172,12 @@ public class ChatTransmissionService extends Service {
                             // SurespotLog.i(TAG, error, "http error on relogin - bailing, status: %d, message: %s", statusCode, error.getMessage());
 
                             socket = null;
-                            // TODO: what is the appropriate behavior here?
+
                             if (mListener != null) {
                                 mListener.reconnectFailed();
                             }
-                            // what internal book-keeping needs to be done?
-                            // WAS: logout();
-                            // WAS: mCallback401.handleResponse(null, false);
+
+                            userLoggedOut();
                             return;
                             // }
                             //
@@ -188,13 +190,12 @@ public class ChatTransmissionService extends Service {
                     if (!reAuthing) {
 
                         socket = null;
-                        // TODO: what is the appropriate behavior here?
+
                         if (mListener != null) {
                             mListener.reconnectFailed();
                         }
-                        // what internal book-keeping needs to be done?
-                        // WAS: logout();
-                        // WAS: mCallback401.handleResponse(null, false);
+
+                        userLoggedOut();
                         return;
                     }
                 }
@@ -232,7 +233,8 @@ public class ChatTransmissionService extends Service {
                     if (mListener != null) {
                         mListener.couldNotConnectToServer();
                     }
-                    // WAS: mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server), true);
+                    // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
+                    userLoggedOut();
                 }
             }
 
@@ -382,17 +384,18 @@ public class ChatTransmissionService extends Service {
         if (mListener != null) {
             mListener.connected();
         }
-
-        // TODO: HEREHERE: process resend queue but somehow not using the chat adapters (UI elements).  Or, is this our responsibility at all?
     }
 
     // Notify the service that the user logged out
     public void userLoggedOut() {
-        saveUnsentMessages();
-        mResendBuffer.clear();
-        mSendBuffer.clear();
-        mUsername = null;
-        shutdownConnection();
+        if (mUsername != null) {
+            saveUnsentMessages();
+            mResendBuffer.clear();
+            mSendBuffer.clear();
+            mUsername = null;
+            shutdownConnection();
+            checkShutdownService();
+        }
     }
 
     public void saveUnsentMessages() {
@@ -407,6 +410,11 @@ public class ChatTransmissionService extends Service {
             mResendBuffer.add(iterator.next());
         }
         // SurespotLog.d(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
+    }
+
+    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
+                                      final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
+        mNetworkController.postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
     }
 
     private int generateInterval(int k) {
@@ -452,6 +460,15 @@ public class ChatTransmissionService extends Service {
             }
         }
         // }
+
+        checkShutdownService();
+    }
+
+    private void checkShutdownService() {
+        if (mSendBuffer.size() == 0 && mListener == null) {
+            Log.d(TAG, "shutting down service!");
+            this.stopSelf();
+        }
     }
 
     public void setUsername(String username) {
@@ -463,8 +480,7 @@ public class ChatTransmissionService extends Service {
     }
 
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
-        // TODO: HEREHERE: cleanup of existing network controller?  Is this where we might save off unsent messages to disk (for the previous user, etc)?
-        mUsername = mUser; // TODO: should this be done more explicitly/through another call?
+        setUsername(mUser);
         mNetworkController = new NetworkController(this, mUser, m401Handler);
     }
 
@@ -535,9 +551,7 @@ public class ChatTransmissionService extends Service {
         sendMessages();
 
         if (mResendBuffer.size() > 0) {
-            if (mResendBuffer.remove(message)) {
-                SurespotLog.d(TAG, "Received and removed message from resend  buffer: " + message);
-            }
+            mResendBuffer.remove(message);
         }
     }
 
@@ -560,6 +574,8 @@ public class ChatTransmissionService extends Service {
         }
 
         SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
+
+        checkShutdownService();
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
         while (iterator.hasNext()) {
@@ -602,7 +618,8 @@ public class ChatTransmissionService extends Service {
     }
 
     public void clearServiceListener() {
-        ChatTransmissionService.this.mListener = null;
+        mListener = null;
+        checkShutdownService();
     }
 
     public class ChatTransmissionServiceBinder extends Binder {
@@ -613,6 +630,7 @@ public class ChatTransmissionService extends Service {
 
     public void setServiceListener(ITransmissionServiceListener listener) {
         mListener = listener;
+        checkShutdownService();
     }
 
     @Override

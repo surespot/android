@@ -206,8 +206,6 @@ public class ChatController {
 		}
 	}
 
-	// TODO: HEREHERE: Talk with Adam - really causing heartburn that chat adapters and friend adapter (really, UI elements) are being
-	// used as data stores for message ids, etc.  OR - do we want the transmission service not to worry about resending messages???
 	private void resendMessages() {
 		// get the resend messages
 		SurespotMessage[] resendMessages = SurespotApplication.getChatTransmissionService().getResendMessages();
@@ -647,8 +645,6 @@ public class ChatController {
 			}
 		}
 
-		// TODO: HEREHERE: does this need to move into the Chat Transmission Service?  It tells us when we can remove messages
-		// from the resend buffer...
 		mNetworkController.getLatestData(mLatestUserControlId, spotIds, new JsonHttpResponseHandler() {
 
 			@Override
@@ -726,7 +722,6 @@ public class ChatController {
 
 							JSONArray messages = messageData.optJSONArray("messages");
 							if (messages != null) {
-								// TODO: HEREHERE: this finally removes messages from the "resend" buffer
 								handleMessages(friendName, messages, mayBeCacheClear);
 							}
 
@@ -1521,7 +1516,6 @@ public class ChatController {
 		mFriendAdapter.setFriends(friends);
 		mFriendAdapter.setLoading(false);
 
-		// TODO: HEREHERE: who should be in charge of loading unsent messages?  Chat Transmission Service?  or here?
 		SurespotApplication.getChatTransmissionService().loadUnsentMessages();
 	}
 
@@ -2066,7 +2060,7 @@ public class ChatController {
 		message.setAlreadySent(false);
 		chatAdapter.notifyDataSetChanged();
 		setProgress("resend", true);
-		ChatUtils.resendFileMessage(mContext, mNetworkController, message, new IAsyncCallback<Integer>() {
+		ChatUtils.resendFileMessage(mNetworkController, message, new IAsyncCallback<Integer>() {
 
 			@Override
 			public void handleResponse(Integer result) {

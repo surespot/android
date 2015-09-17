@@ -119,7 +119,6 @@ public class ChatUtils {
         return chatMessage;
     }
 
-    // TODO: HEREHERE: this logic (or some part of it) now needs to move to the transmission service
     public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
                                                  final Uri imageUri, final String to, final boolean scale, final IAsyncCallback<Boolean> callback) {
 
@@ -188,7 +187,6 @@ public class ChatUtils {
                         // save encrypted image locally until we receive server confirmation
                         String localImageDir = FileUtils.getImageUploadDir(activity);
 
-                        // TODO: HEREHERE: from here on out we don't need activity any more and can pipe this off to the transmission service
                         new File(localImageDir).mkdirs();
 
                         String localImageFilename = localImageDir + File.separator
@@ -208,7 +206,6 @@ public class ChatUtils {
 
                             final SurespotMessage finalMessage = message;
 
-                            // TODO: HERE: this could be a callback into the UI from Transmission service
                             activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -260,7 +257,7 @@ public class ChatUtils {
                                     return;
                                 }
 
-                                networkController.postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
+                                SurespotApplication.getChatTransmissionService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
                                         new IAsyncCallback<Integer>() {
 
                                             @Override
@@ -275,7 +272,6 @@ public class ChatUtils {
                                                         if (finalMessage != null) {
                                                             finalMessage.setErrorStatus(402);
                                                         }
-                                                        // TODO: HEREHERE: these will have to be callbacks from transmission service
                                                         chatAdapter = chatController.getChatAdapter(activity, to);
                                                         if (chatAdapter != null) {
                                                             chatAdapter.notifyDataSetChanged();
@@ -285,7 +281,6 @@ public class ChatUtils {
                                                         if (finalMessage != null) {
                                                             finalMessage.setErrorStatus(500);
                                                         }
-                                                        // TODO: HEREHERE: these will have to be callbacks from transmission service
                                                         chatAdapter = chatController.getChatAdapter(activity, to);
                                                         if (chatAdapter != null) {
                                                             chatAdapter.notifyDataSetChanged();
@@ -295,7 +290,6 @@ public class ChatUtils {
                                                 callback.handleResponse(true);
                                             }
                                         });
-
                             }
                         };
 
@@ -444,7 +438,7 @@ public class ChatUtils {
                                 }
 
                                 final SurespotMessage finalMessage = message;
-                                networkController.postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
+                                SurespotApplication.getChatTransmissionService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
                                         new IAsyncCallback<Integer>() {
 
                                             @Override
@@ -497,7 +491,7 @@ public class ChatUtils {
 
     }
 
-    public static void resendFileMessage(Context context, NetworkController networkController, final SurespotMessage message,
+    public static void resendFileMessage(NetworkController networkController, final SurespotMessage message,
                                          final IAsyncCallback<Integer> callback) {
 
         // upload encrypted file to server
@@ -522,7 +516,7 @@ public class ChatUtils {
             return;
         }
 
-        networkController.postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
+        SurespotApplication.getChatTransmissionService().postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
                 message.getMimeType(), new IAsyncCallback<Integer>() {
 
                     @Override
