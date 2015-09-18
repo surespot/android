@@ -62,6 +62,7 @@ public class ChatTransmissionService extends Service {
     private String mUsername;
     private boolean mMainActivityPaused = false;
     private ReconnectTask mReconnectTask;
+    private DisconnectTask mDisconnectTask;
 
     public static final int STATE_CONNECTING = 0;
     public static final int STATE_CONNECTED = 1;
@@ -70,10 +71,14 @@ public class ChatTransmissionService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // 3 minutes
+
     private SocketIO socket;
     private int mRetries = 0;
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
+    private Timer mDisconnectTimer;
+    private Object DISCONNECT_TIMER_LOCK = new Object();
     private int mConnectionState;
     private boolean mOnWifi;
     private IOCallback mSocketCallback;
@@ -365,13 +370,27 @@ public class ChatTransmissionService extends Service {
 
     private void checkDisconnect() {
         if (mMainActivityPaused && mSendBuffer.size() == 0) {
-            disconnect();
+            // setup a disconnect N minutes from now
+            synchronized (DISCONNECT_TIMER_LOCK) {
+                if (mDisconnectTask != null) {
+                    mDisconnectTask.cancel();
+                }
+
+                DisconnectTask disconnectTask = new DisconnectTask();
+                if (mDisconnectTimer == null) {
+                    mDisconnectTimer = new Timer("disconnectTimer");
+                }
+                mDisconnectTimer.schedule(disconnectTask, DISCONNECT_DELAY_SECONDS * 1000);
+                mDisconnectTask = disconnectTask;
+            }
         }
     }
 
     private void checkReconnect() {
         if (!mMainActivityPaused) {
-            connect();
+            if (getState() == STATE_DISCONNECTED) {
+                connect();
+            }
         }
     }
 
@@ -507,15 +526,44 @@ public class ChatTransmissionService extends Service {
         }
     }
 
+    private class DisconnectTask extends TimerTask {
+
+        @Override
+        public void run() {
+            SurespotLog.d(TAG, "Disconnect task run.");
+            disconnect();
+        }
+    }
+
+    private void cancelDisconnectTimer() {
+        // cancel any disconnect that's been scheduled
+        synchronized (DISCONNECT_TIMER_LOCK) {
+            if (mDisconnectTask != null) {
+                mDisconnectTask.cancel();
+                mDisconnectTask = null;
+            }
+
+            if (mDisconnectTimer != null) {
+                mDisconnectTimer.cancel();
+                mDisconnectTimer = null;
+            }
+        }
+    }
+
     public void connect() {
         SurespotLog.d(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: " + mConnectionState);
 
-        if (mConnectionState == STATE_CONNECTED || mConnectionState == STATE_CONNECTING)
-            return;
+        cancelDisconnectTimer();
 
         // gives the UI a chance to copy out pre-connect ids
         if (mListener != null) {
             mListener.onBeforeConnect();
+        }
+
+        if (mConnectionState == STATE_CONNECTED || mConnectionState == STATE_CONNECTING)
+        {
+            connected();
+            return;
         }
 
         Cookie cookie = IdentityController.getCookieForUser(mUsername);
@@ -536,6 +584,8 @@ public class ChatTransmissionService extends Service {
     }
 
     private void disconnect() {
+        cancelDisconnectTimer();
+
         SurespotLog.d(TAG, "disconnect.");
         setState(STATE_DISCONNECTED);
 
