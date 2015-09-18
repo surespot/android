@@ -751,6 +751,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				SurespotApplication.getChatTransmissionService().initializeService();
 				mBindingChatTransmissionService = false;
+
+				if (!mUnlocking && mCacheServiceBound) {
+					SurespotLog.d(TAG, "transmission service calling postServiceProcess");
+					postServiceProcess();
+				}
+				else {
+					SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
+				}
 			}
 		}
 
@@ -774,7 +782,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
 
-			if (!mUnlocking) {
+			if (!mUnlocking && mChatTransmissionServiceBound) {
 				SurespotLog.d(TAG, "caching service calling postServiceProcess");
 				postServiceProcess();
 			}
