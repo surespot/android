@@ -214,7 +214,7 @@ public class VoiceMessageDownloader {
 							return;
 						}
 
-						EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(),
+						EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
 								voiceStream, out);
 
 						soundbytes = Utils.inputStreamToBytes(inputStream);

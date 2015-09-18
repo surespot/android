@@ -32,6 +32,8 @@ public class Friend implements Comparable<Friend> {
 	private String mAliasVersion;
 	private String mAliasIv;
 	private String mAliasPlain;
+	private boolean mAliasHashed;
+	private boolean mImageHashed;
 	private int mSelectedItem = -1;
 	private int mSelectedTop = 0;
 
@@ -336,6 +338,8 @@ public class Friend implements Comparable<Friend> {
 		this.setAliasData(friend.getAliasData());
 		this.setAliasIv(friend.getAliasIv());
 		this.setAliasVersion(friend.getAliasVersion());
+		this.setAliasHashed(friend.isAliasHashed());
+		this.setImageHashed(friend.isImageHashed());
 		// this.setSelectedItem(friend.getSelectedItem());
 		// this.setSelectedTop(friend.getSelectedTop());
 		// this.setChatActive(friend.isChatActive());
@@ -354,6 +358,9 @@ public class Friend implements Comparable<Friend> {
 		friend.setAliasData(jsonFriend.optString("aliasData"));
 		friend.setAliasVersion(jsonFriend.optString("aliasVersion"));
 		friend.setAliasIv(jsonFriend.optString("aliasIv"));
+
+		friend.setAliasHashed(jsonFriend.optBoolean("aliasHashed", false));
+		friend.setImageHashed(jsonFriend.optBoolean("imageHashed", false));
 
 
 		friend.setFlags(jsonFriend.optInt("flags"));
@@ -382,6 +389,8 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("aliasVersion", this.getAliasVersion());
 			jsonFriend.put("aliasData", this.getAliasData());
 			jsonFriend.put("aliasIv", this.getAliasIv());
+			jsonFriend.put("aliasHashed", this.isAliasHashed());
+			jsonFriend.put("imageHashed", this.isImageHashed());
 
 			jsonFriend.put("selectedItem", this.getSelectedItem());
 			jsonFriend.put("selectedTop", this.getSelectedTop());
@@ -482,7 +491,20 @@ public class Friend implements Comparable<Friend> {
 	public boolean hasFriendAliasAssigned() {
 		return !TextUtils.isEmpty(getAliasIv()) && !TextUtils.isEmpty(getAliasVersion()) && !TextUtils.isEmpty(getAliasData());
 	}
-	
-	
 
+	public boolean isAliasHashed() {
+		return mAliasHashed;
+	}
+
+	public void setAliasHashed(boolean aliasHashed) {
+		this.mAliasHashed = aliasHashed;
+	}
+
+	public boolean isImageHashed() {
+		return mImageHashed;
+	}
+
+	public void setImageHashed(boolean imageHashed) {
+		this.mImageHashed = imageHashed;
+	}
 };

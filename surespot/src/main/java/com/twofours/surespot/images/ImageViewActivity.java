@@ -61,7 +61,7 @@ public class ImageViewActivity extends SherlockActivity {
 						try {
 							inputStream = new PipedInputStream(out);
 
-							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(),
+							EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(), message.isHashed(),
 									new BufferedInputStream(imageStream), out);
 
 							bitmap = BitmapFactory.decodeStream(inputStream);
