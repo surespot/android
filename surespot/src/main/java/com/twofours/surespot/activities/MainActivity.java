@@ -1784,9 +1784,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		mChatController.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
 
 		// TEST: this mimicks the user sending 30 messages and closing the activity
-		//for (int n = 0; n < 30; n++) {
+		// for (int n = 0; n < 30; n++) {
 		//	mChatController.sendMessage(username, message + ":" + n, SurespotConstants.MimeTypes.TEXT);
-		//}
+		// }
 		//finish();
 
 		TextKeyListener.clear(mEtMessage.getText());

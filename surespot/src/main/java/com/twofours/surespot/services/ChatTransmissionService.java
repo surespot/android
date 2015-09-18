@@ -20,7 +20,6 @@ import android.util.Log;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -36,35 +35,21 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.ui.UIUtils;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import ch.boye.httpclientandroidlib.HttpStatus;
-import ch.boye.httpclientandroidlib.HttpVersion;
-import ch.boye.httpclientandroidlib.StatusLine;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
-import ch.boye.httpclientandroidlib.message.BasicStatusLine;
 import io.socket.IOAcknowledge;
 import io.socket.IOCallback;
 import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
-// TODO: Top priority - resend needs to move into this service, but how to tease apart the use of UI element chat adapters from the actual resend work?
-// TODO: #1 - SERVICE LIFESPAN - when is it okay to "give up and shut down"?
-// TODO: #2 - Logout/login - make sure this is handled appropriately (also closely tied to #1)
-// TODO: all TODO's marked with HEREHERE - may need to chat with Adam on some, but make sure I know the inner workings before-hand
-// TODO: change all the "public" stuff back to private with controlled methods (i.e. ChatController should not be mucking with concurrent queues directly)
-// TODO: better way to interface/communicate with ChatController for things like iterating through chat adapters/grabbing messages and ids (if necessary)
 @SuppressLint("NewApi")
 public class ChatTransmissionService extends Service {
     private static final String TAG = "ChatTransmissionService";
@@ -76,36 +61,33 @@ public class ChatTransmissionService extends Service {
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
     private boolean mMainActivityPaused = false;
+    private ReconnectTask mReconnectTask;
 
     public static final int STATE_CONNECTING = 0;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 2;
-
     private static final int MAX_RETRIES = 60;
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    public SocketIO socket;
+    private SocketIO socket;
     private int mRetries = 0;
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
-
     private int mConnectionState;
     private boolean mOnWifi;
-
     private IOCallback mSocketCallback;
-
 
     @Override
     public void onCreate() {
         SurespotLog.i(TAG, "onCreate");
 
+        /*
         Notification notification = null;
 
         // if we're < 4.3 then start foreground service
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             // if this is the first time using the app don't use foreground service
-            // TODO: have Adam explain what this does, why it's used
             boolean alreadyPrevented = Utils.getSharedPrefsBoolean(this, "firstTimePreventedForegroundServiceChatTransmission");
             if (alreadyPrevented) {
                 // in 4.3 and above they decide to fuck us by showing the notification
@@ -127,6 +109,7 @@ public class ChatTransmissionService extends Service {
         if (notification != null) {
             startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
         }
+        */
 
         setOnWifi();
 
@@ -136,7 +119,6 @@ public class ChatTransmissionService extends Service {
             public void onMessage(JSONObject json, IOAcknowledge ack) {
                 try {
                     SurespotLog.d(TAG, "JSON Server said: %s", json.toString(2));
-
                 }
                 catch (JSONException e) {
                     SurespotLog.w(TAG, "onMessage", e);
@@ -169,7 +151,6 @@ public class ChatTransmissionService extends Service {
                             // HttpResponseException error = (HttpResponseException) arg0;
                             // int statusCode = error.getStatusCode();
                             // SurespotLog.i(TAG, error, "http error on relogin - bailing, status: %d, message: %s", statusCode, error.getMessage());
-
                             socket = null;
 
                             if (mListener != null) {
@@ -187,7 +168,6 @@ public class ChatTransmissionService extends Service {
                     });
 
                     if (!reAuthing) {
-
                         socket = null;
 
                         if (mListener != null) {
@@ -287,7 +267,6 @@ public class ChatTransmissionService extends Service {
                 else
                 if (event.equals("message")) {
                     try {
-                        // TODO: Owen note to self: we receive messages we just sent.  That's how we know a message was sent out successfully
                         JSONObject jsonMessage = new JSONObject((String) args[0]);
                         SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
                         SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
@@ -497,7 +476,6 @@ public class ChatTransmissionService extends Service {
         SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
     }
 
-
     public int getState() {
         return mConnectionState;
     }
@@ -506,14 +484,18 @@ public class ChatTransmissionService extends Service {
         mConnectionState = state;
     }
 
-    private ReconnectTask mReconnectTask;
-
     public ConcurrentLinkedQueue<SurespotMessage> getResendBuffer() {
         return mResendBuffer;
     }
 
     public ConcurrentLinkedQueue<SurespotMessage> getSendBuffer() {
         return mSendBuffer;
+    }
+
+    public void sendOnSocket(String json) {
+        if (socket != null) {
+            socket.send(json);
+        }
     }
 
     private class ReconnectTask extends TimerTask {
@@ -652,7 +634,9 @@ public class ChatTransmissionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY;
+        // as long as the main activity isn't forced to be destroyed right away, we don't really need to run as STICKY
+        // At some point in the future if we want to poll the server for notifications, we may need to run as STICKY
+        return START_NOT_STICKY;
     }
 
     @Override

@@ -246,8 +246,7 @@ public class ChatController {
 			sMessageList.put(message.toJSONObjectSocket());
 		}
 
-		// TODO: rework - shouldn't be sending using chat tx service socket directly
-		SurespotApplication.getChatTransmissionService().socket.send(sMessageList.toString());
+		SurespotApplication.getChatTransmissionService().sendOnSocket(sMessageList.toString());
 	}
 
 	public void handleMessage(final SurespotMessage message) {
