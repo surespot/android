@@ -1002,6 +1002,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		setBackgroundImage();
 		setEditTextHints();
 
+		if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+			SurespotApplication.getChatTransmissionService().setMainActivityPaused(false);
+		}
+
 	}
 
 	@Override
@@ -1028,6 +1032,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mDialog != null && mDialog.isShowing()) {
 			mDialog.dismiss();
 		}
+
+		if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+			SurespotApplication.getChatTransmissionService().setMainActivityPaused(true);
+		}
+
 		mResumed = false;
 	}
 

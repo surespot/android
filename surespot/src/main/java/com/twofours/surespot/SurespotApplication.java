@@ -30,6 +30,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.ChatTransmissionService;
 import com.twofours.surespot.services.CredentialCachingService;
 
@@ -44,6 +45,7 @@ public class SurespotApplication extends MultiDexApplication {
 	private static String mVersion;
 	private static BillingController mBillingController;
 	private static String mUserAgent;
+	private static NetworkController mNetworkController = null;
 
 	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -188,6 +190,14 @@ public class SurespotApplication extends MultiDexApplication {
 
 	public static CredentialCachingService getCachingService() {
 		return mCredentialCachingService;
+	}
+
+	public static NetworkController getNetworkController() { return mNetworkController; }
+
+
+	public static void setNetworkController(NetworkController networkController) {
+		// TODO: ensure cleanup of existing network controller if non-null?
+		mNetworkController = networkController;
 	}
 
 	public static ChatTransmissionService getChatTransmissionService () {

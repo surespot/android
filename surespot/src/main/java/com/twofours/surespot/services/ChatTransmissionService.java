@@ -69,14 +69,13 @@ import io.socket.SocketIOException;
 public class ChatTransmissionService extends Service {
     private static final String TAG = "ChatTransmissionService";
 
-    private NetworkController mNetworkController = null;
-
     private final IBinder mBinder = new ChatTransmissionServiceBinder();
     private ITransmissionServiceListener mListener;
     private ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
     private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
+    private boolean mMainActivityPaused = false;
 
     public static final int STATE_CONNECTING = 0;
     public static final int STATE_CONNECTED = 1;
@@ -156,7 +155,7 @@ public class ChatTransmissionService extends Service {
                 if (socketIOException.getHttpStatus() == 403) {
                     SurespotLog.d(TAG, "got 403 from websocket");
 
-                    reAuthing = NetworkHelper.reLogin(ChatTransmissionService.this, mNetworkController, mUsername, new CookieResponseHandler() {
+                    reAuthing = NetworkHelper.reLogin(ChatTransmissionService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
 
                         @Override
                         public void onSuccess(int responseCode, String result, Cookie cookie) {
@@ -379,6 +378,24 @@ public class ChatTransmissionService extends Service {
         };
     }
 
+    public void setMainActivityPaused(boolean paused) {
+        mMainActivityPaused = paused;
+        checkDisconnect();
+        checkReconnect();
+    }
+
+    private void checkDisconnect() {
+        if (mMainActivityPaused && mSendBuffer.size() == 0) {
+            disconnect();
+        }
+    }
+
+    private void checkReconnect() {
+        if (!mMainActivityPaused) {
+            connect();
+        }
+    }
+
     private void connected() {
         // tell any listeners that we're connected
         if (mListener != null) {
@@ -414,7 +431,7 @@ public class ChatTransmissionService extends Service {
 
     public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
                                       final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
-        mNetworkController.postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
+        SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
     }
 
     private int generateInterval(int k) {
@@ -476,12 +493,12 @@ public class ChatTransmissionService extends Service {
     }
 
     public NetworkController getNetworkController() {
-        return mNetworkController;
+        return SurespotApplication.getNetworkController();
     }
 
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
         setUsername(mUser);
-        mNetworkController = new NetworkController(this, mUser, m401Handler);
+        SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
     }
 
 
@@ -514,6 +531,9 @@ public class ChatTransmissionService extends Service {
 
     public void connect() {
         SurespotLog.d(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: " + mConnectionState);
+
+        if (mConnectionState == STATE_CONNECTED || mConnectionState == STATE_CONNECTING)
+            return;
 
         // gives the UI a chance to copy out pre-connect ids
         if (mListener != null) {
@@ -575,6 +595,7 @@ public class ChatTransmissionService extends Service {
 
         SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
+        checkDisconnect();
         checkShutdownService();
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
