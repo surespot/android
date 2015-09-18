@@ -830,7 +830,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mBillingController = SurespotApplication.getBillingController();
 
-		mChatController = new ChatController(MainActivity.this, mUser, SurespotApplication.getChatTransmissionService().getNetworkController(), getSupportFragmentManager(), m401Handler,
+		mChatController = new ChatController(MainActivity.this, mUser, SurespotApplication.getNetworkController(), getSupportFragmentManager(), m401Handler,
 				new IAsyncCallback<Boolean>() {
 					@Override
 					public void handleResponse(Boolean inProgress) {
@@ -1054,7 +1054,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, SurespotApplication.getChatTransmissionService().getNetworkController(), selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, SurespotApplication.getNetworkController(), selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
 						@Override
 						public void handleResponse(Boolean errorHandled) {
 							// delete local image
@@ -1291,7 +1291,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// }.execute();
 			return true;
 		case R.id.menu_invite_external:
-			UIUtils.sendInvitation(MainActivity.this, SurespotApplication.getChatTransmissionService().getNetworkController());
+			UIUtils.sendInvitation(MainActivity.this, SurespotApplication.getNetworkController());
 			return true;
 		case R.id.menu_clear_messages:
 			SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1358,7 +1358,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (SurespotApplication.getChatTransmissionServiceNoThrow() == null) {
 			return null;
 		}
-		return SurespotApplication.getChatTransmissionService().getNetworkController();
+		return SurespotApplication.getNetworkController();
 	}
 
 	public static Context getContext() {
@@ -1747,7 +1747,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 					SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-					ChatUtils.uploadPictureMessageAsync(this, mChatController, SurespotApplication.getChatTransmissionService().getNetworkController(), imageUri, mCurrentFriend.getName(), true,
+					ChatUtils.uploadPictureMessageAsync(this, mChatController, SurespotApplication.getNetworkController(), imageUri, mCurrentFriend.getName(), true,
 							new IAsyncCallback<Boolean>() {
 
 								@Override
@@ -1846,7 +1846,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 
 			setHomeProgress(true);
-			SurespotApplication.getChatTransmissionService().getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+			SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String arg0) {
 					setHomeProgress(false);

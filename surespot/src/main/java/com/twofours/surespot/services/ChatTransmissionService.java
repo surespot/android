@@ -492,10 +492,6 @@ public class ChatTransmissionService extends Service {
         mUsername = username;
     }
 
-    public NetworkController getNetworkController() {
-        return SurespotApplication.getNetworkController();
-    }
-
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
         setUsername(mUser);
         SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
