@@ -131,6 +131,20 @@ public class Utils {
 
 	}
 
+
+	public static String getUserSharedPrefsString(Context context, String username, String key) {
+		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);
+		return sp.getString(key, null);
+	}
+
+	public static boolean putUserSharedPrefsString(Context context, String username, String key, String value) {
+		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);
+		Editor e = sp.edit();
+		e.putString(key, value);
+		return e.commit();
+	}
+
+
 	public static boolean getSharedPrefsBoolean(Context context, String key) {
 		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE, android.content.Context.MODE_PRIVATE);
 		return settings.getBoolean(key, false);

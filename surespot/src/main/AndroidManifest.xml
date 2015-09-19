@@ -42,13 +42,14 @@
         android:label="surespot"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
         <receiver
-            android:name="com.google.android.gcm.GCMBroadcastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
 
-                <category android:name="com.twofours.surespot" />
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.two2fours.surespot" />
             </intent-filter>
         </receiver>
 
@@ -61,7 +62,27 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.twofours.surespot.GCMIntentService" />
+        <service
+            android:name=".services.SurespotGcmListenerService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <!-- [END gcm_listener] -->
+        <!-- [START instanceId_listener] -->
+        <service
+            android:name=".services.SurespotInstanceIDListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID"/>
+            </intent-filter>
+        </service>
+        <!-- [END instanceId_listener] -->
+        <service
+            android:name=".services.RegistrationIntentService"
+            android:exported="false">
+        </service>
         <service
             android:name="com.twofours.surespot.services.CredentialCachingService"
             android:exported="false"></service>

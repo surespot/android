@@ -14,15 +14,19 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.preference.PreferenceManager;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
+import android.widget.ProgressBar;
 
-import com.google.android.gcm.GCMRegistrar;
+//import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.FileUtils;
@@ -127,6 +131,8 @@ public class SurespotApplication extends MultiDexApplication {
 			mVersion = "unknown";
 		}
 
+
+
 		mUserAgent = "surespot/" + SurespotApplication.getVersion() + " (Android)";
 
 		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
@@ -134,27 +140,6 @@ public class SurespotApplication extends MultiDexApplication {
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
 		mStateController = new StateController(this);
 
-		try {
-			// device without GCM throws exception
-			GCMRegistrar.checkDevice(this);
-			GCMRegistrar.checkManifest(this);
-
-			// final String regId = GCMRegistrar.getRegistrationId(this);
-			boolean registered = GCMRegistrar.isRegistered(this);
-			boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
-			if (versionChanged(this) || !registered || !registeredOnServer) {
-				SurespotLog.v(TAG, "Registering for GCM.");
-				GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
-			}
-			else {
-				SurespotLog.v(TAG, "GCM already registered.");
-			}
-		}
-		catch (Exception e) {
-			SurespotLog.w(TAG, "onCreate", e);
-		}
-
-		// NetworkController.unregister(this, regId);
 
 		SurespotLog.v(TAG, "starting cache service");
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);

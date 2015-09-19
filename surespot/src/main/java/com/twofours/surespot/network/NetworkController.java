@@ -35,7 +35,6 @@ import ch.boye.httpclientandroidlib.protocol.HTTP;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
 import ch.boye.httpclientandroidlib.util.EntityUtils;
 
-import com.google.android.gcm.GCMRegistrar;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -223,7 +222,7 @@ public class NetworkController {
 					setUnauthorized(false, false);
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+						Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result, cookie);
@@ -321,7 +320,7 @@ public class NetworkController {
 
 	}
 
-	public void login(String username, String password, String signature, final CookieResponseHandler responseHandler) {
+	public void login(final String username, String password, String signature, final CookieResponseHandler responseHandler) {
 		SurespotLog.d(TAG, "login username: %s", username);
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("username", username);
@@ -334,7 +333,7 @@ public class NetworkController {
 
 		// get the gcm id
 		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
+		String gcmIdSent = Utils.getUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT);
 
 		SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
 
@@ -375,7 +374,7 @@ public class NetworkController {
 					setUnauthorized(false, false);
 					// update shared prefs
 					if (gcmUpdated) {
-						Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+						Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 					}
 
 					responseHandler.onSuccess(responseCode, result, cookie);
@@ -472,56 +471,56 @@ public class NetworkController {
 		post("/invites/" + friendname + "/" + action, null, responseHandler);
 	}
 
-	public void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
-		// make sure the gcm is set
-		// use case:
-		// user signs-up without google account (unlikely)
-		// user creates google account
-		// user opens app again, we have session so neither login or add user is called (which wolud set the gcm)
-		// so we need to upload the gcm here if we haven't already
-		// get the gcm id
-
-		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
-
-		Map<String, String> params = new HashMap<String, String>();
-
-		boolean gcmUpdatedTemp = false;
-		// update the gcmid if it differs
-		if (gcmIdReceived != null && !gcmIdReceived.equals(gcmIdSent)) {
-
-			params.put("gcmId", gcmIdReceived);
-			gcmUpdatedTemp = true;
-		}
-		else {
-			SurespotLog.v(TAG, "GCM does not need updating on server.");
-			return;
-		}
-
-		// just be javascript already
-		final boolean gcmUpdated = gcmUpdatedTemp;
-
-		post("/registergcm", new RequestParams(params), new AsyncHttpResponseHandler() {
-
-			@Override
-			public void onSuccess(int responseCode, String result) {
-
-				// update shared prefs
-				if (gcmUpdated) {
-					Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
-				}
-
-				responseHandler.onSuccess(responseCode, result);
-			}
-
-			@Override
-			public void onFailure(Throwable arg0, String arg1) {
-				responseHandler.onFailure(arg0, arg1);
-			}
-
-		});
-
-	}
+//	public void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
+//		// make sure the gcm is set
+//		// use case:
+//		// user signs-up without google account (unlikely)
+//		// user creates google account
+//		// user opens app again, we have session so neither login or add user is called (which wolud set the gcm)
+//		// so we need to upload the gcm here if we haven't already
+//		// get the gcm id
+//
+//		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+//		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
+//
+//		Map<String, String> params = new HashMap<String, String>();
+//
+//		boolean gcmUpdatedTemp = false;
+//		// update the gcmid if it differs
+//		if (gcmIdReceived != null && !gcmIdReceived.equals(gcmIdSent)) {
+//
+//			params.put("gcmId", gcmIdReceived);
+//			gcmUpdatedTemp = true;
+//		}
+//		else {
+//			SurespotLog.v(TAG, "GCM does not need updating on server.");
+//			return;
+//		}
+//
+//		// just be javascript already
+//		final boolean gcmUpdated = gcmUpdatedTemp;
+//
+//		post("/registergcm", new RequestParams(params), new AsyncHttpResponseHandler() {
+//
+//			@Override
+//			public void onSuccess(int responseCode, String result) {
+//
+//				// update shared prefs
+//				if (gcmUpdated) {
+//					Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+//				}
+//
+//				responseHandler.onSuccess(responseCode, result);
+//			}
+//
+//			@Override
+//			public void onFailure(Throwable arg0, String arg1) {
+//				responseHandler.onFailure(arg0, arg1);
+//			}
+//
+//		});
+//
+//	}
 
 	public void validate(String username, String password, String signature, AsyncHttpResponseHandler responseHandler) {
 		RequestParams params = new RequestParams();
@@ -538,19 +537,6 @@ public class NetworkController {
 
 	public void userExists(String username, AsyncHttpResponseHandler responseHandler) {
 		get("/users/" + username + "/exists", null, responseHandler);
-	}
-
-	/**
-	 * Unregister this account/device pair within the server.
-	 */
-	public static void unregister(final Context context, final String regId) {
-		SurespotLog.i(TAG, "unregistering device (regId = " + regId + ")");
-		try {
-			// this will puke on phone with no google account
-			GCMRegistrar.setRegisteredOnServer(context, false);
-		}
-		finally {
-		}
 	}
 
 	public void postFileStream(Context context, final String ourVersion, final String user, final String theirVersion, final String id,
