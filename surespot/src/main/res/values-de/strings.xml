@@ -343,6 +343,5 @@
   <string name="notification_message_no_from">%s: Neue Nachricht empfangen.</string>
   <string name="notification_invite_no_from">%s: Kontaktanfrage erhalten.</string>
   <string name="notification_invite_accept_no_from">%s: Kontaktanfrage akzeptiert.</string>
-  <string name="whats_new_57_message">Neue Funktionen!\n\nPasswort im Schlüsselbund speichern.\n\nAlias für Kontakte (im Home-Tab lange auf den Kontakt drücken)\n\nVerbessere Verbindungsverwaltung.\n\nDanke für die Unterstützung durch eure spenden!</string>
-  <string name="whats_new_57_title">Version 58</string>
+  <string name="decrypt_update">Bitte aktualisieren Sie Surespot zu entschlüsseln.</string>
 </resources>

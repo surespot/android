@@ -343,6 +343,5 @@
   <string name="notification_message_no_from">%s: Nuovo messaggio ricevuto.</string>
   <string name="notification_invite_no_from">%s: Nuovo invito ricevuto.</string>
   <string name="notification_invite_accept_no_from">%s: Invito accettato.</string>
-  <string name="whats_new_57_message">Nuove funzionalità!\n\nSalva la password nel portachiavi.\n\nAssegna dei nomi ai tuoi amici (tieni premuto sul nome dell\'amico nella home).\n\nMigliorata la gestione della connessione.\n\nGrazie per aver aiutato surespot con le vostre donazioni!</string>
-  <string name="whats_new_57_title">Versione 58</string>
+  <string name="decrypt_update">Si prega di aggiornare SureSpot per decifrare.</string>
 </resources>
