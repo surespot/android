@@ -280,7 +280,7 @@ public class LoginActivity extends SherlockActivity {
 				protected void onPostExecute(final IdSig idSig) {
 					if (idSig != null) {
 
-						NetworkController networkController = MainActivity.getNetworkController();
+						NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
 						if (networkController == null) {
 							try {
 								networkController = new NetworkController(LoginActivity.this, null, null);

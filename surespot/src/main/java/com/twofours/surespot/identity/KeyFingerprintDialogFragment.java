@@ -19,6 +19,7 @@ import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
@@ -105,7 +106,7 @@ public class KeyFingerprintDialogFragment extends SherlockDialogFragment {
 				}
 				
 				//get latest version from server							
-				String latestVersion = MainActivity.getNetworkController().getKeyVersionSync(mUsername);
+				String latestVersion = SurespotApplication.getNetworkController().getKeyVersionSync(mUsername);
 				if (latestVersion == null) {
 					activity = getActivity();
 					if (activity == null) {

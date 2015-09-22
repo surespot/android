@@ -177,7 +177,16 @@ public class SurespotApplication extends MultiDexApplication {
 		return mCredentialCachingService;
 	}
 
-	public static NetworkController getNetworkController() { return mNetworkController; }
+	public static NetworkController getNetworkControllerNoThrow() {
+		return mNetworkController;
+	}
+
+	public static NetworkController getNetworkController() {
+		if (mNetworkController == null) {
+			throw new NullPointerException("mNetworkController was null");
+		}
+		return mNetworkController;
+	}
 
 
 	public static void setNetworkController(NetworkController networkController) {

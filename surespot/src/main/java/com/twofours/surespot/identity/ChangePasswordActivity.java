@@ -24,6 +24,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
@@ -143,7 +144,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		MainActivity.getNetworkController().getPasswordToken(username, dPassword, authSignature, new AsyncHttpResponseHandler() {
+		SurespotApplication.getNetworkController().getPasswordToken(username, dPassword, authSignature, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, final String passwordToken) {
 
@@ -169,7 +170,7 @@ public class ChangePasswordActivity extends SherlockActivity {
 						if (result != null) {
 
 							// upload all this crap to the server
-							MainActivity.getNetworkController().changePassword(username, dPassword, result.password, result.authSig,
+							SurespotApplication.getNetworkController().changePassword(username, dPassword, result.password, result.authSig,
 									result.tokenSig, result.keyVersion, new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// update the password

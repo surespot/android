@@ -26,6 +26,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -302,7 +303,7 @@ public class VoiceController {
 						new File(wavFile).delete();
 
 						if (exitValue == 0) {
-							ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), MainActivity.getNetworkController(),
+							ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), SurespotApplication.getNetworkController(),
 									Uri.fromFile(new File(m4aFile)), mUsername, new IAsyncCallback<Boolean>() {
 										@Override
 										public void handleResponse(Boolean result) {

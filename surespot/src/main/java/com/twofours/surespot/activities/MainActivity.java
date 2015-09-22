@@ -237,10 +237,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			@Override
 			public void handleResponse(final String message, final Boolean timedOut) {
 				SurespotLog.d(TAG, "Got 401, checking authorization.");
-				if (!MainActivity.this.getNetworkController().isUnauthorized()) {
+				if (!SurespotApplication.getNetworkController().isUnauthorized()) {
 
 					// if we just timed out, don't blow away the cookie or go to login screen
-					MainActivity.this.getNetworkController().setUnauthorized(true, !timedOut);
+					SurespotApplication.getNetworkController().setUnauthorized(true, !timedOut);
 
 					if (!timedOut) {
 						SurespotLog.d(TAG, "Got 401, launching login intent.");
@@ -1158,7 +1158,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				if (selectedImageUri != null) {
 
 					// Utils.makeToast(this, getString(R.string.uploading_image));
-					ChatUtils.uploadFriendImageAsync(this, getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
+					ChatUtils.uploadFriendImageAsync(this, SurespotApplication.getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
 
 						@Override
 						public void handleResponse(String url, String version, String iv) {
@@ -1407,13 +1407,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		MessageImageDownloader.evictCache();
-	}
-
-	public static NetworkController getNetworkController() {
-		if (SurespotApplication.getChatTransmissionServiceNoThrow() == null) {
-			return null;
-		}
-		return SurespotApplication.getNetworkController();
 	}
 
 	public static Context getContext() {

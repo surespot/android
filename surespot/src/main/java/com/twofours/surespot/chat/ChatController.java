@@ -292,7 +292,7 @@ public class ChatController {
 							}
 							else {
 
-								InputStream imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
+								InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
 
 								Bitmap bitmap = null;
 								PipedOutputStream out = new PipedOutputStream();
@@ -327,7 +327,7 @@ public class ChatController {
 								}
 								else {
 
-									InputStream encryptedVoiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(),
+									InputStream encryptedVoiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(),
 											message.getData());
 
 									PipedOutputStream out = new PipedOutputStream();
@@ -1733,7 +1733,6 @@ public class ChatController {
 					ChatUtils.base64EncodeNowrap(iv)));
 
 			try {
-
 				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
 				SurespotApplication.getChatTransmissionService().enqueueMessage(chatMessage);
 			}
@@ -1795,7 +1794,6 @@ public class ChatController {
 			final SurespotMessage chatMessage = ChatUtils.buildPlainBinaryMessage(username, mimeType, plainData, new String(ChatUtils.base64EncodeNowrap(iv)));
 
 			try {
-
 				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
 				SurespotApplication.getChatTransmissionService().enqueueMessage(chatMessage);
 			}

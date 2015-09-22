@@ -18,6 +18,7 @@ import android.view.WindowManager.LayoutParams;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -53,7 +54,7 @@ public class ImageViewActivity extends SherlockActivity {
 					@Override
 					protected Bitmap doInBackground(Void... params) {
 
-						InputStream imageStream = MainActivity.getNetworkController().getFileStream(ImageViewActivity.this, message.getData());
+						InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(ImageViewActivity.this, message.getData());
 
 						Bitmap bitmap = null;
 						PipedOutputStream out = new PipedOutputStream();

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
@@ -274,7 +275,7 @@ public class BillingController {
 		if (updateServerCallback != null) {
 
 			// upload to server
-			NetworkController networkController = MainActivity.getNetworkController();
+			NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
 			// TODO tell user if we can't update the token on the server tell them to login
 			if (networkController != null) {
 				networkController.updateVoiceMessagingPurchaseToken(new AsyncHttpResponseHandler() {

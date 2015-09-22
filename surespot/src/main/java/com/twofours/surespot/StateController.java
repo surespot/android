@@ -282,7 +282,7 @@ public class StateController {
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 
 				// network caches
-				NetworkController networkController = MainActivity.getNetworkController();
+				NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
 				if (networkController != null) {
 					networkController.clearCache();
 				}

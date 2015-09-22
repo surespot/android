@@ -192,7 +192,7 @@ public class MessageImageDownloader {
 				}
 			}
 			else {
-				imageStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+				imageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 			}
 
 			if (mCancelled) {

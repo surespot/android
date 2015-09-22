@@ -22,6 +22,7 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -142,7 +143,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
 									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-									InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity, mMessage.getData());
+									InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(mActivity, mMessage.getData());
 
 									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);

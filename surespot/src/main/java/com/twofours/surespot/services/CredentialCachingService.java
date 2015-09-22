@@ -98,7 +98,7 @@ public class CredentialCachingService extends Service {
 			@Override
 			public String load(String key) throws Exception {
 
-				String version = MainActivity.getNetworkController().getKeyVersionSync(key);
+				String version = SurespotApplication.getNetworkController().getKeyVersionSync(key);
 				SurespotLog.v(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", key, version);
 				return version;
 			}

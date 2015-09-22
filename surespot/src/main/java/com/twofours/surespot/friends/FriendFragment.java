@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.identity.IdentityController;
@@ -46,7 +47,7 @@ public class FriendFragment extends SherlockFragment {
 
 			@Override
 			public void onClick(View v) {
-				UIUtils.sendInvitation(getActivity(), MainActivity.getNetworkController());
+				UIUtils.sendInvitation(getActivity(), SurespotApplication.getNetworkController());
 
 			}
 		});

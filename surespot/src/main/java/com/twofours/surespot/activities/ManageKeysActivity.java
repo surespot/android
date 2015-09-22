@@ -28,6 +28,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
@@ -141,7 +142,7 @@ public class ManageKeysActivity extends SherlockActivity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		MainActivity.getNetworkController().getKeyToken(username, dPassword, authSignature, new JsonHttpResponseHandler() {
+		SurespotApplication.getNetworkController().getKeyToken(username, dPassword, authSignature, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, final JSONObject response) {
 
@@ -179,7 +180,7 @@ public class ManageKeysActivity extends SherlockActivity {
 					protected void onPostExecute(final RollKeysWrapper result) {
 						if (result != null) {
 							// upload all this crap to the server
-							MainActivity.getNetworkController().updateKeys(username, dPassword,
+							SurespotApplication.getNetworkController().updateKeys(username, dPassword,
 									EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 									EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
 									result.keyVersion, result.clientSig,  new AsyncHttpResponseHandler() {

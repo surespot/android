@@ -17,6 +17,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
@@ -105,7 +106,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		MainActivity.getNetworkController().getDeleteToken(username, dPassword, authSignature, new AsyncHttpResponseHandler() {
+		SurespotApplication.getNetworkController().getDeleteToken(username, dPassword, authSignature, new AsyncHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, final String deleteToken) {
 
@@ -126,7 +127,7 @@ public class DeleteIdentityActivity extends SherlockActivity {
 					protected void onPostExecute(final DeleteIdentityWrapper result) {
 						if (result != null) {
 							// upload all this crap to the server
-							MainActivity.getNetworkController().deleteUser(username, dPassword, result.authSig, result.tokenSig,
+							SurespotApplication.getNetworkController().deleteUser(username, dPassword, result.authSig, result.tokenSig,
 									result.keyVersion, new AsyncHttpResponseHandler() {
 										public void onSuccess(int statusCode, String content) {
 											// delete the identity stuff localally

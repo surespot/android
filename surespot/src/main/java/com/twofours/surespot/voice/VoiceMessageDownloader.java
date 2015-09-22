@@ -186,7 +186,7 @@ public class VoiceMessageDownloader {
 				}
 				else {
 					SurespotLog.v(TAG, "getting voice stream from cloud");
-					voiceStream = MainActivity.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+					voiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 				}
 
 				if (mCancelled) {

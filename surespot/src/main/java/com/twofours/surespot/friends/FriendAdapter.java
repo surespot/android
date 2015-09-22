@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -318,7 +319,7 @@ public class FriendAdapter extends BaseAdapter {
 			final Friend friend = (Friend) getItem(position);
 			final String friendname = friend.getName();
 
-			MainActivity.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
+			SurespotApplication.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
 				public void onSuccess(String arg0) {
 
 					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
