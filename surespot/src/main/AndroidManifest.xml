@@ -1,197 +1,245 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.twofours.surespot" 
-	android:versionCode="60"
-	android:versionName="60">
-	<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="23" />
+    package="com.twofours.surespot"
+    android:versionCode="61"
+    android:versionName="61">
 
-	<permission android:name="com.twofours.surespot.permission.C2D_MESSAGE"
-		android:protectionLevel="signature" />
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="23" />
 
-	<uses-permission android:name="com.twofours.surespot.permission.C2D_MESSAGE" />
-	<!-- App receives GCM messages. -->
-	<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-	<!-- GCM connects to Google Services. -->
-	<uses-permission android:name="android.permission.INTERNET" />
-	<!-- GCM requires a Google account. -->
-	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
-	<!-- Keeps the processor from sleeping when a message is received. -->
-	<uses-permission android:name="android.permission.WAKE_LOCK" />
-	<uses-permission android:name="android.permission.VIBRATE" />
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-	<uses-permission android:name="android.permission.CAMERA" />
-	<uses-permission android:name="com.android.vending.BILLING" />
-	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <permission
+        android:name="com.twofours.surespot.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
 
-	<uses-feature android:name="android.hardware.camera"
-		android:required="false" />
+    <uses-permission android:name="com.twofours.surespot.permission.C2D_MESSAGE" />
+    <!-- App receives GCM messages. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <!-- GCM connects to Google Services. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- GCM requires a Google account. -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <!-- Keeps the processor from sleeping when a message is received. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-	<supports-screens android:largeScreens="true"
-		android:xlargeScreens="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
-	<application android:name="com.twofours.surespot.SurespotApplication"
-		android:icon="@drawable/surespotlauncher" android:label="surespot"
-		android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
-		<receiver android:name="com.google.android.gcm.GCMBroadcastReceiver"
-			android:permission="com.google.android.c2dm.permission.SEND">
-			<intent-filter>
-				<action android:name="com.google.android.c2dm.intent.RECEIVE" />
-				<action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+    <supports-screens
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
 
-				<category android:name="com.twofours.surespot" />
-			</intent-filter>
-		</receiver>
+    <application
+        android:name="com.twofours.surespot.SurespotApplication"
+        android:icon="@drawable/surespotlauncher"
+        android:label="surespot"
+        android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
 
-		<!-- Used for install referral measurement -->
-		<service
-			android:name="com.google.analytics.tracking.android.CampaignTrackingService" />
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.two2fours.surespot" />
+            </intent-filter>
+        </receiver>
 
-		<receiver android:name="com.twofours.surespot.SurespotBroadcastReceiver">
-			<intent-filter>
-				<action android:name="com.android.vending.INSTALL_REFERRER" />
-			</intent-filter>
-		</receiver>
+        <!-- Used for install referral measurement -->
+        <service android:name="com.google.analytics.tracking.android.CampaignTrackingService" />
 
-		<service android:name="com.twofours.surespot.GCMIntentService" />
-		<service android:name="com.twofours.surespot.services.CredentialCachingService"
-			android:exported="false">
-		</service>
-		<service
-			android:name=".services.ChatTransmissionService"
-			android:exported="false" >
-		</service>
+        <receiver android:name="com.twofours.surespot.SurespotBroadcastReceiver">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
 
-		<activity android:name="com.twofours.surespot.activities.MainActivity"
-			android:label="@string/title_activity_main" android:launchMode="singleTask"
-			android:windowSoftInputMode="adjustResize|stateUnchanged">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
+        <service
+            android:name=".services.SurespotGcmListenerService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <!-- [END gcm_listener] -->
+        <!-- [START instanceId_listener] -->
+        <service
+            android:name=".services.SurespotInstanceIDListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID"/>
+            </intent-filter>
+        </service>
+        <!-- [END instanceId_listener] -->
+        <service
+            android:name=".services.RegistrationIntentService"
+            android:exported="false">
+        </service>
+        <service
+            android:name="com.twofours.surespot.services.CredentialCachingService"
+            android:exported="false"></service>
+        <service
+            android:name=".services.ChatTransmissionService"
+            android:exported="false" >
+        </service>
+        <activity
+            android:name="com.twofours.surespot.activities.MainActivity"
+            android:configChanges="orientation"
+            android:label="@string/title_activity_main"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateUnchanged">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
 
-				<category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.DEFAULT" />
 
-				<data android:mimeType="image/*" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.SEND" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
 
-				<category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.DEFAULT" />
 
-				<data android:mimeType="text/plain" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-				<category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-				<data android:host="server.surespot.me" android:pathPrefix="/autoinvite"
-					android:scheme="https" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.activities.SignupActivity"
-			android:label="@string/title_activity_signup"
-			android:windowSoftInputMode="stateVisible">
-		</activity>
-		<activity android:name="com.twofours.surespot.activities.LoginActivity"
-			android:label="login" android:windowSoftInputMode="stateVisible">
-		</activity>
-		<activity android:name="com.twofours.surespot.images.ImageViewActivity"
-			android:noHistory="true">
-		</activity>
-		<activity android:name="com.twofours.surespot.images.ImageSelectActivity"
-			android:windowSoftInputMode="stateAlwaysHidden">
-		</activity>
-		<activity android:name="com.twofours.surespot.activities.SettingsActivity"
-			android:parentActivityName="com.actionbarsherlock.app.SherlockPreferenceActivity">
-			<meta-data android:name="android.support.PARENT_ACTIVITY"
-				android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
-		</activity>
-		<activity android:name="com.twofours.surespot.backup.ExportIdentityActivity">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.backup.ExportIdentityActivity" />
+                <data
+                    android:host="server.surespot.me"
+                    android:pathPrefix="/autoinvite"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.SignupActivity"
+            android:label="@string/title_activity_signup"
+            android:windowSoftInputMode="stateVisible"></activity>
+        <activity
+            android:name="com.twofours.surespot.activities.LoginActivity"
+            android:label="login"
+            android:windowSoftInputMode="stateVisible"></activity>
+        <activity
+            android:name="com.twofours.surespot.images.ImageViewActivity"
+            android:noHistory="true"></activity>
+        <activity
+            android:name="com.twofours.surespot.images.ImageSelectActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"></activity>
+        <activity
+            android:name="com.twofours.surespot.activities.SettingsActivity"
+            android:parentActivityName="com.actionbarsherlock.app.SherlockPreferenceActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.actionbarsherlock.app.SherlockPreferenceActivity" />
+        </activity>
+        <activity android:name="com.twofours.surespot.backup.ExportIdentityActivity">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.backup.ExportIdentityActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.backup.ImportIdentityActivity"
-			android:exported="true" android:screenOrientation="portrait">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.backup.ImportIdentityActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.backup.ImportIdentityActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.backup.ImportIdentityActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
-			<meta-data android:name="com.google.android.apps.drive.APP_ID"
-				android:value="id=428168563991" />
+            <meta-data
+                android:name="com.google.android.apps.drive.APP_ID"
+                android:value="id=428168563991" />
 
-			<intent-filter>
-				<action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
+            <intent-filter>
+                <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
 
-				<data android:mimeType="application/ssi" />
-				<data android:mimeType="application/vnd.google-apps.drive-sdk.428168563991" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.activities.ManageKeysActivity"
-			android:noHistory="true">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
+                <data android:mimeType="application/ssi" />
+                <data android:mimeType="application/vnd.google-apps.drive-sdk.428168563991" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.activities.ManageKeysActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.ManageKeysActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.identity.DeleteIdentityActivity"
-			android:noHistory="true">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.identity.DeleteIdentityActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.identity.DeleteIdentityActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.identity.DeleteIdentityActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity"
-				  android:noHistory="true">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.identity.ChangePasswordActivity"
-			android:noHistory="true">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.identity.ChangePasswordActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.identity.ChangePasswordActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.identity.ChangePasswordActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.billing.BillingActivity"
-			android:label="@string/surespot">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.billing.BillingActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.billing.BillingActivity"
+            android:label="@string/surespot">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.billing.BillingActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="org.acra.CrashReportDialog"
-			android:excludeFromRecents="true" android:finishOnTaskLaunch="true"
-			android:launchMode="singleInstance" android:noHistory="true"
-			android:theme="@android:style/Theme.Dialog" />
-		<activity android:name="com.twofours.surespot.activities.AboutActivity"
-			android:label="@string/title_activity_about">
-			<intent-filter>
-				<action android:name="com.twofours.surespot.activities.AboutActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="org.acra.CrashReportDialog"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Dialog" />
+        <activity
+            android:name="com.twofours.surespot.activities.AboutActivity"
+            android:label="@string/title_activity_about">
+            <intent-filter>
+                <action android:name="com.twofours.surespot.activities.AboutActivity" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.twofours.surespot.identity.SurespotKeystoreActivity"
-			android:theme="@android:style/Theme.Translucent.NoTitleBar">
-		</activity>
-	</application>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.twofours.surespot.identity.SurespotKeystoreActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
+    </application>
 
 </manifest>

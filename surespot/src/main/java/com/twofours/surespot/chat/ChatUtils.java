@@ -83,7 +83,7 @@ public class ChatUtils {
         chatMessage.setTo(to);
         chatMessage.setPlainData(plainData);
         chatMessage.setIv(iv);
-
+        chatMessage.setHashed(true);
         // store the mime type outside teh encrypted envelope, this way we can offload resources
         // by mime type
         chatMessage.setMimeType(mimeType);
@@ -96,6 +96,7 @@ public class ChatUtils {
         chatMessage.setTo(to);
         chatMessage.setPlainBinaryData(plainData);
         chatMessage.setIv(iv);
+        chatMessage.setHashed(true);
 
         // store the mime type outside teh encrypted envelope, this way we can offload resources
         // by mime type
@@ -112,6 +113,7 @@ public class ChatUtils {
         chatMessage.setData(cipherData);
         chatMessage.setPlainData(plainData);
         chatMessage.setIv(iv);
+        chatMessage.setHashed(true);
 
         // store the mime type outside teh encrypted envelope, this way we can offload resources
         // by mime type

@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
@@ -36,6 +37,7 @@ import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -51,6 +53,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
@@ -61,6 +64,8 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -95,6 +100,7 @@ import com.twofours.surespot.services.ChatTransmissionService;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.ITransmissionServiceListener;
+import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
@@ -103,6 +109,7 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
 	public static final String TAG = "MainActivity";
+	private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
 	private static ChatController mChatController;
 
@@ -152,6 +159,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mPaused = false;
 
 	private BillingController mBillingController;
+	private BroadcastReceiver mRegistrationBroadcastReceiver;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -806,6 +814,29 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		// make sure the transmission service knows the UI is present and is listening
 		SurespotApplication.getChatTransmissionService().setServiceListener(new TransmissionServiceListener());
 
+		//gcm crap
+//	//	mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+//			@Override
+//			public void onReceive(Context context, Intent intent) {
+//			//	mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
+//				SharedPreferences sharedPreferences =
+//						PreferenceManager.getDefaultSharedPreferences(context);
+//				boolean sentToken = sharedPreferences
+//						.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
+////				if (sentToken) {
+////					Utils.makeLongToast(getString(R.string.gcm_send_message));
+////				} else {
+////					Utils.makeLongToast(R.string.token_error_message));
+////				}
+//			}
+//		};
+
+		if (checkPlayServices()) {
+			// Start IntentService to register this application with GCM.
+			Intent intent = new Intent(this, RegistrationIntentService.class);
+			startService(intent);
+		}
+
 		setupBilling();
 
 		// set volume control buttons
@@ -873,6 +904,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		setupChatControls();
 		launch();
+	}
+
+	private boolean checkPlayServices() {
+		GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+		int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+		if (resultCode != ConnectionResult.SUCCESS) {
+			if (apiAvailability.isUserResolvableError(resultCode)) {
+				apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+						.show();
+			} else {
+				Log.i(TAG, "This device is not supported.");
+				finish();
+			}
+			return false;
+		}
+		return true;
 	}
 
 	private void launch() {
@@ -1126,7 +1173,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 							}
 							else {
-								mChatController.setImageUrl(to, url, version, iv);
+								mChatController.setImageUrl(to, url, version, iv, true);
 							}
 						}
 					});

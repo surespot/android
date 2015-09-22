@@ -267,7 +267,7 @@ public class ChatController {
 
 						// decrypt it before adding
 						final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(), message.getOtherUser(),
-								message.getTheirVersion(), message.getIv(), message.getData());
+								message.getTheirVersion(), message.getIv(), message.isHashed(), message.getData());
 
 						// substitute emoji
 						if (plainText != null) {
@@ -300,7 +300,7 @@ public class ChatController {
 									inputStream = new PipedInputStream(out);
 
 									EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-											message.getIv(), new BufferedInputStream(imageStream), out);
+											message.getIv(), message.isHashed(), new BufferedInputStream(imageStream), out);
 
 									byte[] bytes = Utils.inputStreamToBytes(inputStream);
 
@@ -335,7 +335,7 @@ public class ChatController {
 										inputStream = new PipedInputStream(out);
 
 										EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(),
-												message.getIv(), new BufferedInputStream(encryptedVoiceStream), out);
+												message.getIv(), message.isHashed(), new BufferedInputStream(encryptedVoiceStream), out);
 
 										byte[] bytes = Utils.inputStreamToBytes(inputStream);
 										message.setPlainBinaryData(bytes);
@@ -1160,7 +1160,8 @@ public class ChatController {
 												String iv = jsonData.getString("iv");
 												String url = jsonData.getString("url");
 												String version = jsonData.getString("version");
-												setImageUrl(friendName, url, version, iv);
+												boolean hashed = jsonData.optBoolean("imageHashed", false);
+												setImageUrl(friendName, url, version, iv, hashed);
 											}
 											catch (JSONException e) {
 												SurespotLog.e(TAG, e, "could not parse friend image control message json");
@@ -1188,7 +1189,8 @@ public class ChatController {
 													String iv = jsonData.getString("iv");
 													String data = jsonData.getString("data");
 													String version = jsonData.getString("version");
-													setFriendAlias(friendName, data, version, iv);
+													boolean hashed = jsonData.optBoolean("aliasHashed", false);
+													setFriendAlias(friendName, data, version, iv, hashed);
 												}
 												catch (JSONException e) {
 													SurespotLog.e(TAG, e, "could not parse friend alias control message json");
@@ -2258,7 +2260,7 @@ public class ChatController {
 
 	}
 
-	public void setImageUrl(String name, String url, String version, String iv) {
+	public void setImageUrl(String name, String url, String version, String iv, boolean hashed) {
 		Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
 			String oldUrl = friend.getImageUrl();
@@ -2269,24 +2271,26 @@ public class ChatController {
 			friend.setImageUrl(url);
 			friend.setImageIv(iv);
 			friend.setImageVersion(version);
+			friend.setImageHashed(hashed);
 			saveFriends();
 			mFriendAdapter.notifyDataSetChanged();
 		}
 	}
 
-	public void setFriendAlias(String name, String data, String version, String iv) {
+	public void setFriendAlias(String name, String data, String version, String iv, boolean hashed) {
 		final Friend friend = mFriendAdapter.getFriend(name);
 		if (friend != null) {
 			friend.setAliasData(data);
 			friend.setAliasIv(iv);
 			friend.setAliasVersion(version);
+			friend.setAliasHashed(hashed);
 
 			new AsyncTask<Void, Void, String>() {
 
 				@Override
 				protected String doInBackground(Void... params) {
 					String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
-							friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
+							friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
 					return plainText;
 				}
@@ -2446,7 +2450,7 @@ public class ChatController {
 
 			@Override
 			public void onSuccess(int responseCode, String result) {
-				setFriendAlias(name, cipherAlias, version, ivString);
+				setFriendAlias(name, cipherAlias, version, ivString, true);
 				setProgress("assignFriendAlias", false);
 				iAsyncCallback.handleResponse(true);
 			}

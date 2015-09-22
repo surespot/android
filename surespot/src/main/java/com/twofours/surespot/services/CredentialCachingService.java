@@ -75,13 +75,13 @@ public class CredentialCachingService extends Service {
 		CacheLoader<SharedSecretKey, byte[]> secretCacheLoader = new CacheLoader<SharedSecretKey, byte[]>() {
 			@Override
 			public byte[] load(SharedSecretKey key) throws Exception {
-				SurespotLog.i(TAG, "secretCacheLoader, ourVersion: %s, theirUsername: %s, theirVersion: %s", key.getOurVersion(), key.getTheirUsername(),
-						key.getTheirVersion());
+				SurespotLog.i(TAG, "secretCacheLoader, ourVersion: %s, theirUsername: %s, theirVersion: %s, hashed: %b", key.getOurVersion(), key.getTheirUsername(),
+						key.getTheirVersion(), key.getHashed());
 
 				try {
 					PublicKey publicKey = mPublicIdentities.get(new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion()))).getDHKey();
 					return EncryptionController.generateSharedSecretSync(getIdentity(null, key.getOurUsername(), null).getKeyPairDH(key.getOurVersion())
-							.getPrivate(), publicKey);
+							.getPrivate(), publicKey, key.getHashed());
 				}
 				catch (InvalidCacheLoadException e) {
 					SurespotLog.w(TAG, e, "secretCacheLoader");
@@ -255,11 +255,11 @@ public class CredentialCachingService extends Service {
 		return cookie;
 	}
 
-	public byte[] getSharedSecret(String ourVersion, String theirUsername, String theirVersion) {
+	public byte[] getSharedSecret(String ourVersion, String theirUsername, String theirVersion, boolean hashed) {
 		if (getLoggedInUser() != null) {
 			// get the cache for this user
 			try {
-				return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername, theirVersion)));
+				return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername, theirVersion), hashed));
 			}
 			catch (InvalidCacheLoadException e) {
 				SurespotLog.w(TAG, e, "getSharedSecret");
@@ -504,10 +504,12 @@ public class CredentialCachingService extends Service {
 	public static class SharedSecretKey {
 		private VersionMap mOurVersionMap;
 		private VersionMap mTheirVersionMap;
+		private boolean mHashed;
 
-		public SharedSecretKey(VersionMap ourVersionMap, VersionMap theirVersionMap) {
+		public SharedSecretKey(VersionMap ourVersionMap, VersionMap theirVersionMap, boolean hashed) {
 			mOurVersionMap = ourVersionMap;
 			mTheirVersionMap = theirVersionMap;
+			mHashed = hashed;
 		}
 
 		public String getOurUsername() {
@@ -526,12 +528,13 @@ public class CredentialCachingService extends Service {
 			return mTheirVersionMap.getVersion();
 		}
 
+		public boolean getHashed() { return mHashed; }
+
 		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((mOurVersionMap == null) ? 0 : mOurVersionMap.hashCode());
-			result = prime * result + ((mTheirVersionMap == null) ? 0 : mTheirVersionMap.hashCode());
+			int result = mOurVersionMap != null ? mOurVersionMap.hashCode() : 0;
+			result = 31 * result + (mTheirVersionMap != null ? mTheirVersionMap.hashCode() : 0);
+			result = 31 * result + (mHashed ? 1 : 0);
 			return result;
 		}
 
@@ -558,6 +561,10 @@ public class CredentialCachingService extends Service {
 			else
 				if (!mTheirVersionMap.equals(other.mTheirVersionMap))
 					return false;
+
+			if (mHashed != other.getHashed()) {
+				return false;
+			}
 			return true;
 		}
 	}
