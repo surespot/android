@@ -39,8 +39,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -413,6 +416,37 @@ public class ChatTransmissionService extends Service {
         }
     }
 
+    public SurespotMessage[] getResendMessages() {
+        SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
+        List<SurespotMessage> list = Arrays.asList(messages);
+        removeDuplicates(list);
+        // mResendBuffer.clear();
+        return list.toArray(new SurespotMessage[0]);
+    }
+
+    private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
+        ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
+        for (int i = messages.size()-1; i >= 0; i--) {
+            SurespotMessage message = messages.get(i);
+            if (isMessageEqualToAny(message, messagesSeen)) {
+                messages.remove(i);
+                SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
+            } else {
+                messagesSeen.add(message);
+            }
+        }
+        return messages;
+    }
+
+    private boolean isMessageEqualToAny(SurespotMessage message, List<SurespotMessage> messages) {
+        for (SurespotMessage msg : messages) {
+            if (SurespotMessage.areMessagesEqual(msg, message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void saveUnsentMessages() {
         mResendBuffer.addAll(mSendBuffer);
         // SurespotLog.d(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
@@ -603,13 +637,6 @@ public class ChatTransmissionService extends Service {
         }
     }
 
-    public SurespotMessage[] getResendMessages() {
-        SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
-        // mResendBuffer.clear();
-        return messages;
-
-    }
-
     public void enqueueMessage(SurespotMessage message) {
         mSendBuffer.add(message);
     }
@@ -627,11 +654,17 @@ public class ChatTransmissionService extends Service {
         checkShutdownService();
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
+        ArrayList<SurespotMessage> sentMessages = new ArrayList<SurespotMessage>();
         while (iterator.hasNext()) {
             SurespotMessage message = iterator.next();
             if (isMessageReadyToSend(message)) {
                 iterator.remove();
-                sendMessage(message);
+                if (!isMessageEqualToAny(message, sentMessages)) {
+                    sendMessage(message);
+                    sentMessages.add(message);
+                } else {
+                    SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
+                }
             }
         }
     }
