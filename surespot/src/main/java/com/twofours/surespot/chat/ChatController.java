@@ -17,6 +17,7 @@ import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -582,9 +583,24 @@ public class ChatController {
 
 	private SurespotMessage[] getResendMessages() {
 		SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
+		List<SurespotMessage> list = Arrays.asList(messages);
+		removeDuplicates(list);
 		// mResendBuffer.clear();
-		return messages;
+		return list.toArray(new SurespotMessage[0]);
+	}
 
+	private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
+		ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
+		for (int i = messages.size()-1; i >= 0; i--) {
+			SurespotMessage message = messages.get(i);
+			if (isMessageEqualToAny(message, messagesSeen)) {
+				messages.remove(i);
+				SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
+			} else {
+				messagesSeen.add(message);
+			}
+		}
+		return messages;
 	}
 
 	private void enqueueMessage(SurespotMessage message) {
@@ -601,13 +617,28 @@ public class ChatController {
 		SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
 		Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
+		ArrayList<SurespotMessage> sentMessages = new ArrayList<SurespotMessage>();
 		while (iterator.hasNext()) {
 			SurespotMessage message = iterator.next();
 			if (isMessageReadyToSend(message)) {
 				iterator.remove();
-				sendMessage(message);
+				if (!isMessageEqualToAny(message, sentMessages)) {
+					sendMessage(message);
+					sentMessages.add(message);
+				} else {
+					SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
+				}
 			}
 		}
+	}
+
+	private boolean isMessageEqualToAny(SurespotMessage message, List<SurespotMessage> messages) {
+		for (SurespotMessage msg : messages) {
+			if (SurespotMessage.areMessagesEqual(msg, message)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean isMessageReadyToSend(SurespotMessage message) {
