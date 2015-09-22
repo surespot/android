@@ -592,6 +592,11 @@ public class ChatTransmissionService extends Service {
 
         cancelDisconnectTimer();
 
+        if (mConnectionState == STATE_CONNECTED && socket != null && socket.isConnected())
+        {
+            return;
+        }
+
         // gives the UI a chance to copy out pre-connect ids
         if (mListener != null) {
             mListener.onBeforeConnect();
