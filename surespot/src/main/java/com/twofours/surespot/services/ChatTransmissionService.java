@@ -67,9 +67,9 @@ public class ChatTransmissionService extends Service {
     private ReconnectTask mReconnectTask;
     private DisconnectTask mDisconnectTask;
 
-    public static final int STATE_CONNECTING = 0;
+    public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
-    public static final int STATE_DISCONNECTED = 2;
+    public static final int STATE_DISCONNECTED = 0;
     private static final int MAX_RETRIES = 60;
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
@@ -496,6 +496,12 @@ public class ChatTransmissionService extends Service {
         // socket = null;
 
         // workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
+        unregisterReceiver();
+
+        checkShutdownService();
+    }
+
+    private void unregisterReceiver() {
         try {
             unregisterReceiver(mConnectivityReceiver);
         }
@@ -508,9 +514,6 @@ public class ChatTransmissionService extends Service {
                 throw e;
             }
         }
-        // }
-
-        checkShutdownService();
     }
 
     private void checkShutdownService() {
@@ -638,6 +641,9 @@ public class ChatTransmissionService extends Service {
     }
 
     public void enqueueMessage(SurespotMessage message) {
+        if (getState() == STATE_DISCONNECTED) {
+            connect();
+        }
         mSendBuffer.add(message);
     }
 
@@ -715,6 +721,10 @@ public class ChatTransmissionService extends Service {
         checkShutdownService();
     }
 
+    public ITransmissionServiceListener getServiceListener() {
+        return mListener;
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // as long as the main activity isn't forced to be destroyed right away, we don't really need to run as STICKY
@@ -734,6 +744,9 @@ public class ChatTransmissionService extends Service {
     }
 
     public void initializeService() {
+        if (mConnectivityReceiver != null) {
+            unregisterReceiver();
+        }
         SurespotLog.d(TAG, "initializeService: ", this.getClass().getSimpleName());
         this.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }

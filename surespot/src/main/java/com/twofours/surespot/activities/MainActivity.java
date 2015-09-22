@@ -153,10 +153,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private AlertDialog mHelpDialog;
 	private AlertDialog mDialog;
 	private String mUser;
+
+	// control booleans
 	private boolean mLaunched;
 	private boolean mResumed;
+	private boolean mStartWhenBothServicesBound;
+	private boolean mSigningUp;
 	private boolean mUnlocking = false;
 	private boolean mPaused = false;
+	// end control booleans
 
 	private BillingController mBillingController;
 	private BroadcastReceiver mRegistrationBroadcastReceiver;
@@ -177,15 +182,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			// if we have any users or we don't need to create a user, figure out if we need to login
 			if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
 				// otherwise show the signup activity
-
 				SurespotLog.d(TAG, "I was deleted and there are no other users so starting signup activity.");
 				Intent newIntent = new Intent(this, SignupActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				intent.putExtra("signingUp", true);
 				startActivity(newIntent);
 				finish();
 			}
 			else {
-
 				SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
 				Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
 				newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -196,6 +200,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		else {
 			if (!needsSignup()) {
 				processLaunch();
+			}
+			else {
+				mSigningUp = true;
 			}
 		}
 	}
@@ -259,7 +266,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 							}
 						};
-
 						MainActivity.this.runOnUiThread(runnable);
 					}
 				}
@@ -275,14 +281,31 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
 				mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
 
-				SurespotLog
-						.v(TAG,
+				SurespotLog.v(TAG,
 								"loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
 								mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
 			}
 
 			processLaunch();
+		} else {
+			mSigningUp = intent.getBooleanExtra("signingUp", false);
 
+			if (!mSigningUp) {
+				if (mChatTransmissionServiceBound && mCacheServiceBound) {
+					processLaunch();
+				} else {
+					// one or more services needs to be bound
+					mStartWhenBothServicesBound = true;
+
+					if (!mChatTransmissionServiceBound) {
+						bindChatTransmissionService();
+					}
+
+					if (!mCacheServiceBound) {
+						bindCacheService();
+					}
+				}
+			}
 		}
 	}
 
@@ -291,39 +314,30 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		if (user == null) {
 			launchLogin();
-		}
-		else {
-
+		} else {
 			mUser = user;
 
-			ChatTransmissionService cts = SurespotApplication.getChatTransmissionServiceNoThrow();
+			if (!mChatTransmissionServiceBound && !mBindingChatTransmissionService) {
+				bindChatTransmissionService();
+			}
 
-			if (cts == null && !mBindingChatTransmissionService) {
-				mBindingChatTransmissionService = true;
- 				SurespotLog.d(TAG, "binding chat transmission service");
-				Intent chatIntent = new Intent(this, ChatTransmissionService.class);
-				startService(chatIntent);
-				bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
+			if (!mCacheServiceBound) {
+				bindCacheService();
 			}
-			CredentialCachingService ccs = SurespotApplication.getCachingService();
-			if (ccs == null) {
-				SurespotLog.d(TAG, "binding cache service");
-				Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-				startService(cacheIntent);
-				bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-			}
-			else {
-				SurespotLog.d(TAG, "cache service already instantiated");
+
+			if (mCacheServiceBound && mChatTransmissionServiceBound) {
+				SurespotLog.d(TAG, "cache and chat transmission services already bound");
 				if (!mUnlocking) {
 					SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
 					postServiceProcess();
-				}
-				else {
+				} else {
 					SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
 				}
 			}
+			else {
+				mStartWhenBothServicesBound = true;
+			}
 		}
-
 	}
 
 	private void launchLogin() {
@@ -661,8 +675,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotLog.d(TAG, "starting signup activity");
 			Intent newIntent = new Intent(this, SignupActivity.class);
 			newIntent.putExtra("autoinviteuri", intent.getData());
+			newIntent.putExtra("signingUp", true);
 			newIntent.setAction(intent.getAction());
 			newIntent.setType(intent.getType());
+			mSigningUp = true;
 
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
@@ -708,45 +724,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		return user;
 	}
 
-	private class TransmissionServiceListener implements ITransmissionServiceListener {
-		// implementation goes here - or maybe we have a separate class if this gets too big
-
-		@Override
-		public void connected() {
-			mChatController.connected();
-		}
-
-		@Override
-		public void reconnectFailed() {
-			mChatController.reconnectFailed();
-		}
-
-		@Override
-		public void couldNotConnectToServer() {
-			mChatController.couldNotConnectToServer();
-		}
-
-		@Override
-		public void onBeforeConnect() {
-			mChatController.onBeforeConnect();
-		}
-
-		@Override
-		public void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
-			mChatController.handleControlMessage(chatAdapter, message, notify, reApplying);
-		}
-
-		@Override
-		public void handleMessage(SurespotMessage message) {
-			mChatController.handleMessage(message);
-		}
-
-		@Override
-		public void handleErrorMessage(SurespotErrorMessage errorMessage) {
-			mChatController.handleErrorMessage(errorMessage);
-		}
-	}
-
 	private ServiceConnection mChatConnection = new ServiceConnection() {
 		public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
 			if (service instanceof ChatTransmissionService.ChatTransmissionServiceBinder) {
@@ -760,7 +737,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				SurespotApplication.getChatTransmissionService().initializeService();
 				mBindingChatTransmissionService = false;
 
-				if (!mUnlocking && mCacheServiceBound) {
+				if (!mUnlocking && mCacheServiceBound && (mResumed || mStartWhenBothServicesBound)) {
 					SurespotLog.d(TAG, "transmission service calling postServiceProcess");
 					postServiceProcess();
 				}
@@ -790,7 +767,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			SurespotApplication.setCachingService(ccs);
 			mCacheServiceBound = true;
 
-			if (!mUnlocking && mChatTransmissionServiceBound) {
+			if (!mUnlocking && mChatTransmissionServiceBound && (mResumed || mStartWhenBothServicesBound)) {
 				SurespotLog.d(TAG, "caching service calling postServiceProcess");
 				postServiceProcess();
 			}
@@ -810,9 +787,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			launchLogin();
 			return;
 		}
-
-		// make sure the transmission service knows the UI is present and is listening
-		SurespotApplication.getChatTransmissionService().setServiceListener(new TransmissionServiceListener());
 
 		//gcm crap
 //	//	mRegistrationBroadcastReceiver = new BroadcastReceiver() {
@@ -858,9 +832,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		mMainHandler = new Handler(getMainLooper());
 
+		// make sure the transmission service knows the UI is present and is listening
+		if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+			if (SurespotApplication.getChatTransmissionService().getServiceListener() == null) {
+				SurespotLog.w(TAG, "No service listener - this should have been done when the service was bound to the main activity");
+				SurespotApplication.getChatTransmissionService().setServiceListener(new TransmissionServiceListener());
+			}
+		} else {
+			SurespotLog.d(TAG, "chat transmission service was null");
+		}
+
 		try {
 			SurespotApplication.getChatTransmissionService().initNetworkController(mUser, m401Handler);
-			// WAS: mNetworkController = new NetworkController(MainActivity.this, mUser, m401Handler);
 		}
 		catch (Exception e) {
 			finish();
@@ -1330,7 +1313,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}.execute();
 			return true;
 		case R.id.menu_logout_bar:
-			mChatController.logout();
+			if (mChatController != null) {
+				mChatController.logout();
+			}
 			IdentityController.logout();
 
 			// new AsyncTask<Void, Void, Void>() {
@@ -1688,8 +1673,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 					protected void onReceiveResult(int resultCode, Bundle resultData) {
 						if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
 							mKeyboardShowing = true;
-						}
-						else {
+						} else {
 
 						}
 					}
@@ -2208,7 +2192,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	public void removeFriendImage(final String name) {
 		mChatController.removeFriendImage(name, new IAsyncCallback<Boolean>() {
-
 			@Override
 			public void handleResponse(Boolean result) {
 				if (!result) {
@@ -2220,7 +2203,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	public void removeFriendAlias(final String name) {
 		mChatController.removeFriendAlias(name, new IAsyncCallback<Boolean>() {
-
 			@Override
 			public void handleResponse(Boolean result) {
 				if (!result) {
@@ -2229,4 +2211,82 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			}
 		});
 	}
+
+
+	private void bindChatTransmissionService() {
+		mBindingChatTransmissionService = true;
+		SurespotLog.d(TAG, "binding chat transmission service");
+		Intent chatIntent = new Intent(this, ChatTransmissionService.class);
+		startService(chatIntent);
+		bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
+	}
+
+	private void bindCacheService() {
+		SurespotLog.d(TAG, "binding cache service");
+		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
+		startService(cacheIntent);
+		bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+	}
+
+	private class TransmissionServiceListener implements ITransmissionServiceListener {
+		// implementation goes here - or maybe we have a separate class if this gets too big
+
+		@Override
+		public void connected() {
+			if (!logIfChatControllerNull()) {
+				mChatController.connected();
+			}
+		}
+
+		@Override
+		public void reconnectFailed() {
+			if (!logIfChatControllerNull()) {
+				mChatController.reconnectFailed();
+			}
+		}
+
+		@Override
+		public void couldNotConnectToServer() {
+			if (!logIfChatControllerNull()) {
+				mChatController.couldNotConnectToServer();
+			}
+		}
+
+		@Override
+		public void onBeforeConnect() {
+			if (!logIfChatControllerNull()) {
+				mChatController.onBeforeConnect();
+			}
+		}
+
+		@Override
+		public void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
+			if (!logIfChatControllerNull()) {
+				mChatController.handleControlMessage(chatAdapter, message, notify, reApplying);
+			}
+		}
+
+		@Override
+		public void handleMessage(SurespotMessage message) {
+			if (!logIfChatControllerNull()) {
+				mChatController.handleMessage(message);
+			}
+		}
+
+		@Override
+		public void handleErrorMessage(SurespotErrorMessage errorMessage) {
+			if (!logIfChatControllerNull()) {
+				mChatController.handleErrorMessage(errorMessage);
+			}
+		}
+
+		private boolean logIfChatControllerNull() {
+			if (mChatController == null) {
+				SurespotLog.w(TAG, "mChatController was null for tranmission service listener");
+				return true;
+			}
+			return false;
+		}
+	}
+
 }
