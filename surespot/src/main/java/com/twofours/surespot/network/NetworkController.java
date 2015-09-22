@@ -542,7 +542,7 @@ public class NetworkController {
 	/**
 	 * Unregister this account/device pair within the server.
 	 */
-	public static void unregister(final Context context, final String regId) {
+	/*public static void unregister(final Context context, final String regId) {
 		SurespotLog.i(TAG, "unregistering device (regId = " + regId + ")");
 		try {
 			// this will puke on phone with no google account
@@ -550,7 +550,7 @@ public class NetworkController {
 		}
 		finally {
 		}
-	}
+	}*/
 
 	public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
 			final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
