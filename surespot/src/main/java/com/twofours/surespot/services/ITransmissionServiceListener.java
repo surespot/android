@@ -13,4 +13,5 @@ public interface ITransmissionServiceListener {
     void onReconnectFailed();
     void onCouldNotConnectToServer();
     void handleMessage(SurespotMessage message);
+    void onNotConnected();
 }

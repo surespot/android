@@ -238,6 +238,9 @@ public class CommunicationService extends Service {
 
     public void setServiceListener(ITransmissionServiceListener listener) {
         mListener = listener;
+        if (mListener != null) {
+            mRetries = 0; // clear state related to retrying connections
+        }
         checkShutdownService();
     }
 
@@ -260,7 +263,7 @@ public class CommunicationService extends Service {
     @Override
     public void onDestroy() {
         SurespotLog.i(TAG, "onDestroy");
-        userLoggedOut();
+        unregisterReceiver();
     }
 
     public void initializeService() {
@@ -397,6 +400,14 @@ public class CommunicationService extends Service {
         }
     }
 
+    // notify listeners that we've connected
+    private void onNotConnected() {
+        // tell any listeners that we're connected
+        if (mListener != null) {
+            mListener.onNotConnected();
+        }
+    }
+
     // remove duplicate messages
     private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
         ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
@@ -496,12 +507,16 @@ public class CommunicationService extends Service {
     private void checkShutdownService() {
         if (mSendBuffer.size() == 0 && mListener == null) {
             Log.d(TAG, "shutting down service!");
+            userLoggedOut();
             this.stopSelf();
         }
     }
 
     private synchronized void setState(int state) {
         mConnectionState = state;
+        if (state == STATE_CONNECTED) {
+            mRetries = 0;
+        }
     }
 
     private class ReconnectTask extends TimerTask {
@@ -626,7 +641,6 @@ public class CommunicationService extends Service {
         public void onConnect() {
             SurespotLog.d(TAG, "socket.io connection established");
             setOnWifi();
-            mRetries = 0;
             stopReconnectionAttempts();
             setState(STATE_CONNECTED);
             onConnected();
@@ -720,6 +734,8 @@ public class CommunicationService extends Service {
     private void handleSocketException(SocketIOException socketIOException) {
         boolean reAuthing = false;
         setState(STATE_DISCONNECTED);
+        onNotConnected();
+
         // socket.io returns 403 for can't login
         if (socketIOException.getHttpStatus() == 403) {
             SurespotLog.d(TAG, "got 403 from websocket");
@@ -792,7 +808,7 @@ public class CommunicationService extends Service {
                     SurespotLog.d(TAG, "Network newly connected, reconnecting...");
                     synchronized (CommunicationService.this) {
                         setOnWifi();
-                        if (!mMainActivityPaused) {
+                        if (!mMainActivityPaused && mListener != null) {
                             disconnect();
                             connect();
                         }
@@ -815,7 +831,7 @@ public class CommunicationService extends Service {
                         if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
                             mOnWifi = true;
 
-                            if (!mMainActivityPaused) {
+                            if (!mMainActivityPaused && mListener != null) {
                                 SurespotLog.d(TAG, "Network switch, Reconnecting...");
 
                                 setState(STATE_CONNECTING);

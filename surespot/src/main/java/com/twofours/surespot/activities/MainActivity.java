@@ -602,7 +602,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
-					if (actionId == EditorInfo.IME_ACTION_SEND) {
+					if (actionId == EditorInfo.IME_ACTION_SEND || (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN)) {
 						sendMessage(friend.getName());
 						handled = true;
 					}
@@ -641,7 +641,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 				boolean handled = false;
 
 				if (mCurrentFriend == null) {
-					if (actionId == EditorInfo.IME_ACTION_DONE) {
+					if (actionId == EditorInfo.IME_ACTION_DONE || (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN)) {
 						inviteFriend();
 						handled = true;
 					}
@@ -1811,15 +1811,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 	private void sendMessage(String username) {
 		final String message = mEtMessage.getText().toString();
-		SurespotApplication.getChatController().sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
-		//final String userName = username;
-		// TEST: this mimicks the user sending 30 messages and closing the activity
-		//for (int n = 0; n < 30; n++) {
-		//	SurespotApplication.getChatController().sendMessage(userName, message + ":" + n, SurespotConstants.MimeTypes.TEXT);
-		//}
-		//finish();
+		if (!message.isEmpty()) {
+			SurespotApplication.getChatController().sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
 
-		TextKeyListener.clear(mEtMessage.getText());
+			//final String userName = username;
+			// TEST: this mimicks the user sending 30 messages and closing the activity
+			//for (int n = 0; n < 30; n++) {
+			//	SurespotApplication.getChatController().sendMessage(userName, message + ":" + n, SurespotConstants.MimeTypes.TEXT);
+			//}
+			//finish();
+
+			TextKeyListener.clear(mEtMessage.getText());
+		}
 	}
 
 	public boolean backButtonPressed() {
@@ -2256,6 +2259,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 			if (!logIfChatControllerNull()) {
 				SurespotApplication.getChatController().handleMessage(message);
 			}
+		}
+
+		@Override
+		public void onNotConnected() {
+			MainActivity.this.setHomeProgress(true);
 		}
 
 		private boolean logIfChatControllerNull() {
