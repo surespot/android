@@ -16,4 +16,5 @@ public interface ITransmissionServiceListener {
     void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying);
     void handleMessage(SurespotMessage message);
     void handleErrorMessage(SurespotErrorMessage errorMessage);
+    void saveFriends();
 }

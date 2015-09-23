@@ -13,21 +13,17 @@ import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
-import android.app.Application;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.preference.PreferenceManager;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
-import android.widget.ProgressBar;
 
 //import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -35,7 +31,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.services.ChatTransmissionService;
+import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 
 @ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
@@ -44,19 +40,31 @@ formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.
 public class SurespotApplication extends MultiDexApplication {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
-	private static ChatTransmissionService mChatTransmissionService;
+	private static CommunicationService mCommunicationService;
 	private static StateController mStateController = null;
 	private static String mVersion;
 	private static BillingController mBillingController;
 	private static String mUserAgent;
 	private static NetworkController mNetworkController = null;
+	private static ChatController mChatController = null;
 
 	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	public static final int KEEP_ALIVE = 1;
 
+	public static ChatController getChatController() {
+		return mChatController;
+	}
 
-    protected void attachBaseContext(Context base) {
+	public static void setChatController(ChatController chatController) {
+		if (mChatController != null && mCommunicationService != null) {
+			mCommunicationService.save();
+		}
+		SurespotApplication.mChatController = chatController;
+	}
+
+
+	protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         MultiDex.install(this);
     }
@@ -150,7 +158,7 @@ public class SurespotApplication extends MultiDexApplication {
 		startService(cacheIntent);
 
 		SurespotLog.v(TAG, "starting chat transmission service");
-		Intent chatIntent = new Intent(this, ChatTransmissionService.class);
+		Intent chatIntent = new Intent(this, CommunicationService.class);
 		startService(chatIntent);
 
 		mBillingController = new BillingController(this);
@@ -194,19 +202,19 @@ public class SurespotApplication extends MultiDexApplication {
 		mNetworkController = networkController;
 	}
 
-	public static ChatTransmissionService getChatTransmissionService () {
-		if (mChatTransmissionService == null) {
-			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mChatTransmissionService"));
+	public static CommunicationService getChatTransmissionService () {
+		if (mCommunicationService == null) {
+			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mCommunicationService"));
 		}
-		return mChatTransmissionService;
+		return mCommunicationService;
 	}
 
 	public static void setCachingService(CredentialCachingService credentialCachingService) {
 		SurespotApplication.mCredentialCachingService = credentialCachingService;
 	}
 
-	public static void setChatTransmissionService(ChatTransmissionService chatTransmissionService) {
-		SurespotApplication.mChatTransmissionService = chatTransmissionService;
+	public static void setChatTransmissionService(CommunicationService communicationService) {
+		SurespotApplication.mCommunicationService = communicationService;
 	}
 
 	public static StateController getStateController() {
@@ -225,7 +233,7 @@ public class SurespotApplication extends MultiDexApplication {
 		return mUserAgent;
 	}
 
-	public static ChatTransmissionService getChatTransmissionServiceNoThrow() {
-		return mChatTransmissionService;
+	public static CommunicationService getChatTransmissionServiceNoThrow() {
+		return mCommunicationService;
 	}
 }

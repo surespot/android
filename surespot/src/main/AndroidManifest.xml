@@ -87,7 +87,7 @@
             android:name="com.twofours.surespot.services.CredentialCachingService"
             android:exported="false"></service>
         <service
-            android:name=".services.ChatTransmissionService"
+            android:name=".services.CommunicationService"
             android:exported="false" >
         </service>
         <activity

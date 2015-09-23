@@ -14,7 +14,6 @@ import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,7 +64,7 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.services.ChatTransmissionService;
+import com.twofours.surespot.services.CommunicationService;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class ChatController {
@@ -74,7 +73,7 @@ public class ChatController {
 
 	private NotificationManager mNotificationManager;
 
-	private HashMap<String, ChatAdapter> mChatAdapters;
+	public HashMap<String, ChatAdapter> mChatAdapters;
 	private HashMap<String, Integer> mEarliestMessage;
 
 	private FriendAdapter mFriendAdapter;
@@ -86,7 +85,7 @@ public class ChatController {
 	private ArrayList<MenuItem> mMenuItems;
 	private HashMap<String, LatestIdPair> mPreConnectIds;
 
-	private static String mCurrentChat;
+
 	private static boolean mPaused = true;
 	private NetworkController mNetworkController;
 
@@ -120,7 +119,7 @@ public class ChatController {
 		mTabShowingCallback = tabShowingCallback;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
-		mFriendAdapter = new FriendAdapter(mContext);
+		mFriendAdapter = new FriendAdapter(SurespotApplication.getChatTransmissionService()); // HEREHERE: mContext);
 		mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
 		loadState(mUsername);
 
@@ -168,7 +167,7 @@ public class ChatController {
 
 	public void setAutoInviteData(AutoInviteData autoInviteData) {
 		mAutoInviteData = autoInviteData;
-		if (getState() == ChatTransmissionService.STATE_CONNECTED) {
+		if (getState() == CommunicationService.STATE_CONNECTED) {
 			handleAutoInvite();
 		}
 	}
@@ -177,7 +176,7 @@ public class ChatController {
 		return SurespotApplication.getChatTransmissionService().getState();
 	}
 
-	// this is wired up to listen for a message from the ChatTransmissionService.  It's UI stuff
+	// this is wired up to listen for a message from the CommunicationService.  It's UI stuff
 	public void connected() {
 		getFriendsAndData();
 		resendMessages();
@@ -392,7 +391,7 @@ public class ChatController {
 							friend.setAvailableMessageId(messageId, false);
 
 							// if the chat is showing set the last viewed id the id of the message we just received
-							if (otherUser.equals(mCurrentChat)) {
+							if (otherUser.equals(SurespotApplication.getChatTransmissionService().mCurrentChat)) {
 
 								friend.setLastViewedMessageId(messageId);
 
@@ -551,7 +550,7 @@ public class ChatController {
 
 	// message handling shiznit
 	void loadEarlierMessages(final String username, final IAsyncCallback<Boolean> callback) {
-		if (SurespotApplication.getChatTransmissionService().getState() == ChatTransmissionService.STATE_CONNECTED) {
+		if (SurespotApplication.getChatTransmissionService().getState() == CommunicationService.STATE_CONNECTED) {
 
 			// mLoading = true;
 			// get the list of messages
@@ -849,6 +848,13 @@ public class ChatController {
 		}
 	}
 
+	public void dispose() {
+		SurespotLog.d(TAG, "disposing of chat controller");
+		mChatAdapters.clear();
+		mFriendAdapter = null;
+		mFragmentManager = null;
+	}
+
 	private class LatestIdPair {
 		public int latestMessageId;
 		public int latestControlMessageId;
@@ -903,7 +909,7 @@ public class ChatController {
 	}
 
 	private void getLatestMessagesAndControls(final String username, final int fetchMessageId, int fetchControlMessageId, final boolean forceMessageUpdate) {
-		if (getState() != ChatTransmissionService.STATE_CONNECTED) {
+		if (getState() != CommunicationService.STATE_CONNECTED) {
 			return;
 		}
 		SurespotLog.d(TAG, "getLatestMessagesAndControls: name %s, fetchMessageId: %d, fetchControlMessageId: %d", username, fetchMessageId,
@@ -1247,8 +1253,11 @@ public class ChatController {
 			friend.setDeleted();
 
 			// force the controls to update
-			if (friend != null && mCurrentChat != null && mCurrentChat.equals(deletedUser)) {
-				mTabShowingCallback.handleResponse(friend);
+			CommunicationService cts = SurespotApplication.getChatTransmissionServiceNoThrow();
+			if (cts != null) {
+				if (friend != null && cts.mCurrentChat != null && cts.mCurrentChat.equals(deletedUser)) {
+					mTabShowingCallback.handleResponse(friend);
+				}
 			}
 		}
 
@@ -1360,7 +1369,7 @@ public class ChatController {
 
 				// if the current chat is showing or
 				// all the new messages are mine then i've viewed them all
-				if (username.equals(mCurrentChat) || sentByMeCount == delta) {
+				if (username.equals(SurespotApplication.getChatTransmissionService().mCurrentChat) || sentByMeCount == delta) {
 					friend.setLastViewedMessageId(availableId);
 				}
 				else {
@@ -1440,35 +1449,9 @@ public class ChatController {
 
 	}
 
-	private synchronized void saveMessages() {
-		// save last 30? messages
-		SurespotLog.d(TAG, "saveMessages");
-		if (mUsername != null) {
-			for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
-				String them = entry.getKey();
-				String spot = ChatUtils.getSpot(mUsername, them);
-				SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(),
-						entry.getValue().getCurrentScrollPositionId());
-			}
-		}
-	}
-
-	public synchronized void saveMessages(String username) {
-		// save last 30? messages
-		SurespotLog.d(TAG, "saveMessages, username: %s", username);
-		ChatAdapter chatAdapter = mChatAdapters.get(username);
-
-		if (chatAdapter != null) {
-			SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
-					chatAdapter.getCurrentScrollPositionId());
-		}
-
-	}
-
-
 
 	public synchronized void logout() {
-		mCurrentChat = null;
+		SurespotApplication.getChatTransmissionService().mCurrentChat = null;
 		onPause();
 		// mViewPager = null;
 		// mCallback401 = null;
@@ -1484,24 +1467,7 @@ public class ChatController {
 		SurespotApplication.getChatTransmissionService().userLoggedOut();
 	}
 
-	private void saveState(String username) {
-
-		SurespotLog.d(TAG, "saveState");
-
-		if (username == null) {
-			// TODO: HEREHERE: chat transmission service now in charge of saving unsent messages...
-			// SurespotApplication.getChatTransmissionService().saveUnsentMessages();
-			saveMessages();
-			SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
-			Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-			saveFriends();
-		}
-		else {
-			saveMessages(username);
-		}
-	}
-
-	private void saveFriends() {
+	public void saveFriends() {
 		SurespotApplication.getStateController().saveFriends(mUsername, mLatestUserControlId, mFriendAdapter.getFriends());
 	}
 
@@ -1563,55 +1529,34 @@ public class ChatController {
 			for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
 				loadMessages(ca.getKey(), false);
 			}
-			SurespotApplication.getChatTransmissionService().connect();
+
+			if (SurespotApplication.getChatTransmissionService().connect()) {
+				setProgress(null, false);
+			}
+
 			// moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
-			clearMessageNotification(mUsername, mCurrentChat);
+		} else {
+			// just make sure we're connected
+			if (SurespotApplication.getChatTransmissionService().connect()) {
+				setProgress(null, false);
+			}
+		}
+
+		clearMessageNotification(mUsername, SurespotApplication.getChatTransmissionService().mCurrentChat);
+	}
+
+	public synchronized void doPause() {
+		if (!mPaused) {
+			mPaused = true;
+			if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+				SurespotApplication.getChatTransmissionService().saveState(null);
+			}
 		}
 	}
 
 	public synchronized void onPause() {
 		SurespotLog.d(TAG, "onPause, mPaused: %b", mPaused);
-		if (!mPaused) {
-			mPaused = true;
-			saveState(null);
-		}
-
-		// TODO: leave chat transmission service running?  Or notify it that we've paused?
-		// will the "mListener" callback member be set to null automatically?
-		// this code was moved to chat transmission service.shutdown()
-		/*disconnect();
-
-		synchronized (BACKGROUND_TIMER_LOCK) {
-
-			if (mBackgroundTimer != null) {
-				mBackgroundTimer.cancel();
-				mBackgroundTimer = null;
-			}
-			if (mReconnectTask != null) {
-				boolean cancel = mReconnectTask.cancel();
-				mReconnectTask = null;
-				SurespotLog.d(TAG, "Cancelled reconnect task: " + cancel);
-			}
-		}
-
-		// socket = null;
-
-		// workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-		try {
-			mContext.unregisterReceiver(mConnectivityReceiver);
-		}
-		catch (IllegalArgumentException e) {
-			if (e.getMessage().contains("Receiver not registered")) {
-				// Ignore this exception. This is exactly what is desired
-			}
-			else {
-				// unexpected, re-throw
-				throw e;
-			}
-		}
-		// }
-		*/
 	}
 
 	ChatAdapter getChatAdapter(Context context, String username) {
@@ -1650,7 +1595,9 @@ public class ChatController {
 
 	public void destroyChatAdapter(String username) {
 		SurespotLog.d(TAG, "destroying chat adapter for: %s", username);
-		saveState(username);
+		if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+			SurespotApplication.getChatTransmissionService().saveState(username);
+		}
 		mChatAdapters.remove(username);
 	}
 
@@ -1669,7 +1616,9 @@ public class ChatController {
 
 		mTabShowingCallback.handleResponse(friend);
 		if (friend != null) {
-			mCurrentChat = username;
+			if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+				SurespotApplication.getChatTransmissionService().mCurrentChat = username;
+			}
 			mChatPagerAdapter.addChatFriend(friend);
 			friend.setChatActive(true);
 			friend.setLastViewedMessageId(friend.getAvailableMessageId());
@@ -1689,7 +1638,7 @@ public class ChatController {
 
 		}
 		else {
-			mCurrentChat = null;
+			SurespotApplication.getChatTransmissionService().mCurrentChat = null;
 			mViewPager.setCurrentItem(0, true);
 			mNotificationManager.cancel(loggedInUser + ":" + username, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
 			mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
@@ -1850,7 +1799,7 @@ public class ChatController {
 			try {
 				chatAdapter.addOrUpdateMessage(message, false, true, true);
 				scrollToEnd(message.getTo());
-				saveState(message.getTo());
+				SurespotApplication.getChatTransmissionService().saveState(message.getTo());
 			}
 			catch (Exception e) {
 				SurespotLog.e(TAG, e, "addMessage");
@@ -1862,7 +1811,10 @@ public class ChatController {
 	}
 
 	public static String getCurrentChat() {
-		return mCurrentChat;
+		if (SurespotApplication.getChatTransmissionServiceNoThrow() == null) {
+			return null;
+		}
+		return SurespotApplication.getChatTransmissionService().mCurrentChat;
 	}
 
 	public static boolean isPaused() {
@@ -1916,7 +1868,7 @@ public class ChatController {
 
 			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 			chatAdapter.deleteMessageByIv(message.getIv());
-			saveState(otherUser);
+			SurespotApplication.getChatTransmissionService().saveState(otherUser);
 
 			// if it's an image, delete the local image file
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
@@ -2088,7 +2040,7 @@ public class ChatController {
 	}
 
 	public boolean isFriendDeleted() {
-		return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
+		return getFriendAdapter().getFriend(SurespotApplication.getChatTransmissionService().mCurrentChat).isDeleted();
 	}
 
 	private void getFriendsAndData() {
@@ -2167,7 +2119,7 @@ public class ChatController {
 
 					position = mViewPager.getCurrentItem();
 					setCurrentChat(mChatPagerAdapter.getChatName(position));
-					SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
+					SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", SurespotApplication.getChatTransmissionService().mCurrentChat, position);
 				}
 			}
 		}
@@ -2198,7 +2150,7 @@ public class ChatController {
 
 					position = mViewPager.getCurrentItem();
 					setCurrentChat(mChatPagerAdapter.getChatName(position));
-					SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
+					SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", SurespotApplication.getChatTransmissionService().mCurrentChat, position);
 				}
 			}
 		}
@@ -2221,7 +2173,7 @@ public class ChatController {
 	}
 
 	public void enableMenuItems(Friend friend) {
-		boolean enabled = mMode != MODE_SELECT && mCurrentChat != null;
+		boolean enabled = mMode != MODE_SELECT && SurespotApplication.getChatTransmissionService().mCurrentChat != null;
 		SurespotLog.v(TAG, "enableMenuItems, enabled: %b", enabled);
 
 		boolean isDeleted = false;

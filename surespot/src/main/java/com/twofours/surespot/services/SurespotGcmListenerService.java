@@ -119,7 +119,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {
                             SurespotLog.v(TAG, "adding gcm message to controller");
-                            chatController.saveMessages(from);
+                            SurespotApplication.getChatTransmissionService().saveMessages(from);
                             added = true;
                         }
                     }

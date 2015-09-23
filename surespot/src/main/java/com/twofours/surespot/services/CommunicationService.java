@@ -1,8 +1,6 @@
 package com.twofours.surespot.services;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,15 +9,13 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat.Builder;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatAdapter;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -33,7 +29,6 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
-import com.twofours.surespot.ui.UIUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -54,8 +50,8 @@ import io.socket.SocketIO;
 import io.socket.SocketIOException;
 
 @SuppressLint("NewApi")
-public class ChatTransmissionService extends Service {
-    private static final String TAG = "ChatTransmissionService";
+public class CommunicationService extends Service {
+    private static final String TAG = "CommunicationService";
 
     private final IBinder mBinder = new ChatTransmissionServiceBinder();
     private ITransmissionServiceListener mListener;
@@ -66,6 +62,7 @@ public class ChatTransmissionService extends Service {
     private boolean mMainActivityPaused = false;
     private ReconnectTask mReconnectTask;
     private DisconnectTask mDisconnectTask;
+    public static String mCurrentChat;
 
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
@@ -89,35 +86,6 @@ public class ChatTransmissionService extends Service {
     @Override
     public void onCreate() {
         SurespotLog.i(TAG, "onCreate");
-
-        /*
-        Notification notification = null;
-
-        // if we're < 4.3 then start foreground service
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            // if this is the first time using the app don't use foreground service
-            boolean alreadyPrevented = Utils.getSharedPrefsBoolean(this, "firstTimePreventedForegroundServiceChatTransmission");
-            if (alreadyPrevented) {
-                // in 4.3 and above they decide to fuck us by showing the notification
-                // so make the text meaningful at least
-                PendingIntent contentIntent = PendingIntent.getActivity(this, SurespotConstants.IntentRequestCodes.BACKGROUND_CHAT_SERVICE_NOTIFICATION,
-                        new Intent(this, MainActivity.class), 0);
-                notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
-                        getString(R.string.caching_service_notification_title).toString(), "starting secure chat transmission service");
-                notification.priority = Notification.PRIORITY_MIN;
-            } else {
-                Utils.putSharedPrefsBoolean(this, "firstTimePreventedForegroundServiceChatTransmission", true);
-            }
-        }
-        else {
-            notification = new Notification(0, null, System.currentTimeMillis());
-            notification.flags |= Notification.FLAG_NO_CLEAR;
-        }
-
-        if (notification != null) {
-            startForeground(SurespotConstants.IntentRequestCodes.FOREGROUND_NOTIFICATION, notification);
-        }
-        */
 
         setOnWifi();
 
@@ -145,7 +113,7 @@ public class ChatTransmissionService extends Service {
                 if (socketIOException.getHttpStatus() == 403) {
                     SurespotLog.d(TAG, "got 403 from websocket");
 
-                    reAuthing = NetworkHelper.reLogin(ChatTransmissionService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
+                    reAuthing = NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
 
                         @Override
                         public void onSuccess(int responseCode, String result, Cookie cookie) {
@@ -154,11 +122,6 @@ public class ChatTransmissionService extends Service {
 
                         @Override
                         public void onFailure(Throwable arg0, String content) {
-                            // if we got http error bail
-                            // if (arg0 instanceof HttpResponseException) {
-                            // HttpResponseException error = (HttpResponseException) arg0;
-                            // int statusCode = error.getStatusCode();
-                            // SurespotLog.i(TAG, error, "http error on relogin - bailing, status: %d, message: %s", statusCode, error.getMessage());
                             socket = null;
 
                             if (mListener != null) {
@@ -167,11 +130,6 @@ public class ChatTransmissionService extends Service {
 
                             userLoggedOut();
                             return;
-                            // }
-                            //
-                            // // if it's not an http error try again
-                            // SurespotLog.i(TAG, arg0, "non http error on relogin - reconnecting, message: %s", arg0.getMessage());
-                            // connect();
                         }
                     });
 
@@ -205,14 +163,12 @@ public class ChatTransmissionService extends Service {
                         }
 
                         // TODO: Is there ever a case where we don't want to try a reconnect?
-                        //if (!mPaused) {
-                            ReconnectTask reconnectTask = new ReconnectTask();
-                            if (mBackgroundTimer == null) {
-                                mBackgroundTimer = new Timer("backgroundTimer");
-                            }
-                            mBackgroundTimer.schedule(reconnectTask, timerInterval);
-                            mReconnectTask = reconnectTask;
-                        //}
+                        ReconnectTask reconnectTask = new ReconnectTask();
+                        if (mBackgroundTimer == null) {
+                            mBackgroundTimer = new Timer("backgroundTimer");
+                        }
+                        mBackgroundTimer.schedule(reconnectTask, timerInterval);
+                        mReconnectTask = reconnectTask;
                     }
                 }
                 else {
@@ -250,8 +206,8 @@ public class ChatTransmissionService extends Service {
                         mReconnectTask = null;
                     }
                 }
-                connected();
                 setState(STATE_CONNECTED);
+                connected();
             }
 
             @Override
@@ -263,9 +219,10 @@ public class ChatTransmissionService extends Service {
                 if (event.equals("control")) {
                     try {
                         SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
-                        if (mListener != null) {
-                            mListener.handleControlMessage(null, message, true, false);
-                        }
+                        //if (mListener != null) {
+                        //    mListener.handleControlMessage(null, message, true, false);
+                        //}
+                        SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
                         // no need to do anything here - does not involve mResendBuffer, etc
                     }
                     catch (JSONException e) {
@@ -278,9 +235,10 @@ public class ChatTransmissionService extends Service {
                         JSONObject jsonMessage = new JSONObject((String) args[0]);
                         SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
                         SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-                        if (mListener != null) {
-                            mListener.handleMessage(message);
-                        }
+                        SurespotApplication.getChatController().handleMessage(message);
+                        //if (mListener != null) {
+                        //    mListener.handleMessage(message);
+                        //}
 
                         // the UI might have already removed the message from the resend buffer.  That's okay.
                         Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
@@ -304,9 +262,10 @@ public class ChatTransmissionService extends Service {
                         JSONObject jsonMessage = (JSONObject) args[0];
                         SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
                         SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
-                        if (mListener != null) {
-                            mListener.handleErrorMessage(errorMessage);
-                        }
+                        SurespotApplication.getChatController().handleErrorMessage(errorMessage);
+                        //if (mListener != null) {
+                        //    mListener.handleErrorMessage(errorMessage);
+                        //}
 
                         // the UI might have already removed the message from the resend buffer.  That's okay.
                         SurespotMessage message = null;
@@ -343,7 +302,7 @@ public class ChatTransmissionService extends Service {
 
                     // if it's not a failover and wifi is now active then initiate reconnect
                     if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-                        synchronized (ChatTransmissionService.this) {
+                        synchronized (CommunicationService.this) {
                             // if we're not connecting, connect
                             if (getState() != STATE_CONNECTING && !mOnWifi) {
 
@@ -407,12 +366,14 @@ public class ChatTransmissionService extends Service {
     // Notify the service that the user logged out
     public void userLoggedOut() {
         if (mUsername != null) {
+            saveMessages();
             saveUnsentMessages();
             mResendBuffer.clear();
             mSendBuffer.clear();
             mUsername = null;
             shutdownConnection();
             checkShutdownService();
+            SurespotApplication.getChatController().dispose();
         }
     }
 
@@ -554,6 +515,15 @@ public class ChatTransmissionService extends Service {
         }
     }
 
+    public void save() {
+        if (mUsername != null) {
+            saveMessages(mUsername);
+            saveState(mUsername);
+        }
+        saveMessages();
+        saveUnsentMessages();
+    }
+
     private class ReconnectTask extends TimerTask {
 
         @Override
@@ -587,25 +557,31 @@ public class ChatTransmissionService extends Service {
         }
     }
 
-    public void connect() {
+    public synchronized boolean connect() {
         SurespotLog.d(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: " + mConnectionState);
 
         cancelDisconnectTimer();
 
-        if (mConnectionState == STATE_CONNECTED && socket != null && socket.isConnected())
-        {
-            return;
+        if (mConnectionState == STATE_CONNECTED && socket != null && socket.isConnected()) {
+            return true;
         }
+
+        if (mConnectionState == STATE_CONNECTING) {
+            return true;
+        }
+
+        setState(STATE_CONNECTING);
 
         // gives the UI a chance to copy out pre-connect ids
-        if (mListener != null) {
-            mListener.onBeforeConnect();
-        }
+        //if (mListener != null) {
+        //    mListener.onBeforeConnect();
+        //}
+        SurespotApplication.getChatController().onBeforeConnect();
 
-        if (mConnectionState == STATE_CONNECTED || mConnectionState == STATE_CONNECTING)
+        if (mConnectionState == STATE_CONNECTED)
         {
             connected();
-            return;
+            return true;
         }
 
         Cookie cookie = IdentityController.getCookieForUser(mUsername);
@@ -619,14 +595,20 @@ public class ChatTransmissionService extends Service {
             socket.connect(mSocketCallback);
         }
         catch (Exception e) {
-
             SurespotLog.w(TAG, "connect", e);
         }
 
+        return false;
     }
 
     private void disconnect() {
         cancelDisconnectTimer();
+
+        save();
+        if (SurespotApplication.getChatController() != null) {
+            SurespotApplication.getChatController().doPause();
+        }
+        // saveUnsentMessages();
 
         SurespotLog.d(TAG, "disconnect.");
         setState(STATE_DISCONNECTED);
@@ -716,8 +698,8 @@ public class ChatTransmissionService extends Service {
     }
 
     public class ChatTransmissionServiceBinder extends Binder {
-        public ChatTransmissionService getService() {
-            return ChatTransmissionService.this;
+        public CommunicationService getService() {
+            return CommunicationService.this;
         }
     }
 
@@ -754,6 +736,54 @@ public class ChatTransmissionService extends Service {
         }
         SurespotLog.d(TAG, "initializeService: ", this.getClass().getSimpleName());
         this.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    // chat adapters and state
+
+    public synchronized void saveMessages() {
+        // save last 30? messages
+        SurespotLog.d(TAG, "saveMessages");
+        if (mUsername != null) {
+            for (Map.Entry<String, ChatAdapter> entry : SurespotApplication.getChatController().mChatAdapters.entrySet()) {
+                String them = entry.getKey();
+                String spot = ChatUtils.getSpot(mUsername, them);
+                SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(),
+                        entry.getValue().getCurrentScrollPositionId());
+            }
+        }
+    }
+
+    public synchronized void saveMessages(String username) {
+        // save last 30? messages
+        SurespotLog.d(TAG, "saveMessages, username: %s", username);
+        ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(username);
+
+        if (chatAdapter != null) {
+            SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
+                    chatAdapter.getCurrentScrollPositionId());
+        }
+
+    }
+
+    public void saveState(String username) {
+
+        SurespotLog.d(TAG, "saveState");
+
+        if (username == null) {
+            if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+                SurespotApplication.getChatTransmissionService().saveMessages();
+            }
+            SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
+            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+            if (SurespotApplication.getChatController() != null) {
+                SurespotApplication.getChatController().saveFriends();
+            }
+        }
+        else {
+            if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
+                SurespotApplication.getChatTransmissionService().saveMessages(username);
+            }
+        }
     }
 }
 

@@ -20,6 +20,7 @@ import android.widget.SeekBar;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -299,8 +300,8 @@ public class ChatFragment extends SherlockFragment {
 			// mListView.removeOnScrollListener()):
 
 			if (mListView != null) {
-				ChatController chatController = getMainActivity().getChatController();
-				if (chatController != null) {
+				ChatController chatController = SurespotApplication.getChatController();
+				if (chatController != null && chatController.getFriendAdapter() != null) {
 
 					Friend friend = chatController.getFriendAdapter().getFriend(mUsername);
 
