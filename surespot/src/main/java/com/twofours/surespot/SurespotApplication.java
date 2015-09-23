@@ -199,7 +199,7 @@ public class SurespotApplication extends MultiDexApplication {
 		mNetworkController = networkController;
 	}
 
-	public static CommunicationService getChatTransmissionService () {
+	public static CommunicationService getCommunicationService() {
 		if (mCommunicationService == null) {
 			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mCommunicationService"));
 		}
@@ -210,7 +210,7 @@ public class SurespotApplication extends MultiDexApplication {
 		SurespotApplication.mCredentialCachingService = credentialCachingService;
 	}
 
-	public static void setChatTransmissionService(CommunicationService communicationService) {
+	public static void setCommunicationService(CommunicationService communicationService) {
 		SurespotApplication.mCommunicationService = communicationService;
 	}
 
@@ -230,7 +230,7 @@ public class SurespotApplication extends MultiDexApplication {
 		return mUserAgent;
 	}
 
-	public static CommunicationService getChatTransmissionServiceNoThrow() {
+	public static CommunicationService getCommunicationServiceNoThrow() {
 		return mCommunicationService;
 	}
 }

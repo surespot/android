@@ -22,14 +22,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.twofours.surespot.R;
@@ -119,7 +116,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {
                             SurespotLog.v(TAG, "adding gcm message to controller");
-                            SurespotApplication.getChatTransmissionService().saveMessages(from);
+                            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                                SurespotApplication.getCommunicationService().saveMessages(from);
+                            } else {
+                                SurespotLog.w(TAG, "could not add gcm message to controller - transmission service was null");
+                            }
                             added = true;
                         }
                     }

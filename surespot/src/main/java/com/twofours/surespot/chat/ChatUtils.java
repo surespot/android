@@ -259,7 +259,7 @@ public class ChatUtils {
                                     return;
                                 }
 
-                                SurespotApplication.getChatTransmissionService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
+                                SurespotApplication.getCommunicationService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.IMAGE,
                                         new IAsyncCallback<Integer>() {
 
                                             @Override
@@ -440,7 +440,7 @@ public class ChatUtils {
                                 }
 
                                 final SurespotMessage finalMessage = message;
-                                SurespotApplication.getChatTransmissionService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
+                                SurespotApplication.getCommunicationService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
                                         new IAsyncCallback<Integer>() {
 
                                             @Override
@@ -518,7 +518,7 @@ public class ChatUtils {
             return;
         }
 
-        SurespotApplication.getChatTransmissionService().postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
+        SurespotApplication.getCommunicationService().postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
                 message.getMimeType(), new IAsyncCallback<Integer>() {
 
                     @Override

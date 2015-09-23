@@ -30,6 +30,7 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,7 +54,7 @@ import io.socket.SocketIOException;
 public class CommunicationService extends Service {
     private static final String TAG = "CommunicationService";
 
-    private final IBinder mBinder = new ChatTransmissionServiceBinder();
+    private final IBinder mBinder = new CommunicationServiceBinder();
     private ITransmissionServiceListener mListener;
     private ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
     private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
@@ -71,7 +72,7 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 1; // 1 minute - probably want 3, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // probably want 3, 1 is good for testing
 
     private SocketIO socket;
     private int mRetries = 0;
@@ -86,286 +87,27 @@ public class CommunicationService extends Service {
     @Override
     public void onCreate() {
         SurespotLog.i(TAG, "onCreate");
-
         setOnWifi();
-
-        mSocketCallback = new IOCallback() {
-
-            @Override
-            public void onMessage(JSONObject json, IOAcknowledge ack) {
-                try {
-                    SurespotLog.d(TAG, "JSON Server said: %s", json.toString(2));
-                }
-                catch (JSONException e) {
-                    SurespotLog.w(TAG, "onMessage", e);
-                }
-            }
-
-            @Override
-            public void onMessage(String data, IOAcknowledge ack) {
-                SurespotLog.d(TAG, "Server said: %s", data);
-            }
-
-            @Override
-            public synchronized void onError(SocketIOException socketIOException) {
-                boolean reAuthing = false;
-                // socket.io returns 403 for can't login
-                if (socketIOException.getHttpStatus() == 403) {
-                    SurespotLog.d(TAG, "got 403 from websocket");
-
-                    reAuthing = NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
-
-                        @Override
-                        public void onSuccess(int responseCode, String result, Cookie cookie) {
-                            connect();
-                        }
-
-                        @Override
-                        public void onFailure(Throwable arg0, String content) {
-                            socket = null;
-
-                            if (mListener != null) {
-                                mListener.reconnectFailed();
-                            }
-
-                            userLoggedOut();
-                            return;
-                        }
-                    });
-
-                    if (!reAuthing) {
-                        socket = null;
-
-                        if (mListener != null) {
-                            mListener.reconnectFailed();
-                        }
-
-                        userLoggedOut();
-                        return;
-                    }
-                }
-
-                if (reAuthing)
-                    return;
-
-                SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
-
-                setOnWifi();
-                // kick off another task
-                if (mRetries < MAX_RETRIES) {
-
-                    int timerInterval = generateInterval(mRetries++);
-                    SurespotLog.d(TAG, "try %d starting another task in: %d", mRetries - 1, timerInterval);
-
-                    synchronized (BACKGROUND_TIMER_LOCK) {
-                        if (mReconnectTask != null) {
-                            mReconnectTask.cancel();
-                        }
-
-                        // TODO: Is there ever a case where we don't want to try a reconnect?
-                        ReconnectTask reconnectTask = new ReconnectTask();
-                        if (mBackgroundTimer == null) {
-                            mBackgroundTimer = new Timer("backgroundTimer");
-                        }
-                        mBackgroundTimer.schedule(reconnectTask, timerInterval);
-                        mReconnectTask = reconnectTask;
-                    }
-                }
-                else {
-                    SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
-                    if (mListener != null) {
-                        mListener.couldNotConnectToServer();
-                    }
-                    // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
-                    userLoggedOut();
-                }
-            }
-
-            @Override
-            public void onDisconnect() {
-                SurespotLog.d(TAG, "Connection terminated.");
-                // socket = null;
-            }
-
-            @Override
-            public void onConnect() {
-                SurespotLog.d(TAG, "socket.io connection established");
-
-                setOnWifi();
-                mRetries = 0;
-
-                synchronized (BACKGROUND_TIMER_LOCK) {
-
-                    if (mBackgroundTimer != null) {
-                        mBackgroundTimer.cancel();
-                        mBackgroundTimer = null;
-                    }
-
-                    if (mReconnectTask != null && mReconnectTask.cancel()) {
-                        SurespotLog.d(TAG, "Cancelled reconnect timer.");
-                        mReconnectTask = null;
-                    }
-                }
-                setState(STATE_CONNECTED);
-                connected();
-            }
-
-            @Override
-            public void on(String event, IOAcknowledge ack, Object... args) {
-
-                // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
-
-                SurespotLog.d(TAG, "Server triggered event '" + event + "'");
-                if (event.equals("control")) {
-                    try {
-                        SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
-                        //if (mListener != null) {
-                        //    mListener.handleControlMessage(null, message, true, false);
-                        //}
-                        SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
-                        // no need to do anything here - does not involve mResendBuffer, etc
-                    }
-                    catch (JSONException e) {
-                        SurespotLog.w(TAG, "on control", e);
-                    }
-                }
-                else
-                if (event.equals("message")) {
-                    try {
-                        JSONObject jsonMessage = new JSONObject((String) args[0]);
-                        SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
-                        SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-                        SurespotApplication.getChatController().handleMessage(message);
-                        //if (mListener != null) {
-                        //    mListener.handleMessage(message);
-                        //}
-
-                        // the UI might have already removed the message from the resend buffer.  That's okay.
-                        Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
-                        while (iterator.hasNext()) {
-                            message = iterator.next();
-                            if (message.getIv().equals(message.getId())) {
-                                iterator.remove();
-                                break;
-                            }
-                        }
-
-                        checkAndSendNextMessage(message);
-                    }
-                    catch (JSONException e) {
-                        SurespotLog.w(TAG, "on message", e);
-                    }
-                }
-                else
-                if (event.equals("messageError")) {
-                    try {
-                        JSONObject jsonMessage = (JSONObject) args[0];
-                        SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
-                        SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
-                        SurespotApplication.getChatController().handleErrorMessage(errorMessage);
-                        //if (mListener != null) {
-                        //    mListener.handleErrorMessage(errorMessage);
-                        //}
-
-                        // the UI might have already removed the message from the resend buffer.  That's okay.
-                        SurespotMessage message = null;
-
-                        Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
-                        while (iterator.hasNext()) {
-                            message = iterator.next();
-                            if (message.getIv().equals(errorMessage.getId())) {
-                                iterator.remove();
-                                message.setErrorStatus(errorMessage.getStatus());
-                                break;
-                            }
-                        }
-                    }
-                    catch (JSONException e) {
-                        SurespotLog.w(TAG, "on messageError", e);
-                    }
-                }
-            }
-        };
-
-        mConnectivityReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                SurespotLog.d(TAG, "Connectivity Action");
-                ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-                if (networkInfo != null) {
-                    SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
-                    SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
-                    SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
-                    SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
-
-                    // if it's not a failover and wifi is now active then initiate reconnect
-                    if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-                        synchronized (CommunicationService.this) {
-                            // if we're not connecting, connect
-                            if (getState() != STATE_CONNECTING && !mOnWifi) {
-
-                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
-
-                                setState(STATE_CONNECTING);
-
-                                mOnWifi = true;
-                                disconnect();
-                                connect();
-                            }
-                        }
-                    }
-                }
-                else {
-                    SurespotLog.d(TAG, "networkinfo null");
-                }
-            }
-        };
+        mSocketCallback = new SocketCallbackHandler();
+        mConnectivityReceiver = new BroadcastReceiverHandler();
     }
 
+    // sets if the main activity is paused or not
     public void setMainActivityPaused(boolean paused) {
         mMainActivityPaused = paused;
-        checkDisconnect();
+        checkScheduleDisconnect();
         checkReconnect();
     }
 
-    private void checkDisconnect() {
-        if (mMainActivityPaused && mSendBuffer.size() == 0) {
-            // setup a disconnect N minutes from now
-            synchronized (DISCONNECT_TIMER_LOCK) {
-                if (mDisconnectTask != null) {
-                    mDisconnectTask.cancel();
-                }
-
-                DisconnectTask disconnectTask = new DisconnectTask();
-                if (mDisconnectTimer == null) {
-                    mDisconnectTimer = new Timer("disconnectTimer");
-                }
-                mDisconnectTimer.schedule(disconnectTask, DISCONNECT_DELAY_SECONDS * 1000);
-                mDisconnectTask = disconnectTask;
-            }
-        }
-    }
-
-    private void checkReconnect() {
-        if (!mMainActivityPaused) {
-            if (getState() == STATE_DISCONNECTED) {
-                connect();
-            }
-        }
-    }
-
-    private void connected() {
-        // tell any listeners that we're connected
-        if (mListener != null) {
-            mListener.connected();
-        }
+    // sets the current user name
+    public void setUsername(String username) {
+        mUsername = username;
     }
 
     // Notify the service that the user logged out
     public void userLoggedOut() {
         if (mUsername != null) {
+            SurespotLog.d(TAG, "user logging out: " + mUsername);
             save();
             mResendBuffer.clear();
             mSendBuffer.clear();
@@ -376,185 +118,10 @@ public class CommunicationService extends Service {
         }
     }
 
-    public SurespotMessage[] getResendMessages() {
-        SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
-        List<SurespotMessage> list = Arrays.asList(messages);
-        removeDuplicates(list);
-        // mResendBuffer.clear();
-        return list.toArray(new SurespotMessage[0]);
-    }
-
-    private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
-        ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
-        for (int i = messages.size()-1; i >= 0; i--) {
-            SurespotMessage message = messages.get(i);
-            if (isMessageEqualToAny(message, messagesSeen)) {
-                messages.remove(i);
-                SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
-            } else {
-                messagesSeen.add(message);
-            }
-        }
-        return messages;
-    }
-
-    private boolean isMessageEqualToAny(SurespotMessage message, List<SurespotMessage> messages) {
-        for (SurespotMessage msg : messages) {
-            if (SurespotMessage.areMessagesEqual(msg, message)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void saveUnsentMessages() {
-        mResendBuffer.addAll(mSendBuffer);
-        // SurespotLog.d(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
-        SurespotApplication.getStateController().saveUnsentMessages(mUsername, mResendBuffer);
-    }
-
-    public void loadUnsentMessages() {
-        Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages(mUsername).iterator();
-        while (iterator.hasNext()) {
-            mResendBuffer.add(iterator.next());
-        }
-        // SurespotLog.d(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
-    }
-
-    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
-                                      final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
-        SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
-    }
-
-    private int generateInterval(int k) {
-        int timerInterval = (int) (Math.pow(2, k) * 1000);
-        if (timerInterval > MAX_RETRY_DELAY * 1000) {
-            timerInterval = MAX_RETRY_DELAY * 1000;
-        }
-
-        int reconnectTime = (int) (Math.random() * timerInterval);
-        SurespotLog.d(TAG, "generated reconnect time: %d for k: %d", reconnectTime, k);
-        return reconnectTime;
-    }
-
-    public void shutdownConnection() {
-        disconnect();
-
-        synchronized (BACKGROUND_TIMER_LOCK) {
-
-            if (mBackgroundTimer != null) {
-                mBackgroundTimer.cancel();
-                mBackgroundTimer = null;
-            }
-            if (mReconnectTask != null) {
-                boolean cancel = mReconnectTask.cancel();
-                mReconnectTask = null;
-                SurespotLog.d(TAG, "Cancelled reconnect task: " + cancel);
-            }
-        }
-
-        // socket = null;
-
-        // workaround unchecked exception: https://code.google.com/p/android/issues/detail?id=18147
-        unregisterReceiver();
-
-        checkShutdownService();
-    }
-
-    private void unregisterReceiver() {
-        try {
-            unregisterReceiver(mConnectivityReceiver);
-        }
-        catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("Receiver not registered")) {
-                // Ignore this exception. This is exactly what is desired
-            }
-            else {
-                // unexpected, re-throw
-                throw e;
-            }
-        }
-    }
-
-    private void checkShutdownService() {
-        if (mSendBuffer.size() == 0 && mListener == null) {
-            Log.d(TAG, "shutting down service!");
-            this.stopSelf();
-        }
-    }
-
-    public void setUsername(String username) {
-        mUsername = username;
-    }
-
+    // initializes the network controller
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
         setUsername(mUser);
         SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
-    }
-
-    public int getState() {
-        return mConnectionState;
-    }
-
-    private synchronized void setState(int state) {
-        mConnectionState = state;
-    }
-
-    public ConcurrentLinkedQueue<SurespotMessage> getResendBuffer() {
-        return mResendBuffer;
-    }
-
-    public ConcurrentLinkedQueue<SurespotMessage> getSendBuffer() {
-        return mSendBuffer;
-    }
-
-    public void sendOnSocket(String json) {
-        if (socket != null) {
-            socket.send(json);
-        }
-    }
-
-    public void save() {
-        if (mUsername != null && SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
-            SurespotApplication.getChatController().saveFriends();
-            saveMessages(mUsername);
-            saveState(mUsername);
-        }
-        saveMessages();
-        saveUnsentMessages();
-    }
-
-    private class ReconnectTask extends TimerTask {
-
-        @Override
-        public void run() {
-            SurespotLog.d(TAG, "Reconnect task run.");
-            connect();
-        }
-    }
-
-    private class DisconnectTask extends TimerTask {
-
-        @Override
-        public void run() {
-            SurespotLog.d(TAG, "Disconnect task run.");
-            disconnect();
-        }
-    }
-
-    private void cancelDisconnectTimer() {
-        // cancel any disconnect that's been scheduled
-        synchronized (DISCONNECT_TIMER_LOCK) {
-            if (mDisconnectTask != null) {
-                mDisconnectTask.cancel();
-                mDisconnectTask = null;
-            }
-
-            if (mDisconnectTimer != null) {
-                mDisconnectTimer.cancel();
-                mDisconnectTimer = null;
-            }
-        }
     }
 
     public synchronized boolean connect() {
@@ -562,25 +129,21 @@ public class CommunicationService extends Service {
 
         cancelDisconnectTimer();
 
-        if (mConnectionState == STATE_CONNECTED && socket != null && socket.isConnected()) {
+        if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
             return true;
         }
 
-        if (mConnectionState == STATE_CONNECTING) {
+        if (getConnectionState() == STATE_CONNECTING) {
             return true;
         }
 
         setState(STATE_CONNECTING);
 
-        // gives the UI a chance to copy out pre-connect ids
-        //if (mListener != null) {
-        //    mListener.onBeforeConnect();
-        //}
         SurespotApplication.getChatController().onBeforeConnect();
 
-        if (mConnectionState == STATE_CONNECTED)
+        if (getConnectionState() == STATE_CONNECTED)
         {
-            connected();
+            onConnected();
             return true;
         }
 
@@ -601,34 +164,8 @@ public class CommunicationService extends Service {
         return false;
     }
 
-    private void disconnect() {
-        cancelDisconnectTimer();
-
-        save();
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().doPause();
-        }
-        // saveUnsentMessages();
-
-        SurespotLog.d(TAG, "disconnect.");
-        setState(STATE_DISCONNECTED);
-
-        if (socket != null) {
-            socket.disconnect();
-            socket = null;
-        }
-    }
-
-    public void checkAndSendNextMessage(SurespotMessage message) {
-        sendMessages();
-
-        if (mResendBuffer.size() > 0) {
-            mResendBuffer.remove(message);
-        }
-    }
-
     public void enqueueMessage(SurespotMessage message) {
-        if (getState() == STATE_DISCONNECTED) {
+        if (getConnectionState() == STATE_DISCONNECTED) {
             connect();
         }
         mSendBuffer.add(message);
@@ -643,7 +180,7 @@ public class CommunicationService extends Service {
 
         SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
-        checkDisconnect();
+        checkScheduleDisconnect();
         checkShutdownService();
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
@@ -662,34 +199,28 @@ public class CommunicationService extends Service {
         }
     }
 
-    private boolean isMessageReadyToSend(SurespotMessage message) {
-        return !TextUtils.isEmpty(message.getData()) && !TextUtils.isEmpty(message.getFromVersion()) && !TextUtils.isEmpty(message.getToVersion());
+    public int getConnectionState() {
+        return mConnectionState;
     }
 
-    private void sendMessage(final SurespotMessage message) {
-        SurespotLog.d(TAG, "sendmessage adding message to ResendBuffer, text: %s, iv: %s", message.getPlainData(), message.getIv());
+    public ConcurrentLinkedQueue<SurespotMessage> getResendBuffer() { return mResendBuffer; }
+    public ConcurrentLinkedQueue<SurespotMessage> getSendBuffer() { return mSendBuffer; }
 
-        mResendBuffer.add(message);
-        if (getState() == STATE_CONNECTED) {
-            SurespotLog.d(TAG, "sendmessage, socket: %s", socket);
-            JSONObject json = message.toJSONObjectSocket();
-            SurespotLog.d(TAG, "sendmessage, json: %s", json);
-            String s = json.toString();
-            SurespotLog.d(TAG, "sendmessage, message string: %s", s);
-
-            if (socket != null) {
-                socket.send(s);
-            }
+    public void sendOnSocket(String json) {
+        if (socket != null) {
+            socket.send(json);
         }
     }
 
-    private void setOnWifi() {
-        // get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo != null) {
-            mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
+    // saves all data and current state for user, general
+    public void save() {
+        if (mUsername != null && SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
+            SurespotApplication.getChatController().saveFriends();
+            saveMessages(mUsername);
+            saveState(mUsername);
         }
+        saveMessages();
+        saveUnsentMessages();
     }
 
     public void clearServiceListener() {
@@ -697,7 +228,7 @@ public class CommunicationService extends Service {
         checkShutdownService();
     }
 
-    public class ChatTransmissionServiceBinder extends Binder {
+    public class CommunicationServiceBinder extends Binder {
         public CommunicationService getService() {
             return CommunicationService.this;
         }
@@ -762,7 +293,6 @@ public class CommunicationService extends Service {
             SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
                     chatAdapter.getCurrentScrollPositionId());
         }
-
     }
 
     public void saveState(String username) {
@@ -770,8 +300,8 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "saveState");
 
         if (username == null) {
-            if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
-                SurespotApplication.getChatTransmissionService().saveMessages();
+            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                SurespotApplication.getCommunicationService().saveMessages();
             }
             SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
@@ -780,8 +310,493 @@ public class CommunicationService extends Service {
             }
         }
         else {
-            if (SurespotApplication.getChatTransmissionServiceNoThrow() != null) {
-                SurespotApplication.getChatTransmissionService().saveMessages(username);
+            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                SurespotApplication.getCommunicationService().saveMessages(username);
+            }
+        }
+    }
+
+    // gets messages to resend (without duplicates)
+    public SurespotMessage[] getResendMessages() {
+        SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
+        List<SurespotMessage> list = Arrays.asList(messages);
+        removeDuplicates(list);
+        return list.toArray(new SurespotMessage[0]);
+    }
+
+
+    public void saveUnsentMessages() {
+        mResendBuffer.addAll(mSendBuffer);
+        if (mResendBuffer.size() > 0) {
+            SurespotLog.d(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
+        }
+        SurespotApplication.getStateController().saveUnsentMessages(mUsername, mResendBuffer);
+    }
+
+    public void loadUnsentMessages() {
+        Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages(mUsername).iterator();
+        while (iterator.hasNext()) {
+            mResendBuffer.add(iterator.next());
+        }
+        // SurespotLog.d(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
+    }
+
+    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
+                               final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
+        SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
+    }
+
+    // see if we should schedule a disconnect or not
+    private void checkScheduleDisconnect() {
+        // if main activity is paused and we're not sending anything
+        if (mMainActivityPaused && mSendBuffer.size() == 0) {
+            // setup a disconnect N minutes from now
+            scheduleDisconnect();
+        }
+    }
+
+    // setup a disconnect N minutes from now
+    private void scheduleDisconnect() {
+        synchronized (DISCONNECT_TIMER_LOCK) {
+            if (mDisconnectTask != null) {
+                mDisconnectTask.cancel();
+                mDisconnectTask = null;
+            }
+
+            DisconnectTask disconnectTask = new DisconnectTask();
+            if (mDisconnectTimer != null) {
+                mDisconnectTimer.cancel();
+                mDisconnectTimer = null;
+            }
+            mDisconnectTimer = new Timer("disconnectTimer");
+            mDisconnectTimer.schedule(disconnectTask, DISCONNECT_DELAY_SECONDS * 1000);
+            mDisconnectTask = disconnectTask;
+        }
+    }
+
+    // see if it's an appropriate time to reconnect, and if so, try reconnecting
+    private void checkReconnect() {
+        if (!mMainActivityPaused) {
+            if (getConnectionState() == STATE_DISCONNECTED) {
+                connect();
+            }
+        }
+    }
+
+    // notify listeners that we've connected
+    private void onConnected() {
+        // tell any listeners that we're connected
+        if (mListener != null) {
+            mListener.onConnected();
+        }
+    }
+
+    // remove duplicate messages
+    private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
+        ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
+        for (int i = messages.size()-1; i >= 0; i--) {
+            SurespotMessage message = messages.get(i);
+            if (isMessageEqualToAny(message, messagesSeen)) {
+                messages.remove(i);
+                SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
+            } else {
+                messagesSeen.add(message);
+            }
+        }
+        return messages;
+    }
+
+    private boolean isMessageEqualToAny(SurespotMessage message, List<SurespotMessage> messages) {
+        for (SurespotMessage msg : messages) {
+            if (SurespotMessage.areMessagesEqual(msg, message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int generateInterval(int k) {
+        int timerInterval = (int) (Math.pow(2, k) * 1000);
+        if (timerInterval > MAX_RETRY_DELAY * 1000) {
+            timerInterval = MAX_RETRY_DELAY * 1000;
+        }
+
+        int reconnectTime = (int) (Math.random() * timerInterval);
+        SurespotLog.d(TAG, "generated reconnect time: %d for k: %d", reconnectTime, k);
+        return reconnectTime;
+    }
+
+    // stop reconnection attempts
+    private void stopReconnectionAttempts() {
+        synchronized (BACKGROUND_TIMER_LOCK) {
+            if (mBackgroundTimer != null) {
+                mBackgroundTimer.cancel();
+                mBackgroundTimer = null;
+            }
+            if (mReconnectTask != null) {
+                boolean cancel = mReconnectTask.cancel();
+                mReconnectTask = null;
+                SurespotLog.d(TAG, "Cancelled reconnect task: " + cancel);
+            }
+        }
+    }
+
+    private void scheduleReconnectionAttempt() {
+        int timerInterval = generateInterval(mRetries++);
+        SurespotLog.d(TAG, "try %d starting another task in: %d", mRetries - 1, timerInterval);
+
+        synchronized (BACKGROUND_TIMER_LOCK) {
+            if (mReconnectTask != null) {
+                mReconnectTask.cancel();
+            }
+
+            // TODO: Is there ever a case where we don't want to try a reconnect?
+            ReconnectTask reconnectTask = new ReconnectTask();
+            if (mBackgroundTimer == null) {
+                mBackgroundTimer = new Timer("backgroundTimer");
+            }
+            mBackgroundTimer.schedule(reconnectTask, timerInterval);
+            mReconnectTask = reconnectTask;
+        }
+    }
+
+    // shutdown any connection we have open to the server, close sockets, check if service should shut down
+    private void shutdownConnection() {
+        disconnect();
+        stopReconnectionAttempts();
+        unregisterReceiver();
+        checkShutdownService();
+    }
+
+    private void unregisterReceiver() {
+        try {
+            unregisterReceiver(mConnectivityReceiver);
+        }
+        catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Receiver not registered")) {
+                // Ignore this exception. This is exactly what is desired
+            }
+            else {
+                // unexpected, re-throw
+                throw e;
+            }
+        }
+    }
+
+    private void checkShutdownService() {
+        if (mSendBuffer.size() == 0 && mListener == null) {
+            Log.d(TAG, "shutting down service!");
+            this.stopSelf();
+        }
+    }
+
+    private synchronized void setState(int state) {
+        mConnectionState = state;
+    }
+
+    private class ReconnectTask extends TimerTask {
+
+        @Override
+        public void run() {
+            SurespotLog.d(TAG, "Reconnect task run.");
+            connect();
+        }
+    }
+
+    private class DisconnectTask extends TimerTask {
+
+        @Override
+        public void run() {
+            SurespotLog.d(TAG, "Disconnect task run.");
+            disconnect();
+        }
+    }
+
+    private void cancelDisconnectTimer() {
+        // cancel any disconnect that's been scheduled
+        synchronized (DISCONNECT_TIMER_LOCK) {
+            if (mDisconnectTask != null) {
+                mDisconnectTask.cancel();
+                mDisconnectTask = null;
+            }
+
+            if (mDisconnectTimer != null) {
+                mDisconnectTimer.cancel();
+                mDisconnectTimer = null;
+            }
+        }
+    }
+
+    private void disconnect() {
+        cancelDisconnectTimer();
+
+        save();
+        if (SurespotApplication.getChatController() != null) {
+            SurespotApplication.getChatController().doPause();
+        }
+        // saveUnsentMessages();
+
+        SurespotLog.d(TAG, "disconnect.");
+        setState(STATE_DISCONNECTED);
+
+        if (socket != null) {
+            socket.disconnect();
+            socket = null;
+        }
+    }
+
+    private void checkAndSendNextMessage(SurespotMessage message) {
+        sendMessages();
+
+        if (mResendBuffer.size() > 0) {
+            mResendBuffer.remove(message);
+        }
+    }
+
+    private boolean isMessageReadyToSend(SurespotMessage message) {
+        return !TextUtils.isEmpty(message.getData()) && !TextUtils.isEmpty(message.getFromVersion()) && !TextUtils.isEmpty(message.getToVersion());
+    }
+
+    private void sendMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "sendmessage adding message to ResendBuffer, text: %s, iv: %s", message.getPlainData(), message.getIv());
+
+        mResendBuffer.add(message);
+        if (getConnectionState() == STATE_CONNECTED) {
+            SurespotLog.d(TAG, "sendmessage, socket: %s", socket);
+            JSONObject json = message.toJSONObjectSocket();
+            SurespotLog.d(TAG, "sendmessage, json: %s", json);
+            String s = json.toString();
+            SurespotLog.d(TAG, "sendmessage, message string: %s", s);
+
+            if (socket != null) {
+                socket.send(s);
+            }
+        }
+    }
+
+    private void setOnWifi() {
+        // get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
+        }
+    }
+
+    private class SocketCallbackHandler implements IOCallback {
+
+        @Override
+        public void onMessage(JSONObject json, IOAcknowledge ack) {
+            try {
+                SurespotLog.d(TAG, "JSON Server said: %s", json.toString(2));
+            }
+            catch (JSONException e) {
+                SurespotLog.w(TAG, "onMessage", e);
+            }
+        }
+
+        @Override
+        public void onMessage(String data, IOAcknowledge ack) {
+            SurespotLog.d(TAG, "Server said: %s", data);
+        }
+
+        @Override
+        public synchronized void onError(SocketIOException socketIOException) {
+            handleSocketException(socketIOException);
+        }
+
+        @Override
+        public void onDisconnect() {
+            SurespotLog.d(TAG, "Connection terminated.");
+        }
+
+        @Override
+        public void onConnect() {
+            SurespotLog.d(TAG, "socket.io connection established");
+            setOnWifi();
+            mRetries = 0;
+            stopReconnectionAttempts();
+            setState(STATE_CONNECTED);
+            onConnected();
+        }
+
+        @Override
+        public void on(String event, IOAcknowledge ack, Object... args) {
+
+            // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
+
+            SurespotLog.d(TAG, "Server triggered event '" + event + "'");
+            if (event.equals("control")) {
+                try {
+                    SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
+                    SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
+                }
+                catch (JSONException e) {
+                    SurespotLog.w(TAG, "on control", e);
+                }
+            }
+            else
+            if (event.equals("message")) {
+                try {
+                    JSONObject jsonMessage = new JSONObject((String) args[0]);
+                    SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
+                    SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
+                    SurespotApplication.getChatController().handleMessage(message);
+
+                    // see if we have deletes
+                    String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
+                    if (sDeleteControlMessages != null) {
+                        JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
+
+                        if (deleteControlMessages.length() > 0) {
+                            for (int i = 0; i < deleteControlMessages.length(); i++) {
+                                try {
+                                    SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
+                                    SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
+                                }
+                                catch (JSONException e) {
+                                    SurespotLog.w(TAG, "on control", e);
+                                }
+                            }
+                        }
+                    }
+
+                    // the UI might have already removed the message from the resend buffer.  That's okay.
+                    Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
+                    while (iterator.hasNext()) {
+                        message = iterator.next();
+                        if (message.getIv().equals(message.getId())) {
+                            iterator.remove();
+                            break;
+                        }
+                    }
+
+                    checkAndSendNextMessage(message);
+                }
+                catch (JSONException e) {
+                    SurespotLog.w(TAG, "on message", e);
+                }
+            }
+            else
+            if (event.equals("messageError")) {
+                try {
+                    JSONObject jsonMessage = (JSONObject) args[0];
+                    SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
+                    SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
+                    SurespotApplication.getChatController().handleErrorMessage(errorMessage);
+
+                    // the UI might have already removed the message from the resend buffer.  That's okay.
+                    SurespotMessage message = null;
+
+                    Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
+                    while (iterator.hasNext()) {
+                        message = iterator.next();
+                        if (message.getIv().equals(errorMessage.getId())) {
+                            iterator.remove();
+                            message.setErrorStatus(errorMessage.getStatus());
+                            break;
+                        }
+                    }
+                }
+                catch (JSONException e) {
+                    SurespotLog.w(TAG, "on messageError", e);
+                }
+            }
+        }
+    }
+
+    private void handleSocketException(SocketIOException socketIOException) {
+        boolean reAuthing = false;
+        // socket.io returns 403 for can't login
+        if (socketIOException.getHttpStatus() == 403) {
+            SurespotLog.d(TAG, "got 403 from websocket");
+
+            reAuthing = tryReLogin();
+
+            if (!reAuthing) {
+                socket = null;
+
+                if (mListener != null) {
+                    mListener.onReconnectFailed();
+                }
+
+                userLoggedOut();
+                return;
+            }
+        }
+
+        if (reAuthing)
+            return;
+
+        SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
+
+        setOnWifi();
+        // kick off another task
+        if (mRetries < MAX_RETRIES) {
+            scheduleReconnectionAttempt();
+        }
+        else {
+            SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
+            if (mListener != null) {
+                mListener.onCouldNotConnectToServer();
+            }
+            // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
+            userLoggedOut();
+        }
+    }
+
+    private boolean tryReLogin() {
+        return NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
+
+            @Override
+            public void onSuccess(int responseCode, String result, Cookie cookie) {
+                connect();
+            }
+
+            @Override
+            public void onFailure(Throwable arg0, String content) {
+                socket = null;
+
+                if (mListener != null) {
+                    mListener.onReconnectFailed();
+                }
+
+                userLoggedOut();
+            }
+        });
+    }
+
+    private class BroadcastReceiverHandler extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            SurespotLog.d(TAG, "Connectivity Action");
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (networkInfo != null) {
+                SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
+                SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
+                SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
+                SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
+
+                // if it's not a failover and wifi is now active then initiate reconnect
+                if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
+                    synchronized (CommunicationService.this) {
+                        // if we're not connecting, connect
+                        if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
+
+                            SurespotLog.d(TAG, "Network switch, Reconnecting...");
+
+                            setState(STATE_CONNECTING);
+
+                            mOnWifi = true;
+                            disconnect();
+                            connect();
+                        }
+                    }
+                }
+            } else {
+                SurespotLog.d(TAG, "networkinfo null");
             }
         }
     }
