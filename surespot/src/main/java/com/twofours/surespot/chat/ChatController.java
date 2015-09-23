@@ -1484,17 +1484,14 @@ public class ChatController {
 		clearMessageNotification(mUsername, SurespotApplication.getCommunicationService().mCurrentChat);
 	}
 
-	public synchronized void doPause() {
+	public synchronized void onPause() {
+		SurespotLog.d(TAG, "onPause, mPaused: %b", mPaused);
 		if (!mPaused) {
 			mPaused = true;
 			if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-				SurespotApplication.getCommunicationService().saveState(null, false);
+				SurespotApplication.getCommunicationService().save();
 			}
 		}
-	}
-
-	public synchronized void onPause() {
-		SurespotLog.d(TAG, "onPause, mPaused: %b", mPaused);
 	}
 
 	ChatAdapter getChatAdapter(Context context, String username) {

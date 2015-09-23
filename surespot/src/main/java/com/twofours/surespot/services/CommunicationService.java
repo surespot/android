@@ -535,10 +535,10 @@ public class CommunicationService extends Service {
     private void disconnect() {
         cancelDisconnectTimer();
 
-        save();
-
         if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().doPause();
+            SurespotApplication.getChatController().onPause();
+        } else {
+            save();
         }
 
         SurespotLog.d(TAG, "disconnect.");
