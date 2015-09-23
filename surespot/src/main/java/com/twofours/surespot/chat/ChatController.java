@@ -687,12 +687,14 @@ public class ChatController {
 					while (i.hasNext()) {
 						String spot = (String) i.next();
 						try {
-							Integer availableId = controlIds.getInt(spot);
-							String user = ChatUtils.getOtherSpotUser(spot, mUsername);
-							// update available ids
-							friend = mFriendAdapter.getFriend(user);
-							if (friend != null) {
-								friend.setAvailableMessageControlId(availableId);
+							if (controlIds.has(spot)) {
+								Integer availableId = controlIds.getInt(spot);
+								String user = ChatUtils.getOtherSpotUser(spot, mUsername);
+								// update available ids
+								friend = mFriendAdapter.getFriend(user);
+								if (friend != null) {
+									friend.setAvailableMessageControlId(availableId);
+								}
 							}
 						} catch (JSONException e) {
 							SurespotLog.w(TAG, e, "getlatestData");
