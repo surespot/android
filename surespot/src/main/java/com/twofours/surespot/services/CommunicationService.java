@@ -300,9 +300,7 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "saveState");
 
         if (username == null) {
-            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getCommunicationService().saveMessages();
-            }
+            saveMessages();
             SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
             if (SurespotApplication.getChatController() != null) {
@@ -310,9 +308,7 @@ public class CommunicationService extends Service {
             }
         }
         else {
-            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getCommunicationService().saveMessages(username);
-            }
+            saveMessages(username);
         }
     }
 
