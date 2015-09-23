@@ -2234,7 +2234,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		@Override
 		public void onConnected() {
-			MainActivity.this.setHomeProgress(false);
+			MainActivity.this.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					MainActivity.this.setHomeProgress(false);
+				}
+			});
 			if (!logIfChatControllerNull()) {
 				SurespotApplication.getChatController().connected();
 			}
@@ -2263,7 +2268,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 		@Override
 		public void onNotConnected() {
-			MainActivity.this.setHomeProgress(true);
+			MainActivity.this.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					MainActivity.this.setHomeProgress(true);
+				}
+			});
 		}
 
 		private boolean logIfChatControllerNull() {
