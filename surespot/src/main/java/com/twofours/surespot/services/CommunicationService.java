@@ -73,7 +73,7 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // probably want 3, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 20; // probably want 3, 1 is good for testing
 
     private SocketIO socket;
     private int mRetries = 0;
@@ -114,7 +114,7 @@ public class CommunicationService extends Service {
             mSendBuffer.clear();
             mUsername = null;
             shutdownConnection();
-            checkShutdownService();
+            checkShutdownService(true);
             SurespotApplication.getChatController().dispose();
         }
     }
@@ -182,7 +182,7 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
         checkScheduleDisconnect();
-        checkShutdownService();
+        checkShutdownService(false);
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
         ArrayList<SurespotMessage> sentMessages = new ArrayList<SurespotMessage>();
@@ -227,7 +227,7 @@ public class CommunicationService extends Service {
 
     public void clearServiceListener() {
         mListener = null;
-        checkShutdownService();
+        checkShutdownService(false);
     }
 
     public class CommunicationServiceBinder extends Binder {
@@ -241,7 +241,7 @@ public class CommunicationService extends Service {
         if (mListener != null) {
             mRetries = 0; // clear state related to retrying connections
         }
-        checkShutdownService();
+        checkShutdownService(false);
     }
 
     public ITransmissionServiceListener getServiceListener() {
@@ -486,7 +486,7 @@ public class CommunicationService extends Service {
         disconnect();
         stopReconnectionAttempts();
         unregisterReceiver();
-        checkShutdownService();
+        checkShutdownService(false);
     }
 
     private void unregisterReceiver() {
@@ -504,10 +504,12 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void checkShutdownService() {
+    private void checkShutdownService(boolean justCalledUserLoggedOut) {
         if (mSendBuffer.size() == 0 && mListener == null) {
             Log.d(TAG, "shutting down service!");
-            userLoggedOut();
+            if (!justCalledUserLoggedOut) {
+                userLoggedOut();
+            }
             this.stopSelf();
         }
     }
@@ -809,6 +811,9 @@ public class CommunicationService extends Service {
                     synchronized (CommunicationService.this) {
                         setOnWifi();
                         if (!mMainActivityPaused && mListener != null) {
+                            if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+                                return;
+                            }
                             disconnect();
                             connect();
                         }
