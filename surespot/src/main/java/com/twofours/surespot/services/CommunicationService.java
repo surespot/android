@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -453,13 +454,17 @@ public class CommunicationService extends Service {
         synchronized (BACKGROUND_TIMER_LOCK) {
             if (mReconnectTask != null) {
                 mReconnectTask.cancel();
+                mReconnectTask = null;
+            }
+
+            if (mBackgroundTimer != null) {
+                mBackgroundTimer.cancel();
+                mBackgroundTimer = null;
             }
 
             // TODO: Is there ever a case where we don't want to try a reconnect?
             ReconnectTask reconnectTask = new ReconnectTask();
-            if (mBackgroundTimer == null) {
-                mBackgroundTimer = new Timer("backgroundTimer");
-            }
+            mBackgroundTimer = new Timer("backgroundTimer");
             mBackgroundTimer.schedule(reconnectTask, timerInterval);
             mReconnectTask = reconnectTask;
         }
@@ -613,6 +618,8 @@ public class CommunicationService extends Service {
         @Override
         public void onDisconnect() {
             SurespotLog.d(TAG, "Connection terminated.");
+            setState(STATE_DISCONNECTED);
+            mRetries = 0;
         }
 
         @Override
@@ -712,6 +719,7 @@ public class CommunicationService extends Service {
 
     private void handleSocketException(SocketIOException socketIOException) {
         boolean reAuthing = false;
+        setState(STATE_DISCONNECTED);
         // socket.io returns 403 for can't login
         if (socketIOException.getHttpStatus() == 403) {
             SurespotLog.d(TAG, "got 403 from websocket");
@@ -776,6 +784,22 @@ public class CommunicationService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             SurespotLog.d(TAG, "Connectivity Action");
+            debugIntent(intent, TAG);
+            Bundle extras = intent.getExtras();
+            if (extras.containsKey("networkInfo")) {
+                NetworkInfo networkInfo2 = (NetworkInfo)extras.get("networkInfo");
+                if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
+                    SurespotLog.d(TAG, "Network newly connected, reconnecting...");
+                    synchronized (CommunicationService.this) {
+                        setOnWifi();
+                        if (!mMainActivityPaused) {
+                            disconnect();
+                            connect();
+                        }
+                    }
+                    return;
+                }
+            }
             ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
             if (networkInfo != null) {
@@ -789,19 +813,36 @@ public class CommunicationService extends Service {
                     synchronized (CommunicationService.this) {
                         // if we're not connecting, connect
                         if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
-
-                            SurespotLog.d(TAG, "Network switch, Reconnecting...");
-
-                            setState(STATE_CONNECTING);
-
                             mOnWifi = true;
-                            disconnect();
-                            connect();
+
+                            if (!mMainActivityPaused) {
+                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
+
+                                setState(STATE_CONNECTING);
+
+                                disconnect();
+                                connect();
+                            }
                         }
                     }
                 }
             } else {
                 SurespotLog.d(TAG, "networkinfo null");
+            }
+        }
+
+        private void debugIntent(Intent intent, String tag) {
+            Log.v(tag, "action: " + intent.getAction());
+            Log.v(tag, "component: " + intent.getComponent());
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                for (String key: extras.keySet()) {
+                    Log.d(tag, "key [" + key + "]: " +
+                            extras.get(key));
+                }
+            }
+            else {
+                Log.v(tag, "no extras");
             }
         }
     }

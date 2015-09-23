@@ -102,11 +102,11 @@ public class ChatController {
 	private boolean mHandlingAutoInvite;
 	private String mUsername;
 
-	public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm,
+	public ChatController(String username, NetworkController networkController, FragmentManager fm,
 			IAsyncCallbackTuple<String, Boolean> m401Handler, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
 			IAsyncCallback<Friend> tabShowingCallback) {
 		SurespotLog.d(TAG, "constructor: %s", username);
-		mContext = context;
+		mContext = SurespotApplication.getCommunicationService();
 		mUsername = username;
 		mNetworkController = networkController;
 
@@ -122,7 +122,7 @@ public class ChatController {
 		loadState(mUsername);
 
 		mFragmentManager = fm;
-		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager = (NotificationManager) SurespotApplication.getCommunicationService().getSystemService(Context.NOTIFICATION_SERVICE);
 
 		// mViewPager.setOffscreenPageLimit(2);
 	}
@@ -789,8 +789,8 @@ public class ChatController {
 	public void dispose() {
 		SurespotLog.d(TAG, "disposing of chat controller");
 		mChatAdapters.clear();
-		mFriendAdapter = null;
-		mFragmentManager = null;
+		// mFriendAdapter = null;
+		// mFragmentManager = null;
 	}
 
 	private class LatestIdPair {
