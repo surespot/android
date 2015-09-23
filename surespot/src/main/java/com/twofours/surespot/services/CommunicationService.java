@@ -71,7 +71,7 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // 3 minutes
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 1; // 1 minute - probably want 3, 1 is good for testing
 
     private SocketIO socket;
     private int mRetries = 0;
@@ -366,8 +366,7 @@ public class CommunicationService extends Service {
     // Notify the service that the user logged out
     public void userLoggedOut() {
         if (mUsername != null) {
-            saveMessages();
-            saveUnsentMessages();
+            save();
             mResendBuffer.clear();
             mSendBuffer.clear();
             mUsername = null;
@@ -516,7 +515,8 @@ public class CommunicationService extends Service {
     }
 
     public void save() {
-        if (mUsername != null) {
+        if (mUsername != null && SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
+            SurespotApplication.getChatController().saveFriends();
             saveMessages(mUsername);
             saveState(mUsername);
         }

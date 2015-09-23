@@ -1451,7 +1451,7 @@ public class ChatController {
 
 
 	public synchronized void logout() {
-		SurespotApplication.getChatTransmissionService().mCurrentChat = null;
+		// SurespotApplication.getChatTransmissionService().mCurrentChat = null;
 		onPause();
 		// mViewPager = null;
 		// mCallback401 = null;
