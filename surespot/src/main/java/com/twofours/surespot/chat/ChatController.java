@@ -1389,6 +1389,8 @@ public class ChatController {
 
 
 	public synchronized void logout() {
+		// save before we clear the chat adapters
+		SurespotApplication.getCommunicationService().userLoggedOut();
 		onPause();
 		// mViewPager = null;
 		// mCallback401 = null;
@@ -1401,7 +1403,6 @@ public class ChatController {
 		mChatAdapters.clear();
 		// mActiveChats.clear();
 		// mReadSinceConnected.clear();
-		SurespotApplication.getCommunicationService().userLoggedOut();
 	}
 
 	public void saveFriends() {
@@ -1487,7 +1488,7 @@ public class ChatController {
 		if (!mPaused) {
 			mPaused = true;
 			if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-				SurespotApplication.getCommunicationService().saveState(null);
+				SurespotApplication.getCommunicationService().saveState(null, false);
 			}
 		}
 	}
@@ -1533,7 +1534,7 @@ public class ChatController {
 	public void destroyChatAdapter(String username) {
 		SurespotLog.d(TAG, "destroying chat adapter for: %s", username);
 		if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-			SurespotApplication.getCommunicationService().saveState(username);
+			SurespotApplication.getCommunicationService().saveState(username, false);
 		}
 		mChatAdapters.remove(username);
 	}
@@ -1736,7 +1737,7 @@ public class ChatController {
 			try {
 				chatAdapter.addOrUpdateMessage(message, false, true, true);
 				scrollToEnd(message.getTo());
-				SurespotApplication.getCommunicationService().saveState(message.getTo());
+				SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
 			}
 			catch (Exception e) {
 				SurespotLog.e(TAG, e, "addMessage");
@@ -1805,7 +1806,7 @@ public class ChatController {
 
 			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 			chatAdapter.deleteMessageByIv(message.getIv());
-			SurespotApplication.getCommunicationService().saveState(otherUser);
+			SurespotApplication.getCommunicationService().saveState(otherUser, false);
 
 			// if it's an image, delete the local image file
 			if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {

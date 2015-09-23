@@ -214,11 +214,12 @@ public class CommunicationService extends Service {
 
     // saves all data and current state for user, general
     public void save() {
-        if (mUsername != null && SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
-            SurespotApplication.getChatController().saveFriends();
+        if (mUsername != null) {
+            saveFriends();
             saveMessages(mUsername);
-            saveState(mUsername);
+            saveState(mUsername, true);
         }
+        saveState(null, true);
         saveMessages();
         saveUnsentMessages();
     }
@@ -295,19 +296,21 @@ public class CommunicationService extends Service {
         }
     }
 
-    public void saveState(String username) {
+    public void saveState(String username, boolean fromSave) {
 
         SurespotLog.d(TAG, "saveState");
 
         if (username == null) {
-            saveMessages();
+            if (!fromSave) {
+                saveMessages();
+            }
             SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
-            if (SurespotApplication.getChatController() != null) {
-                SurespotApplication.getChatController().saveFriends();
+            if (!fromSave) {
+                saveFriends();
             }
         }
-        else {
+        else if (!fromSave) {
             saveMessages(username);
         }
     }
@@ -340,6 +343,12 @@ public class CommunicationService extends Service {
     public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
                                final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
         SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
+    }
+
+    private void saveFriends() {
+        if (SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
+            SurespotApplication.getChatController().saveFriends();
+        }
     }
 
     // see if we should schedule a disconnect or not
@@ -527,10 +536,10 @@ public class CommunicationService extends Service {
         cancelDisconnectTimer();
 
         save();
+
         if (SurespotApplication.getChatController() != null) {
             SurespotApplication.getChatController().doPause();
         }
-        // saveUnsentMessages();
 
         SurespotLog.d(TAG, "disconnect.");
         setState(STATE_DISCONNECTED);
