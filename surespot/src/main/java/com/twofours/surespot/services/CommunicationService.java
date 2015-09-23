@@ -73,7 +73,7 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 20; // probably want 3, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // probably want 3, 1 is good for testing
 
     private SocketIO socket;
     private int mRetries = 0;
