@@ -57,9 +57,6 @@ public class SurespotApplication extends MultiDexApplication {
 	}
 
 	public static void setChatController(ChatController chatController) {
-		if (mChatController != null && mCommunicationService != null) {
-			mCommunicationService.save();
-		}
 		SurespotApplication.mChatController = chatController;
 	}
 

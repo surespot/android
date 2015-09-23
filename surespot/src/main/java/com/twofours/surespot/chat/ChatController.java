@@ -119,7 +119,7 @@ public class ChatController {
 		mTabShowingCallback = tabShowingCallback;
 		mEarliestMessage = new HashMap<String, Integer>();
 		mChatAdapters = new HashMap<String, ChatAdapter>();
-		mFriendAdapter = new FriendAdapter(SurespotApplication.getChatTransmissionService()); // HEREHERE: mContext);
+		mFriendAdapter = new FriendAdapter(SurespotApplication.getChatTransmissionService());
 		mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
 		loadState(mUsername);
 
