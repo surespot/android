@@ -484,9 +484,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	}
 
 	public static boolean areMessagesEqual(SurespotMessage lastMessage, SurespotMessage message) {
-		return ((lastMessage.getFrom() != null && lastMessage.getFrom().equals(message.getFrom())) &&
-				(lastMessage.getFromVersion() == message.getFromVersion()) &&
-				(lastMessage.getDateTime() == message.getDateTime()) &&
-				(lastMessage.getData() != null && lastMessage.getData().equals(message.getData())));
+		return lastMessage.getIv() != null && lastMessage.getIv().equals(message.getIv());
 	}
 }
