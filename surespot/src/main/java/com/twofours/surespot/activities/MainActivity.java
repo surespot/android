@@ -2224,6 +2224,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		});
 	}
 
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+	}
+
 
 	private void bindChatTransmissionService() {
 		mBindingCommunicationService = true;
