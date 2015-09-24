@@ -78,6 +78,11 @@
             android:title="@string/pref_title_delete_all_messages" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="pref_enter_to_send"
+            android:summary="@string/pref_summary_enter_to_sent"
+            android:title="@string/pref_title_enter_to_send" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="pref_suppress_voice_purchase_ask"
             android:summary="@string/pref_suppress_voice_purchase_ask_summary"
             android:title="@string/pref_suppress_voice_purchase_ask_title" />

@@ -144,6 +144,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private AlertDialog mHelpDialog;
 	private AlertDialog mDialog;
 	private String mUser;
+	private boolean mEnterToSend;
 
 	// control booleans
 	private boolean mLaunched;
@@ -229,6 +230,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		}
 
 		mContext = this;
+
+		SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
+		mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 
 		m401Handler = new IAsyncCallbackTuple<String, Boolean>() {
 
@@ -602,12 +606,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
 				Friend friend = mCurrentFriend;
 				if (friend != null) {
-					if (actionId == EditorInfo.IME_ACTION_SEND || (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN)) {
+					if (actionId == EditorInfo.IME_ACTION_SEND) {
+						sendMessage(friend.getName());
+						handled = true;
+					}
+
+					if (mEnterToSend == true && actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
 						sendMessage(friend.getName());
 						handled = true;
 					}
 				}
-
 				return handled;
 			}
 		});
@@ -1020,6 +1028,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		if (mLaunched && !mResumed) {
 			resume();
 		}
+
+		SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
+		mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 	}
 
 	private void resume() {
