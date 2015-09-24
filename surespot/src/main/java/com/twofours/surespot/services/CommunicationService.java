@@ -63,6 +63,7 @@ public class CommunicationService extends Service {
     private String mUsername;
     private boolean mMainActivityPaused = false;
     private ReconnectTask mReconnectTask;
+    private ReloginTask mReloginTask;
     private DisconnectTask mDisconnectTask;
     public static String mCurrentChat;
 
@@ -70,17 +71,23 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
     private static final int MAX_RETRIES = 60;
+    private static final int MAX_RELOGIN_RETRIES = 20;
+
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
     private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // probably want 3, 1 is good for testing
+    private static final int RELOGIN_DELAY_SECONDS = 5; // 5 seconds between retries
 
+    private int mTriesRelogin = 0;
     private SocketIO socket;
     private int mRetries = 0;
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
     private Timer mDisconnectTimer;
     private Object DISCONNECT_TIMER_LOCK = new Object();
+    private Timer mReloginTimer;
+    private Object RELOGIN_TIMER_LOCK = new Object();
     private int mConnectionState;
     private boolean mOnWifi;
     private IOCallback mSocketCallback;
@@ -383,6 +390,25 @@ public class CommunicationService extends Service {
         }
     }
 
+    // setup a disconnect N minutes from now
+    private void startReloginTimer() {
+        synchronized (RELOGIN_TIMER_LOCK) {
+            if (mReloginTask != null) {
+                mReloginTask.cancel();
+                mReloginTask = null;
+            }
+
+            ReloginTask reloginTask = new ReloginTask();
+            if (mReloginTimer != null) {
+                mReloginTimer.cancel();
+                mReloginTimer= null;
+            }
+            mReloginTimer = new Timer("reloginTimer");
+            mReloginTimer.schedule(reloginTask, RELOGIN_DELAY_SECONDS * 1000);
+            mReloginTask = reloginTask;
+        }
+    }
+
     // see if it's an appropriate time to reconnect, and if so, try reconnecting
     private void checkReconnect() {
         if (!mMainActivityPaused) {
@@ -536,6 +562,41 @@ public class CommunicationService extends Service {
         public void run() {
             SurespotLog.d(TAG, "Disconnect task run.");
             disconnect();
+        }
+    }
+
+    private class ReloginTask extends TimerTask {
+
+        @Override
+        public void run() {
+            SurespotLog.d(TAG, "Relogin task run.");
+            boolean reAuthing = tryReLogin();
+
+            if (!reAuthing) {
+                socket = null;
+
+                if (mListener != null) {
+                    mListener.onReconnectFailed();
+                }
+
+                userLoggedOut();
+                mTriesRelogin = 0;
+            }
+        }
+    }
+
+    private void stopReloginTimer() {
+        // cancel any disconnect that's been scheduled
+        synchronized (RELOGIN_TIMER_LOCK) {
+            if (mReloginTask != null) {
+                mReloginTask.cancel();
+                mReloginTask = null;
+            }
+
+            if (mReloginTimer != null) {
+                mReloginTimer.cancel();
+                mReloginTimer = null;
+            }
         }
     }
 
@@ -776,16 +837,21 @@ public class CommunicationService extends Service {
         }
     }
 
-    private boolean tryReLogin() {
-        return NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
 
-            @Override
-            public void onSuccess(int responseCode, String result, Cookie cookie) {
-                connect();
-            }
+    private class ReLoginCookieResponseHandler extends CookieResponseHandler {
+        @Override
+        public void onSuccess(int responseCode, String result, Cookie cookie) {
+            stopReloginTimer();
+            mTriesRelogin = 0;
+            connect();
+        }
 
-            @Override
-            public void onFailure(Throwable arg0, String content) {
+        @Override
+        public void onFailure(Throwable arg0, String content) {
+            stopReloginTimer();
+            if (mTriesRelogin++ > MAX_RELOGIN_RETRIES) {
+                // give up
+                SurespotLog.i(TAG, "Max login retries exceeded.  Giving up");
                 socket = null;
 
                 if (mListener != null) {
@@ -793,8 +859,15 @@ public class CommunicationService extends Service {
                 }
 
                 userLoggedOut();
+                mTriesRelogin = 0;
+            } else {
+                startReloginTimer();
             }
-        });
+        }
+    }
+
+    private boolean tryReLogin() {
+        return NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new ReLoginCookieResponseHandler());
     }
 
     private class BroadcastReceiverHandler extends BroadcastReceiver {
