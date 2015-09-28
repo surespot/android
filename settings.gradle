@@ -5,5 +5,6 @@ include ':sSLWebSocket'
 include ':androidasynchttp'
 include ':androidkeystore'
 include ':viewpagerindicator'
-include ':surespot'
+include ':surespot', ':ColorPickerPreference'
+project(':ColorPickerPreference').projectDir = new File('libs/android-ColorPickerPreference/ColorPickerPreference')
 
