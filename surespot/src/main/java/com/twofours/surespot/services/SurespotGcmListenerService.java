@@ -264,13 +264,15 @@ public class SurespotGcmListenerService extends GcmListenerService {
         boolean showLights = pm.getBoolean("pref_notifications_led", true);
         boolean makeSound = pm.getBoolean("pref_notifications_sound", true);
         boolean vibrate = pm.getBoolean("pref_notifications_vibration", true);
+        int color = pm.getInt("pref_notification_color", getResources().getColor(R.color.surespotBlue));
 
         if (showLights) {
             SurespotLog.v(TAG, "showing notification led");
-            mBuilder.setLights(0xff0000FF, 500, 5000);
+            mBuilder.setLights(color, 500, 5000);
+            defaults |= Notification.FLAG_SHOW_LIGHTS; // shouldn't need this - setLights does it.  Just to make sure though...
         }
         else {
-            mBuilder.setLights(0xff0000FF, 0, 0);
+            mBuilder.setLights(color, 0, 0);
         }
 
         if (makeSound) {

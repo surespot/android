@@ -86,7 +86,7 @@
             android:title="@string/pref_title_notification_color"
             android:summary="@string/pref_summary_notification_color"
             android:defaultValue="@color/surespotBlue"
-            alphaSlider="true"
+            alphaSlider="false"
         />
         <CheckBoxPreference
             android:defaultValue="false"
