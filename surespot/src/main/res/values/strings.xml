@@ -254,6 +254,8 @@
     <string name="pref_title_debug">debug</string>
     <string name="pref_title_options">identity options</string>
     <string name="pref_title_enter_to_send">enter sends message</string>
+    <string name="pref_title_notification_color">notification LED color</string>
+    <string name="pref_summary_notification_color">LED color for surespot notifications</string>
     <string name="pref_summary_enter_to_sent">pressing enter sends a message</string>
     <string name="pref_summary_delete_message">confirm before deleting a message</string>
     <string name="pref_summary_delete_all_messages">confirm before deleting all messages</string>
