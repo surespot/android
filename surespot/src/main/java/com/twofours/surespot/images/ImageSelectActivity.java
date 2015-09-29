@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
@@ -18,6 +19,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
@@ -41,8 +43,8 @@ public class ImageSelectActivity extends SherlockActivity {
 	private ImageViewTouch mImageView;
 	private Button mSendButton;
 	private Button mCancelButton;
-	private File mCompressedImagePath;
-	private String mPath;
+	private ArrayList<File> mCompressedImagePaths;
+	private ArrayList<String> mPaths;
 	private String mTo;
 	private int mSize;
 
@@ -50,6 +52,7 @@ public class ImageSelectActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_select);
+		Bundle extras = getIntent().getExtras();
 
 		mImageView = (ImageViewTouch) this.findViewById(R.id.imageViewer);
 		mSendButton = (Button) this.findViewById(R.id.send);
@@ -59,18 +62,23 @@ public class ImageSelectActivity extends SherlockActivity {
 		mSendButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mCompressedImagePath == null) {
+				if (mCompressedImagePaths == null || mCompressedImagePaths.size() == 0) {
 					setResult(RESULT_CANCELED);
 					finish();
 				}
 				else {
-
+					// TODO: handle
 					new AsyncTask<Void, Void, Void>() {
 						protected Void doInBackground(Void... params) {
 							Intent dataIntent = new Intent();
-							dataIntent.setData(Uri.fromFile(mCompressedImagePath));
 							dataIntent.putExtra("to", mTo);
-							dataIntent.putExtra("filename", mCompressedImagePath.getPath());
+							dataIntent.setData(Uri.fromFile(mCompressedImagePaths.get(mCompressedImagePaths.size() - 1)));
+							StringBuilder sb = new StringBuilder();
+							for (File file : mCompressedImagePaths) {
+								sb.append(file.getPath());
+								sb.append("\\");
+							}
+							dataIntent.putExtra("filenames", sb.toString());
 							setResult(Activity.RESULT_OK, dataIntent);
 							finish();
 							return null;
@@ -91,16 +99,19 @@ public class ImageSelectActivity extends SherlockActivity {
 		});
 
 		if (savedInstanceState != null) {
-			mPath = savedInstanceState.getString("path");
+			mPaths = savedInstanceState.getStringArrayList("paths");
 			mTo = savedInstanceState.getString("to");
 			mSize = savedInstanceState.getInt("size");
 
 			setTitle();
 			setButtonText();
-			if (mPath != null) {
-				mCompressedImagePath = new File(mPath);
-				setImage(BitmapFactory.decodeFile(mPath), true);
-				return;
+			if (mPaths != null && mPaths.size() > 0) {
+				mCompressedImagePaths = new ArrayList<File>();
+				for (String path : mPaths) {
+					mCompressedImagePaths.add(new File(path));
+				}
+				// TODO: show "and more images..."?
+				setImage(BitmapFactory.decodeFile(mPaths.get(mPaths.size() - 1)), true);
 			}
 		}
 
@@ -117,8 +128,8 @@ public class ImageSelectActivity extends SherlockActivity {
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
+			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
-
 		}
 
 	}
@@ -147,24 +158,32 @@ public class ImageSelectActivity extends SherlockActivity {
 
 				mImageView.setVisibility(View.VISIBLE);
 
-				new AsyncTask<Void, Void, Bitmap>() {
+
+				mPaths = new ArrayList<String>();
+				new AsyncTask<Void, Void, ArrayList<Bitmap>>() {
 					@Override
-					protected Bitmap doInBackground(Void... params) {
-						Uri uri = data.getData();
+					protected ArrayList<Bitmap> doInBackground(Void... params) {
+						// only Android 16+: ClipData clipData = data.getClipData();
+						ArrayList<Parcelable> list = data.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+						ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
+						int n = 0;
+						for (Parcelable parcel : list) {
+							Uri uri = (Uri) parcel;
+							// scale, compress and save the image
+							BitmapAndFile result = compressImage(uri, n, -1);
 
-						// scale, compress and save the image
-						Bitmap bitmap = compressImage(uri, -1);
-
-						mPath = mCompressedImagePath.toString();
-						return bitmap;
+							mPaths.add(result.mFile.toString()); // TODO: is this right?
+							bitmaps.add(result.mBitmap);
+							n++;
+						}
+						return bitmaps;
 					}
 
-					protected void onPostExecute(Bitmap result) {
-						if (result != null) {
-							setImage(result, true);
+					protected void onPostExecute(ArrayList<Bitmap> results) {
+						if (results != null) {
+							setImage(results, true);
 
-						}
-						else {
+						} else {
 							mSendButton.setEnabled(false);
 						}
 					}
@@ -197,10 +216,30 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 	}
 
+	private void setImage(ArrayList<Bitmap> bitmaps, boolean animate) {
+		if (animate) {
+			Animation fadeIn = new AlphaAnimation(0, 1);
+			fadeIn.setDuration(1000);
+			mImageView.startAnimation(fadeIn);
+
+		}
+		else {
+			mImageView.clearAnimation();
+		}
+		mImageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
+		mImageView.setImageBitmap(bitmaps.get(bitmaps.size() - 1));
+		mSendButton.setEnabled(true);
+
+		// TODO: show "and x more images..."??
+		if (mSize == IMAGE_SIZE_SMALL) {
+			mImageView.zoomTo((float) .5, 2000);
+		}
+	}
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString("path", mPath);
+		outState.putStringArrayList("paths", mPaths);
 		outState.putString("to", mTo);
 		outState.putInt("size", mSize);
 	}
@@ -225,23 +264,31 @@ public class ImageSelectActivity extends SherlockActivity {
 	}
 
 	private void deleteCompressedImage() {
-		if (mCompressedImagePath != null) {
-			// SurespotLog.v(TAG, "deleteCompressedImage: " + mCompressedImagePath.getPath());
-			mCompressedImagePath.delete();
-			mCompressedImagePath = null;
+		if (mCompressedImagePaths != null) {
+			for (File file : mCompressedImagePaths) {
+				file.delete();
+			}
+			mCompressedImagePaths = null;
 		}
 	}
 
-	private Bitmap compressImage(final Uri uri, final int rotate) {
-		final Uri finalUri;
-		try {
-			if (mCompressedImagePath == null) {
-				mCompressedImagePath = createImageFile(COMPRESS_SUFFIX);
-			}
+	private class BitmapAndFile {
+		public File mFile;
+		public Bitmap mBitmap;
+	}
 
+	// TODO: test the heck out of this HEREHERE
+	private BitmapAndFile compressImage(final Uri uri, int n, final int rotate) {
+		final Uri finalUri;
+		File f;
+		try {
+			if (mCompressedImagePaths == null) {
+				mCompressedImagePaths = new ArrayList<File>();
+			}
+			f = createImageFile(COMPRESS_SUFFIX + n);
 			// if it's an external image save it first
 			if (uri.getScheme().startsWith("http")) {
-				FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
+				FileOutputStream fos = new FileOutputStream(f);
 				InputStream is = new URL(uri.toString()).openStream();
 				byte[] buffer = new byte[1024];
 				int len;
@@ -250,9 +297,8 @@ public class ImageSelectActivity extends SherlockActivity {
 				}
 
 				fos.close();
-				finalUri = Uri.fromFile(mCompressedImagePath);
-			}
-			else {
+				finalUri = Uri.fromFile(f);
+			} else {
 				finalUri = uri;
 			}
 		}
@@ -280,11 +326,16 @@ public class ImageSelectActivity extends SherlockActivity {
 
 			if (bitmap != null) {
 				// SurespotLog.v(TAG, "compressingImage to: " + mCompressedImagePath);
-				FileOutputStream fos = new FileOutputStream(mCompressedImagePath);
+				FileOutputStream fos = new FileOutputStream(f);
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
 				fos.close();
+				mCompressedImagePaths.add(f);
+
 				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
-				return bitmap;
+				BitmapAndFile result = new BitmapAndFile();
+				result.mBitmap = bitmap;
+				result.mFile = f;
+				return result;
 			}
 			else {
 				Runnable runnable = new Runnable() {
@@ -304,9 +355,11 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 		catch (IOException e) {
 			SurespotLog.w(TAG, e, "onActivityResult");
-			if (mCompressedImagePath != null) {
-				mCompressedImagePath.delete();
-				mCompressedImagePath = null;
+			if (f != null) {
+				f.delete();
+				if (!mSelectMultiple) {
+					mCompressedImagePath = null;
+				}
 			}
 			Runnable runnable = new Runnable() {
 
