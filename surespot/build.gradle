@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "com.twofours.surespot"
         minSdkVersion 10
-        targetSdkVersion 22
+        targetSdkVersion 21
         multiDexEnabled true
     }
 
@@ -43,7 +43,7 @@ dependencies {
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.protobuf:protobuf-java:2.4.1'
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:22.2.0'
+    compile 'com.android.support:support-v4:21.0.0'
     compile files('libs/google-api-client-1.17.0-rc.jar')
     compile files('libs/google-api-client-android-1.17.0-rc.jar')
     compile files('libs/google-api-services-drive-v2-rev103-1.17.0-rc.jar')

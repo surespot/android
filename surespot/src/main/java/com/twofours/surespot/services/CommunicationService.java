@@ -40,11 +40,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import io.socket.IOAcknowledge;
 import io.socket.IOCallback;
@@ -149,8 +151,7 @@ public class CommunicationService extends Service {
 
         SurespotApplication.getChatController().onBeforeConnect();
 
-        if (getConnectionState() == STATE_CONNECTED)
-        {
+        if (getConnectionState() == STATE_CONNECTED) {
             onConnected();
             return true;
         }
@@ -164,8 +165,7 @@ public class CommunicationService extends Service {
             }
             socket = new SocketIO(SurespotConfiguration.getBaseUrl(), headers);
             socket.connect(mSocketCallback);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SurespotLog.w(TAG, "connect", e);
         }
 
@@ -211,8 +211,13 @@ public class CommunicationService extends Service {
         return mConnectionState;
     }
 
-    public ConcurrentLinkedQueue<SurespotMessage> getResendBuffer() { return mResendBuffer; }
-    public ConcurrentLinkedQueue<SurespotMessage> getSendBuffer() { return mSendBuffer; }
+    public ConcurrentLinkedQueue<SurespotMessage> getResendBuffer() {
+        return mResendBuffer;
+    }
+
+    public ConcurrentLinkedQueue<SurespotMessage> getSendBuffer() {
+        return mSendBuffer;
+    }
 
     public void sendOnSocket(String json) {
         if (socket != null) {
@@ -320,8 +325,7 @@ public class CommunicationService extends Service {
             if (!fromSave) {
                 saveFriends();
             }
-        }
-        else if (!fromSave) {
+        } else if (!fromSave) {
             saveMessages(username);
         }
     }
@@ -329,7 +333,7 @@ public class CommunicationService extends Service {
     // gets messages to resend (without duplicates)
     public SurespotMessage[] getResendMessages() {
         SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
-        List<SurespotMessage> list = Arrays.asList(messages);
+        List<SurespotMessage> list = new LinkedList<>(Arrays.asList(messages));
         removeDuplicates(list);
         return list.toArray(new SurespotMessage[0]);
     }
@@ -401,7 +405,7 @@ public class CommunicationService extends Service {
             ReloginTask reloginTask = new ReloginTask();
             if (mReloginTimer != null) {
                 mReloginTimer.cancel();
-                mReloginTimer= null;
+                mReloginTimer = null;
             }
             mReloginTimer = new Timer("reloginTimer");
             mReloginTimer.schedule(reloginTask, RELOGIN_DELAY_SECONDS * 1000);
@@ -437,7 +441,7 @@ public class CommunicationService extends Service {
     // remove duplicate messages
     private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
         ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
-        for (int i = messages.size()-1; i >= 0; i--) {
+        for (int i = messages.size() - 1; i >= 0; i--) {
             SurespotMessage message = messages.get(i);
             if (isMessageEqualToAny(message, messagesSeen)) {
                 messages.remove(i);
@@ -518,12 +522,10 @@ public class CommunicationService extends Service {
     private void unregisterReceiver() {
         try {
             unregisterReceiver(mConnectivityReceiver);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Receiver not registered")) {
                 // Ignore this exception. This is exactly what is desired
-            }
-            else {
+            } else {
                 // unexpected, re-throw
                 throw e;
             }
@@ -677,8 +679,7 @@ public class CommunicationService extends Service {
         public void onMessage(JSONObject json, IOAcknowledge ack) {
             try {
                 SurespotLog.d(TAG, "JSON Server said: %s", json.toString(2));
-            }
-            catch (JSONException e) {
+            } catch (JSONException e) {
                 SurespotLog.w(TAG, "onMessage", e);
             }
         }
@@ -719,13 +720,10 @@ public class CommunicationService extends Service {
                 try {
                     SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
                     SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
-                }
-                catch (JSONException e) {
+                } catch (JSONException e) {
                     SurespotLog.w(TAG, "on control", e);
                 }
-            }
-            else
-            if (event.equals("message")) {
+            } else if (event.equals("message")) {
                 try {
                     JSONObject jsonMessage = new JSONObject((String) args[0]);
                     SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
@@ -742,8 +740,7 @@ public class CommunicationService extends Service {
                                 try {
                                     SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
                                     SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
-                                }
-                                catch (JSONException e) {
+                                } catch (JSONException e) {
                                     SurespotLog.w(TAG, "on control", e);
                                 }
                             }
@@ -761,13 +758,10 @@ public class CommunicationService extends Service {
                     }
 
                     checkAndSendNextMessage(message);
-                }
-                catch (JSONException e) {
+                } catch (JSONException e) {
                     SurespotLog.w(TAG, "on message", e);
                 }
-            }
-            else
-            if (event.equals("messageError")) {
+            } else if (event.equals("messageError")) {
                 try {
                     JSONObject jsonMessage = (JSONObject) args[0];
                     SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
@@ -786,8 +780,7 @@ public class CommunicationService extends Service {
                             break;
                         }
                     }
-                }
-                catch (JSONException e) {
+                } catch (JSONException e) {
                     SurespotLog.w(TAG, "on messageError", e);
                 }
             }
@@ -826,8 +819,7 @@ public class CommunicationService extends Service {
         // kick off another task
         if (mRetries < MAX_RETRIES) {
             scheduleReconnectionAttempt();
-        }
-        else {
+        } else {
             SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
             if (mListener != null) {
                 mListener.onCouldNotConnectToServer();
@@ -878,7 +870,7 @@ public class CommunicationService extends Service {
             debugIntent(intent, TAG);
             Bundle extras = intent.getExtras();
             if (extras.containsKey("networkInfo")) {
-                NetworkInfo networkInfo2 = (NetworkInfo)extras.get("networkInfo");
+                NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
                 if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
                     SurespotLog.d(TAG, "Network newly connected, reconnecting...");
                     synchronized (CommunicationService.this) {
@@ -930,12 +922,11 @@ public class CommunicationService extends Service {
             Log.v(tag, "component: " + intent.getComponent());
             Bundle extras = intent.getExtras();
             if (extras != null) {
-                for (String key: extras.keySet()) {
+                for (String key : extras.keySet()) {
                     Log.d(tag, "key [" + key + "]: " +
                             extras.get(key));
                 }
-            }
-            else {
+            } else {
                 Log.v(tag, "no extras");
             }
         }
