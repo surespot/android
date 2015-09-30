@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 23
@@ -7,13 +8,18 @@ android {
     defaultConfig {
         applicationId "com.twofours.surespot"
         minSdkVersion 10
-        targetSdkVersion 22
-        multiDexEnabled true
+        targetSdkVersion 21
+        multiDexEnabled false
     }
 
     buildTypes {
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
         }
     }
@@ -32,15 +38,17 @@ dependencies {
     compile project(':imageViewTouch')
     compile project(':httpclientandroidlib')
     compile project(':androidkeystore')
-    compile 'com.android.support:multidex:1.0.0'
-    compile 'com.google.android.gms:play-services-drive:7.5.0'
+    // compile 'com.android.support:appcompat-v7:23.0.3'
+    compile project(":ColorPickerPreference")
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.google.android.gms:play-services-gcm:7.8.0'
+    compile 'com.google.android.gms:play-services-drive:7.8.0'
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
     compile 'com.google.code.gson:gson:2.3'
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.protobuf:protobuf-java:2.4.1'
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:22.2.0'
-    compile files('libs/gcm.jar')
+    compile 'com.android.support:support-v4:21.0.0'
     compile files('libs/google-api-client-1.17.0-rc.jar')
     compile files('libs/google-api-client-android-1.17.0-rc.jar')
     compile files('libs/google-api-services-drive-v2-rev103-1.17.0-rc.jar')
