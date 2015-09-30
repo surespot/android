@@ -19,10 +19,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
-
-//import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.EmojiParser;
