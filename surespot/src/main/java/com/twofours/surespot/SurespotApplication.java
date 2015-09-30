@@ -19,8 +19,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
@@ -47,17 +45,6 @@ public class SurespotApplication extends Application {
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	public static final int KEEP_ALIVE = 1;
 
-
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        MultiDex.install(this);
-	}
-
-
-//	protected void attachBaseContext(Context base) {
-//        super.attachBaseContext(base);
-//        MultiDex.install(this);
-//    }
 	// create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
 	// we need a tall queue and a slim pipe
 	public static final ThreadFactory sThreadFactory = new ThreadFactory() {
