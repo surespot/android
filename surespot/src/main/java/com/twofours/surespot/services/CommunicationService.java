@@ -67,6 +67,7 @@ public class CommunicationService extends Service {
     private ReconnectTask mReconnectTask;
     private ReloginTask mReloginTask;
     private DisconnectTask mDisconnectTask;
+    private GiveUpReconnectingTask mGiveUpReconnectingTask;
     public static String mCurrentChat;
 
     public static final int STATE_CONNECTING = 2;
@@ -88,6 +89,8 @@ public class CommunicationService extends Service {
     private Object BACKGROUND_TIMER_LOCK = new Object();
     private Timer mDisconnectTimer;
     private Object DISCONNECT_TIMER_LOCK = new Object();
+    private Timer mGiveUpReconnectingTimer;
+    private Object GIVE_UP_RECONNECTING_LOCK = new Object();
     private Timer mReloginTimer;
     private Object RELOGIN_TIMER_LOCK = new Object();
     private int mConnectionState;
@@ -107,6 +110,13 @@ public class CommunicationService extends Service {
         mMainActivityPaused = paused;
         checkScheduleDisconnect();
         checkReconnect();
+        if (paused) {
+            if (getConnectionState() != STATE_CONNECTED) {
+                scheduleGiveUpReconnecting();
+            }
+        } else {
+            cancelGiveUpReconnectingTimer();
+        }
     }
 
     // sets the current user name
@@ -226,7 +236,7 @@ public class CommunicationService extends Service {
     }
 
     // saves all data and current state for user, general
-    public void save() {
+    public synchronized void save() {
         if (mUsername != null) {
             saveFriends();
             saveMessages(mUsername);
@@ -240,6 +250,15 @@ public class CommunicationService extends Service {
     public void clearServiceListener() {
         mListener = null;
         checkShutdownService(false, false);
+        if (getConnectionState() != STATE_CONNECTED) {
+            scheduleGiveUpReconnecting();
+        }
+    }
+
+    public void saveIfMainActivityPaused() {
+        if (mMainActivityPaused) {
+            save();
+        }
     }
 
     public class CommunicationServiceBinder extends Binder {
@@ -341,6 +360,15 @@ public class CommunicationService extends Service {
 
     public void saveUnsentMessages() {
         mResendBuffer.addAll(mSendBuffer);
+
+        SurespotMessage[] messages = mResendBuffer.toArray(new SurespotMessage[0]);
+        List<SurespotMessage> list = new LinkedList<>(Arrays.asList(messages));
+        removeDuplicates(list);
+        mResendBuffer.clear();
+        for (SurespotMessage m : list) {
+            mResendBuffer.add(m);
+        }
+
         if (mResendBuffer.size() > 0) {
             SurespotLog.d(TAG, "saving: " + mResendBuffer.size() + " unsent messages.");
         }
@@ -391,6 +419,25 @@ public class CommunicationService extends Service {
             mDisconnectTimer = new Timer("disconnectTimer");
             mDisconnectTimer.schedule(disconnectTask, DISCONNECT_DELAY_SECONDS * 1000);
             mDisconnectTask = disconnectTask;
+        }
+    }
+
+    // schedule give up reconnecting
+    private void scheduleGiveUpReconnecting() {
+        synchronized (GIVE_UP_RECONNECTING_LOCK) {
+            if (mGiveUpReconnectingTask != null) {
+                mGiveUpReconnectingTask.cancel();
+                mGiveUpReconnectingTask = null;
+            }
+
+            GiveUpReconnectingTask giveUpReconnectingTask = new GiveUpReconnectingTask();
+            if (mGiveUpReconnectingTimer != null) {
+                mGiveUpReconnectingTimer.cancel();
+                mGiveUpReconnectingTimer = null;
+            }
+            mGiveUpReconnectingTimer = new Timer("giveUpReconnecting");
+            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, DISCONNECT_DELAY_SECONDS * 1000);
+            mGiveUpReconnectingTask = giveUpReconnectingTask;
         }
     }
 
@@ -532,8 +579,8 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void checkShutdownService(boolean justCalledUserLoggedOut, boolean disconnectTimerJustExpired) {
-        if (mSendBuffer.size() == 0 && mListener == null && ((disconnectTimerJustExpired || mRetries == MAX_RETRIES) || mResendBuffer.size() == 0)) {
+    private void checkShutdownService(boolean justCalledUserLoggedOut, boolean disconnectorTimeoutTimerJustExpired) {
+        if (mSendBuffer.size() == 0 && ((disconnectorTimeoutTimerJustExpired && mMainActivityPaused) || mListener == null) && (disconnectorTimeoutTimerJustExpired || mResendBuffer.size() == 0)) {
             Log.d(TAG, "shutting down service!");
             if (!justCalledUserLoggedOut) {
                 userLoggedOut();
@@ -569,6 +616,17 @@ public class CommunicationService extends Service {
         }
     }
 
+    private class GiveUpReconnectingTask extends TimerTask {
+
+        @Override
+        public void run() {
+            SurespotLog.d(TAG, "GiveUpReconnecting task run.");
+            cancelGiveUpReconnectingTimer();
+            // TODO: save off messages to resend buffer
+            checkShutdownService(false, true);
+        }
+    }
+
     private class ReloginTask extends TimerTask {
 
         @Override
@@ -600,6 +658,20 @@ public class CommunicationService extends Service {
             if (mReloginTimer != null) {
                 mReloginTimer.cancel();
                 mReloginTimer = null;
+            }
+        }
+    }
+
+    private void cancelGiveUpReconnectingTimer() {
+        synchronized (GIVE_UP_RECONNECTING_LOCK) {
+            if (mGiveUpReconnectingTask != null) {
+                mGiveUpReconnectingTask.cancel();
+                mGiveUpReconnectingTask = null;
+            }
+
+            if (mGiveUpReconnectingTimer != null) {
+                mGiveUpReconnectingTimer.cancel();
+                mGiveUpReconnectingTimer = null;
             }
         }
     }
@@ -708,6 +780,7 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "socket.io connection established");
             setOnWifi();
             stopReconnectionAttempts();
+            cancelGiveUpReconnectingTimer();
             setState(STATE_CONNECTED);
             onConnected();
         }
@@ -753,10 +826,15 @@ public class CommunicationService extends Service {
                     Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
                     while (iterator.hasNext()) {
                         message = iterator.next();
-                        if (message.getIv().equals(message.getId())) {
+                        if (message.getIv().equals(message.getIv())) {
                             iterator.remove();
                             break;
                         }
+                    }
+
+                    if (mMainActivityPaused) {
+                        // make sure to save out messages because main activity will reload and base message status on saved messages
+                        save();
                     }
 
                     checkAndSendNextMessage(message);
