@@ -9,12 +9,17 @@ android {
         applicationId "com.twofours.surespot"
         minSdkVersion 10
         targetSdkVersion 21
-        multiDexEnabled true
+        multiDexEnabled false
     }
 
     buildTypes {
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
         }
     }
