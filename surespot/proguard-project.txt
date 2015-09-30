@@ -75,3 +75,4 @@
 -keepattributes *Annotation*
 
 -dontobfuscate
+-dontoptimize

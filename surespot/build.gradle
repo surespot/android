@@ -19,7 +19,7 @@ android {
         release {
             minifyEnabled true
 
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
         }
     }
 
