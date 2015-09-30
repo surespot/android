@@ -139,7 +139,7 @@ public class StateController {
 	public synchronized void saveUnsentMessages(String username, Collection<SurespotMessage> messages) {
 		String filename = getFilename(username, UNSENT_MESSAGES);
 		if (filename != null) {
-			if (messages != null) {
+			if (messages != null && messages.size() > 0) {
 				if (messages.size() > 0) {
 
 					String messageString = ChatUtils.chatMessagesToJson(messages).toString();

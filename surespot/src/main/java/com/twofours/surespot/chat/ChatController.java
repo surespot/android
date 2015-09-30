@@ -214,7 +214,6 @@ public class ChatController {
 
 			// if it has an id don't send it again
 			if (message.getId() != null) {
-				// TODO: rework - shouldn't be mucking with this guy's buffer externally
 				SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
 				continue;
 			}
@@ -418,6 +417,8 @@ public class ChatController {
 
 							mFriendAdapter.sort();
 							mFriendAdapter.notifyDataSetChanged();
+
+							SurespotApplication.getCommunicationService().saveIfMainActivityPaused();
 						}
 
 					}
@@ -1463,6 +1464,7 @@ public class ChatController {
 			mPaused = false;
 
 			setProgress(null, true);
+
 			// getFriendsAndIds();
 
 			// load chat messages from disk that may have been added by gcm
@@ -1473,6 +1475,9 @@ public class ChatController {
 			if (SurespotApplication.getCommunicationService().connect()) {
 				setProgress(null, false);
 			}
+
+			// make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
+			loadState(mUsername);
 
 			// moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -1488,11 +1493,9 @@ public class ChatController {
 
 	public synchronized void onPause() {
 		SurespotLog.d(TAG, "onPause, mPaused: %b", mPaused);
-		if (!mPaused) {
-			mPaused = true;
-			if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-				SurespotApplication.getCommunicationService().save();
-			}
+		mPaused = true;
+		if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+			SurespotApplication.getCommunicationService().save();
 		}
 	}
 
