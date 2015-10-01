@@ -136,7 +136,7 @@ public class CommunicationService extends Service {
             mSendBuffer.clear();
             mUsername = null;
             shutdownConnection();
-            checkShutdownService(true, false);
+            checkShutdownService(true, false, false);
             SurespotApplication.getChatController().dispose();
         }
     }
@@ -202,7 +202,7 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
         checkScheduleDisconnect();
-        checkShutdownService(false, false);
+        checkShutdownService(false, false, false);
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
         ArrayList<SurespotMessage> sentMessages = new ArrayList<SurespotMessage>();
@@ -252,7 +252,7 @@ public class CommunicationService extends Service {
 
     public void clearServiceListener() {
         mListener = null;
-        checkShutdownService(false, false);
+        checkShutdownService(false, false, false);
         if (getConnectionState() != STATE_CONNECTED) {
             scheduleGiveUpReconnecting();
         }
@@ -311,7 +311,7 @@ public class CommunicationService extends Service {
         if (mListener != null) {
             mRetries = 0; // clear state related to retrying connections
         }
-        checkShutdownService(false, false);
+        checkShutdownService(false, false, false);
     }
 
     public ITransmissionServiceListener getServiceListener() {
@@ -606,7 +606,7 @@ public class CommunicationService extends Service {
         disconnect();
         stopReconnectionAttempts();
         unregisterReceiver();
-        checkShutdownService(false, false);
+        checkShutdownService(false, false, false);
     }
 
     private void unregisterReceiver() {
@@ -622,8 +622,11 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void checkShutdownService(boolean justCalledUserLoggedOut, boolean timeoutTimerJustExpired) {
-        if (mSendBuffer.size() == 0 && ((timeoutTimerJustExpired && mMainActivityPaused) || mListener == null) && (timeoutTimerJustExpired || mResendBuffer.size() == 0)) {
+    private void checkShutdownService(boolean justCalledUserLoggedOut, boolean justDisconnecting, boolean timeoutTimerJustExpired) {
+        if (mSendBuffer.size() == 0 &&
+                !justDisconnecting &&
+                ((timeoutTimerJustExpired && mMainActivityPaused) || mListener == null) &&
+                (timeoutTimerJustExpired || mResendBuffer.size() == 0)) {
             Log.d(TAG, "shutting down service!");
             if (!justCalledUserLoggedOut) {
                 userLoggedOut();
@@ -655,7 +658,7 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "Disconnect task run.");
             disconnect();
             cancelDisconnectTimer();
-            checkShutdownService(false, false);
+            checkShutdownService(false, true, false);
         }
     }
 
@@ -665,7 +668,7 @@ public class CommunicationService extends Service {
         public void run() {
             SurespotLog.d(TAG, "GiveUpReconnecting task run.");
             cancelGiveUpReconnectingTimer();
-            checkShutdownService(false, true);
+            checkShutdownService(false, false, true);
         }
     }
 
