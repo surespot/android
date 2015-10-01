@@ -10,4 +10,5 @@ public class FileStreamMessage {
     public FileInputStream mStream;
     public String mMimeType;
     public IAsyncCallback<Integer> mAsyncCallback;
+    public String mLocalFilePath;
 }

@@ -263,6 +263,7 @@ public class ChatUtils {
                                 fileStreamMessage.mTo = to;
                                 fileStreamMessage.mIv = iv;
                                 fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
+                                fileStreamMessage.mLocalFilePath = localImageFile.getAbsolutePath();
                                 fileStreamMessage.mMimeType = SurespotConstants.MimeTypes.IMAGE;
                                 fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
 
@@ -448,40 +449,49 @@ public class ChatUtils {
                                 }
 
                                 final SurespotMessage finalMessage = message;
-                                SurespotApplication.getCommunicationService().postFileStream(ourVersion, to, theirVersion, iv, uploadStream, SurespotConstants.MimeTypes.M4A,
-                                        new IAsyncCallback<Integer>() {
 
-                                            @Override
-                                            public void handleResponse(Integer statusCode) {
-                                                // if it failed update the message
-                                                SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-                                                ChatAdapter chatAdapter = null;
-                                                switch (statusCode) {
-                                                    case 200:
-                                                        break;
-                                                    case 402:
-                                                        if (finalMessage != null) {
-                                                            finalMessage.setErrorStatus(402);
-                                                        }
-                                                        chatAdapter = chatController.getChatAdapter(activity, to);
-                                                        if (chatAdapter != null) {
-                                                            chatAdapter.notifyDataSetChanged();
-                                                        }
-                                                        break;
-                                                    default:
-                                                        if (finalMessage != null) {
-                                                            finalMessage.setErrorStatus(500);
-                                                        }
-                                                        chatAdapter = chatController.getChatAdapter(activity, to);
-                                                        if (chatAdapter != null) {
-                                                            chatAdapter.notifyDataSetChanged();
-                                                        }
+                                FileStreamMessage fileStreamMessage = new FileStreamMessage();
+                                fileStreamMessage.mTo = to;
+                                fileStreamMessage.mIv = iv;
+                                fileStreamMessage.mLocalFilePath = localImageFile.getAbsolutePath();
+                                fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
+                                fileStreamMessage.mMimeType = SurespotConstants.MimeTypes.M4A;
+                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
+
+                                    @Override
+                                    public void handleResponse(Integer statusCode) {
+                                        // if it failed update the message
+                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+                                        ChatAdapter chatAdapter = null;
+                                        switch (statusCode) {
+                                            case 200:
+                                                break;
+                                            case 402:
+                                                if (finalMessage != null) {
+                                                    finalMessage.setErrorStatus(402);
                                                 }
+                                                chatAdapter = chatController.getChatAdapter(activity, to);
+                                                if (chatAdapter != null) {
+                                                    chatAdapter.notifyDataSetChanged();
+                                                }
+                                                break;
+                                            default:
+                                                if (finalMessage != null) {
+                                                    finalMessage.setErrorStatus(500);
+                                                }
+                                                chatAdapter = chatController.getChatAdapter(activity, to);
+                                                if (chatAdapter != null) {
+                                                    chatAdapter.notifyDataSetChanged();
+                                                }
+                                        }
 
-                                                callback.handleResponse(true);
-                                            }
-                                        });
+                                        callback.handleResponse(true);
+                                    }
+                                };
 
+                                if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamMessage);
+                                }
                             }
                         };
 
