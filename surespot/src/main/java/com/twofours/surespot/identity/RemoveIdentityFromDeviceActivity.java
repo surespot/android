@@ -1,6 +1,7 @@
 package com.twofours.surespot.identity;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.Spinner;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
+import com.twofours.surespot.activities.SignupActivity;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
@@ -72,6 +74,13 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
+
+		if (mIdentityNames == null || mIdentityNames.size() == 0) {
+			Intent intent = new Intent(RemoveIdentityFromDeviceActivity.this, SignupActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
 
 		for (String name : mIdentityNames) {
 			adapter.add(name);
