@@ -518,6 +518,8 @@ public class CommunicationService extends Service {
         if (mUsername != null && !mUsername.equals("")) {
             sendFileStreamMessages(false);
         }
+
+        cancelGiveUpReconnectingTimer();
     }
 
     // notify listeners that we've connected
