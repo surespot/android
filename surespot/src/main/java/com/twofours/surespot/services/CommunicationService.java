@@ -139,6 +139,8 @@ public class CommunicationService extends Service {
             shutdownConnection();
             checkShutdownService(true, false, false);
             SurespotApplication.getChatController().dispose();
+            mEverConnected = false;
+            cancelGiveUpReconnectingTimer();
         }
     }
 
