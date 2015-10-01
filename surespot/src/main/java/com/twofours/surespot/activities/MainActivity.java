@@ -969,7 +969,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         boolean helpShown = Utils.getSharedPrefsBoolean(this, "helpShownAgain");
         if (!helpShown || userWasCreated) {
             Utils.removePref(this, "helpShown");
-            mHelpDialog = UIUtils.showHelpDialog(this, true);
+            String justRestoredIdentity = Utils.getUserSharedPrefsString(this, mUser, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY);
+            mHelpDialog = UIUtils.showHelpDialog(this, (justRestoredIdentity == null || justRestoredIdentity.equals("")));
         }
 
         // only lollipop fixes for 59 so don't bother showing anything

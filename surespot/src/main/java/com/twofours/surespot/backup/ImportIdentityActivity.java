@@ -192,6 +192,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 																			Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 																			intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, user);
 																			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+																			Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
 																			startActivity(intent);
 																			finish();
 																		}
@@ -394,6 +395,7 @@ public class ImportIdentityActivity extends SherlockActivity {
 
 															Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 															intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+															Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
 															startActivity(intent);
 														}
 

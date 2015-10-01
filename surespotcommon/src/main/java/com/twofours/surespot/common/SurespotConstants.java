@@ -34,6 +34,7 @@ public class SurespotConstants {
 		// public static final String SHOW_CHAT_NAME = "show_chat_name";
 		public static final String MESSAGE_FROM = "message_from";
 		public static final String MESSAGE_TO = "message_to";
+		public static final String JUST_RESTORED_IDENTITY = "just_restored_identity";
 
 		public static final String GCM_CHANGED = "gcm_changed";
 		public static final String CONNECTED = "connected";
