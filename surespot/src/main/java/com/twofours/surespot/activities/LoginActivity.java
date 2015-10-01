@@ -184,6 +184,13 @@ public class LoginActivity extends SherlockActivity {
 		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
+		if (mIdentityNames == null || mIdentityNames.size() == 0) {
+			Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
+
 		for (String name : mIdentityNames) {
 			adapter.add(name);
 
