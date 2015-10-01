@@ -17,6 +17,7 @@ import android.util.Log;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.chat.FileStreamMessage;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -61,6 +62,7 @@ public class CommunicationService extends Service {
     private ITransmissionServiceListener mListener;
     private ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
     private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
+    private ConcurrentLinkedQueue<FileStreamMessage> mFileStreamsToSend = new ConcurrentLinkedQueue<FileStreamMessage>();
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
     private boolean mMainActivityPaused = false;
@@ -128,6 +130,7 @@ public class CommunicationService extends Service {
     public void userLoggedOut() {
         if (mUsername != null) {
             SurespotLog.d(TAG, "user logging out: " + mUsername);
+            sendFileStreamMessages(true); // this could be a save if we want to persist across runs
             save();
             mResendBuffer.clear();
             mSendBuffer.clear();
@@ -259,6 +262,42 @@ public class CommunicationService extends Service {
         if (mMainActivityPaused) {
             save();
         }
+    }
+
+    private void sendFileStreamMessages(boolean flushIfNotConnected) {
+        Iterator<FileStreamMessage> iterator = mFileStreamsToSend.iterator();
+        while (iterator.hasNext()) {
+            FileStreamMessage message = iterator.next();
+            if (flushIfNotConnected) {
+                iterator.remove();
+                sendFileStreamMessageImmediately(message);
+            } else {
+                if (trySendFileStreamMessage(message)) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    private boolean trySendFileStreamMessage(FileStreamMessage fileStreamMessage) {
+        if (getConnectionState() == STATE_CONNECTED) {
+            sendFileStreamMessageImmediately(fileStreamMessage);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void sendFileStreamMessage(FileStreamMessage fileStreamMessage) {
+        if (!trySendFileStreamMessage(fileStreamMessage)) {
+            // "offline mode" - queue file for sending as soon as we reconnect
+            mFileStreamsToSend.add(fileStreamMessage);
+        }
+    }
+
+    private void sendFileStreamMessageImmediately(FileStreamMessage fileStreamMessage) {
+        SurespotApplication.getCommunicationService().postFileStream(IdentityController.getOurLatestVersion(mUsername), fileStreamMessage.mTo, IdentityController.getTheirLatestVersion(fileStreamMessage.mTo),
+                fileStreamMessage.mIv, fileStreamMessage.mStream, fileStreamMessage.mMimeType, fileStreamMessage.mAsyncCallback);
     }
 
     public class CommunicationServiceBinder extends Binder {
@@ -474,6 +513,10 @@ public class CommunicationService extends Service {
         // tell any listeners that we're connected
         if (mListener != null) {
             mListener.onConnected();
+        }
+
+        if (mUsername != null && !mUsername.equals("")) {
+            sendFileStreamMessages(false);
         }
     }
 

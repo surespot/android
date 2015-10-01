@@ -301,7 +301,9 @@ public class ChatAdapter extends BaseAdapter {
         chatMessageViewHolder.tvTime.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
         chatMessageViewHolder.messageSize.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
 
-        SurespotLog.v(TAG, "rendering item: %s", item);
+        if (!SurespotConstants.MimeTypes.TEXT.equals(item.getMimeType())) {
+            SurespotLog.v(TAG, "rendering item: %s", item);
+        }
 
         if (item.getErrorStatus() > 0) {
             SurespotLog.v(TAG, "item has error: %s", item);
