@@ -1073,17 +1073,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
                 if (resultCode == RESULT_OK) {
                     final Uri selectedImageUri = data.getData();
-                    String filenames = data.getStringExtra("filenames");
-                    String[] fileNames = filenames.split("~~~~");
-                    // TODO: handle multiple images selected
-
                     String to = data.getStringExtra("to");
                     SurespotLog.d(TAG, "to: " + to);
-                    if (selectedImageUri != null) {
-                        uploadPicture(selectedImageUri, to);
-                        //for (int n = 0; n < 15; n++) {
-                        //	uploadPicture(selectedImageUri, to);
-                        //}
+
+                    String urisExtra = data.getStringExtra("uris");
+                    String[] uris = urisExtra.split("~~~~");
+
+                    if (uris == null || uris.length == 0) {
+                        if (selectedImageUri != null) {
+                            uploadPicture(selectedImageUri, to);
+                        }
+                    } else {
+                        for (String uri : uris) {
+                            uploadPicture(Uri.parse(uri), to);
+                        }
                     }
                 }
                 break;
@@ -1149,22 +1152,17 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 // delete local image
                 try {
                     File file = new File(new URI(selectedImageUri.toString()));
-                    SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
-                } catch (URISyntaxException e) {
-                }
+                    boolean b = file.delete();
+                    SurespotLog.d(TAG, "deleted temp image file: %b", b);
+                } catch (URISyntaxException e) { }
 
                 if (!errorHandled) {
-
                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-
                     Runnable runnable = new Runnable() {
 
                         @Override
-                        public void run() {
-                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-                        }
+                        public void run() { Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image)); }
                     };
-
                     getMainHandler().post(runnable);
                 }
             }

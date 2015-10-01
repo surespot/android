@@ -12,12 +12,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
@@ -102,11 +105,16 @@ public class ImageSelectActivity extends SherlockActivity {
 			setButtonText();
 
 			// TODO paid version allows any file
+			String plural = "";
 			Intent intent = new Intent();
 			intent.setType("image/*");
+			int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+			if (currentapiVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+				intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+				plural = "s";
+			}
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			// TODO: HEREHERE: FOR NOW, only allow one until communications service offline mode is complete - intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
+			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image) + plural), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 		}
 
 	}
@@ -117,7 +125,6 @@ public class ImageSelectActivity extends SherlockActivity {
             finish();
         }
         else {
-            // TODO: handle
             new AsyncTask<Void, Void, Void>() {
                 protected Void doInBackground(Void... params) {
                     Intent dataIntent = new Intent();
@@ -125,10 +132,10 @@ public class ImageSelectActivity extends SherlockActivity {
                     dataIntent.setData(Uri.fromFile(mCompressedImagePaths.get(mCompressedImagePaths.size() - 1)));
                     StringBuilder sb = new StringBuilder();
                     for (File file : mCompressedImagePaths) {
-                        sb.append(file.getPath());
+                        sb.append(file.toURI().toString());
                         sb.append("~~~~");
                     }
-                    dataIntent.putExtra("filenames", sb.toString());
+                    dataIntent.putExtra("uris", sb.toString());
                     setResult(Activity.RESULT_OK, dataIntent);
                     finish();
                     return null;
@@ -174,19 +181,10 @@ public class ImageSelectActivity extends SherlockActivity {
 
 							mPaths.add(result.mFile.toString());
 							bitmaps.add(result.mBitmap);
+						} else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+							handleMultipleImageSelection(bitmaps, data);
 						} else {
-							// only Android 16+: ClipData clipData = data.getClipData();
-							ArrayList<Parcelable> list = data.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-							int n = 0;
-							for (Parcelable parcel : list) {
-								Uri uri = (Uri) parcel;
-								// scale, compress and save the image
-								BitmapAndFile result = compressImage(uri, n, -1);
-
-								mPaths.add(result.mFile.toString()); // TODO: is this right?
-								bitmaps.add(result.mBitmap);
-								n++;
-							}
+							SurespotLog.i(TAG, "Not able to support multiple image selection and no appropriate data returned from image picker");
 						}
 						return bitmaps;
 					}
@@ -212,6 +210,19 @@ public class ImageSelectActivity extends SherlockActivity {
 		}
 
 		// Utils.clearIntent(getIntent());
+	}
+
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	private void handleMultipleImageSelection(ArrayList<Bitmap> bitmaps, Intent data) {
+		ClipData clipData = data.getClipData();
+
+		for (int n = 0; n < clipData.getItemCount(); n++) {
+            Uri uri = clipData.getItemAt(n).getUri();
+            // scale, compress and save the image
+            BitmapAndFile result = compressImage(uri, n, -1);
+            mPaths.add(result.mFile.toString()); // TODO: is this right?
+            bitmaps.add(result.mBitmap);
+        }
 	}
 
 	private void setImage(Bitmap bitmap, boolean animate) {
