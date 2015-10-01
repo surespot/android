@@ -159,27 +159,34 @@ public class ImageSelectActivity extends SherlockActivity {
 		if (resultCode == RESULT_OK) {
 			switch (requestCode) {
 			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
-
 				mImageView.setVisibility(View.VISIBLE);
-
 
 				mPaths = new ArrayList<String>();
 				new AsyncTask<Void, Void, ArrayList<Bitmap>>() {
 					@Override
 					protected ArrayList<Bitmap> doInBackground(Void... params) {
-						// TODO: if only one, this won't have an ArrayList in it... look at old code to determine how to get single result HEREHERE
-						// only Android 16+: ClipData clipData = data.getClipData();
-						ArrayList<Parcelable> list = data.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
 						ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-						int n = 0;
-						for (Parcelable parcel : list) {
-							Uri uri = (Uri) parcel;
-							// scale, compress and save the image
-							BitmapAndFile result = compressImage(uri, n, -1);
 
-							mPaths.add(result.mFile.toString()); // TODO: is this right?
+						if (data.getData() != null) {
+							Uri uri = (Uri) data.getData();
+							// scale, compress and save the image
+							BitmapAndFile result = compressImage(uri, -1, -1);
+
+							mPaths.add(result.mFile.toString());
 							bitmaps.add(result.mBitmap);
-							n++;
+						} else {
+							// only Android 16+: ClipData clipData = data.getClipData();
+							ArrayList<Parcelable> list = data.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+							int n = 0;
+							for (Parcelable parcel : list) {
+								Uri uri = (Uri) parcel;
+								// scale, compress and save the image
+								BitmapAndFile result = compressImage(uri, n, -1);
+
+								mPaths.add(result.mFile.toString()); // TODO: is this right?
+								bitmaps.add(result.mBitmap);
+								n++;
+							}
 						}
 						return bitmaps;
 					}
@@ -287,7 +294,6 @@ public class ImageSelectActivity extends SherlockActivity {
 		public Bitmap mBitmap;
 	}
 
-	// TODO: test the heck out of this HEREHERE
 	private BitmapAndFile compressImage(final Uri uri, int n, final int rotate) {
 		final Uri finalUri;
 		File f;

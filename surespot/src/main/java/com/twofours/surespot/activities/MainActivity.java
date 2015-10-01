@@ -1075,7 +1075,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     final Uri selectedImageUri = data.getData();
                     String filenames = data.getStringExtra("filenames");
                     String[] fileNames = filenames.split("~~~~");
-                    // HEREHERE:
+                    // TODO: handle multiple images selected
 
                     String to = data.getStringExtra("to");
                     SurespotLog.d(TAG, "to: " + to);
