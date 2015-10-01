@@ -1073,6 +1073,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
                 if (resultCode == RESULT_OK) {
                     final Uri selectedImageUri = data.getData();
+                    String filenames = data.getStringExtra("filenames");
+                    String[] fileNames = filenames.split("~~~~");
+                    // HEREHERE:
 
                     String to = data.getStringExtra("to");
                     SurespotLog.d(TAG, "to: " + to);

@@ -62,30 +62,7 @@ public class ImageSelectActivity extends SherlockActivity {
 		mSendButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (mCompressedImagePaths == null || mCompressedImagePaths.size() == 0) {
-					setResult(RESULT_CANCELED);
-					finish();
-				}
-				else {
-					// TODO: handle
-					new AsyncTask<Void, Void, Void>() {
-						protected Void doInBackground(Void... params) {
-							Intent dataIntent = new Intent();
-							dataIntent.putExtra("to", mTo);
-							dataIntent.setData(Uri.fromFile(mCompressedImagePaths.get(mCompressedImagePaths.size() - 1)));
-							StringBuilder sb = new StringBuilder();
-							for (File file : mCompressedImagePaths) {
-								sb.append(file.getPath());
-								sb.append("\\");
-							}
-							dataIntent.putExtra("filenames", sb.toString());
-							setResult(Activity.RESULT_OK, dataIntent);
-							finish();
-							return null;
-						};
-
-					}.execute();
-				}
+				sendImages();
 			}
 		});
 
@@ -128,10 +105,37 @@ public class ImageSelectActivity extends SherlockActivity {
 			Intent intent = new Intent();
 			intent.setType("image/*");
 			intent.setAction(Intent.ACTION_GET_CONTENT);
-			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+			// TODO: HEREHERE: FOR NOW, only allow one until communications service offline mode is complete - intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 			startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
 		}
 
+	}
+
+	private void sendImages() {
+		if (mCompressedImagePaths == null || mCompressedImagePaths.size() == 0) {
+            setResult(RESULT_CANCELED);
+            finish();
+        }
+        else {
+            // TODO: handle
+            new AsyncTask<Void, Void, Void>() {
+                protected Void doInBackground(Void... params) {
+                    Intent dataIntent = new Intent();
+                    dataIntent.putExtra("to", mTo);
+                    dataIntent.setData(Uri.fromFile(mCompressedImagePaths.get(mCompressedImagePaths.size() - 1)));
+                    StringBuilder sb = new StringBuilder();
+                    for (File file : mCompressedImagePaths) {
+                        sb.append(file.getPath());
+                        sb.append("~~~~");
+                    }
+                    dataIntent.putExtra("filenames", sb.toString());
+                    setResult(Activity.RESULT_OK, dataIntent);
+                    finish();
+                    return null;
+                };
+
+            }.execute();
+        }
 	}
 
 	private void setTitle() {
@@ -163,6 +167,7 @@ public class ImageSelectActivity extends SherlockActivity {
 				new AsyncTask<Void, Void, ArrayList<Bitmap>>() {
 					@Override
 					protected ArrayList<Bitmap> doInBackground(Void... params) {
+						// TODO: if only one, this won't have an ArrayList in it... look at old code to determine how to get single result HEREHERE
 						// only Android 16+: ClipData clipData = data.getClipData();
 						ArrayList<Parcelable> list = data.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
 						ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
@@ -181,8 +186,13 @@ public class ImageSelectActivity extends SherlockActivity {
 
 					protected void onPostExecute(ArrayList<Bitmap> results) {
 						if (results != null) {
-							setImage(results, true);
-
+							if (results.size() == 1) {
+								setImage(results, true);
+							}
+							else {
+								// just send them
+								sendImages();
+							}
 						} else {
 							mSendButton.setEnabled(false);
 						}
@@ -357,9 +367,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			SurespotLog.w(TAG, e, "onActivityResult");
 			if (f != null) {
 				f.delete();
-				if (!mSelectMultiple) {
-					mCompressedImagePath = null;
-				}
 			}
 			Runnable runnable = new Runnable() {
 
