@@ -622,8 +622,8 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void checkShutdownService(boolean justCalledUserLoggedOut, boolean disconnectorTimeoutTimerJustExpired) {
-        if (mSendBuffer.size() == 0 && ((disconnectorTimeoutTimerJustExpired && mMainActivityPaused) || mListener == null) && (disconnectorTimeoutTimerJustExpired || mResendBuffer.size() == 0)) {
+    private void checkShutdownService(boolean justCalledUserLoggedOut, boolean timeoutTimerJustExpired) {
+        if (mSendBuffer.size() == 0 && ((timeoutTimerJustExpired && mMainActivityPaused) || mListener == null) && (timeoutTimerJustExpired || mResendBuffer.size() == 0)) {
             Log.d(TAG, "shutting down service!");
             if (!justCalledUserLoggedOut) {
                 userLoggedOut();
@@ -655,7 +655,7 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "Disconnect task run.");
             disconnect();
             cancelDisconnectTimer();
-            checkShutdownService(false, true);
+            checkShutdownService(false, false);
         }
     }
 
@@ -665,7 +665,6 @@ public class CommunicationService extends Service {
         public void run() {
             SurespotLog.d(TAG, "GiveUpReconnecting task run.");
             cancelGiveUpReconnectingTimer();
-            // TODO: save off messages to resend buffer
             checkShutdownService(false, true);
         }
     }
