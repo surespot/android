@@ -68,6 +68,7 @@ public class CommunicationService extends Service {
     private boolean mMainActivityPaused = false;
     private ReconnectTask mReconnectTask;
     private ReloginTask mReloginTask;
+    private boolean mEverConnected = false;
     private DisconnectTask mDisconnectTask;
     private GiveUpReconnectingTask mGiveUpReconnectingTask;
     public static String mCurrentChat;
@@ -113,7 +114,7 @@ public class CommunicationService extends Service {
         checkScheduleDisconnect();
         checkReconnect();
         if (paused) {
-            if (getConnectionState() != STATE_CONNECTED) {
+            if (getConnectionState() != STATE_CONNECTED && mEverConnected) {
                 scheduleGiveUpReconnecting();
             }
         } else {
@@ -510,6 +511,8 @@ public class CommunicationService extends Service {
 
     // notify listeners that we've connected
     private void onConnected() {
+        mEverConnected = true;
+
         // tell any listeners that we're connected
         if (mListener != null) {
             mListener.onConnected();
