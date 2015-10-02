@@ -486,18 +486,6 @@ public class SignupActivity extends SherlockActivity {
 		}
 	}
 
-
-	private void launchImport() {
-		Intent intent = new Intent(this, ImportIdentityActivity.class);
-		intent.putExtra("signup", true);
-		startActivity(intent);
-	}
-
-	private void setUsernameValidity(boolean isValid) {
-		mUsernameValid.setVisibility(isValid ? View.VISIBLE : View.GONE);
-		mUsernameInvalid.setVisibility(isValid ? View.GONE : View.VISIBLE);
-	}
-
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
@@ -529,5 +517,17 @@ public class SignupActivity extends SherlockActivity {
 					  }
 		);
 	}
+
+	private void launchImport() {
+		Intent intent = new Intent(this, ImportIdentityActivity.class);
+		intent.putExtra("signup", true);
+		startActivity(intent);
+	}
+
+	private void setUsernameValidity(boolean isValid) {
+		mUsernameValid.setVisibility(isValid ? View.VISIBLE : View.GONE);
+		mUsernameInvalid.setVisibility(isValid ? View.GONE : View.VISIBLE);
+	}
+
 
 }
