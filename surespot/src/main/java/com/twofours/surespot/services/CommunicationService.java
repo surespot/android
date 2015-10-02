@@ -77,13 +77,12 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
     private static final int MAX_RETRIES = 60;
-    private static final int MAX_RELOGIN_RETRIES = 20;
+    private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 5; // probably want 3, 1 is good for testing
-    private static final int RELOGIN_DELAY_SECONDS = 5; // 5 seconds between retries
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 5; // probably want 5-10, 1 is good for testing
 
     private int mTriesRelogin = 0;
     private SocketIO socket;
@@ -498,7 +497,9 @@ public class CommunicationService extends Service {
                 mReloginTimer = null;
             }
             mReloginTimer = new Timer("reloginTimer");
-            mReloginTimer.schedule(reloginTask, RELOGIN_DELAY_SECONDS * 1000);
+            int timerInterval = generateInterval(mTriesRelogin + 1);
+            SurespotLog.d(TAG, "try %d starting another login task in: %d", mTriesRelogin, timerInterval);
+            mReloginTimer.schedule(reloginTask, timerInterval);
             mReloginTask = reloginTask;
         }
     }
