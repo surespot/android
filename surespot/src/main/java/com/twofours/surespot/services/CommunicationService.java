@@ -118,6 +118,7 @@ public class CommunicationService extends Service {
                 scheduleGiveUpReconnecting();
             }
         } else {
+            cancelDisconnectTimer();
             cancelGiveUpReconnectingTimer();
         }
     }
@@ -642,6 +643,7 @@ public class CommunicationService extends Service {
 
     private void checkShutdownService(boolean justCalledUserLoggedOut, boolean justDisconnecting, boolean timeoutTimerJustExpired) {
         if (mSendBuffer.size() == 0 &&
+                (mMainActivityPaused && mListener == null) &&
                 !justDisconnecting &&
                 mDisconnectTimer == null &&
                 ((timeoutTimerJustExpired && mMainActivityPaused) || mListener == null) &&

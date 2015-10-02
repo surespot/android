@@ -791,7 +791,7 @@ public class ChatController {
 
 	public void dispose() {
 		SurespotLog.d(TAG, "disposing of chat controller");
-		mChatAdapters.clear();
+		// mChatAdapters.clear();
 		// mFriendAdapter = null;
 		// mFragmentManager = null;
 	}
