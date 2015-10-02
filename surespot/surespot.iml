@@ -103,7 +103,10 @@
     <orderEntry type="library" exported="" name="play-services-drive-7.8.0" level="project" />
     <orderEntry type="library" exported="" name="google-http-client-gson-1.19.0" level="project" />
     <orderEntry type="library" exported="" name="google-oauth-client-1.17.0-rc" level="project" />
+<<<<<<< HEAD
     <orderEntry type="library" exported="" name="gcm" level="project" />
+=======
+>>>>>>> de8ffc8... build abs from source
     <orderEntry type="library" exported="" name="protobuf-java-2.4.1" level="project" />
     <orderEntry type="library" exported="" name="jsr305-1.3.9" level="project" />
     <orderEntry type="library" exported="" name="1_jsr305-1.3.9" level="project" />
