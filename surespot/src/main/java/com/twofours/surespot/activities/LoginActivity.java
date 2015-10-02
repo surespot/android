@@ -514,8 +514,9 @@ public class LoginActivity extends SherlockActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            if (keyCode == KeyEvent.KEYCODE_MENU) {
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
                 if (mMenuOverflow != null) {
                     mHandler.post(new Runnable() {
                         @Override
@@ -525,9 +526,10 @@ public class LoginActivity extends SherlockActivity {
                     });
                 }
             }
-        }
-        else {
-            openOptionsMenuDeferred();
+            else {
+                openOptionsMenuDeferred();
+            }
+            return true;
         }
 
         return super.onKeyUp(keyCode, event);

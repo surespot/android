@@ -1439,8 +1439,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            if (keyCode == KeyEvent.KEYCODE_MENU) {
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 if (mMenuOverflow != null) {
                     mHandler.post(new Runnable() {
                         @Override
@@ -1450,12 +1450,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     });
                 }
             }
-        }
-        else {
-            openOptionsMenuDeferred();
+            else {
+                openOptionsMenuDeferred();
+            }
+            return true;
         }
 
-        return super.onKeyUp(keyCode, event);
+        return super.
+
+                onKeyUp(keyCode, event);
     }
 
 
