@@ -28,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.ResultReceiver;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -158,6 +159,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
     private BillingController mBillingController;
     private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -181,17 +183,20 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 intent.putExtra("signingUp", true);
                 startActivity(newIntent);
                 finish();
-            } else {
+            }
+            else {
                 SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
                 Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(newIntent);
                 finish();
             }
-        } else {
+        }
+        else {
             if (!needsSignup()) {
                 processLaunch();
-            } else {
+            }
+            else {
                 mSigningUp = true;
             }
         }
@@ -280,14 +285,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             }
 
             processLaunch();
-        } else {
+        }
+        else {
             if (!mSigningUp) {
                 mSigningUp = intent.getBooleanExtra("signingUp", false);
 
                 if (!mSigningUp) {
                     if (mCommunicationServiceBound && mCacheServiceBound) {
                         processLaunch();
-                    } else {
+                    }
+                    else {
                         // one or more services needs to be bound
                         mStartWhenBothServicesBound = true;
 
@@ -309,7 +316,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         if (user == null) {
             launchLogin();
-        } else {
+        }
+        else {
             mUser = user;
 
             if (!mCommunicationServiceBound && !mBindingCommunicationService) {
@@ -325,10 +333,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 if (!mUnlocking) {
                     SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
                     postServiceProcess();
-                } else {
+                }
+                else {
                     SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
                 }
-            } else {
+            }
+            else {
                 mStartWhenBothServicesBound = true;
             }
         }
@@ -383,7 +393,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 if (segments.size() > 1) {
                     if (dataUri) {
                         intent.setData(null);
-                    } else {
+                    }
+                    else {
                         intent.removeExtra("autoinviteurl");
                     }
 
@@ -392,7 +403,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                         aid.setUsername(segments.get(1));
                         aid.setSource(segments.get(2));
                         return aid;
-                    } catch (IndexOutOfBoundsException e) {
+                    }
+                    catch (IndexOutOfBoundsException e) {
                         SurespotLog.i(TAG, e, "getAutoInviteData");
                     }
                 }
@@ -441,7 +453,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
                         if (mEtMessage.getText().toString().length() > 0 && !SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
                             sendMessage(friend.getName());
-                        } else {
+                        }
+                        else {
 
                             SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
                             boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
@@ -450,12 +463,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                             if (mBillingController.hasVoiceMessaging() || dontAskDontTell || SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
                                 // go to home
                                 SurespotApplication.getChatController().setCurrentChat(null);
-                            } else {
+                            }
+                            else {
                                 // nag nag nag
                                 showVoicePurchaseDialog(true);
                             }
                         }
-                    } else {
+                    }
+                    else {
                         inviteFriend();
                     }
                 }
@@ -472,19 +487,23 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     // if they're deleted always close the tab
                     if (SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
                         SurespotApplication.getChatController().closeTab();
-                    } else {
+                    }
+                    else {
                         if (mEtMessage.getText().toString().length() > 0) {
                             sendMessage(friend.getName());
-                        } else {
+                        }
+                        else {
                             if (mBillingController.hasVoiceMessaging()) {
                                 VoiceController.startRecording(MainActivity.this, friend.getName());
-                            } else {
+                            }
+                            else {
                                 //
                                 SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
                                 boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
                                 if (dontAskDontTell) {
                                     SurespotApplication.getChatController().closeTab();
-                                } else {
+                                }
+                                else {
                                     showVoicePurchaseDialog(true);
                                 }
                             }
@@ -704,7 +723,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
             user = messageTo;
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
-        } else {
+        }
+        else {
             user = IdentityController.getLastLoggedInUser(this);
         }
 
@@ -728,7 +748,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 if (!mUnlocking && mCacheServiceBound && (mResumed || mStartWhenBothServicesBound)) {
                     SurespotLog.d(TAG, "transmission service calling postServiceProcess");
                     postServiceProcess();
-                } else {
+                }
+                else {
                     SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
                 }
             }
@@ -755,7 +776,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             if (!mUnlocking && mCommunicationServiceBound && (mResumed || mStartWhenBothServicesBound)) {
                 SurespotLog.d(TAG, "caching service calling postServiceProcess");
                 postServiceProcess();
-            } else {
+            }
+            else {
                 SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
             }
         }
@@ -822,13 +844,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 SurespotLog.w(TAG, "No service listener - this should have been done when the service was bound to the main activity");
                 SurespotApplication.getCommunicationService().setServiceListener(new CommunicationServiceListener());
             }
-        } else {
+        }
+        else {
             SurespotLog.d(TAG, "chat transmission service was null");
         }
 
         try {
             SurespotApplication.getCommunicationService().initNetworkController(mUser, m401Handler);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             finish();
             return;
         }
@@ -881,7 +905,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             if (apiAvailability.isUserResolvableError(resultCode)) {
                 apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
                         .show();
-            } else {
+            }
+            else {
                 Log.i(TAG, "This device is not supported.");
                 finish();
             }
@@ -945,7 +970,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
                     SurespotApplication.getChatController().setCurrentChat(null);
                     mSet = true;
-                } else {
+                }
+                else {
                     Utils.clearIntent(intent);
                 }
             }
@@ -1117,12 +1143,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                                 try {
                                     File file = new File(new URI(selectedImageUri.toString()));
                                     SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
-                                } catch (URISyntaxException e) {
+                                }
+                                catch (URISyntaxException e) {
                                 }
 
                                 if (SurespotApplication.getChatController() == null || url == null) {
                                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
-                                } else {
+                                }
+                                else {
                                     SurespotApplication.getChatController().setImageUrl(to, url, version, iv, true);
                                 }
                             }
@@ -1135,7 +1163,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 // Pass on the activity result to the helper for handling
                 if (!SurespotApplication.getBillingController().getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
                     super.onActivityResult(requestCode, resultCode, data);
-                } else {
+                }
+                else {
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
@@ -1153,6 +1182,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 // delete local image
                 try {
                     File file = new File(new URI(selectedImageUri.toString()));
+
                     boolean b = file.delete();
                     SurespotLog.d(TAG, "deleted temp image file: %b", b);
                 } catch (URISyntaxException e) { }
@@ -1176,7 +1206,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         SurespotLog.d(TAG, "onCreateOptionsMenu");
 
         MenuInflater inflater = getSupportMenuInflater();
-        inflater.inflate(R.menu.activity_main, menu);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            inflater.inflate(R.menu.activity_main_gb, menu);
+        }
+        else {
+            inflater.inflate(R.menu.activity_main, menu);
+        }
+
         mMenuOverflow = menu;
 
         mMenuItems.add(menu.findItem(R.id.menu_close_bar));
@@ -1186,7 +1223,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         if (hasCamera()) {
             mMenuItems.add(captureItem);
             captureItem.setEnabled(FileUtils.isExternalStorageMounted());
-        } else {
+        }
+        else {
             SurespotLog.d(TAG, "hiding capture image menu option");
             menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
         }
@@ -1209,7 +1247,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
     private boolean hasCamera() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
             return Camera.getNumberOfCameras() > 0;
-        } else {
+        }
+        else {
             PackageManager pm = this.getPackageManager();
             return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
         }
@@ -1338,7 +1377,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
                                 ;
                             });
-                } else {
+                }
+                else {
                     SurespotApplication.getChatController().deleteMessages(currentChat);
                 }
 
@@ -1398,17 +1438,42 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         return mMainHandler;
     }
 
+
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
-            if (mMenuOverflow != null) {
-                mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-                return true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                if (mMenuOverflow != null) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+                        }
+                    });
+                }
             }
+            else {
+                openOptionsMenuDeferred();
+            }
+            return true;
         }
 
-        return super.onKeyUp(keyCode, event);
+        return super.
+
+                onKeyUp(keyCode, event);
     }
+
+
+    public void openOptionsMenuDeferred() {
+        mHandler.post(new Runnable() {
+                          @Override
+                          public void run() {
+                              openOptionsMenu();
+                          }
+                      }
+        );
+    }
+
 
     private void startWatchingExternalStorage() {
         mExternalStorageReceiver = new BroadcastReceiver() {
@@ -1430,7 +1495,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         // don't puke if we can't unregister
         try {
             unregisterReceiver(mExternalStorageReceiver);
-        } catch (java.lang.IllegalArgumentException e) {
+        }
+        catch (java.lang.IllegalArgumentException e) {
         }
     }
 
@@ -1439,10 +1505,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         SurespotLog.d(TAG, "updateExternalStorageState:  " + state);
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             mExternalStorageAvailable = mExternalStorageWriteable = true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+        }
+        else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             mExternalStorageAvailable = true;
             mExternalStorageWriteable = false;
-        } else {
+        }
+        else {
 
             mExternalStorageAvailable = mExternalStorageWriteable = false;
         }
@@ -1525,7 +1593,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         SurespotLog.d(TAG, "progress status changed to: %b", inProgress);
         if (inProgress) {
             UIUtils.showProgressAnimation(this, mHomeImageView);
-        } else {
+        }
+        else {
             mHomeImageView.clearAnimation();
         }
 
@@ -1540,7 +1609,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         View view = null;
         if (mCurrentFriend == null) {
             view = mEtInvite;
-        } else {
+        }
+        else {
             view = mEtMessage;
         }
 
@@ -1576,7 +1646,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         View view = null;
         if (mCurrentFriend == null) {
             view = mEtInvite;
-        } else {
+        }
+        else {
             view = mEtMessage;
         }
 
@@ -1624,7 +1695,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
                             mKeyboardShowing = false;
-                        } else {
+                        }
+                        else {
                             Runnable runnable = new Runnable() {
 
                                 @Override
@@ -1658,7 +1730,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
                             mKeyboardShowing = true;
-                        } else {
+                        }
+                        else {
 
                         }
                     }
@@ -1678,7 +1751,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 SurespotLog.d(TAG, "showEmoji,  showing emoji view");
                 mEmojiView.setVisibility(View.VISIBLE);
             }
-        } else {
+        }
+        else {
             if (visibility != View.GONE && force) {
                 SurespotLog.d(TAG, "showEmoji,  hiding emoji view");
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
@@ -1696,11 +1770,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
     private void toggleEmoji() {
         if (mEmojiShowing) {
             showSoftKeyboard(mEtMessage);
-        } else {
+        }
+        else {
             if (mKeyboardShowing) {
                 hideSoftKeyboard();
                 showEmoji(true, false);
-            } else {
+            }
+            else {
                 showEmoji(true, true);
             }
 
@@ -1750,7 +1826,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 // requestFocus();
                 // clear the intent
 
-            } else {
+            }
+            else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
                     final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
@@ -1778,7 +1855,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                                     }
                                 }
                             });
-                } else {
+                }
+                else {
                     if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
                         // TODO implement
                     }
@@ -1839,7 +1917,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
             mEmojiView.setVisibility(View.VISIBLE);
             setEmojiIcon(false);
-        } else {
+        }
+        else {
             mEmojiView.setVisibility(View.GONE);
             setEmojiIcon(true);
         }
@@ -1864,7 +1943,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     TextKeyListener.clear(mEtInvite.getText());
                     if (SurespotApplication.getChatController().getFriendAdapter().addFriendInvited(friend)) {
                         Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
-                    } else {
+                    }
+                    else {
                         Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
                     }
 
@@ -1890,7 +1970,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                                 SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
                                 Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                         }
-                    } else {
+                    }
+                    else {
                         SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
                         Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                     }
@@ -1905,19 +1986,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             mIvVoice.setVisibility(View.GONE);
             mIvHome.setVisibility(View.GONE);
             mIvSend.setVisibility(View.GONE);
-        } else {
+        }
+        else {
             if (mCurrentFriend.isDeleted()) {
                 mIvInvite.setVisibility(View.GONE);
                 mIvVoice.setVisibility(View.GONE);
                 mIvHome.setVisibility(View.VISIBLE);
                 mIvSend.setVisibility(View.GONE);
-            } else {
+            }
+            else {
                 if (mEtMessage.getText().length() > 0) {
                     mIvInvite.setVisibility(View.GONE);
                     mIvVoice.setVisibility(View.GONE);
                     mIvHome.setVisibility(View.GONE);
                     mIvSend.setVisibility(View.VISIBLE);
-                } else {
+                }
+                else {
                     mIvInvite.setVisibility(View.GONE);
                     SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
                     boolean dontAsk = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
@@ -1925,7 +2009,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     if (dontAsk) {
                         mIvVoice.setVisibility(View.GONE);
                         mIvHome.setVisibility(View.VISIBLE);
-                    } else {
+                    }
+                    else {
                         mIvVoice.setVisibility(View.VISIBLE);
                         mIvHome.setVisibility(View.GONE);
                     }
@@ -1967,12 +2052,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 }
                 showKeyboard = mKeyboardShowingOnHomeTab;
 
-            } else {
+            }
+            else {
                 showKeyboard = mKeyboardShowing;
             }
             showEmoji = false;
 
-        } else {
+        }
+        else {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
             if (friend.isDeleted()) {
@@ -1984,7 +2071,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     // if we're coming from home tab
                     if (mCurrentFriend == null) {
                         mKeyboardShowingOnHomeTab = mKeyboardShowing;
-                    } else {
+                    }
+                    else {
                         if (!mCurrentFriend.isDeleted()) {
                             mKeyboardShowingOnChatTab = mKeyboardShowing;
                             mEmojiShowingOnChatTab = mEmojiShowing;
@@ -1995,7 +2083,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 showKeyboard = false;
                 showEmoji = false;
 
-            } else {
+            }
+            else {
                 mEtMessage.setVisibility(View.VISIBLE);
                 mEmojiButton.setVisibility(View.VISIBLE);
 
@@ -2010,7 +2099,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                         mKeyboardShowingOnHomeTab = mKeyboardShowing;
                     }
 
-                } else {
+                }
+                else {
                     showKeyboard = mKeyboardShowing;
                     showEmoji = mEmojiShowing;
                 }
@@ -2027,27 +2117,33 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             if (friend == null) {
                 if (mEmojiShowing) {
                     showSoftKeyboardThenHideEmoji(mEtInvite);
-                } else {
+                }
+                else {
                     hideSoftKeyboard(mEtMessage);
                 }
-            } else {
+            }
+            else {
                 if (mEmojiShowing) {
                     showSoftKeyboard(mEtMessage);
                     showEmoji(false, true);
-                } else {
+                }
+                else {
                     showEmoji(true, true);
                     hideSoftKeyboard(mEtInvite);
                 }
             }
-        } else {
+        }
+        else {
             if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
                 showSoftKeyboard();
-            } else {
+            }
+            else {
 
                 if (mKeyboardShowing != showKeyboard) {
                     showEmoji(showEmoji, true);
                     hideSoftKeyboard();
-                } else {
+                }
+                else {
                     showEmoji(showEmoji, true);
                 }
             }
@@ -2069,7 +2165,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
             }
             mEmojiButton.setImageResource(mEmojiResourceId);
-        } else {
+        }
+        else {
             mEmojiButton.setImageResource(R.drawable.keyboard_icon);
         }
 
@@ -2099,7 +2196,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             imageView.setImageURI(Uri.parse(backgroundImageUrl));
             imageView.setAlpha(125);
             SurespotConfiguration.setBackgroundImageSet(true);
-        } else {
+        }
+        else {
             imageView.setImageDrawable(null);
             SurespotConfiguration.setBackgroundImageSet(false);
         }

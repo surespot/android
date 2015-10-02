@@ -8,13 +8,14 @@ android {
     defaultConfig {
         applicationId "com.twofours.surespot"
         minSdkVersion 10
-        targetSdkVersion 20
+        targetSdkVersion 19
         multiDexEnabled false
     }
 
     buildTypes {
         debug {
             minifyEnabled true
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
         }
         release {
@@ -24,6 +25,14 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('/home/adam/raid/2fours/android_keystore/custom-debug.keystore')
+                    storePassword "android"
+                    keyAlias "androiddebugkey"
+                    keyPassword "android"
+        }
+    }
     dexOptions {
         incremental true
         javaMaxHeapSize "4g"
@@ -45,8 +54,8 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3'
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.protobuf:protobuf-java:2.4.1'
-    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:20.0.0'
+    //compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
+    compile 'com.android.support:support-v4:19.0.1'
     compile files('libs/google-api-client-1.17.0-rc.jar')
     compile files('libs/google-api-client-android-1.17.0-rc.jar')
     compile files('libs/google-api-services-drive-v2-rev103-1.17.0-rc.jar')
