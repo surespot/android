@@ -5,7 +5,7 @@
         android:id="@+id/item_overflow"
         android:icon="@drawable/ic_menu_overflow"
         android:orderInCategory="100"
-        android:showAsAction="always">
+        android:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/menu_create_identity_bar"

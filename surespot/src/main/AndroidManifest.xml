@@ -39,6 +39,9 @@
         android:icon="@drawable/surespotlauncher"
         android:label="surespot"
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
+
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"></meta-data>
+
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND">
