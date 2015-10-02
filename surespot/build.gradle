@@ -7,8 +7,7 @@ android {
     defaultConfig {
         applicationId "com.twofours.surespot"
         minSdkVersion 10
-        targetSdkVersion 20
-        multiDexEnabled false
+        targetSdkVersion 19
     }
 
     buildTypes {
@@ -44,12 +43,11 @@ dependencies {
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.protobuf:protobuf-java:2.4.1'
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:20.0.0'
+    compile 'com.android.support:support-v4:19.0.1'
     compile files('libs/gcm.jar')
     compile files('libs/google-api-client-1.17.0-rc.jar')
     compile files('libs/google-api-client-android-1.17.0-rc.jar')
     compile files('libs/google-api-services-drive-v2-rev103-1.17.0-rc.jar')
-    //compile files('libs/google-http-client-1.17.0-rc.jar')
     compile files('libs/google-http-client-android-1.17.0-rc.jar')
     compile files('libs/google-oauth-client-1.17.0-rc.jar')
     compile files('libs/jsr305-1.3.9.jar')
