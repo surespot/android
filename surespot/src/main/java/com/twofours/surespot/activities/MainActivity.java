@@ -28,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.ResultReceiver;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -142,6 +143,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	private boolean mResumed;
 	private boolean mUnlocking = false;
 	private boolean mPaused = false;
+	private Handler mHandler = new Handler(Looper.getMainLooper());
 
 	private BillingController mBillingController;
 
@@ -1042,7 +1044,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 		SurespotLog.d(TAG, "onCreateOptionsMenu");
 
 		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.activity_main, menu);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			inflater.inflate(R.menu.activity_main_gb, menu);
+		}
+		else {
+			inflater.inflate(R.menu.activity_main, menu);
+		}
 		mMenuOverflow = menu;
 
 		mMenuItems.add(menu.findItem(R.id.menu_close_bar));
@@ -1257,14 +1264,35 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			if (mMenuOverflow != null) {
-				mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-				return true;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+				if (mMenuOverflow != null) {
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+						}
+					});
+				}
 			}
+			else {
+				openOptionsMenuDeferred();
+			}
+			return true;
 		}
 
 		return super.onKeyUp(keyCode, event);
 	}
+
+	public void openOptionsMenuDeferred() {
+		mHandler.post(new Runnable() {
+						  @Override
+						  public void run() {
+							  openOptionsMenu();
+						  }
+					  }
+		);
+	}
+
 
 	private void startWatchingExternalStorage() {
 		mExternalStorageReceiver = new BroadcastReceiver() {

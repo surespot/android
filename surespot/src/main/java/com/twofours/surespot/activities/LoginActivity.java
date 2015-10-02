@@ -8,7 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.security.keystore.UserNotAuthenticatedException;
 import android.text.InputFilter;
 import android.text.TextUtils;
@@ -69,6 +72,7 @@ public class LoginActivity extends SherlockActivity {
 	private boolean mKeystoreNeededUnlocking;
 	private String mUnlockingUser;
 	private boolean mUserChallenge;
+	private Handler mHandler = new Handler(Looper.getMainLooper());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -392,7 +396,12 @@ public class LoginActivity extends SherlockActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.activity_login, menu);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			inflater.inflate(R.menu.activity_login_gb, menu);
+		}
+		else {
+			inflater.inflate(R.menu.activity_login, menu);
+		}
 		mMenuOverflow = menu;
 		return true;
 	}
@@ -496,13 +505,33 @@ public class LoginActivity extends SherlockActivity {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			if (mMenuOverflow != null) {
-				mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-				return true;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+				if (mMenuOverflow != null) {
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+						}
+					});
+				}
 			}
+			else {
+				openOptionsMenuDeferred();
+			}
+			return true;
 		}
 
 		return super.onKeyUp(keyCode, event);
+	}
+
+	public void openOptionsMenuDeferred() {
+		mHandler.post(new Runnable() {
+						  @Override
+						  public void run() {
+							  openOptionsMenu();
+						  }
+					  }
+		);
 	}
 
 	private void updatePassword() {
