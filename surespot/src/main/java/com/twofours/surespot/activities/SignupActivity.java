@@ -10,7 +10,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -66,6 +69,7 @@ public class SignupActivity extends SherlockActivity {
 	private View mUsernameInvalid;
 	private Menu mMenuOverflow;
 	private boolean mLoggedIn = false;
+	private Handler mHandler = new Handler(Looper.getMainLooper());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -452,7 +456,12 @@ public class SignupActivity extends SherlockActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.activity_signup, menu);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			inflater.inflate(R.menu.activity_signup_gb, menu);
+		}
+		else {
+			inflater.inflate(R.menu.activity_signup, menu);
+		}
 		mMenuOverflow = menu;
 		return true;
 	}
@@ -477,17 +486,6 @@ public class SignupActivity extends SherlockActivity {
 		}
 	}
 
-	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_MENU) {
-			if (mMenuOverflow != null) {
-				mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-				return true;
-			}
-		}
-
-		return super.onKeyUp(keyCode, event);
-	}
 
 	private void launchImport() {
 		Intent intent = new Intent(this, ImportIdentityActivity.class);
@@ -498,6 +496,37 @@ public class SignupActivity extends SherlockActivity {
 	private void setUsernameValidity(boolean isValid) {
 		mUsernameValid.setVisibility(isValid ? View.VISIBLE : View.GONE);
 		mUsernameInvalid.setVisibility(isValid ? View.GONE : View.VISIBLE);
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			if (keyCode == KeyEvent.KEYCODE_MENU) {
+				if (mMenuOverflow != null) {
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+						}
+					});
+				}
+			}
+		}
+		else {
+			openOptionsMenuDeferred();
+		}
+
+		return super.onKeyUp(keyCode, event);
+	}
+
+	public void openOptionsMenuDeferred() {
+		mHandler.post(new Runnable() {
+						  @Override
+						  public void run() {
+							  openOptionsMenu();
+						  }
+					  }
+		);
 	}
 
 }

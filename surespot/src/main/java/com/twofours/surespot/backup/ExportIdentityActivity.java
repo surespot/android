@@ -16,13 +16,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -68,6 +72,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 	private SingleProgressDialog mSpd;
 	private SingleProgressDialog mSpdBackupDir;
 	private AlertDialog mDialog;
+	private Handler mHandler = new Handler(Looper.getMainLooper());
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -551,5 +556,26 @@ public class ExportIdentityActivity extends SherlockActivity {
 		if (mDialog != null && mDialog.isShowing()) {
 			mDialog.dismiss();
 		}
+	}
+
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			openOptionsMenuDeferred();
+		}
+
+		return super.onKeyUp(keyCode, event);
+	}
+
+
+	public void openOptionsMenuDeferred() {
+		mHandler.post(new Runnable() {
+						  @Override
+						  public void run() {
+							  openOptionsMenu();
+						  }
+					  }
+		);
 	}
 }
