@@ -525,6 +525,17 @@ public class CommunicationService extends Service {
         }
 
         cancelGiveUpReconnectingTimer();
+
+        if (mResendBuffer.size() > 0) {
+            for (SurespotMessage message : getResendMessages()) {
+                mSendBuffer.add(message);
+            }
+            mResendBuffer.clear();
+        }
+
+        if (mSendBuffer.size() > 0) {
+            sendMessages();
+        }
     }
 
     // notify listeners that we've connected
