@@ -523,7 +523,6 @@ public class LoginActivity extends SherlockActivity {
                             mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
                         }
                     });
-                    return true;
                 }
             }
         }
