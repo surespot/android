@@ -132,15 +132,15 @@ public class SurespotApplication extends Application {
 			GCMRegistrar.checkManifest(this);
 
 			// final String regId = GCMRegistrar.getRegistrationId(this);
-			boolean registered = GCMRegistrar.isRegistered(this);
-			boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
-			if (versionChanged(this) || !registered || !registeredOnServer) {
+		//	boolean registered = GCMRegistrar.isRegistered(this);
+		//	boolean registeredOnServer = GCMRegistrar.isRegisteredOnServer(this);
+		//	if (versionChanged(this) || !registered || !registeredOnServer) {
 				SurespotLog.v(TAG, "Registering for GCM.");
 				GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
-			}
-			else {
-				SurespotLog.v(TAG, "GCM already registered.");
-			}
+//			}
+//			else {
+//				SurespotLog.v(TAG, "GCM already registered.");
+//			}
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "onCreate", e);
