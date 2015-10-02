@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.security.keystore.UserNotAuthenticatedException;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -140,10 +139,12 @@ public class LoginActivity extends SherlockActivity {
                     mUnlockingUser = getSelectedUsername();
                     try {
                         mKeystoreNeededUnlocking = !IdentityController.storePasswordForIdentity(LoginActivity.this, mUnlockingUser, mEtPassword.getText().toString());
-                    } catch (InvalidKeyException e) {
+                    }
+                    catch (InvalidKeyException e) {
                         LaunchKeystoreActivity();
                     }
-                } else {
+                }
+                else {
                     IdentityController.clearStoredPasswordForIdentity(LoginActivity.this, getSelectedUsername());
                 }
 
@@ -166,7 +167,8 @@ public class LoginActivity extends SherlockActivity {
             // Challenge completed, proceed with using cipher
             if (resultCode == RESULT_OK) {
                 Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
-            } else {
+            }
+            else {
                 // The user canceled or didn’t complete the lock screen operation. Go to error/cancellation flow.
                 Utils.makeLongToast(this, this.getString(R.string.keystore_not_unlocked));
                 Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
@@ -290,7 +292,8 @@ public class LoginActivity extends SherlockActivity {
                         if (networkController == null) {
                             try {
                                 networkController = new NetworkController(LoginActivity.this, null, null);
-                            } catch (Exception e) {
+                            }
+                            catch (Exception e) {
                                 LoginActivity.this.finish();
                                 return;
                             }
@@ -310,7 +313,8 @@ public class LoginActivity extends SherlockActivity {
                                     if (keysaveChecked) {
                                         try {
                                             IdentityController.storePasswordForIdentity(LoginActivity.this, username, password);
-                                        } catch (InvalidKeyException e) {
+                                        }
+                                        catch (InvalidKeyException e) {
                                             LaunchKeystoreActivity();
                                         }
                                     }
@@ -370,7 +374,8 @@ public class LoginActivity extends SherlockActivity {
                                         default:
                                             Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
                                     }
-                                } else {
+                                }
+                                else {
                                     Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
                                 }
                                 pwText.setText("");
@@ -381,7 +386,8 @@ public class LoginActivity extends SherlockActivity {
                                 mMpd.decrProgress();
                             }
                         });
-                    } else {
+                    }
+                    else {
                         mMpd.decrProgress();
                         Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
                         pwText.setText("");
@@ -412,21 +418,6 @@ public class LoginActivity extends SherlockActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-//            case R.id.item_overflow:
-//                //openOptionsMenuDeferred();
-////                if (mMenuOverflow != null) {
-////                    mHandler.post(new Runnable() {
-////                        @Override
-////                        public void run() {
-////                            mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-////                        }
-////                    });
-////                    //openOptionsMenu();
-////                    // mMenuOverflow.
-//                item.getSubMenu().setGroupVisible(0, true);
-////                }
-//                super.onOptionsItemSelected(item);
-//                return true;
             case R.id.menu_import_identities_bar:
                 new AsyncTask<Void, Void, Void>() {
 
@@ -463,7 +454,8 @@ public class LoginActivity extends SherlockActivity {
                         }
 
                     }.execute();
-                } else {
+                }
+                else {
                     Utils.makeLongToast(this, getString(R.string.login_max_identities_reached, SurespotConstants.MAX_IDENTITIES));
                 }
                 return true;
@@ -498,16 +490,6 @@ public class LoginActivity extends SherlockActivity {
 
     }
 
-    public void openOptionsMenuDeferred() {
-        mHandler.post(new Runnable() {
-                          @Override
-                          public void run() {
-                              openOptionsMenu();
-                          }
-                      }
-        );
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -538,12 +520,9 @@ public class LoginActivity extends SherlockActivity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-
-
                             mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-                        }});
-                    //openOptionsMenu();
-                    // mMenuOverflow.
+                        }
+                    });
                     return true;
                 }
             }
@@ -553,6 +532,17 @@ public class LoginActivity extends SherlockActivity {
         }
 
         return super.onKeyUp(keyCode, event);
+    }
+
+
+    public void openOptionsMenuDeferred() {
+        mHandler.post(new Runnable() {
+                          @Override
+                          public void run() {
+                              openOptionsMenu();
+                          }
+                      }
+        );
     }
 
     private void updatePassword() {
@@ -568,7 +558,8 @@ public class LoginActivity extends SherlockActivity {
                 mEtPassword.setText(password);
                 mEtPassword.setSelection(password.length());
                 mCbSavePassword.setChecked(true);
-            } else {
+            }
+            else {
                 // if we needed to unlock the keystore don't change the password and check status, and store password in keychain now
                 if (mKeystoreNeededUnlocking && username.equals(mUnlockingUser)) {
 
@@ -580,7 +571,8 @@ public class LoginActivity extends SherlockActivity {
                         if (!TextUtils.isEmpty(password)) {
                             try {
                                 IdentityController.storePasswordForIdentity(this, username, password);
-                            } catch (InvalidKeyException e) {
+                            }
+                            catch (InvalidKeyException e) {
                                 LaunchKeystoreActivity();
                             }
                         }
@@ -593,13 +585,15 @@ public class LoginActivity extends SherlockActivity {
 
                     mKeystoreNeededUnlocking = false;
                     mUnlockingUser = null;
-                } else {
+                }
+                else {
                     mEtPassword.setText(null);
                     mCbSavePassword.setChecked(false);
                 }
 
             }
-        } else {
+        }
+        else {
             mCbSavePassword.setChecked(false);
         }
     }
@@ -607,13 +601,4 @@ public class LoginActivity extends SherlockActivity {
     private String getSelectedUsername() {
         return mIdentityNames.get(((Spinner) LoginActivity.this.findViewById(R.id.spinnerUsername)).getSelectedItemPosition());
     }
-
-//    @Override
-//    public boolean onPrepareOptionsMenu(Menu menu) {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-//            menu.removeItem(R.id.item_overflow);
-//        }
-//        return super.onPrepareOptionsMenu(menu);
-//    }
-
 }
