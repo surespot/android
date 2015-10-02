@@ -316,21 +316,22 @@ public class EncryptionController {
 			ka.init(privateKey);
 			ka.doPhase(publicKey, true);
 			byte[] sharedSecret = ka.generateSecret();
+			return sharedSecret;
 
-			SurespotLog.i(TAG, "generated shared Key hashed: %b", hashed);
+			//SurespotLog.i(TAG, "generated shared Key hashed: %b", hashed);
 
-			if (!hashed) {
-				return sharedSecret;
-			}
-
-			SurespotLog.i(TAG, "hashing shared key");
-
-			//hash it
-			SHA256Digest digest = new SHA256Digest();
-			byte[] digested = new byte[AES_KEY_LENGTH];
-			digest.update(sharedSecret, 0, sharedSecret.length);
-			digest.doFinal(digested, 0);
-			return digested;
+//			if (!hashed) {
+//				return sharedSecret;
+//			}
+//
+//			SurespotLog.i(TAG, "hashing shared key");
+//
+//			//hash it
+//			SHA256Digest digest = new SHA256Digest();
+//			byte[] digested = new byte[AES_KEY_LENGTH];
+//			digest.update(sharedSecret, 0, sharedSecret.length);
+//			digest.doFinal(digested, 0);
+//			return digested;
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key
