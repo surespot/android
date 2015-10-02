@@ -82,7 +82,7 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 30;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 3; // probably want 3, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 5; // probably want 3, 1 is good for testing
     private static final int RELOGIN_DELAY_SECONDS = 5; // 5 seconds between retries
 
     private int mTriesRelogin = 0;
@@ -478,7 +478,7 @@ public class CommunicationService extends Service {
                 mGiveUpReconnectingTimer = null;
             }
             mGiveUpReconnectingTimer = new Timer("giveUpReconnecting");
-            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, DISCONNECT_DELAY_SECONDS * 1000);
+            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, DISCONNECT_DELAY_SECONDS * 1000 * 10);
             mGiveUpReconnectingTask = giveUpReconnectingTask;
         }
     }
@@ -632,6 +632,7 @@ public class CommunicationService extends Service {
     private void checkShutdownService(boolean justCalledUserLoggedOut, boolean justDisconnecting, boolean timeoutTimerJustExpired) {
         if (mSendBuffer.size() == 0 &&
                 !justDisconnecting &&
+                mDisconnectTimer == null &&
                 ((timeoutTimerJustExpired && mMainActivityPaused) || mListener == null) &&
                 (timeoutTimerJustExpired || mResendBuffer.size() == 0)) {
             Log.d(TAG, "shutting down service!");
@@ -1007,13 +1008,10 @@ public class CommunicationService extends Service {
                     SurespotLog.d(TAG, "Network newly connected, reconnecting...");
                     synchronized (CommunicationService.this) {
                         setOnWifi();
-                        if (!mMainActivityPaused && mListener != null) {
-                            if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
-                                return;
-                            }
-                            disconnect();
-                            connect();
+                        if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+                            return;
                         }
+                        connect();
                     }
                     return;
                 }
