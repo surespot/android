@@ -80,9 +80,9 @@ public class CommunicationService extends Service {
     private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
-    private static final int MAX_RETRY_DELAY = 30;
+    private static final int MAX_RETRY_DELAY = 10;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 5; // probably want 5-10, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 30; // probably want 5-10, 1 is good for testing
 
     private int mTriesRelogin = 0;
     private SocketIO socket;
@@ -152,7 +152,6 @@ public class CommunicationService extends Service {
 
     public synchronized boolean connect() {
         SurespotLog.d(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: " + mConnectionState);
-
         cancelDisconnectTimer();
 
         if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
@@ -447,6 +446,8 @@ public class CommunicationService extends Service {
 
     // setup a disconnect N minutes from now
     private void scheduleDisconnect() {
+        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000;
+        SurespotLog.d(TAG, "scheduleDisconnect, seconds: %d",delaySeconds);
         synchronized (DISCONNECT_TIMER_LOCK) {
             if (mDisconnectTask != null) {
                 mDisconnectTask.cancel();
@@ -459,13 +460,15 @@ public class CommunicationService extends Service {
                 mDisconnectTimer = null;
             }
             mDisconnectTimer = new Timer("disconnectTimer");
-            mDisconnectTimer.schedule(disconnectTask, DISCONNECT_DELAY_SECONDS * 1000);
+            mDisconnectTimer.schedule(disconnectTask, delaySeconds);
             mDisconnectTask = disconnectTask;
         }
     }
 
     // schedule give up reconnecting
     private void scheduleGiveUpReconnecting() {
+        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000 * 10;
+        SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d",delaySeconds);
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
                 mGiveUpReconnectingTask.cancel();
@@ -478,7 +481,7 @@ public class CommunicationService extends Service {
                 mGiveUpReconnectingTimer = null;
             }
             mGiveUpReconnectingTimer = new Timer("giveUpReconnecting");
-            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, DISCONNECT_DELAY_SECONDS * 1000 * 10);
+            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, delaySeconds);
             mGiveUpReconnectingTask = giveUpReconnectingTask;
         }
     }
@@ -498,7 +501,7 @@ public class CommunicationService extends Service {
             }
             mReloginTimer = new Timer("reloginTimer");
             int timerInterval = generateInterval(mTriesRelogin + 1);
-            SurespotLog.d(TAG, "try %d starting another login task in: %d", mTriesRelogin, timerInterval);
+            SurespotLog.d(TAG, "startReloginTimer, try %d starting another login task in: %d", mTriesRelogin, timerInterval);
             mReloginTimer.schedule(reloginTask, timerInterval);
             mReloginTask = reloginTask;
         }
@@ -717,6 +720,7 @@ public class CommunicationService extends Service {
 
     private void stopReloginTimer() {
         // cancel any disconnect that's been scheduled
+        SurespotLog.d(TAG,"stopReloginTimer");
         synchronized (RELOGIN_TIMER_LOCK) {
             if (mReloginTask != null) {
                 mReloginTask.cancel();
@@ -731,6 +735,7 @@ public class CommunicationService extends Service {
     }
 
     private void cancelGiveUpReconnectingTimer() {
+        SurespotLog.d(TAG,"cancelGiveUpReconnectingTimer");
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
                 mGiveUpReconnectingTask.cancel();
@@ -745,6 +750,7 @@ public class CommunicationService extends Service {
     }
 
     private void cancelDisconnectTimer() {
+        SurespotLog.d(TAG,"cancelDisconnectTimer");
         // cancel any disconnect that's been scheduled
         synchronized (DISCONNECT_TIMER_LOCK) {
             if (mDisconnectTask != null) {
