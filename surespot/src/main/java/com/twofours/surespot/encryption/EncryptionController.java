@@ -316,6 +316,8 @@ public class EncryptionController {
 			ka.init(privateKey);
 			ka.doPhase(publicKey, true);
 			byte[] sharedSecret = ka.generateSecret();
+
+			//TODO prodhash
 			return sharedSecret;
 
 			//SurespotLog.i(TAG, "generated shared Key hashed: %b", hashed);

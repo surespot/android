@@ -151,6 +151,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
 	public boolean isHashed() {
 		return false;
+		//TODO prodhash
 		//return mHashed;
 	}
 
