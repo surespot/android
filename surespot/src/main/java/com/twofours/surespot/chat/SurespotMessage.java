@@ -150,7 +150,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	}
 
 	public boolean isHashed() {
-		return mHashed;
+		return false;
+		//return mHashed;
 	}
 
 	public void setHashed(boolean hashed) {
