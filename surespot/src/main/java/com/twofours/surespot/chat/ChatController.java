@@ -2215,11 +2215,13 @@ public class ChatController {
 		// might not be same user so check that to is the currently logged in user
 		boolean sameUser = message.getTo().equals(mUsername);
 		if (!sameUser) {
+			SurespotLog.d(TAG, "addMessageExternal: different user, not adding message");
 			return false;
 		}
 		else {
 			final ChatAdapter chatAdapter = mChatAdapters.get(message.getFrom());
 			if (chatAdapter == null) {
+				SurespotLog.d(TAG, "addMessageExternal: chatAdapter null, not adding message");
 				return false;
 			}
 			else {

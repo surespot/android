@@ -515,6 +515,7 @@ public class CommunicationService extends Service {
 
     // notify listeners that we've connected
     private void onConnected() {
+        SurespotLog.d(TAG, "onConnected");
         mEverConnected = true;
 
         // tell any listeners that we're connected
@@ -811,6 +812,7 @@ public class CommunicationService extends Service {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null) {
             mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
+            SurespotLog.d(TAG, "setOnWifi, set mOnWifi to: %b", mOnWifi);
         }
     }
 
@@ -1013,52 +1015,62 @@ public class CommunicationService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            SurespotLog.d(TAG, "Connectivity Action");
+            SurespotLog.d(TAG, "onReceive");
             debugIntent(intent, TAG);
             Bundle extras = intent.getExtras();
             if (extras.containsKey("networkInfo")) {
                 NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
                 if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
-                    SurespotLog.d(TAG, "Network newly connected, reconnecting...");
+                    SurespotLog.d(TAG, "onReceive,  CONNECTED");
                     synchronized (CommunicationService.this) {
+                        boolean wasOnWifi = mOnWifi;
                         setOnWifi();
-                        if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+
+
+                        /*if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+                            SurespotLog.d(TAG, "onReceive, socket already connected doing nothing");
                             return;
+                        }*/
+
+                        //if we our wifi state changed reconnect
+                        if (wasOnWifi != mOnWifi) {
+                            SurespotLog.d(TAG, "onReceive, (re)connecting the socket");
+                            disconnect();
+                            connect();
                         }
-                        connect();
                     }
                     return;
                 }
             }
-            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            if (networkInfo != null) {
-                SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
-                SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
-                SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
-                SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
-
-                // if it's not a failover and wifi is now active then initiate reconnect
-                if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-                    synchronized (CommunicationService.this) {
-                        // if we're not connecting, connect
-                        if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
-                            mOnWifi = true;
-
-                            if (!mMainActivityPaused && mListener != null) {
-                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
-
-                                setState(STATE_CONNECTING);
-
-                                disconnect();
-                                connect();
-                            }
-                        }
-                    }
-                }
-            } else {
-                SurespotLog.d(TAG, "networkinfo null");
-            }
+//            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+//            if (networkInfo != null) {
+//                SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
+//                SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
+//                SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
+//                SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
+//
+//                // if it's not a failover and wifi is now active then initiate reconnect
+//                if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
+//                    synchronized (CommunicationService.this) {
+//                        // if we're not connecting, connect
+//                        if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
+//                            mOnWifi = true;
+//
+//                            if (!mMainActivityPaused && mListener != null) {
+//                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
+//
+//                                setState(STATE_CONNECTING);
+//
+//                                disconnect();
+//                                connect();
+//                            }
+//                        }
+//                    }
+//                }
+//            } else {
+//                SurespotLog.d(TAG, "networkinfo null");
+//            }
         }
 
         private void debugIntent(Intent intent, String tag) {

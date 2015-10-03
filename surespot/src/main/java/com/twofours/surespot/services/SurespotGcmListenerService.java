@@ -94,11 +94,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
             boolean tabOpenToUser = from.equals(ChatController.getCurrentChat());
             boolean paused = ChatController.isPaused();
 
-            SurespotLog.v(TAG, "is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
+            SurespotLog.d(TAG, "gcm is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
                     sameUser, tabOpenToUser);
 
             if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && !paused) {
-                SurespotLog.v(TAG, "not displaying notification because the tab is open for it.");
+                SurespotLog.d(TAG, "not displaying gcm notification because the tab is open for it.");
                 return;
             }
 
@@ -115,7 +115,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     boolean added = false;
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {
-                            SurespotLog.v(TAG, "adding gcm message to controller");
+                            SurespotLog.d(TAG, "adding gcm message to controller");
                             if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
                                 SurespotApplication.getCommunicationService().saveMessages(from);
                             } else {
@@ -127,13 +127,20 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
                     // if not add it directly
                     if (!added) {
-                        SurespotLog.v(TAG, "adding gcm message directly");
-
                         ArrayList<SurespotMessage> messages = SurespotApplication.getStateController().loadMessages(to, spot);
                         if (!messages.contains(sm)) {
                             messages.add(sm);
+                            SurespotLog.d(TAG, "added gcm message directly to disk");
                             added = true;
                             SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
+                        }
+                        else {
+                            SurespotLog.d(TAG, "did not add gcm message directly disk as it's already there");
+                            // AEP what was happening here is it wasn't adding the message because
+                            // it's already been received on the websocket and saved to disk before the push message arrives
+                            // so gonna show notification now; was unnecessary before because the socket would have been
+                            // disconnected before push arrived if we got this far thanks to above isscreenon...etc.  check
+                            added = true;
                         }
                     }
 
@@ -233,7 +240,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
     // [END receive_message]
 
     private void generateNotification(Context context, String type, String from, String to, String title, String message, String tag, int id) {
-
+        SurespotLog.d(TAG, "generateNotification");
         // get shared prefs
         SharedPreferences pm = context.getSharedPreferences(to, Context.MODE_PRIVATE);
         if (!pm.getBoolean("pref_notifications_enabled", true)) {
