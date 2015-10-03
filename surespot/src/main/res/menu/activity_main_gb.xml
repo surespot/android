@@ -20,10 +20,10 @@
         android:id="@+id/menu_invite_external"
         android:icon="@drawable/blue_heart"
         android:title="@string/share_invite_link" />
-    <item
-        android:id="@+id/menu_purchase_voice"
-        android:icon="@drawable/gold_heart"
-        android:title="@string/menu_purchase_voice_messaging" />
+    <!--<item-->
+        <!--android:id="@+id/menu_purchase_voice"-->
+        <!--android:icon="@drawable/gold_heart"-->
+        <!--android:title="@string/menu_purchase_voice_messaging" />-->
 
     <!-- I told you before kid, paywhatyoulike -->
 

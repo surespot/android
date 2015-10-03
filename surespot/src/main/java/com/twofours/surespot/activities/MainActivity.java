@@ -99,7 +99,6 @@ import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
-import com.twofours.surespot.voice.VoicePurchaseFragment;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
@@ -464,10 +463,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                                 // go to home
                                 SurespotApplication.getChatController().setCurrentChat(null);
                             }
-                            else {
-                                // nag nag nag
-                                showVoicePurchaseDialog(true);
-                            }
+//                            else {
+//                                // nag nag nag
+//                                showVoicePurchaseDialog(true);
+//                            }
                         }
                     }
                     else {
@@ -503,9 +502,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                                 if (dontAskDontTell) {
                                     SurespotApplication.getChatController().closeTab();
                                 }
-                                else {
-                                    showVoicePurchaseDialog(true);
-                                }
+//                                else {
+//                                    showVoicePurchaseDialog(true);
+//                                }
                             }
                         }
                     }
@@ -1232,7 +1231,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
         // nag nag nag
 
-        mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
+        //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
         if (SurespotApplication.getChatController() != null) {
             SurespotApplication.getChatController().enableMenuItems(mCurrentFriend);
@@ -1394,9 +1393,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     }
                 }.execute();
                 return true;
-            case R.id.menu_purchase_voice:
-                showVoicePurchaseDialog(false);
-                return true;
+//            case R.id.menu_purchase_voice:
+//                showVoicePurchaseDialog(false);
+//                return true;
             default:
                 return false;
 
@@ -2172,12 +2171,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
     }
 
-    public void showVoicePurchaseDialog(boolean comingFromButton) {
-        FragmentManager fm = getSupportFragmentManager();
-        SherlockDialogFragment dialog = VoicePurchaseFragment.newInstance(comingFromButton);
-        dialog.show(fm, "voice_purchase");
-
-    }
+//    public void showVoicePurchaseDialog(boolean comingFromButton) {
+//        FragmentManager fm = getSupportFragmentManager();
+//        SherlockDialogFragment dialog = VoicePurchaseFragment.newInstance(comingFromButton);
+//        dialog.show(fm, "voice_purchase");
+//
+//    }
 
     @Override
     public void onLowMemory() {

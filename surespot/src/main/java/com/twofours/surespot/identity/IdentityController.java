@@ -83,7 +83,7 @@ public class IdentityController {
             Utils.putSharedPrefsString(context, "referrer", null);
             SurespotApplication.getCachingService().login(identity, cookie, password);
             // if we're logging in we probably didn't just buy it
-            SurespotApplication.getBillingController().clearJustPurchased();
+           // SurespotApplication.getBillingController().clearJustPurchased();
         } else {
             SurespotLog.w(TAG, "getIdentity null");
         }

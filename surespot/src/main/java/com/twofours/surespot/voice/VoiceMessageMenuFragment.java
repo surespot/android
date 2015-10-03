@@ -53,9 +53,9 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 		// builder.setTitle(R.string.pick_color);
 
 		// nag nag nag
-		if (!mBillingController.hasVoiceMessaging()) {
-			mItems.add(getString(R.string.menu_purchase_voice_messaging));
-		}
+//		if (!mBillingController.hasVoiceMessaging()) {
+//			mItems.add(getString(R.string.menu_purchase_voice_messaging));
+//		}
 
 		// if we have an errored voice message we can resend it
 		if (mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getErrorStatus() > 0) {
@@ -101,10 +101,10 @@ public class VoiceMessageMenuFragment extends SherlockDialogFragment {
 					return;
 				}
 
-				if (itemText.equals(getString(R.string.menu_purchase_voice_messaging))) {
-					mActivity.showVoicePurchaseDialog(false);
-					return;
-				}
+//				if (itemText.equals(getString(R.string.menu_purchase_voice_messaging))) {
+//					mActivity.showVoicePurchaseDialog(false);
+//					return;
+//				}
 
 			}
 		});

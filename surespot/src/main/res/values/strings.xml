@@ -306,30 +306,30 @@
     <string name="device_does_not_support_google_drive">Device not configured for Google Drive.</string>
     <string name="login_update">please update surespot to log in</string>
     <string name="help_agreement"><![CDATA["By touching OK you agree to the surespot <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">terms of service</a>."]]></string>
-    <string name="billing_payment_required_voice">surespot voice message not purchased</string>
+    <!--<string name="billing_payment_required_voice">surespot voice message not purchased</string>-->
     <string name="billing_getting_inventory">getting purchase inventory, please try again in a second</string>
-    <string name="billing_unavailable_message">you must have a Google account on your device to purchase voice messaging</string>
+    <!--<string name="billing_unavailable_message">you must have a Google account on your device to purchase voice messaging</string>-->
     <string name="billing_unavailable_title">billing unavailable</string>
     <string name="billing_error">billing error</string>
     <string name="pref_billing">purchases</string>
-    <string name="suppress_voice_purchase">"don't ask me to buy voice messaging (closes tab instead)"</string>
-    <string name="voice_messaging_purchase_1"><![CDATA["Add voice messaging to your surespot and make encrypted communication even easier! Simply hold down the microphone button to record and release to send. Because sometimes it is easier to say it than type it. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
-    <string name="voice_messaging_purchase_button">"touch here to buy for $1.99"</string>
-    <string name="voice_message_suppress_purchase_ask">"don't ask me again"</string>
-    <string name="pref_suppress_voice_purchase_ask_title">"don't ask me again"</string>
-    <string name="pref_suppress_voice_purchase_ask_summary">"stop asking me to purchase voice messaging capability"</string>
-    <string name="menu_purchase_voice_messaging">"purchase voice"</string>
-    <string name="purchase_voice_title">voice messaging purchase</string>
-    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>
+    <!--<string name="suppress_voice_purchase">"don't ask me to buy voice messaging (closes tab instead)"</string>-->
+    <!--<string name="voice_messaging_purchase_1"><![CDATA["Add voice messaging to your surespot and make encrypted communication even easier! Simply hold down the microphone button to record and release to send. Because sometimes it is easier to say it than type it. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>-->
+    <!--<string name="voice_messaging_purchase_button">"touch here to buy for $1.99"</string>-->
+    <!--<string name="voice_message_suppress_purchase_ask">"don't ask me again"</string>-->
+    <!--<string name="pref_suppress_voice_purchase_ask_title">"don't ask me again"</string>-->
+    <!--<string name="pref_suppress_voice_purchase_ask_summary">"stop asking me to purchase voice messaging capability"</string>-->
+    <!--<string name="menu_purchase_voice_messaging">"purchase voice"</string>-->
+    <!--<string name="purchase_voice_title">voice messaging purchase</string>-->
+    <!--<string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">You must update surespot to listen to this voice message.</a>"]]></string>-->
     <string name="user_exists_throttled">too many checks, try again later</string>
     <string name="user_exists_error">error checking for username</string>
     <string name="user_exists_progress">checking username</string>
     <string name="caching_service_notification_title">surespot</string>
     <string name="caching_service_notification_message">caching for maximum performance</string>
-    <string name="voice_help_1">Hold down the microphone button to record a voice message, release the button to send.</string>
-    <string name="voice_help_2">To cancel the recording drag away from button and release.</string>
-    <string name="voice_help_3">Touch on a voice message to play, touch again to stop.</string>
-    <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
+    <!--<string name="voice_help_1">Hold down the microphone button to record a voice message, release the button to send.</string>-->
+    <!--<string name="voice_help_2">To cancel the recording drag away from button and release.</string>-->
+    <!--<string name="voice_help_3">Touch on a voice message to play, touch again to stop.</string>-->
+    <!--<string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>-->
     <string name="close">close</string>
     <string name="no_audio_detected">no audio detected - not sending voice message</string>
     <string name="pref_title_background_image_select">select a background image</string>

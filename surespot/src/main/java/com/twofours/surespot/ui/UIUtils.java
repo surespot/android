@@ -146,11 +146,11 @@ public class UIUtils {
 			statusText = context.getString(R.string.message_error_invalid);
 			break;
 		case 402:
-			// if it's voice message they need to have upgraded, otherwise fall through to 403
-			if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-				statusText = context.getString(R.string.billing_payment_required_voice);
-				break;
-			}
+//			// if it's voice message they need to have upgraded, otherwise fall through to 403
+//			if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//				statusText = context.getString(R.string.billing_payment_required_voice);
+//				break;
+//			}
 		case 403:
 			statusText = context.getString(R.string.message_error_unauthorized);
 			break;
