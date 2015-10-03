@@ -1,25 +1,18 @@
 package com.twofours.surespot.billing;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabSetupFinishedListener;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BillingController {
 	protected static final String TAG = "BillingController";
@@ -27,10 +20,6 @@ public class BillingController {
 	private IabHelper mIabHelper;
 	private boolean mQueried;
 	private boolean mQuerying;
-
-	private boolean mHasVoiceMessagingCapability;
-	//private String mVoiceMessagePurchaseToken;
-	//private boolean mJustPurchasedVoice;
 
 	public static final int BILLING_QUERYING_INVENTORY = 100;
 	private Context mContext;
@@ -156,12 +145,6 @@ public class BillingController {
 				for (Purchase purchase : owned) {
 					SurespotLog.d(TAG, "has purchased sku: %s, state: %d, token: %s", purchase.getSku(), purchase.getPurchaseState(), purchase.getToken());
 
-//					if (purchase.getSku().equals(SurespotConstants.Products.VOICE_MESSAGING)) {
-//						if (purchase.getPurchaseState() == 0) {
-//							setVoiceMessagingToken(purchase.getToken(), false, null);
-//						}
-//					}
-
 					if (isConsumable(purchase.getSku())) {
 						consumables.add(purchase);
 					}
@@ -220,24 +203,6 @@ public class BillingController {
 					SurespotLog.v(TAG, "purchase successful");
 
 					String returnedSku = info.getSku();
-//
-//					if (returnedSku.equals(SurespotConstants.Products.VOICE_MESSAGING)) {
-//						//clear the don't show me again flag
-//						SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-//						Editor editor = sp.edit();
-//						editor.putBoolean("pref_suppress_voice_purchase_ask", false);
-//						editor.commit();
-//
-//						setVoiceMessagingToken(info.getToken(), true, new IAsyncCallback<Boolean>() {
-//							@Override
-//							public void handleResponse(Boolean result) {
-//								if (result) {
-//									SurespotLog.v(TAG, " set server purchase token result: %b", result);
-//								}
-//
-//							}
-//						});
-//					}
 
 					if (isConsumable(returnedSku)) {
 						getIabHelper().consumeAsync(info, new OnConsumeFinishedListener() {
@@ -266,36 +231,6 @@ public class BillingController {
 		}
 	}
 
-//	public void setVoiceMessagingToken(String token, boolean justPurchased, IAsyncCallback<Boolean> updateServerCallback) {
-//		SurespotLog.v(TAG, "setVoiceMessagingToken: %s, justPurchased: %b", token, justPurchased);
-//		synchronized (this) {
-//			mJustPurchasedVoice = justPurchased;
-//			mVoiceMessagePurchaseToken = token;
-//			mHasVoiceMessagingCapability = true;
-//		}
-//
-//		if (updateServerCallback != null) {
-//
-//			// upload to server
-//			NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-//			// TODO tell user if we can't update the token on the server tell them to login
-//			if (networkController != null) {
-//				networkController.updateVoiceMessagingPurchaseToken(new AsyncHttpResponseHandler() {
-//					@Override
-//					public void onSuccess(int statusCode, String content) {
-//						SurespotLog.v(TAG, "successfully updated voice messaging token");
-//					}
-//				});
-//			}
-//
-//		}
-//	}
-
-//	public synchronized String getVoiceMessagingPurchaseToken() {
-//		SurespotLog.v(TAG, "getting purchase token: %s", mVoiceMessagePurchaseToken);
-//		return mVoiceMessagePurchaseToken;
-//	}
-
 	private boolean isConsumable(String sku) {
 		if (sku.equals(SurespotConstants.Products.VOICE_MESSAGING)) {
 			return false;
@@ -311,14 +246,6 @@ public class BillingController {
 		}
 	}
 
-//	public synchronized void revokeVoiceMessaging() {
-//		SurespotLog.v(TAG,"revokeVoiceMessaging");
-//		// Will probably have to kill surespot process to re-query after this but oh well
-//		mHasVoiceMessagingCapability = false;
-//		mVoiceMessagePurchaseToken = null;
-//		clearJustPurchased();
-//	}
-
 	public synchronized void dispose() {
 		SurespotLog.v(TAG, "dispose");
 		if (mIabHelper != null && !mIabHelper.mAsyncInProgress) {
@@ -329,8 +256,4 @@ public class BillingController {
 		mQueried = false;
 		mQuerying = false;
 	}
-
-//	public synchronized void clearJustPurchased() {
-//		mJustPurchasedVoice = false;
-//	}
 }

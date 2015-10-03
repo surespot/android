@@ -363,4 +363,6 @@
     <string name="notification_message_no_from">%s: New message received.</string>
     <string name="notification_invite_no_from">%s: Friend invite received.</string>
     <string name="notification_invite_accept_no_from">%s: Friend invite accepted.</string>
+    <string name="pref_disable_voice_title">disable voice</string>
+    <string name="pref_disable_voice">disable voice messaging</string>
 </resources>

@@ -1,11 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -30,7 +24,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ResultReceiver;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -56,9 +49,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
-
-import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -100,6 +90,14 @@ import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
 public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
     public static final String TAG = "MainActivity";
@@ -454,19 +452,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                             sendMessage(friend.getName());
                         }
                         else {
-
-                            SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
-                            boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
-
-                            // if they have purchased voice or don't want to be bugged anymore or the user they are on is deleted
-                            if (mBillingController.hasVoiceMessaging() || dontAskDontTell || SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
-                                // go to home
-                                SurespotApplication.getChatController().setCurrentChat(null);
-                            }
-//                            else {
-//                                // nag nag nag
-//                                showVoicePurchaseDialog(true);
-//                            }
+                            // go to home
+                            SurespotApplication.getChatController().setCurrentChat(null);
                         }
                     }
                     else {
@@ -492,19 +479,13 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                             sendMessage(friend.getName());
                         }
                         else {
-                            if (mBillingController.hasVoiceMessaging()) {
+                            SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
+                            boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
+                            if (!disableVoice) {
                                 VoiceController.startRecording(MainActivity.this, friend.getName());
                             }
                             else {
-                                //
-                                SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
-                                boolean dontAskDontTell = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
-                                if (dontAskDontTell) {
-                                    SurespotApplication.getChatController().closeTab();
-                                }
-//                                else {
-//                                    showVoicePurchaseDialog(true);
-//                                }
+                                SurespotApplication.getChatController().closeTab();
                             }
                         }
                     }
@@ -1109,7 +1090,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                         if (selectedImageUri != null) {
                             uploadPicture(selectedImageUri, to);
                         }
-                    } else {
+                    }
+                    else {
                         for (String uri : uris) {
                             uploadPicture(Uri.parse(uri), to);
                         }
@@ -1184,14 +1166,18 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
                     boolean b = file.delete();
                     SurespotLog.d(TAG, "deleted temp image file: %b", b);
-                } catch (URISyntaxException e) { }
+                }
+                catch (URISyntaxException e) {
+                }
 
                 if (!errorHandled) {
                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
                     Runnable runnable = new Runnable() {
 
                         @Override
-                        public void run() { Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image)); }
+                        public void run() {
+                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+                        }
                     };
                     getMainHandler().post(runnable);
                 }
@@ -2003,9 +1989,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 else {
                     mIvInvite.setVisibility(View.GONE);
                     SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
-                    boolean dontAsk = sp.getBoolean("pref_suppress_voice_purchase_ask", false);
+                    boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
 
-                    if (dontAsk) {
+                    if (disableVoice) {
                         mIvVoice.setVisibility(View.GONE);
                         mIvHome.setVisibility(View.VISIBLE);
                     }
