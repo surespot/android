@@ -1,10 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.ListIterator;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
@@ -28,6 +23,11 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.ListIterator;
 
 public class ChatAdapter extends BaseAdapter {
     private final static String TAG = "ChatAdapter";
@@ -335,7 +335,9 @@ public class ChatAdapter extends BaseAdapter {
         }
 
         if (item.isHashed()) {
-            chatMessageViewHolder.tvText.setText(R.string.decrypt_update);
+            chatMessageViewHolder.tvText.setAutoLinkMask(0);
+            UIUtils.setHtml(mContext, chatMessageViewHolder.tvText, R.string.decrypt_update);
+
             chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 
             chatMessageViewHolder.voiceView.setVisibility(View.GONE);
@@ -360,7 +362,8 @@ public class ChatAdapter extends BaseAdapter {
                 if (item.getPlainData() != null) {
                     chatMessageViewHolder.tvText.clearAnimation();
                     chatMessageViewHolder.tvText.setText(item.getPlainData());
-                } else {
+                }
+                else {
                     chatMessageViewHolder.tvText.setText("");
                     mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
                 }

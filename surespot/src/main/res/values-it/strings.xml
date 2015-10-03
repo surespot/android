@@ -343,5 +343,5 @@
   <string name="notification_message_no_from">%s: Nuovo messaggio ricevuto.</string>
   <string name="notification_invite_no_from">%s: Nuovo invito ricevuto.</string>
   <string name="notification_invite_accept_no_from">%s: Invito accettato.</string>
-  <string name="decrypt_update">Si prega di aggiornare SureSpot per decifrare.</string>
+  <string name="decrypt_update"><![CDATA["<a href="market://details?id=com.twofours.surespot">Si prega di aggiornare SureSpot dal Google Play Store .</a>"]]></string>
 </resources>
