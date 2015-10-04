@@ -124,6 +124,7 @@ public class CommunicationService extends Service {
 
     // sets the current user name
     public void setUsername(String username) {
+        SurespotLog.d(TAG, "setUsername, mUsername: %s, username: %s", mUsername, username);
         mUsername = username;
     }
 
@@ -148,6 +149,15 @@ public class CommunicationService extends Service {
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
         setUsername(mUser);
         SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
+    }
+
+    public synchronized boolean connect (String username) {
+        if (mUsername != null && mUsername.equals(username)) {
+            disconnect();
+            setUsername(username);
+        }
+
+        return connect();
     }
 
     public synchronized boolean connect() {

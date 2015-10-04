@@ -1,28 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -31,16 +8,6 @@ import android.os.AsyncTask;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.HttpStatus;
-import ch.boye.httpclientandroidlib.HttpVersion;
-import ch.boye.httpclientandroidlib.StatusLine;
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
-import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
-import ch.boye.httpclientandroidlib.impl.client.cache.HeapResource;
-import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.message.BasicStatusLine;
 
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -64,6 +31,40 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
 import com.viewpagerindicator.TitlePageIndicator;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import ch.boye.httpclientandroidlib.Header;
+import ch.boye.httpclientandroidlib.HttpStatus;
+import ch.boye.httpclientandroidlib.HttpVersion;
+import ch.boye.httpclientandroidlib.StatusLine;
+import ch.boye.httpclientandroidlib.client.HttpResponseException;
+import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
+import ch.boye.httpclientandroidlib.impl.client.cache.HeapResource;
+import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
+import ch.boye.httpclientandroidlib.message.BasicHeader;
+import ch.boye.httpclientandroidlib.message.BasicStatusLine;
 
 public class ChatController {
 
@@ -1472,7 +1473,7 @@ public class ChatController {
 				loadMessages(ca.getKey(), false);
 			}
 
-			if (SurespotApplication.getCommunicationService().connect()) {
+			if (SurespotApplication.getCommunicationService().connect(mUsername)) {
 				setProgress(null, false);
 			}
 
@@ -1483,7 +1484,7 @@ public class ChatController {
 
 		} else {
 			// just make sure we're connected
-			if (SurespotApplication.getCommunicationService().connect()) {
+			if (SurespotApplication.getCommunicationService().connect(mUsername)) {
 				setProgress(null, false);
 			}
 		}
