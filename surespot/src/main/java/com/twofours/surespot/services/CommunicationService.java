@@ -80,9 +80,9 @@ public class CommunicationService extends Service {
     private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
-    private static final int MAX_RETRY_DELAY = 30;
+    private static final int MAX_RETRY_DELAY = 10;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 5; // probably want 5-10, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 30; // probably want 5-10, 1 is good for testing
 
     private int mTriesRelogin = 0;
     private SocketIO socket;
@@ -162,7 +162,6 @@ public class CommunicationService extends Service {
 
     public synchronized boolean connect() {
         SurespotLog.d(TAG, "connect, socket: " + socket + ", connected: " + (socket != null ? socket.isConnected() : false) + ", state: " + mConnectionState);
-
         cancelDisconnectTimer();
 
         if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
@@ -457,6 +456,8 @@ public class CommunicationService extends Service {
 
     // setup a disconnect N minutes from now
     private void scheduleDisconnect() {
+        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000;
+        SurespotLog.d(TAG, "scheduleDisconnect, seconds: %d",delaySeconds);
         synchronized (DISCONNECT_TIMER_LOCK) {
             if (mDisconnectTask != null) {
                 mDisconnectTask.cancel();
@@ -469,13 +470,15 @@ public class CommunicationService extends Service {
                 mDisconnectTimer = null;
             }
             mDisconnectTimer = new Timer("disconnectTimer");
-            mDisconnectTimer.schedule(disconnectTask, DISCONNECT_DELAY_SECONDS * 1000);
+            mDisconnectTimer.schedule(disconnectTask, delaySeconds);
             mDisconnectTask = disconnectTask;
         }
     }
 
     // schedule give up reconnecting
     private void scheduleGiveUpReconnecting() {
+        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000 * 10;
+        SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d",delaySeconds);
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
                 mGiveUpReconnectingTask.cancel();
@@ -488,7 +491,7 @@ public class CommunicationService extends Service {
                 mGiveUpReconnectingTimer = null;
             }
             mGiveUpReconnectingTimer = new Timer("giveUpReconnecting");
-            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, DISCONNECT_DELAY_SECONDS * 1000 * 10);
+            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, delaySeconds);
             mGiveUpReconnectingTask = giveUpReconnectingTask;
         }
     }
@@ -508,7 +511,7 @@ public class CommunicationService extends Service {
             }
             mReloginTimer = new Timer("reloginTimer");
             int timerInterval = generateInterval(mTriesRelogin + 1);
-            SurespotLog.d(TAG, "try %d starting another login task in: %d", mTriesRelogin, timerInterval);
+            SurespotLog.d(TAG, "startReloginTimer, try %d starting another login task in: %d", mTriesRelogin, timerInterval);
             mReloginTimer.schedule(reloginTask, timerInterval);
             mReloginTask = reloginTask;
         }
@@ -525,6 +528,7 @@ public class CommunicationService extends Service {
 
     // notify listeners that we've connected
     private void onConnected() {
+        SurespotLog.d(TAG, "onConnected");
         mEverConnected = true;
 
         // tell any listeners that we're connected
@@ -726,6 +730,7 @@ public class CommunicationService extends Service {
 
     private void stopReloginTimer() {
         // cancel any disconnect that's been scheduled
+        SurespotLog.d(TAG,"stopReloginTimer");
         synchronized (RELOGIN_TIMER_LOCK) {
             if (mReloginTask != null) {
                 mReloginTask.cancel();
@@ -740,6 +745,7 @@ public class CommunicationService extends Service {
     }
 
     private void cancelGiveUpReconnectingTimer() {
+        SurespotLog.d(TAG,"cancelGiveUpReconnectingTimer");
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
                 mGiveUpReconnectingTask.cancel();
@@ -754,6 +760,7 @@ public class CommunicationService extends Service {
     }
 
     private void cancelDisconnectTimer() {
+        SurespotLog.d(TAG,"cancelDisconnectTimer");
         // cancel any disconnect that's been scheduled
         synchronized (DISCONNECT_TIMER_LOCK) {
             if (mDisconnectTask != null) {
@@ -821,6 +828,7 @@ public class CommunicationService extends Service {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null) {
             mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
+            SurespotLog.d(TAG, "setOnWifi, set mOnWifi to: %b", mOnWifi);
         }
     }
 
@@ -1023,52 +1031,62 @@ public class CommunicationService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            SurespotLog.d(TAG, "Connectivity Action");
+            SurespotLog.d(TAG, "onReceive");
             debugIntent(intent, TAG);
             Bundle extras = intent.getExtras();
             if (extras.containsKey("networkInfo")) {
                 NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
                 if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
-                    SurespotLog.d(TAG, "Network newly connected, reconnecting...");
+                    SurespotLog.d(TAG, "onReceive,  CONNECTED");
                     synchronized (CommunicationService.this) {
+                        boolean wasOnWifi = mOnWifi;
                         setOnWifi();
-                        if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+
+
+                        /*if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+                            SurespotLog.d(TAG, "onReceive, socket already connected doing nothing");
                             return;
+                        }*/
+
+                        //if we our wifi state changed reconnect
+                        if (wasOnWifi != mOnWifi) {
+                            SurespotLog.d(TAG, "onReceive, (re)connecting the socket");
+                            disconnect();
+                            connect();
                         }
-                        connect();
                     }
                     return;
                 }
             }
-            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            if (networkInfo != null) {
-                SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
-                SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
-                SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
-                SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
-
-                // if it's not a failover and wifi is now active then initiate reconnect
-                if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-                    synchronized (CommunicationService.this) {
-                        // if we're not connecting, connect
-                        if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
-                            mOnWifi = true;
-
-                            if (!mMainActivityPaused && mListener != null) {
-                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
-
-                                setState(STATE_CONNECTING);
-
-                                disconnect();
-                                connect();
-                            }
-                        }
-                    }
-                }
-            } else {
-                SurespotLog.d(TAG, "networkinfo null");
-            }
+//            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+//            if (networkInfo != null) {
+//                SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
+//                SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
+//                SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
+//                SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
+//
+//                // if it's not a failover and wifi is now active then initiate reconnect
+//                if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
+//                    synchronized (CommunicationService.this) {
+//                        // if we're not connecting, connect
+//                        if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
+//                            mOnWifi = true;
+//
+//                            if (!mMainActivityPaused && mListener != null) {
+//                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
+//
+//                                setState(STATE_CONNECTING);
+//
+//                                disconnect();
+//                                connect();
+//                            }
+//                        }
+//                    }
+//                }
+//            } else {
+//                SurespotLog.d(TAG, "networkinfo null");
+//            }
         }
 
         private void debugIntent(Intent intent, String tag) {
