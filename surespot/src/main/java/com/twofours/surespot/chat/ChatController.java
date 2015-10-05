@@ -161,7 +161,7 @@ public class ChatController {
 			}
 		});
 
-		onResume();
+		onResume(false);
 	}
 
 	public void setAutoInviteData(AutoInviteData autoInviteData) {
@@ -1460,35 +1460,34 @@ public class ChatController {
 		return mGlobalProgress || !mChatProgress.isEmpty();
 	}
 
-	public synchronized void onResume() {
+	public synchronized void onResume(boolean justSetFlag) {
 		SurespotLog.d(TAG, "onResume, mPaused: %b", mPaused);
-		if (mPaused) {
-			mPaused = false;
-
-			setProgress(null, true);
-
-			// getFriendsAndIds();
-
-			// load chat messages from disk that may have been added by gcm
-			for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
-				loadMessages(ca.getKey(), false);
+		if (justSetFlag) {
+			if (mPaused) {
+				mPaused = false;
 			}
-
-			if (SurespotApplication.getCommunicationService().connect(mUsername)) {
-				setProgress(null, false);
-			}
-
-			// make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
-			loadState(mUsername);
-
-			// moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-
-		} else {
-			// just make sure we're connected
-			if (SurespotApplication.getCommunicationService().connect(mUsername)) {
-				setProgress(null, false);
-			}
+			return;
 		}
+
+		mPaused = false;
+
+		setProgress(null, true);
+
+		// getFriendsAndIds();
+
+		// load chat messages from disk that may have been added by gcm
+		for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
+			loadMessages(ca.getKey(), false);
+		}
+
+		if (SurespotApplication.getCommunicationService().connect(mUsername)) {
+			setProgress(null, false);
+		}
+
+		// make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
+		loadState(mUsername);
+
+		// moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
 		clearMessageNotification(mUsername, SurespotApplication.getCommunicationService().mCurrentChat);
 	}

@@ -883,6 +883,9 @@ public class CommunicationService extends Service {
             stopReconnectionAttempts();
             cancelGiveUpReconnectingTimer();
             setState(STATE_CONNECTED);
+            if (SurespotApplication.getChatController() != null) {
+                SurespotApplication.getChatController().onResume(true);
+            }
             onConnected();
         }
 

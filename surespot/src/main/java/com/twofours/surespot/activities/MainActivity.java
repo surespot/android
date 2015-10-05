@@ -1023,7 +1023,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         SurespotLog.d(TAG, "resume");
         mResumed = true;
         if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().onResume();
+            SurespotApplication.getChatController().onResume(false);
         }
 
         startWatchingExternalStorage();
