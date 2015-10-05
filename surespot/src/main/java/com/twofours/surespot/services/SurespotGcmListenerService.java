@@ -22,6 +22,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
@@ -87,7 +88,12 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
             boolean isScreenOn = false;
             if (mPm != null) {
-                isScreenOn = mPm.isScreenOn();
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                    isScreenOn = mPm.isInteractive();
+                }
+                else {
+                    isScreenOn = mPm.isScreenOn();
+                }
             }
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
             boolean sameUser = to.equals(IdentityController.getLoggedInUser());
