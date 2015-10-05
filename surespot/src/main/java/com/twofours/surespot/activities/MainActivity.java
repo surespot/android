@@ -317,7 +317,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         else {
             mUser = user;
 
-            if (!mCommunicationServiceBound && !mBindingCommunicationService) {
+            if (!mCommunicationServiceBound) {
                 bindChatTransmissionService();
             }
 
@@ -722,9 +722,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 SurespotApplication.setCommunicationService(cts);
                 mCommunicationServiceBound = true;
 
-
-                mBindingCommunicationService = false;
-
                 if (!mUnlocking && mCacheServiceBound && (mResumed || mStartWhenBothServicesBound)) {
                     SurespotLog.d(TAG, "transmission service calling postServiceProcess");
                     postServiceProcess();
@@ -973,9 +970,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         // if this is the first time the app has been run, or they just created a user, show the help screen
         boolean helpShown = Utils.getSharedPrefsBoolean(this, "helpShownAgain");
-        if (!helpShown || userWasCreated) {
+        String justRestoredIdentity = Utils.getUserSharedPrefsString(this, mUser, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY);
+
+        if ((!helpShown || userWasCreated) && justRestoredIdentity == null) {
             Utils.removePref(this, "helpShown");
-            String justRestoredIdentity = Utils.getUserSharedPrefsString(this, mUser, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY);
             mHelpDialog = UIUtils.showHelpDialog(this, (justRestoredIdentity == null || justRestoredIdentity.equals("")));
         }
 
@@ -993,10 +991,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         super.onResume();
         SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
 
+        SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
+        mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
+
         CommunicationService cts = SurespotApplication.getCommunicationServiceNoThrow();
 
-        if (cts == null && !mBindingCommunicationService) {
-            mBindingCommunicationService = true;
+        if (cts == null) {
             SurespotLog.d(TAG, "binding chat transmission service");
             Intent chatIntent = new Intent(this, CommunicationService.class);
             startService(chatIntent);
@@ -1008,8 +1008,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             SurespotLog.d(TAG, "setting mUnlocking to false");
             mUnlocking = false;
 
-            if (SurespotApplication.getCachingService() != null) {
-
+            if (SurespotApplication.getCachingService() != null && SurespotApplication.getCommunicationServiceNoThrow() != null) {
                 SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
                 postServiceProcess();
             }
@@ -1018,9 +1017,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         if (mLaunched && !mResumed) {
             resume();
         }
-
-        SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
-        mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
     }
 
     private void resume() {
@@ -1786,6 +1782,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         @Override
         public void afterTextChanged(Editable s) {
+            if (MainActivity.this.mEnterToSend && s.toString().contains("\n")) {
+                int idx = s.toString().indexOf('\n');
+                s.delete(idx, idx + 1);
+                if (mEtMessage.getText().toString().length() > 0 && !SurespotApplication.getChatController().isFriendDeleted(mCurrentFriend.getName())) {
+                    sendMessage(mCurrentFriend.getName());
+                }
+            }
+
             // mEtMessage.setSelection(s.length());
         }
     }
@@ -2308,18 +2312,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         }
 
         @Override
-        public void handleMessage(SurespotMessage message) {
-            if (!logIfChatControllerNull()) {
-                SurespotApplication.getChatController().handleMessage(message);
-            }
-        }
-
-        @Override
         public void onNotConnected() {
             MainActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     MainActivity.this.setHomeProgress(true);
+                }
+            });
+        }
+
+        @Override
+        public void onAlreadyConnected() {
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    MainActivity.this.setHomeProgress(false);
                 }
             });
         }

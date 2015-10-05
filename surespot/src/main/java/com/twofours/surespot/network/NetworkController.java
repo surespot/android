@@ -60,18 +60,22 @@ public class NetworkController {
 	private SurespotCachingHttpClient mCachingHttpClient;
 
 	public void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "get to " + url);
 		mClient.get(mBaseUrl + url, params, responseHandler);
 	}
 
 	public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "post to " + url);
 		mClient.post(mBaseUrl + url, params, responseHandler);
 	}
 
 	public void put(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "put to " + url);
 		mClient.put(mBaseUrl + url, params, responseHandler);
 	}
 
 	public void delete(String url, AsyncHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "delete to " + url);
 		mClient.delete(mBaseUrl + url, responseHandler);
 	}
 

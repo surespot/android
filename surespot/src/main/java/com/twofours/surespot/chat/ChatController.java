@@ -1021,6 +1021,7 @@ public class ChatController {
 		String user = null;
 
 		if (message.getAction().equals("revoke")) {
+			SurespotLog.d(TAG, "message action is revoke");
 			IdentityController.updateLatestVersion(mContext, message.getData(), message.getMoreData());
 		}
 		else

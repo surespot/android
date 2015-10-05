@@ -82,7 +82,7 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 10;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 30; // probably want 5-10, 1 is good for testing
+    private static final int DISCONNECT_DELAY_SECONDS = 60 * 10; // probably want 5-10, 1 is good for testing
 
     private int mTriesRelogin = 0;
     private SocketIO socket;
@@ -125,7 +125,10 @@ public class CommunicationService extends Service {
     // sets the current user name
     public void setUsername(String username) {
         SurespotLog.d(TAG, "setUsername, mUsername: %s, username: %s", mUsername, username);
-        mUsername = username;
+        if (username != null && !username.equals(mUsername)) {
+            disconnect();
+            mUsername = username;
+        }
     }
 
     // Notify the service that the user logged out
@@ -147,12 +150,14 @@ public class CommunicationService extends Service {
 
     // initializes the network controller
     public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
+        SurespotLog.d(TAG, "initNetworkController: setting user name to " + mUser + " and m401 handler");
         setUsername(mUser);
         SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
     }
 
-    public synchronized boolean connect (String username) {
-        if (mUsername != null && mUsername.equals(username)) {
+    public synchronized boolean connect(String username) {
+        if (mUsername != null && !mUsername.equals(username)) {
+            SurespotLog.d(TAG, "Username did not match existing username on connect.  Setting user name to " + username + " and creating new network controller with saved m401Handler");
             disconnect();
             setUsername(username);
         }
@@ -165,10 +170,12 @@ public class CommunicationService extends Service {
         cancelDisconnectTimer();
 
         if (getConnectionState() == STATE_CONNECTED && socket != null && socket.isConnected()) {
+            onAlreadyConnected();
             return true;
         }
 
         if (getConnectionState() == STATE_CONNECTING) {
+            onAlreadyConnected();
             return true;
         }
 
@@ -523,6 +530,15 @@ public class CommunicationService extends Service {
             if (getConnectionState() == STATE_DISCONNECTED) {
                 connect();
             }
+        }
+    }
+
+    private void onAlreadyConnected() {
+        SurespotLog.d(TAG, "onAlreadyConnected");
+
+        // tell any listeners that we're connected
+        if (mListener != null) {
+            mListener.onAlreadyConnected();
         }
     }
 
@@ -1024,6 +1040,7 @@ public class CommunicationService extends Service {
     }
 
     private boolean tryReLogin() {
+        SurespotLog.d(TAG, "trying to relogin " + mUsername);
         return NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new ReLoginCookieResponseHandler());
     }
 

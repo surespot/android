@@ -1077,6 +1077,7 @@ public class IdentityController {
             deleteIdentity(context, username, false);
 
             // delete identities locally?
+            SurespotLog.d(TAG, "setting unauthorized, username=" + username + ", getLoggedInUser=" + getLoggedInUser());
             SurespotApplication.getNetworkController().setUnauthorized(true, true);
 
             // boot them out
