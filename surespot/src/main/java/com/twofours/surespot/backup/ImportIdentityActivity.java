@@ -390,12 +390,13 @@ public class ImportIdentityActivity extends SherlockActivity {
 														// import, go to
 														// login
 														// screen
+														Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
+
 														if (mSignup) {
 															IdentityController.logout();
 
 															Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
 															intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-															Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
 															startActivity(intent);
 														}
 
