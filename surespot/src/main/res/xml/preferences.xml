@@ -77,9 +77,9 @@
             android:summary="@string/pref_summary_delete_all_messages"
             android:title="@string/pref_title_delete_all_messages" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="pref_enter_to_send"
-            android:summary="@string/pref_summary_enter_to_sent"
+            android:summary="@string/pref_summary_enter_to_send"
             android:title="@string/pref_title_enter_to_send" />
         <net.margaritov.preference.colorpicker.ColorPickerPreference
             android:key="pref_notification_color"
