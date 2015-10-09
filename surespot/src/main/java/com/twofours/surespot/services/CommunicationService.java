@@ -822,7 +822,7 @@ public class CommunicationService extends Service {
     }
 
     private void sendMessage(final SurespotMessage message) {
-        SurespotLog.d(TAG, "sendmessage adding message to ResendBuffer, text: %s, iv: %s", message.getPlainData(), message.getIv());
+        SurespotLog.d(TAG, "sendmessage adding message to ResendBuffer, iv: %s", message.getIv());
 
         mResendBuffer.add(message);
         if (getConnectionState() == STATE_CONNECTED) {
