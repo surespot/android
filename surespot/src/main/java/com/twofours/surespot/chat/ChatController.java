@@ -443,8 +443,6 @@ public class ChatController {
 
 						// always update the available id
 						friend.setAvailableMessageId(messageId, false);
-
-						mFriendAdapter.notifyDataSetChanged();
 					}
 
 					return null;
@@ -452,6 +450,7 @@ public class ChatController {
 
 				@Override
 				protected void onPostExecute(Void aVoid) {
+					mFriendAdapter.notifyDataSetChanged();
 					mFriendAdapter.sort();
 
 				};
