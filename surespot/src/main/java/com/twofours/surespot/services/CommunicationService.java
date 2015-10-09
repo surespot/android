@@ -1282,9 +1282,9 @@ public class CommunicationService extends Service {
     private Emitter.Listener onMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
+//            Runnable runnable = new Runnable() {
+//                @Override
+//                public void run() {
                     SurespotLog.d(TAG, "onMessage, args: %s", args[0]);
                     // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
                     try {
@@ -1331,10 +1331,10 @@ public class CommunicationService extends Service {
                     catch (JSONException e) {
                         SurespotLog.w(TAG, "on message", e);
                     }
-                }
-            };
-
-            mHandler.post(runnable);
+              //  }
+//            };
+//
+//            mHandler.post(runnable);
         }
     };
 }
