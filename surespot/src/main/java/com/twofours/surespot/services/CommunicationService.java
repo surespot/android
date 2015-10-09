@@ -146,9 +146,12 @@ public class CommunicationService extends Service {
                             Map<String, List> headers = (Map<String, List>) args[0];
                             // set header
                             Cookie cookie = IdentityController.getCookieForUser(mUsername);
-                            ArrayList<String> cookies = new ArrayList<String>();
-                            cookies.add(cookie.getName() + "=" + cookie.getValue());
-                            headers.put("cookie", cookies);
+                            //TODO not sure why it's null seems like we need to handle this
+                            if (cookie != null) {
+                                ArrayList<String> cookies = new ArrayList<String>();
+                                cookies.add(cookie.getName() + "=" + cookie.getValue());
+                                headers.put("cookie", cookies);
+                            }
                         }
                     });
                 }
