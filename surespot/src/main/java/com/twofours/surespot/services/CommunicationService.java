@@ -1216,7 +1216,48 @@ public class CommunicationService extends Service {
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
+            SurespotLog.d(TAG,"onConnectError: args: %s", args[0]);
+            boolean reAuthing = false;
+            setState(STATE_DISCONNECTED);
+            onNotConnected();
 
+//            // mSocket.io returns 403 for can't login
+//            if (socketIOException.getHttpStatus() == 403) {
+//                SurespotLog.d(TAG, "got 403 from websocket");
+//
+//                reAuthing = tryReLogin();
+//
+//                if (!reAuthing) {
+//                    mSocket = null;
+//
+//                    if (mListener != null) {
+//                        mListener.onReconnectFailed();
+//                    }
+//
+//                    userLoggedOut();
+//                    return;
+//                }
+//            }
+
+            if (reAuthing) {
+                return;
+            }
+
+          //  SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
+
+            setOnWifi();
+            // kick off another task
+            if (mRetries < MAX_RETRIES) {
+                scheduleReconnectionAttempt();
+            }
+            else {
+                SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
+                if (mListener != null) {
+                    mListener.onCouldNotConnectToServer();
+                }
+                // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
+                userLoggedOut();
+            }
         }
     };
     private Emitter.Listener onMessageError = new Emitter.Listener() {
@@ -1285,53 +1326,53 @@ public class CommunicationService extends Service {
 //            Runnable runnable = new Runnable() {
 //                @Override
 //                public void run() {
-                    SurespotLog.d(TAG, "onMessage, args: %s", args[0]);
-                    // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
-                    try {
-                        JSONObject jsonMessage = (JSONObject) args[0];
-                        SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
-                        SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-                        SurespotApplication.getChatController().handleMessage(message);
+            SurespotLog.d(TAG, "onMessage, args: %s", args[0]);
+            // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
+            try {
+                JSONObject jsonMessage = (JSONObject) args[0];
+                SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
+                SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
+                SurespotApplication.getChatController().handleMessage(message);
 
-                        // see if we have deletes
-                        String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
-                        if (sDeleteControlMessages != null) {
-                            JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
+                // see if we have deletes
+                String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
+                if (sDeleteControlMessages != null) {
+                    JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
 
-                            if (deleteControlMessages.length() > 0) {
-                                for (int i = 0; i < deleteControlMessages.length(); i++) {
-                                    try {
-                                        SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
-                                        SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
-                                    }
-                                    catch (JSONException e) {
-                                        SurespotLog.w(TAG, "on control", e);
-                                    }
-                                }
+                    if (deleteControlMessages.length() > 0) {
+                        for (int i = 0; i < deleteControlMessages.length(); i++) {
+                            try {
+                                SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
+                                SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
+                            }
+                            catch (JSONException e) {
+                                SurespotLog.w(TAG, "on control", e);
                             }
                         }
-
-                        // the UI might have already removed the message from the resend buffer.  That's okay.
-                        Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
-                        while (iterator.hasNext()) {
-                            message = iterator.next();
-                            if (message.getIv().equals(message.getIv())) {
-                                iterator.remove();
-                                break;
-                            }
-                        }
-
-                        if (mMainActivityPaused) {
-                            // make sure to save out messages because main activity will reload and base message status on saved messages
-                            save();
-                        }
-
-                        checkAndSendNextMessage(message);
                     }
-                    catch (JSONException e) {
-                        SurespotLog.w(TAG, "on message", e);
+                }
+
+                // the UI might have already removed the message from the resend buffer.  That's okay.
+                Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
+                while (iterator.hasNext()) {
+                    message = iterator.next();
+                    if (message.getIv().equals(message.getIv())) {
+                        iterator.remove();
+                        break;
                     }
-              //  }
+                }
+
+                if (mMainActivityPaused) {
+                    // make sure to save out messages because main activity will reload and base message status on saved messages
+                    save();
+                }
+
+                checkAndSendNextMessage(message);
+            }
+            catch (JSONException e) {
+                SurespotLog.w(TAG, "on message", e);
+            }
+            //  }
 //            };
 //
 //            mHandler.post(runnable);
