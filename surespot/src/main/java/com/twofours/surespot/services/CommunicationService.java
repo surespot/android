@@ -56,6 +56,7 @@ import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import io.socket.engineio.client.Transport;
+import io.socket.engineio.client.transports.WebSocket;
 
 @SuppressLint("NewApi")
 public class CommunicationService extends Service {
@@ -115,9 +116,11 @@ public class CommunicationService extends Service {
 
     private Socket createSocket() {
         if (mSocket == null) {
+            IO.Options opts = new IO.Options();
+            opts.transports = new String[] {WebSocket.NAME};
 
             try {
-                mSocket = IO.socket(SurespotConfiguration.getBaseUrl());
+                mSocket = IO.socket(SurespotConfiguration.getBaseUrl(), opts);
             }
             catch (URISyntaxException e) {
                 mSocket = null;
