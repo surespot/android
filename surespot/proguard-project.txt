@@ -61,7 +61,7 @@
 }
 
 
--dontwarn sun.misc.*,javax.naming.*,javax.naming.directory.*,javax.inject.*,android.content.pm.*,com.actionbarsherlock.BuildConfig,android.webkit.WebSettings, org.apache.http.**, com.google.api.client.**, android.util.FloatMath
+-dontwarn okio.*,sun.misc.*,javax.naming.*,javax.naming.directory.*,javax.inject.*,android.content.pm.*,com.actionbarsherlock.BuildConfig,android.webkit.WebSettings, org.apache.http.**, com.google.api.client.**, android.util.FloatMath
 
 -keep class android.support.v4.app.** { *; }
 -keep interface android.support.v4.app.** { *; }
