@@ -123,8 +123,10 @@ public class CommunicationService extends Service {
                 mSocket = null;
                 return null;
             }
+
             mSocket.on(Socket.EVENT_CONNECT, onConnect);
             mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+            mSocket.on(Socket.EVENT_ERROR, onConnectError);
             mSocket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
             mSocket.on(Socket.EVENT_MESSAGE, onMessage);
@@ -1216,34 +1218,38 @@ public class CommunicationService extends Service {
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            SurespotLog.d(TAG,"onConnectError: args: %s", args[0]);
+            if (args.length > 0) {
+                SurespotLog.d(TAG, "onConnectError: args: %s", args[0]);
+            }
             boolean reAuthing = false;
             setState(STATE_DISCONNECTED);
             onNotConnected();
 
-//            // mSocket.io returns 403 for can't login
-//            if (socketIOException.getHttpStatus() == 403) {
-//                SurespotLog.d(TAG, "got 403 from websocket");
-//
-//                reAuthing = tryReLogin();
-//
-//                if (!reAuthing) {
-//                    mSocket = null;
-//
-//                    if (mListener != null) {
-//                        mListener.onReconnectFailed();
-//                    }
-//
-//                    userLoggedOut();
-//                    return;
-//                }
-//            }
+
+            if (args.length > 0) {
+                if ("not authorized".equals(args[0])) {
+                    SurespotLog.d(TAG, "got not authorized from websocket");
+
+                    reAuthing = tryReLogin();
+
+                    if (!reAuthing) {
+                        mSocket = null;
+
+                        if (mListener != null) {
+                            mListener.onReconnectFailed();
+                        }
+
+                        userLoggedOut();
+                        return;
+                    }
+                }
+            }
 
             if (reAuthing) {
                 return;
             }
 
-          //  SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
+            SurespotLog.i(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
 
             setOnWifi();
             // kick off another task
