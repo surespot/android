@@ -433,10 +433,10 @@ public class ChatController {
 
 		}
 		else {
-			new AsyncTask<Void, Void, Void>() {
+			//new AsyncTask<Void, Void, Void>() {
 
-				@Override
-				protected Void doInBackground(Void... params) {
+//				@Override
+//				protected Void doInBackground(Void... params) {params
 					Friend friend = mFriendAdapter.getFriend(otherUser);
 					if (friend != null) {
 						int messageId = message.getId();
@@ -445,16 +445,16 @@ public class ChatController {
 						friend.setAvailableMessageId(messageId, false);
 					}
 
-					return null;
-				};
-
-				@Override
-				protected void onPostExecute(Void aVoid) {
+//					return null;
+//				};
+//
+//				@Override
+//				protected void onPostExecute(Void aVoid) {
 					mFriendAdapter.notifyDataSetChanged();
 					mFriendAdapter.sort();
 
-				};
-			}.execute();
+//				};
+//			}.execute();
 
 		}
 
