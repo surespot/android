@@ -468,7 +468,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		sb.append("\tfromVersion: " + getFromVersion() + "\n");
 		sb.append("\tiv: " + getIv() + "\n");
 		sb.append("\tdata: " + getData() + "\n");
-		sb.append("\tplainData: " + getPlainData() + "\n");
 		sb.append("\tdataSize: " + getDataSize() + "\n");
 		sb.append("\tmimeType: " + getMimeType() + "\n");
 		// sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
