@@ -1227,10 +1227,19 @@ public class IdentityController {
         if (mKs == null) {
             return false;
         }
-        if (mKs.state() == KeyStore.State.UNINITIALIZED) {
-            // can we do anything about keystore being in uninitialized state?
+        try
+        {
+            if (mKs.state() == KeyStore.State.UNINITIALIZED) {
+                // can we do anything about keystore being in uninitialized state?
+            }
+            return mKs.state() == KeyStore.State.UNLOCKED;
         }
-        return mKs.state() == KeyStore.State.UNLOCKED;
+        catch (Exception ex) {
+            // fix to #742 - org.nick....KeyStoreKk.state() throwing an exception
+            // if we can't access keystore state(), treat it as locked so we don't get an exception
+            // higher up the call chain
+            return false;
+        }
     }
 
     public static boolean unlock(Context activity) {
