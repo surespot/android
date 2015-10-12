@@ -1449,7 +1449,7 @@ public class ChatController {
 		}
 
 		boolean progress = isInProgress();
-		SurespotLog.d(TAG, "setProgress, isInProgress(): %b", progress);
+		SurespotLog.d(TAG, "setProgress %s, isInProgress(): %b", key == null ? "null" : key, progress);
 
 		if (mProgressCallback != null) {
 			mProgressCallback.handleResponse(progress);
@@ -1461,7 +1461,7 @@ public class ChatController {
 	}
 
 	public synchronized void onResume(boolean justSetFlag) {
-		SurespotLog.d(TAG, "onResume, mPaused: %b", mPaused);
+		SurespotLog.d(TAG, "onResume, mPaused: %b, justSetFlag: %b", mPaused, justSetFlag);
 		if (justSetFlag) {
 			if (mPaused) {
 				mPaused = false;
