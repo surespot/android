@@ -382,6 +382,10 @@ public class CommunicationService extends Service {
                 fileStreamMessage.mIv, fileStreamMessage.mStream, fileStreamMessage.mMimeType, fileStreamMessage.mAsyncCallback);
     }
 
+    public boolean isConnected() {
+        return getConnectionState() == CommunicationService.STATE_CONNECTED;
+    }
+
     public class CommunicationServiceBinder extends Binder {
         public CommunicationService getService() {
             return CommunicationService.this;

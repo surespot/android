@@ -1462,7 +1462,7 @@ public class ChatController {
 		}
 
 		boolean progress = isInProgress();
-		SurespotLog.d(TAG, "setProgress, isInProgress(): %b", progress);
+		SurespotLog.d(TAG, "setProgress %s, isInProgress(): %b", key == null ? "null" : key, progress);
 
 		if (mProgressCallback != null) {
 			mProgressCallback.handleResponse(progress);
@@ -1474,7 +1474,7 @@ public class ChatController {
 	}
 
 	public synchronized void onResume(boolean justSetFlag) {
-		SurespotLog.d(TAG, "onResume, mPaused: %b", mPaused);
+		SurespotLog.d(TAG, "onResume, mPaused: %b, justSetFlag: %b", mPaused, justSetFlag);
 		if (justSetFlag) {
 			if (mPaused) {
 				mPaused = false;
@@ -1760,6 +1760,7 @@ public class ChatController {
 			}
 		}
 		else {
+			// TODO: we should tell the user there was an error sending the message if surespot UI is not actively running (via a notification)
 			Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
 		}
 	}

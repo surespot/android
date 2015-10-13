@@ -117,7 +117,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 if (sm != null) {
                     sm.setGcm(true);
                     // see if we can add it to existing chat controller
-                    ChatController chatController = MainActivity.getChatController();
+                    ChatController chatController = SurespotApplication.getChatController();
                     boolean added = false;
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {
@@ -141,11 +141,12 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
                         }
                         else {
-                            SurespotLog.d(TAG, "did not add gcm message directly disk as it's already there");
+                            SurespotLog.d(TAG, "did not add gcm message directly to disk as it's already there");
                             // AEP what was happening here is it wasn't adding the message because
                             // it's already been received on the websocket and saved to disk before the push message arrives
                             // so gonna show notification now; was unnecessary before because the socket would have been
                             // disconnected before push arrived if we got this far thanks to above isscreenon...etc.  check
+                            // OE hmmm... is there a flag we can set if the main activity is not paused to indicate the user has truly "seen" the message or not?
                             added = true;
                         }
                     }
