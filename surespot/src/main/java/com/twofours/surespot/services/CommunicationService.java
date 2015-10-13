@@ -114,6 +114,21 @@ public class CommunicationService extends Service {
         mConnectivityReceiver = new BroadcastReceiverHandler();
     }
 
+    private synchronized void disposeSocket() {
+        if (mSocket != null) {
+            mSocket.off(Socket.EVENT_CONNECT);
+            mSocket.off(Socket.EVENT_DISCONNECT);
+            mSocket.off(Socket.EVENT_ERROR);
+            mSocket.off(Socket.EVENT_CONNECT_ERROR);
+            mSocket.off(Socket.EVENT_CONNECT_TIMEOUT);
+            mSocket.off(Socket.EVENT_MESSAGE);
+            mSocket.off("messageError");
+            mSocket.off("control");
+            mSocket.io().off(Manager.EVENT_TRANSPORT);
+            mSocket = null;
+        }
+    }
+
     private Socket createSocket() {
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
@@ -252,9 +267,7 @@ public class CommunicationService extends Service {
             return true;
         }
 
-
         try {
-
             createSocket();
             mSocket.connect();
         }
@@ -618,7 +631,10 @@ public class CommunicationService extends Service {
 
         // tell any listeners that we're connected
         if (mListener != null) {
+            SurespotLog.d(TAG, "onConnected, mListener calling onConnected()");
             mListener.onConnected();
+        } else {
+            SurespotLog.d(TAG, "onConnected, mListener was null");
         }
 
         if (mUsername != null && !mUsername.equals("")) {
@@ -804,7 +820,7 @@ public class CommunicationService extends Service {
             boolean reAuthing = tryReLogin();
 
             if (!reAuthing) {
-                mSocket = null;
+                disposeSocket();
 
                 if (mListener != null) {
                     mListener.onReconnectFailed();
@@ -878,7 +894,7 @@ public class CommunicationService extends Service {
 
         if (mSocket != null) {
             mSocket.disconnect();
-            mSocket = null;
+            disposeSocket();
         }
     }
 
@@ -1101,7 +1117,7 @@ public class CommunicationService extends Service {
             if (mTriesRelogin++ > MAX_RELOGIN_RETRIES) {
                 // give up
                 SurespotLog.i(TAG, "Max login retries exceeded.  Giving up");
-                mSocket = null;
+                disposeSocket();
 
                 if (mListener != null) {
                     mListener.onReconnectFailed();
@@ -1243,7 +1259,7 @@ public class CommunicationService extends Service {
                     reAuthing = tryReLogin();
 
                     if (!reAuthing) {
-                        mSocket = null;
+                        disposeSocket();
 
                         if (mListener != null) {
                             mListener.onReconnectFailed();
