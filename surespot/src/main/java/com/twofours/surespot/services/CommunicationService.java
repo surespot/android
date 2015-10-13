@@ -615,28 +615,7 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void onAlreadyConnected() {
-        SurespotLog.d(TAG, "onAlreadyConnected");
-
-        // tell any listeners that we're connected
-        if (mListener != null) {
-            mListener.onAlreadyConnected();
-        }
-    }
-
-    // notify listeners that we've connected
-    private void onConnected() {
-        SurespotLog.d(TAG, "onConnected");
-        mEverConnected = true;
-
-        // tell any listeners that we're connected
-        if (mListener != null) {
-            SurespotLog.d(TAG, "onConnected, mListener calling onConnected()");
-            mListener.onConnected();
-        } else {
-            SurespotLog.d(TAG, "onConnected, mListener was null");
-        }
-
+    private void handleUnsentMaterial() {
         if (mUsername != null && !mUsername.equals("")) {
             sendFileStreamMessages(false);
         }
@@ -653,6 +632,33 @@ public class CommunicationService extends Service {
         if (mSendBuffer.size() > 0) {
             sendMessages();
         }
+    }
+
+    private void onAlreadyConnected() {
+        SurespotLog.d(TAG, "onAlreadyConnected");
+
+        // tell any listeners that we're connected
+        if (mListener != null) {
+            mListener.onAlreadyConnected();
+        }
+
+        handleUnsentMaterial();
+    }
+
+    // notify listeners that we've connected
+    private void onConnected() {
+        SurespotLog.d(TAG, "onConnected");
+        mEverConnected = true;
+
+        // tell any listeners that we're connected
+        if (mListener != null) {
+            SurespotLog.d(TAG, "onConnected, mListener calling onConnected()");
+            mListener.onConnected();
+        } else {
+            SurespotLog.d(TAG, "onConnected, mListener was null");
+        }
+
+        handleUnsentMaterial();
     }
 
     // notify listeners that we've connected
