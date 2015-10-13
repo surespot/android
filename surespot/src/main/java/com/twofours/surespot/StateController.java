@@ -152,11 +152,21 @@ public class StateController {
 					}
 				}
 				else {
-					new File(filename).delete();
+					try {
+						new File(filename).delete();
+					}
+					catch (Exception ex) {
+						SurespotLog.w(TAG, ex, "saveUnsentMessages");
+					}
 				}
 			}
 			else {
-				new File(filename).delete();
+				try {
+					new File(filename).delete();
+				}
+				catch (Exception ex) {
+					SurespotLog.w(TAG, ex, "saveUnsentMessages");
+				}
 			}
 		}
 
@@ -214,7 +224,12 @@ public class StateController {
 				}
 			}
 			else {
-				new File(filename).delete();
+				try {
+					new File(filename).delete();
+				}
+				catch (Exception ex) {
+					SurespotLog.w(TAG, ex, "saveMessages");
+				}
 			}
 		}
 	}
@@ -312,9 +327,13 @@ public class StateController {
 
 		String room = ChatUtils.getSpot(username, otherUsername);
 		String messageFile = FileUtils.getStateDir(context) + File.separator + username + File.separator + "messages_" + room + STATE_EXTENSION;
-		File file = new File(messageFile);
-		file.delete();
-
+		try {
+			File file = new File(messageFile);
+			file.delete();
+		}
+		catch (Exception ex) {
+			SurespotLog.w(TAG, ex, "wipeUserState");
+		}
 	}
 
 	public void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {
