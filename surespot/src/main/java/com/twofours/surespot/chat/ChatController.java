@@ -1747,6 +1747,7 @@ public class ChatController {
 			}
 		}
 		else {
+			// TODO: we should tell the user there was an error sending the message if surespot UI is not actively running (via a notification)
 			Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
 		}
 	}
