@@ -108,10 +108,15 @@ public class CommunicationService extends Service {
     public void onCreate() {
         SurespotLog.i(TAG, "onCreate");
         setOnWifi();
-        //   mSocketCallback = new SocketCallbackHandler();
-
-
         mConnectivityReceiver = new BroadcastReceiverHandler();
+        resetState();
+    }
+
+    private void resetState() {
+        mRetries = 0;
+        mTriesRelogin = 0;
+        this.cancelDisconnectTimer();
+        this.cancelGiveUpReconnectingTimer();
     }
 
     private synchronized void disposeSocket() {
@@ -777,6 +782,7 @@ public class CommunicationService extends Service {
             if (!justCalledUserLoggedOut) {
                 userLoggedOut();
             }
+            resetState();
             this.stopSelf();
         }
     }
