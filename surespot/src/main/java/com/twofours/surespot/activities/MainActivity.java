@@ -1279,7 +1279,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     return true;
                 }
 
-                setHomeProgress(true);
                 MessageImageDownloader.evictCache();
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
@@ -1306,7 +1305,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                     return true;
                 }
 
-                setHomeProgress(true);
                 MessageImageDownloader.evictCache();
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
