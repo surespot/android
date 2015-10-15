@@ -173,6 +173,9 @@
     <string name="could_not_set_message_lock_state">could not set message lock state</string>
     <string name="menu_save_to_gallery">save to gallery</string>
     <string name="menu_resend_message">resend message</string>
+    <string name="error_sending_messages">Error Sending Message(s)</string>
+    <string name="error_sending_detail">Click to open Surespot and retry sending</string>
+    <string name="prompt_resend_errored_messages">Resend errored message(s)?</string>
     <string name="menu_lock">lock</string>
     <string name="menu_unlock">unlock</string>
     <string name="image_saved_to_gallery">image saved to gallery</string>

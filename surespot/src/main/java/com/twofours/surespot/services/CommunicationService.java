@@ -1,11 +1,15 @@
 package com.twofours.surespot.services;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
@@ -13,10 +17,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompatBase;
+import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.FileStreamMessage;
@@ -33,6 +42,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
+import com.twofours.surespot.ui.UIUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +52,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,7 +92,7 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
-    private static final int MAX_RETRIES = 60;
+    private static final int MAX_RETRIES = 2; // 60;
     private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
@@ -102,7 +113,9 @@ public class CommunicationService extends Service {
     private Object RELOGIN_TIMER_LOCK = new Object();
     private int mConnectionState;
     private boolean mOnWifi;
-    //private IOCallback mSocketCallback;
+    private NotificationManager mNotificationManager;
+    private NotificationCompat.Builder mBuilder;
+    private boolean mPromptingResendErroredMessages = false;
 
     @Override
     public void onCreate() {
@@ -110,11 +123,14 @@ public class CommunicationService extends Service {
         setOnWifi();
         mConnectivityReceiver = new BroadcastReceiverHandler();
         resetState();
+        mNotificationManager = (NotificationManager) CommunicationService.this.getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(CommunicationService.this);
     }
 
     private void resetState() {
         mRetries = 0;
         mTriesRelogin = 0;
+        mPromptingResendErroredMessages = false;
         this.cancelDisconnectTimer();
         this.cancelGiveUpReconnectingTimer();
     }
@@ -182,12 +198,6 @@ public class CommunicationService extends Service {
 
         }
         return mSocket;
-    }
-
-    private void destroySocket() {
-        mSocket.off(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
-        mSocket.off(Socket.EVENT_MESSAGE, onMessage);
     }
 
     // sets if the main activity is paused or not
@@ -404,6 +414,39 @@ public class CommunicationService extends Service {
         return getConnectionState() == CommunicationService.STATE_CONNECTED;
     }
 
+    public void resendMessage(SurespotMessage message) {
+        // user wants to resend the message.  Retry connection if we have given up/are not connected.
+        // If message is in resend buffer, simply retry connection and it will be sent once connected.
+        // If message is not in resend buffer, then simply attempt to send the message again
+
+        if (getConnectionState() == STATE_DISCONNECTED) {
+            mRetries = 0; // start over in terms of retries (?)
+            connect();
+        }
+
+        if (mResendBuffer.contains(message) || mSendBuffer.contains(message)) {
+            // do nothing - message will transmit when we reconnect
+        } else {
+            // resend the message
+            sendMessage(message);
+        }
+    }
+
+    public void setPromptingResendErroredMessages() {
+        mPromptingResendErroredMessages = true;
+    }
+
+    public void setResendErroredMessages() {
+        mPromptingResendErroredMessages = false;
+    }
+
+    public void setDoNotResendErroredMessages() {
+        mPromptingResendErroredMessages = false;
+        // TODO: HEREHERE: confirm this is sufficient
+        mResendBuffer.clear();
+        mSendBuffer.clear();
+    }
+
     public class CommunicationServiceBinder extends Binder {
         public CommunicationService getService() {
             return CommunicationService.this;
@@ -438,7 +481,7 @@ public class CommunicationService extends Service {
     public void onDestroy() {
         SurespotLog.i(TAG, "onDestroy");
         unregisterReceiver();
-        destroySocket();
+        disposeSocket();
     }
 
     public void initializeService() {
@@ -571,7 +614,7 @@ public class CommunicationService extends Service {
 
     // schedule give up reconnecting
     private void scheduleGiveUpReconnecting() {
-        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000 * 10;
+        int delaySeconds = 10 * 1000; // HEREHERE: DISCONNECT_DELAY_SECONDS * 1000 * 10;
         SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d", delaySeconds);
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
@@ -740,7 +783,7 @@ public class CommunicationService extends Service {
                 mBackgroundTimer = null;
             }
 
-            // TODO: Is there ever a case where we don't want to try a reconnect?
+            // Is there ever a case where we don't want to try a reconnect?
             ReconnectTask reconnectTask = new ReconnectTask();
             mBackgroundTimer = new Timer("backgroundTimer");
             mBackgroundTimer.schedule(reconnectTask, timerInterval);
@@ -819,9 +862,73 @@ public class CommunicationService extends Service {
         @Override
         public void run() {
             SurespotLog.d(TAG, "GiveUpReconnecting task run.");
+            // raise Android notifications for unsent messages so the user can re-enter the app and retry sending
+            if (mMainActivityPaused && (!CommunicationService.this.mResendBuffer.isEmpty() || !CommunicationService.this.mSendBuffer.isEmpty())) {
+                CommunicationService.this.raiseNotificationForUnsentMessages();
+            }
             cancelGiveUpReconnectingTimer();
             checkShutdownService(false, false, true);
         }
+    }
+
+    private void raiseNotificationForUnsentMessages() {
+        // TODO: HEREHERE -
+        mBuilder.setAutoCancel(true).setOnlyAlertOnce(true);
+        SharedPreferences pm = null;
+        if (mUsername != null) {
+            pm = getSharedPreferences(mUsername, Context.MODE_PRIVATE);
+        }
+
+        int icon = R.drawable.surespot_logo;
+
+        // need to use same builder for only alert once to work:
+        // http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
+        mBuilder.setSmallIcon(icon).setContentTitle(getString(R.string.error_sending_messages)).setAutoCancel(true).setOnlyAlertOnce(false).setContentText(getString(R.string.error_sending_detail));
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+
+        Intent mainIntent = null;
+        mainIntent = new Intent(this, MainActivity.class);
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        mainIntent.putExtra(SurespotConstants.ExtraNames.UNSENT_MESSAGES, "true");
+        mainIntent.putExtra(SurespotConstants.ExtraNames.NAME, mUsername);
+
+        stackBuilder.addNextIntent(mainIntent);
+
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) new Date().getTime(), PendingIntent.FLAG_CANCEL_CURRENT);
+
+        mBuilder.setContentIntent(resultPendingIntent);
+        int defaults = 0;
+
+        boolean showLights = pm == null ? true : pm.getBoolean("pref_notifications_led", true);
+        boolean makeSound = pm == null ? true : pm.getBoolean("pref_notifications_sound", true);
+        boolean vibrate = pm == null ? true : pm.getBoolean("pref_notifications_vibration", true);
+        int color = pm == null ? 0xff0000FF : pm.getInt("pref_notification_color", getResources().getColor(R.color.surespotBlue));
+
+        if (showLights) {
+            SurespotLog.v(TAG, "showing notification led");
+            mBuilder.setLights(color, 500, 5000);
+            defaults |= Notification.FLAG_SHOW_LIGHTS; // shouldn't need this - setLights does it.  Just to make sure though...
+        }
+        else {
+            mBuilder.setLights(color, 0, 0);
+        }
+
+        if (makeSound) {
+            SurespotLog.v(TAG, "making notification sound");
+            defaults |= Notification.DEFAULT_SOUND;
+        }
+
+        if (vibrate) {
+            SurespotLog.v(TAG, "vibrating notification");
+            defaults |= Notification.DEFAULT_VIBRATE;
+        }
+
+        mBuilder.setDefaults(defaults);
+        mNotificationManager.notify(SurespotConstants.ExtraNames.UNSENT_MESSAGES, SurespotConstants.IntentRequestCodes.UNSENT_MESSAGE_NOTIFICATION, mBuilder.build());
+
+        // mNotificationManager.notify(tag, id, mBuilder.build());
+        // Notification notification = UIUtils.generateNotification(mBuilder, contentIntent, getPackageName(), title, message);
+        // mNotificationManager.notify(tag, id, notification);
     }
 
     private class ReloginTask extends TimerTask {
@@ -1296,9 +1403,17 @@ public class CommunicationService extends Service {
             }
             else {
                 SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
+
                 if (mListener != null) {
                     mListener.onCouldNotConnectToServer();
                 }
+
+                // raise Android notifications for unsent messages so the user can re-enter the app and retry sending
+                // HEREHERE
+                if (true || (mMainActivityPaused && (!CommunicationService.this.mResendBuffer.isEmpty() || !CommunicationService.this.mSendBuffer.isEmpty()))) {
+                    raiseNotificationForUnsentMessages();
+                }
+
                 // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
                 userLoggedOut();
             }

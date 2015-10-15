@@ -1958,6 +1958,12 @@ public class ChatController {
 		}
 	}
 
+	public void resendMessage(SurespotMessage message) {
+		if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+			SurespotApplication.getCommunicationService().resendMessage(message);
+		}
+	}
+
 	public void resendFileMessage(String to, final String messageIv) {
 		final ChatAdapter chatAdapter = mChatAdapters.get(to);
 		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);

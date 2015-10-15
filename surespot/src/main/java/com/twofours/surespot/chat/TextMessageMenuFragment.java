@@ -54,9 +54,19 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 		final String finalMessageText = messageText;
 			
 
-		mMenuItemArray = new String[2];
+		int countOptions = 2;
+
+		if (mMessage.getId() == 0) {
+			countOptions++;
+		}
+
+		mMenuItemArray = new String[countOptions];
 		mMenuItemArray[0] = getString(R.string.menu_copy);
 		mMenuItemArray[1] = getString(R.string.menu_delete_message);
+
+		if (countOptions > 2) {
+			mMenuItemArray[2] = getString(R.string.menu_resend_message);
+		}
 
 		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
 			@SuppressWarnings("deprecation")
@@ -108,6 +118,11 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
 					break;
+
+					case 2:
+						// resend the message
+						mActivity.getChatController().resendMessage(mMessage);
+						break;
 
 				}
 

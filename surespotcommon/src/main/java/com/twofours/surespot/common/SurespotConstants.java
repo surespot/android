@@ -40,6 +40,7 @@ public class SurespotConstants {
 		public static final String CONNECTED = "connected";
 		public static final String IMAGE_MESSAGE = "image_message";
 		public static final String NOTIFICATION_TYPE = "notification_type";
+		public static final String UNSENT_MESSAGES = "unsent_messages";
 
 	}
 
@@ -101,6 +102,7 @@ public class SurespotConstants {
 		public final static int PURCHASE = 15;
 		public final static int BACKGROUND_CACHE_NOTIFICATION = 16;
 		public final static int BACKGROUND_CHAT_SERVICE_NOTIFICATION = 17;
+		public final static int UNSENT_MESSAGE_NOTIFICATION = 18;
 	}
 	
 	
