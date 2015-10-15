@@ -1,5 +1,26 @@
 package com.twofours.surespot.encryption;
 
+import android.os.AsyncTask;
+
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.network.IAsyncCallback;
+
+import org.spongycastle.crypto.InvalidCipherTextException;
+import org.spongycastle.crypto.digests.SHA256Digest;
+import org.spongycastle.crypto.engines.AESLightEngine;
+import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
+import org.spongycastle.crypto.modes.GCMBlockCipher;
+import org.spongycastle.crypto.params.KeyParameter;
+import org.spongycastle.crypto.params.ParametersWithIV;
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.interfaces.ECPrivateKey;
+import org.spongycastle.jce.interfaces.ECPublicKey;
+import org.spongycastle.jce.spec.ECParameterSpec;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -29,27 +50,6 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.spongycastle.crypto.InvalidCipherTextException;
-import org.spongycastle.crypto.digests.SHA256Digest;
-import org.spongycastle.crypto.engines.AESLightEngine;
-import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.spongycastle.crypto.modes.GCMBlockCipher;
-import org.spongycastle.crypto.params.KeyParameter;
-import org.spongycastle.crypto.params.ParametersWithIV;
-import org.spongycastle.jce.ECNamedCurveTable;
-import org.spongycastle.jce.interfaces.ECPrivateKey;
-import org.spongycastle.jce.interfaces.ECPublicKey;
-import org.spongycastle.jce.spec.ECParameterSpec;
-
-import android.os.AsyncTask;
-
-import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.network.IAsyncCallback;
 
 public class EncryptionController {
 	private static final int PBKDF_ROUNDS_LEGACY = 1000;
@@ -317,23 +317,20 @@ public class EncryptionController {
 			ka.doPhase(publicKey, true);
 			byte[] sharedSecret = ka.generateSecret();
 
-			//TODO prodhash
-			return sharedSecret;
+			SurespotLog.i(TAG, "generated shared Key hashed: %b", hashed);
 
-			//SurespotLog.i(TAG, "generated shared Key hashed: %b", hashed);
+			if (!hashed) {
+				return sharedSecret;
+			}
 
-//			if (!hashed) {
-//				return sharedSecret;
-//			}
-//
-//			SurespotLog.i(TAG, "hashing shared key");
-//
-//			//hash it
-//			SHA256Digest digest = new SHA256Digest();
-//			byte[] digested = new byte[AES_KEY_LENGTH];
-//			digest.update(sharedSecret, 0, sharedSecret.length);
-//			digest.doFinal(digested, 0);
-//			return digested;
+			SurespotLog.i(TAG, "hashing shared key");
+
+			//hash it
+			SHA256Digest digest = new SHA256Digest();
+			byte[] digested = new byte[AES_KEY_LENGTH];
+			digest.update(sharedSecret, 0, sharedSecret.length);
+			digest.doFinal(digested, 0);
+			return digested;
 		}
 		catch (InvalidCacheLoadException icle) {
 			// will occur if couldn't load key

@@ -167,7 +167,6 @@ public class ImageSelectActivity extends SherlockActivity {
 			switch (requestCode) {
 			case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
 				mImageView.setVisibility(View.VISIBLE);
-
 				mPaths = new ArrayList<String>();
 				new AsyncTask<Void, Void, ArrayList<Bitmap>>() {
 					@Override
@@ -216,11 +215,27 @@ public class ImageSelectActivity extends SherlockActivity {
 	private void handleMultipleImageSelection(ArrayList<Bitmap> bitmaps, Intent data) {
 		ClipData clipData = data.getClipData();
 
+		if (clipData.getItemCount() > 1) {
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					// make sure the user can't do anything while the images are being compressed and sent
+					// eventually we'll want a progress indicator for those people who decide to send 10+ images at once :P
+					mSendButton.setText(getString(R.string.sending_images));
+					mSendButton.setEnabled(false);
+					mCancelButton.setEnabled(false);
+				}
+			};
+
+			this.runOnUiThread(runnable);
+		}
+
 		for (int n = 0; n < clipData.getItemCount(); n++) {
             Uri uri = clipData.getItemAt(n).getUri();
             // scale, compress and save the image
             BitmapAndFile result = compressImage(uri, n, -1);
-            mPaths.add(result.mFile.toString()); // TODO: is this right?
+            mPaths.add(result.mFile.toString());
             bitmaps.add(result.mBitmap);
         }
 	}

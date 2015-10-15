@@ -1,20 +1,34 @@
 package com.twofours.surespot.network;
 
+import android.content.Context;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.text.TextUtils;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.SyncHttpClient;
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotCachingHttpClient;
+import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.Activity;
-import android.content.Context;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.text.TextUtils;
 import ch.boye.httpclientandroidlib.HttpEntity;
 import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
@@ -34,20 +48,6 @@ import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
 import ch.boye.httpclientandroidlib.protocol.HTTP;
 import ch.boye.httpclientandroidlib.protocol.HttpContext;
 import ch.boye.httpclientandroidlib.util.EntityUtils;
-
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-import com.loopj.android.http.SyncHttpClient;
-import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotCachingHttpClient;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.identity.IdentityController;
 
 public class NetworkController {
 	protected static final String TAG = "NetworkController";
@@ -399,23 +399,6 @@ public class NetworkController {
 
 	}
 
-//	private void addVoiceMessagingPurchaseTokens(Map<String, String> params) {
-//		String voiceMessagingPurchaseToken = SurespotApplication.getBillingController().getVoiceMessagingPurchaseToken();
-//		if (params != null && !TextUtils.isEmpty(voiceMessagingPurchaseToken)) {
-//			SurespotLog.d(TAG,"adding voice messaging purchase tokens");
-//			// build purchase token json object string
-//			JSONObject jPurchaseTokens = new JSONObject();
-//			try {
-//				jPurchaseTokens.put(SurespotConstants.Products.VOICE_MESSAGING, voiceMessagingPurchaseToken);
-//				params.put("purchaseTokens", jPurchaseTokens.toString());
-//			}
-//			catch (JSONException e) {
-//				SurespotLog.w(TAG, e, "json error creating purchase token object");
-//			}
-//		}
-//
-//	}
-
 	public void getFriends(AsyncHttpResponseHandler responseHandler) {
 		get("/friends", null, responseHandler);
 	}
@@ -432,10 +415,6 @@ public class NetworkController {
 		SurespotLog.d(TAG, "getLatestData userControlId: %d", userControlId);
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("spotIds", spotIds.toString());
-		
-		//update voice tokens, we may have just switched user
-	//	addVoiceMessagingPurchaseTokens(params);
-
 		post("/optdata/" + userControlId, new RequestParams(params), responseHandler);
 	}
 
@@ -444,13 +423,6 @@ public class NetworkController {
 		get("/messagesopt/" + username + "/before/" + id, null, responseHandler);
 	}
 
-	public void getLastMessageIds(JsonHttpResponseHandler responseHandler) {
-		get("/conversations/ids", null, responseHandler);
-	}
-
-//	public String getPublicKeysSync(String username, String version) {
-//		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/" + version);
-//	}
 
 	public String getPublicKeysSync(String username, String version) {
 		return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/since/" + version);
@@ -775,12 +747,6 @@ public class NetworkController {
 
 	}
 
-//	public void updateVoiceMessagingPurchaseToken(final AsyncHttpResponseHandler responseHandler) {
-//		Map<String, String> params = new HashMap<String, String>();
-//		addVoiceMessagingPurchaseTokens(params);
-//		post("/updatePurchaseTokens", new RequestParams(params), responseHandler);
-//	}
-//
 	public void assignFriendAlias(String username, String version, String data, String iv, AsyncHttpResponseHandler responseHandler) {
 		SurespotLog.d(TAG, "assignFriendAlias, username: %s, version: %s", username, version);
 		RequestParams params = new RequestParams("data", data);

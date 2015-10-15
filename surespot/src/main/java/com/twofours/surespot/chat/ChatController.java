@@ -433,16 +433,29 @@ public class ChatController {
 
 		}
 		else {
-			Friend friend = mFriendAdapter.getFriend(otherUser);
-			if (friend != null) {
-				int messageId = message.getId();
+			//new AsyncTask<Void, Void, Void>() {
 
-				// always update the available id
-				friend.setAvailableMessageId(messageId, false);
+//				@Override
+//				protected Void doInBackground(Void... params) {params
+					Friend friend = mFriendAdapter.getFriend(otherUser);
+					if (friend != null) {
+						int messageId = message.getId();
 
-				mFriendAdapter.sort();
-				mFriendAdapter.notifyDataSetChanged();
-			}
+						// always update the available id
+						friend.setAvailableMessageId(messageId, false);
+					}
+
+//					return null;
+//				};
+//
+//				@Override
+//				protected void onPostExecute(Void aVoid) {
+					mFriendAdapter.notifyDataSetChanged();
+					mFriendAdapter.sort();
+
+//				};
+//			}.execute();
+
 		}
 
 	}

@@ -1,12 +1,12 @@
 package com.twofours.surespot.chat;
 
-import java.util.Date;
-import java.util.Observable;
+import com.twofours.surespot.common.SurespotLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.twofours.surespot.common.SurespotLog;
+import java.util.Date;
+import java.util.Observable;
 
 /**
  * @author adam
@@ -150,10 +150,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	}
 
 	public boolean isHashed() {
-		return false;
-
-		//TODO prodhash
-		//return mHashed;
+		return mHashed;
 	}
 
 	public void setHashed(boolean hashed) {

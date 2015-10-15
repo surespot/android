@@ -45,6 +45,7 @@
     <string name="select_image">select image</string>
     <string name="capture_image">capture image</string>
     <string name="assign_image">assign image</string>
+    <string name="sending_images">sending...</string>
     <string name="logout">log out</string>
     <string name="settings">settings</string>
     <string name="welcome_to_surespot"><![CDATA["Welcome to surespot! Data sent using this app is <a href="https://en.wikipedia.org/wiki/End-to-end_encryption">end-to-end</a> encrypted with <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm">symmetric-key</a> encryption (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) using keys created with 521 bit <a href="https://en.wikipedia.org/wiki/Elliptic_curve_Diffie-Hellman">ECDH shared secret derivation</a>."]]></string>
