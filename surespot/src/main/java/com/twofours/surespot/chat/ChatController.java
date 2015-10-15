@@ -1395,6 +1395,7 @@ public class ChatController {
 		if (!TextUtils.isEmpty(mUsername)) {
 			String spot = ChatUtils.getSpot(mUsername, username);
 			ChatAdapter chatAdapter = mChatAdapters.get(username);
+			// TODO: will need to take into account "errored" messages here and show them
 			if (replace) {
 				chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(mUsername, spot));
 			}

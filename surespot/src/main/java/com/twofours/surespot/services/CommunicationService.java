@@ -92,7 +92,7 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
-    private static final int MAX_RETRIES = 2; // 60;
+    private static final int MAX_RETRIES = 60;
     private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
@@ -209,6 +209,8 @@ public class CommunicationService extends Service {
             if (getConnectionState() != STATE_CONNECTED && mEverConnected) {
                 scheduleGiveUpReconnecting();
             }
+            // make sure to save everything just in case...
+            // save();
         }
         else {
             cancelDisconnectTimer();
@@ -447,6 +449,13 @@ public class CommunicationService extends Service {
         mSendBuffer.clear();
     }
 
+    public boolean messageIsInResendBuffer(SurespotMessage message) {
+        if (mSendBuffer.contains(message) || mResendBuffer.contains(message))
+            return true;
+
+        return false;
+    }
+
     public class CommunicationServiceBinder extends Binder {
         public CommunicationService getService() {
             return CommunicationService.this;
@@ -614,7 +623,7 @@ public class CommunicationService extends Service {
 
     // schedule give up reconnecting
     private void scheduleGiveUpReconnecting() {
-        int delaySeconds = 10 * 1000; // HEREHERE: DISCONNECT_DELAY_SECONDS * 1000 * 10;
+        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000 * 10;
         SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d", delaySeconds);
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
@@ -872,7 +881,6 @@ public class CommunicationService extends Service {
     }
 
     private void raiseNotificationForUnsentMessages() {
-        // TODO: HEREHERE -
         mBuilder.setAutoCancel(true).setOnlyAlertOnce(true);
         SharedPreferences pm = null;
         if (mUsername != null) {
@@ -907,7 +915,7 @@ public class CommunicationService extends Service {
         if (showLights) {
             SurespotLog.v(TAG, "showing notification led");
             mBuilder.setLights(color, 500, 5000);
-            defaults |= Notification.FLAG_SHOW_LIGHTS; // shouldn't need this - setLights does it.  Just to make sure though...
+            defaults |= Notification.FLAG_SHOW_LIGHTS;
         }
         else {
             mBuilder.setLights(color, 0, 0);
@@ -1409,8 +1417,7 @@ public class CommunicationService extends Service {
                 }
 
                 // raise Android notifications for unsent messages so the user can re-enter the app and retry sending
-                // HEREHERE
-                if (true || (mMainActivityPaused && (!CommunicationService.this.mResendBuffer.isEmpty() || !CommunicationService.this.mSendBuffer.isEmpty()))) {
+                if (mMainActivityPaused && (!CommunicationService.this.mResendBuffer.isEmpty() || !CommunicationService.this.mSendBuffer.isEmpty())) {
                     raiseNotificationForUnsentMessages();
                 }
 

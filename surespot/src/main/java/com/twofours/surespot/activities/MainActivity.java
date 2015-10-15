@@ -891,7 +891,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
     private void showResendMessageDialog() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
 
-        alertDialogBuilder.setTitle(getString(R.string.prompt_resend_errored_messages));
+        alertDialogBuilder.setTitle(getString(R.string.prompt_resend));
         alertDialogBuilder.setMessage(getString(R.string.prompt_resend_errored_messages));
 
         alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {

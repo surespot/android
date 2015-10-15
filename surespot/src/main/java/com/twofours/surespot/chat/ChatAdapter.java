@@ -18,6 +18,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -312,7 +313,12 @@ public class ChatAdapter extends BaseAdapter {
             if (item.getId() == null) {
                 // if it's a text message or we're sending
                 if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || !item.isAlreadySent()) {
-                    chatMessageViewHolder.tvTime.setText(R.string.message_sending);
+                    // TODO: HEREHERE: determine if status should be "sending..." or "error sending message" (depending on presence in resend buffer??)
+                    if (SurespotApplication.getCommunicationService().messageIsInResendBuffer(item)) {
+                        chatMessageViewHolder.tvTime.setText(R.string.message_sending);
+                    } else {
+                        chatMessageViewHolder.tvTime.setText(R.string.error_sending_message);
+                    }
                     SurespotLog.v(TAG, "getView, item.getId() is null, a text message or not loaded from disk, setting status text to sending...");
                 } else {
                     if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {

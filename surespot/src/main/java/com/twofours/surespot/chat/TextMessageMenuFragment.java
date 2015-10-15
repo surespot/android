@@ -56,7 +56,7 @@ public class TextMessageMenuFragment extends SherlockDialogFragment {
 
 		int countOptions = 2;
 
-		if (mMessage.getId() == 0) {
+		if (mMessage == null || mMessage.getId() == null) {
 			countOptions++;
 		}
 
