@@ -343,11 +343,11 @@ public class CommunicationService extends Service {
         return mSendBuffer;
     }
 
-    public void sendOnSocket(String json) {
-        if (mSocket != null) {
-            mSocket.send(json);
-        }
-    }
+//    public void sendMessages(JSONArray json) {
+//        if (mSocket != null) {
+//            mSocket.send(json);
+//        }
+//    }
 
     // saves all data and current state for user, general
     public synchronized void save() {
@@ -681,6 +681,40 @@ public class CommunicationService extends Service {
 
         if (mResendBuffer.size() > 0) {
             for (SurespotMessage message : getResendMessages()) {
+                if (message.getId() != null) {
+
+                    continue;
+                }
+
+                if (SurespotApplication.getChatController() != null) {
+
+                    // set the last received id so the server knows which messages to check
+                    String otherUser = message.getOtherUser();
+
+
+                    // String username = message.getFrom();
+                    Integer lastMessageID = null;
+                    // ideally get the last id from the fragment's chat adapter
+                    ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(otherUser);
+                    if (chatAdapter != null) {
+                        SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
+                        if (lastMessage != null) {
+                            lastMessageID = lastMessage.getId();
+                        }
+                    }
+
+                    // failing that use the last viewed id
+                    if (lastMessageID == null) {
+                        SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
+                    }
+
+                    if (lastMessageID == null) {
+                        lastMessageID = 0;
+                    }
+                    SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
+                    message.setResendId(lastMessageID);
+
+                }
                 mSendBuffer.add(message);
             }
             mResendBuffer.clear();
@@ -690,6 +724,7 @@ public class CommunicationService extends Service {
             sendMessages();
         }
     }
+
 
     private void onAlreadyConnected() {
         SurespotLog.d(TAG, "onAlreadyConnected");
@@ -725,6 +760,8 @@ public class CommunicationService extends Service {
             mListener.onNotConnected();
         }
     }
+
+
 
     // remove duplicate messages
     private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {

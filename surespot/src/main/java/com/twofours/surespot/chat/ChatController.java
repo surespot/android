@@ -178,7 +178,7 @@ public class ChatController {
 	// this is wired up to listen for a message from the CommunicationService.  It's UI stuff
 	public void connected() {
 		getFriendsAndData();
-		resendMessages();
+		//resendMessages();
 	}
 
 	private void handleAutoInvite() {
@@ -205,47 +205,48 @@ public class ChatController {
 		}
 	}
 
-	private void resendMessages() {
-		// get the resend messages
-		SurespotMessage[] resendMessages = SurespotApplication.getCommunicationService().getResendMessages();
-		JSONArray sMessageList = new JSONArray();
-
-		for (int i = 0; i < resendMessages.length; i++) {
-			SurespotMessage message = resendMessages[i];
-
-			// if it has an id don't send it again
-			if (message.getId() != null) {
-				SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
-				continue;
-			}
-
-			// set the last received id so the server knows which messages to check
-			String otherUser = message.getOtherUser();
-
-			// String username = message.getFrom();
-			Integer lastMessageID = 0;
-			// ideally get the last id from the fragment's chat adapter
-			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
-			if (chatAdapter != null) {
-				SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
-				if (lastMessage != null) {
-					lastMessageID = lastMessage.getId();
-				}
-			}
-
-			// failing that use the last viewed id
-			if (lastMessageID == null) {
-				mFriendAdapter.getFriend(otherUser).getLastViewedMessageId();
-			}
-
-			SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
-			message.setResendId(lastMessageID);
-
-			sMessageList.put(message.toJSONObjectSocket());
-		}
-
-		SurespotApplication.getCommunicationService().sendOnSocket(sMessageList.toString());
-	}
+//handled in CommunicationService now
+//	private void resendMessages() {
+//		// get the resend messages
+//		SurespotMessage[] resendMessages = SurespotApplication.getCommunicationService().getResendMessages();
+//		JSONArray sMessageList = new JSONArray();
+//
+//		for (int i = 0; i < resendMessages.length; i++) {
+//			SurespotMessage message = resendMessages[i];
+//
+//			// if it has an id don't send it again
+//			if (message.getId() != null) {
+//				SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
+//				continue;
+//			}
+//
+//			// set the last received id so the server knows which messages to check
+//			String otherUser = message.getOtherUser();
+//
+//			// String username = message.getFrom();
+//			Integer lastMessageID = 0;
+//			// ideally get the last id from the fragment's chat adapter
+//			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
+//			if (chatAdapter != null) {
+//				SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
+//				if (lastMessage != null) {
+//					lastMessageID = lastMessage.getId();
+//				}
+//			}
+//
+//			// failing that use the last viewed id
+//			if (lastMessageID == null) {
+//				mFriendAdapter.getFriend(otherUser).getLastViewedMessageId();
+//			}
+//
+//			SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
+//			message.setResendId(lastMessageID);
+//
+//			sMessageList.put(message.toJSONObjectSocket());
+//		}
+//
+//		SurespotApplication.getCommunicationService().sendOnSocket(sMessageList.toString());
+//	}
 
 	public void handleMessage(final SurespotMessage message) {
 		SurespotLog.d(TAG, "handleMessage %s", message);
