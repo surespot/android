@@ -13,6 +13,7 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotCachingHttpClient;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ch.boye.httpclientandroidlib.HttpEntity;
@@ -441,6 +443,16 @@ public class NetworkController {
 
 	public void invite(String friendname, String source, AsyncHttpResponseHandler responseHandler) {
 		post("/invite/" + friendname + "/" + source, null, responseHandler);
+	}
+
+	public void postMessages(List<SurespotMessage> messages, AsyncHttpResponseHandler responseHandler) {
+		RequestParams params = new RequestParams();
+		JSONArray jsonArray = new JSONArray();
+		for (int i = 0; i < messages.size(); i++) {
+			jsonArray.put(messages.get(i).toJSONObject());
+		}
+		params.put("messages", jsonArray.toString());
+		post("/messages", params, responseHandler);
 	}
 
 	public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {

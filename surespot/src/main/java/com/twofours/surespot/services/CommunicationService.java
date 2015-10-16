@@ -717,6 +717,7 @@ public class CommunicationService extends Service {
                     message.setResendId(lastMessageID);
 
                 }
+                // TODO: use new POST to /messages to post messages using HTTP(S)
                 mSendBuffer.add(message);
             }
             mResendBuffer.clear();
@@ -726,6 +727,8 @@ public class CommunicationService extends Service {
             sendMessages();
         }
     }
+
+
 
 
     private void onAlreadyConnected() {
