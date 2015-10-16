@@ -705,7 +705,9 @@ public class CommunicationService extends Service {
 
                     // failing that use the last viewed id
                     if (lastMessageID == null) {
-                        SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
+                        if (SurespotApplication.getChatController().getFriendAdapter() != null) {
+                            SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
+                        }
                     }
 
                     if (lastMessageID == null) {
