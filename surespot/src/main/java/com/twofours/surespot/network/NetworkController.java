@@ -445,14 +445,20 @@ public class NetworkController {
 		post("/invite/" + friendname + "/" + source, null, responseHandler);
 	}
 
-	public void postMessages(List<SurespotMessage> messages, AsyncHttpResponseHandler responseHandler) {
-		RequestParams params = new RequestParams();
+	public void postMessages(List<SurespotMessage> messages, JsonHttpResponseHandler responseHandler) {
+		Map<String, String> params = new HashMap<String, String>();
+		JSONObject jso = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
 		for (int i = 0; i < messages.size(); i++) {
-			jsonArray.put(messages.get(i).toJSONObject());
+			jsonArray.put(messages.get(i).toJSONObjectSocket());
 		}
-		params.put("messages", jsonArray.toString());
-		post("/messages", params, responseHandler);
+		try {
+			jso.put("messages", jsonArray);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		params.put("messages", jso.toString());
+		post("/messages", new RequestParams(params), responseHandler);
 	}
 
 	public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {

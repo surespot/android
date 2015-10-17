@@ -23,6 +23,8 @@ import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -679,10 +681,11 @@ public class CommunicationService extends Service {
 
         cancelGiveUpReconnectingTimer();
 
+        ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
+
         if (mResendBuffer.size() > 0) {
             for (SurespotMessage message : getResendMessages()) {
                 if (message.getId() != null) {
-
                     continue;
                 }
 
@@ -718,9 +721,25 @@ public class CommunicationService extends Service {
 
                 }
                 // TODO: use new POST to /messages to post messages using HTTP(S)
-                mSendBuffer.add(message);
+                toSend.add(message);
             }
+
             mResendBuffer.clear();
+
+            SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, String content) {
+                    super.onSuccess(statusCode, content);
+                }
+
+                @Override
+                public void onFailure(Throwable error, String content) {
+                    super.onFailure(error, content);
+                    // TODO: HEREHERE: re-add to resent buffer: mResendBuffer.add();
+                }
+            });
+
+
         }
 
         if (mSendBuffer.size() > 0) {
@@ -1083,6 +1102,24 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "sendmessage adding message to ResendBuffer, iv: %s", message.getIv());
 
         mResendBuffer.add(message);
+
+        // testing - we want to use sockets, not http, but testing the new functionality for now
+        /*ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
+        toSend.add(message);
+        SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, String content) {
+                super.onSuccess(statusCode, content);
+                mResendBuffer.remove(message);
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                super.onFailure(error, content);
+            }
+        });*/
+
+
         if (getConnectionState() == STATE_CONNECTED) {
             SurespotLog.d(TAG, "sendmessage, mSocket: %s", mSocket);
             JSONObject json = message.toJSONObjectSocket();
