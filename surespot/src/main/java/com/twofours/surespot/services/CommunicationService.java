@@ -95,6 +95,7 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
     private static final int MAX_RETRIES = 60;
+    private static final int MAX_RETRIES_MAIN_ACTIVITY_PAUSED = 20;
     private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
@@ -205,18 +206,23 @@ public class CommunicationService extends Service {
     // sets if the main activity is paused or not
     public void setMainActivityPaused(boolean paused) {
         mMainActivityPaused = paused;
-        checkScheduleDisconnect();
-        checkReconnect();
+        // changed with not keeping socket open: checkScheduleDisconnect();
+        // changed with not keeping socket open: checkReconnect();
         if (paused) {
+            // changed with not keeping socket open:
+            /*
             if (getConnectionState() != STATE_CONNECTED && mEverConnected) {
                 scheduleGiveUpReconnecting();
             }
-            // make sure to save everything just in case...
+            */
+            // make sure to save everything just in case... ?
             // save();
+            disconnect();
         }
         else {
-            cancelDisconnectTimer();
-            cancelGiveUpReconnectingTimer();
+            connect();
+            // changed with not keeping socket open: cancelDisconnectTimer();
+            // changed with not keeping socket open: cancelGiveUpReconnectingTimer();
         }
     }
 
@@ -464,6 +470,16 @@ public class CommunicationService extends Service {
         mResendBuffer.clear();
         mSendBuffer.clear();
         // TODO: HEREHERE: update all the friend adapters to make sure the messages read "error sending message" instead of "sending..."
+
+        invalidateAllChatAdapters();
+    }
+
+    private void invalidateAllChatAdapters() {
+        if (mUsername != null) {
+            for (Map.Entry<String, ChatAdapter> entry : SurespotApplication.getChatController().mChatAdapters.entrySet()) {
+                entry.getValue().notifyDataSetInvalidated();
+            }
+        }
     }
 
     public boolean messageIsInResendBuffer(SurespotMessage message) {
@@ -624,7 +640,7 @@ public class CommunicationService extends Service {
     // setup a disconnect N minutes from now
     private void scheduleDisconnect() {
         int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000;
-        SurespotLog.d(TAG, "scheduleDisconnect, seconds: %d", delaySeconds);
+        SurespotLog.d(TAG, "scheduleDisconnect, seconds: %d", delaySeconds/1000);
         synchronized (DISCONNECT_TIMER_LOCK) {
             if (mDisconnectTask != null) {
                 mDisconnectTask.cancel();
@@ -645,7 +661,7 @@ public class CommunicationService extends Service {
     // schedule give up reconnecting
     private void scheduleGiveUpReconnecting() {
         int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000 * 10;
-        SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d", delaySeconds);
+        SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d", delaySeconds/1000);
         synchronized (GIVE_UP_RECONNECTING_LOCK) {
             if (mGiveUpReconnectingTask != null) {
                 mGiveUpReconnectingTask.cancel();
@@ -720,7 +736,6 @@ public class CommunicationService extends Service {
                     // set the last received id so the server knows which messages to check
                     String otherUser = message.getOtherUser();
 
-
                     // String username = message.getFrom();
                     Integer lastMessageID = null;
                     // ideally get the last id from the fragment's chat adapter
@@ -751,17 +766,39 @@ public class CommunicationService extends Service {
             }
 
             mResendBuffer.clear();
+        }
 
+        if (!isConnected()) {
+
+            // send via http(s) since the web socket is not connected
             SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
 
                 @Override
                 public void onSuccess(JSONObject jsonObject) {
-                    super.onSuccess(jsonObject);
+                    // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
+                    try {
+                        SurespotMessage message = SurespotMessage.toSurespotMessage(jsonObject);
+                        // TODO: do we need to do more here?
+                        SurespotApplication.getChatController().handleMessage(message);
+                    } catch (JSONException e) {
+                        SurespotLog.w(TAG, e, "JSON received from server");
+                    }
                 }
 
                 @Override
                 public void onSuccess(JSONArray jsonArray) {
-                    super.onSuccess(jsonArray);
+                    // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
+                    ArrayList<SurespotMessage> list = new ArrayList<SurespotMessage>();
+                    for (int n = 0; n < jsonArray.length(); n++) {
+                        try {
+                            JSONObject jso = jsonArray.getJSONObject(n);
+                            SurespotMessage message = SurespotMessage.toSurespotMessage(jso);
+                            // TODO: do we need to do more here?
+                            SurespotApplication.getChatController().handleMessage(message);
+                        } catch (JSONException e) {
+                            SurespotLog.w(TAG, e, "JSON array received from server");
+                        }
+                    }
                 }
 
                 @Override
@@ -789,10 +826,13 @@ public class CommunicationService extends Service {
                     mResendBuffer.addAll(toSend);
                 }
             });
-        }
+        } else {
 
-        if (mSendBuffer.size() > 0) {
-            sendMessages();
+            // send via socket since we're connected
+            mSendBuffer.addAll(toSend);
+            if (mSendBuffer.size() > 0) {
+                sendMessages();
+            }
         }
     }
 
@@ -1133,6 +1173,9 @@ public class CommunicationService extends Service {
             mSocket.disconnect();
             disposeSocket();
         }
+
+        // attempt to send all remaining items via http(s)
+        handleUnsentMaterial();
     }
 
     private void checkAndSendNextMessage(SurespotMessage message) {
@@ -1176,16 +1219,32 @@ public class CommunicationService extends Service {
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
-                super.onSuccess(jsonObject);
-                // TODO: populate info from message like id, update chat adapter, etc
-                mResendBuffer.remove(message);
+                // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
+                try {
+                    SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonObject);
+                    // TODO: do we need to do more here?
+                    SurespotApplication.getChatController().handleMessage(messageReceived);
+                    mResendBuffer.remove(message);
+                } catch (JSONException e) {
+                    SurespotLog.w(TAG, e, "JSON received from server");
+                }
             }
 
             @Override
             public void onSuccess(JSONArray jsonArray) {
-                super.onSuccess(jsonArray);
-                // TODO: populate info from message like id, update chat adapter, etc
-                mResendBuffer.remove(message);
+                // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
+                ArrayList<SurespotMessage> list = new ArrayList<SurespotMessage>();
+                for (int n = 0; n < jsonArray.length(); n++) {
+                    try {
+                        JSONObject jso = jsonArray.getJSONObject(n);
+                        SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jso);
+                        // TODO: do we need to do more here?
+                        SurespotApplication.getChatController().handleMessage(messageReceived);
+                        mResendBuffer.remove(message);
+                    } catch (JSONException e) {
+                        SurespotLog.w(TAG, e, "JSON array received from server");
+                    }
+                }
             }
 
             @Override
@@ -1565,7 +1624,7 @@ public class CommunicationService extends Service {
 
             setOnWifi();
             // kick off another task
-            if (mRetries < MAX_RETRIES) {
+            if ((!mMainActivityPaused && mRetries < MAX_RETRIES) || (mMainActivityPaused && mRetries < MAX_RETRIES_MAIN_ACTIVITY_PAUSED)) {
                 scheduleReconnectionAttempt();
             }
             else {
@@ -1596,20 +1655,7 @@ public class CommunicationService extends Service {
                         JSONObject jsonMessage = (JSONObject) args[0];
                         SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
                         SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
-                        SurespotApplication.getChatController().handleErrorMessage(errorMessage);
-
-                        // the UI might have already removed the message from the resend buffer.  That's okay.
-                        SurespotMessage message = null;
-
-                        Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
-                        while (iterator.hasNext()) {
-                            message = iterator.next();
-                            if (message.getIv().equals(errorMessage.getId())) {
-                                iterator.remove();
-                                message.setErrorStatus(errorMessage.getStatus());
-                                break;
-                            }
-                        }
+                        SurespotMessage message = SurespotApplication.getChatController().handleErrorMessage(errorMessage);
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, "on messageError", e);

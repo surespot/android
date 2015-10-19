@@ -1221,7 +1221,7 @@ public class ChatController {
 		enableMenuItems(friend);
 	}
 
-	public void handleErrorMessage(SurespotErrorMessage errorMessage) {
+	public SurespotMessage handleErrorMessage(SurespotErrorMessage errorMessage) {
 		SurespotMessage message = null;
 
 		// this logic is also done in the chat transmission service (but after this call) so that if the UI is not available,
@@ -1242,6 +1242,8 @@ public class ChatController {
 				chatAdapter.notifyDataSetChanged();
 			}
 		}
+
+		return message;
 	}
 
 	private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
