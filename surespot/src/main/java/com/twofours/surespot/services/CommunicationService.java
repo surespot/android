@@ -264,6 +264,10 @@ public class CommunicationService extends Service {
     }
 
     public synchronized boolean connect() {
+
+        // TODO: HEREHERE - now that we don't want to connect the websocket when the main activity is paused, do we
+        // check if there is unsent material here and attempt to post via http?  What is the best place to do so...?
+
         SurespotLog.d(TAG, "connect, mSocket: " + mSocket + ", connected: " + (mSocket != null ? mSocket.connected() : false) + ", state: " + mConnectionState);
         cancelDisconnectTimer();
 
@@ -273,7 +277,9 @@ public class CommunicationService extends Service {
         }
 
         if (getConnectionState() == STATE_CONNECTING) {
-            onAlreadyConnected();
+            // do NOT call already connected here, since we're not already connected
+            // need to test to see if the program flow is good returning true here, or if we should allow things to continue
+            // and try to connect()...
             return true;
         }
 
@@ -442,6 +448,14 @@ public class CommunicationService extends Service {
 
     public void setResendErroredMessages() {
         mPromptingResendErroredMessages = false;
+        if (!isConnected() && getConnectionState() != STATE_CONNECTING) {
+            mRetries = 0;
+            connect();
+        }
+
+        if (isConnected()) {
+            handleUnsentMaterial();
+        }
     }
 
     public void setDoNotResendErroredMessages() {
@@ -679,14 +693,21 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void handleUnsentMaterial() {
+    private synchronized void handleUnsentMaterial() {
+
+        // if we're asking the user if they want to resend errored messages, don't just go blindly sending them without user input
+        if (mPromptingResendErroredMessages)
+            return;
+
         if (mUsername != null && !mUsername.equals("")) {
             sendFileStreamMessages(false);
         }
 
-        cancelGiveUpReconnectingTimer();
+        if (getConnectionState() == STATE_CONNECTED) {
+            cancelGiveUpReconnectingTimer();
+        }
 
-        ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
+        final ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
 
         if (mResendBuffer.size() > 0) {
             for (SurespotMessage message : getResendMessages()) {
@@ -732,6 +753,7 @@ public class CommunicationService extends Service {
             mResendBuffer.clear();
 
             SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
+
                 @Override
                 public void onSuccess(JSONObject jsonObject) {
                     super.onSuccess(jsonObject);
@@ -749,23 +771,24 @@ public class CommunicationService extends Service {
 
                 @Override
                 public void onFailure(Throwable error, String content) {
-                    super.onFailure(error, content);
-                    // TODO: HEREHERE: re-add to resent buffer: mResendBuffer.add();
+                    // re-add to resend buffer
+                    mResendBuffer.addAll(toSend);
                 }
 
                 @Override
                 public void onFailure(Throwable e, JSONObject errorResponse) {
-                    super.onFailure(e, errorResponse);
+                    // re-add to resend buffer
+                    // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
+                    mResendBuffer.addAll(toSend);
                 }
 
                 @Override
                 public void onFailure(Throwable e, JSONArray errorResponse) {
-                    super.onFailure(e, errorResponse);
+                    // re-add to resend buffer
+                    // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
+                    mResendBuffer.addAll(toSend);
                 }
-
             });
-
-
         }
 
         if (mSendBuffer.size() > 0) {
@@ -1129,7 +1152,24 @@ public class CommunicationService extends Service {
 
         mResendBuffer.add(message);
 
-        // testing - we want to use sockets, not http, but testing the new functionality for now
+        if (mMainActivityPaused) {
+            sendMessageUsingHttp(message);
+        } else {
+            if (getConnectionState() == STATE_CONNECTED) {
+                SurespotLog.d(TAG, "sendmessage, mSocket: %s", mSocket);
+                JSONObject json = message.toJSONObjectSocket();
+                SurespotLog.d(TAG, "sendmessage, json: %s", json);
+                //String s = json.toString();
+                //SurespotLog.d(TAG, "sendmessage, message string: %s", s);
+
+                if (mSocket != null) {
+                    mSocket.send(json);
+                }
+            }
+        }
+    }
+
+    private void sendMessageUsingHttp(final SurespotMessage message) {
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
         SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
@@ -1137,18 +1177,21 @@ public class CommunicationService extends Service {
             @Override
             public void onSuccess(JSONObject jsonObject) {
                 super.onSuccess(jsonObject);
+                // TODO: populate info from message like id, update chat adapter, etc
                 mResendBuffer.remove(message);
             }
 
             @Override
             public void onSuccess(JSONArray jsonArray) {
                 super.onSuccess(jsonArray);
+                // TODO: populate info from message like id, update chat adapter, etc
                 mResendBuffer.remove(message);
             }
 
             @Override
             public void onSuccess(int statusCode, String content) {
                 super.onSuccess(statusCode, content);
+                // TODO: populate info from message like id, update chat adapter, etc
                 mResendBuffer.remove(message);
             }
 
@@ -1168,20 +1211,6 @@ public class CommunicationService extends Service {
             }
 
         });
-
-/*
-        if (getConnectionState() == STATE_CONNECTED) {
-            SurespotLog.d(TAG, "sendmessage, mSocket: %s", mSocket);
-            JSONObject json = message.toJSONObjectSocket();
-            SurespotLog.d(TAG, "sendmessage, json: %s", json);
-            //String s = json.toString();
-            //SurespotLog.d(TAG, "sendmessage, message string: %s", s);
-
-            if (mSocket != null) {
-                mSocket.send(json);
-            }
-        }
-        */
     }
 
     private void setOnWifi() {
