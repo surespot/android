@@ -446,9 +446,10 @@ public class CommunicationService extends Service {
 
     public void setDoNotResendErroredMessages() {
         mPromptingResendErroredMessages = false;
-        // TODO: HEREHERE: confirm this is sufficient
+        // confirm this is sufficient - simply clear the resend/send buffers
         mResendBuffer.clear();
         mSendBuffer.clear();
+        // TODO: HEREHERE: update all the friend adapters to make sure the messages read "error sending message" instead of "sending..."
     }
 
     public boolean messageIsInResendBuffer(SurespotMessage message) {
@@ -456,6 +457,10 @@ public class CommunicationService extends Service {
             return true;
 
         return false;
+    }
+
+    public boolean hasUnsentMessages() {
+        return (mResendBuffer.size() > 0 || mSendBuffer.size() > 0);
     }
 
     public class CommunicationServiceBinder extends Binder {
@@ -720,13 +725,23 @@ public class CommunicationService extends Service {
                     message.setResendId(lastMessageID);
 
                 }
-                // TODO: use new POST to /messages to post messages using HTTP(S)
+                // use new POST to /messages to post messages using HTTP(S)
                 toSend.add(message);
             }
 
             mResendBuffer.clear();
 
             SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(JSONObject jsonObject) {
+                    super.onSuccess(jsonObject);
+                }
+
+                @Override
+                public void onSuccess(JSONArray jsonArray) {
+                    super.onSuccess(jsonArray);
+                }
+
                 @Override
                 public void onSuccess(int statusCode, String content) {
                     super.onSuccess(statusCode, content);
@@ -737,6 +752,17 @@ public class CommunicationService extends Service {
                     super.onFailure(error, content);
                     // TODO: HEREHERE: re-add to resent buffer: mResendBuffer.add();
                 }
+
+                @Override
+                public void onFailure(Throwable e, JSONObject errorResponse) {
+                    super.onFailure(e, errorResponse);
+                }
+
+                @Override
+                public void onFailure(Throwable e, JSONArray errorResponse) {
+                    super.onFailure(e, errorResponse);
+                }
+
             });
 
 
@@ -1107,6 +1133,19 @@ public class CommunicationService extends Service {
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
         SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(JSONObject jsonObject) {
+                super.onSuccess(jsonObject);
+                mResendBuffer.remove(message);
+            }
+
+            @Override
+            public void onSuccess(JSONArray jsonArray) {
+                super.onSuccess(jsonArray);
+                mResendBuffer.remove(message);
+            }
+
             @Override
             public void onSuccess(int statusCode, String content) {
                 super.onSuccess(statusCode, content);
@@ -1117,6 +1156,17 @@ public class CommunicationService extends Service {
             public void onFailure(Throwable error, String content) {
                 super.onFailure(error, content);
             }
+
+            @Override
+            public void onFailure(Throwable e, JSONObject errorResponse) {
+                super.onFailure(e, errorResponse);
+            }
+
+            @Override
+            public void onFailure(Throwable e, JSONArray errorResponse) {
+                super.onFailure(e, errorResponse);
+            }
+
         });
 
 /*

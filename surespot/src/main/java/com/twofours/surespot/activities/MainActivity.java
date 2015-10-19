@@ -866,7 +866,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         // TODO: Adam wants this option to appear regardless if the user entered through the notification or not
         String extraUnsentMessages = getIntent().getStringExtra(SurespotConstants.ExtraNames.UNSENT_MESSAGES);
-        if ("true".equals(extraUnsentMessages)) {
+        if ("true".equals(extraUnsentMessages) || SurespotApplication.getCommunicationService().hasUnsentMessages()) {
             SurespotApplication.getCommunicationService().setPromptingResendErroredMessages();
             showResendMessageDialog();
         }
