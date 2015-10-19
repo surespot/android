@@ -71,6 +71,20 @@ public class NetworkController {
 		mClient.post(mBaseUrl + url, params, responseHandler);
 	}
 
+	public void postJson(String url, JSONObject jsonParams, JsonHttpResponseHandler responseHandler) {
+		SurespotLog.d(TAG, "JSON post to " + url);
+
+		StringEntity entity = null;
+		try {
+			entity = new StringEntity(jsonParams.toString());
+		} catch (UnsupportedEncodingException e) {
+			SurespotLog.w(TAG, e, "postJson");
+		}
+		entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+
+		mClient.post(mContext, mBaseUrl + url, entity, "application/json", responseHandler);
+	}
+
 	public void put(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		SurespotLog.d(TAG, "put to " + url);
 		mClient.put(mBaseUrl + url, params, responseHandler);
@@ -446,19 +460,17 @@ public class NetworkController {
 	}
 
 	public void postMessages(List<SurespotMessage> messages, JsonHttpResponseHandler responseHandler) {
-		Map<String, String> params = new HashMap<String, String>();
-		JSONObject jso = new JSONObject();
+		JSONObject params = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
 		for (int i = 0; i < messages.size(); i++) {
 			jsonArray.put(messages.get(i).toJSONObjectSocket());
 		}
 		try {
-			jso.put("messages", jsonArray);
+			params.put("messages", jsonArray);
 		} catch (JSONException e) {
-			e.printStackTrace();
+			SurespotLog.e(TAG, e, "postMessages");
 		}
-		params.put("messages", jso.toString());
-		post("/messages", new RequestParams(params), responseHandler);
+		postJson("/messages", params, responseHandler);
 	}
 
 	public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {

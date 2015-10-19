@@ -1104,7 +1104,7 @@ public class CommunicationService extends Service {
         mResendBuffer.add(message);
 
         // testing - we want to use sockets, not http, but testing the new functionality for now
-        /*ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
+        ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
         SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
             @Override
@@ -1117,9 +1117,9 @@ public class CommunicationService extends Service {
             public void onFailure(Throwable error, String content) {
                 super.onFailure(error, content);
             }
-        });*/
+        });
 
-
+/*
         if (getConnectionState() == STATE_CONNECTED) {
             SurespotLog.d(TAG, "sendmessage, mSocket: %s", mSocket);
             JSONObject json = message.toJSONObjectSocket();
@@ -1131,6 +1131,7 @@ public class CommunicationService extends Service {
                 mSocket.send(json);
             }
         }
+        */
     }
 
     private void setOnWifi() {
