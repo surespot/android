@@ -777,9 +777,16 @@ public class CommunicationService extends Service {
                     public void onSuccess(JSONObject jsonObject) {
                         // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
                         try {
-                            SurespotMessage message = SurespotMessage.toSurespotMessage(jsonObject);
-                            // TODO: do we need to do more here?
-                            SurespotApplication.getChatController().handleMessage(message);
+                            JSONArray messages = jsonObject.getJSONArray("messageStatus");
+                            for (int n = 0; n < messages.length(); n++) {
+                                JSONObject messageAndStatus = messages.getJSONObject(n);
+                                JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
+                                // JSONObject jsonStatus = messageAndStatus.getJSONObject("status");
+                                // status should be 204 - TODO: will it ever be the case that some messages return 204 and others do not?
+                                SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                                // TODO: do we need to do more here?
+                                SurespotApplication.getChatController().handleMessage(messageReceived);
+                            }
                         } catch (JSONException e) {
                             SurespotLog.w(TAG, e, "JSON received from server");
                         }
@@ -788,7 +795,6 @@ public class CommunicationService extends Service {
                     @Override
                     public void onSuccess(JSONArray jsonArray) {
                         // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
-                        ArrayList<SurespotMessage> list = new ArrayList<SurespotMessage>();
                         for (int n = 0; n < jsonArray.length(); n++) {
                             try {
                                 JSONObject jso = jsonArray.getJSONObject(n);
@@ -1222,9 +1228,17 @@ public class CommunicationService extends Service {
             public void onSuccess(JSONObject jsonObject) {
                 // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
                 try {
-                    SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonObject);
-                    // TODO: do we need to do more here?
-                    SurespotApplication.getChatController().handleMessage(messageReceived);
+                    JSONArray messages = jsonObject.getJSONArray("messageStatus");
+                    for (int n = 0; n < messages.length(); n++) {
+                        JSONObject messageAndStatus = messages.getJSONObject(n);
+                        JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
+                        // JSONObject jsonStatus = messageAndStatus.getJSONObject("status");
+                        // status should be 204 - TODO: will it ever be the case that some messages return 204 and others do not?
+                        SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                        // TODO: do we need to do more here?
+                        SurespotApplication.getChatController().handleMessage(messageReceived);
+                        mResendBuffer.remove(messageReceived);
+                    }
                     mResendBuffer.remove(message);
                 } catch (JSONException e) {
                     SurespotLog.w(TAG, e, "JSON received from server");
