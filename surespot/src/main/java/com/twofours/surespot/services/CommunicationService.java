@@ -769,63 +769,64 @@ public class CommunicationService extends Service {
         }
 
         if (!isConnected()) {
+            if (SurespotApplication.getNetworkControllerNoThrow() != null) {
+                // send via http(s) since the web socket is not connected
+                SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
 
-            // send via http(s) since the web socket is not connected
-            SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
-
-                @Override
-                public void onSuccess(JSONObject jsonObject) {
-                    // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
-                    try {
-                        SurespotMessage message = SurespotMessage.toSurespotMessage(jsonObject);
-                        // TODO: do we need to do more here?
-                        SurespotApplication.getChatController().handleMessage(message);
-                    } catch (JSONException e) {
-                        SurespotLog.w(TAG, e, "JSON received from server");
-                    }
-                }
-
-                @Override
-                public void onSuccess(JSONArray jsonArray) {
-                    // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
-                    ArrayList<SurespotMessage> list = new ArrayList<SurespotMessage>();
-                    for (int n = 0; n < jsonArray.length(); n++) {
+                    @Override
+                    public void onSuccess(JSONObject jsonObject) {
+                        // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
                         try {
-                            JSONObject jso = jsonArray.getJSONObject(n);
-                            SurespotMessage message = SurespotMessage.toSurespotMessage(jso);
+                            SurespotMessage message = SurespotMessage.toSurespotMessage(jsonObject);
                             // TODO: do we need to do more here?
                             SurespotApplication.getChatController().handleMessage(message);
                         } catch (JSONException e) {
-                            SurespotLog.w(TAG, e, "JSON array received from server");
+                            SurespotLog.w(TAG, e, "JSON received from server");
                         }
                     }
-                }
 
-                @Override
-                public void onSuccess(int statusCode, String content) {
-                    super.onSuccess(statusCode, content);
-                }
+                    @Override
+                    public void onSuccess(JSONArray jsonArray) {
+                        // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
+                        ArrayList<SurespotMessage> list = new ArrayList<SurespotMessage>();
+                        for (int n = 0; n < jsonArray.length(); n++) {
+                            try {
+                                JSONObject jso = jsonArray.getJSONObject(n);
+                                SurespotMessage message = SurespotMessage.toSurespotMessage(jso);
+                                // TODO: do we need to do more here?
+                                SurespotApplication.getChatController().handleMessage(message);
+                            } catch (JSONException e) {
+                                SurespotLog.w(TAG, e, "JSON array received from server");
+                            }
+                        }
+                    }
 
-                @Override
-                public void onFailure(Throwable error, String content) {
-                    // re-add to resend buffer
-                    mResendBuffer.addAll(toSend);
-                }
+                    @Override
+                    public void onSuccess(int statusCode, String content) {
+                        super.onSuccess(statusCode, content);
+                    }
 
-                @Override
-                public void onFailure(Throwable e, JSONObject errorResponse) {
-                    // re-add to resend buffer
-                    // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
-                    mResendBuffer.addAll(toSend);
-                }
+                    @Override
+                    public void onFailure(Throwable error, String content) {
+                        // re-add to resend buffer
+                        mResendBuffer.addAll(toSend);
+                    }
 
-                @Override
-                public void onFailure(Throwable e, JSONArray errorResponse) {
-                    // re-add to resend buffer
-                    // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
-                    mResendBuffer.addAll(toSend);
-                }
-            });
+                    @Override
+                    public void onFailure(Throwable e, JSONObject errorResponse) {
+                        // re-add to resend buffer
+                        // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
+                        mResendBuffer.addAll(toSend);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable e, JSONArray errorResponse) {
+                        // re-add to resend buffer
+                        // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
+                        mResendBuffer.addAll(toSend);
+                    }
+                });
+            }
         } else {
 
             // send via socket since we're connected
