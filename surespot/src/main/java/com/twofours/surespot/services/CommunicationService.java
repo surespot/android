@@ -937,6 +937,7 @@ public class CommunicationService extends Service {
     private void scheduleSendUnsentMaterialTimer() {
         if (mResendViaHttpTries >= MAX_RETRIES_SEND_VIA_HTTP) {
             raiseNotificationForUnsentMessages();
+            checkShutdownService(false, false, true);
             return;
         }
         int timerInterval = generateInterval(mResendViaHttpTries++);
