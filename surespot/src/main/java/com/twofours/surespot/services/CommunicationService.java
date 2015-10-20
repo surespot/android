@@ -83,6 +83,7 @@ public class CommunicationService extends Service {
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
     private boolean mMainActivityPaused = false;
+    private SendUnsentMaterialTask mSendUnsentMaterialTask;
     private ReconnectTask mReconnectTask;
     private ReloginTask mReloginTask;
     private boolean mEverConnected = false;
@@ -94,6 +95,7 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
+    private static final int MAX_RETRIES_SEND_VIA_HTTP = 30;
     private static final int MAX_RETRIES = 60;
     private static final int MAX_RETRIES_MAIN_ACTIVITY_PAUSED = 20;
     private static final int MAX_RELOGIN_RETRIES = 60;
@@ -102,10 +104,14 @@ public class CommunicationService extends Service {
     private static final int MAX_RETRY_DELAY = 10;
 
     private static final int DISCONNECT_DELAY_SECONDS = 60 * 10; // probably want 5-10, 1 is good for testing
+    private static final int RETRY_SEND_HTTP_DELAY_SECONDS = 10;
 
+    private int mResendViaHttpTries = 0;
     private int mTriesRelogin = 0;
     private Socket mSocket;
     private int mRetries = 0;
+    private Timer mResendViaHttpTimer;
+    private Object RESEND_HTTP_TIMER_LOCK = new Object();
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
     private Timer mDisconnectTimer;
@@ -133,6 +139,7 @@ public class CommunicationService extends Service {
     private void resetState() {
         mRetries = 0;
         mTriesRelogin = 0;
+        mResendViaHttpTries = 0;
         mPromptingResendErroredMessages = false;
         this.cancelDisconnectTimer();
         this.cancelGiveUpReconnectingTimer();
@@ -794,17 +801,7 @@ public class CommunicationService extends Service {
 
                     @Override
                     public void onSuccess(JSONArray jsonArray) {
-                        // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
-                        for (int n = 0; n < jsonArray.length(); n++) {
-                            try {
-                                JSONObject jso = jsonArray.getJSONObject(n);
-                                SurespotMessage message = SurespotMessage.toSurespotMessage(jso);
-                                // TODO: do we need to do more here?
-                                SurespotApplication.getChatController().handleMessage(message);
-                            } catch (JSONException e) {
-                                SurespotLog.w(TAG, e, "JSON array received from server");
-                            }
-                        }
+                        SurespotLog.w(TAG, "Unexpected condition - JSON array received from server");
                     }
 
                     @Override
@@ -816,6 +813,7 @@ public class CommunicationService extends Service {
                     public void onFailure(Throwable error, String content) {
                         // re-add to resend buffer
                         mResendBuffer.addAll(toSend);
+                        scheduleSendUnsentMaterialTimer();
                     }
 
                     @Override
@@ -823,6 +821,7 @@ public class CommunicationService extends Service {
                         // re-add to resend buffer
                         // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
                         mResendBuffer.addAll(toSend);
+                        scheduleSendUnsentMaterialTimer();
                     }
 
                     @Override
@@ -830,6 +829,7 @@ public class CommunicationService extends Service {
                         // re-add to resend buffer
                         // do we need to be more fine-grained about what failed?  will the server ever succeed for some messages but fail for others?
                         mResendBuffer.addAll(toSend);
+                        scheduleSendUnsentMaterialTimer();
                     }
                 });
             }
@@ -934,6 +934,33 @@ public class CommunicationService extends Service {
         }
     }
 
+    private void scheduleSendUnsentMaterialTimer() {
+        if (mResendViaHttpTries >= MAX_RETRIES_SEND_VIA_HTTP) {
+            raiseNotificationForUnsentMessages();
+            return;
+        }
+        int timerInterval = generateInterval(mResendViaHttpTries++);
+        SurespotLog.d(TAG, "try %d sending unsent material starting another task in: %d", mResendViaHttpTries - 1, timerInterval);
+
+        synchronized (RESEND_HTTP_TIMER_LOCK) {
+            if (mSendUnsentMaterialTask != null) {
+                mSendUnsentMaterialTask.cancel();
+                mSendUnsentMaterialTask = null;
+            }
+
+            if (mResendViaHttpTimer != null) {
+                mResendViaHttpTimer.cancel();
+                mResendViaHttpTimer = null;
+            }
+
+            // Is there ever a case where we don't want to try a reconnect?
+            SendUnsentMaterialTask retrySendViaHttpTask = new SendUnsentMaterialTask();
+            mResendViaHttpTimer = new Timer("sendUnsentMaterialTimer");
+            mResendViaHttpTimer.schedule(retrySendViaHttpTask, timerInterval);
+            mSendUnsentMaterialTask = retrySendViaHttpTask;
+        }
+    }
+
     private void scheduleReconnectionAttempt() {
         int timerInterval = generateInterval(mRetries++);
         SurespotLog.d(TAG, "try %d starting another task in: %d", mRetries - 1, timerInterval);
@@ -1009,6 +1036,15 @@ public class CommunicationService extends Service {
         public void run() {
             SurespotLog.d(TAG, "Reconnect task run.");
             connect();
+        }
+    }
+
+    private class SendUnsentMaterialTask extends TimerTask {
+
+        @Override
+        public void run() {
+            SurespotLog.d(TAG, "SendUnsentMaterial task run.");
+            handleUnsentMaterial();
         }
     }
 
@@ -1247,19 +1283,7 @@ public class CommunicationService extends Service {
 
             @Override
             public void onSuccess(JSONArray jsonArray) {
-                // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
-                ArrayList<SurespotMessage> list = new ArrayList<SurespotMessage>();
-                for (int n = 0; n < jsonArray.length(); n++) {
-                    try {
-                        JSONObject jso = jsonArray.getJSONObject(n);
-                        SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jso);
-                        // TODO: do we need to do more here?
-                        SurespotApplication.getChatController().handleMessage(messageReceived);
-                        mResendBuffer.remove(message);
-                    } catch (JSONException e) {
-                        SurespotLog.w(TAG, e, "JSON array received from server");
-                    }
-                }
+                SurespotLog.w(TAG, "Unexpected condition - JSON array received from server");
             }
 
             @Override
