@@ -776,7 +776,7 @@ public class CommunicationService extends Service {
         }
 
         if (!isConnected()) {
-            if (SurespotApplication.getNetworkControllerNoThrow() != null) {
+            if (SurespotApplication.getNetworkControllerNoThrow() != null && toSend.size() > 0) {
                 // send via http(s) since the web socket is not connected
                 SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
 
