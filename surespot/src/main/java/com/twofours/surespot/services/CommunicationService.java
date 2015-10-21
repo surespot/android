@@ -278,8 +278,10 @@ public class CommunicationService extends Service {
 
     public synchronized boolean connect() {
 
-        // TODO: HEREHERE - now that we don't want to connect the websocket when the main activity is paused, do we
-        // check if there is unsent material here and attempt to post via http?  What is the best place to do so...?
+        if (mMainActivityPaused) {
+            // if the communication service wants to stay connected again any time in the future, disable the below statement
+            return true;
+        }
 
         SurespotLog.d(TAG, "connect, mSocket: " + mSocket + ", connected: " + (mSocket != null ? mSocket.connected() : false) + ", state: " + mConnectionState);
         cancelDisconnectTimer();
@@ -476,7 +478,6 @@ public class CommunicationService extends Service {
         // confirm this is sufficient - simply clear the resend/send buffers
         mResendBuffer.clear();
         mSendBuffer.clear();
-        // TODO: HEREHERE: update all the friend adapters to make sure the messages read "error sending message" instead of "sending..."
 
         invalidateAllChatAdapters();
     }
@@ -782,7 +783,7 @@ public class CommunicationService extends Service {
 
                     @Override
                     public void onSuccess(JSONObject jsonObject) {
-                        // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
+                        // update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
                         try {
                             JSONArray messages = jsonObject.getJSONArray("messageStatus");
                             for (int n = 0; n < messages.length(); n++) {
@@ -1239,6 +1240,7 @@ public class CommunicationService extends Service {
 
         mResendBuffer.add(message);
 
+        // for now, send all messages using http for testing
         if (mMainActivityPaused) {
             sendMessageUsingHttp(message);
         } else {
@@ -1263,7 +1265,6 @@ public class CommunicationService extends Service {
 
             @Override
             public void onSuccess(JSONObject jsonObject) {
-                // TODO: need to update message id, chat adapter based on response.  chat adapter is not updating its UI either without user interaction
                 try {
                     JSONArray messages = jsonObject.getJSONArray("messageStatus");
                     for (int n = 0; n < messages.length(); n++) {
@@ -1290,7 +1291,7 @@ public class CommunicationService extends Service {
             @Override
             public void onSuccess(int statusCode, String content) {
                 super.onSuccess(statusCode, content);
-                // TODO: populate info from message like id, update chat adapter, etc
+                // not sure this is a legit condition
                 mResendBuffer.remove(message);
             }
 
@@ -1321,172 +1322,6 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "setOnWifi, set mOnWifi to: %b", mOnWifi);
         }
     }
-
-//    private class SocketCallbackHandler implements IOCallback {
-//
-//        @Override
-//        public void onMessage(JSONObject json, IOAcknowledge ack) {
-//            try {
-//                SurespotLog.d(TAG, "JSON Server said: %s", json.toString(2));
-//            } catch (JSONException e) {
-//                SurespotLog.w(TAG, "onMessage", e);
-//            }
-//        }
-//
-//        @Override
-//        public void onMessage(String data, IOAcknowledge ack) {
-//            SurespotLog.d(TAG, "Server said: %s", data);
-//        }
-//
-//        @Override
-//        public synchronized void onError(SocketIOException socketIOException) {
-//            handleSocketException(socketIOException);
-//        }
-//
-//        @Override
-//        public void onDisconnect() {
-//            SurespotLog.d(TAG, "Connection terminated.");
-//            setState(STATE_DISCONNECTED);
-//            mRetries = 0;
-//        }
-//
-//        @Override
-//        public void onConnect() {
-//            SurespotLog.d(TAG, "mSocket.io connection established");
-//            setOnWifi();
-//            stopReconnectionAttempts();
-//            cancelGiveUpReconnectingTimer();
-//            setState(STATE_CONNECTED);
-//            if (SurespotApplication.getChatController() != null) {
-//                SurespotApplication.getChatController().onResume(true);
-//            }
-//            onConnected();
-//        }
-//
-//        @Override
-//        public void on(String event, IOAcknowledge ack, Object... args) {
-//
-//            // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
-//
-//            SurespotLog.d(TAG, "Server triggered event '" + event + "'");
-//            if (event.equals("control")) {
-//                try {
-//                    SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage(new JSONObject((String) args[0]));
-//                    SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
-//                } catch (JSONException e) {
-//                    SurespotLog.w(TAG, "on control", e);
-//                }
-//            } else if (event.equals("message")) {
-//                try {
-//                    JSONObject jsonMessage = new JSONObject((String) args[0]);
-//                    SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
-//                    SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-//                    SurespotApplication.getChatController().handleMessage(message);
-//
-//                    // see if we have deletes
-//                    String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
-//                    if (sDeleteControlMessages != null) {
-//                        JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
-//
-//                        if (deleteControlMessages.length() > 0) {
-//                            for (int i = 0; i < deleteControlMessages.length(); i++) {
-//                                try {
-//                                    SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
-//                                    SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
-//                                } catch (JSONException e) {
-//                                    SurespotLog.w(TAG, "on control", e);
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    // the UI might have already removed the message from the resend buffer.  That's okay.
-//                    Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
-//                    while (iterator.hasNext()) {
-//                        message = iterator.next();
-//                        if (message.getIv().equals(message.getIv())) {
-//                            iterator.remove();
-//                            break;
-//                        }
-//                    }
-//
-//                    if (mMainActivityPaused) {
-//                        // make sure to save out messages because main activity will reload and base message status on saved messages
-//                        save();
-//                    }
-//
-//                    checkAndSendNextMessage(message);
-//                } catch (JSONException e) {
-//                    SurespotLog.w(TAG, "on message", e);
-//                }
-//            } else if (event.equals("messageError")) {
-//                try {
-//                    JSONObject jsonMessage = (JSONObject) args[0];
-//                    SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
-//                    SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
-//                    SurespotApplication.getChatController().handleErrorMessage(errorMessage);
-//
-//                    // the UI might have already removed the message from the resend buffer.  That's okay.
-//                    SurespotMessage message = null;
-//
-//                    Iterator<SurespotMessage> iterator = mResendBuffer.iterator();
-//                    while (iterator.hasNext()) {
-//                        message = iterator.next();
-//                        if (message.getIv().equals(errorMessage.getId())) {
-//                            iterator.remove();
-//                            message.setErrorStatus(errorMessage.getStatus());
-//                            break;
-//                        }
-//                    }
-//                } catch (JSONException e) {
-//                    SurespotLog.w(TAG, "on messageError", e);
-//                }
-//            }
-//        }
-//    }
-
-//    private void handleSocketException(SocketIOException socketIOException) {
-//        boolean reAuthing = false;
-//        setState(STATE_DISCONNECTED);
-//        onNotConnected();
-//
-//        // mSocket.io returns 403 for can't login
-//        if (socketIOException.getHttpStatus() == 403) {
-//            SurespotLog.d(TAG, "got 403 from websocket");
-//
-//            reAuthing = tryReLogin();
-//
-//            if (!reAuthing) {
-//                mSocket = null;
-//
-//                if (mListener != null) {
-//                    mListener.onReconnectFailed();
-//                }
-//
-//                userLoggedOut();
-//                return;
-//            }
-//        }
-//
-//        if (reAuthing)
-//            return;
-//
-//        SurespotLog.i(TAG, socketIOException, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mRetries);
-//
-//        setOnWifi();
-//        // kick off another task
-//        if (mRetries < MAX_RETRIES) {
-//            scheduleReconnectionAttempt();
-//        } else {
-//            SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
-//            if (mListener != null) {
-//                mListener.onCouldNotConnectToServer();
-//            }
-//            // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
-//            userLoggedOut();
-//        }
-//    }
-
 
     private class ReLoginCookieResponseHandler extends CookieResponseHandler {
         @Override
