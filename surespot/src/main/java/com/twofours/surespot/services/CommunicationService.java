@@ -18,12 +18,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompatBase;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -38,13 +36,13 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.common.WebClientDevWrapper;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
-import com.twofours.surespot.ui.UIUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,6 +61,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import ch.boye.httpclientandroidlib.conn.ssl.SSLSocketFactory;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 import io.socket.client.IO;
 import io.socket.client.Manager;
@@ -163,6 +162,9 @@ public class CommunicationService extends Service {
     private Socket createSocket() {
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
+            opts.sslContext = WebClientDevWrapper.getSSLContext();
+            opts.secure = true;
+            opts.hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
             opts.transports = new String[]{WebSocket.NAME};
 
             try {

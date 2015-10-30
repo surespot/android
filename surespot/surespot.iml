@@ -93,6 +93,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="okhttp-ws-2.4.0" level="project" />
+    <orderEntry type="library" exported="" name="socket.io-client-0.6.1" level="project" />
     <orderEntry type="library" exported="" name="google-api-client-android-1.17.0-rc" level="project" />
     <orderEntry type="library" exported="" name="google-http-client-1.19.0" level="project" />
     <orderEntry type="library" exported="" name="google-http-client-android-1.17.0-rc" level="project" />
@@ -100,21 +102,23 @@
     <orderEntry type="library" exported="" name="guava-18.0" level="project" />
     <orderEntry type="library" exported="" name="google-api-services-drive-v2-rev103-1.17.0-rc" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3" level="project" />
+    <orderEntry type="library" exported="" name="engine.io-client-0.6.1" level="project" />
+    <orderEntry type="library" exported="" name="okhttp-2.4.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-22.2.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-22.2.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-drive-7.8.0" level="project" />
     <orderEntry type="library" exported="" name="google-http-client-gson-1.19.0" level="project" />
     <orderEntry type="library" exported="" name="google-oauth-client-1.17.0-rc" level="project" />
+    <orderEntry type="library" exported="" name="protobuf-java-2.4.1" level="project" />
     <orderEntry type="library" exported="" name="jsr305-1.3.9" level="project" />
     <orderEntry type="library" exported="" name="1_jsr305-1.3.9" level="project" />
-    <orderEntry type="library" exported="" name="protobuf-java-2.4.1" level="project" />
     <orderEntry type="library" exported="" name="google-api-client-1.17.0-rc" level="project" />
+    <orderEntry type="library" exported="" name="okio-1.4.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-base-7.8.0" level="project" />
     <orderEntry type="module" module-name="ColorPickerPreference" exported="" />
     <orderEntry type="module" module-name="httpclientandroidlib" exported="" />
     <orderEntry type="module" module-name="androidkeystore" exported="" />
     <orderEntry type="module" module-name="androidasynchttp" exported="" />
-    <orderEntry type="module" module-name="sSLWebSocket" exported="" />
     <orderEntry type="module" module-name="surespotcommon" exported="" />
     <orderEntry type="module" module-name="viewpagerindicator" exported="" />
     <orderEntry type="module" module-name="imageViewTouch" exported="" />
