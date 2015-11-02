@@ -147,7 +147,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             // so gonna show notification now; was unnecessary before because the socket would have been
                             // disconnected before push arrived if we got this far thanks to above isscreenon...etc.  check
                             // OE hmmm... is there a flag we can set if the main activity is not paused to indicate the user has truly "seen" the message or not?
-                            added = true;
+                       //     added = true;
                         }
                     }
 

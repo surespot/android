@@ -314,11 +314,11 @@ public class ChatAdapter extends BaseAdapter {
                 // if it's a text message or we're sending
                 if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || !item.isAlreadySent()) {
                     // TODO: HEREHERE: determine if status should be "sending..." or "error sending message" (depending on presence in resend buffer??)
-                    if (SurespotApplication.getCommunicationService().messageIsInResendBuffer(item)) {
+                 //   if (SurespotApplication.getCommunicationService().messageIsInResendBuffer(item)) {
                         chatMessageViewHolder.tvTime.setText(R.string.message_sending);
-                    } else {
-                        chatMessageViewHolder.tvTime.setText(R.string.error_sending_message);
-                    }
+                //    } else {
+                //        chatMessageViewHolder.tvTime.setText(R.string.error_sending_message);
+                 //   }
                     SurespotLog.v(TAG, "getView, item.getId() is null, a text message or not loaded from disk, setting status text to sending...");
                 } else {
                     if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {

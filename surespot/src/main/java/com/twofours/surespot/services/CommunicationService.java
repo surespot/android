@@ -85,9 +85,6 @@ public class CommunicationService extends Service {
     private SendUnsentMaterialTask mSendUnsentMaterialTask;
     private ReconnectTask mReconnectTask;
     private ReloginTask mReloginTask;
-    private boolean mEverConnected = false;
-    private DisconnectTask mDisconnectTask;
-    private GiveUpReconnectingTask mGiveUpReconnectingTask;
     public static String mCurrentChat;
     Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -102,9 +99,6 @@ public class CommunicationService extends Service {
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 10;
 
-    private static final int DISCONNECT_DELAY_SECONDS = 60 * 10; // probably want 5-10, 1 is good for testing
-    private static final int RETRY_SEND_HTTP_DELAY_SECONDS = 10;
-
     private int mResendViaHttpTries = 0;
     private int mTriesRelogin = 0;
     private Socket mSocket;
@@ -113,10 +107,6 @@ public class CommunicationService extends Service {
     private Object RESEND_HTTP_TIMER_LOCK = new Object();
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
-    private Timer mDisconnectTimer;
-    private Object DISCONNECT_TIMER_LOCK = new Object();
-    private Timer mGiveUpReconnectingTimer;
-    private Object GIVE_UP_RECONNECTING_LOCK = new Object();
     private Timer mReloginTimer;
     private Object RELOGIN_TIMER_LOCK = new Object();
     private int mConnectionState;
@@ -140,8 +130,7 @@ public class CommunicationService extends Service {
         mTriesRelogin = 0;
         mResendViaHttpTries = 0;
         mPromptingResendErroredMessages = false;
-        this.cancelDisconnectTimer();
-        this.cancelGiveUpReconnectingTimer();
+
     }
 
     private synchronized void disposeSocket() {
@@ -256,8 +245,6 @@ public class CommunicationService extends Service {
             shutdownConnection();
             checkShutdownService(true, false, false);
             SurespotApplication.getChatController().dispose();
-            mEverConnected = false;
-            cancelGiveUpReconnectingTimer();
         }
     }
 
@@ -286,7 +273,6 @@ public class CommunicationService extends Service {
         }
 
         SurespotLog.d(TAG, "connect, mSocket: " + mSocket + ", connected: " + (mSocket != null ? mSocket.connected() : false) + ", state: " + mConnectionState);
-        cancelDisconnectTimer();
 
         if (getConnectionState() == STATE_CONNECTED && mSocket != null && mSocket.connected()) {
             onAlreadyConnected();
@@ -336,8 +322,6 @@ public class CommunicationService extends Service {
 
         SurespotLog.d(TAG, "Sending: " + mSendBuffer.size() + " messages.");
 
-        checkScheduleDisconnect();
-        checkShutdownService(false, false, false);
 
         Iterator<SurespotMessage> iterator = mSendBuffer.iterator();
         ArrayList<SurespotMessage> sentMessages = new ArrayList<SurespotMessage>();
@@ -388,10 +372,6 @@ public class CommunicationService extends Service {
 
     public void clearServiceListener() {
         mListener = null;
-        checkShutdownService(false, false, false);
-        if (getConnectionState() != STATE_CONNECTED) {
-            scheduleGiveUpReconnecting();
-        }
     }
 
     public void saveIfMainActivityPaused() {
@@ -514,7 +494,7 @@ public class CommunicationService extends Service {
         if (mListener != null) {
             mRetries = 0; // clear state related to retrying connections
         }
-        checkShutdownService(false, false, false);
+        //checkShutdownService(false, false, false);
     }
 
     public ITransmissionServiceListener getServiceListener() {
@@ -638,56 +618,8 @@ public class CommunicationService extends Service {
         }
     }
 
-    // see if we should schedule a disconnect or not
-    private void checkScheduleDisconnect() {
-        // if main activity is paused and we're not sending anything
-        if (mMainActivityPaused && mSendBuffer.size() == 0) {
-            // setup a disconnect N minutes from now
-            scheduleDisconnect();
-        }
-    }
 
-    // setup a disconnect N minutes from now
-    private void scheduleDisconnect() {
-        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000;
-        SurespotLog.d(TAG, "scheduleDisconnect, seconds: %d", delaySeconds/1000);
-        synchronized (DISCONNECT_TIMER_LOCK) {
-            if (mDisconnectTask != null) {
-                mDisconnectTask.cancel();
-                mDisconnectTask = null;
-            }
 
-            DisconnectTask disconnectTask = new DisconnectTask();
-            if (mDisconnectTimer != null) {
-                mDisconnectTimer.cancel();
-                mDisconnectTimer = null;
-            }
-            mDisconnectTimer = new Timer("disconnectTimer");
-            mDisconnectTimer.schedule(disconnectTask, delaySeconds);
-            mDisconnectTask = disconnectTask;
-        }
-    }
-
-    // schedule give up reconnecting
-    private void scheduleGiveUpReconnecting() {
-        int delaySeconds = DISCONNECT_DELAY_SECONDS * 1000 * 10;
-        SurespotLog.d(TAG, "scheduleGiveUpReconnecting, seconds: %d", delaySeconds/1000);
-        synchronized (GIVE_UP_RECONNECTING_LOCK) {
-            if (mGiveUpReconnectingTask != null) {
-                mGiveUpReconnectingTask.cancel();
-                mGiveUpReconnectingTask = null;
-            }
-
-            GiveUpReconnectingTask giveUpReconnectingTask = new GiveUpReconnectingTask();
-            if (mGiveUpReconnectingTimer != null) {
-                mGiveUpReconnectingTimer.cancel();
-                mGiveUpReconnectingTimer = null;
-            }
-            mGiveUpReconnectingTimer = new Timer("giveUpReconnecting");
-            mGiveUpReconnectingTimer.schedule(giveUpReconnectingTask, delaySeconds);
-            mGiveUpReconnectingTask = giveUpReconnectingTask;
-        }
-    }
 
     // setup a disconnect N minutes from now
     private void startReloginTimer() {
@@ -727,10 +659,6 @@ public class CommunicationService extends Service {
 
         if (mUsername != null && !mUsername.equals("")) {
             sendFileStreamMessages(false);
-        }
-
-        if (getConnectionState() == STATE_CONNECTED) {
-            cancelGiveUpReconnectingTimer();
         }
 
         final ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
@@ -863,7 +791,6 @@ public class CommunicationService extends Service {
     // notify listeners that we've connected
     private void onConnected() {
         SurespotLog.d(TAG, "onConnected");
-        mEverConnected = true;
 
         // tell any listeners that we're connected
         if (mListener != null) {
@@ -940,7 +867,7 @@ public class CommunicationService extends Service {
     private void scheduleSendUnsentMaterialTimer() {
         if (mResendViaHttpTries >= MAX_RETRIES_SEND_VIA_HTTP) {
             raiseNotificationForUnsentMessages();
-            checkShutdownService(false, false, true);
+            //checkShutdownService(false, false, true);
             return;
         }
         int timerInterval = generateInterval(mResendViaHttpTries++);
@@ -993,7 +920,6 @@ public class CommunicationService extends Service {
         disconnect();
         stopReconnectionAttempts();
         unregisterReceiver();
-        checkShutdownService(false, false, false);
     }
 
     private void unregisterReceiver() {
@@ -1015,7 +941,6 @@ public class CommunicationService extends Service {
         if (mSendBuffer.size() == 0 &&
                 (mMainActivityPaused && mListener == null) &&
                 !justDisconnecting &&
-                mDisconnectTimer == null &&
                 ((timeoutTimerJustExpired && mMainActivityPaused) || mListener == null) &&
                 (timeoutTimerJustExpired || mResendBuffer.size() == 0)) {
             Log.d(TAG, "shutting down service!");
@@ -1052,30 +977,6 @@ public class CommunicationService extends Service {
         }
     }
 
-    private class DisconnectTask extends TimerTask {
-
-        @Override
-        public void run() {
-            SurespotLog.d(TAG, "Disconnect task run.");
-            disconnect();
-            cancelDisconnectTimer();
-            checkShutdownService(false, true, false);
-        }
-    }
-
-    private class GiveUpReconnectingTask extends TimerTask {
-
-        @Override
-        public void run() {
-            SurespotLog.d(TAG, "GiveUpReconnecting task run.");
-            // raise Android notifications for unsent messages so the user can re-enter the app and retry sending
-            if (mMainActivityPaused && (!CommunicationService.this.mResendBuffer.isEmpty() || !CommunicationService.this.mSendBuffer.isEmpty())) {
-                CommunicationService.this.raiseNotificationForUnsentMessages();
-            }
-            cancelGiveUpReconnectingTimer();
-            checkShutdownService(false, false, true);
-        }
-    }
 
     private void raiseNotificationForUnsentMessages() {
         mBuilder.setAutoCancel(true).setOnlyAlertOnce(true);
@@ -1172,39 +1073,7 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void cancelGiveUpReconnectingTimer() {
-        SurespotLog.d(TAG, "cancelGiveUpReconnectingTimer");
-        synchronized (GIVE_UP_RECONNECTING_LOCK) {
-            if (mGiveUpReconnectingTask != null) {
-                mGiveUpReconnectingTask.cancel();
-                mGiveUpReconnectingTask = null;
-            }
-
-            if (mGiveUpReconnectingTimer != null) {
-                mGiveUpReconnectingTimer.cancel();
-                mGiveUpReconnectingTimer = null;
-            }
-        }
-    }
-
-    private void cancelDisconnectTimer() {
-        SurespotLog.d(TAG, "cancelDisconnectTimer");
-        // cancel any disconnect that's been scheduled
-        synchronized (DISCONNECT_TIMER_LOCK) {
-            if (mDisconnectTask != null) {
-                mDisconnectTask.cancel();
-                mDisconnectTask = null;
-            }
-
-            if (mDisconnectTimer != null) {
-                mDisconnectTimer.cancel();
-                mDisconnectTimer = null;
-            }
-        }
-    }
-
     private void disconnect() {
-        cancelDisconnectTimer();
 
         if (SurespotApplication.getChatController() != null) {
             SurespotApplication.getChatController().onPause();
@@ -1445,7 +1314,6 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "mSocket.io connection established");
             setOnWifi();
             stopReconnectionAttempts();
-            cancelGiveUpReconnectingTimer();
             setState(STATE_CONNECTED);
             if (SurespotApplication.getChatController() != null) {
                 SurespotApplication.getChatController().onResume(true);
@@ -1487,7 +1355,7 @@ public class CommunicationService extends Service {
                             mListener.onReconnectFailed();
                         }
 
-                        userLoggedOut();
+                        //userLoggedOut();
                         return;
                     }
                 }
@@ -1517,7 +1385,7 @@ public class CommunicationService extends Service {
                 }
 
                 // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
-                userLoggedOut();
+                //userLoggedOut();
             }
         }
     };

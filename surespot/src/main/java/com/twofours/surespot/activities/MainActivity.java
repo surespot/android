@@ -842,7 +842,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         mBillingController = SurespotApplication.getBillingController();
 
-        SurespotApplication.setChatController(new ChatController(mUser, SurespotApplication.getNetworkController(), getSupportFragmentManager(), m401Handler,
+        SurespotApplication.setChatController(new ChatController(this, mUser, SurespotApplication.getNetworkController(), getSupportFragmentManager(), m401Handler,
                 new IAsyncCallback<Boolean>() {
                     @Override
                     public void handleResponse(Boolean inProgress) {
@@ -2332,11 +2332,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 @Override
                 public void run() {
                     MainActivity.this.setHomeProgress(false);
+                    if (!logIfChatControllerNull()) {
+                        SurespotApplication.getChatController().connected();
+                    }
                 }
             });
-            if (!logIfChatControllerNull()) {
-                SurespotApplication.getChatController().connected();
-            }
+
         }
 
         @Override

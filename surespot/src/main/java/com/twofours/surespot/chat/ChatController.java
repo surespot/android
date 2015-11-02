@@ -103,11 +103,11 @@ public class ChatController {
 	private boolean mHandlingAutoInvite;
 	private String mUsername;
 
-	public ChatController(String username, NetworkController networkController, FragmentManager fm,
+	public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm,
 			IAsyncCallbackTuple<String, Boolean> m401Handler, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
 			IAsyncCallback<Friend> tabShowingCallback) {
 		SurespotLog.d(TAG, "constructor: %s", username);
-		mContext = SurespotApplication.getCommunicationService();
+		mContext = context;
 		mUsername = username;
 		mNetworkController = networkController;
 
@@ -262,6 +262,7 @@ public class ChatController {
 
 				@Override
 				protected Void doInBackground(Void... params) {
+					SurespotLog.d(TAG, "ChatAdapter open for user: %s",otherUser);
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
 						// decrypt it before adding
@@ -434,6 +435,7 @@ public class ChatController {
 
 		}
 		else {
+			SurespotLog.d(TAG, "ChatAdapter not open for user: %s",otherUser);
 			//new AsyncTask<Void, Void, Void>() {
 
 //				@Override
@@ -962,71 +964,66 @@ public class ChatController {
 		// if it's a system message from another user then check version
 		if (message.getType().equals("user")) {
 			handleUserControlMessage(message, notify);
-		}
-		else
-			if (message.getType().equals("message")) {
-				String otherUser = ChatUtils.getOtherSpotUser(message.getData(), mUsername);
-				Friend friend = mFriendAdapter.getFriend(otherUser);
+		} else if (message.getType().equals("message")) {
+			String otherUser = ChatUtils.getOtherSpotUser(message.getData(), mUsername);
+			Friend friend = mFriendAdapter.getFriend(otherUser);
 
-				if (chatAdapter == null) {
-					chatAdapter = mChatAdapters.get(otherUser);
+			if (chatAdapter == null) {
+				chatAdapter = mChatAdapters.get(otherUser);
+			}
+
+			if (chatAdapter != null) {
+				// if we're not re applying this control message
+				if (!reApplying) {
+					// add control message to check messages against later for this session
+					chatAdapter.addControlMessage(message);
 				}
 
-				if (chatAdapter != null) {
-					// if we're not re applying this control message
-					if (!reApplying) {
-						// add control message to check messages against later for this session
-						chatAdapter.addControlMessage(message);
-					}
+				boolean controlFromMe = message.getFrom().equals(mUsername);
+				if (message.getAction().equals("delete")) {
+					int messageId = Integer.parseInt(message.getMoreData());
+					SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
 
-					boolean controlFromMe = message.getFrom().equals(mUsername);
-					if (message.getAction().equals("delete")) {
-						int messageId = Integer.parseInt(message.getMoreData());
-						SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
-
-						if (dMessage != null) {
-							deleteMessageInternal(chatAdapter, dMessage, controlFromMe);
-						}
+					if (dMessage != null) {
+						deleteMessageInternal(chatAdapter, dMessage, controlFromMe);
 					}
-					else {
-						if (message.getAction().equals("deleteAll")) {
-							if (message.getMoreData() != null) {
-								if (controlFromMe) {
-									chatAdapter.deleteAllMessages(Integer.parseInt(message.getMoreData()));
-								}
-								else {
-									chatAdapter.deleteTheirMessages(Integer.parseInt(message.getMoreData()));
-								}
+				} else {
+					if (message.getAction().equals("deleteAll")) {
+						if (message.getMoreData() != null) {
+							if (controlFromMe) {
+								chatAdapter.deleteAllMessages(Integer.parseInt(message.getMoreData()));
+							} else {
+								chatAdapter.deleteTheirMessages(Integer.parseInt(message.getMoreData()));
 							}
 						}
-						else {
-							if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
-								int messageId = Integer.parseInt(message.getMoreData());
-								SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
-								if (dMessage != null) {
-									SurespotLog.d(TAG, "setting message " + message.getAction());
-									dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
-								}
+					} else {
+						if (message.getAction().equals("shareable") || message.getAction().equals("notshareable")) {
+							int messageId = Integer.parseInt(message.getMoreData());
+							SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
+							if (dMessage != null) {
+								SurespotLog.d(TAG, "setting message " + message.getAction());
+								dMessage.setShareable(message.getAction().equals("shareable") ? true : false);
 							}
 						}
-					}
-				}
-
-				if (notify) {
-					if (friend != null) {
-						// if the chat adapter is open we will have acted upon the control message
-						if (chatAdapter != null) {
-							friend.setLastReceivedMessageControlId(message.getId());
-						}
-
-						friend.setAvailableMessageControlId(message.getId());
-					}
-
-					if (chatAdapter != null) {
-						chatAdapter.notifyDataSetChanged();
 					}
 				}
 			}
+
+			if (notify) {
+				if (friend != null) {
+					// if the chat adapter is open we will have acted upon the control message
+					if (chatAdapter != null) {
+						friend.setLastReceivedMessageControlId(message.getId());
+					}
+
+					friend.setAvailableMessageControlId(message.getId());
+				}
+
+				if (chatAdapter != null) {
+					chatAdapter.notifyDataSetChanged();
+				}
+			}
+		}
 	}
 
 	private void handleUserControlMessage(SurespotControlMessage message, boolean notify) {
@@ -1514,6 +1511,7 @@ public class ChatController {
 		mPaused = true;
 		if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
 			SurespotApplication.getCommunicationService().save();
+
 		}
 	}
 
