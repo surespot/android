@@ -67,7 +67,6 @@ import com.twofours.surespot.chat.EmojiAdapter;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.MainActivityLayout;
 import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
-import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -1197,32 +1196,34 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
     private void uploadPicture(final Uri selectedImageUri, String to) {
         // Utils.makeToast(this, getString(R.string.uploading_image));
-        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), selectedImageUri, to, false, new IAsyncCallback<Boolean>() {
-            @Override
-            public void handleResponse(Boolean errorHandled) {
-                // delete local image
-                try {
-                    File file = new File(new URI(selectedImageUri.toString()));
+        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), selectedImageUri, to, false, true);
 
-                    boolean b = file.delete();
-                    SurespotLog.d(TAG, "deleted temp image file: %b", b);
-                }
-                catch (URISyntaxException e) {
-                }
-
-                if (!errorHandled) {
-                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-                    Runnable runnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-                        }
-                    };
-                    getMainHandler().post(runnable);
-                }
-            }
-        });
+//        new IAsyncCallback<Boolean>() {
+//            @Override
+//            public void handleResponse(Boolean errorHandled) {
+//                // delete local image
+//                try {
+//                    File file = new File(new URI(selectedImageUri.toString()));
+//
+//                    boolean b = file.delete();
+//                    SurespotLog.d(TAG, "deleted temp image file: %b", b);
+//                }
+//                catch (URISyntaxException e) {
+//                }
+//
+//                if (!errorHandled) {
+//                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+//                    Runnable runnable = new Runnable() {
+//
+//                        @Override
+//                        public void run() {
+//                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+//                        }
+//                    };
+//                    getMainHandler().post(runnable);
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -1867,25 +1868,26 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
                     SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-                    ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), imageUri, mCurrentFriend.getName(), true,
-                            new IAsyncCallback<Boolean>() {
-
-                                @Override
-                                public void handleResponse(Boolean errorHandled) {
-                                    if (!errorHandled) {
-                                        Runnable runnable = new Runnable() {
-
-                                            @Override
-                                            public void run() {
-                                                Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-
-                                            }
-                                        };
-
-                                        getMainHandler().post(runnable);
-                                    }
-                                }
-                            });
+                    ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), imageUri, mCurrentFriend.getName(), true, false);
+//                            new IAsyncCallback<Boolean>() {
+//
+//                                @Override
+//                                public void handleResponse(Boolean errorHandled) {
+                                    //showing notification now
+//                                    if (!errorHandled) {
+//                                        Runnable runnable = new Runnable() {
+//
+//                                            @Override
+//                                            public void run() {
+//                                                Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
+//
+//                                            }
+//                                        };
+//
+//                                        getMainHandler().post(runnable);
+//                                    }
+                //                }
+                //            });
                 }
                 else {
                     if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {

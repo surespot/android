@@ -380,40 +380,50 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void sendFileStreamMessages(boolean flushIfNotConnected) {
+    private void sendFileStreamMessages() {
         Iterator<FileStreamMessage> iterator = mFileStreamsToSend.iterator();
         while (iterator.hasNext()) {
             FileStreamMessage message = iterator.next();
-            if (flushIfNotConnected) {
-                iterator.remove();
+            //if (flushIfNotConnected) {
+               // iterator.remove();
                 sendFileStreamMessageImmediately(message);
-            }
-            else {
-                if (trySendFileStreamMessage(message)) {
-                    iterator.remove();
-                }
-            }
+//            }
+//            else {
+//                if (trySendFileStreamMessage(message)) {
+//                    iterator.remove();
+//                }
+//            }
         }
     }
 
-    private boolean trySendFileStreamMessage(FileStreamMessage fileStreamMessage) {
-        if (getConnectionState() == STATE_CONNECTED) {
-            sendFileStreamMessageImmediately(fileStreamMessage);
-            return true;
-        }
-
-        return false;
-    }
+//    private boolean trySendFileStreamMessage(FileStreamMessage fileStreamMessage) {
+//        if (getConnectionState() == STATE_CONNECTED) {
+//            sendFileStreamMessageImmediately(fileStreamMessage);
+//            return true;
+//        }
+//
+//        return false;
+//    }
 
     public void sendFileStreamMessage(FileStreamMessage fileStreamMessage) {
-        if (!trySendFileStreamMessage(fileStreamMessage)) {
+     //   if (!trySendFileStreamMessage(fileStreamMessage)) {
             // "offline mode" - queue file for sending as soon as we reconnect
             mFileStreamsToSend.add(fileStreamMessage);
-        }
+      // }
+        sendFileStreamMessageImmediately(fileStreamMessage);
     }
 
     private void sendFileStreamMessageImmediately(FileStreamMessage fileStreamMessage) {
-        SurespotApplication.getCommunicationService().postFileStream(IdentityController.getOurLatestVersion(mUsername), fileStreamMessage.mTo, IdentityController.getTheirLatestVersion(fileStreamMessage.mTo),
+        //wrap the callback so we can handle retry
+        IAsyncCallback<Integer> callback = new IAsyncCallback<Integer>() {
+            @Override
+            public void handleResponse(Integer result) {
+
+            }
+        };
+
+
+        SurespotApplication.getNetworkController().postFileStream(IdentityController.getOurLatestVersion(mUsername), fileStreamMessage.mTo, IdentityController.getTheirLatestVersion(fileStreamMessage.mTo),
                 fileStreamMessage.mIv, fileStreamMessage.mStream, fileStreamMessage.mMimeType, fileStreamMessage.mAsyncCallback);
     }
 
@@ -607,10 +617,10 @@ public class CommunicationService extends Service {
         // SurespotLog.d(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
     }
 
-    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
-                               final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
-        SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
-    }
+//    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
+//                               final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
+//        SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
+//    }
 
     private void saveFriends() {
         if (SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {

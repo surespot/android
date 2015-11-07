@@ -1,27 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Random;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
@@ -36,8 +14,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 
-import ch.boye.httpclientandroidlib.androidextra.Base64;
-
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -50,6 +26,28 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkController;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Random;
+
+import ch.boye.httpclientandroidlib.androidextra.Base64;
 
 public class ChatUtils {
     private static final String TAG = "ChatUtils";
@@ -122,7 +120,7 @@ public class ChatUtils {
     }
 
     public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
-                                                 final Uri imageUri, final String to, final boolean scale, final IAsyncCallback<Boolean> callback) {
+                                                 final Uri imageUri, final String to, final boolean scale, final boolean delete) {
 
         Runnable runnable = new Runnable() {
 
@@ -242,7 +240,8 @@ public class ChatUtils {
                                     if (finalMessage != null) {
                                         finalMessage.setErrorStatus(500);
                                     }
-                                    callback.handleResponse(true);
+                                    //TODO notification with retry?
+                                 //   callback.handleResponse(true);
                                     return;
                                 }
 
@@ -255,48 +254,50 @@ public class ChatUtils {
                                     if (finalMessage != null) {
                                         finalMessage.setErrorStatus(500);
                                     }
-                                    callback.handleResponse(true);
+                              //      callback.handleResponse(true);
+                                    //TODO notification with retry?
                                     return;
                                 }
 
                                 FileStreamMessage fileStreamMessage = new FileStreamMessage();
                                 fileStreamMessage.mTo = to;
                                 fileStreamMessage.mIv = iv;
-                                fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
+
+                                //fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
                                 fileStreamMessage.mLocalFilePath = localImageFile.getAbsolutePath();
                                 fileStreamMessage.mMimeType = SurespotConstants.MimeTypes.IMAGE;
-                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
-
-                                    @Override
-                                    public void handleResponse(Integer statusCode) {
-                                        // if it failed update the message
-                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-                                        ChatAdapter chatAdapter = null;
-                                        switch (statusCode) {
-                                            case 200:
-                                                break;
-                                            case 402:
-                                                if (finalMessage != null) {
-                                                    finalMessage.setErrorStatus(402);
-                                                }
-                                                chatAdapter = chatController.getChatAdapter(activity, to);
-                                                if (chatAdapter != null) {
-                                                    chatAdapter.notifyDataSetChanged();
-                                                }
-                                                break;
-                                            default:
-                                                if (finalMessage != null) {
-                                                    finalMessage.setErrorStatus(500);
-                                                }
-                                                chatAdapter = chatController.getChatAdapter(activity, to);
-                                                if (chatAdapter != null) {
-                                                    chatAdapter.notifyDataSetChanged();
-                                                }
-                                        }
-
-                                        callback.handleResponse(true);
-                                    }
-                                };
+//                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
+//
+//                                    @Override
+//                                    public void handleResponse(Integer statusCode) {
+//                                        // if it failed update the message
+//                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+//                                        ChatAdapter chatAdapter = null;
+//                                        switch (statusCode) {
+//                                            case 200:
+//                                                break;
+//                                            case 402:
+//                                                if (finalMessage != null) {
+//                                                    finalMessage.setErrorStatus(402);
+//                                                }
+//                                                chatAdapter = chatController.getChatAdapter(activity, to);
+//                                                if (chatAdapter != null) {
+//                                                    chatAdapter.notifyDataSetChanged();
+//                                                }
+//                                                break;
+//                                            default:
+//                                                if (finalMessage != null) {
+//                                                    finalMessage.setErrorStatus(500);
+//                                                }
+//                                                chatAdapter = chatController.getChatAdapter(activity, to);
+//                                                if (chatAdapter != null) {
+//                                                    chatAdapter.notifyDataSetChanged();
+//                                                }
+//                                        }
+//                                        //TODO error notification?
+//                                    //    callback.handleResponse(true);
+//                                    }
+//                                };
 
                                 if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
                                     SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamMessage);
@@ -307,7 +308,8 @@ public class ChatUtils {
                         SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
 
                     } else {
-                        callback.handleResponse(false);
+                        //TODO error notification
+                     //   callback.handleResponse(false);
                     }
                 } catch (IOException e) {
                     SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
@@ -456,42 +458,44 @@ public class ChatUtils {
                                 fileStreamMessage.mLocalFilePath = localImageFile.getAbsolutePath();
                                 fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
                                 fileStreamMessage.mMimeType = SurespotConstants.MimeTypes.M4A;
-                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
-
-                                    @Override
-                                    public void handleResponse(Integer statusCode) {
-                                        // if it failed update the message
-                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-                                        ChatAdapter chatAdapter = null;
-                                        switch (statusCode) {
-                                            case 200:
-                                                break;
-                                            case 402:
-                                                if (finalMessage != null) {
-                                                    finalMessage.setErrorStatus(402);
-                                                }
-                                                chatAdapter = chatController.getChatAdapter(activity, to);
-                                                if (chatAdapter != null) {
-                                                    chatAdapter.notifyDataSetChanged();
-                                                }
-                                                break;
-                                            default:
-                                                if (finalMessage != null) {
-                                                    finalMessage.setErrorStatus(500);
-                                                }
-                                                chatAdapter = chatController.getChatAdapter(activity, to);
-                                                if (chatAdapter != null) {
-                                                    chatAdapter.notifyDataSetChanged();
-                                                }
-                                        }
-
-                                        callback.handleResponse(true);
-                                    }
-                                };
+                                fileStreamMessage.mChatController = chatController;
+//                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
+//
+//                                    @Override
+//                                    public void handleResponse(Integer statusCode) {
+//                                        // if it failed update the message
+//                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+//                                        ChatAdapter chatAdapter = null;
+//                                        switch (statusCode) {
+//                                            case 200:
+//                                                break;
+//                                            case 402:
+//                                                if (finalMessage != null) {
+//                                                    finalMessage.setErrorStatus(402);
+//                                                }
+//                                                chatAdapter = fileStreamMessage.mChatController.getChatAdapter(activity, to);
+//                                                if (chatAdapter != null) {
+//                                                    chatAdapter.notifyDataSetChanged();
+//                                                }
+//                                                break;
+//                                            default:
+//                                                if (finalMessage != null) {
+//                                                    finalMessage.setErrorStatus(500);
+//                                                }
+//                                                chatAdapter = fileStreamMessage.mChatController.getChatAdapter(activity, to);
+//                                                if (chatAdapter != null) {
+//                                                    chatAdapter.notifyDataSetChanged();
+//                                                }
+//                                        }
+//
+//                                        callback.handleResponse(true);
+//                                    }
+//                                };
 
                                 if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
                                     SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamMessage);
                                 }
+                                //else ? TODO wtf owen
                             }
                         };
 
@@ -511,41 +515,41 @@ public class ChatUtils {
 
     }
 
-    public static void resendFileMessage(NetworkController networkController, final SurespotMessage message,
-                                         final IAsyncCallback<Integer> callback) {
-
-        // upload encrypted file to server
-        FileInputStream uploadStream = null;
-        try {
-            if (message.getData().startsWith("file")) {
-                uploadStream = new FileInputStream(new File(new URI(message.getData())));
-            } else {
-                callback.handleResponse(500);
-            }
-        } catch (IllegalArgumentException e) {
-            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-            callback.handleResponse(500);
-            return;
-        } catch (FileNotFoundException e) {
-            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-            callback.handleResponse(500);
-            return;
-        } catch (URISyntaxException e) {
-            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-            callback.handleResponse(500);
-            return;
-        }
-
-        SurespotApplication.getCommunicationService().postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
-                message.getMimeType(), new IAsyncCallback<Integer>() {
-
-                    @Override
-                    public void handleResponse(Integer statusCode) {
-                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-                        callback.handleResponse(statusCode);
-                    }
-                });
-    }
+//    public static void resendFileMessage(NetworkController networkController, final SurespotMessage message,
+//                                         final IAsyncCallback<Integer> callback) {
+//
+//        // upload encrypted file to server
+//        FileInputStream uploadStream = null;
+//        try {
+//            if (message.getData().startsWith("file")) {
+//                uploadStream = new FileInputStream(new File(new URI(message.getData())));
+//            } else {
+//                callback.handleResponse(500);
+//            }
+//        } catch (IllegalArgumentException e) {
+//            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+//            callback.handleResponse(500);
+//            return;
+//        } catch (FileNotFoundException e) {
+//            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+//            callback.handleResponse(500);
+//            return;
+//        } catch (URISyntaxException e) {
+//            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+//            callback.handleResponse(500);
+//            return;
+//        }
+//
+//        SurespotApplication.getCommunicationService().postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
+//                message.getMimeType(), new IAsyncCallback<Integer>() {
+//
+//                    @Override
+//                    public void handleResponse(Integer statusCode) {
+//                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
+//                        callback.handleResponse(statusCode);
+//                    }
+//                });
+//    }
 
     public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate, int maxDimension) {
         //
