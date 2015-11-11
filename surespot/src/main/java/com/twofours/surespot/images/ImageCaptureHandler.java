@@ -20,6 +20,7 @@ public class ImageCaptureHandler implements Parcelable {
 
 	private String mCurrentPhotoPath;
 	private String mTo;
+	private String mFrom;
 
 	public String getImagePath() {
 		return mCurrentPhotoPath;
@@ -31,11 +32,12 @@ public class ImageCaptureHandler implements Parcelable {
 
 	private ImageCaptureHandler(Parcel in) {
 		mCurrentPhotoPath = in.readString();
+		mFrom = in.readString();
 		mTo = in.readString();
 	}
 
-	public ImageCaptureHandler(String to) {
-
+	public ImageCaptureHandler(String from, String to) {
+		mFrom = from;
 		mTo = to;
 	}
 
@@ -59,7 +61,7 @@ public class ImageCaptureHandler implements Parcelable {
 	public void handleResult(final MainActivity activity) {
 		activity.getChatController().scrollToEnd(mTo);
 		ChatUtils.uploadPictureMessageAsync(activity, activity.getChatController(), SurespotApplication.getNetworkController(), Uri.fromFile(new File(mCurrentPhotoPath)),
-				mTo, true, false);
+				mFrom, mTo, true, false);
 
 //                new IAsyncCallback<Boolean>() {
 //					@Override
@@ -89,6 +91,7 @@ public class ImageCaptureHandler implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(mCurrentPhotoPath);
+		dest.writeString(mFrom);
 		dest.writeString(mTo);
 
 	}

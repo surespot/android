@@ -482,7 +482,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                             SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
                             boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
                             if (!disableVoice) {
-                                VoiceController.startRecording(MainActivity.this, friend.getName());
+                                VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
                             }
                             else {
                                 SurespotApplication.getChatController().closeTab();
@@ -1196,7 +1196,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
     private void uploadPicture(final Uri selectedImageUri, String to) {
         // Utils.makeToast(this, getString(R.string.uploading_image));
-        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), selectedImageUri, to, false, true);
+        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), selectedImageUri, mUser, to, false, true);
 
 //        new IAsyncCallback<Boolean>() {
 //            @Override
@@ -1348,7 +1348,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
 
-                        mImageCaptureHandler = new ImageCaptureHandler(currentChat);
+                        mImageCaptureHandler = new ImageCaptureHandler(mUser, currentChat);
                         mImageCaptureHandler.capture(MainActivity.this);
                         return null;
                     }
@@ -1868,7 +1868,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
                     SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-                    ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), imageUri, mCurrentFriend.getName(), true, false);
+                    ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), imageUri, mUser, mCurrentFriend.getName(), true, false);
 //                            new IAsyncCallback<Boolean>() {
 //
 //                                @Override

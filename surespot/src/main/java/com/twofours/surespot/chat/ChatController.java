@@ -106,7 +106,7 @@ public class ChatController {
 	public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm,
 			IAsyncCallbackTuple<String, Boolean> m401Handler, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
 			IAsyncCallback<Friend> tabShowingCallback) {
-		SurespotLog.d(TAG, "constructor: %s", username);
+		SurespotLog.d(TAG, "constructor, username: %s", username);
 		mContext = context;
 		mUsername = username;
 		mNetworkController = networkController;
@@ -1515,12 +1515,16 @@ public class ChatController {
 		}
 	}
 
-	ChatAdapter getChatAdapter(Context context, String username) {
+	ChatAdapter getChatAdapter(String username) {
+		return getChatAdapter(username, true);
+	}
+
+	ChatAdapter getChatAdapter(String username, boolean create) {
 
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
-		if (chatAdapter == null) {
+		if (chatAdapter == null && create) {
 
-			chatAdapter = new ChatAdapter(context);
+			chatAdapter = new ChatAdapter(mContext);
 
 			Friend friend = mFriendAdapter.getFriend(username);
 			if (friend != null) {
@@ -1753,7 +1757,7 @@ public class ChatController {
 			ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
 
 			try {
-				chatAdapter.addOrUpdateMessage(message, false, true, true);
+				chatAdapter.addOrUpdateMessage(message, false, true, false);
 				scrollToEnd(message.getTo());
 				SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
 			}
@@ -1967,30 +1971,30 @@ public class ChatController {
 	}
 
 	public void resendFileMessage(String to, final String messageIv) {
-		final ChatAdapter chatAdapter = mChatAdapters.get(to);
-		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
-
-		// reset status flags
-		message.setErrorStatus(0);
-		message.setAlreadySent(false);
-		chatAdapter.notifyDataSetChanged();
-		setProgress("resend", true);
-		ChatUtils.resendFileMessage(mNetworkController, message, new IAsyncCallback<Integer>() {
-
-			@Override
-			public void handleResponse(Integer result) {
-				setProgress("resend", false);
-				if (result == 200) {
-					message.setErrorStatus(0);
-				}
-				else {
-					message.setErrorStatus(result);
-				}
-
-				message.setAlreadySent(true);
-				chatAdapter.notifyDataSetChanged();
-			}
-		});
+//		final ChatAdapter chatAdapter = mChatAdapters.get(to);
+//		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
+//
+//		// reset status flags
+//		message.setErrorStatus(0);
+//		message.setAlreadySent(false);
+//		chatAdapter.notifyDataSetChanged();
+//		setProgress("resend", true);
+//		ChatUtils.resendFileMessage(mNetworkController, message, new IAsyncCallback<Integer>() {
+//
+//			@Override
+//			public void handleResponse(Integer result) {
+//				setProgress("resend", false);
+//				if (result == 200) {
+//					message.setErrorStatus(0);
+//				}
+//				else {
+//					message.setErrorStatus(result);
+//				}
+//
+//				message.setAlreadySent(true);
+//				chatAdapter.notifyDataSetChanged();
+//			}
+//		});
 
 	}
 
@@ -2379,5 +2383,9 @@ public class ChatController {
 			}
 		});
 		
+	}
+
+	public String getUsername() {
+		return mUsername;
 	}
 }

@@ -146,7 +146,7 @@ public class ChatFragment extends SherlockFragment {
 
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
-			mChatAdapter = chatController.getChatAdapter(getMainActivity(), mUsername);
+			mChatAdapter = chatController.getChatAdapter(mUsername);
 			mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
 
 				@Override

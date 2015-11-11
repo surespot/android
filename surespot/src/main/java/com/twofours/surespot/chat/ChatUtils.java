@@ -34,8 +34,6 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,7 +118,7 @@ public class ChatUtils {
     }
 
     public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
-                                                 final Uri imageUri, final String to, final boolean scale, final boolean delete) {
+                                                 final Uri imageUri, final String from, final String to, final boolean scale, final boolean delete) {
 
         Runnable runnable = new Runnable() {
 
@@ -246,27 +244,27 @@ public class ChatUtils {
                                 }
 
                                 // upload encrypted image to server
-                                FileInputStream uploadStream;
-                                try {
-                                    uploadStream = new FileInputStream(localImageFile);
-                                } catch (FileNotFoundException e) {
-                                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-                                    if (finalMessage != null) {
-                                        finalMessage.setErrorStatus(500);
-                                    }
-                              //      callback.handleResponse(true);
-                                    //TODO notification with retry?
-                                    return;
-                                }
+//                                FileInputStream uploadStream;
+//                                try {
+//                                    uploadStream = new FileInputStream(localImageFile);
+//                                } catch (FileNotFoundException e) {
+//                                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+//                                    if (finalMessage != null) {
+//                                        finalMessage.setErrorStatus(500);
+//                                    }
+//                              //      callback.handleResponse(true);
+//                                    //TODO notification with retry?
+//                                    return;
+//                                }
 
-                                FileStreamMessage fileStreamMessage = new FileStreamMessage();
-                                fileStreamMessage.mTo = to;
-                                fileStreamMessage.mIv = iv;
-
-                                //fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
-                                fileStreamMessage.mLocalFilePath = localImageFile.getAbsolutePath();
-                                fileStreamMessage.mMimeType = SurespotConstants.MimeTypes.IMAGE;
-//                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
+                                FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.IMAGE, localImageFile.getAbsolutePath());
+//                                fileStreamTask.mTo = to;
+//                                fileStreamTask.mIv = iv;
+//
+//                                //fileStreamTask.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
+//                                fileStreamTask.mLocalFilePath = localImageFile.getAbsolutePath();
+//                                fileStreamTask.mMimeType = SurespotConstants.MimeTypes.IMAGE;
+//                                fileStreamTask.mAsyncCallback = new IAsyncCallback<Integer>() {
 //
 //                                    @Override
 //                                    public void handleResponse(Integer statusCode) {
@@ -300,7 +298,7 @@ public class ChatUtils {
 //                                };
 
                                 if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamMessage);
+                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamTask);
                                 }
                             }
                         };
@@ -361,7 +359,7 @@ public class ChatUtils {
     }
 
     public static void uploadVoiceMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
-                                               final Uri audioUri, final String to, final IAsyncCallback<Boolean> callback) {
+                                               final Uri audioUri, final String from, final String to, final IAsyncCallback<Boolean> callback) {
 
         Runnable runnable = new Runnable() {
 
@@ -420,11 +418,19 @@ public class ChatUtils {
                                     message.setId(null);
 
                                     final SurespotMessage finalMessage = message;
+                                    SurespotLog.v(TAG, "adding local voice message %s", finalMessage);
+                                    //need to add the message synchronously immediately so we can pull it out later
+                                    chatController.addMessage(activity, finalMessage);
+
                                     activity.runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            SurespotLog.v(TAG, "adding local voice message %s", finalMessage);
-                                            chatController.addMessage(activity, finalMessage);
+                                            //then update on UI thread async
+                                            ChatAdapter chatAdapter = chatController.getChatAdapter(finalMessage.getTo());
+                                            if (chatAdapter != null) {
+                                                chatAdapter.notifyDataSetChanged();
+                                            }
+
                                         }
                                     });
 
@@ -437,29 +443,29 @@ public class ChatUtils {
                                     return;
                                 }
 
-                                // upload encrypted image to server
-                                FileInputStream uploadStream;
-                                try {
-                                    uploadStream = new FileInputStream(localImageFile);
-                                } catch (FileNotFoundException e) {
-                                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-                                    if (message != null) {
-                                        message.setErrorStatus(500);
-                                    }
-                                    callback.handleResponse(true);
-                                    return;
-                                }
+//                                // upload encrypted image to server
+//                                FileInputStream uploadStream;
+//                                try {
+//                                    uploadStream = new FileInputStream(localImageFile);
+//                                } catch (FileNotFoundException e) {
+//                                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
+//                                    if (message != null) {
+//                                        message.setErrorStatus(500);
+//                                    }
+//                                    callback.handleResponse(true);
+//                                    return;
+//                                }
+//
+//                                final SurespotMessage finalMessage = message;
 
-                                final SurespotMessage finalMessage = message;
-
-                                FileStreamMessage fileStreamMessage = new FileStreamMessage();
-                                fileStreamMessage.mTo = to;
-                                fileStreamMessage.mIv = iv;
-                                fileStreamMessage.mLocalFilePath = localImageFile.getAbsolutePath();
-                                fileStreamMessage.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
-                                fileStreamMessage.mMimeType = SurespotConstants.MimeTypes.M4A;
-                                fileStreamMessage.mChatController = chatController;
-//                                fileStreamMessage.mAsyncCallback = new IAsyncCallback<Integer>() {
+                                FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.M4A, localImageFile.getAbsolutePath());
+//                                fileStreamTask.mTo = to;
+//                                fileStreamTask.mIv = iv;
+//                                fileStreamTask.mLocalFilePath = localImageFile.getAbsolutePath();
+//                                fileStreamTask.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
+//                                fileStreamTask.mMimeType = SurespotConstants.MimeTypes.M4A;
+//                                fileStreamTask.mChatController = chatController;
+//                                fileStreamTask.mAsyncCallback = new IAsyncCallback<Integer>() {
 //
 //                                    @Override
 //                                    public void handleResponse(Integer statusCode) {
@@ -473,7 +479,7 @@ public class ChatUtils {
 //                                                if (finalMessage != null) {
 //                                                    finalMessage.setErrorStatus(402);
 //                                                }
-//                                                chatAdapter = fileStreamMessage.mChatController.getChatAdapter(activity, to);
+//                                                chatAdapter = fileStreamTask.mChatController.getChatAdapter(activity, to);
 //                                                if (chatAdapter != null) {
 //                                                    chatAdapter.notifyDataSetChanged();
 //                                                }
@@ -482,7 +488,7 @@ public class ChatUtils {
 //                                                if (finalMessage != null) {
 //                                                    finalMessage.setErrorStatus(500);
 //                                                }
-//                                                chatAdapter = fileStreamMessage.mChatController.getChatAdapter(activity, to);
+//                                                chatAdapter = fileStreamTask.mChatController.getChatAdapter(activity, to);
 //                                                if (chatAdapter != null) {
 //                                                    chatAdapter.notifyDataSetChanged();
 //                                                }
@@ -493,9 +499,9 @@ public class ChatUtils {
 //                                };
 
                                 if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamMessage);
+                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamTask);
                                 }
-                                //else ? TODO wtf owen
+                                //else ? TODO wtf owen set errored immediately
                             }
                         };
 

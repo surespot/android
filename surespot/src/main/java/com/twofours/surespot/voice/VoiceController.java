@@ -39,7 +39,8 @@ public class VoiceController {
 	private static final String TAG = "VoiceController";
 
 	private static String mFileName = null;
-	private static String mUsername = null;
+	private static String mFrom = null;
+	private static String mTo = null;
 
 	public static final int SEND_THRESHOLD = 3500;
 	public static final int MAX_TIME = 10000;
@@ -236,14 +237,15 @@ public class VoiceController {
 
 	}
 
-	public static synchronized void startRecording(Activity context, String username) {
+	public static synchronized void startRecording(Activity context, String from, String to) {
 		if (!mRecording) {
 			stopPlaying();
 			// disable rotation
 			UIUtils.lockOrientation(context);
 
 			mActivity = context;
-			mUsername = username;
+			mFrom = from;
+			mTo = to;
 			mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
 			mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
 			mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
@@ -304,7 +306,7 @@ public class VoiceController {
 
 						if (exitValue == 0) {
 							ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), SurespotApplication.getNetworkController(),
-									Uri.fromFile(new File(m4aFile)), mUsername, new IAsyncCallback<Boolean>() {
+									Uri.fromFile(new File(m4aFile)), mFrom, mTo, new IAsyncCallback<Boolean>() {
 										@Override
 										public void handleResponse(Boolean result) {
 											// delete files

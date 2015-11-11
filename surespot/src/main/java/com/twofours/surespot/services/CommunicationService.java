@@ -28,7 +28,8 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.FileStreamMessage;
+import com.twofours.surespot.chat.FileStreamTask;
+import com.twofours.surespot.chat.FileStreamTaskData;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -48,7 +49,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +78,7 @@ public class CommunicationService extends Service {
     private ITransmissionServiceListener mListener;
     private ConcurrentLinkedQueue<SurespotMessage> mSendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
     private ConcurrentLinkedQueue<SurespotMessage> mResendBuffer = new ConcurrentLinkedQueue<SurespotMessage>();
-    private ConcurrentLinkedQueue<FileStreamMessage> mFileStreamsToSend = new ConcurrentLinkedQueue<FileStreamMessage>();
+    private ConcurrentLinkedQueue<FileStreamTaskData> mFileStreamsToSend = new ConcurrentLinkedQueue<FileStreamTaskData>();
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
     private boolean mMainActivityPaused = false;
@@ -92,8 +92,8 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
     private static final int MAX_RETRIES_SEND_VIA_HTTP = 30;
-    private static final int MAX_RETRIES = 60;
     private static final int MAX_RETRIES_MAIN_ACTIVITY_PAUSED = 20;
+    private static final int MAX_RETRIES = 60;
     private static final int MAX_RELOGIN_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
@@ -158,8 +158,7 @@ public class CommunicationService extends Service {
 
             try {
                 mSocket = IO.socket(SurespotConfiguration.getBaseUrl(), opts);
-            }
-            catch (URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 mSocket = null;
                 return null;
             }
@@ -216,8 +215,7 @@ public class CommunicationService extends Service {
             // make sure to save everything just in case... ?
             // save();
             disconnect();
-        }
-        else {
+        } else {
             connect();
             // changed with not keeping socket open: cancelDisconnectTimer();
             // changed with not keeping socket open: cancelGiveUpReconnectingTimer();
@@ -237,7 +235,7 @@ public class CommunicationService extends Service {
     public void userLoggedOut() {
         if (mUsername != null) {
             SurespotLog.d(TAG, "user logging out: " + mUsername);
-            sendFileStreamMessages(true); // this could be a save if we want to persist across runs
+            sendFileStreamMessages(); // this could be a save if we want to persist across runs
             save();
             mResendBuffer.clear();
             mSendBuffer.clear();
@@ -298,8 +296,7 @@ public class CommunicationService extends Service {
         try {
             createSocket();
             mSocket.connect();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SurespotLog.w(TAG, "connect", e);
         }
 
@@ -332,8 +329,7 @@ public class CommunicationService extends Service {
                 if (!isMessageEqualToAny(message, sentMessages)) {
                     sendMessage(message);
                     sentMessages.add(message);
-                }
-                else {
+                } else {
                     SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
                 }
             }
@@ -352,11 +348,6 @@ public class CommunicationService extends Service {
         return mSendBuffer;
     }
 
-//    public void sendMessages(JSONArray json) {
-//        if (mSocket != null) {
-//            mSocket.send(json);
-//        }
-//    }
 
     // saves all data and current state for user, general
     public synchronized void save() {
@@ -381,50 +372,54 @@ public class CommunicationService extends Service {
     }
 
     private void sendFileStreamMessages() {
-        Iterator<FileStreamMessage> iterator = mFileStreamsToSend.iterator();
+        Iterator<FileStreamTaskData> iterator = mFileStreamsToSend.iterator();
         while (iterator.hasNext()) {
-            FileStreamMessage message = iterator.next();
-            //if (flushIfNotConnected) {
-               // iterator.remove();
-                sendFileStreamMessageImmediately(message);
-//            }
-//            else {
-//                if (trySendFileStreamMessage(message)) {
-//                    iterator.remove();
-//                }
-//            }
+            FileStreamTaskData message = iterator.next();
+            sendFileStreamMessageInternal(message);
         }
     }
 
-//    private boolean trySendFileStreamMessage(FileStreamMessage fileStreamMessage) {
-//        if (getConnectionState() == STATE_CONNECTED) {
-//            sendFileStreamMessageImmediately(fileStreamMessage);
-//            return true;
-//        }
-//
-//        return false;
-//    }
 
-    public void sendFileStreamMessage(FileStreamMessage fileStreamMessage) {
-     //   if (!trySendFileStreamMessage(fileStreamMessage)) {
-            // "offline mode" - queue file for sending as soon as we reconnect
-            mFileStreamsToSend.add(fileStreamMessage);
-      // }
-        sendFileStreamMessageImmediately(fileStreamMessage);
+    public void sendFileStreamMessage(FileStreamTaskData fileStreamTask) {
+
+        if (!mFileStreamsToSend.contains(fileStreamTask)) {
+            mFileStreamsToSend.add(fileStreamTask);
+        }
+
+        sendFileStreamMessageInternal(fileStreamTask);
     }
 
-    private void sendFileStreamMessageImmediately(FileStreamMessage fileStreamMessage) {
-        //wrap the callback so we can handle retry
-        IAsyncCallback<Integer> callback = new IAsyncCallback<Integer>() {
+    private void sendFileStreamMessageInternal(final FileStreamTaskData fileStreamTask) {
+        //TODO callback handler that removes message and deletes local data (files) if necessary
+        final FileStreamTask fst = new FileStreamTask(fileStreamTask);
+        fst.setCallback(new IAsyncCallback<Void>() {
             @Override
-            public void handleResponse(Integer result) {
+            public void handleResponse(Void result) {
+                SurespotLog.i(TAG, "FileStreamTask complete, iv: %s, statusCode: %d", fileStreamTask.getIv(), fst.getStatusCode());
+                //TODO handle task completion
+                if (fst.getStatusCode() == 200) {
+                    //remove the message from the send queue if successful
+                    SurespotLog.i(TAG, "task success, removing from send queue: %s", fileStreamTask.getIv());
+                    mFileStreamsToSend.remove(fileStreamTask);
+                }
+
+                //if any inprogress still, let them complete
+
+                Iterator<FileStreamTaskData> iterator = mFileStreamsToSend.iterator();
+                while (iterator.hasNext())  {
+                    FileStreamTaskData taskData = iterator.next();
+                    if (taskData.getTaskStatus() == FileStreamTaskData.TaskStatus.INPROGRESS.ordinal()) {
+                        return;
+                    }
+
+                }
+
+            
+
 
             }
-        };
-
-
-        SurespotApplication.getNetworkController().postFileStream(IdentityController.getOurLatestVersion(mUsername), fileStreamMessage.mTo, IdentityController.getTheirLatestVersion(fileStreamMessage.mTo),
-                fileStreamMessage.mIv, fileStreamMessage.mStream, fileStreamMessage.mMimeType, fileStreamMessage.mAsyncCallback);
+        });
+        fst.execute();
     }
 
     public boolean isConnected() {
@@ -577,8 +572,7 @@ public class CommunicationService extends Service {
             if (!fromSave) {
                 saveFriends();
             }
-        }
-        else if (!fromSave) {
+        } else if (!fromSave) {
             saveMessages(username);
         }
     }
@@ -617,18 +611,11 @@ public class CommunicationService extends Service {
         // SurespotLog.d(TAG, "loaded: " + mSendBuffer.size() + " unsent messages.");
     }
 
-//    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
-//                               final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
-//        SurespotApplication.getNetworkController().postFileStream(ourVersion, user, theirVersion, id, fileInputStream, mimeType, callback);
-//    }
-
     private void saveFriends() {
         if (SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
             SurespotApplication.getChatController().saveFriends();
         }
     }
-
-
 
 
     // setup a disconnect N minutes from now
@@ -668,7 +655,7 @@ public class CommunicationService extends Service {
             return;
 
         if (mUsername != null && !mUsername.equals("")) {
-            sendFileStreamMessages(false);
+            sendFileStreamMessages();
         }
 
         final ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
@@ -785,8 +772,6 @@ public class CommunicationService extends Service {
     }
 
 
-
-
     private void onAlreadyConnected() {
         SurespotLog.d(TAG, "onAlreadyConnected");
 
@@ -822,7 +807,6 @@ public class CommunicationService extends Service {
     }
 
 
-
     // remove duplicate messages
     private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
         ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
@@ -831,8 +815,7 @@ public class CommunicationService extends Service {
             if (isMessageEqualToAny(message, messagesSeen)) {
                 messages.remove(i);
                 SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
-            }
-            else {
+            } else {
                 messagesSeen.add(message);
             }
         }
@@ -876,7 +859,9 @@ public class CommunicationService extends Service {
 
     private void scheduleSendUnsentMaterialTimer() {
         if (mResendViaHttpTries >= MAX_RETRIES_SEND_VIA_HTTP) {
+            SurespotLog.d(TAG, "unsent materials retries exhausted");
             raiseNotificationForUnsentMessages();
+
             //checkShutdownService(false, false, true);
             return;
         }
@@ -935,12 +920,10 @@ public class CommunicationService extends Service {
     private void unregisterReceiver() {
         try {
             unregisterReceiver(mConnectivityReceiver);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Receiver not registered")) {
                 // Ignore this exception. This is exactly what is desired
-            }
-            else {
+            } else {
                 // unexpected, re-throw
                 throw e;
             }
@@ -1024,8 +1007,7 @@ public class CommunicationService extends Service {
             SurespotLog.v(TAG, "showing notification led");
             mBuilder.setLights(color, 500, 5000);
             defaults |= Notification.FLAG_SHOW_LIGHTS;
-        }
-        else {
+        } else {
             mBuilder.setLights(color, 0, 0);
         }
 
@@ -1087,8 +1069,7 @@ public class CommunicationService extends Service {
 
         if (SurespotApplication.getChatController() != null) {
             SurespotApplication.getChatController().onPause();
-        }
-        else {
+        } else {
             save();
         }
 
@@ -1226,8 +1207,7 @@ public class CommunicationService extends Service {
 
                 userLoggedOut();
                 mTriesRelogin = 0;
-            }
-            else {
+            } else {
                 startReloginTimer();
             }
         }
@@ -1312,8 +1292,7 @@ public class CommunicationService extends Service {
                 Log.d(tag, "key [" + key + "]: " +
                         extras.get(key));
             }
-        }
-        else {
+        } else {
             Log.v(tag, "no extras");
         }
     }
@@ -1381,8 +1360,7 @@ public class CommunicationService extends Service {
             // kick off another task
             if ((!mMainActivityPaused && mRetries < MAX_RETRIES) || (mMainActivityPaused && mRetries < MAX_RETRIES_MAIN_ACTIVITY_PAUSED)) {
                 scheduleReconnectionAttempt();
-            }
-            else {
+            } else {
                 SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
 
                 if (mListener != null) {
@@ -1411,8 +1389,7 @@ public class CommunicationService extends Service {
                         SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
                         SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
                         SurespotMessage message = SurespotApplication.getChatController().handleErrorMessage(errorMessage);
-                    }
-                    catch (JSONException e) {
+                    } catch (JSONException e) {
                         SurespotLog.w(TAG, "on messageError", e);
                     }
                 }
@@ -1434,8 +1411,7 @@ public class CommunicationService extends Service {
                     try {
                         SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage((JSONObject) args[0]);
                         SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
-                    }
-                    catch (JSONException e) {
+                    } catch (JSONException e) {
                         SurespotLog.w(TAG, "on control", e);
                     }
                 }
@@ -1470,8 +1446,7 @@ public class CommunicationService extends Service {
                                     try {
                                         SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
                                         SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
-                                    }
-                                    catch (JSONException e) {
+                                    } catch (JSONException e) {
                                         SurespotLog.w(TAG, "on control", e);
                                     }
                                 }
@@ -1494,8 +1469,7 @@ public class CommunicationService extends Service {
                         }
 
                         checkAndSendNextMessage(message);
-                    }
-                    catch (JSONException e) {
+                    } catch (JSONException e) {
                         SurespotLog.w(TAG, "on message", e);
                     }
                 }
