@@ -13,6 +13,7 @@ import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotCachingHttpClient;
+import com.twofours.surespot.Tuple;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -23,6 +24,7 @@ import com.twofours.surespot.identity.IdentityController;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +43,7 @@ import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
 import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
+import ch.boye.httpclientandroidlib.entity.BufferedHttpEntity;
 import ch.boye.httpclientandroidlib.entity.StringEntity;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
@@ -545,7 +548,7 @@ public class NetworkController {
      * Unregister this account/device pair within the server.
      */
     /*public static void unregister(final Context context, final String regId) {
-		SurespotLog.i(TAG, "unregistering device (regId = " + regId + ")");
+        SurespotLog.i(TAG, "unregistering device (regId = " + regId + ")");
 		try {
 			// this will puke on phone with no google account
 			GCMRegistrar.setRegisteredOnServer(context, false);
@@ -608,8 +611,8 @@ public class NetworkController {
         }.execute();
     }
 
-    public int postFileStreamSync(final String ourVersion, final String user, final String theirVersion, final String id,
-                                  final InputStream fileInputStream, final String mimeType) {
+    public Tuple<Integer, JSONObject> postFileStreamSync(final String ourVersion, final String user, final String theirVersion, final String id,
+                                                         final InputStream fileInputStream, final String mimeType) throws JSONException {
 
 
         SurespotLog.v(TAG, "posting file stream");
@@ -617,7 +620,7 @@ public class NetworkController {
         HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + ourVersion + "/" + user + "/" + theirVersion);
         if (fileInputStream == null) {
             SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
-            return 500;
+            return new Tuple<>(500, null);
         }
 
         InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
@@ -630,26 +633,51 @@ public class NetworkController {
         try {
             response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
 
+            if (response != null) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode == 200) {
+
+                    HttpEntity entity = null;
+                    HttpEntity temp = response.getEntity();
+                    if (temp != null) {
+                        entity = new BufferedHttpEntity(temp);
+                        String responseBody = EntityUtils.toString(entity, "UTF-8");
+                        Object result = null;
+                        //trim the string to prevent start with blank, and test if the string is valid JSON, because the parser don't do this :(. If Json is not valid this will return null
+                        responseBody = responseBody.trim();
+                        if (responseBody.startsWith("{") || responseBody.startsWith("[")) {
+                            result = new JSONTokener(responseBody).nextValue();
+
+                            return new Tuple<>(200, (JSONObject) result);
+                        } else {
+                            return new Tuple<>(500, null);
+                        }
+                    }
+
+                } else {
+                    return new Tuple<>(statusCode, null);
+                }
+
+            } else {
+                return new Tuple<>(500, null);
+            }
+
         } catch (Exception e) {
             SurespotLog.w(TAG, e, "createPostFile");
         } finally {
             httppost.releaseConnection();
-            if (response != null) {
-                try {
-                    EntityUtils.consume(response.getEntity());
-                } catch (IOException e) {
-                    SurespotLog.w(TAG, e, "postFileStream");
-                }
-            }
+//            if (response != null) {
+//                try {
+//                    EntityUtils.consume(response.getEntity());
+//                } catch (IOException e) {
+//                    SurespotLog.w(TAG, e, "postFileStream");
+//                }
+//            }
         }
 
-
-        if (response != null) {
-            return response.getStatusLine().getStatusCode();
-        } else {
-            return 500;
-        }
+        return new Tuple<>(500, null);
     }
+
 
 
 
