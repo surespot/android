@@ -864,11 +864,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         }));
 
         // TODO: Adam wants this option to appear regardless if the user entered through the notification or not
-        String extraUnsentMessages = getIntent().getStringExtra(SurespotConstants.ExtraNames.UNSENT_MESSAGES);
-        if ("true".equals(extraUnsentMessages) || SurespotApplication.getCommunicationService().hasUnsentMessages()) {
-            SurespotApplication.getCommunicationService().setPromptingResendErroredMessages();
-            showResendMessageDialog();
-        }
+//        String extraUnsentMessages = getIntent().getStringExtra(SurespotConstants.ExtraNames.UNSENT_MESSAGES);
+//        if ("true".equals(extraUnsentMessages) || SurespotApplication.getCommunicationService().hasUnsentMessages()) {
+//            SurespotApplication.getCommunicationService().setPromptingResendErroredMessages();
+//            showResendMessageDialog();
+//        }
 
         SurespotApplication.getCommunicationService().initializeService();
 
@@ -887,30 +887,30 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         launch();
     }
 
-    private void showResendMessageDialog() {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-
-        alertDialogBuilder.setTitle(getString(R.string.prompt_resend));
-        alertDialogBuilder.setMessage(getString(R.string.prompt_resend_errored_messages));
-
-        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-                SurespotApplication.getCommunicationService().setResendErroredMessages();
-            }
-        });
-
-        alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-                SurespotApplication.getCommunicationService().setDoNotResendErroredMessages();
-            }
-        });
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        // show alert
-        alertDialog.show();
-    }
+//    private void showResendMessageDialog() {
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+//
+//        alertDialogBuilder.setTitle(getString(R.string.prompt_resend));
+//        alertDialogBuilder.setMessage(getString(R.string.prompt_resend_errored_messages));
+//
+//        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int id) {
+//                dialog.cancel();
+//                SurespotApplication.getCommunicationService().setResendErroredMessages();
+//            }
+//        });
+//
+//        alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int id) {
+//                dialog.cancel();
+//                SurespotApplication.getCommunicationService().setDoNotResendErroredMessages();
+//            }
+//        });
+//
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//        // show alert
+//        alertDialog.show();
+//    }
 
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();

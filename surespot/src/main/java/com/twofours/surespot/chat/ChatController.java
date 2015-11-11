@@ -1223,7 +1223,7 @@ public class ChatController {
 
 		// this logic is also done in the chat transmission service (but after this call) so that if the UI is not available,
 		// the mResendBuffer is still updated properly
-		Iterator<SurespotMessage> iterator = SurespotApplication.getCommunicationService().getSendBuffer().iterator();
+		Iterator<SurespotMessage> iterator = SurespotApplication.getCommunicationService().getSendQueue().iterator();
 		while (iterator.hasNext()) {
 			message = iterator.next();
 			if (message.getIv().equals(errorMessage.getId())) {
@@ -1294,7 +1294,7 @@ public class ChatController {
 
 					boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
 
-					SurespotApplication.getCommunicationService().getSendBuffer().remove(lastMessage);
+					SurespotApplication.getCommunicationService().getSendQueue().remove(lastMessage);
 					if (added && myMessage) {
 						sentByMeCount++;
 					}
@@ -1409,8 +1409,9 @@ public class ChatController {
 
 	public synchronized void logout() {
 		// save before we clear the chat adapters
-		SurespotApplication.getCommunicationService().userLoggedOut();
 		onPause();
+		SurespotApplication.getCommunicationService().userLoggedOut();
+
 		// mViewPager = null;
 		// mCallback401 = null;
 		// mChatPagerAdapter = null;
@@ -1441,7 +1442,7 @@ public class ChatController {
 		mFriendAdapter.setFriends(friends);
 		mFriendAdapter.setLoading(false);
 
-		SurespotApplication.getCommunicationService().loadUnsentMessages();
+		//SurespotApplication.getCommunicationService().loadUnsentMessages();
 	}
 
 	private boolean mGlobalProgress;
@@ -1796,6 +1797,11 @@ public class ChatController {
 	}
 
 	public void deleteMessage(final SurespotMessage message) {
+
+
+		//remove it from send queue
+		SurespotApplication.getCommunicationService().removeQueuedMessage(message);
+
 		// if it's on the server, send delete control message otherwise just delete it locally
 		if (message.getId() != null) {
 
@@ -1824,15 +1830,14 @@ public class ChatController {
 		else {
 			// remove the local message
 			String otherUser = message.getOtherUser();
-			//SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
-			SurespotApplication.getCommunicationService().getSendBuffer().remove(message);
+		//	SurespotApplication.getCommunicationService().getSendQueue().remove(message);
 
 			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 			chatAdapter.deleteMessageByIv(message.getIv());
 			SurespotApplication.getCommunicationService().saveState(otherUser, false);
 
-			// if it's an image, delete the local image file
-			if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+			// if it's an file message, delete the local file
+			if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 				if (message.getData().startsWith("file")) {
 					try {
 						new File(new URI(message.getData())).delete();
@@ -1869,6 +1874,10 @@ public class ChatController {
 			}
 
 			final int finalMessageId = lastReceivedMessageId;
+			//get rid of messages for this isure in chat controller queue
+
+			SurespotApplication.getCommunicationServiceNoThrow().clearMessageQueue(username);
+
 			mNetworkController.deleteMessages(username, lastReceivedMessageId, new AsyncHttpResponseHandler() {
 				@Override
 				public void onSuccess(int statusCode, String content) {
