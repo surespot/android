@@ -257,7 +257,7 @@ public class ChatUtils {
 //                                    return;
 //                                }
 
-                                FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.IMAGE, localImageFile.getAbsolutePath());
+                          //      FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.IMAGE, localImageFile.getAbsolutePath());
 //                                fileStreamTask.mTo = to;
 //                                fileStreamTask.mIv = iv;
 //
@@ -298,7 +298,12 @@ public class ChatUtils {
 //                                };
 
                                 if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamTask);
+                                    SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
+                                    SurespotApplication.getCommunicationService().processNextMessage();
+                                }
+                                else {
+                                    //TODO mark errored
+
                                 }
                             }
                         };
@@ -456,9 +461,9 @@ public class ChatUtils {
 //                                    return;
 //                                }
 //
-//                                final SurespotMessage finalMessage = message;
+                                final SurespotMessage finalMessage = message;
 
-                                FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.M4A, localImageFile.getAbsolutePath());
+                        //        FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.M4A, localImageFile.getAbsolutePath());
 //                                fileStreamTask.mTo = to;
 //                                fileStreamTask.mIv = iv;
 //                                fileStreamTask.mLocalFilePath = localImageFile.getAbsolutePath();
@@ -499,7 +504,8 @@ public class ChatUtils {
 //                                };
 
                                 if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().sendFileStreamMessage(fileStreamTask);
+                                    SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
+                                    SurespotApplication.getCommunicationService().processNextMessage();
                                 }
                                 //else ? TODO wtf owen set errored immediately
                             }

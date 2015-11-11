@@ -1223,7 +1223,7 @@ public class ChatController {
 
 		// this logic is also done in the chat transmission service (but after this call) so that if the UI is not available,
 		// the mResendBuffer is still updated properly
-		Iterator<SurespotMessage> iterator = SurespotApplication.getCommunicationService().getResendBuffer().iterator();
+		Iterator<SurespotMessage> iterator = SurespotApplication.getCommunicationService().getSendBuffer().iterator();
 		while (iterator.hasNext()) {
 			message = iterator.next();
 			if (message.getIv().equals(errorMessage.getId())) {
@@ -1294,7 +1294,7 @@ public class ChatController {
 
 					boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
 
-					SurespotApplication.getCommunicationService().getResendBuffer().remove(lastMessage);
+					SurespotApplication.getCommunicationService().getSendBuffer().remove(lastMessage);
 					if (added && myMessage) {
 						sentByMeCount++;
 					}
@@ -1519,7 +1519,7 @@ public class ChatController {
 		return getChatAdapter(username, true);
 	}
 
-	ChatAdapter getChatAdapter(String username, boolean create) {
+	public ChatAdapter getChatAdapter(String username, boolean create) {
 
 		ChatAdapter chatAdapter = mChatAdapters.get(username);
 		if (chatAdapter == null && create) {
@@ -1666,7 +1666,7 @@ public class ChatController {
 						chatMessage.setToVersion(theirLatestVersion);
 
 						SurespotLog.d(TAG, "sending message to chat controller iv: %s", chatMessage.getIv());
-						SurespotApplication.getCommunicationService().sendMessages();
+						SurespotApplication.getCommunicationService().processNextMessage();
 						return true;
 					}
 					else {
@@ -1729,7 +1729,7 @@ public class ChatController {
 						chatMessage.setToVersion(theirLatestVersion);
 
 						SurespotLog.d(TAG, "sending message to chat controller iv: %s", chatMessage.getIv());
-						SurespotApplication.getCommunicationService().sendMessages();
+						SurespotApplication.getCommunicationService().processNextMessage();
 						return true;
 					}
 					else {
@@ -1824,7 +1824,7 @@ public class ChatController {
 		else {
 			// remove the local message
 			String otherUser = message.getOtherUser();
-			SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
+			//SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
 			SurespotApplication.getCommunicationService().getSendBuffer().remove(message);
 
 			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
