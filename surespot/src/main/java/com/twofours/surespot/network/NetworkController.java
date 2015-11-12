@@ -544,72 +544,6 @@ public class NetworkController {
         get("/users/" + username + "/exists", null, responseHandler);
     }
 
-    /**
-     * Unregister this account/device pair within the server.
-     */
-    /*public static void unregister(final Context context, final String regId) {
-        SurespotLog.i(TAG, "unregistering device (regId = " + regId + ")");
-		try {
-			// this will puke on phone with no google account
-			GCMRegistrar.setRegisteredOnServer(context, false);
-		}
-		finally {
-		}
-	}*/
-    public void postFileStream(final String ourVersion, final String user, final String theirVersion, final String id,
-                               final InputStream fileInputStream, final String mimeType, final IAsyncCallback<Integer> callback) {
-
-        new AsyncTask<Void, Void, HttpResponse>() {
-
-            @Override
-            protected HttpResponse doInBackground(Void... params) {
-
-                SurespotLog.v(TAG, "posting file stream");
-
-                HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + ourVersion + "/" + user + "/" + theirVersion);
-                if (fileInputStream == null) {
-                    SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
-                    return null;
-                }
-
-                InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
-
-                MultipartEntity reqEntity = new MultipartEntity();
-                reqEntity.addPart("image", isBody);
-                httppost.setEntity(reqEntity);
-                HttpResponse response = null;
-
-                try {
-                    response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
-
-                } catch (Exception e) {
-                    SurespotLog.w(TAG, e, "createPostFile");
-                } finally {
-                    httppost.releaseConnection();
-                    if (response != null) {
-                        try {
-                            EntityUtils.consume(response.getEntity());
-                        } catch (IOException e) {
-                            SurespotLog.w(TAG, e, "postFileStream");
-                        }
-                    }
-                }
-
-                return response;
-
-            }
-
-            protected void onPostExecute(HttpResponse response) {
-                if (response != null) {
-                    callback.handleResponse(response.getStatusLine().getStatusCode());
-                } else {
-                    callback.handleResponse(500);
-                }
-            }
-
-            ;
-        }.execute();
-    }
 
     public Tuple<Integer, JSONObject> postFileStreamSync(final String ourVersion, final String user, final String theirVersion, final String id,
                                                          final InputStream fileInputStream, final String mimeType) throws JSONException {
@@ -656,16 +590,16 @@ public class NetworkController {
 
                 } else {
                     return new Tuple<>(statusCode, null);
-                }
+        }
 
-            } else {
-                return new Tuple<>(500, null);
-            }
+    } else {
+        return new Tuple<>(500, null);
+    }
 
-        } catch (Exception e) {
-            SurespotLog.w(TAG, e, "createPostFile");
+} catch (Exception e) {
+        SurespotLog.w(TAG, e, "createPostFile");
         } finally {
-            httppost.releaseConnection();
+        httppost.releaseConnection();
 //            if (response != null) {
 //                try {
 //                    EntityUtils.consume(response.getEntity());

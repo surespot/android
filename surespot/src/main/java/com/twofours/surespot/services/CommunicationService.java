@@ -323,55 +323,66 @@ public class CommunicationService extends Service {
 //        }
         synchronized (SEND_LOCK) {
 
-            SurespotLog.d(TAG, "Sending next message, messages in queue: %d", mSendQueue.size());
+
+            SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
 
 
             SurespotMessage nextMessage = mSendQueue.peek();
             if (nextMessage != null) {
-                //  if (mCurrentSendIv != nextMessage.getIv()) {
-                SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
-                mCurrentSendIv = nextMessage.getIv();
-                switch (nextMessage.getMimeType()) {
-                    case SurespotConstants.MimeTypes.TEXT:
-                        if (isMessageReadyToSend(nextMessage)) {
-                            sendTextMessage(nextMessage);
-                        } else {
-                            //start timer and try in a bit
-                        }
-                        break;
-                    case SurespotConstants.MimeTypes.IMAGE:
-                        sendImageMessage(nextMessage);
 
-                        break;
+
+                if (mCurrentSendIv != nextMessage.getIv()) {
+                    //message processed successfully, onto the next
+                    SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
+                    mCurrentSendIv = nextMessage.getIv();
+                    switch (nextMessage.getMimeType()) {
+                        case SurespotConstants.MimeTypes.TEXT:
+                            if (isMessageReadyToSend(nextMessage)) {
+                                sendTextMessage(nextMessage);
+                            } else {
+                                //start timer and try in a bit
+                            }
+                            break;
+                        case SurespotConstants.MimeTypes.IMAGE:
+                            sendImageMessage(nextMessage);
+
+                            break;
+                    }
+//
+                } else {
+                    SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
                 }
-//                } else {
-//                    SurespotLog.i(TAG, "processNextMessage() already sending message, iv: %s", nextMessage.getIv());
-//                }
             }
         }
 
     }
 
     private void sendTextMessage(final SurespotMessage message) {
-        //    SurespotLog.d(TAG, "sendmessage adding message to ResendBuffer, iv: %s", message.getIv());
+        SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
         if (mMainActivityPaused) {
             sendMessageUsingHttp(message);
         } else {
             if (getConnectionState() == STATE_CONNECTED) {
-                SurespotLog.d(TAG, "sendmessage, mSocket: %s", mSocket);
+                SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
                 JSONObject json = message.toJSONObjectSocket();
-                SurespotLog.d(TAG, "sendmessage, json: %s", json);
+                SurespotLog.d(TAG, "sendTextMessage, json: %s", json);
                 //String s = json.toString();
                 //SurespotLog.d(TAG, "sendmessage, message string: %s", s);
 
                 if (mSocket != null) {
                     mSocket.send(json);
                 }
+            } else {
+                //not connected, clear current iv so queue can proceed
+
+                mCurrentSendIv = null;
+
             }
         }
     }
 
     private void sendImageMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "sendImageMessage, iv: %s", message.getIv());
         new AsyncTask<Void, Void, Tuple<Integer, JSONObject>>() {
             @Override
             protected Tuple<Integer, JSONObject> doInBackground(Void... voids) {
@@ -387,16 +398,16 @@ public class CommunicationService extends Service {
 
                     } catch (FileNotFoundException e) {
                         SurespotLog.w(TAG, e, "sendImageMessage");
-                        return new Tuple<>(500,null);
+                        return new Tuple<>(500, null);
                     } catch (JSONException e) {
                         SurespotLog.w(TAG, e, "sendImageMessage");
-                        return new Tuple<>(500,null);
+                        return new Tuple<>(500, null);
                     }
 
 
                 } else {
                     SurespotLog.i(TAG, "network controller null or different user");
-                    return new Tuple<>(500,null);
+                    return new Tuple<>(500, null);
                 }
             }
 
@@ -428,9 +439,57 @@ public class CommunicationService extends Service {
                 } else {
                     mResendTries = 0;
                     mSendQueue.remove(message);
+                    //clear current iv so queue can proceed
+                    synchronized (SEND_LOCK) {
+                        mCurrentSendIv = null;
+                    }
 
                     //update local message with server data
                     SurespotLog.d(TAG, "sendImageMessage received response: %s", result.second);
+
+                    JSONObject serverData = result.second;
+                    try {
+                        int serverId = serverData.getInt("id");
+                        //   String url = serverData.getString("url");
+                        long datetime = serverData.getLong("time");
+                        int size = serverData.getInt("size");
+
+                        //create a new message purely to update cached file location
+//                        SurespotMessage newMessage = new SurespotMessage();
+//                        newMessage.setIv(message.getIv());
+//                        newMessage.setData(url);
+//                        newMessage.setDateTime(new Date(datetime));
+//                        newMessage.setId(serverId);
+//                        newMessage.setDataSize(size);
+//                        newMessage.setMimeType(message.getMimeType());
+
+                        //set server data in original message
+//                        message.setData(url);
+//                        message.setDateTime(new Date(datetime));
+//                        message.setId(serverId);
+//                        message.setDataSize(size);
+
+//                        ChatController chatController = SurespotApplication.getChatController();
+//                        if (chatController != null) {
+//                            ChatAdapter chatAdapter = chatController.getChatAdapter(message.getTo(), false);
+//                            if (chatAdapter != null) {
+//                                SurespotMessage adapterMessage = chatAdapter.getMessageByIv(message.getIv());
+//                                if (adapterMessage != null) {
+//
+//                                    chatController.handleCachedFile(chatAdapter, message);
+//                                    //set server data in adapter message
+//                                    adapterMessage.setDateTime(new Date(datetime));
+//                                    adapterMessage.setId(serverId);
+//                                    adapterMessage.setDataSize(size);
+//                                    chatAdapter.notifyDataSetChanged();
+//                                }
+//                            }
+//                        }
+
+
+                    } catch (JSONException e) {
+                        //TODO notification
+                    }
 
 
                     processNextMessage();
@@ -744,6 +803,9 @@ public class CommunicationService extends Service {
     private void onConnected() {
         SurespotLog.d(TAG, "onConnected");
 
+        stopReconnectionAttempts();
+        stopResendTimer();
+
         // tell any listeners that we're connected
         if (mListener != null) {
             SurespotLog.d(TAG, "onConnected, mListener calling onConnected()");
@@ -752,9 +814,8 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "onConnected, mListener was null");
         }
 
-        stopReconnectionAttempts();
-        stopResendTimer();
-        processNextMessage();
+
+        //  processNextMessage();
     }
 
     // notify listeners that we've connected
@@ -1035,7 +1096,9 @@ public class CommunicationService extends Service {
             disposeSocket();
         }
 
+
         processNextMessage();
+
     }
 
     private boolean isMessageReadyToSend(SurespotMessage message) {

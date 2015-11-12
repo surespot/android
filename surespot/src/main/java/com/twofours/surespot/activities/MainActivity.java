@@ -1269,15 +1269,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         return true;
     }
 
-    @SuppressLint("NewApi")
     private boolean hasCamera() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
+     //   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
             return Camera.getNumberOfCameras() > 0;
-        }
-        else {
-            PackageManager pm = this.getPackageManager();
-            return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
-        }
+//        }
+//        else {
+//            PackageManager pm = this.getPackageManager();
+//            return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
+//        }
     }
 
     public void uploadFriendImage(String name) {

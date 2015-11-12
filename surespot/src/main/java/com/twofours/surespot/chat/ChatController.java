@@ -205,49 +205,6 @@ public class ChatController {
 		}
 	}
 
-//handled in CommunicationService now
-//	private void resendMessages() {
-//		// get the resend messages
-//		SurespotMessage[] resendMessages = SurespotApplication.getCommunicationService().getResendMessages();
-//		JSONArray sMessageList = new JSONArray();
-//
-//		for (int i = 0; i < resendMessages.length; i++) {
-//			SurespotMessage message = resendMessages[i];
-//
-//			// if it has an id don't send it again
-//			if (message.getId() != null) {
-//				SurespotApplication.getCommunicationService().getResendBuffer().remove(message);
-//				continue;
-//			}
-//
-//			// set the last received id so the server knows which messages to check
-//			String otherUser = message.getOtherUser();
-//
-//			// String username = message.getFrom();
-//			Integer lastMessageID = 0;
-//			// ideally get the last id from the fragment's chat adapter
-//			ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
-//			if (chatAdapter != null) {
-//				SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
-//				if (lastMessage != null) {
-//					lastMessageID = lastMessage.getId();
-//				}
-//			}
-//
-//			// failing that use the last viewed id
-//			if (lastMessageID == null) {
-//				mFriendAdapter.getFriend(otherUser).getLastViewedMessageId();
-//			}
-//
-//			SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
-//			message.setResendId(lastMessageID);
-//
-//			sMessageList.put(message.toJSONObjectSocket());
-//		}
-//
-//		SurespotApplication.getCommunicationService().sendOnSocket(sMessageList.toString());
-//	}
-
 	public void handleMessage(final SurespotMessage message) {
 		SurespotLog.d(TAG, "handleMessage %s", message);
 		final String otherUser = message.getOtherUser();
@@ -498,7 +455,7 @@ public class ChatController {
 	}
 
 	// add entry to http cache for image we sent so we don't download it again
-	private void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
+	public void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
 		SurespotLog.d(TAG, "handleCachedFile");
 		SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
 
@@ -531,7 +488,7 @@ public class ChatController {
 				mNetworkController.addCacheEntry(remoteUri, cacheEntry);
 
 				// update image cache
-				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+				if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
 					MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
 				}
 
@@ -754,6 +711,7 @@ public class ChatController {
 				}
 
 				handleAutoInvite();
+				SurespotApplication.getCommunicationService().processNextMessage();
 				setProgress(null, false);
 			}
 
@@ -1294,7 +1252,7 @@ public class ChatController {
 
 					boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
 
-					SurespotApplication.getCommunicationService().getSendQueue().remove(lastMessage);
+					SurespotApplication.getCommunicationService().removeQueuedMessage(lastMessage);
 					if (added && myMessage) {
 						sentByMeCount++;
 					}
@@ -1663,69 +1621,6 @@ public class ChatController {
 
 					if (result != null) {
 						chatMessage.setData(result);
-						chatMessage.setFromVersion(ourLatestVersion);
-						chatMessage.setToVersion(theirLatestVersion);
-
-						SurespotLog.d(TAG, "sending message to chat controller iv: %s", chatMessage.getIv());
-						SurespotApplication.getCommunicationService().processNextMessage();
-						return true;
-					}
-					else {
-						SurespotLog.d(TAG, "could not encrypt message, iv: %s", chatMessage.getIv());
-						chatMessage.setErrorStatus(500);
-
-						return false;
-					}
-				}
-
-				protected void onPostExecute(Boolean success) {
-					// if success is false we will have set an error status in the message so notify
-					if (!success) {
-						chatAdapter.notifyDataSetChanged();
-					}
-				};
-
-			}.execute();
-		}
-
-	}
-
-	public void sendVoiceMessage(final String username, final byte[] plainData, final String mimeType) {
-		if (plainData.length > 0) {
-			final ChatAdapter chatAdapter = mChatAdapters.get(username);
-			if (chatAdapter == null) {
-				return;
-			}
-			// display the message immediately
-			final byte[] iv = EncryptionController.getIv();
-
-			// build a message without the encryption values set as they could take a while
-
-			final SurespotMessage chatMessage = ChatUtils.buildPlainBinaryMessage(username, mimeType, plainData, new String(ChatUtils.base64EncodeNowrap(iv)));
-
-			try {
-				chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
-				SurespotApplication.getCommunicationService().enqueueMessage(chatMessage);
-			}
-			catch (SurespotMessageSequenceException e) {
-				// not gonna happen
-				SurespotLog.w(TAG, e, "sendMessage");
-			}
-
-			// do encryption in background
-			new AsyncTask<Void, Void, Boolean>() {
-
-				@Override
-				protected Boolean doInBackground(Void... arg0) {
-					String ourLatestVersion = IdentityController.getOurLatestVersion();
-					String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
-
-					byte[] result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainData, iv);
-
-					if (result != null) {
-
-						// set data for sending
-						chatMessage.setData(new String(ChatUtils.base64EncodeNowrap(result)));
 						chatMessage.setFromVersion(ourLatestVersion);
 						chatMessage.setToVersion(theirLatestVersion);
 

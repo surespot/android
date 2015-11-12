@@ -62,17 +62,17 @@ public class FileUtils {
 		}
 
 		String cacheDir = null;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+//		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
 			File fCacheDir = context.getExternalCacheDir();
 			if (fCacheDir != null) {
 				cacheDir = fCacheDir.getPath();
 			}
-		}
-		else {
-
-			String baseDir = Environment.getExternalStorageDirectory().getPath();
-			cacheDir = baseDir + "/Android/data/com.twofours.surespot/cache/";
-		}
+//		}
+//		else {
+//
+//			String baseDir = Environment.getExternalStorageDirectory().getPath();
+//			cacheDir = baseDir + "/Android/data/com.twofours.surespot/cache/";
+//		}
 		return cacheDir;
 
 	}
@@ -146,13 +146,13 @@ public class FileUtils {
 
 	private static File getPublicImageStorageDir() {
 		File imageDir;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
 			imageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "surespot");
-		}
-		else {
-			imageDir = new File(Environment.getExternalStorageDirectory().getPath() + "/Pictures/surespot");
-
-		}
+//		}
+//		else {
+//			imageDir = new File(Environment.getExternalStorageDirectory().getPath() + "/Pictures/surespot");
+//
+//		}
 		return imageDir;
 	}
 
