@@ -3,6 +3,7 @@ package com.twofours.surespot.activities;
 import java.security.InvalidKeyException;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,9 @@ import android.os.Looper;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
@@ -32,10 +36,6 @@ import android.widget.TextView.OnEditorActionListener;
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
@@ -56,7 +56,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.MultiProgressDialog;
 
-public class LoginActivity extends SherlockActivity {
+public class LoginActivity extends Activity {
 
     private static final int REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS = 1;
     private Button loginButton;
@@ -186,8 +186,8 @@ public class LoginActivity extends SherlockActivity {
 
         Spinner spinner = (Spinner) findViewById(R.id.spinnerUsername);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
-        adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mIdentityNames = IdentityController.getIdentityNames(this);
 
         if (mIdentityNames == null || mIdentityNames.size() == 0) {
@@ -407,7 +407,7 @@ public class LoginActivity extends SherlockActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getSupportMenuInflater();
+        MenuInflater inflater = getMenuInflater();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             inflater.inflate(R.menu.activity_login_gb, menu);
         }

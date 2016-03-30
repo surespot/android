@@ -2,11 +2,11 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "22.0.1"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 19
+        minSdkVersion 15
+        targetSdkVersion 23
     }
 //
 //    buildTypes {
@@ -19,8 +19,6 @@ android {
 
 dependencies {
     compile project(':httpclientandroidlib')
-    compile project(':actionbarsherlock')
-    compile 'com.android.support:support-v4:19.0.1'
     compile 'ch.acra:acra:4.5.0'
     compile 'com.madgag.spongycastle:core:1.53.0.0'
     compile 'com.madgag.spongycastle:prov:1.53.0.0'

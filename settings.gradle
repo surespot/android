@@ -1,7 +1,6 @@
 include ':imageViewTouch'
 include ':httpclientandroidlib'
 include ':surespotcommon'
-include ':actionbarsherlock'
 include ':androidasynchttp'
 include ':androidkeystore'
 include ':viewpagerindicator'

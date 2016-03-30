@@ -36,7 +36,7 @@ import java.security.ProviderException;
  *  If no device available the service is not available,
  *  that is, provider shouldn't register the algorithm. <BR>
  */
-public class RandomBitsSupplier implements SHA1_Data {
+public class RandomBitsSupplier {
 
 
     /**

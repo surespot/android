@@ -39,7 +39,6 @@
 
             <Button
                 android:id="@+id/tvShareInvite"
-                style="@style/Widget.Sherlock.ActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -53,7 +52,6 @@
 
             <Button
                 android:id="@+id/tvHelp"
-                style="@style/Widget.Sherlock.ActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

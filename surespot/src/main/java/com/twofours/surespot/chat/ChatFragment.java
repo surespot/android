@@ -2,9 +2,10 @@ package com.twofours.surespot.chat;
 
 import java.lang.reflect.Field;
 
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +18,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -32,7 +31,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
-public class ChatFragment extends SherlockFragment {
+public class ChatFragment extends Fragment {
 	private String TAG = "ChatFragment";
 	private String mUsername;
 	private ListView mListView;
@@ -122,20 +121,20 @@ public class ChatFragment extends SherlockFragment {
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 				if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-					SherlockDialogFragment dialog = TextMessageMenuFragment.newInstance(message);
-					dialog.show(getActivity().getSupportFragmentManager(), "TextMessageMenuFragment");
+					DialogFragment dialog = TextMessageMenuFragment.newInstance(message);
+					dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
 					return true;
 				}
 				else {
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-						SherlockDialogFragment dialog = ImageMessageMenuFragment.newInstance(message);
-						dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
+						DialogFragment dialog = ImageMessageMenuFragment.newInstance(message);
+						dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
 						return true;
 					}
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-							SherlockDialogFragment dialog = VoiceMessageMenuFragment.newInstance(message);
-							dialog.show(getActivity().getSupportFragmentManager(), "VoiceMessageMenuFragment");
+							DialogFragment dialog = VoiceMessageMenuFragment.newInstance(message);
+							dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
 							return true;
 						}
 					}

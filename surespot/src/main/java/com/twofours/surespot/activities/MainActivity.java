@@ -33,6 +33,9 @@ import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -50,10 +53,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -99,7 +98,7 @@ import java.util.List;
 
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 
-public class MainActivity extends SherlockFragmentActivity implements OnMeasureListener {
+public class MainActivity extends Activity implements OnMeasureListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -223,11 +222,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         mOrientation = getResources().getConfiguration().orientation;
 
-        // PROD Gingerbread does not like FLAG_SECURE
-        if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.FROYO
-                || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-            getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-        }
+
+        getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
+
 
         mContext = this;
 
@@ -645,11 +642,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             }
         });
 
-        // we like the underline in ICS
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            mEtMessage.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-            mEtInvite.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-        }
+
 
     }
 
@@ -701,7 +694,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
             user = intent.getStringExtra(SurespotConstants.ExtraNames.NAME);
 
-        } else if (!TextUtils.isEmpty(messageTo)
+        }
+        else if (!TextUtils.isEmpty(messageTo)
                 && (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
                 || SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
                 .equals(notificationType))) {
@@ -808,9 +802,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         setContentView(R.layout.activity_main);
 
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
-        if (mHomeImageView == null) {
-            mHomeImageView = (ImageView) findViewById(R.id.abs__home);
-        }
 
         setHomeProgress(true);
 
@@ -841,7 +832,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         mBillingController = SurespotApplication.getBillingController();
 
-        SurespotApplication.setChatController(new ChatController(this, mUser, SurespotApplication.getNetworkController(), getSupportFragmentManager(), m401Handler,
+        SurespotApplication.setChatController(new ChatController(this, mUser, SurespotApplication.getNetworkController(), getFragmentManager(), m401Handler,
                 new IAsyncCallback<Boolean>() {
                     @Override
                     public void handleResponse(Boolean inProgress) {
@@ -1062,7 +1053,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
         if (SurespotApplication.getChatController() != null) {
             if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
                 SurespotApplication.getChatController().onResume(SurespotApplication.getCommunicationService().isConnected());
-            } else {
+            }
+            else {
                 SurespotApplication.getChatController().onResume(false);
             }
         }
@@ -1073,7 +1065,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
             SurespotApplication.getCommunicationService().setMainActivityPaused(false);
-        } else {
+        }
+        else {
             SurespotLog.d(TAG, "resume, Communication service was null");
         }
 
@@ -1227,11 +1220,11 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
     }
 
     @Override
-    public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         SurespotLog.d(TAG, "onCreateOptionsMenu");
 
-        MenuInflater inflater = getSupportMenuInflater();
+        MenuInflater inflater = getMenuInflater();
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             inflater.inflate(R.menu.activity_main_gb, menu);
@@ -1270,8 +1263,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
     }
 
     private boolean hasCamera() {
-     //   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
-            return Camera.getNumberOfCameras() > 0;
+        //   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
+        return Camera.getNumberOfCameras() > 0;
 //        }
 //        else {
 //            PackageManager pm = this.getPackageManager();
@@ -1872,7 +1865,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 //
 //                                @Override
 //                                public void handleResponse(Boolean errorHandled) {
-                                    //showing notification now
+                    //showing notification now
 //                                    if (!errorHandled) {
 //                                        Runnable runnable = new Runnable() {
 //
@@ -1885,8 +1878,8 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 //
 //                                        getMainHandler().post(runnable);
 //                                    }
-                //                }
-                //            });
+                    //                }
+                    //            });
                 }
                 else {
                     if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
@@ -2074,7 +2067,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
             mQRButton.setVisibility(View.VISIBLE);
             mEtInvite.requestFocus();
 
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getActionBar().setDisplayHomeAsUpEnabled(false);
 
             SurespotLog.d(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
             if (mFriendHasBeenSet) {
@@ -2092,7 +2085,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 
         }
         else {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getActionBar().setDisplayHomeAsUpEnabled(true);
 
             if (friend.isDeleted()) {
 

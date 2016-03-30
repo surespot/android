@@ -1,32 +1,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/abs__background_holo_dark"
-    tools:context=".ImageSelectActivity" >
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".ImageSelectActivity">
 
     <it.sephiroth.android.library.imagezoom.ImageViewTouch
         android:id="@+id/imageViewer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/buttonFrame"
-        android:background="@color/abs__background_holo_dark" />
+        android:layout_above="@+id/buttonFrame"/>
 
     <LinearLayout
         android:id="@+id/buttonFrame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@color/abs__background_holo_light" >
+        android:layout_alignParentBottom="true">
 
         <Button
             android:id="@+id/cancel"
-            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/cancel"
-            android:textColor="@color/surespotBlue" >
+            android:textColor="@color/surespotBlue">
         </Button>
 
         <View
@@ -34,18 +30,17 @@
             android:layout_height="match_parent"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
-            
-            android:background="#aaa" />
+
+            android:background="#aaa"/>
 
         <Button
             android:id="@+id/send"
-            style="@style/Widget.Sherlock.ActionButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:enabled="false"
             android:text="@string/send"
-            android:textColor="@color/surespotBlue" >
+            android:textColor="@color/surespotBlue">
         </Button>
     </LinearLayout>
 

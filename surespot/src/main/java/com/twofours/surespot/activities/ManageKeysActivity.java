@@ -7,6 +7,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -23,8 +25,6 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
@@ -40,7 +40,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
-public class ManageKeysActivity extends SherlockActivity {
+public class ManageKeysActivity extends Activity {
 	private static final String TAG = "ManageKeysActivity";
 	private List<String> mIdentityNames;
 	private MultiProgressDialog mMpd;
@@ -62,8 +62,8 @@ public class ManageKeysActivity extends SherlockActivity {
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
-		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
 		for (String name : mIdentityNames) {

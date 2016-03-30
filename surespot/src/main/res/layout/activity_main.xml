@@ -17,7 +17,6 @@
         android:id="@+id/indicator"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@color/abs__background_holo_dark"
         android:textColor="#7733b5e5"
         android:textSize="20sp"
         app:footerIndicatorStyle="none"
@@ -25,6 +24,7 @@
         app:footerPadding="8dp"
         app:selectedBold="true"
         app:selectedColor="@color/surespotBlue"
+        android:background="@android:color/black"
         app:topPadding="0dp" />
 
     <com.twofours.surespot.ui.FixedViewPager
@@ -46,7 +46,6 @@
             android:id="@+id/bEmoji"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/abs__list_selector_holo_light"
             android:padding="5dp"
             android:visibility="gone" />
 
@@ -54,7 +53,6 @@
             android:id="@+id/bQR"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/abs__list_selector_holo_light"
             android:padding="5dp"
             android:src="@drawable/qr_surespot" />
     </FrameLayout>

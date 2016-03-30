@@ -140,7 +140,6 @@
 
                 <Button
                     android:id="@+id/bSelectDriveAccount"
-                    style="@style/Widget.Sherlock.ActionButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/select_google_drive_account"

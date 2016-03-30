@@ -7,16 +7,17 @@ import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
+
 import com.twofours.surespot.R;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.ui.UIUtils;
 
-public class FriendMenuFragment extends SherlockDialogFragment {
+public class FriendMenuFragment extends DialogFragment {
 	protected static final String TAG = "FriendMenuFragment";
 	private Friend mFriend;
 	private ArrayList<String> mItems;

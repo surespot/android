@@ -9,7 +9,6 @@
         android:id="@+id/statusLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/abs__list_selector_holo_light"
         android:orientation="horizontal" >
 
         <View
@@ -86,7 +85,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/abs__list_selector_holo_light"
             android:gravity="center"
             android:padding="3dp"
             android:tag="block"
@@ -99,7 +97,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/abs__list_selector_holo_light"
             android:gravity="center"
             android:padding="3dp"
             android:tag="ignore"
@@ -112,7 +109,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/abs__list_selector_holo_light"
             android:gravity="center"
             android:padding="3dp"
             android:tag="accept"

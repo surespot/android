@@ -1,16 +1,16 @@
 package com.twofours.surespot.activities;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.ui.UIUtils;
 
-public class AboutActivity extends SherlockActivity {
+public class AboutActivity extends Activity {
 
 	private static final String TAG = null;
 

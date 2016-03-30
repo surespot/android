@@ -66,7 +66,7 @@ public class NetworkController {
     private String mUsername;
 
     public void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        SurespotLog.d(TAG, "get to " + url);
+        SurespotLog.d(TAG, "get  " + url);
         mClient.get(mBaseUrl + url, params, responseHandler);
     }
 

@@ -3,12 +3,13 @@ package com.twofours.surespot.friends;
 import java.lang.reflect.Field;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,7 +19,6 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -28,7 +28,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.ui.UIUtils;
 
-public class FriendFragment extends SherlockFragment {
+public class FriendFragment extends Fragment {
 	private FriendAdapter mMainAdapter;
 
 	protected static final String TAG = "FriendFragment";
@@ -110,7 +110,7 @@ public class FriendFragment extends SherlockFragment {
 					};
 				});
 
-				dialog.show(getActivity().getSupportFragmentManager(), "FriendMenuFragment");
+				dialog.show(getActivity().getFragmentManager(), "FriendMenuFragment");
 			}
 			return true;
 

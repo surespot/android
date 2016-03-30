@@ -29,7 +29,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
@@ -37,7 +36,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 
-public class ImageSelectActivity extends SherlockActivity {
+public class ImageSelectActivity extends Activity {
 	private static final String TAG = "ImageSelectActivity";
 	public static final int SOURCE_EXISTING_IMAGE = 1;
 	public static final int IMAGE_SIZE_LARGE = 0;

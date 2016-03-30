@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -19,13 +19,13 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
-public class VoiceMessageMenuFragment extends SherlockDialogFragment {
+public class VoiceMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "VoiceMessageMenuFragment";
 	private SurespotMessage mMessage;
 	private ArrayList<String> mItems;
 	private BillingController mBillingController;
 
-	public static SherlockDialogFragment newInstance(SurespotMessage message) {
+	public static DialogFragment newInstance(SurespotMessage message) {
 		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
 
 		Bundle args = new Bundle();

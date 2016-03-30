@@ -20,12 +20,15 @@ import org.w3c.dom.Text;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,10 +37,6 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
 
 public class Utils {
 	private static Toast mToast;
@@ -268,19 +267,8 @@ public class Utils {
 	 * @param leftText
 	 * @param rightText
 	 */
-	public static void configureActionBar(SherlockFragmentActivity activity, String leftText, String rightText, boolean home) {
-		final ActionBar actionBar = activity.getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(home);
-		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);
-		View customNav = LayoutInflater.from(activity).inflate(R.layout.actionbar_title, null);
-		actionBar.setCustomView(customNav);
-		setActionBarTitles(activity, leftText, rightText);
-
-	}
-
-	public static void configureActionBar(SherlockActivity activity, String leftText, String rightText, boolean home) {
-		final ActionBar actionBar = activity.getSupportActionBar();
+	public static void configureActionBar(Activity activity, String leftText, String rightText, boolean home) {
+		final ActionBar actionBar = activity.getActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(home);
 		actionBar.setDisplayShowCustomEnabled(true);
 		actionBar.setDisplayShowTitleEnabled(false);
@@ -289,70 +277,7 @@ public class Utils {
 		setActionBarTitles(activity, leftText, rightText);
 	}
 
-	public static void configureActionBar(SherlockPreferenceActivity activity, String leftText, String rightText, boolean home) {
-		final ActionBar actionBar = activity.getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(home);
-		actionBar.setDisplayShowCustomEnabled(true);
-		actionBar.setDisplayShowTitleEnabled(false);
-		View customNav = LayoutInflater.from(activity).inflate(R.layout.actionbar_title, null);
-		actionBar.setCustomView(customNav);
-		setActionBarTitles(activity, leftText, rightText);
-	}
-
-	// code for these should be identical
-	public static void setActionBarTitles(SherlockFragmentActivity activity, String leftText, String rightText) {
-		TextView navView = (TextView) activity.findViewById(R.id.nav);
-		TextView separatorView = (TextView) activity.findViewById(R.id.separator);
-		TextView userView = (TextView) activity.findViewById(R.id.user);
-
-		if (leftText != null && leftText.length() > 0) {
-			navView.setVisibility(View.VISIBLE);
-			separatorView.setVisibility(View.VISIBLE);
-			navView.setText(leftText);
-			userView.setGravity(Gravity.CENTER_VERTICAL);
-			LayoutParams params = (LayoutParams) userView.getLayoutParams();
-			params.setMargins(0, 0, 0, 0);
-			userView.setLayoutParams(params);
-		}
-		else {
-			navView.setVisibility(View.GONE);
-			separatorView.setVisibility(View.GONE);
-			navView.setText("");
-			userView.setGravity(Gravity.CENTER);
-			LayoutParams params = (LayoutParams) userView.getLayoutParams();
-			params.setMargins(7, 0, 0, 0);
-			userView.setLayoutParams(params);
-		}
-		userView.setText(rightText);
-	}
-
-	public static void setActionBarTitles(SherlockActivity activity, String leftText, String rightText) {
-		TextView navView = (TextView) activity.findViewById(R.id.nav);
-		TextView separatorView = (TextView) activity.findViewById(R.id.separator);
-		TextView userView = (TextView) activity.findViewById(R.id.user);
-
-		if (leftText != null && leftText.length() > 0) {
-			navView.setVisibility(View.VISIBLE);
-			separatorView.setVisibility(View.VISIBLE);
-			navView.setText(leftText);
-			userView.setGravity(Gravity.CENTER_VERTICAL);
-			LayoutParams params = (LayoutParams) userView.getLayoutParams();
-			params.setMargins(0, 0, 0, 0);
-			userView.setLayoutParams(params);
-		}
-		else {
-			navView.setVisibility(View.GONE);
-			separatorView.setVisibility(View.GONE);
-			navView.setText("");
-			userView.setGravity(Gravity.CENTER);
-			LayoutParams params = (LayoutParams) userView.getLayoutParams();
-			params.setMargins(7, 0, 0, 0);
-			userView.setLayoutParams(params);
-		}
-		userView.setText(rightText);
-	}
-
-	public static void setActionBarTitles(SherlockPreferenceActivity activity, String leftText, String rightText) {
+	public static void setActionBarTitles(Activity activity, String leftText, String rightText) {
 		TextView navView = (TextView) activity.findViewById(R.id.nav);
 		TextView separatorView = (TextView) activity.findViewById(R.id.separator);
 		TextView userView = (TextView) activity.findViewById(R.id.user);

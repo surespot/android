@@ -3,6 +3,7 @@ package com.twofours.surespot.billing;
 import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.ClipboardManager;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -18,8 +20,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
@@ -29,7 +29,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 @SuppressLint("InlinedApi")
-public class BillingActivity extends SherlockFragmentActivity {
+public class BillingActivity extends Activity {
 
 	protected static final String TAG = "BillingActivity";
 
@@ -48,9 +48,6 @@ public class BillingActivity extends SherlockFragmentActivity {
 		UIUtils.setHtml(this, tvPwyl, R.string.pwyl_text);
 
 		mHomeImageView = (ImageView) findViewById(android.R.id.home);
-		if (mHomeImageView == null) {
-			mHomeImageView = (ImageView) findViewById(R.id.abs__home);
-		}
 
 		mBillingController = SurespotApplication.getBillingController();
 		mBillingResponseHandler = new IAsyncCallback<Integer>() {
@@ -324,7 +321,7 @@ public class BillingActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onDestroy() {
 		SurespotLog.v(TAG, "onDestroy");
-		super.onPause();
+		super.onDestroy();
 		BillingController bc = SurespotApplication.getBillingController();
 		if (bc != null) {
 			bc.dispose();

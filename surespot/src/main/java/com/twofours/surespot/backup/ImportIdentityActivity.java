@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -30,8 +31,6 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -53,7 +52,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.SingleProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
-public class ImportIdentityActivity extends SherlockActivity {
+public class ImportIdentityActivity extends Activity {
 	private static final String TAG = null;
 	private boolean mSignup;
 

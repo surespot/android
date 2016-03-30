@@ -28,6 +28,9 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -36,11 +39,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -61,7 +59,7 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.ui.SingleProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
-public class ExportIdentityActivity extends SherlockActivity {
+public class ExportIdentityActivity extends Activity {
     private static final String TAG = "ExportIdentityActivity";
     private List<String> mIdentityNames;
     private DriveHelper mDriveHelper;
@@ -90,8 +88,8 @@ public class ExportIdentityActivity extends SherlockActivity {
         final TextView tvPath = (TextView) findViewById(R.id.backupLocalLocation);
         mSpinner = (Spinner) findViewById(R.id.identitySpinner);
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
-        adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mIdentityNames = IdentityController.getIdentityNames(this);
 
         for (String name : mIdentityNames) {
@@ -515,7 +513,7 @@ public class ExportIdentityActivity extends SherlockActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getSupportMenuInflater();
+        MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_help, menu);
         return true;
     }

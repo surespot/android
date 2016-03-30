@@ -19,6 +19,9 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.support.multidex.MultiDex;
+import android.support.multidex.MultiDexApplication;
+
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.EmojiParser;
@@ -58,10 +61,10 @@ public class SurespotApplication extends Application {
 	}
 
 
-//	protected void attachBaseContext(Context base) {
-//        super.attachBaseContext(base);
-//        MultiDex.install(this);
-//    }
+	protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
 	// create our own thread factory to handle message decryption where we have potentially hundreds of messages to decrypt
 	// we need a tall queue and a slim pipe
 	public static final ThreadFactory sThreadFactory = new ThreadFactory() {

@@ -427,7 +427,7 @@ public class UIUtils {
 
 		// Create the fragment and show it as a dialog.
 		KeyFingerprintDialogFragment newFragment = KeyFingerprintDialogFragment.newInstance(name, alias);
-		newFragment.show(activity.getSupportFragmentManager(), "dialog");
+		newFragment.show(activity.getFragmentManager(), "dialog");
 
 	}
 

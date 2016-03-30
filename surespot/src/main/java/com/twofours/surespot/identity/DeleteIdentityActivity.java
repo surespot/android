@@ -3,18 +3,18 @@ package com.twofours.surespot.identity;
 import java.security.PrivateKey;
 import java.util.List;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -27,7 +27,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
-public class DeleteIdentityActivity extends SherlockActivity {
+public class DeleteIdentityActivity extends Activity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
 	private Spinner mSpinner;
@@ -69,8 +69,8 @@ public class DeleteIdentityActivity extends SherlockActivity {
 	}
 
 	private void refreshSpinner() {
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
-		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
 		for (String name : mIdentityNames) {

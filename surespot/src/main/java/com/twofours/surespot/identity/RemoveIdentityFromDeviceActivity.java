@@ -1,17 +1,17 @@
 package com.twofours.surespot.identity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.SignupActivity;
 import com.twofours.surespot.common.Utils;
@@ -21,7 +21,7 @@ import com.twofours.surespot.ui.UIUtils;
 
 import java.util.List;
 
-public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
+public class RemoveIdentityFromDeviceActivity extends Activity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
 	private Spinner mSpinner;
@@ -71,8 +71,8 @@ public class RemoveIdentityFromDeviceActivity extends SherlockActivity {
 	}
 
 	private void refreshSpinner(String savedUsername) {
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.sherlock_spinner_item);
-		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
 		if (mIdentityNames == null || mIdentityNames.size() == 0) {

@@ -19,9 +19,11 @@ import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -29,8 +31,6 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -41,7 +41,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
-public class SettingsActivity extends SherlockPreferenceActivity {
+public class SettingsActivity extends PreferenceActivity {
 	private static final String TAG = "SettingsActivity";
 	private Preference mBgImagePref;
 	private AlertDialog mHelpDialog;
@@ -231,9 +231,6 @@ public class SettingsActivity extends SherlockPreferenceActivity {
 			// Related Issue: https://code.google.com/p/android/issues/detail?id=4611
 
 			View homeBtn = dialog.findViewById(android.R.id.home);
-			if (homeBtn == null) {
-				homeBtn = dialog.findViewById(R.id.abs__home);
-			}
 
 			if (homeBtn != null) {
 				OnClickListener dismissDialogClickListener = new OnClickListener() {

@@ -3,6 +3,7 @@ package com.twofours.surespot.identity;
 import java.security.PrivateKey;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -12,6 +13,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -20,8 +22,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -34,7 +34,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.ui.MultiProgressDialog;
 
-public class ChangePasswordActivity extends SherlockActivity {
+public class ChangePasswordActivity extends Activity {
 	private static final String TAG = null;
 	private List<String> mIdentityNames;
 	private MultiProgressDialog mMpd;
@@ -49,8 +49,8 @@ public class ChangePasswordActivity extends SherlockActivity {
 
 		final Spinner spinner = (Spinner) findViewById(R.id.identitySpinner);
 
-		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, R.layout.sherlock_spinner_item);
-		adapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+		ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mIdentityNames = IdentityController.getIdentityNames(this);
 
 		for (String name : mIdentityNames) {

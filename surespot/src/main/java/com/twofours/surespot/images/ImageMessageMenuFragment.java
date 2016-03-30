@@ -12,6 +12,7 @@ import java.util.Observer;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
@@ -20,7 +21,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -33,13 +33,13 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
-public class ImageMessageMenuFragment extends SherlockDialogFragment {
+public class ImageMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "ImageMessageMenuFragment";
 	private SurespotMessage mMessage;
 	private ArrayList<String> mItems;
 	private Observer mMessageObserver;
 	
-	public static SherlockDialogFragment newInstance(SurespotMessage message) {
+	public static DialogFragment newInstance(SurespotMessage message) {
 		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
 		Bundle args = new Bundle();

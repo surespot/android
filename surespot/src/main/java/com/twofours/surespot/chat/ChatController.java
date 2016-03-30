@@ -1,15 +1,16 @@
 package com.twofours.surespot.chat;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.support.v4.app.FragmentManager;
+
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
+import android.view.MenuItem;
 
-import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
@@ -1581,7 +1582,7 @@ public class ChatController {
 	private ChatFragment getChatFragment(String username) {
 		String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
 		SurespotLog.d(TAG, "looking for fragment: %s", fragmentTag);
-		ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
+		ChatFragment chatFragment = null;//(ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
 		SurespotLog.d(TAG, "fragment: %s", chatFragment);
 		return chatFragment;
 	}
