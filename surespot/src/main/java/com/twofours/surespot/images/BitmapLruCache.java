@@ -19,12 +19,7 @@ public class BitmapLruCache extends LruCache<String, Bitmap> {
 	}
 
 	protected void entryRemoved(boolean evicted, String key, Bitmap oldValue, Bitmap newValue) {
-
 		SurespotLog.v(TAG, "entryRemoved, %s", key);
-		if (evicted && (mEvictionExceptions == null || !mEvictionExceptions.contains(oldValue)) && Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-			SurespotLog.v(TAG, "evicted, recycling bitmap");
-			oldValue.recycle();
-		}
 	}
 
 	public void evictExcept(ArrayList<Bitmap> preserve) {

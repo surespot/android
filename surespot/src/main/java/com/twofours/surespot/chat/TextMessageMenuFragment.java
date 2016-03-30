@@ -17,120 +17,116 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 public class TextMessageMenuFragment extends DialogFragment {
-	protected static final String TAG = "TextMessageMenuFragment";
-	private SurespotMessage mMessage;
-	private String[] mMenuItemArray;
+    protected static final String TAG = "TextMessageMenuFragment";
+    private SurespotMessage mMessage;
+    private String[] mMenuItemArray;
 
-	public static DialogFragment newInstance(SurespotMessage message) {
-		TextMessageMenuFragment f = new TextMessageMenuFragment();
+    public static DialogFragment newInstance(SurespotMessage message) {
+        TextMessageMenuFragment f = new TextMessageMenuFragment();
 
-		Bundle args = new Bundle();
-		args.putString("message", message.toJSONObject().toString());
+        Bundle args = new Bundle();
+        args.putString("message", message.toJSONObject().toString());
 
-		// plain text is not converted to json string so store it separately
-		if (message.getPlainData() != null) {
-			args.putString("messageText", message.getPlainData().toString());
-		}
-		f.setArguments(args);
+        // plain text is not converted to json string so store it separately
+        if (message.getPlainData() != null) {
+            args.putString("messageText", message.getPlainData().toString());
+        }
+        f.setArguments(args);
 
-		return f;
-	}
+        return f;
+    }
 
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		final MainActivity mActivity = (MainActivity) getActivity();
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final MainActivity mActivity = (MainActivity) getActivity();
 
-		String messageString = getArguments().getString("message");
-		if (messageString != null) {
-			mMessage = SurespotMessage.toSurespotMessage(messageString);
-		}
+        String messageString = getArguments().getString("message");
+        if (messageString != null) {
+            mMessage = SurespotMessage.toSurespotMessage(messageString);
+        }
 
-		String messageText = getArguments().getString("messageText");
-		if (messageText == null) {
-			messageText = "";
-		}
-		
-		final String finalMessageText = messageText;
-			
+        String messageText = getArguments().getString("messageText");
+        if (messageText == null) {
+            messageText = "";
+        }
 
-		int countOptions = 2;
+        final String finalMessageText = messageText;
 
-		if (mMessage == null || mMessage.getId() == null) {
-			countOptions++;
-		}
 
-		mMenuItemArray = new String[countOptions];
-		mMenuItemArray[0] = getString(R.string.menu_copy);
-		mMenuItemArray[1] = getString(R.string.menu_delete_message);
+        int countOptions = 2;
 
-		if (countOptions > 2) {
-			mMenuItemArray[2] = getString(R.string.menu_resend_message);
-		}
+        if (mMessage == null || mMessage.getId() == null) {
+            countOptions++;
+        }
 
-		builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
-			@SuppressWarnings("deprecation")
-			@SuppressLint("NewApi")
-			public void onClick(final DialogInterface dialogi, int which) {
-				if (mMessage == null) {
-					return;
-				}
+        mMenuItemArray = new String[countOptions];
+        mMenuItemArray[0] = getString(R.string.menu_copy);
+        mMenuItemArray[1] = getString(R.string.menu_delete_message);
 
-				if (getActivity() == null) {
-					return;
-				}
+        if (countOptions > 2) {
+            mMenuItemArray[2] = getString(R.string.menu_resend_message);
+        }
 
-				switch (which) {
-				case 0:
-					if (finalMessageText != null) {
-						int sdk = android.os.Build.VERSION.SDK_INT;
-						if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-							android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-							clipboard.setText(new SpannableString(finalMessageText));
-						}
-						else {
-							android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(
-									Context.CLIPBOARD_SERVICE);
-							android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text", finalMessageText);
-							clipboard.setPrimaryClip(clip);
-						}
-					}
-					break;
-				case 1:
-					SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
-					boolean confirm = sp.getBoolean("pref_delete_message", true);
-					if (confirm) {
-						AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
-								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
-									public void handleResponse(Boolean result) {
-										if (result) {
-											mActivity.getChatController().deleteMessage(mMessage);
-										}
-										else {
-											dialogi.cancel();
-										}
-									};
-								});
-						mActivity.setChildDialog(dialog);
-					}
+        builder.setItems(mMenuItemArray, new DialogInterface.OnClickListener() {
+            @SuppressWarnings("deprecation")
+            @SuppressLint("NewApi")
+            public void onClick(final DialogInterface dialogi, int which) {
+                if (mMessage == null) {
+                    return;
+                }
 
-					else {
-						mActivity.getChatController().deleteMessage(mMessage);
-					}
-					break;
+                if (getActivity() == null) {
+                    return;
+                }
 
-					case 2:
-						// resend the message
-						mActivity.getChatController().resendMessage(mMessage);
-						break;
+                switch (which) {
+                    case 0:
+                        if (finalMessageText != null) {
+                            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(
+                                    Context.CLIPBOARD_SERVICE);
+                            android.content.ClipData clip = android.content.ClipData.newPlainText("surespot text", finalMessageText);
+                            clipboard.setPrimaryClip(clip);
 
-				}
+                        }
+                        break;
+                    case 1:
+                        SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+                        boolean confirm = sp.getBoolean("pref_delete_message", true);
+                        if (confirm) {
+                            AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+                                    getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                                        public void handleResponse(Boolean result) {
+                                            if (result) {
+                                                mActivity.getChatController().deleteMessage(mMessage);
+                                            }
+                                            else {
+                                                dialogi.cancel();
+                                            }
+                                        }
 
-			}
-		});
+                                        ;
+                                    });
+                            mActivity.setChildDialog(dialog);
+                        }
 
-		AlertDialog dialog = builder.create();
-		return dialog;
-	}
+                        else {
+                            mActivity.getChatController().deleteMessage(mMessage);
+                        }
+                        break;
+
+                    case 2:
+                        // resend the message
+                        mActivity.getChatController().resendMessage(mMessage);
+                        break;
+
+                }
+
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        return dialog;
+    }
 
 }

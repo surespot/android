@@ -643,7 +643,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         });
 
 
-
     }
 
     private boolean needsSignup() {
@@ -1225,13 +1224,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "onCreateOptionsMenu");
 
         MenuInflater inflater = getMenuInflater();
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            inflater.inflate(R.menu.activity_main_gb, menu);
-        }
-        else {
-            inflater.inflate(R.menu.activity_main, menu);
-        }
+        inflater.inflate(R.menu.activity_main, menu);
 
         mMenuOverflow = menu;
 
@@ -1458,25 +1451,19 @@ public class MainActivity extends Activity implements OnMeasureListener {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                if (mMenuOverflow != null) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-                        }
-                    });
-                }
+            if (mMenuOverflow != null) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+                    }
+                });
             }
-            else {
-                openOptionsMenuDeferred();
-            }
+
             return true;
         }
 
-        return super.
-
-                onKeyUp(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
 
 

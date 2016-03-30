@@ -408,12 +408,8 @@ public class LoginActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            inflater.inflate(R.menu.activity_login_gb, menu);
-        }
-        else {
-            inflater.inflate(R.menu.activity_login, menu);
-        }
+        inflater.inflate(R.menu.activity_login, menu);
+
         mMenuOverflow = menu;
         return true;
     }
@@ -519,37 +515,20 @@ public class LoginActivity extends Activity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (mMenuOverflow != null) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
+                    }
+                });
+            }
 
-                if (mMenuOverflow != null) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mMenuOverflow.performIdentifierAction(R.id.item_overflow, 0);
-                        }
-                    });
-                }
-            }
-            else {
-                openOptionsMenuDeferred();
-            }
             return true;
-
         }
-
         return super.onKeyUp(keyCode, event);
     }
 
-
-    public void openOptionsMenuDeferred() {
-        mHandler.post(new Runnable() {
-                          @Override
-                          public void run() {
-                              openOptionsMenu();
-                          }
-                      }
-        );
-    }
 
     private void updatePassword() {
         String username = getSelectedUsername();

@@ -47,12 +47,8 @@ public class SurespotKeystoreActivity extends Activity {
 
 		try {
 			Intent intent = null;
-			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-				intent = new Intent(IdentityController.OLD_UNLOCK_ACTION);
-			}
-			else {
-				intent = new Intent(IdentityController.UNLOCK_ACTION);
-			}
+			intent = new Intent(IdentityController.UNLOCK_ACTION);
+
 			Utils.putSharedPrefsBoolean(activity, SurespotConstants.PrefNames.KEYSTORE_ENABLED, true);
 			this.startActivity(intent);
 		}

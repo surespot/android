@@ -679,12 +679,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
 
     @SuppressWarnings("unused")
     private void resetKeystore() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            Toast.makeText(this, "Reset not supported on pre-ICS devices",
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            startActivity(new Intent(RESET_ACTION));
-        }
+        startActivity(new Intent(RESET_ACTION));
     }
 
     @SuppressWarnings("unused")

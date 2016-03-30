@@ -557,28 +557,4 @@ public class ExportIdentityActivity extends Activity {
             mDialog.dismiss();
         }
     }
-
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                openOptionsMenuDeferred();
-            }
-            return true;
-        }
-
-        return super.onKeyUp(keyCode, event);
-    }
-
-
-    public void openOptionsMenuDeferred() {
-        mHandler.post(new Runnable() {
-                          @Override
-                          public void run() {
-                              openOptionsMenu();
-                          }
-                      }
-        );
-    }
 }

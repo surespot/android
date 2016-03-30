@@ -215,12 +215,7 @@ public class SettingsActivity extends PreferenceActivity {
 	}
 
 	/** Sets up the action bar for an {@link PreferenceScreen} */
-	@SuppressLint("NewApi")
 	public static void initializeActionBar(PreferenceScreen preferenceScreen) {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-			return;
-		}
-
 		final Dialog dialog = preferenceScreen.getDialog();
 		if (dialog != null && dialog.getActionBar() != null) {
 			// Inialize the action bar
