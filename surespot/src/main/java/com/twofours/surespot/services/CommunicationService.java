@@ -389,6 +389,7 @@ public class CommunicationService extends Service {
                         }
                         break;
                     case SurespotConstants.MimeTypes.IMAGE:
+                    case SurespotConstants.MimeTypes.M4A:
                         sendImageMessage(nextMessage);
 
                         break;

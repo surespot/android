@@ -529,14 +529,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
                                 SurespotLog.d(TAG, "voice record up");
 
                                 // truncates without the delay for some reason
-                                mSendButton.post(new Runnable() {
+                                mSendButton.postDelayed(new Runnable() {
 
                                     @Override
                                     public void run() {
                                         VoiceController.stopRecording(MainActivity.this, finalSend);
 
                                     }
-                                });
+                                }, 250);
                             }
                         }
                     }
