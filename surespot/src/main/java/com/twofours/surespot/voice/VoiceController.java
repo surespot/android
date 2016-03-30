@@ -38,8 +38,9 @@ public class VoiceController {
     private static String mTo = null;
 
     public static final int SEND_THRESHOLD = 3500;
-    public static final int MAX_TIME = 10000;
+    public static final int MAX_TIME = 60000;
     public static final int INTERVAL = 50;
+    private static final int SEEK_MAX = 1000;
 
     private static MediaRecorderWrapper mRecorder = null;
 
@@ -64,9 +65,7 @@ public class VoiceController {
         INITIALIZING, READY, STARTED, RECORDING
     }
 
-    ;
 
-    private final static int[] sampleRates = {44100, 22050};
     private static State mState;
     private static int mDuration;
 
@@ -150,17 +149,10 @@ public class VoiceController {
             mFileName = File.createTempFile("record", ".m4a").getAbsolutePath();
             SurespotLog.v(TAG, "recording to: %s", mFileName);
 
-            int i = 0;
-
-            do {
-                if (mRecorder != null) {
-                    mRecorder.release();
-                }
-
-                mRecorder = new MediaRecorderWrapper();
+            if (mRecorder != null) {
+                mRecorder.release();
             }
-            while ((++i < sampleRates.length) & !(mRecorder.getState() == MediaRecorderWrapper.State.INITIALIZING));
-
+            mRecorder = new MediaRecorderWrapper();
 
             mEnvelopeView.setVisibility(View.VISIBLE);
             mVoiceHeaderView.setVisibility(View.VISIBLE);
@@ -326,7 +318,7 @@ public class VoiceController {
             mPlaying = true;
             mMessage = message;
             mSeekBar = seekBar;
-            mSeekBar.setMax(100);
+            mSeekBar.setMax(SEEK_MAX);
 
             if (mSeekBarThread == null) {
                 mSeekBarThread = new SeekBarThread();
@@ -498,7 +490,7 @@ public class VoiceController {
                             break;
                         }
 
-                        progress = (int) (((float) currentPosition / (float) mDuration) * 101);
+                        progress = (int) (((float) currentPosition / (float) mDuration) * SEEK_MAX);
                         // SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
                         // progress);
 
@@ -506,9 +498,9 @@ public class VoiceController {
                         if (progress < 0) {
                             progress = 0;
                         }
-                        if (progress > 95) {
-                            progress = 100;
-                        }
+                     //   if (progress/SEEK_MAX*100 > 95) {
+                    //        progress = SEEK_MAX;
+                   //     }
 
                         // SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
 

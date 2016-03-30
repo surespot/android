@@ -97,7 +97,8 @@ public class VolumeEnvelopeView extends View {
 		super.onDraw(canvas);
 
 		int size = mEnvelope.size();
-		int width = canvas.getWidth() / (VoiceController.MAX_TIME / VoiceController.INTERVAL);
+		//max we'll display is 10 seconds
+		int width = canvas.getWidth() / (10000/ VoiceController.INTERVAL);
 		int x = canvas.getWidth() - width * size;
 
 		int height = (this.getHeight() - this.getPaddingBottom() - this.getPaddingTop()) / 2;
