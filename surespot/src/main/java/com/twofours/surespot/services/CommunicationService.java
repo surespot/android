@@ -161,7 +161,8 @@ public class CommunicationService extends Service {
 
             try {
                 mSocket = IO.socket(SurespotConfiguration.getBaseUrl(), opts);
-            } catch (URISyntaxException e) {
+            }
+            catch (URISyntaxException e) {
                 mSocket = null;
                 return null;
             }
@@ -218,7 +219,8 @@ public class CommunicationService extends Service {
             // make sure to save everything just in case... ?
             // save();
             disconnect();
-        } else {
+        }
+        else {
             connect();
             // changed with not keeping socket open: cancelDisconnectTimer();
             // changed with not keeping socket open: cancelGiveUpReconnectingTimer();
@@ -297,7 +299,8 @@ public class CommunicationService extends Service {
         try {
             createSocket();
             mSocket.connect();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, "connect", e);
         }
 
@@ -330,28 +333,69 @@ public class CommunicationService extends Service {
             SurespotMessage nextMessage = mSendQueue.peek();
             if (nextMessage != null) {
 
+                if (mCurrentSendIv == nextMessage.getIv()) {
+                    if (nextMessage.getId() != null) {
+                        SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
+                        //set the resend id
 
-                if (mCurrentSendIv != nextMessage.getIv()) {
-                    //message processed successfully, onto the next
-                    SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
-                    mCurrentSendIv = nextMessage.getIv();
-                    switch (nextMessage.getMimeType()) {
-                        case SurespotConstants.MimeTypes.TEXT:
-                            if (isMessageReadyToSend(nextMessage)) {
-                                sendTextMessage(nextMessage);
-                            } else {
-                                //start timer and try in a bit
+
+                        if (SurespotApplication.getChatController() != null) {
+
+                            // set the last received id so the server knows which messages to check
+                            String otherUser = nextMessage.getOtherUser();
+
+                            // String username = message.getFrom();
+                            Integer lastMessageID = null;
+                            // ideally get the last id from the fragment's chat adapter
+                            ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(otherUser);
+                            if (chatAdapter != null) {
+                                SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
+                                if (lastMessage != null) {
+                                    lastMessageID = lastMessage.getId();
+                                }
                             }
-                            break;
-                        case SurespotConstants.MimeTypes.IMAGE:
-                            sendImageMessage(nextMessage);
 
-                            break;
+                            // failing that use the last viewed id
+                            if (lastMessageID == null) {
+                                if (SurespotApplication.getChatController().getFriendAdapter() != null) {
+                                    SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
+                                }
+                            }
+
+                            if (lastMessageID == null) {
+                                lastMessageID = 0;
+                            }
+                            SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
+                            nextMessage.setResendId(lastMessageID);
+
+                        }
+
                     }
-//
-                } else {
-                    SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
+
+
                 }
+
+
+                //message processed successfully, onto the next
+                SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
+                mCurrentSendIv = nextMessage.getIv();
+                switch (nextMessage.getMimeType()) {
+                    case SurespotConstants.MimeTypes.TEXT:
+                        if (isMessageReadyToSend(nextMessage)) {
+                            sendTextMessage(nextMessage);
+                        }
+                        else {
+                            //start timer and try in a bit
+                        }
+                        break;
+                    case SurespotConstants.MimeTypes.IMAGE:
+                        sendImageMessage(nextMessage);
+
+                        break;
+                }
+//
+
+
             }
         }
 
@@ -361,7 +405,8 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
         if (mMainActivityPaused) {
             sendMessageUsingHttp(message);
-        } else {
+        }
+        else {
             if (getConnectionState() == STATE_CONNECTED) {
                 SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
                 JSONObject json = message.toJSONObjectSocket();
@@ -372,7 +417,8 @@ public class CommunicationService extends Service {
                 if (mSocket != null) {
                     mSocket.send(json);
                 }
-            } else {
+            }
+            else {
                 //not connected, clear current iv so queue can proceed
 
                 mCurrentSendIv = null;
@@ -396,16 +442,19 @@ public class CommunicationService extends Service {
                         return networkController.postFileStreamSync(IdentityController.getOurLatestVersion(message.getFrom()), message.getTo(), IdentityController.getTheirLatestVersion(message.getTo()),
                                 message.getIv(), uploadStream, message.getMimeType());
 
-                    } catch (FileNotFoundException e) {
+                    }
+                    catch (FileNotFoundException e) {
                         SurespotLog.w(TAG, e, "sendImageMessage");
                         return new Tuple<>(500, null);
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         SurespotLog.w(TAG, e, "sendImageMessage");
                         return new Tuple<>(500, null);
                     }
 
 
-                } else {
+                }
+                else {
                     SurespotLog.i(TAG, "network controller null or different user");
                     return new Tuple<>(500, null);
                 }
@@ -432,11 +481,13 @@ public class CommunicationService extends Service {
                                 }
                             }
                         }
-                    } else {
+                    }
+                    else {
                         //try and send next message again
                         scheduleResendTimer();
                     }
-                } else {
+                }
+                else {
                     mResendTries = 0;
                     mSendQueue.remove(message);
                     //clear current iv so queue can proceed
@@ -487,7 +538,8 @@ public class CommunicationService extends Service {
 //                        }
 
 
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         //TODO notification
                     }
 
@@ -518,7 +570,8 @@ public class CommunicationService extends Service {
                         mSendQueue.remove(messageReceived);
                         SurespotApplication.getChatController().handleMessage(messageReceived);
                         processNextMessage();
-                    } else {
+                    }
+                    else {
                         //if we've hit retry limit stop retrying and set messages errored
                         if (mResendTries++ >= MAX_RETRIES_SEND_VIA_HTTP) {
                             //TODO set all messages in queue errored
@@ -534,12 +587,14 @@ public class CommunicationService extends Service {
                                     }
                                 }
                             }
-                        } else {
+                        }
+                        else {
                             //try and send next message again
                             scheduleResendTimer();
                         }
                     }
-                } catch (JSONException e) {
+                }
+                catch (JSONException e) {
                     SurespotLog.w(TAG, e, "JSON received from server");
                 }
             }
@@ -620,7 +675,8 @@ public class CommunicationService extends Service {
 
         if (mSendQueue.contains(message)) {
             // do nothing - message will transmit when we reconnect
-        } else {
+        }
+        else {
             // resend the message
             //  sendMessage(message);
         }
@@ -739,7 +795,8 @@ public class CommunicationService extends Service {
             if (!fromSave) {
                 saveFriends();
             }
-        } else if (!fromSave) {
+        }
+        else if (!fromSave) {
             saveMessages(username);
         }
     }
@@ -810,7 +867,8 @@ public class CommunicationService extends Service {
         if (mListener != null) {
             SurespotLog.d(TAG, "onConnected, mListener calling onConnected()");
             mListener.onConnected();
-        } else {
+        }
+        else {
             SurespotLog.d(TAG, "onConnected, mListener was null");
         }
 
@@ -835,7 +893,8 @@ public class CommunicationService extends Service {
             if (isMessageEqualToAny(message, messagesSeen)) {
                 messages.remove(i);
                 SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
-            } else {
+            }
+            else {
                 messagesSeen.add(message);
             }
         }
@@ -950,10 +1009,12 @@ public class CommunicationService extends Service {
     private void unregisterReceiver() {
         try {
             unregisterReceiver(mConnectivityReceiver);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Receiver not registered")) {
                 // Ignore this exception. This is exactly what is desired
-            } else {
+            }
+            else {
                 // unexpected, re-throw
                 throw e;
             }
@@ -1022,7 +1083,8 @@ public class CommunicationService extends Service {
             SurespotLog.v(TAG, "showing notification led");
             mBuilder.setLights(color, 500, 5000);
             defaults |= Notification.FLAG_SHOW_LIGHTS;
-        } else {
+        }
+        else {
             mBuilder.setLights(color, 0, 0);
         }
 
@@ -1138,7 +1200,8 @@ public class CommunicationService extends Service {
 
                 userLoggedOut();
                 mTriesRelogin = 0;
-            } else {
+            }
+            else {
                 startReloginTimer();
             }
         }
@@ -1225,7 +1288,8 @@ public class CommunicationService extends Service {
                 Log.d(tag, "key [" + key + "]: " +
                         extras.get(key));
             }
-        } else {
+        }
+        else {
             Log.v(tag, "no extras");
         }
     }
@@ -1292,7 +1356,8 @@ public class CommunicationService extends Service {
             // kick off another task
             if ((!mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES) || (mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES_MAIN_ACTIVITY_PAUSED)) {
                 scheduleReconnectionAttempt();
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
 
                 if (mListener != null) {
@@ -1321,7 +1386,8 @@ public class CommunicationService extends Service {
                         SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
                         SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
                         SurespotMessage message = SurespotApplication.getChatController().handleErrorMessage(errorMessage);
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         SurespotLog.w(TAG, "on messageError", e);
                     }
                 }
@@ -1343,7 +1409,8 @@ public class CommunicationService extends Service {
                     try {
                         SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage((JSONObject) args[0]);
                         SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         SurespotLog.w(TAG, "on control", e);
                     }
                 }
@@ -1378,7 +1445,8 @@ public class CommunicationService extends Service {
                                     try {
                                         SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
                                         SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
-                                    } catch (JSONException e) {
+                                    }
+                                    catch (JSONException e) {
                                         SurespotLog.w(TAG, "on control", e);
                                     }
                                 }
@@ -1401,7 +1469,8 @@ public class CommunicationService extends Service {
                         }
 
 
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         SurespotLog.w(TAG, "on message", e);
                     }
                     processNextMessage();
