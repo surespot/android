@@ -80,7 +80,9 @@ public class KeystoreActivity extends Activity implements OnClickListener {
     private String signKeyName;
     private String rsaEncryptKeyName;
 
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -104,11 +106,14 @@ public class KeystoreActivity extends Activity implements OnClickListener {
 
         if (IS_M) {
             ks = KeyStoreM.getInstance();
-        } else if (IS_KK) {
+        }
+        else if (IS_KK) {
             ks = KeyStoreKk.getInstance();
-        } else if (IS_JB43) {
+        }
+        else if (IS_JB43) {
             ks = KeyStoreJb43.getInstance();
-        } else {
+        }
+        else {
             ks = KeyStore.getInstance();
         }
 
@@ -129,7 +134,8 @@ public class KeystoreActivity extends Activity implements OnClickListener {
         protected String[] doInBackground(Void... params) {
             try {
                 return doWork();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 error = e;
                 Log.e(TAG, "Error: " + e.getMessage(), e);
 
@@ -184,19 +190,21 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                 String status = String.format("Keystore state:%s", ks.state()
                         .toString());
                 String storeType = null;
-                
+
                 if (IS_M) {
                     storeType = ((KeyStoreM) ks).isHardwareBacked() ? "HW-backed"
                             : "SW only";
-                } else if (IS_KK) {
+                }
+                else if (IS_KK) {
                     storeType = ((KeyStoreKk) ks).isHardwareBacked() ? "HW-backed"
                             : "SW only";
-                } else if (IS_JB43) {
+                }
+                else if (IS_JB43) {
                     storeType = ((KeyStoreJb43) ks).isHardwareBacked() ? "HW-backed"
                             : "SW only";
                 }
 
-                return new String[] { status, storeType };
+                return new String[]{status, storeType};
             }
 
             @Override
@@ -277,7 +285,8 @@ public class KeystoreActivity extends Activity implements OnClickListener {
 
             Log.d(TAG, "EC supported " + KeyChain.isKeyAlgorithmSupported("EC"));
             Log.d(TAG, "EC bound " + KeyChain.isBoundKeyAlgorithm("EC"));
-        } else if (IS_JB43) {
+        }
+        else if (IS_JB43) {
             Log.d(TAG,
                     "RSA supported " + KeyChain.isKeyAlgorithmSupported("RSA"));
             Log.d(TAG, "RSA bound " + KeyChain.isBoundKeyAlgorithm("RSA"));
@@ -373,7 +382,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                 String ciphertext = Crypto.encryptRsaOaep(PLAIN_TEXT,
                         rsaEncryptKeyName);
 
-                return new String[] { ciphertext };
+                return new String[]{ciphertext};
             }
 
             @Override
@@ -395,7 +404,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                 String plainStr = Crypto.decryptRsaOaep(encryptedText.getText()
                         .toString(), rsaEncryptKeyName);
 
-                return new String[] { plainStr };
+                return new String[]{plainStr};
             }
 
             @Override
@@ -425,7 +434,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                 SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
                 String plaintext = Crypto.decryptAesCbc(ciphertext, key);
 
-                return new String[] { plaintext };
+                return new String[]{plaintext};
             }
 
             @Override
@@ -457,7 +466,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                 keyNum++;
                 String ciphertext = Crypto.encryptAesCbc(PLAIN_TEXT, key);
 
-                return new String[] { ciphertext };
+                return new String[]{ciphertext};
             }
 
             @Override
@@ -487,7 +496,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
 
                 String signature = Crypto.signRsaPss(signKeyName, PLAIN_TEXT);
 
-                return new String[] { signature };
+                return new String[]{signature};
             }
 
             @Override
@@ -511,8 +520,8 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                         PLAIN_TEXT, signKeyName);
                 Log.d(TAG, "RSA PSS signature verification result: " + verified);
 
-                return new String[] { verified ? "Signature verifies"
-                        : "Invalid signature" };
+                return new String[]{verified ? "Signature verifies"
+                        : "Invalid signature"};
             }
 
             @Override
@@ -546,7 +555,7 @@ public class KeystoreActivity extends Activity implements OnClickListener {
 
                 String signature = Crypto.signEc(signKeyName, PLAIN_TEXT);
 
-                return new String[] { signature };
+                return new String[]{signature};
             }
 
             @Override
@@ -570,8 +579,8 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                         signKeyName);
                 Log.d(TAG, "RSA PSS signature verification result: " + verified);
 
-                return new String[] { verified ? "Signature verifies"
-                        : "Invalid signature" };
+                return new String[]{verified ? "Signature verifies"
+                        : "Invalid signature"};
             }
 
             @Override
@@ -648,7 +657,8 @@ public class KeystoreActivity extends Activity implements OnClickListener {
                     if (keyBytes != null) {
                         Log.d(TAG, String.format("\t%s: %s", keyName,
                                 new BigInteger(keyBytes).toString()));
-                    } else {
+                    }
+                    else {
                         Log.d(TAG, String.format("\t%s: %s", keyName,
                                 "RSA unexportable"));
                     }
@@ -663,12 +673,9 @@ public class KeystoreActivity extends Activity implements OnClickListener {
         }
 
         try {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                startActivity(new Intent(OLD_UNLOCK_ACTION));
-            } else {
-                startActivity(new Intent(UNLOCK_ACTION));
-            }
-        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(UNLOCK_ACTION));
+        }
+        catch (ActivityNotFoundException e) {
             Log.e(TAG, "No UNLOCK activity: " + e.getMessage(), e);
             Toast.makeText(this, "No keystore unlock activity found.",
                     Toast.LENGTH_SHORT).show();
@@ -717,28 +724,28 @@ public class KeystoreActivity extends Activity implements OnClickListener {
 
     private static final String rcToStr(int rc) {
         switch (rc) {
-        case KeyStore.NO_ERROR:
-            return "NO_ERROR";
-        case KeyStore.LOCKED:
-            return "LOCKED";
-        case KeyStore.UNINITIALIZED:
-            return "UNINITIALIZED";
-        case KeyStore.SYSTEM_ERROR:
-            return "SYSTEM_ERROR";
-        case KeyStore.PROTOCOL_ERROR:
-            return "PROTOCOL_ERROR";
-        case KeyStore.PERMISSION_DENIED:
-            return "PERMISSION_DENIED";
-        case KeyStore.KEY_NOT_FOUND:
-            return "KEY_NOT_FOUND";
-        case KeyStore.VALUE_CORRUPTED:
-            return "VALUE_CORRUPTED";
-        case KeyStore.UNDEFINED_ACTION:
-            return "UNDEFINED_ACTION";
-        case KeyStore.WRONG_PASSWORD:
-            return "WRONG_PASSWORD";
-        default:
-            return "Unknown RC";
+            case KeyStore.NO_ERROR:
+                return "NO_ERROR";
+            case KeyStore.LOCKED:
+                return "LOCKED";
+            case KeyStore.UNINITIALIZED:
+                return "UNINITIALIZED";
+            case KeyStore.SYSTEM_ERROR:
+                return "SYSTEM_ERROR";
+            case KeyStore.PROTOCOL_ERROR:
+                return "PROTOCOL_ERROR";
+            case KeyStore.PERMISSION_DENIED:
+                return "PERMISSION_DENIED";
+            case KeyStore.KEY_NOT_FOUND:
+                return "KEY_NOT_FOUND";
+            case KeyStore.VALUE_CORRUPTED:
+                return "VALUE_CORRUPTED";
+            case KeyStore.UNDEFINED_ACTION:
+                return "UNDEFINED_ACTION";
+            case KeyStore.WRONG_PASSWORD:
+                return "WRONG_PASSWORD";
+            default:
+                return "Unknown RC";
         }
     }
 }
