@@ -85,6 +85,5 @@
     <orderEntry type="library" exported="" name="prov-1.53.0.0" level="project" />
     <orderEntry type="library" exported="" name="core-1.53.0.0" level="project" />
     <orderEntry type="library" exported="" name="acra-4.5.0" level="project" />
-    <orderEntry type="module" module-name="httpclientandroidlib" exported="" />
   </component>
 </module>

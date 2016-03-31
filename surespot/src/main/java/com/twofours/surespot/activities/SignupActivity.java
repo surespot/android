@@ -1,10 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.io.IOException;
-import java.security.KeyPair;
-
-import org.spongycastle.jce.interfaces.ECPublicKey;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,7 +8,6 @@ import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -40,17 +34,9 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.TextView.OnEditorActionListener;
 
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
-
-
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.backup.ImportIdentityActivity;
@@ -67,6 +53,13 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;
+
+import java.io.IOException;
+import java.security.KeyPair;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class SignupActivity extends Activity {
     private static final String TAG = "SignupActivity";

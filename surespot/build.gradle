@@ -40,11 +40,11 @@ android {
 }
 
 dependencies {
-    compile project(':androidasynchttp')
+    //compile project(':androidasynchttp')
     compile project(':surespotcommon')
     compile project(':viewpagerindicator')
     compile project(':imageViewTouch')
-    compile project(':httpclientandroidlib')
+    //compile project(':httpclientandroidlib')
     compile project(':androidkeystore')
     compile project(":ColorPickerPreference")
     //compile 'com.squareup.okhttp3:okhttp:3.2.0'

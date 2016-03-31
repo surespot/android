@@ -3,8 +3,6 @@ package com.twofours.surespot.network;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
@@ -25,11 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.boye.httpclientandroidlib.HttpResponse;
-import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
-import ch.boye.httpclientandroidlib.client.methods.HttpPost;
-import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
-import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Cookie;
@@ -623,18 +616,18 @@ public class NetworkController {
 
         SurespotLog.v(TAG, "posting file stream");
 
-        HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + ourVersion + "/" + user + "/" + theirVersion);
-        if (fileInputStream == null) {
-            SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
-            return new Tuple<>(500, null);
-        }
-
-        InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
-
-        MultipartEntity reqEntity = new MultipartEntity();
-        reqEntity.addPart("image", isBody);
-        httppost.setEntity(reqEntity);
-        HttpResponse response = null;
+//        HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + ourVersion + "/" + user + "/" + theirVersion);
+//        if (fileInputStream == null) {
+//            SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
+//            return new Tuple<>(500, null);
+//        }
+//
+//        InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
+//
+//        MultipartEntity reqEntity = new MultipartEntity();
+//        reqEntity.addPart("image", isBody);
+//        httppost.setEntity(reqEntity);
+//        HttpResponse response = null;
 
 //        try {
 //            response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
@@ -783,30 +776,37 @@ public class NetworkController {
 
     }
 
-    public void deleteMessage(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
-        //    delete("/messages/" + username + "/" + id, responseHandler);
+    public void deleteMessage(String username, Integer id, Callback responseHandler) {
+        delete("/messages/" + username + "/" + id, responseHandler);
+    }
+
+    public void deleteMessages(String username, int utaiId, Callback responseHandler) {
+        delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
 
     }
 
-    public void deleteMessages(String username, int utaiId, AsyncHttpResponseHandler responseHandler) {
-        //    delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
-
-    }
-
-    public void setMessageShareable(String username, Integer id, boolean shareable, AsyncHttpResponseHandler responseHandler) {
+    public void setMessageShareable(String username, Integer id, boolean shareable, Callback responseHandler) {
         SurespotLog.v(TAG, "setMessageSharable %b", shareable);
-        RequestParams params = new RequestParams("shareable", shareable);
-        //   put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
+        JSONObject params = new JSONObject();
+        try {
+            params.put("shareable", shareable);
+
+        }
+        catch (JSONException e) {
+            responseHandler.onFailure(null, new IOException(e));
+        }
+
+        putJSON("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
 
     }
 
-    public void deleteFriend(String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        //   delete("/friends/" + username, asyncHttpResponseHandler);
+    public void deleteFriend(String username, Callback asyncHttpResponseHandler) {
+        delete("/friends/" + username, asyncHttpResponseHandler);
     }
 
-    public void blockUser(String username, boolean blocked, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        //   put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler);
-    }
+    //public void blockUser(String username, boolean blocked, Callback asyncHttpResponseHandler) {
+       // put("/users/" + username + "/block/" + blocked, asyncHttpResponseHandler);
+    //}
 
     public void deleteUser(String username, String password, String authSig, String tokenSig, String keyVersion,
                            Callback asyncHttpResponseHandler) {
@@ -844,42 +844,57 @@ public class NetworkController {
 
     }
 
-    public void addCacheEntry(String key, HttpCacheEntry httpCacheEntry) {
-        // mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
+//    public void addCacheEntry(String key, HttpCacheEntry httpCacheEntry) {
+//        // mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
+//
+//    }
 
-    }
-
-    public HttpCacheEntry getCacheEntry(String key) {
-        //    return mCachingHttpClient.getCacheEntry(key);
-        return null;
-    }
+//    public HttpCacheEntry getCacheEntry(String key) {
+//        //    return mCachingHttpClient.getCacheEntry(key);
+//        return null;
+//    }
 
     public void removeCacheEntry(String key) {
         //   mCachingHttpClient.removeEntry(key);
 
     }
 
-    public void assignFriendAlias(String username, String version, String data, String iv, AsyncHttpResponseHandler responseHandler) {
+    public void assignFriendAlias(String username, String version, String data, String iv, Callback responseHandler) {
         SurespotLog.d(TAG, "assignFriendAlias, username: %s, version: %s", username, version);
-        RequestParams params = new RequestParams("data", data);
-        params.put("iv", iv);
-        params.put("version", version);
-        //  put("/users/" + username + "/alias2", params, responseHandler);
+        JSONObject params = new JSONObject();
+        try {
+            params.put("data", data);
+            params.put("iv", iv);
+            params.put("version", version);
 
+        }
+        catch (JSONException e) {
+            responseHandler.onFailure(null, new IOException(e));
+            return;
+        }
+        putJSON("/users/" + username + "/alias2", params, responseHandler);
     }
 
-    public void deleteFriendAlias(String username, AsyncHttpResponseHandler responseHandler) {
+    public void deleteFriendAlias(String username, Callback responseHandler) {
         SurespotLog.d(TAG, "deleteFriendAlias, username: %s", username);
-        //   delete("/users/" + username + "/alias", responseHandler);
+        delete("/users/" + username + "/alias", responseHandler);
     }
 
-    public void deleteFriendImage(String username, AsyncHttpResponseHandler responseHandler) {
+    public void deleteFriendImage(String username, Callback responseHandler) {
         SurespotLog.d(TAG, "deleteFriendImage, username: %s", username);
-        //    delete("/users/" + username + "/image", responseHandler);
+        delete("/users/" + username + "/image", responseHandler);
     }
 
-    public void updateSigs(JSONObject sigs, AsyncHttpResponseHandler responseHandler) {
-        //   post("/sigs", new RequestParams("sigs", sigs.toString()), responseHandler);
+    public void updateSigs(JSONObject sigs, Callback responseHandler) {
+        JSONObject params = new JSONObject();
+        try {
+            params.put("sigs", sigs);
+        }
+        catch (JSONException e) {
+            responseHandler.onFailure(null, new IOException(e));
+            return;
+        }
+        postJSON("/sigs", params, responseHandler);
     }
 
     public String getUsername() {

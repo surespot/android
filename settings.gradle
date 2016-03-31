@@ -1,7 +1,5 @@
 include ':imageViewTouch'
-include ':httpclientandroidlib'
 include ':surespotcommon'
-include ':androidasynchttp'
 include ':androidkeystore'
 include ':viewpagerindicator'
 include ':surespot', ':ColorPickerPreference'

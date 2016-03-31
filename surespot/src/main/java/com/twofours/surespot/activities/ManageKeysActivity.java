@@ -1,13 +1,5 @@
 package com.twofours.surespot.activities;
 
-import java.io.IOException;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.util.List;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -26,8 +18,6 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.backup.ExportIdentityActivity;
@@ -40,6 +30,14 @@ import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;

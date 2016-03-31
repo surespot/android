@@ -1,9 +1,5 @@
 package com.twofours.surespot.identity;
 
-import java.io.IOException;
-import java.security.PrivateKey;
-import java.util.List;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.AsyncTask;
@@ -16,10 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -27,6 +21,10 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
+
+import java.io.IOException;
+import java.security.PrivateKey;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;

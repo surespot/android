@@ -37,13 +37,14 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.common.WebClientDevWrapper;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,8 +63,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import ch.boye.httpclientandroidlib.conn.ssl.SSLSocketFactory;
-
 import io.socket.client.IO;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
@@ -71,9 +70,10 @@ import io.socket.emitter.Emitter;
 import io.socket.engineio.client.Transport;
 import io.socket.engineio.client.transports.WebSocket;
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.Response;
+
+
 
 @SuppressLint("NewApi")
 public class CommunicationService extends Service {
@@ -158,7 +158,8 @@ public class CommunicationService extends Service {
     private Socket createSocket() {
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
-            opts.sslContext = WebClientDevWrapper.getSSLContext();
+            //TODO
+           // opts.sslContext = WebClientDevWrapper.getSSLContext();
             opts.secure = true;
             opts.hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
             opts.transports = new String[]{WebSocket.NAME};
@@ -560,7 +561,7 @@ public class CommunicationService extends Service {
     private void sendMessageUsingHttp(final SurespotMessage message) {
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
-        SurespotApplication.getNetworkController().postMessages(toSend, new Callback() {
+        SurespotApplication.getNetworkController().postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -569,10 +570,10 @@ public class CommunicationService extends Service {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
                 if (response.isSuccessful()) {
                     try {
-                        JSONObject json = new JSONObject(response.body().string());
+                        JSONObject json = new JSONObject(responseString);
                         JSONArray messages = json.getJSONArray("messageStatus");
                         JSONObject messageAndStatus = messages.getJSONObject(0);
                         JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
@@ -622,7 +623,7 @@ public class CommunicationService extends Service {
 
 
 
-        });
+        }));
     }
 
 

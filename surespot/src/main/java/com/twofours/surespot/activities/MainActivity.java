@@ -1,25 +1,21 @@
 package com.twofours.surespot.activities;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -55,7 +51,6 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
@@ -80,6 +75,7 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -97,9 +93,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class MainActivity extends Activity implements OnMeasureListener {
@@ -1952,7 +1946,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
 
             setHomeProgress(true);
-            SurespotApplication.getNetworkController().invite(friend, new Callback() {
+            SurespotApplication.getNetworkController().invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "inviteFriend error");
@@ -1960,7 +1954,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(Call call, Response response, String responseString) throws IOException {
                     setHomeProgress(false);
                     if (response.isSuccessful()) {
 
@@ -1989,7 +1983,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         }
                     }
                 }
-            });
+            }));
         }
     }
 

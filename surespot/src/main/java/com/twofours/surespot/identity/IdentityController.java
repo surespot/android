@@ -1,5 +1,42 @@
 package com.twofours.surespot.identity;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.KeyguardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
+
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.encryption.PrivateKeyPairs;
+import com.twofours.surespot.encryption.PublicKeys;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
+import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.ui.UIUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.nick.androidkeystore.android.security.KeyStore;
+import org.nick.androidkeystore.android.security.KeyStoreJb43;
+import org.nick.androidkeystore.android.security.KeyStoreKk;
+import org.nick.androidkeystore.android.security.KeyStoreM;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -17,50 +54,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.nick.androidkeystore.android.security.KeyStore;
-import org.nick.androidkeystore.android.security.KeyStoreJb43;
-import org.nick.androidkeystore.android.security.KeyStoreKk;
-import org.nick.androidkeystore.android.security.KeyStoreM;
-
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.KeyguardManager;
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Build;
-
-
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Ordering;
-
-import com.twofours.surespot.R;
-import com.twofours.surespot.StateController;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.Tuple;
-import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.encryption.PrivateKeyPairs;
-import com.twofours.surespot.encryption.PublicKeys;
-import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.IAsyncCallbackTuple;
-import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.services.CredentialCachingService;
-import com.twofours.surespot.ui.UIUtils;
 
 import okhttp3.Call;
 import okhttp3.Callback;

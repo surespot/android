@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
+import android.util.Base64;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
@@ -44,8 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
-
-import ch.boye.httpclientandroidlib.androidextra.Base64;
 
 public class ChatUtils {
     private static final String TAG = "ChatUtils";

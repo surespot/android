@@ -1,11 +1,5 @@
 package com.twofours.surespot.friends;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Typeface;
@@ -20,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
@@ -32,9 +25,15 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class FriendAdapter extends BaseAdapter {
@@ -324,7 +323,7 @@ public class FriendAdapter extends BaseAdapter {
 			final Friend friend = (Friend) getItem(position);
 			final String friendname = friend.getName();
 
-			SurespotApplication.getNetworkController().respondToInvite(friendname, action, new Callback() {
+			SurespotApplication.getNetworkController().respondToInvite(friendname, action, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 				@Override
 				public void onFailure(Call call, IOException e) {
 					SurespotLog.i(TAG, e, "respondToInvite");
@@ -332,7 +331,7 @@ public class FriendAdapter extends BaseAdapter {
 				}
 
 				@Override
-				public void onResponse(Call call, Response response) throws IOException {
+				public void onResponse(Call call, Response response, String responseString) throws IOException {
 					if (response.isSuccessful()) {
 
 						SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
@@ -358,7 +357,7 @@ public class FriendAdapter extends BaseAdapter {
 						Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
 					}
 				}
-			});
+			}));
 		}
 	};
 

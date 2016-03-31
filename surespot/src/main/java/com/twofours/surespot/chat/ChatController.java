@@ -6,15 +6,10 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
@@ -42,8 +37,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -52,24 +45,12 @@ import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-
-import ch.boye.httpclientandroidlib.Header;
-import ch.boye.httpclientandroidlib.HttpStatus;
-import ch.boye.httpclientandroidlib.HttpVersion;
-import ch.boye.httpclientandroidlib.StatusLine;
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
-import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
-import ch.boye.httpclientandroidlib.impl.client.cache.HeapResource;
-import ch.boye.httpclientandroidlib.impl.cookie.DateUtils;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.message.BasicStatusLine;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -99,7 +80,7 @@ public class ChatController {
     private Context mContext;
     public static final int MODE_NORMAL = 0;
     public static final int MODE_SELECT = 1;
-    private final StatusLine mImageStatusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "");
+    //   private final StatusLine mImageStatusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "");
 
     private int mMode = MODE_NORMAL;
 
@@ -195,7 +176,7 @@ public class ChatController {
         if (mAutoInviteData != null && !mHandlingAutoInvite) {
             if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {
                 SurespotLog.d(TAG, "auto inviting user: %s", mAutoInviteData.getUsername());
-                mNetworkController.invite(mAutoInviteData.getUsername(), mAutoInviteData.getSource(), new Callback() {
+                mNetworkController.invite(mAutoInviteData.getUsername(), mAutoInviteData.getSource(), new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         //TODO handle?
@@ -203,7 +184,7 @@ public class ChatController {
                     }
 
                     @Override
-                    public void onResponse(Call call, Response response) throws IOException {
+                    public void onResponse(Call call, Response response, String responseString) throws IOException {
                         if (response.isSuccessful()) {
                             getFriendAdapter().addFriendInvited(mAutoInviteData.getUsername());
                             // scroll to home page
@@ -212,7 +193,7 @@ public class ChatController {
                         }
                     }
 
-                });
+                }));
             }
             else {
                 Utils.makeToast(mContext, mContext.getString(R.string.autoinvite_user_exists, mAutoInviteData.getUsername()));
@@ -474,69 +455,74 @@ public class ChatController {
 
     // add entry to http cache for image we sent so we don't download it again
     public void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
-        SurespotLog.d(TAG, "handleCachedFile");
-        SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
+        //TODO
+        return;
 
-        // if the data is different we haven't updated the url to point externally
-        if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
-            // add the remote cache entry for the new url
+//        SurespotLog.d(TAG, "handleCachedFile");
+//
+//        SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
+//
+//        // if the data is different we haven't updated the url to point externally
+//        if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
+//            // add the remote cache entry for the new url
+//
+//            String localUri = localMessage.getData();
+//            String remoteUri = message.getData();
+//
+//            FileInputStream fis;
+//            try {
+//                fis = new FileInputStream(new File(new URI(localUri)));
+//                byte[] imageData = Utils.inputStreamToBytes(fis);
 
-            String localUri = localMessage.getData();
-            String remoteUri = message.getData();
+//                HeapResource resource = new HeapResource(imageData);
+//                Date date = new Date();
+//                String sDate = DateUtils.formatDate(date);
+//
+//                Header[] cacheHeaders = new Header[3];
+//
+//                // create fake cache entry
+//                cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
+//                cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
+//                cacheHeaders[2] = new BasicHeader("Date", sDate);
+//
+//                HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
+//
+//                SurespotLog.d(TAG, "creating http cache entry for: %s", remoteUri);
+//                mNetworkController.addCacheEntry(remoteUri, cacheEntry);
+//
+//                // update image cache
+//                if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//                    MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
+//                }
 
-            FileInputStream fis;
-            try {
-                fis = new FileInputStream(new File(new URI(localUri)));
-                byte[] imageData = Utils.inputStreamToBytes(fis);
+//            }
+//            catch (FileNotFoundException e1) {
+//                SurespotLog.w(TAG, e1, "onMessage");
+//            }
+//            catch (URISyntaxException e1) {
+//                SurespotLog.w(TAG, e1, "onMessage");
+//            }
+//            catch (IOException e) {
+//                SurespotLog.w(TAG, e, "onMessage");
+//            }
+//
+//            // delete the file
+//
+//            try {
+//                SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
+//
+//                File file = new File(new URI(localUri));
+//                file.delete();
+//            }
+//            catch (URISyntaxException e) {
+//                SurespotLog.w(TAG, e, "handleMessage");
+//            }
+//
+//            // update message to point to real location
+//            localMessage.setData(remoteUri);
 
-                HeapResource resource = new HeapResource(imageData);
-                Date date = new Date();
-                String sDate = DateUtils.formatDate(date);
-
-                Header[] cacheHeaders = new Header[3];
-
-                // create fake cache entry
-                cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
-                cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
-                cacheHeaders[2] = new BasicHeader("Date", sDate);
-
-                HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
-
-                SurespotLog.d(TAG, "creating http cache entry for: %s", remoteUri);
-                mNetworkController.addCacheEntry(remoteUri, cacheEntry);
-
-                // update image cache
-                if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                    MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
-                }
-
-            }
-            catch (FileNotFoundException e1) {
-                SurespotLog.w(TAG, e1, "onMessage");
-            }
-            catch (URISyntaxException e1) {
-                SurespotLog.w(TAG, e1, "onMessage");
-            }
-            catch (IOException e) {
-                SurespotLog.w(TAG, e, "onMessage");
-            }
-
-            // delete the file
-
-            try {
-                SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
-
-                File file = new File(new URI(localUri));
-                file.delete();
-            }
-            catch (URISyntaxException e) {
-                SurespotLog.w(TAG, e, "handleMessage");
-            }
-
-            // update message to point to real location
-            localMessage.setData(remoteUri);
-
-        }
+//
+//        }
     }
 
     // message handling shiznit
@@ -566,7 +552,7 @@ public class ChatController {
                     // final int fMessageId = firstMessageId;
                     final ChatAdapter chatAdapter = mChatAdapters.get(username);
 
-                    mNetworkController.getEarlierMessages(username, firstMessageId, new Callback() {
+                    mNetworkController.getEarlierMessages(username, firstMessageId, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
                             SurespotLog.i(TAG, e, "%s: getEarlierMessages", username);
@@ -575,13 +561,13 @@ public class ChatController {
                         }
 
                         @Override
-                        public void onResponse(Call call, Response response) throws IOException {
+                        public void onResponse(Call call, Response response, String responseString) throws IOException {
                             if (response.isSuccessful()) {
                                 // if (getActivity() != null) {
                                 SurespotMessage message = null;
 
                                 try {
-                                    JSONArray jsonArray = new JSONArray(response.body().string());
+                                    JSONArray jsonArray = new JSONArray(responseString);
 
                                     for (int i = jsonArray.length() - 1; i >= 0; i--) {
                                         JSONObject jsonMessage = jsonArray.getJSONObject(i);
@@ -613,7 +599,7 @@ public class ChatController {
                         }
 
 
-                    });
+                    }));
                 }
                 else {
                     SurespotLog.d(TAG, "%s: getEarlierMessages: no more messages.", username);
@@ -675,7 +661,22 @@ public class ChatController {
                                     //see if we need to update signatures, will only have sigs property if we need to update
                                     if (hasSigs) {
                                         JSONObject sigs = IdentityController.updateSignatures(mContext);
-                                        mNetworkController.updateSigs(sigs, new AsyncHttpResponseHandler());
+                                        mNetworkController.updateSigs(sigs, new Callback() {
+                                            @Override
+                                            public void onFailure(Call call, IOException e) {
+                                                SurespotLog.i(TAG, e, "Signatures update failed");
+                                            }
+
+                                            @Override
+                                            public void onResponse(Call call, Response response) throws IOException {
+                                                if (response.isSuccessful()) {
+                                                    SurespotLog.d(TAG, "Signatures updated");
+                                                }
+                                                else {
+                                                    SurespotLog.d(TAG, "Signatures update failed, code: ", response.code());
+                                                }
+                                            }
+                                        });
                                     }
                                     return null;
                                 }
@@ -1756,22 +1757,27 @@ public class ChatController {
             final ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
             setProgress("delete", true);
             if (chatAdapter != null) {
-                mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new AsyncHttpResponseHandler() {
+                mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                     @Override
-                    public void onSuccess(int statusCode, String content) {
-                        deleteMessageInternal(chatAdapter, message, true);
-                        setProgress("delete", false);
-                    }
-
-                    @Override
-                    public void onFailure(Throwable error, String content) {
-                        SurespotLog.i(TAG, error, "deleteMessage");
+                    public void onFailure(Call call, IOException e) {
+                        SurespotLog.i(TAG, e, "deleteMessage");
                         setProgress("delete", false);
                         Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_message));
-
                     }
 
-                });
+                    @Override
+                    public void onResponse(Call call, Response response, String responseString) throws IOException {
+                        if (response.isSuccessful()) {
+                            deleteMessageInternal(chatAdapter, message, true);
+                            setProgress("delete", false);
+                        }
+                        else {
+                            SurespotLog.i(TAG, "deleteMessage statusCode: %d", response.code());
+                            setProgress("delete", false);
+                            Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_message));
+                        }
+                    }
+                }));
             }
 
         }
@@ -1826,29 +1832,34 @@ public class ChatController {
 
             SurespotApplication.getCommunicationServiceNoThrow().clearMessageQueue(username);
 
-            mNetworkController.deleteMessages(username, lastReceivedMessageId, new AsyncHttpResponseHandler() {
+            mNetworkController.deleteMessages(username, lastReceivedMessageId, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
-                public void onSuccess(int statusCode, String content) {
-
-                    if (chatAdapter != null) {
-                        chatAdapter.deleteAllMessages(finalMessageId);
-                        chatAdapter.notifyDataSetChanged();
-                    }
-                    else {
-                        // tell friend there's a new control message so they get it when the tab is opened
-                        friend.setAvailableMessageControlId(friend.getAvailableMessageControlId() + 1);
-                        saveFriends();
-                    }
-
-                    setProgress("deleteMessages", false);
-                }
-
-                @Override
-                public void onFailure(Throwable error, String content) {
+                public void onFailure(Call call, IOException e) {
                     setProgress("deleteMessages", false);
                     Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_messages));
                 }
-            });
+
+                @Override
+                public void onResponse(Call call, Response response, String responseString) throws IOException {
+                    if (response.isSuccessful()) {
+                        if (chatAdapter != null) {
+                            chatAdapter.deleteAllMessages(finalMessageId);
+                            chatAdapter.notifyDataSetChanged();
+                        }
+                        else {
+                            // tell friend there's a new control message so they get it when the tab is opened
+                            friend.setAvailableMessageControlId(friend.getAvailableMessageControlId() + 1);
+                            saveFriends();
+                        }
+
+                        setProgress("deleteMessages", false);
+                    }
+                    else {
+                        setProgress("deleteMessages", false);
+                        Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_messages));
+                    }
+                }
+            }));
         }
     }
 
@@ -1857,23 +1868,28 @@ public class ChatController {
         if (friend != null) {
             final String username = friend.getName();
             setProgress("deleteFriend", true);
-            mNetworkController.deleteFriend(username, new AsyncHttpResponseHandler() {
+            mNetworkController.deleteFriend(username, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
-                public void onSuccess(int statusCode, String content) {
-                    handleDeleteUser(username, mUsername, true);
-                    setProgress("deleteFriend", false);
-                }
-
-                @Override
-                public void onFailure(Throwable error, String content) {
-                    SurespotLog.i(TAG, error, "deleteFriend");
+                public void onFailure(Call call, IOException e) {
+                    SurespotLog.i(TAG, e, "deleteFriend");
                     setProgress("deleteFriend", false);
                     Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_friend));
                 }
-            });
 
+                @Override
+                public void onResponse(Call call, Response response, String responseString) throws IOException {
+                    if (response.isSuccessful()) {
+                        handleDeleteUser(username, mUsername, true);
+                        setProgress("deleteFriend", false);
+                    }
+                    else {
+                        SurespotLog.i(TAG, "deleteFriend error, response code: %d" + response.code());
+                        setProgress("deleteFriend", false);
+                        Utils.makeToast(mContext, mContext.getString(R.string.could_not_delete_friend));
+                    }
+                }
+            }));
         }
-
     }
 
     public void toggleMessageShareable(String to, final String messageIv) {
@@ -1890,33 +1906,42 @@ public class ChatController {
             if (chatAdapter != null) {
 
                 setProgress("shareable", true);
-                mNetworkController.setMessageShareable(to, message.getId(), !message.isShareable(), new AsyncHttpResponseHandler() {
+                mNetworkController.setMessageShareable(to, message.getId(), !message.isShareable(), new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                     @Override
-                    public void onSuccess(int statusCode, String status) {
-                        setProgress("shareable", false);
-
-                        if (status == null) {
-                            return;
-                        }
-
-                        SurespotLog.d(TAG, "setting message sharable via http: %s", status);
-                        if (status.equals("shareable")) {
-                            message.setShareable(true);
-                        }
-                        else if (status.equals("notshareable")) {
-                            message.setShareable(false);
-                        }
-
-                        chatAdapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onFailure(Throwable error, String content) {
-                        SurespotLog.i(TAG, error, "toggleMessageShareable");
+                    public void onFailure(Call call, IOException e) {
+                        SurespotLog.i(TAG, e, "toggleMessageShareable");
                         setProgress("shareable", false);
                         Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
                     }
-                });
+
+                    @Override
+                    public void onResponse(Call call, Response response, String responseString) throws IOException {
+                        if (response.isSuccessful()) {
+                            setProgress("shareable", false);
+                            String status = responseString;
+
+                            //TODO check for empty string
+                            if (status == null) {
+                                return;
+                            }
+
+                            SurespotLog.d(TAG, "setting message sharable via http: %s", status);
+                            if (status.equals("shareable")) {
+                                message.setShareable(true);
+                            }
+                            else if (status.equals("notshareable")) {
+                                message.setShareable(false);
+                            }
+
+                            chatAdapter.notifyDataSetChanged();
+                        }
+                        else {
+                            SurespotLog.i(TAG, "toggleMessageShareable error response code: %d", response.code());
+                            setProgress("shareable", false);
+                            Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
+                        }
+                    }
+                }));
             }
         }
     }
@@ -2265,22 +2290,30 @@ public class ChatController {
 
     public void removeFriendAlias(final String name, final IAsyncCallback<Boolean> iAsyncCallback) {
         setProgress("removeFriendAlias", true);
-        mNetworkController.deleteFriendAlias(name, new AsyncHttpResponseHandler() {
+        mNetworkController.deleteFriendAlias(name, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
-            public void onSuccess(int responseCode, String result) {
-                removeFriendAlias(name);
-                setProgress("removeFriendAlias", false);
-                iAsyncCallback.handleResponse(true);
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, String arg1) {
-                SurespotLog.w(TAG, arg0, "error removing friend alias: %s", arg1);
+            public void onFailure(Call call, IOException e) {
+                SurespotLog.w(TAG, e, "error removing friend alias: %s", name);
                 setProgress("removeFriendAlias", false);
                 iAsyncCallback.handleResponse(false);
             }
-        });
+
+            @Override
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
+                if (response.isSuccessful()) {
+                    removeFriendAlias(name);
+                    setProgress("removeFriendAlias", false);
+                    iAsyncCallback.handleResponse(true);
+                }
+                else {
+                    SurespotLog.w(TAG, "error removing friend alias, response code: %d", response.code());
+                    setProgress("removeFriendAlias", false);
+                    iAsyncCallback.handleResponse(false);
+                }
+            }
+
+        }));
 
     }
 
@@ -2305,22 +2338,31 @@ public class ChatController {
 
     public void removeFriendImage(final String name, final IAsyncCallback<Boolean> iAsyncCallback) {
         setProgress("removeFriendImage", true);
-        mNetworkController.deleteFriendImage(name, new AsyncHttpResponseHandler() {
+        mNetworkController.deleteFriendImage(name, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
-            public void onSuccess(int responseCode, String result) {
-                removeFriendImage(name);
-                setProgress("removeFriendImage", false);
-                iAsyncCallback.handleResponse(true);
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, String arg1) {
-                SurespotLog.w(TAG, arg0, "error removing friend image: %s", arg1);
+            public void onFailure(Call call, IOException e) {
+                SurespotLog.w(TAG, e, "error removing friend image for: %s", name);
                 setProgress("removeFriendImage", false);
                 iAsyncCallback.handleResponse(false);
             }
-        });
+
+            @Override
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
+                if (response.isSuccessful()) {
+                    removeFriendImage(name);
+                    setProgress("removeFriendImage", false);
+                    iAsyncCallback.handleResponse(true);
+                }
+                else {
+                    SurespotLog.w(TAG, "error removing friend image, response code: %d", response.code());
+                    setProgress("removeFriendImage", false);
+                    iAsyncCallback.handleResponse(false);
+                }
+            }
+
+
+        }));
 
     }
 
@@ -2337,23 +2379,29 @@ public class ChatController {
         final String cipherAlias = EncryptionController.symmetricEncrypt(version, username, version, alias, iv);
         final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
 
-        mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new AsyncHttpResponseHandler() {
+        mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
-            public void onSuccess(int responseCode, String result) {
-                setFriendAlias(name, cipherAlias, version, ivString, true);
-                setProgress("assignFriendAlias", false);
-                iAsyncCallback.handleResponse(true);
-            }
-
-            @Override
-            public void onFailure(Throwable arg0, String arg1) {
-                SurespotLog.w(TAG, arg0, "error assigning friend alias: %s", arg1);
+            public void onFailure(Call call, IOException e) {
+                SurespotLog.w(TAG, e, "error assigning friend alias: %s", name);
                 setProgress("assignFriendAlias", false);
                 iAsyncCallback.handleResponse(false);
             }
-        });
 
+            @Override
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
+                if (response.isSuccessful()) {
+                    setFriendAlias(name, cipherAlias, version, ivString, true);
+                    setProgress("assignFriendAlias", false);
+                    iAsyncCallback.handleResponse(true);
+                }
+                else {
+                    SurespotLog.w(TAG, "error assigning friend alias, response code: %d", response.code());
+                    setProgress("assignFriendAlias", false);
+                    iAsyncCallback.handleResponse(false);
+                }
+            }
+        }));
     }
 
     public String getUsername() {

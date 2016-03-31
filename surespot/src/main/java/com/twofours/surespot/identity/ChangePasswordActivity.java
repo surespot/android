@@ -1,9 +1,5 @@
 package com.twofours.surespot.identity;
 
-import java.io.IOException;
-import java.security.PrivateKey;
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -23,10 +19,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -34,6 +28,10 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.ui.MultiProgressDialog;
+
+import java.io.IOException;
+import java.security.PrivateKey;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;

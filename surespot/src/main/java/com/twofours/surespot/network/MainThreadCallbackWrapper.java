@@ -51,6 +51,7 @@ public class MainThreadCallbackWrapper implements Callback {
     }
 
     public interface MainThreadCallback {
+
         void onFailure(Call call, IOException e);
         void onResponse(Call call, Response response, String responseString) throws IOException;
     }

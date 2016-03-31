@@ -1,15 +1,11 @@
 package com.twofours.surespot.activities;
 
-import java.security.InvalidKeyException;
-import java.util.List;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -33,9 +29,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
-
+import com.google.api.client.http.HttpResponseException;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
@@ -55,6 +49,9 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.MultiProgressDialog;
+
+import java.security.InvalidKeyException;
+import java.util.List;
 
 public class LoginActivity extends Activity {
 

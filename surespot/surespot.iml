@@ -108,8 +108,8 @@
     <orderEntry type="library" exported="" name="support-annotations-23.2.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="multidex-instrumentation-1.0.1" level="project" />
     <orderEntry type="library" exported="" name="guava-18.0" level="project" />
-    <orderEntry type="library" exported="" name="prov-1.53.0.0" level="project" />
     <orderEntry type="library" exported="" name="gson-2.4" level="project" />
+    <orderEntry type="library" exported="" name="prov-1.53.0.0" level="project" />
     <orderEntry type="library" exported="" name="engine.io-client-0.7.0" level="project" />
     <orderEntry type="library" exported="" name="okhttp-3.0.1" level="project" />
     <orderEntry type="library" exported="" name="google-http-client-gson-1.19.0" level="project" />
@@ -122,9 +122,7 @@
     <orderEntry type="library" exported="" name="google-api-client-1.17.0-rc" level="project" />
     <orderEntry type="library" exported="" name="play-services-basement-8.4.0" level="project" />
     <orderEntry type="module" module-name="ColorPickerPreference" exported="" />
-    <orderEntry type="module" module-name="httpclientandroidlib" exported="" />
     <orderEntry type="module" module-name="androidkeystore" exported="" />
-    <orderEntry type="module" module-name="androidasynchttp" exported="" />
     <orderEntry type="module" module-name="surespotcommon" exported="" />
     <orderEntry type="module" module-name="viewpagerindicator" exported="" />
     <orderEntry type="module" module-name="imageViewTouch" exported="" />

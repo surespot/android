@@ -18,31 +18,29 @@ package com.twofours.surespot.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
-import com.loopj.android.http.RequestParams;
-import com.loopj.android.http.SyncHttpClient;
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.SurespotCookieJar;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import ch.boye.httpclientandroidlib.client.CookieStore;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
-import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 
 public class RegistrationIntentService extends IntentService {
 
@@ -83,7 +81,8 @@ public class RegistrationIntentService extends IntentService {
             // otherwise your server should have already received the token.
 //            sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, true).apply();
             // [END register_for_gcm]
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.i(TAG, e, "Failed to complete token refresh");
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
@@ -96,7 +95,7 @@ public class RegistrationIntentService extends IntentService {
 
     /**
      * Persist registration to third-party servers.
-     *
+     * <p/>
      * Modify this method to associate the user's GCM registration token with any server-side account
      * maintained by your application.
      *
@@ -116,43 +115,50 @@ public class RegistrationIntentService extends IntentService {
             }
 
             SurespotLog.i(TAG, "Attempting to register gcm id on surespot server.");
-            // do this synchronously so android doesn't kill the service thread before it's done
-
-            SyncHttpClient client = null;
-            try {
-                client = new SyncHttpClient(this) {
-
-                    @Override
-                    public String onRequestFailed(Throwable arg0, String arg1) {
-                        SurespotLog.i(TAG, "Error saving gcmId on surespot server: " + arg1);
-                        return "failed";
-                    }
-                };
-            } catch (IOException e) {
-                // TODO tell user shit is fucked
-                return;
-            }
 
             okhttp3.Cookie cookie = IdentityController.getCookieForUser(IdentityController.getLoggedInUser());
             if (cookie != null) {
+                SurespotCookieJar jar = new SurespotCookieJar();
+                jar.setCookie(cookie);
 
-//                CookieStore cookieStore = new BasicCookieStore();
-//                cookieStore.addCookie(cookie);
-//                client.setCookieStore(cookieStore);
-//
-//                Map<String, String> params = new HashMap<String, String>();
-//                params.put("gcmId", id);
-//
-//                String result = client.post(SurespotConfiguration.getBaseUrl() + "/registergcm", new RequestParams(params));
-//                // success returns 204 = null result
-//                if (result == null) {
-//                    SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
-//
-//                    // the server and client match, we're golden
-//                    Utils.putUserSharedPrefsString(this, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
-//                }
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .cookieJar(jar)
+                        .build();
+
+                JSONObject params = new JSONObject();
+                try {
+                    params.put("gcmId", id);
+                }
+                catch (JSONException e) {
+                    SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
+                    return;
+                }
+
+                RequestBody body = RequestBody.create(NetworkController.JSON, params.toString());
+                Request request = new Request.Builder()
+                        .url(SurespotConfiguration.getBaseUrl() + "/registergcm")
+                        .post(body)
+                        .build();
+
+                Response response;
+                try {
+                    response = client.newCall(request).execute();
+                }
+                catch (IOException e) {
+                    SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
+                    return;
+                }
+
+                // success returns 204
+                if (response.code() == 204) {
+                    SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
+
+                    // the server and client match, we're golden
+                    Utils.putUserSharedPrefsString(this, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
+                }
             }
-        } else {
+        }
+        else {
             SurespotLog.i(TAG, "Can't save GCM id on surespot server as user is not logged in.");
         }
     }
