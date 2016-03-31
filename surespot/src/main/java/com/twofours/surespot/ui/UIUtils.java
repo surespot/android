@@ -1,11 +1,13 @@
 package com.twofours.surespot.ui;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.util.encoders.Hex;
 
@@ -65,6 +67,10 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.qr.QRCodeEncoder;
 import com.twofours.surespot.qr.WriterException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class UIUtils {
 
@@ -285,33 +291,40 @@ public class UIUtils {
         final SingleProgressDialog progressDialog = new SingleProgressDialog(context, context.getString(R.string.invite_progress_text), 750);
 
         progressDialog.show();
-        networkController.getShortUrl(longUrl, new JsonHttpResponseHandler() {
-            public void onSuccess(int statusCode, JSONObject response) {
-                String sUrl = response.optString("id", null);
-                if (!TextUtils.isEmpty(sUrl)) {
-                    launchInviteApp(context, progressDialog, sUrl);
+        networkController.getShortUrl(longUrl, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                SurespotLog.i(TAG, e, "getShortUrl error");
+                launchInviteApp(context, progressDialog, longUrl);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    JSONObject json = null;
+                    try {
+                        json = new JSONObject(response.body().string());
+                    }
+                    catch (JSONException e) {
+                        SurespotLog.i(TAG, e, "getShortUrl error");
+                        launchInviteApp(context, progressDialog, longUrl);
+                        return;
+                    }
+
+                    String sUrl = json.optString("id", null);
+                    if (!TextUtils.isEmpty(sUrl)) {
+                        launchInviteApp(context, progressDialog, sUrl);
+                    }
+                    else {
+                        launchInviteApp(context, progressDialog, longUrl);
+                    }
                 }
                 else {
                     launchInviteApp(context, progressDialog, longUrl);
                 }
             }
-
-            ;
-
-            public void onFailure(Throwable e, JSONObject errorResponse) {
-                SurespotLog.i(TAG, e, "getShortUrl, error: %s", errorResponse);
-                launchInviteApp(context, progressDialog, longUrl);
-            }
-
-            ;
-
-            @Override
-            public void onFailure(Throwable error, String content) {
-                SurespotLog.i(TAG, error, "getShortUrl, content: %s", content);
-                launchInviteApp(context, progressDialog, longUrl);
-            }
         });
-
     }
 
     private static void launchInviteApp(Activity context, SingleProgressDialog progressDialog, String url) {

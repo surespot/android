@@ -17,7 +17,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat.Builder;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -35,6 +34,8 @@ import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.ui.UIUtils;
+
+import okhttp3.Cookie;
 
 @SuppressLint("NewApi")
 public class CredentialCachingService extends Service {
@@ -191,7 +192,8 @@ public class CredentialCachingService extends Service {
 		Date expire = new Date(date.getTime() - 60 * 60 * 1000);
 
 		// if the cookie expires within the hour make them login again
-		if (cookie != null && !cookie.isExpired(expire)) {
+		//TODO check logic
+		if (cookie != null && cookie.expiresAt() < expire.getTime()) {
 			hasCookie = true;
 			SurespotLog.d(TAG, "we have non expired cookie");
 		}

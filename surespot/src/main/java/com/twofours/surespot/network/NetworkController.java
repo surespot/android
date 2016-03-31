@@ -5,14 +5,13 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
-import com.loopj.android.http.AsyncHttpClient;
+
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.loopj.android.http.SyncHttpClient;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotCachingHttpClient;
+
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -29,77 +28,95 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.boye.httpclientandroidlib.HttpEntity;
-import ch.boye.httpclientandroidlib.HttpException;
 import ch.boye.httpclientandroidlib.HttpResponse;
-import ch.boye.httpclientandroidlib.HttpResponseInterceptor;
-import ch.boye.httpclientandroidlib.HttpStatus;
-import ch.boye.httpclientandroidlib.client.CookieStore;
 import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
-import ch.boye.httpclientandroidlib.client.methods.HttpGet;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
-import ch.boye.httpclientandroidlib.entity.BufferedHttpEntity;
 import ch.boye.httpclientandroidlib.entity.StringEntity;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
-import ch.boye.httpclientandroidlib.impl.client.BasicCookieStore;
 import ch.boye.httpclientandroidlib.message.BasicHeader;
-import ch.boye.httpclientandroidlib.protocol.BasicHttpContext;
-import ch.boye.httpclientandroidlib.protocol.HTTP;
-import ch.boye.httpclientandroidlib.protocol.HttpContext;
-import ch.boye.httpclientandroidlib.util.EntityUtils;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Cookie;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.CookieJar;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 
 public class NetworkController {
     protected static final String TAG = "NetworkController";
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
     private static String mBaseUrl;
 
     private Context mContext;
-    private AsyncHttpClient mClient;
-    private CookieStore mCookieStore;
-    private SyncHttpClient mSyncClient;
-    private SurespotCachingHttpClient mCachingHttpClient;
+    private OkHttpClient mClient;
+    private SurespotCookieJar mCookieStore;
+
     private String mUsername;
 
-    public void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    public void get(String url, AsyncHttpResponseHandler responseHandler) {
+
+    }
+
+    public void get(String url, Callback responseHandler) {
         SurespotLog.d(TAG, "get  " + url);
-        mClient.get(mBaseUrl + url, params, responseHandler);
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .build();
+        mClient.newCall(request).enqueue(responseHandler);
     }
 
     public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.d(TAG, "post to " + url);
-        mClient.post(mBaseUrl + url, params, responseHandler);
+      //  mClient.post(mBaseUrl + url, params, responseHandler);
     }
 
-    public void postJson(String url, JSONObject jsonParams, JsonHttpResponseHandler responseHandler) {
+    public Call postJson(String url, JSONObject jsonParams, Callback responseHandler) {
         SurespotLog.d(TAG, "JSON post to " + url);
 
-        StringEntity entity = null;
-        try {
-            entity = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException e) {
-            SurespotLog.w(TAG, e, "postJson");
-        }
-        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+        RequestBody body = RequestBody.create(JSON, jsonParams.toString());
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .post(body)
+                .build();
 
-        mClient.post(mContext, mBaseUrl + url, entity, "application/json", responseHandler);
+        Call call = mClient.newCall(request);
+        call.enqueue(responseHandler);
+        return call;
     }
 
-    public void put(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+    public void putJSON(String url, JSONObject jsonParams, Callback responseHandler) {
         SurespotLog.d(TAG, "put to " + url);
-        mClient.put(mBaseUrl + url, params, responseHandler);
+        RequestBody body = RequestBody.create(JSON, jsonParams.toString());
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .put(body)
+                .build();
+
+        mClient.newCall(request).enqueue(responseHandler);
     }
 
-    public void delete(String url, AsyncHttpResponseHandler responseHandler) {
+    public void delete(String url, Callback responseHandler) {
         SurespotLog.d(TAG, "delete to " + url);
-        mClient.delete(mBaseUrl + url, responseHandler);
+
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .delete()
+                .build();
+
+        mClient.newCall(request).enqueue(responseHandler);
     }
 
-    public CookieStore getCookieStore() {
+    public CookieJar getCookieStore() {
         return mCookieStore;
     }
 
@@ -122,78 +139,74 @@ public class NetworkController {
         mContext = context;
         mUsername = username;
         mBaseUrl = SurespotConfiguration.getBaseUrl();
-        mCookieStore = new BasicCookieStore();
+        mCookieStore = new SurespotCookieJar();
+
+        mClient = new OkHttpClient.Builder()
+                .cookieJar(mCookieStore)
+                .build();
+
+        if (mClient == null) {
+            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
+            throw new Exception("Fatal error, could not create http clients..is storage space available?");
+        }
+
 
         if (username != null) {
             Cookie cookie = IdentityController.getCookieForUser(username);
             if (cookie != null) {
-                mCookieStore.addCookie(cookie);
+                mCookieStore.setCookie(cookie);
             }
         }
 
-        try {
-            mCachingHttpClient = SurespotCachingHttpClient.createSurespotDiskCachingHttpClient(context);
-            mClient = new AsyncHttpClient(mContext);
-            mSyncClient = new SyncHttpClient(mContext) {
-
-                @Override
-                public String onRequestFailed(Throwable arg0, String arg1) {
-                    return null;
-                }
-            };
-        } catch (IOException e) {
-            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
-            throw new Exception("Fatal error, could not create http clients..is storage space available?", e);
-        }
-
-        HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
-
-            @Override
-            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
-
-                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
-                    String origin = context.getAttribute("http.cookie-origin").toString();
-
-                    if (origin != null) {
-
-                        if (!isUnauthorized()) {
-
-                            Uri uri = Uri.parse(mBaseUrl);
-                            if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
-                                // setUnauthorized(true);
-
-                                mClient.cancelRequests(mContext, true);
-                                mSyncClient.cancelRequests(mContext, true);
-
-                                if (m401Handler != null) {
-                                    m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
-                                }
-
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
-
-            mClient.setCookieStore(mCookieStore);
-            mSyncClient.setCookieStore(mCookieStore);
-            mCachingHttpClient.setCookieStore(mCookieStore);
-
-            // handle 401s
-            mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-            mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-            mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-
-            mClient.setUserAgent(SurespotApplication.getUserAgent());
-            mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
-            mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());
-        }
+//        HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
+//
+//            @Override
+//            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+//
+//                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+//                    String origin = context.getAttribute("http.cookie-origin").toString();
+//
+//                    if (origin != null) {
+//
+//                        if (!isUnauthorized()) {
+//
+//                            Uri uri = Uri.parse(mBaseUrl);
+//                            if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
+//                                // setUnauthorized(true);
+//
+//                                mClient.cancelRequests(mContext, true);
+//                                mSyncClient.cancelRequests(mContext, true);
+//
+//                                if (m401Handler != null) {
+//                                    m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+//                                }
+//
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        };
+//
+//        if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
+//
+//            mClient.setCookieStore(mCookieStore);
+//            mSyncClient.setCookieStore(mCookieStore);
+//            mCachingHttpClient.setCookieStore(mCookieStore);
+//
+//            // handle 401s
+//            mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
+//            mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
+//            mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
+//
+//            mClient.setUserAgent(SurespotApplication.getUserAgent());
+//            mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
+//            mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());
+//        }
     }
 
     public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
+        JSONObject json = new JSONObject();
         Map<String, String> params = new HashMap<String, String>();
         params.put("username", username);
         params.put("password", password);
@@ -224,42 +237,43 @@ public class NetworkController {
 
         for (Cookie c : mCookieStore.getCookies()) {
 
-            if (c.getName().equals("connect.sid")) {
+            if (c.name().equals("connect.sid")) {
                 SurespotLog.d(TAG, "signup, clearing cookie: %s", c);
             }
         }
 
         mCookieStore.clear();
 
-        post("/users2", new RequestParams(params), new AsyncHttpResponseHandler() {
+        postJson("/users2", json, new Callback() {
 
             @Override
-            public void onSuccess(int responseCode, String result) {
-                Cookie cookie = extractConnectCookie(mCookieStore);
+            public void onFailure(Call call, IOException e) {
+                responseHandler.onFailure(e, "Error creating user.");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Cookie cookie = null;
+                if (response.isSuccessful()) {
+                    cookie = extractConnectCookie(mCookieStore);
+                }
 
                 if (cookie == null) {
                     SurespotLog.w(TAG, "did not get cookie from signup");
-                    responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
-                } else {
+                    responseHandler.onFailure(new IOException("Did not get cookie."), "Did not get cookie.");
+                }
+                else {
                     setUnauthorized(false, false);
                     // update shared prefs
                     if (gcmUpdated) {
                         Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
                     }
 
-                    responseHandler.onSuccess(responseCode, result, cookie);
+                    responseHandler.onSuccess(response.code(), response.body().string(), cookie);
                 }
             }
 
-            @Override
-            public void onFailure(Throwable arg0, String content) {
-                responseHandler.onFailure(arg0, content);
-            }
 
-            @Override
-            public void onFinish() {
-                responseHandler.onFinish();
-            }
         });
     }
 
@@ -287,20 +301,17 @@ public class NetworkController {
         post("/passwordtoken", new RequestParams(params), asyncHttpResponseHandler);
     }
 
-    public void getShortUrl(String longUrl, JsonHttpResponseHandler responseHandler) {
+    public void getShortUrl(String longUrl, Callback responseHandler) {
 
         try {
             JSONObject params = new JSONObject();
             params.put("longUrl", longUrl);
-            StringEntity entity = new StringEntity(params.toString());
-            entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-            mClient.post(null, "https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey(), entity, "application/json", responseHandler);
-        } catch (UnsupportedEncodingException e) {
+
+            postJson("https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey(), params, responseHandler);
+        }
+        catch (JSONException e) {
             SurespotLog.v(TAG, "getShortUrl", e);
-            responseHandler.onFailure(e, new JSONObject());
-        } catch (JSONException e) {
-            SurespotLog.v(TAG, "getShortUrl", e);
-            responseHandler.onFailure(e, new JSONObject());
+            responseHandler.onFailure(null, new IOException(e));
         }
 
     }
@@ -328,10 +339,10 @@ public class NetworkController {
         post("/keys2", new RequestParams(params), asyncHttpResponseHandler);
     }
 
-    private static Cookie extractConnectCookie(CookieStore cookieStore) {
+    private static Cookie extractConnectCookie(SurespotCookieJar cookieStore) {
         for (Cookie c : cookieStore.getCookies()) {
 
-            if (c.getName().equals("connect.sid")) {
+            if (c.name().equals("connect.sid")) {
                 SurespotLog.d(TAG, "extracted cookie: %s", c);
                 return c;
             }
@@ -342,35 +353,41 @@ public class NetworkController {
 
     public void login(final String username, String password, String signature, final CookieResponseHandler responseHandler) {
         SurespotLog.d(TAG, "login username: %s", username);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", signature);
-        params.put("version", SurespotApplication.getVersion());
-        params.put("platform", "android");
-
-        //	addVoiceMessagingPurchaseTokens(params);
-
-        // get the gcm id
+        JSONObject json = new JSONObject();
         final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-        String gcmIdSent = Utils.getUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT);
-
-        SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
 
         boolean gcmUpdatedTemp = false;
-        // update the gcmid if it false
-        if (gcmIdReceived != null) {
+        try {
+            json.put("username", username);
+            json.put("password", password);
+            json.put("authSig", signature);
+            json.put("version", SurespotApplication.getVersion());
+            json.put("platform", "android");
 
-            params.put("gcmId", gcmIdReceived);
 
-            if (!gcmIdReceived.equals(gcmIdSent)) {
-                gcmUpdatedTemp = true;
+            // get the gcm id
+            String gcmIdSent = Utils.getUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT);
+            SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
+
+
+            // update the gcmid if it false
+            if (gcmIdReceived != null) {
+
+                json.put("gcmId", gcmIdReceived);
+
+                if (!gcmIdReceived.equals(gcmIdSent)) {
+                    gcmUpdatedTemp = true;
+                }
             }
+        }
+        catch (Exception e) {
+            responseHandler.onFailure(e, "JSON Error");
+            return;
         }
 
         for (Cookie c : mCookieStore.getCookies()) {
 
-            if (c.getName().equals("connect.sid")) {
+            if (c.name().equals("connect.sid")) {
                 SurespotLog.d(TAG, "login, clearing cookie: %s", c);
             }
         }
@@ -380,49 +397,48 @@ public class NetworkController {
         // just be javascript already
         final boolean gcmUpdated = gcmUpdatedTemp;
 
-        post("/login", new RequestParams(params), new AsyncHttpResponseHandler() {
+        postJson("/login", json, new Callback() {
 
             @Override
-            public void onSuccess(int responseCode, String result) {
+            public void onFailure(Call call, IOException e) {
+                responseHandler.onFailure(e, "Error logging in.");
+            }
 
-                Cookie cookie = extractConnectCookie(mCookieStore);
-                if (cookie == null) {
-                    SurespotLog.w(TAG, "Did not get cookie from login.");
-                    responseHandler.onFailure(new Exception("Did not get cookie."), null);
-                } else {
-                    setUnauthorized(false, false);
-                    // update shared prefs
-                    if (gcmUpdated) {
-                        Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    Cookie cookie = extractConnectCookie(mCookieStore);
+                    if (cookie == null) {
+                        SurespotLog.w(TAG, "Did not get cookie from login.");
+                        responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
                     }
 
-                    responseHandler.onSuccess(responseCode, result, cookie);
+                    else {
+                        setUnauthorized(false, false);
+                        // update shared prefs
+                        if (gcmUpdated) {
+                            Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+                        }
+
+                        responseHandler.onSuccess(response.code(), response.body().string(), cookie);
+                    }
                 }
-
             }
 
-            @Override
-            public void onFailure(Throwable arg0, String content) {
-                responseHandler.onFailure(arg0, content);
-            }
 
-            @Override
-            public void onFinish() {
-                responseHandler.onFinish();
-            }
         });
 
     }
 
     public void getFriends(AsyncHttpResponseHandler responseHandler) {
-        get("/friends", null, responseHandler);
+        get("/friends", responseHandler);
     }
 
     public void getMessageData(String user, Integer messageId, Integer controlId, JsonHttpResponseHandler responseHandler) {
         int mId = messageId;
         int cId = controlId;
 
-        get("/messagedataopt/" + user + "/" + mId + "/" + cId, null, responseHandler);
+        get("/messagedataopt/" + user + "/" + mId + "/" + cId, responseHandler);
 
     }
 
@@ -435,18 +451,20 @@ public class NetworkController {
 
     // if we have an id get the messages since the id, otherwise get the last x
     public void getEarlierMessages(String username, Integer id, JsonHttpResponseHandler responseHandler) {
-        get("/messagesopt/" + username + "/before/" + id, null, responseHandler);
+        get("/messagesopt/" + username + "/before/" + id, responseHandler);
     }
 
 
     public String getPublicKeysSync(String username, String version) {
-        return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/since/" + version);
+     //   return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/since/" + version);
+        return null;
     }
 
 
     public String getKeyVersionSync(String username) {
         SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
-        return mSyncClient.get(mBaseUrl + "/keyversion/" + username);
+  //      return mSyncClient.get(mBaseUrl + "/keyversion/" + username);
+        return null;
 
     }
 
@@ -466,10 +484,21 @@ public class NetworkController {
         }
         try {
             params.put("messages", jsonArray);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.e(TAG, e, "postMessages");
         }
-        postJson("/messages", params, responseHandler);
+        postJson("/messages", params, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+            }
+        });
     }
 
     public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
@@ -527,21 +556,28 @@ public class NetworkController {
 //
 //	}
 
-    public void validate(String username, String password, String signature, AsyncHttpResponseHandler responseHandler) {
-        RequestParams params = new RequestParams();
+    public void validate(String username, String password, String signature, Callback responseHandler) {
+        JSONObject json = new JSONObject();
 
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", signature);
+
+        try {
+            json.put("username", username);
+            json.put("password", password);
+            json.put("authSig", signature);
+
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         // ideally would use a get here but putting body in a get request is frowned upon apparently:
         // http://stackoverflow.com/questions/978061/http-get-with-request-body
         // It's also not a good idea to put passwords in the url
-        post("/validate", params, responseHandler);
+        postJson("/validate", json, responseHandler);
     }
 
-    public void userExists(String username, AsyncHttpResponseHandler responseHandler) {
-        get("/users/" + username + "/exists", null, responseHandler);
+    public void userExists(String username, Callback responseHandler) {
+        get("/users/" + username + "/exists", responseHandler);
     }
 
 
@@ -564,129 +600,139 @@ public class NetworkController {
         httppost.setEntity(reqEntity);
         HttpResponse response = null;
 
-        try {
-            response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
-
-            if (response != null) {
-                int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
-
-                    HttpEntity entity = null;
-                    HttpEntity temp = response.getEntity();
-                    if (temp != null) {
-                        entity = new BufferedHttpEntity(temp);
-                        String responseBody = EntityUtils.toString(entity, "UTF-8");
-                        Object result = null;
-                        //trim the string to prevent start with blank, and test if the string is valid JSON, because the parser don't do this :(. If Json is not valid this will return null
-                        responseBody = responseBody.trim();
-                        if (responseBody.startsWith("{") || responseBody.startsWith("[")) {
-                            result = new JSONTokener(responseBody).nextValue();
-
-                            return new Tuple<>(200, (JSONObject) result);
-                        } else {
-                            return new Tuple<>(500, null);
-                        }
-                    }
-
-                } else {
-                    return new Tuple<>(statusCode, null);
-        }
-
-    } else {
-        return new Tuple<>(500, null);
-    }
-
-} catch (Exception e) {
-        SurespotLog.w(TAG, e, "createPostFile");
-        } finally {
-        httppost.releaseConnection();
+//        try {
+//            response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
+//
 //            if (response != null) {
-//                try {
-//                    EntityUtils.consume(response.getEntity());
-//                } catch (IOException e) {
-//                    SurespotLog.w(TAG, e, "postFileStream");
+//                int statusCode = response.getStatusLine().getStatusCode();
+//                if (statusCode == 200) {
+//
+//                    HttpEntity entity = null;
+//                    HttpEntity temp = response.getEntity();
+//                    if (temp != null) {
+//                        entity = new BufferedHttpEntity(temp);
+//                        String responseBody = EntityUtils.toString(entity, "UTF-8");
+//                        Object result = null;
+//                        //trim the string to prevent start with blank, and test if the string is valid JSON, because the parser don't do this :(. If Json is not valid this will return null
+//                        responseBody = responseBody.trim();
+//                        if (responseBody.startsWith("{") || responseBody.startsWith("[")) {
+//                            result = new JSONTokener(responseBody).nextValue();
+//
+//                            return new Tuple<>(200, (JSONObject) result);
+//                        }
+//                        else {
+//                            return new Tuple<>(500, null);
+//                        }
+//                    }
+//
 //                }
+//                else {
+//                    return new Tuple<>(statusCode, null);
+//                }
+//
 //            }
-        }
+//            else {
+//                return new Tuple<>(500, null);
+//            }
+//
+//        }
+//        catch (Exception e) {
+//            SurespotLog.w(TAG, e, "createPostFile");
+//        }
+//        finally {
+//            httppost.releaseConnection();
+////            if (response != null) {
+////                try {
+////                    EntityUtils.consume(response.getEntity());
+////                } catch (IOException e) {
+////                    SurespotLog.w(TAG, e, "postFileStream");
+////                }
+////            }
+//        }
 
         return new Tuple<>(500, null);
     }
-
-
 
 
     public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv, final InputStream fileInputStream,
                                       final IAsyncCallback<String> callback) {
-        new AsyncTask<Void, Void, String>() {
-
-            @Override
-            protected String doInBackground(Void... params) {
-
-                SurespotLog.v(TAG, "posting file stream");
-
-                HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + user + "/" + ourVersion);
-
-                InputStreamBody isBody = new InputStreamBody(fileInputStream, SurespotConstants.MimeTypes.IMAGE, iv);
-                MultipartEntity reqEntity = new MultipartEntity();
-                reqEntity.addPart("image", isBody);
-                httppost.setEntity(reqEntity);
-                HttpResponse response = null;
-
-                try {
-                    response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
-                    if (response != null && response.getStatusLine().getStatusCode() == 200) {
-                        String url = Utils.inputStreamToString(response.getEntity().getContent());
-                        return url;
-                    }
-                } catch (IllegalStateException e) {
-                    SurespotLog.w(TAG, e, "postFriendImageStream");
-
-                } catch (IOException e) {
-                    SurespotLog.w(TAG, e, "postFriendImageStream");
-
-                } catch (Exception e) {
-                    SurespotLog.w(TAG, e, "createPostFile");
-                } finally {
-                    httppost.releaseConnection();
-                    if (response != null) {
-                        try {
-                            EntityUtils.consume(response.getEntity());
-                        } catch (IOException e) {
-                            SurespotLog.w(TAG, e, "postFileStream");
-                        }
-                    }
-                }
-                return null;
-
-            }
-
-            protected void onPostExecute(String url) {
-                callback.handleResponse(url);
-
-            }
-
-            ;
-        }.execute();
+//        new AsyncTask<Void, Void, String>() {
+//
+//            @Override
+//            protected String doInBackground(Void... params) {
+//
+//                SurespotLog.v(TAG, "posting file stream");
+//
+//                HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + user + "/" + ourVersion);
+//
+//                InputStreamBody isBody = new InputStreamBody(fileInputStream, SurespotConstants.MimeTypes.IMAGE, iv);
+//                MultipartEntity reqEntity = new MultipartEntity();
+//                reqEntity.addPart("image", isBody);
+//                httppost.setEntity(reqEntity);
+//                HttpResponse response = null;
+//
+//                try {
+//                    response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
+//                    if (response != null && response.getStatusLine().getStatusCode() == 200) {
+//                        String url = Utils.inputStreamToString(response.getEntity().getContent());
+//                        return url;
+//                    }
+//                }
+//                catch (IllegalStateException e) {
+//                    SurespotLog.w(TAG, e, "postFriendImageStream");
+//
+//                }
+//                catch (IOException e) {
+//                    SurespotLog.w(TAG, e, "postFriendImageStream");
+//
+//                }
+//                catch (Exception e) {
+//                    SurespotLog.w(TAG, e, "createPostFile");
+//                }
+//                finally {
+//                    httppost.releaseConnection();
+//                    if (response != null) {
+//                        try {
+//                            EntityUtils.consume(response.getEntity());
+//                        }
+//                        catch (IOException e) {
+//                            SurespotLog.w(TAG, e, "postFileStream");
+//                        }
+//                    }
+//                }
+//                return null;
+//
+//            }
+//
+//            protected void onPostExecute(String url) {
+//                callback.handleResponse(url);
+//
+//            }
+//
+//            ;
+//        }.execute();
     }
 
     public InputStream getFileStream(Context context, final String url) {
 
         // SurespotLog.v(TAG, "getting file stream");
 
-        HttpGet httpGet = new HttpGet(url);
-        HttpResponse response = null;
-        try {
-            response = mCachingHttpClient.execute(httpGet, new BasicHttpContext());
-            HttpEntity resEntity = response.getEntity();
-            if (response.getStatusLine().getStatusCode() == 200) {
-                return resEntity.getContent();
-            }
-        } catch (Exception e) {
-            SurespotLog.w(TAG, e, "getFileStream");
-
-        } finally {
-            httpGet.releaseConnection();
-        }
+//        HttpGet httpGet = new HttpGet(url);
+//        HttpResponse response = null;
+//        try {
+//            response = mCachingHttpClient.execute(httpGet, new BasicHttpContext());
+//            HttpEntity resEntity = response.getEntity();
+//            if (response.getStatusLine().getStatusCode() == 200) {
+//                return resEntity.getContent();
+//            }
+//        }
+//        catch (Exception e) {
+//            SurespotLog.w(TAG, e, "getFileStream");
+//
+//        }
+//        finally {
+//            httpGet.releaseConnection();
+//        }
         return null;
     }
 
@@ -699,36 +745,38 @@ public class NetworkController {
 
     public void clearCache() {
         // all the clients share a cache
-        mClient.clearCache();
+      //  mClient.clearCache();
     }
 
     public void purgeCacheUrl(String url) {
-        mCachingHttpClient.removeEntry(mBaseUrl + url);
+
+        //mCachingHttpClient.removeEntry(mBaseUrl + url);
+
     }
 
     public void deleteMessage(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
-        delete("/messages/" + username + "/" + id, responseHandler);
+    //    delete("/messages/" + username + "/" + id, responseHandler);
 
     }
 
     public void deleteMessages(String username, int utaiId, AsyncHttpResponseHandler responseHandler) {
-        delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
+    //    delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
 
     }
 
     public void setMessageShareable(String username, Integer id, boolean shareable, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.v(TAG, "setMessageSharable %b", shareable);
         RequestParams params = new RequestParams("shareable", shareable);
-        put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
+     //   put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
 
     }
 
     public void deleteFriend(String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        delete("/friends/" + username, asyncHttpResponseHandler);
+     //   delete("/friends/" + username, asyncHttpResponseHandler);
     }
 
     public void blockUser(String username, boolean blocked, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler);
+     //   put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler);
     }
 
     public void deleteUser(String username, String password, String authSig, String tokenSig, String keyVersion,
@@ -752,21 +800,22 @@ public class NetworkController {
         params.put("tokenSig", tokenSig);
         params.put("keyVersion", keyVersion);
         params.put("newPassword", newPassword);
-        put("/users/password", new RequestParams(params), asyncHttpResponseHandler);
+     //   put("/users/password", new RequestParams(params), asyncHttpResponseHandler);
 
     }
 
     public void addCacheEntry(String key, HttpCacheEntry httpCacheEntry) {
-        mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
+       // mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
 
     }
 
     public HttpCacheEntry getCacheEntry(String key) {
-        return mCachingHttpClient.getCacheEntry(key);
+    //    return mCachingHttpClient.getCacheEntry(key);
+        return null;
     }
 
     public void removeCacheEntry(String key) {
-        mCachingHttpClient.removeEntry(key);
+     //   mCachingHttpClient.removeEntry(key);
 
     }
 
@@ -775,22 +824,22 @@ public class NetworkController {
         RequestParams params = new RequestParams("data", data);
         params.put("iv", iv);
         params.put("version", version);
-        put("/users/" + username + "/alias2", params, responseHandler);
+      //  put("/users/" + username + "/alias2", params, responseHandler);
 
     }
 
     public void deleteFriendAlias(String username, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.d(TAG, "deleteFriendAlias, username: %s", username);
-        delete("/users/" + username + "/alias", responseHandler);
+     //   delete("/users/" + username + "/alias", responseHandler);
     }
 
     public void deleteFriendImage(String username, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.d(TAG, "deleteFriendImage, username: %s", username);
-        delete("/users/" + username + "/image", responseHandler);
+    //    delete("/users/" + username + "/image", responseHandler);
     }
 
     public void updateSigs(JSONObject sigs, AsyncHttpResponseHandler responseHandler) {
-        post("/sigs", new RequestParams("sigs", sigs.toString()), responseHandler);
+     //   post("/sigs", new RequestParams("sigs", sigs.toString()), responseHandler);
     }
 
     public String getUsername() {

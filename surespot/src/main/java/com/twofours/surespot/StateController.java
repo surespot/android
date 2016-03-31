@@ -22,9 +22,6 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
-
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -37,6 +34,8 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
 import com.twofours.surespot.services.CredentialCachingService.VersionMap;
+
+import okhttp3.Cookie;
 
 public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
@@ -462,6 +461,9 @@ public class StateController {
 			if (cookie != null) {
 				return cookie;
 			}
+		}
+		catch (ClassCastException e) {
+			SurespotLog.e(TAG, e, "error loading cookie for %s", username);
 		}
 		catch (IOException e) {
 			SurespotLog.e(TAG, e, "error loading cookie for %s", username);			

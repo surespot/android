@@ -51,6 +51,7 @@ import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -63,13 +64,16 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ch.boye.httpclientandroidlib.conn.ssl.SSLSocketFactory;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
+
 import io.socket.client.IO;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import io.socket.engineio.client.Transport;
 import io.socket.engineio.client.transports.WebSocket;
+import okhttp3.Call;
+import okhttp3.Cookie;
+import okhttp3.Response;
 
 @SuppressLint("NewApi")
 public class CommunicationService extends Service {
@@ -192,7 +196,7 @@ public class CommunicationService extends Service {
                             //TODO not sure why it's null seems like we need to handle this
                             if (cookie != null) {
                                 ArrayList<String> cookies = new ArrayList<String>();
-                                cookies.add(cookie.getName() + "=" + cookie.getValue());
+                                cookies.add(cookie.name() + "=" + cookie.value());
                                 headers.put("cookie", cookies);
                             }
                         }
@@ -1206,6 +1210,7 @@ public class CommunicationService extends Service {
                 startReloginTimer();
             }
         }
+
     }
 
     private boolean tryReLogin() {

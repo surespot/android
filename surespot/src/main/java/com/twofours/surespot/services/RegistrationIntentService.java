@@ -133,24 +133,24 @@ public class RegistrationIntentService extends IntentService {
                 return;
             }
 
-            Cookie cookie = IdentityController.getCookieForUser(IdentityController.getLoggedInUser());
+            okhttp3.Cookie cookie = IdentityController.getCookieForUser(IdentityController.getLoggedInUser());
             if (cookie != null) {
 
-                CookieStore cookieStore = new BasicCookieStore();
-                cookieStore.addCookie(cookie);
-                client.setCookieStore(cookieStore);
-
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("gcmId", id);
-
-                String result = client.post(SurespotConfiguration.getBaseUrl() + "/registergcm", new RequestParams(params));
-                // success returns 204 = null result
-                if (result == null) {
-                    SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
-
-                    // the server and client match, we're golden
-                    Utils.putUserSharedPrefsString(this, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
-                }
+//                CookieStore cookieStore = new BasicCookieStore();
+//                cookieStore.addCookie(cookie);
+//                client.setCookieStore(cookieStore);
+//
+//                Map<String, String> params = new HashMap<String, String>();
+//                params.put("gcmId", id);
+//
+//                String result = client.post(SurespotConfiguration.getBaseUrl() + "/registergcm", new RequestParams(params));
+//                // success returns 204 = null result
+//                if (result == null) {
+//                    SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
+//
+//                    // the server and client match, we're golden
+//                    Utils.putUserSharedPrefsString(this, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
+//                }
             }
         } else {
             SurespotLog.i(TAG, "Can't save GCM id on surespot server as user is not logged in.");

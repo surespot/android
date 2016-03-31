@@ -40,12 +40,14 @@ public class NetworkHelper {
 						networkController.login(username, dPassword, signature, new CookieResponseHandler() {
 							 
 							@Override
-							public void onSuccess(int responseCode, String result, Cookie cookie) {
+							public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {
 								SurespotLog.d(TAG, "successfully re-logged in: %s", username);
 								IdentityController.userLoggedIn(context, identity, cookie, password);
 								cookieResponseHandler.onSuccess(responseCode, result, cookie);								
 							}
-							
+
+
+
 							@Override
 							public void onFailure(Throwable error, String content) {
 								SurespotLog.d(TAG, "failed re-logging in: %s", username);

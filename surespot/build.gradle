@@ -47,6 +47,7 @@ dependencies {
     compile project(':httpclientandroidlib')
     compile project(':androidkeystore')
     compile project(":ColorPickerPreference")
+    //compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile('com.google.android.gms:play-services-gcm:8.4.0')
     compile('com.google.android.gms:play-services-drive:8.4.0')
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
@@ -63,4 +64,5 @@ dependencies {
     compile 'io.socket:socket.io-client:0.7.0'
   //  compile 'com.parse.bolts:bolts-tasks:1.3.0'
   //  compile 'com.parse.bolts:bolts-applinks:1.3.0'
+    compile 'com.google.android.gms:play-services-appindexing:8.4.0'
 }

@@ -38,12 +38,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 
-import ch.boye.httpclientandroidlib.client.HttpResponseException;
-import ch.boye.httpclientandroidlib.cookie.Cookie;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
@@ -64,7 +62,10 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.ui.UIUtils;
 
-import javax.crypto.SecretKey;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Cookie;
+import okhttp3.Response;
 
 public class IdentityController {
     private static final String TAG = "IdentityController";
@@ -83,14 +84,15 @@ public class IdentityController {
             Utils.putSharedPrefsString(context, "referrer", null);
             SurespotApplication.getCachingService().login(identity, cookie, password);
             // if we're logging in we probably didn't just buy it
-           // SurespotApplication.getBillingController().clearJustPurchased();
-        } else {
+            // SurespotApplication.getBillingController().clearJustPurchased();
+        }
+        else {
             SurespotLog.w(TAG, "getIdentity null");
         }
     }
 
     public static synchronized void createIdentity(final Context context, final String username, final String password, final String salt,
-                                                   final KeyPair keyPairDH, final KeyPair keyPairECDSA, final Cookie cookie) {
+                                                   final KeyPair keyPairDH, final KeyPair keyPairECDSA, final okhttp3.Cookie cookie) {
         SurespotIdentity identity = new SurespotIdentity(username, salt);
         identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
         saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
@@ -114,7 +116,8 @@ public class IdentityController {
         if (internal) {
             filename = identity.getUsername() + IDENTITY_EXTENSION;
             identityDir = FileUtils.getIdentityDir(backupContext);
-        } else {
+        }
+        else {
             filename = caseInsensitivize(identity.getUsername()) + IDENTITY_EXTENSION;
             identityDir = FileUtils.getIdentityExportDir().getAbsolutePath();
         }
@@ -149,9 +152,11 @@ public class IdentityController {
                 // SurespotApplication.mBackupManager.dataChanged();
             }
             return identityFile;
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
         }
         return null;
@@ -181,7 +186,8 @@ public class IdentityController {
 
             byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
             return identityBytes;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "encryptIdentity");
         }
         return null;
@@ -208,28 +214,28 @@ public class IdentityController {
                 if (networkController == null) {
                     try {
                         networkController = new NetworkController(context, null, null);
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         context.finish();
                         return null;
                     }
                 }
 
                 networkController.validate(username, dPassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword),
-                        new AsyncHttpResponseHandler() {
-                            public void onSuccess(int statusCode, String content) {
-
-                                callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
+                        new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                callback.handleResponse(null, null);
                             }
 
-                            public void onFailure(Throwable error) {
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                if (response.isSuccessful()) {
+                                    callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
+                                }
+                                else {
 
-                                if (error instanceof HttpResponseException) {
-                                    int statusCode = ((HttpResponseException) error).getStatusCode();
-                                    // would use 401 but we're intercepting
-                                    // those
-                                    // and I don't feel like special casing
-                                    // it
-                                    switch (statusCode) {
+                                    switch (response.code()) {
                                         case 403:
                                             callback.handleResponse(null, context.getString(R.string.incorrect_password_or_key));
                                             break;
@@ -238,12 +244,13 @@ public class IdentityController {
                                             break;
 
                                         default:
-                                            SurespotLog.i(TAG, error, "exportIdentity");
+                                            SurespotLog.i(TAG, "exportIdentity unexpected http response: %d", response.code());
                                             callback.handleResponse(null, null);
                                     }
-                                } else {
-                                    callback.handleResponse(null, null);
+
                                 }
+
+
                             }
                         });
 
@@ -280,10 +287,12 @@ public class IdentityController {
 
         if (exists && !overwrite) {
             return false;
-        } else {
+        }
+        else {
             if (exists) {
                 return identityFile.isFile() && identityFile.canWrite();
-            } else {
+            }
+            else {
 
                 try {
                     // make sure we'll have the space to write the identity file
@@ -292,7 +301,8 @@ public class IdentityController {
                     fos.close();
                     identityFile.delete();
                     return true;
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     return false;
                 }
             }
@@ -325,12 +335,13 @@ public class IdentityController {
         if (networkController == null) {
             try {
                 networkController = new NetworkController(context, null, null);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 Utils.makeLongToast(context, context.getString(R.string.could_not_remove_identity_from_device));
                 return;
             }
         }
-        
+
         networkController.clearCache();
         StateController.wipeState(context, username);
 
@@ -385,7 +396,8 @@ public class IdentityController {
         if (internal) {
             dir = FileUtils.getIdentityDir(context);
             identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
-        } else {
+        }
+        else {
             dir = FileUtils.getIdentityExportDir().getAbsolutePath();
             identityFilename = dir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
             checkCase = false;
@@ -423,7 +435,8 @@ public class IdentityController {
                 return decryptIdentity(idBytes, username, password, checkCase);
             }
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "loadIdentity");
         }
 
@@ -466,7 +479,8 @@ public class IdentityController {
             }
 
             return si;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
         }
         return null;
 
@@ -486,36 +500,38 @@ public class IdentityController {
             if (networkController == null) {
                 try {
                     networkController = new NetworkController(context, null, null);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     context.finish();
                     return;
                 }
             }
 
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
-                    new AsyncHttpResponseHandler() {
+                    new Callback() {
                         @Override
-                        public void onSuccess(int statusCode, String content) {
-                            String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
-                            if (file != null) {
-                                updateKeychainPassword(context, finalusername, password);
-                                SurespotApplication.getCachingService().updateIdentity(identity, true);
-                                callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
-                                        true));
-                            } else {
-                                callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
-                                        false));
-                            }
+                        public void onFailure(Call call, IOException e) {
+                            callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
+                                    false));
                         }
 
                         @Override
-                        public void onFailure(Throwable error) {
-
-                            if (error instanceof HttpResponseException) {
-                                int statusCode = ((HttpResponseException) error).getStatusCode();
-                                // would use 401 but we're intercepting those
-                                // and I don't feel like special casing it
-                                switch (statusCode) {
+                        public void onResponse(Call call, Response response) throws IOException {
+                            if (response.isSuccessful()) {
+                                String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
+                                if (file != null) {
+                                    updateKeychainPassword(context, finalusername, password);
+                                    SurespotApplication.getCachingService().updateIdentity(identity, true);
+                                    callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
+                                            true));
+                                }
+                                else {
+                                    callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
+                                            false));
+                                }
+                            }
+                            else {
+                                switch (response.code()) {
                                     case 403:
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.incorrect_password_or_key), false));
                                         break;
@@ -524,18 +540,15 @@ public class IdentityController {
                                         break;
 
                                     default:
-                                        SurespotLog.i(TAG, error, "importIdentity");
+                                        SurespotLog.i(TAG, "importIdentity unexpected HTTP response code: %d", response.code());
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name,
                                                 finalusername), false));
                                 }
-                            } else {
-                                callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
-                                        false));
                             }
                         }
                     });
-
-        } else {
+        }
+        else {
             callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
         }
 
@@ -554,36 +567,40 @@ public class IdentityController {
             if (networkController == null) {
                 try {
                     networkController = new NetworkController(context, null, null);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     context.finish();
                     return;
                 }
             }
 
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
-                    new AsyncHttpResponseHandler() {
+                    new Callback() {
+
+
                         @Override
-                        public void onSuccess(int statusCode, String content) {
-                            String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
-                            if (file != null) {
-                                updateKeychainPassword(context, finalusername, password);
-                                SurespotApplication.getCachingService().updateIdentity(identity, true);
-                                callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
-                                        true));
-                            } else {
-                                callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
-                                        false));
-                            }
+                        public void onFailure(Call call, IOException e) {
+                            callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+                                    false));
                         }
 
                         @Override
-                        public void onFailure(Throwable error) {
-
-                            if (error instanceof HttpResponseException) {
-                                int statusCode = ((HttpResponseException) error).getStatusCode();
-                                // would use 401 but we're intercepting those
-                                // and I don't feel like special casing it
-                                switch (statusCode) {
+                        public void onResponse(Call call, Response response) throws IOException {
+                            if (response.isSuccessful()) {
+                                String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
+                                if (file != null) {
+                                    updateKeychainPassword(context, finalusername, password);
+                                    SurespotApplication.getCachingService().updateIdentity(identity, true);
+                                    callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
+                                            true));
+                                }
+                                else {
+                                    callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
+                                            false));
+                                }
+                            }
+                            else {
+                                switch (response.code()) {
                                     case 403:
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.incorrect_password_or_key), false));
                                         break;
@@ -592,18 +609,16 @@ public class IdentityController {
                                         break;
 
                                     default:
-                                        SurespotLog.i(TAG, error, "importIdentity");
+                                        SurespotLog.i(TAG, "importIdentityBytes unexpected HTTP response code: %d", response.code());
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
                                                 false));
                                 }
-                            } else {
-                                callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
-                                        false));
                             }
                         }
                     });
 
-        } else {
+        }
+        else {
             callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
         }
 
@@ -624,19 +639,20 @@ public class IdentityController {
             String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
             // do OOB verification
             SurespotApplication.getNetworkController().validate(username, dPassword,
-                    EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new AsyncHttpResponseHandler() {
-                        public void onSuccess(int statusCode, String content) {
-                            String path = saveIdentity(null, false, identity, password + EXPORT_IDENTITY_ID);
-                            callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, finalUsername, path));
+                    EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            callback.handleResponse(null);
                         }
 
-                        public void onFailure(Throwable error) {
-
-                            if (error instanceof HttpResponseException) {
-                                int statusCode = ((HttpResponseException) error).getStatusCode();
-                                // would use 401 but we're intercepting those
-                                // and I don't feel like special casing it
-                                switch (statusCode) {
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            if (response.isSuccessful()) {
+                                String path = saveIdentity(null, false, identity, password + EXPORT_IDENTITY_ID);
+                                callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, finalUsername, path));
+                            }
+                            else {
+                                switch (response.code()) {
                                     case 403:
                                         callback.handleResponse(context.getString(R.string.incorrect_password_or_key));
                                         break;
@@ -645,15 +661,16 @@ public class IdentityController {
                                         break;
 
                                     default:
-                                        SurespotLog.i(TAG, error, "exportIdentity");
+                                        SurespotLog.i(TAG, "importIdentity unexpected HTTP response code: %d", response.code());
                                         callback.handleResponse(null);
                                 }
-                            } else {
-                                callback.handleResponse(null);
                             }
                         }
+
+
                     });
-        } else {
+        }
+        else {
             callback.handleResponse(null);
         }
 
@@ -673,7 +690,8 @@ public class IdentityController {
             FileUtils.writeFile(pkFile, keyPair);
 
             return pkFile;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
         }
         return null;
@@ -701,7 +719,8 @@ public class IdentityController {
             savePublicKeyPair(username, version, json.toString());
             SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
             return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "recreatePublicKeyPair");
         }
 
@@ -740,7 +759,8 @@ public class IdentityController {
         //if we have the keys for the version we want return them
         if (validatedKeys != null && wantedVersion == validatedKeyVersion) {
             return validatedKeys;
-        } else {
+        }
+        else {
             //get keys from server since the last validated version
             sDownloadedKeys = SurespotApplication.getNetworkController().getPublicKeysSync(username, Integer.toString(validatedKeyVersion + 1, 10));
 
@@ -769,14 +789,16 @@ public class IdentityController {
                         //TODO need to recheck somehow and eventually get all keys validated using v2 code
                         return getPublicKeyPair(username, version, wantedKey);
 
-                    } else {
+                    }
+                    else {
                         SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", username, version);
 
                         PublicKey previousDsaKey = null;
                         if (validatedKeys != null) {
                             //if we have a key validated start with that
                             previousDsaKey = validatedKeys.getDSAKey();
-                        } else {
+                        }
+                        else {
                             //otherwise start from ground zero
                             previousDsaKey = dsaKeys.get(1);
                         }
@@ -835,7 +857,8 @@ public class IdentityController {
                         SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", username);
                         return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
                     }
-                } catch (JSONException e) {
+                }
+                catch (JSONException e) {
                     SurespotLog.w(TAG, e, "recreatePublicKeyPair");
                 }
             }
@@ -859,7 +882,8 @@ public class IdentityController {
                 // alert alert
                 SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."), "could not verify DH key against server signature");
                 return null;
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "DH key successfully verified");
             }
 
@@ -868,12 +892,14 @@ public class IdentityController {
                 // alert alert
                 SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."), "could not verify DSA key against server signature");
                 return null;
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "DSA key successfully verified");
             }
 
             return jsonKeypair;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "recreatePublicIdentity");
         }
         return null;
@@ -976,7 +1002,8 @@ public class IdentityController {
             return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
                     EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")), lastModified);
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, "loadPublicKeyPair", e);
         }
         return null;
@@ -1000,7 +1027,8 @@ public class IdentityController {
         if (service != null) {
             return service.getLoggedInUser();
 
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -1087,7 +1115,8 @@ public class IdentityController {
             // Utils.makeLongToast(context, "identity: " + username +
             // " revoked");
 
-        } else {
+        }
+        else {
             SurespotApplication.getCachingService().updateLatestVersion(username, version);
         }
 
@@ -1110,7 +1139,8 @@ public class IdentityController {
             if (Character.isUpperCase(c)) {
                 sb.append("_");
                 sb.append(c);
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -1125,7 +1155,8 @@ public class IdentityController {
 
             if (c == '_') {
                 sb.append(Character.toUpperCase(string.charAt(++i)));
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -1155,11 +1186,14 @@ public class IdentityController {
                 if (!USE_PUBLIC_KEYSTORE_M) {
                     mKs = KeyStoreM.getInstance();
                 }
-            } else if (IS_KK) {
+            }
+            else if (IS_KK) {
                 mKs = KeyStoreKk.getInstance();
-            } else if (IS_JB43) {
+            }
+            else if (IS_JB43) {
                 mKs = KeyStoreJb43.getInstance();
-            } else {
+            }
+            else {
                 mKs = KeyStore.getInstance();
             }
         }
@@ -1215,7 +1249,8 @@ public class IdentityController {
 
             try {
                 AndroidMKeystoreController.loadEncryptedPassword(context, username, true);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 // at some point, we may want to use KeyguardManager.createConfirmDeviceCredentialIntent
                 // but for now, we're not setting up the key in the keystore so that it must be manually unlocked by the user
             }
@@ -1227,8 +1262,7 @@ public class IdentityController {
         if (mKs == null) {
             return false;
         }
-        try
-        {
+        try {
             if (mKs.state() == KeyStore.State.UNINITIALIZED) {
                 // can we do anything about keystore being in uninitialized state?
             }
@@ -1290,8 +1324,9 @@ public class IdentityController {
     }
 
     public static boolean storePasswordForIdentity(Context activity, String username, String password) throws InvalidKeyException {
-        if (activity == null)
+        if (activity == null) {
             return false;
+        }
 
         if (isKeystoreUnlocked(activity, username)) {
             if (username != null && password != null) {
@@ -1320,7 +1355,8 @@ public class IdentityController {
                     ks = java.security.KeyStore.getInstance("AndroidKeyStore");
                     ks.load(null);
                     ks.deleteEntry(username);
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+                }
+                catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
                     e.printStackTrace();
                     SurespotLog.d(TAG, "Error clearing stored password: " + e.getMessage());
                     return false;
@@ -1341,7 +1377,8 @@ public class IdentityController {
         if (storedPassword != null) {
             try {
                 storePasswordForIdentity(context, username, password);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 Intent intent = new Intent(context, SurespotKeystoreActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 context.startActivity(intent);
@@ -1375,7 +1412,8 @@ public class IdentityController {
                     previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
                 }
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.e(TAG, e, "error generating update signatures");
         }
         return signatures;

@@ -305,7 +305,8 @@ public class LoginActivity extends Activity {
                         }
                         networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
                             @Override
-                            public void onSuccess(int responseCode, String arg0, Cookie cookie) {
+                            public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {
+                                mMpd.decrProgress();
                                 IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie, password);
                                 mLoggedIn = true;
                                 boolean enableKeystore = Utils.getSharedPrefsBoolean(LoginActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
@@ -362,8 +363,10 @@ public class LoginActivity extends Activity {
 
                             }
 
+
                             @Override
                             public void onFailure(Throwable arg0, String message) {
+                                mMpd.decrProgress();
                                 SurespotLog.i(TAG, arg0, message);
 
                                 if (arg0 instanceof HttpResponseException) {
@@ -386,10 +389,6 @@ public class LoginActivity extends Activity {
                                 pwText.setText("");
                             }
 
-                            @Override
-                            public void onFinish() {
-                                mMpd.decrProgress();
-                            }
                         });
                     }
                     else {
