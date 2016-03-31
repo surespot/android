@@ -63,10 +63,6 @@ public class NetworkController {
 
     private String mUsername;
 
-    public void get(String url, AsyncHttpResponseHandler responseHandler) {
-
-    }
-
     public void get(String url, Callback responseHandler) {
         SurespotLog.d(TAG, "get  " + url);
         Request request = new Request.Builder()
@@ -75,9 +71,29 @@ public class NetworkController {
         mClient.newCall(request).enqueue(responseHandler);
     }
 
-    public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-        SurespotLog.d(TAG, "post to " + url);
-      //  mClient.post(mBaseUrl + url, params, responseHandler);
+    public Response getSync(String url) throws IOException {
+        SurespotLog.d(TAG, "get  " + url);
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .build();
+
+        return mClient.newCall(request).execute();
+
+    }
+
+//    public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
+//        SurespotLog.d(TAG, "post to " + url);
+//      //  mClient.post(mBaseUrl + url, params, responseHandler);
+//    }
+
+
+    public void post(String url, Callback responseHandler) {
+        SurespotLog.d(TAG, "post: " + url);
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .post(RequestBody.create(null, new byte[0]))
+                .build();
+        mClient.newCall(request).enqueue(responseHandler);
     }
 
     public Call postJson(String url, JSONObject jsonParams, Callback responseHandler) {
@@ -95,7 +111,7 @@ public class NetworkController {
     }
 
     public void putJSON(String url, JSONObject jsonParams, Callback responseHandler) {
-        SurespotLog.d(TAG, "put to " + url);
+        SurespotLog.d(TAG, "put JSON to: " + url);
         RequestBody body = RequestBody.create(JSON, jsonParams.toString());
         Request request = new Request.Builder()
                 .url(mBaseUrl + url)
@@ -277,28 +293,53 @@ public class NetworkController {
         });
     }
 
-    public void getKeyToken(String username, String password, String authSignature, JsonHttpResponseHandler jsonHttpResponseHandler) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", authSignature);
-        post("/keytoken", new RequestParams(params), jsonHttpResponseHandler);
+    public void getKeyToken(String username, String password, String authSignature, Callback jsonHttpResponseHandler) {
+        JSONObject json = new JSONObject();
+        try {
+
+            json.put("username", username);
+            json.put("password", password);
+            json.put("authSig", authSignature);
+        }
+        catch (JSONException e) {
+            jsonHttpResponseHandler.onFailure(null, new IOException(e));
+            return;
+        }
+
+        postJson("/keytoken", json, jsonHttpResponseHandler);
+
     }
 
-    public void getDeleteToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", authSignature);
-        post("/deletetoken", new RequestParams(params), asyncHttpResponseHandler);
+    public void getDeleteToken(final String username, String password, String authSignature, Callback asyncHttpResponseHandler) {
+        JSONObject json = new JSONObject();
+        try {
+
+            json.put("username", username);
+            json.put("password", password);
+            json.put("authSig", authSignature);
+        }
+        catch (JSONException e) {
+            asyncHttpResponseHandler.onFailure(null, new IOException(e));
+            return;
+        }
+
+        postJson("/deletetoken", json, asyncHttpResponseHandler);
     }
 
-    public void getPasswordToken(final String username, String password, String authSignature, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", authSignature);
-        post("/passwordtoken", new RequestParams(params), asyncHttpResponseHandler);
+    public void getPasswordToken(final String username, String password, String authSignature, Callback responseHandler) {
+        JSONObject json = new JSONObject();
+        try {
+
+            json.put("username", username);
+            json.put("password", password);
+            json.put("authSig", authSignature);
+        }
+        catch (JSONException e) {
+            responseHandler.onFailure(null, new IOException(e));
+            return;
+        }
+
+        postJson("/passwordtoken", json, responseHandler);
     }
 
     public void getShortUrl(String longUrl, Callback responseHandler) {
@@ -317,26 +358,32 @@ public class NetworkController {
     }
 
     public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
-                           String keyVersion, String clientSig, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("dhPub", publicKeyDH);
-        params.put("dsaPub", publicKeyECDSA);
-        params.put("authSig", authSignature);
-        params.put("tokenSig", tokenSignature);
-        params.put("keyVersion", keyVersion);
-        params.put("clientSig", clientSig);
-        params.put("version", SurespotApplication.getVersion());
-        params.put("platform", "android");
+                           String keyVersion, String clientSig, Callback asyncHttpResponseHandler) {
+        JSONObject params = new JSONObject();
+        try {
+            params.put("username", username);
+            params.put("password", password);
+            params.put("dhPub", publicKeyDH);
+            params.put("dsaPub", publicKeyECDSA);
+            params.put("authSig", authSignature);
+            params.put("tokenSig", tokenSignature);
+            params.put("keyVersion", keyVersion);
+            params.put("clientSig", clientSig);
+            params.put("version", SurespotApplication.getVersion());
+            params.put("platform", "android");
 
-        String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+            String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
-        if (gcmIdReceived != null) {
-            params.put("gcmId", gcmIdReceived);
+            if (gcmIdReceived != null) {
+                params.put("gcmId", gcmIdReceived);
+            }
+        }
+        catch (JSONException e) {
+            asyncHttpResponseHandler.onFailure(null, new IOException(e));
+            return;
         }
 
-        post("/keys2", new RequestParams(params), asyncHttpResponseHandler);
+        postJson("/keys2", params, asyncHttpResponseHandler);
     }
 
     private static Cookie extractConnectCookie(SurespotCookieJar cookieStore) {
@@ -430,11 +477,11 @@ public class NetworkController {
 
     }
 
-    public void getFriends(AsyncHttpResponseHandler responseHandler) {
+    public void getFriends(Callback responseHandler) {
         get("/friends", responseHandler);
     }
 
-    public void getMessageData(String user, Integer messageId, Integer controlId, JsonHttpResponseHandler responseHandler) {
+    public void getMessageData(String user, Integer messageId, Integer controlId, Callback responseHandler) {
         int mId = messageId;
         int cId = controlId;
 
@@ -442,41 +489,56 @@ public class NetworkController {
 
     }
 
-    public void getLatestData(int userControlId, JSONArray spotIds, JsonHttpResponseHandler responseHandler) {
+    public void getLatestData(int userControlId, JSONArray spotIds, Callback responseHandler) {
         SurespotLog.d(TAG, "getLatestData userControlId: %d", userControlId);
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("spotIds", spotIds.toString());
-        post("/optdata/" + userControlId, new RequestParams(params), responseHandler);
+        JSONObject params = new JSONObject();
+        try {
+            params.put("spotIds", spotIds.toString());
+        }
+        catch (JSONException e) {
+            responseHandler.onFailure(null, new IOException(e));
+        }
+
+        postJson("/optdata/" + userControlId, params, responseHandler);
     }
 
     // if we have an id get the messages since the id, otherwise get the last x
-    public void getEarlierMessages(String username, Integer id, JsonHttpResponseHandler responseHandler) {
+    public void getEarlierMessages(String username, Integer id, Callback responseHandler) {
         get("/messagesopt/" + username + "/before/" + id, responseHandler);
     }
 
 
     public String getPublicKeysSync(String username, String version) {
-     //   return mSyncClient.get(mBaseUrl + "/publickeys/" + username + "/since/" + version);
-        return null;
+        try {
+            return getSync(mBaseUrl + "/publickeys/" + username + "/since/" + version).body().string();
+        }
+        catch (IOException e) {
+            return null;
+        }
+
     }
 
 
     public String getKeyVersionSync(String username) {
         SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
-  //      return mSyncClient.get(mBaseUrl + "/keyversion/" + username);
-        return null;
+        try {
+            return getSync(mBaseUrl + "/keyversion/" + username).body().string();
+        }
+        catch (IOException e) {
+            return null;
+        }
 
     }
 
-    public void invite(String friendname, AsyncHttpResponseHandler responseHandler) {
-        post("/invite/" + friendname, null, responseHandler);
+    public void invite(String friendname, Callback responseHandler) {
+        post("/invite/" + friendname, responseHandler);
     }
 
-    public void invite(String friendname, String source, AsyncHttpResponseHandler responseHandler) {
-        post("/invite/" + friendname + "/" + source, null, responseHandler);
+    public void invite(String friendname, String source, Callback responseHandler) {
+        post("/invite/" + friendname + "/" + source, responseHandler);
     }
 
-    public void postMessages(List<SurespotMessage> messages, JsonHttpResponseHandler responseHandler) {
+    public void postMessages(List<SurespotMessage> messages, Callback responseHandler) {
         JSONObject params = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         for (int i = 0; i < messages.size(); i++) {
@@ -488,21 +550,11 @@ public class NetworkController {
         catch (JSONException e) {
             SurespotLog.e(TAG, e, "postMessages");
         }
-        postJson("/messages", params, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-
-            }
-        });
+        postJson("/messages", params, responseHandler);
     }
 
-    public void respondToInvite(String friendname, String action, AsyncHttpResponseHandler responseHandler) {
-        post("/invites/" + friendname + "/" + action, null, responseHandler);
+    public void respondToInvite(String friendname, String action, Callback responseHandler) {
+        post("/invites/" + friendname + "/" + action, responseHandler);
     }
 
 //	public void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
@@ -738,14 +790,13 @@ public class NetworkController {
 
     public void logout() {
         if (!isUnauthorized()) {
-            post("/logout", null, new AsyncHttpResponseHandler() {
-            });
+            post("/logout", null);
         }
     }
 
     public void clearCache() {
         // all the clients share a cache
-      //  mClient.clearCache();
+        //  mClient.clearCache();
     }
 
     public void purgeCacheUrl(String url) {
@@ -755,67 +806,78 @@ public class NetworkController {
     }
 
     public void deleteMessage(String username, Integer id, AsyncHttpResponseHandler responseHandler) {
-    //    delete("/messages/" + username + "/" + id, responseHandler);
+        //    delete("/messages/" + username + "/" + id, responseHandler);
 
     }
 
     public void deleteMessages(String username, int utaiId, AsyncHttpResponseHandler responseHandler) {
-    //    delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
+        //    delete("/messagesutai/" + username + "/" + utaiId, responseHandler);
 
     }
 
     public void setMessageShareable(String username, Integer id, boolean shareable, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.v(TAG, "setMessageSharable %b", shareable);
         RequestParams params = new RequestParams("shareable", shareable);
-     //   put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
+        //   put("/messages/" + username + "/" + id + "/shareable", params, responseHandler);
 
     }
 
     public void deleteFriend(String username, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-     //   delete("/friends/" + username, asyncHttpResponseHandler);
+        //   delete("/friends/" + username, asyncHttpResponseHandler);
     }
 
     public void blockUser(String username, boolean blocked, AsyncHttpResponseHandler asyncHttpResponseHandler) {
-     //   put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler);
+        //   put("/users/" + username + "/block/" + blocked, null, asyncHttpResponseHandler);
     }
 
     public void deleteUser(String username, String password, String authSig, String tokenSig, String keyVersion,
-                           AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", authSig);
-        params.put("tokenSig", tokenSig);
-        params.put("keyVersion", keyVersion);
-        post("/users/delete", new RequestParams(params), asyncHttpResponseHandler);
+                           Callback asyncHttpResponseHandler) {
+        JSONObject params = new JSONObject();
+        try {
+            params.put("username", username);
+            params.put("password", password);
+            params.put("authSig", authSig);
+            params.put("tokenSig", tokenSig);
+            params.put("keyVersion", keyVersion);
+        }
+        catch (JSONException e) {
+            asyncHttpResponseHandler.onFailure(null, new IOException(e));
+        }
+
+        postJson("/users/delete", params, asyncHttpResponseHandler);
 
     }
 
     public void changePassword(String username, String password, String newPassword, String authSig, String tokenSig, String keyVersion,
-                               AsyncHttpResponseHandler asyncHttpResponseHandler) {
-        Map<String, String> params = new HashMap<String, String>();
+                               Callback asyncHttpResponseHandler) {
+        JSONObject params = new JSONObject();
+        try {
         params.put("username", username);
         params.put("password", password);
         params.put("authSig", authSig);
         params.put("tokenSig", tokenSig);
         params.put("keyVersion", keyVersion);
         params.put("newPassword", newPassword);
-     //   put("/users/password", new RequestParams(params), asyncHttpResponseHandler);
+        }
+        catch (JSONException e) {
+            asyncHttpResponseHandler.onFailure(null, new IOException(e));
+        }
+        putJSON("/users/password", params, asyncHttpResponseHandler);
 
     }
 
     public void addCacheEntry(String key, HttpCacheEntry httpCacheEntry) {
-       // mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
+        // mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
 
     }
 
     public HttpCacheEntry getCacheEntry(String key) {
-    //    return mCachingHttpClient.getCacheEntry(key);
+        //    return mCachingHttpClient.getCacheEntry(key);
         return null;
     }
 
     public void removeCacheEntry(String key) {
-     //   mCachingHttpClient.removeEntry(key);
+        //   mCachingHttpClient.removeEntry(key);
 
     }
 
@@ -824,22 +886,22 @@ public class NetworkController {
         RequestParams params = new RequestParams("data", data);
         params.put("iv", iv);
         params.put("version", version);
-      //  put("/users/" + username + "/alias2", params, responseHandler);
+        //  put("/users/" + username + "/alias2", params, responseHandler);
 
     }
 
     public void deleteFriendAlias(String username, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.d(TAG, "deleteFriendAlias, username: %s", username);
-     //   delete("/users/" + username + "/alias", responseHandler);
+        //   delete("/users/" + username + "/alias", responseHandler);
     }
 
     public void deleteFriendImage(String username, AsyncHttpResponseHandler responseHandler) {
         SurespotLog.d(TAG, "deleteFriendImage, username: %s", username);
-    //    delete("/users/" + username + "/image", responseHandler);
+        //    delete("/users/" + username + "/image", responseHandler);
     }
 
     public void updateSigs(JSONObject sigs, AsyncHttpResponseHandler responseHandler) {
-     //   post("/sigs", new RequestParams("sigs", sigs.toString()), responseHandler);
+        //   post("/sigs", new RequestParams("sigs", sigs.toString()), responseHandler);
     }
 
     public String getUsername() {

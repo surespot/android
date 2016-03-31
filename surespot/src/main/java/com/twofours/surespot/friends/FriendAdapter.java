@@ -1,5 +1,6 @@
 package com.twofours.surespot.friends;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +32,10 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class FriendAdapter extends BaseAdapter {
 	private final static String TAG = "FriendAdapter";
@@ -319,32 +324,40 @@ public class FriendAdapter extends BaseAdapter {
 			final Friend friend = (Friend) getItem(position);
 			final String friendname = friend.getName();
 
-			SurespotApplication.getNetworkController().respondToInvite(friendname, action, new AsyncHttpResponseHandler() {
-				public void onSuccess(String arg0) {
-
-					SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
-					friend.setInviter(false);
-					if (action.equals("accept")) {
-						friend.setNewFriend(true);
-					}
-					else {
-						if (action.equals("block") || action.equals("ignore")) {
-
-							if (!friend.isDeleted()) {
-								mFriends.remove(position);
-							}
-						}
-					}
-					mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname,
-							SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-					Collections.sort(mFriends);
-					notifyDataSetChanged();
+			SurespotApplication.getNetworkController().respondToInvite(friendname, action, new Callback() {
+				@Override
+				public void onFailure(Call call, IOException e) {
+					SurespotLog.i(TAG, e, "respondToInvite");
+					Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
 				}
 
-				public void onFailure(Throwable error, String content) {
-					SurespotLog.i(TAG, error, "respondToInvite");
-					Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
-				};
+				@Override
+				public void onResponse(Call call, Response response) throws IOException {
+					if (response.isSuccessful()) {
+
+						SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
+						friend.setInviter(false);
+						if (action.equals("accept")) {
+							friend.setNewFriend(true);
+						}
+						else {
+							if (action.equals("block") || action.equals("ignore")) {
+
+								if (!friend.isDeleted()) {
+									mFriends.remove(position);
+								}
+							}
+						}
+						mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname,
+								SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+						Collections.sort(mFriends);
+						notifyDataSetChanged();
+					}
+					else {
+						SurespotLog.i(TAG, "respondToInvite");
+						Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+					}
+				}
 			});
 		}
 	};

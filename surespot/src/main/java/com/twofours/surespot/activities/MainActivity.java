@@ -91,12 +91,16 @@ import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class MainActivity extends Activity implements OnMeasureListener {
     public static final String TAG = "MainActivity";
@@ -1948,27 +1952,28 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
 
             setHomeProgress(true);
-            SurespotApplication.getNetworkController().invite(friend, new AsyncHttpResponseHandler() {
+            SurespotApplication.getNetworkController().invite(friend, new Callback() {
                 @Override
-                public void onSuccess(int statusCode, String arg0) {
-                    setHomeProgress(false);
-                    TextKeyListener.clear(mEtInvite.getText());
-                    if (SurespotApplication.getChatController().getFriendAdapter().addFriendInvited(friend)) {
-                        Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
-                    }
-                    else {
-                        Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
-                    }
-
+                public void onFailure(Call call, IOException e) {
+                    SurespotLog.i(TAG, e, "inviteFriend error");
+                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                 }
 
                 @Override
-                public void onFailure(Throwable arg0, String content) {
+                public void onResponse(Call call, Response response) throws IOException {
                     setHomeProgress(false);
-                    if (arg0 instanceof HttpResponseException) {
-                        HttpResponseException error = (HttpResponseException) arg0;
-                        int statusCode = error.getStatusCode();
-                        switch (statusCode) {
+                    if (response.isSuccessful()) {
+
+                        TextKeyListener.clear(mEtInvite.getText());
+                        if (SurespotApplication.getChatController().getFriendAdapter().addFriendInvited(friend)) {
+                            Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
+                        }
+                        else {
+                            Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
+                        }
+                    }
+                    else {
+                        switch (response.code()) {
                             case 404:
                                 Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
                                 break;
@@ -1979,13 +1984,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
                                 Utils.makeToast(MainActivity.this, getString(R.string.already_invited));
                                 break;
                             default:
-                                SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
+                                SurespotLog.i(TAG, "inviteFriend error");
                                 Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                         }
-                    }
-                    else {
-                        SurespotLog.i(TAG, arg0, "inviteFriend: %s", content);
-                        Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                     }
                 }
             });

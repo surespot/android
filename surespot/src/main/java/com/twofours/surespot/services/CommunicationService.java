@@ -72,6 +72,7 @@ import io.socket.emitter.Emitter;
 import io.socket.engineio.client.Transport;
 import io.socket.engineio.client.transports.WebSocket;
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.Response;
 
@@ -560,74 +561,67 @@ public class CommunicationService extends Service {
     private void sendMessageUsingHttp(final SurespotMessage message) {
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
-        SurespotApplication.getNetworkController().postMessages(toSend, new JsonHttpResponseHandler() {
+        SurespotApplication.getNetworkController().postMessages(toSend, new Callback() {
 
             @Override
-            public void onSuccess(JSONObject jsonObject) {
-                try {
-                    JSONArray messages = jsonObject.getJSONArray("messageStatus");
-                    JSONObject messageAndStatus = messages.getJSONObject(0);
-                    JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
-                    int status = messageAndStatus.getInt("status");
+            public void onFailure(Call call, IOException e) {
+                //TODO handle
+                throw new UnsupportedOperationException();
+            }
 
-                    if (status == 204) {
-                        SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
-                        mSendQueue.remove(messageReceived);
-                        SurespotApplication.getChatController().handleMessage(messageReceived);
-                        processNextMessage();
-                    }
-                    else {
-                        //if we've hit retry limit stop retrying and set messages errored
-                        if (mResendTries++ >= MAX_RETRIES_SEND_VIA_HTTP) {
-                            //TODO set all messages in queue errored
-                            message.setErrorStatus(status);
-                            ChatController chatController = SurespotApplication.getChatController();
-                            if (chatController != null) {
-                                ChatAdapter chatAdapter = chatController.getChatAdapter(message.getTo(), false);
-                                if (chatAdapter != null) {
-                                    SurespotMessage adapterMessage = chatAdapter.getMessageByIv(message.getIv());
-                                    if (adapterMessage != null) {
-                                        adapterMessage.setErrorStatus(status);
-                                        chatAdapter.notifyDataSetChanged();
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        JSONObject json = new JSONObject(response.body().string());
+                        JSONArray messages = json.getJSONArray("messageStatus");
+                        JSONObject messageAndStatus = messages.getJSONObject(0);
+                        JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
+                        int status = messageAndStatus.getInt("status");
+
+                        if (status == 204) {
+                            SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                            mSendQueue.remove(messageReceived);
+                            SurespotApplication.getChatController().handleMessage(messageReceived);
+                            processNextMessage();
+                        }
+                        else {
+                            //if we've hit retry limit stop retrying and set messages errored
+                            if (mResendTries++ >= MAX_RETRIES_SEND_VIA_HTTP) {
+                                //TODO set all messages in queue errored
+                                message.setErrorStatus(status);
+                                ChatController chatController = SurespotApplication.getChatController();
+                                if (chatController != null) {
+                                    ChatAdapter chatAdapter = chatController.getChatAdapter(message.getTo(), false);
+                                    if (chatAdapter != null) {
+                                        SurespotMessage adapterMessage = chatAdapter.getMessageByIv(message.getIv());
+                                        if (adapterMessage != null) {
+                                            adapterMessage.setErrorStatus(status);
+                                            chatAdapter.notifyDataSetChanged();
+                                        }
                                     }
                                 }
                             }
-                        }
-                        else {
-                            //try and send next message again
-                            scheduleResendTimer();
+                            else {
+                                //try and send next message again
+                                scheduleResendTimer();
+                            }
                         }
                     }
+                    catch (JSONException e) {
+                        SurespotLog.w(TAG, e, "JSON received from server");
+                    }
+
                 }
-                catch (JSONException e) {
-                    SurespotLog.w(TAG, e, "JSON received from server");
+                else {
+                    //TODO implement
+                    throw new UnsupportedOperationException();
                 }
             }
 
-            @Override
-            public void onSuccess(JSONArray jsonArray) {
-                SurespotLog.w(TAG, "Unexpected condition - JSON array received from server");
-            }
 
-            @Override
-            public void onSuccess(int statusCode, String content) {
-                super.onSuccess(statusCode, content);
-            }
 
-            @Override
-            public void onFailure(Throwable error, String content) {
-                super.onFailure(error, content);
-            }
 
-            @Override
-            public void onFailure(Throwable e, JSONObject errorResponse) {
-                super.onFailure(e, errorResponse);
-            }
-
-            @Override
-            public void onFailure(Throwable e, JSONArray errorResponse) {
-                super.onFailure(e, errorResponse);
-            }
 
         });
     }
