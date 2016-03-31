@@ -25,6 +25,7 @@ import android.os.AsyncTask;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -36,6 +37,7 @@ import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
 import com.twofours.surespot.services.CredentialCachingService.VersionMap;
 
 import okhttp3.Cookie;
+import okhttp3.HttpUrl;
 
 public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
@@ -455,7 +457,10 @@ public class StateController {
 
 			ByteArrayInputStream bais = new ByteArrayInputStream(cookieData);
 			ObjectInputStream ois = new ObjectInputStream(bais);
-			cookie = (Cookie) ois.readObject();
+			String cookieString = (String) ois.readObject();
+
+			cookie = Cookie.parse(HttpUrl.parse(SurespotConfiguration.getBaseUrl()), cookieString);
+
 			ois.close();
 			SurespotLog.d(TAG, "loaded cookie for username: %s", username);
 			if (cookie != null) {
@@ -486,7 +491,7 @@ public class StateController {
 				try {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					ObjectOutputStream oos = new ObjectOutputStream(baos);
-					oos.writeObject(cookie);
+					oos.writeObject(cookie.toString());
 					oos.close();
 					baos.close();
 

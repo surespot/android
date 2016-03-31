@@ -647,135 +647,134 @@ public class ChatController {
             }
         }
 
-        mNetworkController.getLatestData(mLatestUserControlId, spotIds, new Callback() {
+        mNetworkController.getLatestData(mLatestUserControlId, spotIds, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
-            }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    JSONObject jsonResponse = null;
-                    try {
-                        jsonResponse = new JSONObject(response.body().string());
-                        SurespotLog.d(TAG, "getlatestData success, response: %s, statusCode: %d", jsonResponse, response.code());
-                    }
-                    catch (JSONException e) {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
                         Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
-                        return;
                     }
 
-                    final boolean hasSigs = jsonResponse.has("sigs");
-                    new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... voids) {
-                            //see if we need to update signatures, will only have sigs property if we need to update
-                            if (hasSigs) {
-                                JSONObject sigs = IdentityController.updateSignatures(mContext);
-                                mNetworkController.updateSigs(sigs, new AsyncHttpResponseHandler());
-                            }
-                            return null;
-                        }
-                    }.execute();
-
-                    JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
-
-                    Friend friend = null;
-                    if (conversationIds != null) {
-                        Iterator i = conversationIds.keys();
-                        while (i.hasNext()) {
-                            String spot = (String) i.next();
+                    @Override
+                    public void onResponse(Call call, Response response, String responseString) throws IOException {
+                        if (response.isSuccessful()) {
+                            JSONObject jsonResponse = null;
                             try {
-                                Integer availableId = conversationIds.getInt(spot);
-                                String user = ChatUtils.getOtherSpotUser(spot, mUsername);
-                                // update available ids
-                                friend = mFriendAdapter.getFriend(user);
-                                if (friend != null) {
-                                    friend.setAvailableMessageId(availableId, mayBeCacheClear);
+                                jsonResponse = new JSONObject(responseString);
+                                SurespotLog.d(TAG, "getlatestData success, response: %s, statusCode: %d", jsonResponse, response.code());
+                            }
+                            catch (JSONException e) {
+                                Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
+                                return;
+                            }
+
+                            final boolean hasSigs = jsonResponse.has("sigs");
+                            new AsyncTask<Void, Void, Void>() {
+                                @Override
+                                protected Void doInBackground(Void... voids) {
+                                    //see if we need to update signatures, will only have sigs property if we need to update
+                                    if (hasSigs) {
+                                        JSONObject sigs = IdentityController.updateSignatures(mContext);
+                                        mNetworkController.updateSigs(sigs, new AsyncHttpResponseHandler());
+                                    }
+                                    return null;
                                 }
-                            }
-                            catch (Exception e) {
-                                SurespotLog.w(TAG, e, "getlatestData");
-                            }
-                        }
-                    }
+                            }.execute();
 
-                    JSONObject controlIds = jsonResponse.optJSONObject("controlIds");
-                    if (controlIds != null) {
-                        Iterator i = conversationIds.keys();
-                        while (i.hasNext()) {
-                            String spot = (String) i.next();
-                            try {
-                                if (controlIds.has(spot)) {
-                                    Integer availableId = controlIds.getInt(spot);
-                                    String user = ChatUtils.getOtherSpotUser(spot, mUsername);
-                                    // update available ids
-                                    friend = mFriendAdapter.getFriend(user);
-                                    if (friend != null) {
-                                        friend.setAvailableMessageControlId(availableId);
+                            JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
+
+                            Friend friend = null;
+                            if (conversationIds != null) {
+                                Iterator i = conversationIds.keys();
+                                while (i.hasNext()) {
+                                    String spot = (String) i.next();
+                                    try {
+                                        Integer availableId = conversationIds.getInt(spot);
+                                        String user = ChatUtils.getOtherSpotUser(spot, mUsername);
+                                        // update available ids
+                                        friend = mFriendAdapter.getFriend(user);
+                                        if (friend != null) {
+                                            friend.setAvailableMessageId(availableId, mayBeCacheClear);
+                                        }
+                                    }
+                                    catch (Exception e) {
+                                        SurespotLog.w(TAG, e, "getlatestData");
                                     }
                                 }
                             }
-                            catch (JSONException e) {
-                                SurespotLog.w(TAG, e, "getlatestData");
+
+                            JSONObject controlIds = jsonResponse.optJSONObject("controlIds");
+                            if (controlIds != null) {
+                                Iterator i = conversationIds.keys();
+                                while (i.hasNext()) {
+                                    String spot = (String) i.next();
+                                    try {
+                                        if (controlIds.has(spot)) {
+                                            Integer availableId = controlIds.getInt(spot);
+                                            String user = ChatUtils.getOtherSpotUser(spot, mUsername);
+                                            // update available ids
+                                            friend = mFriendAdapter.getFriend(user);
+                                            if (friend != null) {
+                                                friend.setAvailableMessageControlId(availableId);
+                                            }
+                                        }
+                                    }
+                                    catch (JSONException e) {
+                                        SurespotLog.w(TAG, e, "getlatestData");
+                                    }
+                                }
+                            }
+
+                            JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
+                            if (userControlMessages != null) {
+                                handleControlMessages(mUsername, userControlMessages);
+                            }
+
+                            JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
+                            if (messageDatas != null) {
+                                for (int i = 0; i < messageDatas.length(); i++) {
+                                    try {
+                                        JSONObject messageData = messageDatas.getJSONObject(i);
+                                        String friendName = messageData.getString("username");
+
+                                        JSONArray controlMessages = messageData.optJSONArray("controlMessages");
+                                        if (controlMessages != null) {
+                                            handleControlMessages(friendName, controlMessages);
+                                        }
+
+                                        JSONArray messages = messageData.optJSONArray("messages");
+                                        if (messages != null) {
+                                            handleMessages(friendName, messages, mayBeCacheClear);
+                                        }
+
+                                    }
+                                    catch (JSONException e) {
+                                        SurespotLog.w(TAG, e, "getlatestData");
+                                    }
+                                }
+                            }
+
+                            if (friend != null) {
+                                mFriendAdapter.sort();
+                                mFriendAdapter.notifyDataSetChanged();
+                            }
+
+                            handleAutoInvite();
+                            SurespotApplication.getCommunicationService().processNextMessage();
+                            setProgress(null, false);
+                        }
+                        else {
+                            switch (response.code()) {
+                                case 401:
+                                    // don't show toast on 401 as we are going to be going bye bye
+                                    return;
+                                default:
+                                    Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
                             }
                         }
                     }
-
-                    JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
-                    if (userControlMessages != null) {
-                        handleControlMessages(mUsername, userControlMessages);
-                    }
-
-                    JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
-                    if (messageDatas != null) {
-                        for (int i = 0; i < messageDatas.length(); i++) {
-                            try {
-                                JSONObject messageData = messageDatas.getJSONObject(i);
-                                String friendName = messageData.getString("username");
-
-                                JSONArray controlMessages = messageData.optJSONArray("controlMessages");
-                                if (controlMessages != null) {
-                                    handleControlMessages(friendName, controlMessages);
-                                }
-
-                                JSONArray messages = messageData.optJSONArray("messages");
-                                if (messages != null) {
-                                    handleMessages(friendName, messages, mayBeCacheClear);
-                                }
-
-                            }
-                            catch (JSONException e) {
-                                SurespotLog.w(TAG, e, "getlatestData");
-                            }
-                        }
-                    }
-
-                    if (friend != null) {
-                        mFriendAdapter.sort();
-                        mFriendAdapter.notifyDataSetChanged();
-                    }
-
-                    handleAutoInvite();
-                    SurespotApplication.getCommunicationService().processNextMessage();
-                    setProgress(null, false);
-                }
-                else {
-                    switch (response.code()) {
-                        case 401:
-                            // don't show toast on 401 as we are going to be going bye bye
-                            return;
-                        default:
-                            Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
-                    }
-                }
-            }
-
-
-        });
-
+                })
+        );
     }
 
     public void reconnectFailed() {
@@ -873,18 +872,19 @@ public class ChatController {
         if (fetchMessageId > -1 || fetchControlMessageId > -1) {
             setProgress(username, true);
 
-            mNetworkController.getMessageData(username, fetchMessageId, fetchControlMessageId, new Callback() {
+            mNetworkController.getMessageData(username, fetchMessageId, fetchControlMessageId, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+
                 @Override
                 public void onFailure(Call call, IOException e) {
 
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(Call call, Response response, String responseString) throws IOException {
                     if (response.isSuccessful()) {
                         JSONObject json;
                         try {
-                            json = new JSONObject(response.body().string());
+                            json = new JSONObject(responseString);
                         }
                         catch (JSONException e) {
                             return;
@@ -908,7 +908,7 @@ public class ChatController {
                 }
 
 
-            });
+            }));
         }
 
     }
@@ -1971,7 +1971,7 @@ public class ChatController {
         if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
             mFriendAdapter.setLoading(true);
             // get the list of friends
-            mNetworkController.getFriends(new MainThreadCallbackWrapper(new Callback() {
+            mNetworkController.getFriends(new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
                 @Override
                 public void onFailure(Call call, final IOException e) {
@@ -1983,14 +1983,14 @@ public class ChatController {
                 }
 
                 @Override
-                public void onResponse(Call call, final Response response) throws IOException {
+                public void onResponse(Call call, final Response response, final String responseString) throws IOException {
 
                     if (response.isSuccessful()) {
                         SurespotLog.d(TAG, "getFriends success.");
                         ArrayList<Friend> friends = new ArrayList<Friend>();
                         boolean userSuddenlyHasFriends = false;
                         try {
-                            JSONObject jsonObject = new JSONObject(response.body().string());
+                            JSONObject jsonObject = new JSONObject(responseString);
                             mLatestUserControlId = jsonObject.getInt("userControlId");
                             JSONArray friendsArray = jsonObject.optJSONArray("friends");
 
@@ -2013,11 +2013,7 @@ public class ChatController {
                             mFriendAdapter.setLoading(false);
                             return;
                         }
-                        catch (IOException e) {
-                            SurespotLog.e(TAG, e, "getFriendsAndData error");
-                            mFriendAdapter.setLoading(false);
-                            return;
-                        }
+
 
                         if (mFriendAdapter != null) {
                             mFriendAdapter.addFriends(friends);

@@ -510,7 +510,7 @@ public class NetworkController {
 
     public String getPublicKeysSync(String username, String version) {
         try {
-            return getSync(mBaseUrl + "/publickeys/" + username + "/since/" + version).body().string();
+            return getSync("/publickeys/" + username + "/since/" + version).body().string();
         }
         catch (IOException e) {
             return null;
@@ -522,7 +522,7 @@ public class NetworkController {
     public String getKeyVersionSync(String username) {
         SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
         try {
-            return getSync(mBaseUrl + "/keyversion/" + username).body().string();
+            return getSync("/keyversion/" + username).body().string();
         }
         catch (IOException e) {
             return null;

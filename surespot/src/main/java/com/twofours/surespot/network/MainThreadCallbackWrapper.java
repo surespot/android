@@ -13,9 +13,9 @@ import okhttp3.Response;
  * Created by adam on 3/31/16.
  */
 public class MainThreadCallbackWrapper implements Callback {
-    private Callback mCallback;
+    private MainThreadCallback mCallback;
 
-    public MainThreadCallbackWrapper(Callback callback) {
+    public MainThreadCallbackWrapper(MainThreadCallback callback) {
         mCallback = callback;
     }
 
@@ -32,11 +32,13 @@ public class MainThreadCallbackWrapper implements Callback {
 
     @Override
     public void onResponse(final Call call, final Response response) throws IOException {
+        //force body to download
+        final String responseString = response.body().string();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    mCallback.onResponse(call, response);
+                    mCallback.onResponse(call, response, responseString);
                 }
                 catch (IOException e) {
                     mCallback.onFailure(call, e);
@@ -47,4 +49,10 @@ public class MainThreadCallbackWrapper implements Callback {
     private void runOnUiThread(Runnable task) {
         new Handler(Looper.getMainLooper()).post(task);
     }
+
+    public interface MainThreadCallback {
+        void onFailure(Call call, IOException e);
+        void onResponse(Call call, Response response, String responseString) throws IOException;
+    }
+
 }
