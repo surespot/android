@@ -1,17 +1,12 @@
 package com.twofours.surespot.network;
 
 import android.content.Context;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 
-
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -23,12 +18,9 @@ import com.twofours.surespot.identity.IdentityController;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.CookieManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,16 +28,14 @@ import java.util.Map;
 import ch.boye.httpclientandroidlib.HttpResponse;
 import ch.boye.httpclientandroidlib.client.cache.HttpCacheEntry;
 import ch.boye.httpclientandroidlib.client.methods.HttpPost;
-import ch.boye.httpclientandroidlib.entity.StringEntity;
 import ch.boye.httpclientandroidlib.entity.mime.MultipartEntity;
 import ch.boye.httpclientandroidlib.entity.mime.content.InputStreamBody;
-import ch.boye.httpclientandroidlib.message.BasicHeader;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.CookieJar;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -81,12 +71,6 @@ public class NetworkController {
 
     }
 
-//    public void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
-//        SurespotLog.d(TAG, "post to " + url);
-//      //  mClient.post(mBaseUrl + url, params, responseHandler);
-//    }
-
-
     public void post(String url, Callback responseHandler) {
         SurespotLog.d(TAG, "post: " + url);
         Request request = new Request.Builder()
@@ -96,7 +80,7 @@ public class NetworkController {
         mClient.newCall(request).enqueue(responseHandler);
     }
 
-    public Call postJson(String url, JSONObject jsonParams, Callback responseHandler) {
+    public Call postJSON(String url, JSONObject jsonParams, Callback responseHandler) {
         SurespotLog.d(TAG, "JSON post to " + url);
 
         RequestBody body = RequestBody.create(JSON, jsonParams.toString());
@@ -260,7 +244,7 @@ public class NetworkController {
 
         mCookieStore.clear();
 
-        postJson("/users2", json, new Callback() {
+        postJSON("/users2", json, new Callback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -306,7 +290,7 @@ public class NetworkController {
             return;
         }
 
-        postJson("/keytoken", json, jsonHttpResponseHandler);
+        postJSON("/keytoken", json, jsonHttpResponseHandler);
 
     }
 
@@ -323,7 +307,7 @@ public class NetworkController {
             return;
         }
 
-        postJson("/deletetoken", json, asyncHttpResponseHandler);
+        postJSON("/deletetoken", json, asyncHttpResponseHandler);
     }
 
     public void getPasswordToken(final String username, String password, String authSignature, Callback responseHandler) {
@@ -339,7 +323,7 @@ public class NetworkController {
             return;
         }
 
-        postJson("/passwordtoken", json, responseHandler);
+        postJSON("/passwordtoken", json, responseHandler);
     }
 
     public void getShortUrl(String longUrl, Callback responseHandler) {
@@ -348,7 +332,7 @@ public class NetworkController {
             JSONObject params = new JSONObject();
             params.put("longUrl", longUrl);
 
-            postJson("https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey(), params, responseHandler);
+            postJSON("https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey(), params, responseHandler);
         }
         catch (JSONException e) {
             SurespotLog.v(TAG, "getShortUrl", e);
@@ -383,7 +367,7 @@ public class NetworkController {
             return;
         }
 
-        postJson("/keys2", params, asyncHttpResponseHandler);
+        postJSON("/keys2", params, asyncHttpResponseHandler);
     }
 
     private static Cookie extractConnectCookie(SurespotCookieJar cookieStore) {
@@ -444,7 +428,7 @@ public class NetworkController {
         // just be javascript already
         final boolean gcmUpdated = gcmUpdatedTemp;
 
-        postJson("/login", json, new Callback() {
+        postJSON("/login", json, new Callback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -499,7 +483,7 @@ public class NetworkController {
             responseHandler.onFailure(null, new IOException(e));
         }
 
-        postJson("/optdata/" + userControlId, params, responseHandler);
+        postJSON("/optdata/" + userControlId, params, responseHandler);
     }
 
     // if we have an id get the messages since the id, otherwise get the last x
@@ -550,7 +534,7 @@ public class NetworkController {
         catch (JSONException e) {
             SurespotLog.e(TAG, e, "postMessages");
         }
-        postJson("/messages", params, responseHandler);
+        postJSON("/messages", params, responseHandler);
     }
 
     public void respondToInvite(String friendname, String action, Callback responseHandler) {
@@ -619,13 +603,13 @@ public class NetworkController {
 
         }
         catch (JSONException e) {
-            e.printStackTrace();
+            responseHandler.onFailure(null, new IOException(e));
         }
 
         // ideally would use a get here but putting body in a get request is frowned upon apparently:
         // http://stackoverflow.com/questions/978061/http-get-with-request-body
         // It's also not a good idea to put passwords in the url
-        postJson("/validate", json, responseHandler);
+        postJSON("/validate", json, responseHandler);
     }
 
     public void userExists(String username, Callback responseHandler) {
@@ -766,25 +750,19 @@ public class NetworkController {
     }
 
     public InputStream getFileStream(Context context, final String url) {
+        Request request = new Request.Builder().url(url).build();
+        Response response;
+        try {
+            response = mClient.newCall(request).execute();
+        }
+        catch (IOException e) {
+            return null;
+        }
 
-        // SurespotLog.v(TAG, "getting file stream");
+        if (response.code() == 200) {
+            return response.body().byteStream();
+        }
 
-//        HttpGet httpGet = new HttpGet(url);
-//        HttpResponse response = null;
-//        try {
-//            response = mCachingHttpClient.execute(httpGet, new BasicHttpContext());
-//            HttpEntity resEntity = response.getEntity();
-//            if (response.getStatusLine().getStatusCode() == 200) {
-//                return resEntity.getContent();
-//            }
-//        }
-//        catch (Exception e) {
-//            SurespotLog.w(TAG, e, "getFileStream");
-//
-//        }
-//        finally {
-//            httpGet.releaseConnection();
-//        }
         return null;
     }
 
@@ -844,7 +822,7 @@ public class NetworkController {
             asyncHttpResponseHandler.onFailure(null, new IOException(e));
         }
 
-        postJson("/users/delete", params, asyncHttpResponseHandler);
+        postJSON("/users/delete", params, asyncHttpResponseHandler);
 
     }
 
@@ -852,12 +830,12 @@ public class NetworkController {
                                Callback asyncHttpResponseHandler) {
         JSONObject params = new JSONObject();
         try {
-        params.put("username", username);
-        params.put("password", password);
-        params.put("authSig", authSig);
-        params.put("tokenSig", tokenSig);
-        params.put("keyVersion", keyVersion);
-        params.put("newPassword", newPassword);
+            params.put("username", username);
+            params.put("password", password);
+            params.put("authSig", authSig);
+            params.put("tokenSig", tokenSig);
+            params.put("keyVersion", keyVersion);
+            params.put("newPassword", newPassword);
         }
         catch (JSONException e) {
             asyncHttpResponseHandler.onFailure(null, new IOException(e));
