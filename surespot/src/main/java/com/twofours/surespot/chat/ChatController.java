@@ -7,6 +7,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -29,6 +31,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -55,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 
 import ch.boye.httpclientandroidlib.Header;
 import ch.boye.httpclientandroidlib.HttpStatus;
@@ -1967,9 +1971,10 @@ public class ChatController {
         if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
             mFriendAdapter.setLoading(true);
             // get the list of friends
-            mNetworkController.getFriends(new Callback() {
+            mNetworkController.getFriends(new MainThreadCallbackWrapper(new Callback() {
+
                 @Override
-                public void onFailure(Call call, IOException e) {
+                public void onFailure(Call call, final IOException e) {
                     if (!mNetworkController.isUnauthorized()) {
                         mFriendAdapter.setLoading(false);
                         SurespotLog.i(TAG, e, "getFriends error");
@@ -1978,7 +1983,8 @@ public class ChatController {
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(Call call, final Response response) throws IOException {
+
                     if (response.isSuccessful()) {
                         SurespotLog.d(TAG, "getFriends success.");
                         ArrayList<Friend> friends = new ArrayList<Friend>();
@@ -2007,6 +2013,11 @@ public class ChatController {
                             mFriendAdapter.setLoading(false);
                             return;
                         }
+                        catch (IOException e) {
+                            SurespotLog.e(TAG, e, "getFriendsAndData error");
+                            mFriendAdapter.setLoading(false);
+                            return;
+                        }
 
                         if (mFriendAdapter != null) {
                             mFriendAdapter.addFriends(friends);
@@ -2023,8 +2034,7 @@ public class ChatController {
                         }
                     }
                 }
-
-            });
+            }));
         }
         else {
             getLatestData(false);
