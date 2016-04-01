@@ -329,7 +329,7 @@ public class ChatUtils {
 
             @Override
             public void run() {
-                SurespotLog.v(TAG, "uploadFriendImageAsync");
+                SurespotLog.d(TAG, "uploadFriendImageAsync from: %s", imageUri);
                 try {
                     InputStream dataStream = activity.getContentResolver().openInputStream(imageUri);
                     PipedOutputStream encryptionOutputStream = new PipedOutputStream();
@@ -340,7 +340,7 @@ public class ChatUtils {
                     final String iv = EncryptionController.runEncryptTask(ourVersion, username, ourVersion, new BufferedInputStream(dataStream),
                             encryptionOutputStream);
 
-                    networkController.postFriendImageStream(activity, friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
+                    networkController.postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
 
                         @Override
                         public void handleResponse(String uri) {

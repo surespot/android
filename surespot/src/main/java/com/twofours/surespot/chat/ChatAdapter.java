@@ -1,10 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.ListIterator;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
@@ -18,7 +13,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -29,6 +23,11 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.ListIterator;
 
 public class ChatAdapter extends BaseAdapter {
     private final static String TAG = "ChatAdapter";
@@ -111,7 +110,7 @@ public class ChatAdapter extends BaseAdapter {
         // throw new SurespotMessageSequenceException(previousId);
         // }
         //
-        SurespotLog.v(TAG, "addOrUpdateMessage: %s", message);
+       // SurespotLog.v(TAG, "addOrUpdateMessage: %s", message);
 
         int index = mMessages.indexOf(message);
         boolean added = false;

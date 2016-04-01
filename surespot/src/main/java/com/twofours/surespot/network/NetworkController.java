@@ -1,6 +1,8 @@
 package com.twofours.surespot.network;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.twofours.surespot.R;
@@ -613,10 +615,6 @@ public class NetworkController {
 
     public Tuple<Integer, JSONObject> postFileStreamSync(final String ourVersion, final String user, final String theirVersion, final String id,
                                                          final InputStream fileInputStream, final String mimeType) throws JSONException {
-
-
-
-
         if (fileInputStream == null) {
             SurespotLog.d(TAG, "not uploading anything because the file upload stream is null");
             return new Tuple<>(500, null);
@@ -636,7 +634,7 @@ public class NetworkController {
                 .build();
 
 
-                //HttpUrl.parse(mBaseUrl + "/files/" + ourVersion + "/" + user + "/" + theirVersion + "/" + id + "/" + (mimeType.equals(SurespotConstants.MimeTypes.M4A) ? "mp4" : "image"));
+        //HttpUrl.parse(mBaseUrl + "/files/" + ourVersion + "/" + user + "/" + theirVersion + "/" + id + "/" + (mimeType.equals(SurespotConstants.MimeTypes.M4A) ? "mp4" : "image"));
 
         SurespotLog.d(TAG, "posting file stream to %s", url);
         Request request = new Request.Builder()
@@ -668,63 +666,57 @@ public class NetworkController {
     }
 
 
-    public void postFriendImageStream(Context context, final String user, final String ourVersion, final String iv, final InputStream fileInputStream,
+    public void postFriendImageStream(final String user, final String ourVersion, final String iv, final InputStream fileInputStream,
                                       final IAsyncCallback<String> callback) {
-//        new AsyncTask<Void, Void, String>() {
-//
-//            @Override
-//            protected String doInBackground(Void... params) {
-//
-//                SurespotLog.v(TAG, "posting file stream");
-//
-//                HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + user + "/" + ourVersion);
-//
-//                InputStreamBody isBody = new InputStreamBody(fileInputStream, SurespotConstants.MimeTypes.IMAGE, iv);
-//                MultipartEntity reqEntity = new MultipartEntity();
-//                reqEntity.addPart("image", isBody);
-//                httppost.setEntity(reqEntity);
-//                HttpResponse response = null;
-//
-//                try {
-//                    response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
-//                    if (response != null && response.getStatusLine().getStatusCode() == 200) {
-//                        String url = Utils.inputStreamToString(response.getEntity().getContent());
-//                        return url;
-//                    }
-//                }
-//                catch (IllegalStateException e) {
-//                    SurespotLog.w(TAG, e, "postFriendImageStream");
-//
-//                }
-//                catch (IOException e) {
-//                    SurespotLog.w(TAG, e, "postFriendImageStream");
-//
-//                }
-//                catch (Exception e) {
-//                    SurespotLog.w(TAG, e, "createPostFile");
-//                }
-//                finally {
-//                    httppost.releaseConnection();
-//                    if (response != null) {
-//                        try {
-//                            EntityUtils.consume(response.getEntity());
-//                        }
-//                        catch (IOException e) {
-//                            SurespotLog.w(TAG, e, "postFileStream");
-//                        }
-//                    }
-//                }
-//                return null;
-//
-//            }
-//
-//            protected void onPostExecute(String url) {
-//                callback.handleResponse(url);
-//
-//            }
-//
-//            ;
-//        }.execute();
+
+        if (fileInputStream == null) {
+            SurespotLog.d(TAG, "not uploading anything because the file upload stream is null");
+            callback.handleResponse(null);
+            return;
+        }
+
+        HttpUrl baseUrl = HttpUrl.parse(mBaseUrl);
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme(baseUrl.scheme())
+                .host((baseUrl.host()))
+                .port(baseUrl.port())
+                .addPathSegment("images2")
+                .addPathSegment(user)
+                .addPathSegment(ourVersion)
+                .addPathSegment(iv)
+                .build();
+
+
+        SurespotLog.d(TAG, "posting friend image stream to %s", url);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(RequestBodyUtil.create(MediaType.parse("application/octet-stream"), fileInputStream))
+                .build();
+
+        Response response;
+        String responseBody = null;
+
+        try {
+            response = mClient.newCall(request).execute();
+            int statusCode = response.code();
+            if (statusCode == 200) {
+                responseBody = response.body().string();
+            }
+            else {
+                SurespotLog.w(TAG, "error uploading friend image, response code: %d", statusCode);
+            }
+        }
+        catch (IOException e) {
+            SurespotLog.w(TAG, e, "error uploading friend image");
+        }
+
+        final String finalResponseBody = responseBody;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                callback.handleResponse(finalResponseBody);
+            }
+        });
     }
 
     public InputStream getFileStream(Context context, final String url) {
