@@ -12,11 +12,12 @@ import okhttp3.HttpUrl;
  */
 public class SurespotCookieJar implements CookieJar {
 
-    private List<Cookie> cookies;
+    private List<Cookie> cookies = new ArrayList<>(5);
 
     @Override
     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-        this.cookies = cookies;
+        this.cookies.clear();
+        this.cookies.addAll(cookies);
     }
 
     @Override
@@ -25,9 +26,6 @@ public class SurespotCookieJar implements CookieJar {
     }
 
     public List<Cookie> getCookies() {
-        if (cookies == null) {
-            cookies = new ArrayList<Cookie>();
-        }
         return cookies;
     }
 
@@ -36,8 +34,6 @@ public class SurespotCookieJar implements CookieJar {
     }
 
     public void clear() {
-        if (cookies != null) {
-            cookies.clear();
-        }
+        cookies.clear();
     }
 }

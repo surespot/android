@@ -36,6 +36,15 @@ public class SurespotLog {
 
 	}
 
+	public static void d(String tag, String msg) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.d(tag, tag + ": " + msg);
+		}
+
+	}
+
+
 	public static void d(String tag, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";

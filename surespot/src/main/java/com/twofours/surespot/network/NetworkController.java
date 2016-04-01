@@ -9,6 +9,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -22,9 +23,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Cookie;
@@ -35,6 +38,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 
 public class NetworkController {
@@ -48,6 +52,90 @@ public class NetworkController {
     private SurespotCookieJar mCookieStore;
 
     private String mUsername;
+
+    public NetworkController(Context context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
+        SurespotLog.d(TAG, "constructor username: %s", username);
+        mContext = context;
+        mUsername = username;
+        mBaseUrl = SurespotConfiguration.getBaseUrl();
+        mCookieStore = new SurespotCookieJar();
+
+        int cacheSize = 10 * 1024 * 1024; // 10 MiB
+        Cache cache = new Cache(FileUtils.getHttpCacheDir(context), cacheSize);
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                SurespotLog.d("okhttp", message);
+            }
+        });
+        logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+
+        mClient = new OkHttpClient.Builder()
+                .cache(cache)
+                .cookieJar(mCookieStore)
+                .addInterceptor(logging)
+                .build();
+
+        if (mClient == null) {
+            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
+            throw new Exception("Fatal error, could not create http clients..is storage space available?");
+        }
+
+
+        if (username != null) {
+            Cookie cookie = IdentityController.getCookieForUser(username);
+            if (cookie != null) {
+                mCookieStore.setCookie(cookie);
+            }
+        }
+
+//        HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
+//
+//            @Override
+//            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+//
+//                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+//                    String origin = context.getAttribute("http.cookie-origin").toString();
+//
+//                    if (origin != null) {
+//
+//                        if (!isUnauthorized()) {
+//
+//                            Uri uri = Uri.parse(mBaseUrl);
+//                            if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
+//                                // setUnauthorized(true);
+//
+//                                mClient.cancelRequests(mContext, true);
+//                                mSyncClient.cancelRequests(mContext, true);
+//
+//                                if (m401Handler != null) {
+//                                    m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+//                                }
+//
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        };
+//
+//        if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
+//
+//            mClient.setCookieStore(mCookieStore);
+//            mSyncClient.setCookieStore(mCookieStore);
+//            mCachingHttpClient.setCookieStore(mCookieStore);
+//
+//            // handle 401s
+//            mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
+//            mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
+//            mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
+//
+//            mClient.setUserAgent(SurespotApplication.getUserAgent());
+//            mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
+//            mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());
+//        }
+    }
 
     public void get(String url, Callback responseHandler) {
         SurespotLog.d(TAG, "get  " + url);
@@ -130,76 +218,6 @@ public class NetworkController {
         }
     }
 
-    public NetworkController(Context context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
-        SurespotLog.d(TAG, "constructor username: %s", username);
-        mContext = context;
-        mUsername = username;
-        mBaseUrl = SurespotConfiguration.getBaseUrl();
-        mCookieStore = new SurespotCookieJar();
-
-        mClient = new OkHttpClient.Builder()
-                .cookieJar(mCookieStore)
-                .build();
-
-        if (mClient == null) {
-            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
-            throw new Exception("Fatal error, could not create http clients..is storage space available?");
-        }
-
-
-        if (username != null) {
-            Cookie cookie = IdentityController.getCookieForUser(username);
-            if (cookie != null) {
-                mCookieStore.setCookie(cookie);
-            }
-        }
-
-//        HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
-//
-//            @Override
-//            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
-//
-//                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
-//                    String origin = context.getAttribute("http.cookie-origin").toString();
-//
-//                    if (origin != null) {
-//
-//                        if (!isUnauthorized()) {
-//
-//                            Uri uri = Uri.parse(mBaseUrl);
-//                            if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
-//                                // setUnauthorized(true);
-//
-//                                mClient.cancelRequests(mContext, true);
-//                                mSyncClient.cancelRequests(mContext, true);
-//
-//                                if (m401Handler != null) {
-//                                    m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
-//                                }
-//
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        };
-//
-//        if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
-//
-//            mClient.setCookieStore(mCookieStore);
-//            mSyncClient.setCookieStore(mCookieStore);
-//            mCachingHttpClient.setCookieStore(mCookieStore);
-//
-//            // handle 401s
-//            mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-//            mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-//            mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-//
-//            mClient.setUserAgent(SurespotApplication.getUserAgent());
-//            mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
-//            mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());
-//        }
-    }
 
     public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
         JSONObject json = new JSONObject();
@@ -739,20 +757,20 @@ public class NetworkController {
 
     public void logout() {
         if (!isUnauthorized()) {
-            post("/logout", null);
+            post("/logout", new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+
+                }
+            });
         }
     }
 
-    public void clearCache() {
-        // all the clients share a cache
-        //  mClient.clearCache();
-    }
-
-    public void purgeCacheUrl(String url) {
-
-        //mCachingHttpClient.removeEntry(mBaseUrl + url);
-
-    }
 
     public void deleteMessage(String username, Integer id, Callback responseHandler) {
         delete("/messages/" + username + "/" + id, responseHandler);
@@ -822,20 +840,44 @@ public class NetworkController {
 
     }
 
-//    public void addCacheEntry(String key, HttpCacheEntry httpCacheEntry) {
-//        // mCachingHttpClient.addCacheEntry(key, httpCacheEntry);
-//
-//    }
+    public void addCacheEntry(String key, byte[] data) {
+
+    }
 
 //    public HttpCacheEntry getCacheEntry(String key) {
 //        //    return mCachingHttpClient.getCacheEntry(key);
 //        return null;
 //    }
 
-    public void removeCacheEntry(String key) {
-        //   mCachingHttpClient.removeEntry(key);
+    public void removeCacheEntry(String url) {
 
+        try {
+            Iterator<String> it = mClient.cache().urls();
+
+            while (it.hasNext()) {
+                String next = it.next();
+
+                if (next.contains(url)) {
+                    it.remove();
+                }
+            }
+        } catch (IOException e) {
+            SurespotLog.i(TAG, e, "error removing cache entry");
+        }
     }
+
+    public void clearCache() {
+
+        try {
+            mClient.cache().delete();
+        }
+        catch (IOException e) {
+            SurespotLog.w(TAG, e, "could not delete okhttp cache");
+        }
+    }
+
+
+
 
     public void assignFriendAlias(String username, String version, String data, String iv, Callback responseHandler) {
         SurespotLog.d(TAG, "assignFriendAlias, username: %s, version: %s", username, version);

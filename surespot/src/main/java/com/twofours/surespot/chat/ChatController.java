@@ -37,6 +37,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -455,74 +457,60 @@ public class ChatController {
 
     // add entry to http cache for image we sent so we don't download it again
     public void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
-        //TODO
-        return;
 
-//        SurespotLog.d(TAG, "handleCachedFile");
-//
-//        SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
-//
-//        // if the data is different we haven't updated the url to point externally
-//        if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
-//            // add the remote cache entry for the new url
-//
-//            String localUri = localMessage.getData();
-//            String remoteUri = message.getData();
-//
-//            FileInputStream fis;
-//            try {
-//                fis = new FileInputStream(new File(new URI(localUri)));
-//                byte[] imageData = Utils.inputStreamToBytes(fis);
 
-//                HeapResource resource = new HeapResource(imageData);
-//                Date date = new Date();
-//                String sDate = DateUtils.formatDate(date);
-//
-//                Header[] cacheHeaders = new Header[3];
-//
-//                // create fake cache entry
-//                cacheHeaders[0] = new BasicHeader("Last-Modified", sDate);
-//                cacheHeaders[1] = new BasicHeader("Cache-Control", "public, max-age=31557600");
-//                cacheHeaders[2] = new BasicHeader("Date", sDate);
-//
-//                HttpCacheEntry cacheEntry = new HttpCacheEntry(date, date, mImageStatusLine, cacheHeaders, resource);
-//
-//                SurespotLog.d(TAG, "creating http cache entry for: %s", remoteUri);
-//                mNetworkController.addCacheEntry(remoteUri, cacheEntry);
-//
-//                // update image cache
-//                if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-//                    MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
-//                }
+        SurespotLog.d(TAG, "handleCachedFile");
 
-//            }
-//            catch (FileNotFoundException e1) {
-//                SurespotLog.w(TAG, e1, "onMessage");
-//            }
-//            catch (URISyntaxException e1) {
-//                SurespotLog.w(TAG, e1, "onMessage");
-//            }
-//            catch (IOException e) {
-//                SurespotLog.w(TAG, e, "onMessage");
-//            }
-//
-//            // delete the file
-//
-//            try {
-//                SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
-//
-//                File file = new File(new URI(localUri));
-//                file.delete();
-//            }
-//            catch (URISyntaxException e) {
-//                SurespotLog.w(TAG, e, "handleMessage");
-//            }
-//
-//            // update message to point to real location
-//            localMessage.setData(remoteUri);
+        SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
 
-//
-//        }
+        // if the data is different we haven't updated the url to point externally
+        if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
+            // add the remote cache entry for the new url
+
+            String localUri = localMessage.getData();
+            String remoteUri = message.getData();
+
+            FileInputStream fis;
+            try {
+                fis = new FileInputStream(new File(new URI(localUri)));
+                byte[] imageData = Utils.inputStreamToBytes(fis);
+
+                SurespotLog.d(TAG, "creating http cache entry for: %s", remoteUri);
+                mNetworkController.addCacheEntry(remoteUri, imageData);
+
+                // update image cache
+                if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                    MessageImageDownloader.copyAndRemoveCacheEntry(localUri, remoteUri);
+                }
+
+            }
+            catch (FileNotFoundException e1) {
+                SurespotLog.w(TAG, e1, "onMessage");
+            }
+            catch (URISyntaxException e1) {
+                SurespotLog.w(TAG, e1, "onMessage");
+            }
+            catch (IOException e) {
+                SurespotLog.w(TAG, e, "onMessage");
+            }
+
+            // delete the file
+
+            try {
+                SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
+
+                File file = new File(new URI(localUri));
+                file.delete();
+            }
+            catch (URISyntaxException e) {
+                SurespotLog.w(TAG, e, "handleMessage");
+            }
+
+            // update message to point to real location
+            localMessage.setData(remoteUri);
+
+
+        }
     }
 
     // message handling shiznit
@@ -1257,7 +1245,7 @@ public class ChatController {
         // if it's an image blow the http cache entry away
         if (dMessage.getMimeType() != null) {
             if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || dMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                mNetworkController.purgeCacheUrl(dMessage.getData());
+                mNetworkController.removeCacheEntry(dMessage.getData());
             }
 
             boolean myMessage = dMessage.getFrom().equals(mUsername);
