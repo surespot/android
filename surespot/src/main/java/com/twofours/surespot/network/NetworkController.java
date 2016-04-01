@@ -27,6 +27,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -614,70 +615,54 @@ public class NetworkController {
                                                          final InputStream fileInputStream, final String mimeType) throws JSONException {
 
 
-        SurespotLog.v(TAG, "posting file stream");
 
-//        HttpPost httppost = new HttpPost(mBaseUrl + "/images2/" + ourVersion + "/" + user + "/" + theirVersion);
-//        if (fileInputStream == null) {
-//            SurespotLog.v(TAG, "not uploading anything because the file upload stream is null");
-//            return new Tuple<>(500, null);
-//        }
-//
-//        InputStreamBody isBody = new InputStreamBody(fileInputStream, mimeType, id);
-//
-//        MultipartEntity reqEntity = new MultipartEntity();
-//        reqEntity.addPart("image", isBody);
-//        httppost.setEntity(reqEntity);
-//        HttpResponse response = null;
 
-//        try {
-//            response = mCachingHttpClient.execute(httppost, new BasicHttpContext());
-//
-//            if (response != null) {
-//                int statusCode = response.getStatusLine().getStatusCode();
-//                if (statusCode == 200) {
-//
-//                    HttpEntity entity = null;
-//                    HttpEntity temp = response.getEntity();
-//                    if (temp != null) {
-//                        entity = new BufferedHttpEntity(temp);
-//                        String responseBody = EntityUtils.toString(entity, "UTF-8");
-//                        Object result = null;
-//                        //trim the string to prevent start with blank, and test if the string is valid JSON, because the parser don't do this :(. If Json is not valid this will return null
-//                        responseBody = responseBody.trim();
-//                        if (responseBody.startsWith("{") || responseBody.startsWith("[")) {
-//                            result = new JSONTokener(responseBody).nextValue();
-//
-//                            return new Tuple<>(200, (JSONObject) result);
-//                        }
-//                        else {
-//                            return new Tuple<>(500, null);
-//                        }
-//                    }
-//
-//                }
-//                else {
-//                    return new Tuple<>(statusCode, null);
-//                }
-//
-//            }
-//            else {
-//                return new Tuple<>(500, null);
-//            }
-//
-//        }
-//        catch (Exception e) {
-//            SurespotLog.w(TAG, e, "createPostFile");
-//        }
-//        finally {
-//            httppost.releaseConnection();
-////            if (response != null) {
-////                try {
-////                    EntityUtils.consume(response.getEntity());
-////                } catch (IOException e) {
-////                    SurespotLog.w(TAG, e, "postFileStream");
-////                }
-////            }
-//        }
+        if (fileInputStream == null) {
+            SurespotLog.d(TAG, "not uploading anything because the file upload stream is null");
+            return new Tuple<>(500, null);
+        }
+
+        HttpUrl baseUrl = HttpUrl.parse(mBaseUrl);
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme(baseUrl.scheme())
+                .host((baseUrl.host()))
+                .port(baseUrl.port())
+                .addPathSegment("files")
+                .addPathSegment(ourVersion)
+                .addPathSegment(user)
+                .addPathSegment(theirVersion)
+                .addPathSegment(id)
+                .addPathSegment((mimeType.equals(SurespotConstants.MimeTypes.M4A) ? "mp4" : "image"))
+                .build();
+
+
+                //HttpUrl.parse(mBaseUrl + "/files/" + ourVersion + "/" + user + "/" + theirVersion + "/" + id + "/" + (mimeType.equals(SurespotConstants.MimeTypes.M4A) ? "mp4" : "image"));
+
+        SurespotLog.d(TAG, "posting file stream to %s", url);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(RequestBodyUtil.create(MediaType.parse("application/octet-stream"), fileInputStream))
+                .build();
+
+        Response response;
+        try {
+            response = mClient.newCall(request).execute();
+            int statusCode = response.code();
+            if (statusCode == 200) {
+
+                String responseBody = response.body().string();
+                JSONObject jsonBody = new JSONObject(responseBody);
+                return new Tuple<>(200, jsonBody);
+            }
+            else {
+                SurespotLog.w(TAG, "error uploading file, response code: %d", statusCode);
+            }
+        }
+        catch (IOException e) {
+            SurespotLog.w(TAG, e, "error uploading file");
+            return new Tuple<>(500, null);
+        }
+
 
         return new Tuple<>(500, null);
     }
@@ -743,12 +728,13 @@ public class NetworkController {
     }
 
     public InputStream getFileStream(Context context, final String url) {
-        Request request = new Request.Builder().url(url).build();
+
         Response response;
         try {
+            Request request = new Request.Builder().url(url).build();
             response = mClient.newCall(request).execute();
         }
-        catch (IOException e) {
+        catch (Exception e) {
             return null;
         }
 
@@ -805,7 +791,7 @@ public class NetworkController {
     }
 
     //public void blockUser(String username, boolean blocked, Callback asyncHttpResponseHandler) {
-       // put("/users/" + username + "/block/" + blocked, asyncHttpResponseHandler);
+    // put("/users/" + username + "/block/" + blocked, asyncHttpResponseHandler);
     //}
 
     public void deleteUser(String username, String password, String authSig, String tokenSig, String keyVersion,

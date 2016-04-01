@@ -247,7 +247,7 @@ public class ChatUtils {
 //                                try {
 //                                    uploadStream = new FileInputStream(localImageFile);
 //                                } catch (FileNotFoundException e) {
-//                                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
+//                                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync"); Did you forget to close a response body?
 //                                    if (finalMessage != null) {
 //                                        finalMessage.setErrorStatus(500);
 //                                    }
