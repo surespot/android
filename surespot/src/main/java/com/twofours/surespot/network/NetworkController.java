@@ -75,6 +75,7 @@ public class NetworkController {
                 .cache(cache)
                 .cookieJar(mCookieStore)
                 .addInterceptor(logging)
+                .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
                 .build();
 
         if (mClient == null) {
@@ -120,21 +121,12 @@ public class NetworkController {
 //            }
 //        };
 //
-//        if (mClient != null && mSyncClient != null && mCachingHttpClient != null) {
-//
-//            mClient.setCookieStore(mCookieStore);
-//            mSyncClient.setCookieStore(mCookieStore);
-//            mCachingHttpClient.setCookieStore(mCookieStore);
+
 //
 //            // handle 401s
 //            mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-//            mSyncClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-//            mCachingHttpClient.addResponseInterceptor(httpResponseInterceptor);
-//
-//            mClient.setUserAgent(SurespotApplication.getUserAgent());
-//            mSyncClient.setUserAgent(SurespotApplication.getUserAgent());
-//            mCachingHttpClient.setUserAgent(SurespotApplication.getUserAgent());
-//        }
+
+
     }
 
     public void get(String url, Callback responseHandler) {
@@ -650,9 +642,6 @@ public class NetworkController {
                 .addPathSegment(id)
                 .addPathSegment((mimeType.equals(SurespotConstants.MimeTypes.M4A) ? "mp4" : "image"))
                 .build();
-
-
-        //HttpUrl.parse(mBaseUrl + "/files/" + ourVersion + "/" + user + "/" + theirVersion + "/" + id + "/" + (mimeType.equals(SurespotConstants.MimeTypes.M4A) ? "mp4" : "image"));
 
         SurespotLog.d(TAG, "posting file stream to %s", url);
         Request request = new Request.Builder()
