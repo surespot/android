@@ -687,7 +687,7 @@ public class NetworkController {
                 .scheme(baseUrl.scheme())
                 .host((baseUrl.host()))
                 .port(baseUrl.port())
-                .addPathSegment("images2")
+                .addPathSegment("files")
                 .addPathSegment(user)
                 .addPathSegment(ourVersion)
                 .addPathSegment(iv)
