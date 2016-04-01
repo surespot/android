@@ -627,6 +627,8 @@ public class ChatController {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
+                        SurespotLog.w(TAG, e, "error getLatestData");
+                        setProgress(null, false);
                     }
 
                     @Override
@@ -639,6 +641,8 @@ public class ChatController {
                             }
                             catch (JSONException e) {
                                 Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
+                                SurespotLog.w(TAG, e, "error getLatestData");
+                                setProgress(null, false);
                                 return;
                             }
 
@@ -753,6 +757,8 @@ public class ChatController {
                             setProgress(null, false);
                         }
                         else {
+                            SurespotLog.w(TAG, "error getLatestData, response code: %d", response.code());
+                            setProgress(null,false);
                             switch (response.code()) {
                                 case 401:
                                     // don't show toast on 401 as we are going to be going bye bye
@@ -865,7 +871,8 @@ public class ChatController {
 
                 @Override
                 public void onFailure(Call call, IOException e) {
-
+                    SurespotLog.w(TAG, e, "error getting latest message data for user: %s",username);
+                    setProgress(username, false);
                 }
 
                 @Override
@@ -876,6 +883,8 @@ public class ChatController {
                             json = new JSONObject(responseString);
                         }
                         catch (JSONException e) {
+                            SurespotLog.w(TAG, e, "error getting latest message data for user: %s",username);
+                            setProgress(username,false);
                             return;
                         }
 
@@ -1988,10 +1997,10 @@ public class ChatController {
 
                 @Override
                 public void onFailure(Call call, final IOException e) {
+                    setProgress(null, false);
                     if (!mNetworkController.isUnauthorized()) {
                         mFriendAdapter.setLoading(false);
-                        SurespotLog.i(TAG, e, "getFriends error");
-                        setProgress(null, false);
+                        SurespotLog.w(TAG, e, "getFriendsAndData error");
                     }
                 }
 
@@ -2024,6 +2033,7 @@ public class ChatController {
                         catch (JSONException e) {
                             SurespotLog.e(TAG, e, "getFriendsAndData error");
                             mFriendAdapter.setLoading(false);
+                            setProgress(null, false);
                             return;
                         }
 
