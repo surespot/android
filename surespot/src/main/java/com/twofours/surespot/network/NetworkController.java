@@ -22,10 +22,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import okhttp3.Cache;
 import okhttp3.Call;
@@ -212,30 +210,38 @@ public class NetworkController {
 
 
     public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
-        JSONObject json = new JSONObject();
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("username", username);
-        params.put("password", password);
-        params.put("dhPub", publicKeyDH);
-        params.put("dsaPub", publicKeyECDSA);
-        params.put("clientSig", clientSig);
-        params.put("authSig", authSig);
-        if (!TextUtils.isEmpty(referrers)) {
-            params.put("referrers", referrers);
-        }
-        params.put("version", SurespotApplication.getVersion());
-        params.put("platform", "android");
-        //addVoiceMessagingPurchaseTokens(params);
-
-        // get the gcm id
-        final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-
+        JSONObject params = new JSONObject();
         boolean gcmUpdatedTemp = false;
-        // update the gcmid if it differs
-        if (gcmIdReceived != null) {
+        final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+        try {
+            params.put("username", username);
+            params.put("password", password);
+            params.put("dhPub", publicKeyDH);
+            params.put("dsaPub", publicKeyECDSA);
+            params.put("clientSig", clientSig);
+            params.put("authSig", authSig);
+            if (!TextUtils.isEmpty(referrers)) {
+                params.put("referrers", referrers);
+            }
+            params.put("version", SurespotApplication.getVersion());
+            params.put("platform", "android");
 
-            params.put("gcmId", gcmIdReceived);
-            gcmUpdatedTemp = true;
+            //addVoiceMessagingPurchaseTokens(params);
+
+            // get the gcm id
+
+
+
+            // update the gcmid if it differs
+            if (gcmIdReceived != null) {
+
+                params.put("gcmId", gcmIdReceived);
+                gcmUpdatedTemp = true;
+            }
+        }
+        catch (JSONException e) {
+            responseHandler.onFailure(e, "error creating user");
+            return;
         }
 
         // just be javascript already
@@ -250,7 +256,7 @@ public class NetworkController {
 
         mCookieStore.clear();
 
-        postJSON("/users2", json, new Callback() {
+        postJSON("/users2", params, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -258,7 +264,7 @@ public class NetworkController {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
                 Cookie cookie = null;
                 if (response.isSuccessful()) {
                     cookie = extractConnectCookie(mCookieStore);
@@ -275,12 +281,12 @@ public class NetworkController {
                         Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
                     }
 
-                    responseHandler.onSuccess(response.code(), response.body().string(), cookie);
+                    responseHandler.onSuccess(response.code(), responseString, cookie);
                 }
             }
 
 
-        });
+        }));
     }
 
     public void getKeyToken(String username, String password, String authSignature, Callback jsonHttpResponseHandler) {
@@ -687,7 +693,9 @@ public class NetworkController {
                 .scheme(baseUrl.scheme())
                 .host((baseUrl.host()))
                 .port(baseUrl.port())
-                .addPathSegment("files")
+                .addPathSegment("files" +
+                        "" +
+                        "")
                 .addPathSegment(user)
                 .addPathSegment(ourVersion)
                 .addPathSegment(iv)
@@ -850,7 +858,8 @@ public class NetworkController {
                     it.remove();
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.i(TAG, e, "error removing cache entry");
         }
     }
@@ -864,8 +873,6 @@ public class NetworkController {
             SurespotLog.w(TAG, e, "could not delete okhttp cache");
         }
     }
-
-
 
 
     public void assignFriendAlias(String username, String version, String data, String iv, Callback responseHandler) {

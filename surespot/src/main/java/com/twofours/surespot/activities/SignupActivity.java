@@ -44,6 +44,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -54,7 +55,6 @@ import java.io.IOException;
 import java.security.KeyPair;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class SignupActivity extends Activity {
@@ -212,7 +212,8 @@ public class SignupActivity extends Activity {
         mMpdCheck.incrProgress();
 
         // see if the user exists
-        mNetworkController.userExists(username, new Callback() {
+        mNetworkController.userExists(username, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+
             @Override
             public void onFailure(Call call, IOException e) {
                 SurespotLog.i(TAG, e, "userExists error");
@@ -221,11 +222,13 @@ public class SignupActivity extends Activity {
                 userText.requestFocus();
             }
 
+
+
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
                 mMpdCheck.decrProgress();
                 if (response.isSuccessful()) {
-                    if (response.body().string().equals("true")) {
+                    if (responseString.equals("true")) {
                         Utils.makeToast(SignupActivity.this, getString(R.string.username_exists));
                         setUsernameValidity(false);
                         userText.requestFocus();
@@ -249,7 +252,7 @@ public class SignupActivity extends Activity {
                     userText.requestFocus();
                 }
             }
-        });
+        }));
     }
 
     private void signup() {
@@ -377,7 +380,6 @@ public class SignupActivity extends Activity {
                                                 setUsernameValidity(true);
                                             }
 
-                                            ;
                                         }.execute();
                                     }
                                     else {
