@@ -375,7 +375,14 @@ public class NetworkController {
             JSONObject params = new JSONObject();
             params.put("longUrl", longUrl);
 
-            postJSON("https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey(), params, responseHandler);
+            RequestBody body = RequestBody.create(JSON, params.toString());
+            Request request = new Request.Builder()
+                    .url("https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey())
+                    .post(body)
+                    .build();
+
+            Call call = mClient.newCall(request);
+            call.enqueue(responseHandler);
         }
         catch (JSONException e) {
             SurespotLog.v(TAG, "getShortUrl", e);
@@ -976,7 +983,7 @@ public class NetworkController {
     public void clearCache() {
 
         try {
-            mClient.cache().delete();
+            mClient.cache().evictAll();
         }
         catch (IOException e) {
             SurespotLog.w(TAG, e, "could not delete okhttp cache");
