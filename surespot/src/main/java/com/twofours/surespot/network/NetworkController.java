@@ -67,7 +67,7 @@ public class NetworkController {
                 SurespotLog.d("okhttp", message);
             }
         });
-        logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
         mClient = new OkHttpClient.Builder()
                 .cache(cache)

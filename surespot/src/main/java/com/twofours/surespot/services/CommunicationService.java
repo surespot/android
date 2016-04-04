@@ -141,6 +141,7 @@ public class CommunicationService extends Service {
     }
 
     private synchronized void disposeSocket() {
+        SurespotLog.d(TAG, "disposeSocket");
         if (mSocket != null) {
             mSocket.off(Socket.EVENT_CONNECT);
             mSocket.off(Socket.EVENT_DISCONNECT);
@@ -156,11 +157,13 @@ public class CommunicationService extends Service {
     }
 
     private Socket createSocket() {
+        SurespotLog.d(TAG, "createSocket, mSocket == null: %b", mSocket == null);
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
             //TODO
            // opts.sslContext = WebClientDevWrapper.getSSLContext();
             opts.secure = true;
+            opts.reconnection = false;
             opts.hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
             opts.transports = new String[]{WebSocket.NAME};
 
@@ -186,7 +189,7 @@ public class CommunicationService extends Service {
 
                     Transport transport = (Transport) args[0];
                     SurespotLog.d(TAG, "socket.io EVENT_TRANSPORT");
-                    transport.once(Transport.EVENT_REQUEST_HEADERS, new Emitter.Listener() {
+                    transport.on(Transport.EVENT_REQUEST_HEADERS, new Emitter.Listener() {
                         @Override
                         public void call(Object... args) {
                             SurespotLog.d(TAG, "socket.io EVENT_REQUEST_HEADERS");
@@ -195,11 +198,11 @@ public class CommunicationService extends Service {
                             // set header
                             Cookie cookie = IdentityController.getCookieForUser(mUsername);
                             //TODO not sure why it's null seems like we need to handle this
-                            if (cookie != null) {
+                      //      if (cookie != null) {
                                 ArrayList<String> cookies = new ArrayList<String>();
                                 cookies.add(cookie.name() + "=" + cookie.value());
                                 headers.put("cookie", cookies);
-                            }
+                           // }
                         }
                     });
                 }
@@ -306,7 +309,7 @@ public class CommunicationService extends Service {
             mSocket.connect();
         }
         catch (Exception e) {
-            SurespotLog.w(TAG, "connect", e);
+            SurespotLog.w(TAG, e, "connect");
         }
 
         return false;
@@ -1110,10 +1113,10 @@ public class CommunicationService extends Service {
         @Override
         public void run() {
             SurespotLog.d(TAG, "Relogin task run.");
+            disposeSocket();
             boolean reAuthing = tryReLogin();
 
             if (!reAuthing) {
-                disposeSocket();
 
                 if (mListener != null) {
                     mListener.onReconnectFailed();
@@ -1182,6 +1185,10 @@ public class CommunicationService extends Service {
         public void onSuccess(int responseCode, String result, Cookie cookie) {
             stopReloginTimer();
             mTriesRelogin = 0;
+
+            //set the cookie
+
+
             connect();
         }
 
@@ -1330,11 +1337,10 @@ public class CommunicationService extends Service {
             if (args.length > 0) {
                 if ("not authorized".equals(args[0])) {
                     SurespotLog.d(TAG, "got not authorized from websocket");
-
+                    disposeSocket();
                     reAuthing = tryReLogin();
 
                     if (!reAuthing) {
-                        disposeSocket();
 
                         if (mListener != null) {
                             mListener.onReconnectFailed();
