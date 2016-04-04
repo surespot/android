@@ -36,6 +36,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 
@@ -69,11 +70,26 @@ public class NetworkController {
         });
         logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
+        //handle 401
+        okhttp3.Authenticator authenticator = new okhttp3.Authenticator() {
+            @Override
+            public Request authenticate(Route route, Response response) throws IOException {
+                if (NetworkHelper.reLoginSync(mContext, NetworkController.this, mUsername)) {
+                    return response.request().newBuilder().build();
+                }
+                else {
+                    return null;
+                }
+            }
+        };
+
+
         mClient = new OkHttpClient.Builder()
                 .cache(cache)
                 .cookieJar(mCookieStore)
                 .addInterceptor(logging)
                 .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
+                .authenticator(authenticator)
                 .build();
 
         if (mClient == null) {
@@ -88,6 +104,7 @@ public class NetworkController {
                 mCookieStore.setCookie(cookie);
             }
         }
+
 
 //        HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
 //
@@ -168,6 +185,21 @@ public class NetworkController {
         return call;
     }
 
+    public Response postJSONSync(String url, JSONObject jsonParams) throws IOException {
+        SurespotLog.d(TAG, "JSON post to " + url);
+
+        RequestBody body = RequestBody.create(JSON, jsonParams.toString());
+        Request request = new Request.Builder()
+                .url(mBaseUrl + url)
+                .post(body)
+                .build();
+
+        Call call = mClient.newCall(request);
+
+        return call.execute();
+
+    }
+
     public void putJSON(String url, JSONObject jsonParams, Callback responseHandler) {
         SurespotLog.d(TAG, "put JSON to: " + url);
         RequestBody body = RequestBody.create(JSON, jsonParams.toString());
@@ -229,7 +261,6 @@ public class NetworkController {
             //addVoiceMessagingPurchaseTokens(params);
 
             // get the gcm id
-
 
 
             // update the gcmid if it differs
@@ -471,7 +502,87 @@ public class NetworkController {
 
         });
 
+
     }
+
+    public Cookie loginSync(final String username, String password, String signature) {
+        SurespotLog.d(TAG, "login username: %s", username);
+        JSONObject json = new JSONObject();
+        final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+
+        boolean gcmUpdatedTemp = false;
+        try {
+            json.put("username", username);
+            json.put("password", password);
+            json.put("authSig", signature);
+            json.put("version", SurespotApplication.getVersion());
+            json.put("platform", "android");
+
+
+            // get the gcm id
+            String gcmIdSent = Utils.getUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT);
+            SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
+
+
+            // update the gcmid if it false
+            if (gcmIdReceived != null) {
+
+                json.put("gcmId", gcmIdReceived);
+
+                if (!gcmIdReceived.equals(gcmIdSent)) {
+                    gcmUpdatedTemp = true;
+                }
+            }
+        }
+        catch (Exception e) {
+
+            return null;
+        }
+
+        for (Cookie c : mCookieStore.getCookies()) {
+
+            if (c.name().equals("connect.sid")) {
+                SurespotLog.d(TAG, "login, clearing cookie: %s", c);
+            }
+        }
+
+        mCookieStore.clear();
+
+        // just be javascript already
+        final boolean gcmUpdated = gcmUpdatedTemp;
+
+        Response response = null;
+        try {
+            response = postJSONSync("/login", json);
+        }
+        catch (IOException e) {
+            return null;
+        }
+
+        if (response.isSuccessful()) {
+            Cookie cookie = extractConnectCookie(mCookieStore);
+            if (cookie == null) {
+                SurespotLog.w(TAG, "Did not get cookie from login.");
+                return null;
+            }
+
+            else {
+                // update shared prefs
+                if (gcmUpdated) {
+                    Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+                }
+
+                return cookie;
+            }
+        }
+
+
+        return null;
+
+
+
+    }
+
 
     public void getFriends(Callback responseHandler) {
         get("/friends", responseHandler);
