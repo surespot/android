@@ -49,9 +49,9 @@ public class NetworkHelper {
 
 
                             @Override
-                            public void onFailure(Throwable error, String content) {
+                            public void onFailure(Throwable error, int code, String content) {
                                 SurespotLog.d(TAG, "failed re-logging in: %s", username);
-                                cookieResponseHandler.onFailure(error, content);
+                                cookieResponseHandler.onFailure(error, code, content);
                             }
                         });
                     }

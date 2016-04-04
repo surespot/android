@@ -1,11 +1,10 @@
 package com.twofours.surespot.network;
-import okhttp3.Callback;
 import okhttp3.Cookie;
 
 public abstract class CookieResponseHandler  {
 
 	public abstract void onSuccess(int responseCode, String result, Cookie cookie);
-	public abstract void onFailure(Throwable arg0, String content);
+	public abstract void onFailure(Throwable arg0, int code, String content);
 
 
 

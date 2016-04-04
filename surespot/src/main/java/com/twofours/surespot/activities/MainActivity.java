@@ -258,6 +258,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         };
                         MainActivity.this.runOnUiThread(runnable);
                     }
+
+
                 }
             }
         };
@@ -819,17 +821,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
             SurespotLog.d(TAG, "chat transmission service was null");
         }
 
-        try {
-            SurespotApplication.getCommunicationService().initNetworkController(mUser, m401Handler);
-        }
-        catch (Exception e) {
-            finish();
-            return;
-        }
+        //set username
+        SurespotApplication.getNetworkController().setUsernameAnd401Handler(mUser, m401Handler);
+
 
         mBillingController = SurespotApplication.getBillingController();
 
-        SurespotApplication.setChatController(new ChatController(this, mUser, SurespotApplication.getNetworkController(), getFragmentManager(), m401Handler,
+        SurespotApplication.setChatController(new ChatController(this, mUser, getFragmentManager(), m401Handler,
                 new IAsyncCallback<Boolean>() {
                     @Override
                     public void handleResponse(Boolean inProgress) {

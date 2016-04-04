@@ -1,7 +1,5 @@
 package com.twofours.surespot.friends;
 
-import java.lang.reflect.Field;
-
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -9,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;

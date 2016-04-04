@@ -116,6 +116,7 @@ public class RegistrationIntentService extends IntentService {
 
             SurespotLog.i(TAG, "Attempting to register gcm id on surespot server.");
 
+            //TODO use application's network controller
             okhttp3.Cookie cookie = IdentityController.getCookieForUser(IdentityController.getLoggedInUser());
             if (cookie != null) {
                 SurespotCookieJar jar = new SurespotCookieJar();

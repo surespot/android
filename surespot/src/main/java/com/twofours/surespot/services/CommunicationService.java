@@ -39,7 +39,6 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
-import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
@@ -74,7 +73,6 @@ import okhttp3.Cookie;
 import okhttp3.Response;
 
 
-
 @SuppressLint("NewApi")
 public class CommunicationService extends Service {
     private static final String TAG = "CommunicationService";
@@ -98,7 +96,7 @@ public class CommunicationService extends Service {
     private static final int MAX_RETRIES_SEND_VIA_HTTP = 30;
     private static final int MAX_RETRIES_MAIN_ACTIVITY_PAUSED = 20;
     private static final int MAX_RETRIES = 60;
-    private static final int MAX_RELOGIN_RETRIES = 60;
+    private static final int MAX_RELOGIN_RETRIES = 5;
 
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 10;
@@ -161,7 +159,7 @@ public class CommunicationService extends Service {
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
             //TODO
-           // opts.sslContext = WebClientDevWrapper.getSSLContext();
+            // opts.sslContext = WebClientDevWrapper.getSSLContext();
             opts.secure = true;
             opts.reconnection = false;
             opts.hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
@@ -197,17 +195,15 @@ public class CommunicationService extends Service {
                             Map<String, List> headers = (Map<String, List>) args[0];
                             // set header
                             Cookie cookie = IdentityController.getCookieForUser(mUsername);
-                            //TODO not sure why it's null seems like we need to handle this
-                      //      if (cookie != null) {
+                            if (cookie != null) {
                                 ArrayList<String> cookies = new ArrayList<String>();
                                 cookies.add(cookie.name() + "=" + cookie.value());
                                 headers.put("cookie", cookies);
-                           // }
+                            }
                         }
                     });
                 }
             });
-
         }
         return mSocket;
     }
@@ -235,14 +231,6 @@ public class CommunicationService extends Service {
         }
     }
 
-    // sets the current user name
-    public void setUsername(String username) {
-        SurespotLog.d(TAG, "setUsername, mUsername: %s, username: %s", mUsername, username);
-        if (username != null && !username.equals(mUsername)) {
-            disconnect();
-            mUsername = username;
-        }
-    }
 
     // Notify the service that the user logged out
     public void userLoggedOut() {
@@ -257,18 +245,14 @@ public class CommunicationService extends Service {
         }
     }
 
-    // initializes the network controller
-    public void initNetworkController(String mUser, IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
-        SurespotLog.d(TAG, "initNetworkController: setting user name to " + mUser + " and m401 handler");
-        setUsername(mUser);
-        SurespotApplication.setNetworkController(new NetworkController(this, mUser, m401Handler));
-    }
-
     public synchronized boolean connect(String username) {
-        if (mUsername != null && !mUsername.equals(username)) {
-            SurespotLog.d(TAG, "Username did not match existing username on connect.  Setting user name to " + username + " and creating new network controller with saved m401Handler");
-            disconnect();
-            setUsername(username);
+        if (!username.equals(mUsername)) {
+            SurespotLog.d(TAG, "Setting user name to " + username + " and connecting");
+            //don't need to disconnect 1st time through when mUsername will be null
+            if (mUsername != null) {
+                disconnect();
+            }
+            mUsername = username;
         }
 
         return connect();
@@ -623,9 +607,6 @@ public class CommunicationService extends Service {
             }
 
 
-
-
-
         }));
     }
 
@@ -864,6 +845,7 @@ public class CommunicationService extends Service {
 
         stopReconnectionAttempts();
         stopResendTimer();
+        mTriesRelogin = 0;
 
         // tell any listeners that we're connected
         if (mListener != null) {
@@ -1184,7 +1166,7 @@ public class CommunicationService extends Service {
         @Override
         public void onSuccess(int responseCode, String result, Cookie cookie) {
             stopReloginTimer();
-            mTriesRelogin = 0;
+            //    mTriesRelogin = 0;
 
             //set the cookie
 
@@ -1193,7 +1175,7 @@ public class CommunicationService extends Service {
         }
 
         @Override
-        public void onFailure(Throwable arg0, String content) {
+        public void onFailure(Throwable arg0, int code, String content) {
             stopReloginTimer();
             if (mTriesRelogin++ > MAX_RELOGIN_RETRIES) {
                 // give up

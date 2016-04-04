@@ -1,5 +1,25 @@
 package com.twofours.surespot;
 
+import android.content.Context;
+import android.os.AsyncTask;
+
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConfiguration;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
+import com.twofours.surespot.services.CredentialCachingService.VersionMap;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -15,26 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-import android.os.AsyncTask;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.friends.Friend;
-import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
-import com.twofours.surespot.services.CredentialCachingService.VersionMap;
 
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
@@ -298,10 +298,7 @@ public class StateController {
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 
 				// network caches
-				NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-				if (networkController != null) {
-					networkController.clearCache();
-				}
+				SurespotApplication.getNetworkController().clearCache();
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);

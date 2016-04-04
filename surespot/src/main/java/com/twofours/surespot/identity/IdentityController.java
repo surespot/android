@@ -205,17 +205,7 @@ public class IdentityController {
 
                 String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
                 // do OOB verification
-                NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-                if (networkController == null) {
-                    try {
-                        networkController = new NetworkController(context, null, null);
-                    }
-                    catch (Exception e) {
-                        context.finish();
-                        return null;
-                    }
-                }
-
+                NetworkController networkController = SurespotApplication.getNetworkController();
                 networkController.validate(username, dPassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword),
                         new Callback() {
                             @Override
@@ -326,18 +316,7 @@ public class IdentityController {
 
         clearStoredPasswordForIdentity(context, username);
 
-        NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-        if (networkController == null) {
-            try {
-                networkController = new NetworkController(context, null, null);
-            }
-            catch (Exception e) {
-                Utils.makeLongToast(context, context.getString(R.string.could_not_remove_identity_from_device));
-                return;
-            }
-        }
-
-        networkController.clearCache();
+        SurespotApplication.getNetworkController().clearCache();
         StateController.wipeState(context, username);
 
         synchronized (IDENTITY_FILE_LOCK) {
@@ -490,18 +469,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-
-            if (networkController == null) {
-                try {
-                    networkController = new NetworkController(context, null, null);
-                }
-                catch (Exception e) {
-                    context.finish();
-                    return;
-                }
-            }
-
+            NetworkController networkController = SurespotApplication.getNetworkController();
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
                         @Override
@@ -558,17 +526,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-            if (networkController == null) {
-                try {
-                    networkController = new NetworkController(context, null, null);
-                }
-                catch (Exception e) {
-                    context.finish();
-                    return;
-                }
-            }
-
+            NetworkController networkController = SurespotApplication.getNetworkController();
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
 
@@ -964,9 +922,8 @@ public class IdentityController {
 
     public static void logout() {
         if (hasLoggedInUser()) {
-            if (SurespotApplication.getNetworkControllerNoThrow() != null) {
-                SurespotApplication.getNetworkController().logout();
-            }
+            SurespotApplication.getNetworkController().logout();
+
             CredentialCachingService cache = SurespotApplication.getCachingService();
             if (cache != null) {
                 cache.logout(false);

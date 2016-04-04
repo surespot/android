@@ -1,18 +1,5 @@
 package com.twofours.surespot;
 
-import java.security.Security;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +7,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
 
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
@@ -34,8 +20,17 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 
-@ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
-formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.crash_toast_text, resDialogText = R.string.crash_dialog_text, resDialogOkToast = R.string.crash_dialog_ok_toast, resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
+import java.security.Security;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+//@ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
+//formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.crash_toast_text, resDialogText = R.string.crash_dialog_text, resDialogOkToast = R.string.crash_dialog_ok_toast, resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
 // optional
 public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
@@ -47,6 +42,7 @@ public class SurespotApplication extends Application {
 	private static String mUserAgent;
 	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController = null;
+	private static Context mContext;
 
 	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
@@ -86,6 +82,7 @@ public class SurespotApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 
+		mContext = getApplicationContext();
 		// Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 		//
 		// @Override
@@ -125,7 +122,7 @@ public class SurespotApplication extends Application {
 		//
 		// }
 
-		ACRA.init(this);
+	//	ACRA.init(this);
 
 		EmojiParser.init(this);
 
@@ -161,6 +158,8 @@ public class SurespotApplication extends Application {
 		mBillingController = new BillingController(this);
 						
 		FileUtils.wipeImageCaptureDir(this);
+
+
 	}
 
 	private boolean versionChanged(Context context) {
@@ -182,22 +181,14 @@ public class SurespotApplication extends Application {
 		return mCredentialCachingService;
 	}
 
-	public static NetworkController getNetworkControllerNoThrow() {
-		return mNetworkController;
-	}
-
 	public static NetworkController getNetworkController() {
 		if (mNetworkController == null) {
-			throw new NullPointerException("mNetworkController was null");
+			mNetworkController = new NetworkController();
 		}
 		return mNetworkController;
 	}
 
 
-	public static void setNetworkController(NetworkController networkController) {
-		// TODO: ensure cleanup of existing network controller if non-null?
-		mNetworkController = networkController;
-	}
 
 	public static CommunicationService getCommunicationService() {
 		if (mCommunicationService == null) {
@@ -232,5 +223,9 @@ public class SurespotApplication extends Application {
 
 	public static CommunicationService getCommunicationServiceNoThrow() {
 		return mCommunicationService;
+	}
+
+	public static Context getContext() {
+		return mContext;
 	}
 }

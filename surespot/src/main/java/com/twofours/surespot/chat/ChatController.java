@@ -14,7 +14,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -94,13 +93,13 @@ public class ChatController {
     private boolean mHandlingAutoInvite;
     private String mUsername;
 
-    public ChatController(Context context, String username, NetworkController networkController, FragmentManager fm,
+    public ChatController(Context context, String username, FragmentManager fm,
                           IAsyncCallbackTuple<String, Boolean> m401Handler, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
                           IAsyncCallback<Friend> tabShowingCallback) {
         SurespotLog.d(TAG, "constructor, username: %s", username);
         mContext = context;
         mUsername = username;
-        mNetworkController = networkController;
+        mNetworkController = SurespotApplication.getNetworkController();
 
         mCallback401 = m401Handler;
         mProgressCallback = progressCallback;
@@ -247,7 +246,7 @@ public class ChatController {
                             }
                             else {
 
-                                InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), message.getData());
+                                InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(mContext, message.getData());
 
                                 Bitmap bitmap = null;
                                 PipedOutputStream out = new PipedOutputStream();
@@ -282,7 +281,7 @@ public class ChatController {
                                 }
                                 else {
 
-                                    InputStream encryptedVoiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(),
+                                    InputStream encryptedVoiceStream = SurespotApplication.getNetworkController().getFileStream(mContext,
                                             message.getData());
 
                                     PipedOutputStream out = new PipedOutputStream();

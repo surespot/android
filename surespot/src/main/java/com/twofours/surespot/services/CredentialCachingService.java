@@ -1,12 +1,5 @@
 package com.twofours.surespot.services;
 
-import java.security.PublicKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -34,6 +27,13 @@ import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.ui.UIUtils;
+
+import java.security.PublicKey;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import okhttp3.Cookie;
 

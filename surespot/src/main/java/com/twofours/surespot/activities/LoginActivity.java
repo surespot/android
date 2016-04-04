@@ -29,7 +29,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import com.google.api.client.http.HttpResponseException;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
@@ -45,6 +44,7 @@ import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.identity.SurespotKeystoreActivity;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -290,16 +290,22 @@ public class LoginActivity extends Activity {
                 protected void onPostExecute(final IdSig idSig) {
                     if (idSig != null) {
 
-                        NetworkController networkController = SurespotApplication.getNetworkControllerNoThrow();
-                        if (networkController == null) {
-                            try {
-                                networkController = new NetworkController(LoginActivity.this, null, null);
+                        NetworkController networkController = SurespotApplication.getNetworkController();
+                        networkController.setUsernameAnd401Handler(username, new IAsyncCallbackTuple<String, Boolean>() {
+                            @Override
+                            public void handleResponse(String message, Boolean result) {
+
+                                Runnable runnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //   mMpd.decrProgress();
+                                        Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
+                                    }
+                                };
+                                LoginActivity.this.runOnUiThread(runnable);
                             }
-                            catch (Exception e) {
-                                LoginActivity.this.finish();
-                                return;
-                            }
-                        }
+                        });
+
                         networkController.login(username, idSig.derivedPassword, idSig.signature, new CookieResponseHandler() {
                             @Override
                             public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {
@@ -362,27 +368,21 @@ public class LoginActivity extends Activity {
 
 
                             @Override
-                            public void onFailure(Throwable arg0, String message) {
+                            public void onFailure(Throwable arg0, int code, String message) {
                                 mMpd.decrProgress();
                                 SurespotLog.i(TAG, arg0, message);
 
-                                if (arg0 instanceof HttpResponseException) {
-                                    HttpResponseException error = (HttpResponseException) arg0;
-                                    int statusCode = error.getStatusCode();
-                                    switch (statusCode) {
-                                        case 401:
-                                            Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
-                                            break;
-                                        case 403:
-                                            Utils.makeToast(LoginActivity.this, getString(R.string.login_update));
-                                            break;
-                                        default:
-                                            Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
-                                    }
+                                switch (code) {
+                                    case 401:
+                                        //     Utils.makeToast(LoginActivity.this, getString(R.string.login_check_password));
+                                        break;
+                                    case 403:
+                                        Utils.makeToast(LoginActivity.this, getString(R.string.login_update));
+                                        break;
+                                    default:
+                                        Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
                                 }
-                                else {
-                                    Utils.makeToast(LoginActivity.this, getString(R.string.login_try_again_later));
-                                }
+
                                 pwText.setText("");
                             }
 

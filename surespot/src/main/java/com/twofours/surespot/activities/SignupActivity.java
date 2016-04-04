@@ -77,13 +77,10 @@ public class SignupActivity extends Activity {
         setContentView(R.layout.activity_signup);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);
 
-        try {
-            mNetworkController = new NetworkController(SignupActivity.this, null, null);
-        }
-        catch (Exception e) {
-            this.finish();
-            return;
-        }
+
+        mNetworkController = SurespotApplication.getNetworkController();
+   //     mNetworkController.setUsernameAnd401Handler(null,null);
+
 
         TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
         tvSignupHelp.setMovementMethod(LinkMovementMethod.getInstance());
@@ -392,7 +389,7 @@ public class SignupActivity extends Activity {
                                 }
 
                                 @Override
-                                public void onFailure(Throwable arg0, String content) {
+                                public void onFailure(Throwable arg0, int code, String content) {
                                     SurespotLog.i(TAG,  "signup error %s", content);
                                     mMpd.decrProgress();
                                     Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));

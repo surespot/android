@@ -46,22 +46,21 @@ public class NetworkController {
             = MediaType.parse("application/json; charset=utf-8");
     private static String mBaseUrl;
 
-    private Context mContext;
     private OkHttpClient mClient;
     private SurespotCookieJar mCookieStore;
 
     private String mUsername;
     private int m401RetryCount = 0;
 
-    public NetworkController(Context context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
-        SurespotLog.d(TAG, "constructor username: %s", username);
-        mContext = context;
-        mUsername = username;
+    private IAsyncCallbackTuple<String, Boolean> m401Handler;
+
+    public NetworkController()  {
+        SurespotLog.d(TAG, "constructor");
         mBaseUrl = SurespotConfiguration.getBaseUrl();
         mCookieStore = new SurespotCookieJar();
 
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
-        Cache cache = new Cache(FileUtils.getHttpCacheDir(context), cacheSize);
+        Cache cache = new Cache(FileUtils.getHttpCacheDir(SurespotApplication.getContext()), cacheSize);
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
@@ -80,7 +79,7 @@ public class NetworkController {
                     SurespotLog.i(TAG, "authenticate re-login failed, giving up");
                     m401RetryCount = 0;
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
                     }
 
                     return null;
@@ -90,20 +89,20 @@ public class NetworkController {
                     SurespotLog.i(TAG, "authenticate giving up");
                     m401RetryCount = 0;
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
                     }
 
                     return null;
                 }
 
                 SurespotLog.i(TAG, "authenticate");
-                if (NetworkHelper.reLoginSync(mContext, NetworkController.this, mUsername)) {
+                if (NetworkHelper.reLoginSync(SurespotApplication.getContext(), NetworkController.this, mUsername)) {
                     return response.request().newBuilder().build();
                 }
                 else {
                     m401RetryCount = 0;
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
                     }
 
                     return null;
@@ -114,6 +113,8 @@ public class NetworkController {
         };
 
 
+
+
         mClient = new OkHttpClient.Builder()
                 .cache(cache)
                 .cookieJar(mCookieStore)
@@ -122,11 +123,18 @@ public class NetworkController {
                 .authenticator(authenticator)
                 .build();
 
-        if (mClient == null) {
-            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
-            throw new Exception("Fatal error, could not create http clients..is storage space available?");
-        }
+//        if (mClient == null) {
+//            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
+//            throw new Exception("Fatal error, could not create http clients..is storage space available?");
+//        }
 
+
+
+    }
+
+    public void setUsernameAnd401Handler (String username, IAsyncCallbackTuple<String, Boolean> the401Handler) {
+        mUsername = username;
+        m401Handler = the401Handler;
 
         if (username != null) {
             Cookie cookie = IdentityController.getCookieForUser(username);
@@ -236,7 +244,7 @@ public class NetworkController {
     public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
         JSONObject params = new JSONObject();
         boolean gcmUpdatedTemp = false;
-        final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+        final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED);
         try {
             params.put("username", username);
             params.put("password", password);
@@ -263,7 +271,7 @@ public class NetworkController {
             }
         }
         catch (JSONException e) {
-            responseHandler.onFailure(e, "error creating user");
+            responseHandler.onFailure(e, 500, "error creating user");
             return;
         }
 
@@ -283,7 +291,7 @@ public class NetworkController {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                responseHandler.onFailure(e, "Error creating user.");
+                responseHandler.onFailure(e, 500, "Error creating user.");
             }
 
             @Override
@@ -295,13 +303,13 @@ public class NetworkController {
 
                 if (cookie == null) {
                     SurespotLog.w(TAG, "did not get cookie from signup");
-                    responseHandler.onFailure(new IOException("Did not get cookie."), "Did not get cookie.");
+                    responseHandler.onFailure(new IOException("Did not get cookie."), 500, "Did not get cookie.");
                 }
                 else {
                     setUnauthorized(false, false);
                     // update shared prefs
                     if (gcmUpdated) {
-                        Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+                        Utils.putUserSharedPrefsString(SurespotApplication.getContext(), username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
                     }
 
                     responseHandler.onSuccess(response.code(), responseString, cookie);
@@ -391,7 +399,7 @@ public class NetworkController {
             params.put("version", SurespotApplication.getVersion());
             params.put("platform", "android");
 
-            String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+            String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
             if (gcmIdReceived != null) {
                 params.put("gcmId", gcmIdReceived);
@@ -420,7 +428,7 @@ public class NetworkController {
     public void login(final String username, String password, String signature, final CookieResponseHandler responseHandler) {
         SurespotLog.d(TAG, "login username: %s", username);
         JSONObject json = new JSONObject();
-        final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+        final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
         boolean gcmUpdatedTemp = false;
         try {
@@ -432,7 +440,7 @@ public class NetworkController {
 
 
             // get the gcm id
-            String gcmIdSent = Utils.getUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT);
+            String gcmIdSent = Utils.getUserSharedPrefsString(SurespotApplication.getContext(), username, SurespotConstants.PrefNames.GCM_ID_SENT);
             SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
 
 
@@ -447,7 +455,7 @@ public class NetworkController {
             }
         }
         catch (Exception e) {
-            responseHandler.onFailure(e, "JSON Error");
+            responseHandler.onFailure(e, 500, "JSON Error");
             return;
         }
 
@@ -463,44 +471,43 @@ public class NetworkController {
         // just be javascript already
         final boolean gcmUpdated = gcmUpdatedTemp;
 
-        postJSON("/login", json, new Callback() {
+        postJSON("/login", json, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                responseHandler.onFailure(e, "Error logging in.");
+                responseHandler.onFailure(e, 500, "Error logging in.");
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
                 if (response.isSuccessful()) {
                     Cookie cookie = extractConnectCookie(mCookieStore);
                     if (cookie == null) {
                         SurespotLog.w(TAG, "Did not get cookie from login.");
-                        responseHandler.onFailure(new Exception("Did not get cookie."), "Did not get cookie.");
+                        responseHandler.onFailure(new Exception("Did not get cookie."), 500, "Did not get cookie.");
                     }
 
                     else {
                         setUnauthorized(false, false);
                         // update shared prefs
                         if (gcmUpdated) {
-                            Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+                            Utils.putUserSharedPrefsString(SurespotApplication.getContext(), username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
                         }
 
-                        responseHandler.onSuccess(response.code(), response.body().string(), cookie);
+                        responseHandler.onSuccess(response.code(), responseString, cookie);
                     }
                 }
+                else {
+                    responseHandler.onFailure(new Exception("Error logging in."), response.code(), String.format("Error logging in, code: %d", response.code()));
+                }
             }
-
-
-        });
-
-
+        }));
     }
 
     public Cookie loginSync(final String username, String password, String signature) {
         SurespotLog.d(TAG, "login username: %s", username);
         JSONObject json = new JSONObject();
-        final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+        final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED);
 
         boolean gcmUpdatedTemp = false;
         try {
@@ -512,7 +519,7 @@ public class NetworkController {
 
 
             // get the gcm id
-            String gcmIdSent = Utils.getUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT);
+            String gcmIdSent = Utils.getUserSharedPrefsString(SurespotApplication.getContext(), username, SurespotConstants.PrefNames.GCM_ID_SENT);
             SurespotLog.v(TAG, "gcm id received: %s, gcmId sent: %s", gcmIdReceived, gcmIdSent);
 
 
@@ -561,7 +568,7 @@ public class NetworkController {
             else {
                 // update shared prefs
                 if (gcmUpdated) {
-                    Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+                    Utils.putUserSharedPrefsString(SurespotApplication.getContext(), username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
                 }
 
                 return cookie;
@@ -664,8 +671,8 @@ public class NetworkController {
 //		// so we need to upload the gcm here if we haven't already
 //		// get the gcm id
 //
-//		final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-//		String gcmIdSent = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT);
+//		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED);
+//		String gcmIdSent = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
 //
 //		Map<String, String> params = new HashMap<String, String>();
 //
@@ -691,7 +698,7 @@ public class NetworkController {
 //
 //				// update shared prefs
 //				if (gcmUpdated) {
-//					Utils.putSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+//					Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
 //				}
 //
 //				responseHandler.onSuccess(responseCode, result);
