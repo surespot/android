@@ -51,6 +51,7 @@ public class NetworkController {
     private SurespotCookieJar mCookieStore;
 
     private String mUsername;
+    private int m401RetryCount = 0;
 
     public NetworkController(Context context, String username, final IAsyncCallbackTuple<String, Boolean> m401Handler) throws Exception {
         SurespotLog.d(TAG, "constructor username: %s", username);
@@ -74,13 +75,42 @@ public class NetworkController {
         okhttp3.Authenticator authenticator = new okhttp3.Authenticator() {
             @Override
             public Request authenticate(Route route, Response response) throws IOException {
+                //if login fails abort
+                if (response.request().url().pathSegments().contains("login")) {
+                    SurespotLog.i(TAG, "authenticate re-login failed, giving up");
+                    m401RetryCount = 0;
+                    if (m401Handler != null) {
+                        m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+                    }
+
+                    return null;
+                }
+
+                if (m401RetryCount++ >= 5) {
+                    SurespotLog.i(TAG, "authenticate giving up");
+                    m401RetryCount = 0;
+                    if (m401Handler != null) {
+                        m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+                    }
+
+                    return null;
+                }
+
+                SurespotLog.i(TAG, "authenticate");
                 if (NetworkHelper.reLoginSync(mContext, NetworkController.this, mUsername)) {
                     return response.request().newBuilder().build();
                 }
                 else {
+                    m401RetryCount = 0;
+                    if (m401Handler != null) {
+                        m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
+                    }
+
                     return null;
                 }
             }
+
+
         };
 
 
@@ -104,44 +134,6 @@ public class NetworkController {
                 mCookieStore.setCookie(cookie);
             }
         }
-
-
-//        HttpResponseInterceptor httpResponseInterceptor = new HttpResponseInterceptor() {
-//
-//            @Override
-//            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
-//
-//                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
-//                    String origin = context.getAttribute("http.cookie-origin").toString();
-//
-//                    if (origin != null) {
-//
-//                        if (!isUnauthorized()) {
-//
-//                            Uri uri = Uri.parse(mBaseUrl);
-//                            if (!(origin.contains(uri.getHost()) && origin.contains("/login"))) {
-//                                // setUnauthorized(true);
-//
-//                                mClient.cancelRequests(mContext, true);
-//                                mSyncClient.cancelRequests(mContext, true);
-//
-//                                if (m401Handler != null) {
-//                                    m401Handler.handleResponse(mContext.getString(R.string.unauthorized), false);
-//                                }
-//
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        };
-//
-
-//
-//            // handle 401s
-//            mClient.getAbstractHttpClient().addResponseInterceptor(httpResponseInterceptor);
-
-
     }
 
     public void get(String url, Callback responseHandler) {
@@ -578,7 +570,6 @@ public class NetworkController {
 
 
         return null;
-
 
 
     }
