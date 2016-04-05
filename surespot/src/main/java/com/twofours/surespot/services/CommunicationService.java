@@ -95,7 +95,6 @@ public class CommunicationService extends Service {
     private static final int MAX_RETRIES_SEND_VIA_HTTP = 30;
     private static final int MAX_RETRIES_MAIN_ACTIVITY_PAUSED = 20;
     private static final int MAX_RETRIES = 60;
-    private static final int MAX_RELOGIN_RETRIES = 5;
 
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 10;
@@ -547,8 +546,7 @@ public class CommunicationService extends Service {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                //TODO handle
-                throw new UnsupportedOperationException();
+                SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
             }
 
             @Override
@@ -596,8 +594,7 @@ public class CommunicationService extends Service {
 
                 }
                 else {
-                    //TODO implement
-                    throw new UnsupportedOperationException();
+                    SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
                 }
             }
 
@@ -812,7 +809,7 @@ public class CommunicationService extends Service {
 
 
 
-        //  processNextMessage();
+        processNextMessage();
     }
 
     // notify listeners that we've connected
