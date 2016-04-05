@@ -14,7 +14,7 @@ import okhttp3.Cookie;
 public class NetworkHelper {
     private static final String TAG = "NetworkHelper";
 
-    public static boolean reLogin(final Context context, final NetworkController networkController, final String username, final CookieResponseHandler cookieResponseHandler) {
+    public static void reLogin(final Context context, final NetworkController networkController, final String username, final CookieResponseHandler cookieResponseHandler) {
         // if we have password login again and retry
         String pw = null;
 
@@ -58,10 +58,10 @@ public class NetworkHelper {
                     return null;
                 }
             }.execute();
-            return true;
+
         }
         else {
-            return false;
+            cookieResponseHandler.onFailure(null, 500, null);
         }
     }
 

@@ -83,10 +83,9 @@ public class CommunicationService extends Service {
 
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
-    private boolean mMainActivityPaused = false;
+    private static boolean mMainActivityPaused = false;
 
     private ReconnectTask mReconnectTask;
-    private ReloginTask mReloginTask;
     public static String mCurrentChat;
     Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -102,15 +101,12 @@ public class CommunicationService extends Service {
     private static final int MAX_RETRY_DELAY = 10;
 
     private int mResendTries = 0;
-    private int mTriesRelogin = 0;
     private Socket mSocket;
     private int mSocketReconnectRetries = 0;
     private Timer mResendViaHttpTimer;
     private Object SEND_LOCK = new Object();
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
-    private Timer mReloginTimer;
-    private Object RELOGIN_TIMER_LOCK = new Object();
     private int mConnectionState;
     private boolean mOnWifi;
     private NotificationManager mNotificationManager;
@@ -133,7 +129,6 @@ public class CommunicationService extends Service {
 
     private void resetState() {
         mSocketReconnectRetries = 0;
-        mTriesRelogin = 0;
         mResendTries = 0;
 
     }
@@ -220,8 +215,8 @@ public class CommunicationService extends Service {
                 scheduleGiveUpReconnecting();
             }
             */
-            // make sure to save everything just in case... ?
-            // save();
+
+            save();
             disconnect();
         }
         else {
@@ -666,18 +661,6 @@ public class CommunicationService extends Service {
     }
 
 
-    private void invalidateAllChatAdapters() {
-        if (mUsername != null) {
-            for (Map.Entry<String, ChatAdapter> entry : SurespotApplication.getChatController().mChatAdapters.entrySet()) {
-                entry.getValue().notifyDataSetInvalidated();
-            }
-        }
-    }
-
-    public boolean hasUnsentMessages() {
-        return (mSendQueue.size() > 0);
-    }
-
     public void clearMessageQueue(String friendname) {
         Iterator<SurespotMessage> iterator = mSendQueue.iterator();
         while (iterator.hasNext()) {
@@ -808,44 +791,15 @@ public class CommunicationService extends Service {
         }
     }
 
-
-    // setup a disconnect N minutes from now
-    private void startReloginTimer() {
-        synchronized (RELOGIN_TIMER_LOCK) {
-            if (mReloginTask != null) {
-                mReloginTask.cancel();
-                mReloginTask = null;
-            }
-
-            ReloginTask reloginTask = new ReloginTask();
-            if (mReloginTimer != null) {
-                mReloginTimer.cancel();
-                mReloginTimer = null;
-            }
-            mReloginTimer = new Timer("reloginTimer");
-            int timerInterval = generateInterval(mTriesRelogin + 1);
-            SurespotLog.d(TAG, "startReloginTimer, try %d starting another login task in: %d", mTriesRelogin, timerInterval);
-            mReloginTimer.schedule(reloginTask, timerInterval);
-            mReloginTask = reloginTask;
-        }
-    }
-
-    // see if it's an appropriate time to reconnect, and if so, try reconnecting
-    private void checkReconnect() {
-        if (!mMainActivityPaused) {
-            if (getConnectionState() == STATE_DISCONNECTED) {
-                connect();
-            }
-        }
-    }
-
     // notify listeners that we've connected
     private void onConnected() {
         SurespotLog.d(TAG, "onConnected");
 
         stopReconnectionAttempts();
         stopResendTimer();
-        mTriesRelogin = 0;
+
+        //tell chat controller
+
 
         // tell any listeners that we're connected
         if (mListener != null) {
@@ -855,6 +809,7 @@ public class CommunicationService extends Service {
         else {
             SurespotLog.d(TAG, "onConnected, mListener was null");
         }
+
 
 
         //  processNextMessage();
@@ -1090,41 +1045,6 @@ public class CommunicationService extends Service {
         // mNotificationManager.notify(tag, id, notification);
     }
 
-    private class ReloginTask extends TimerTask {
-
-        @Override
-        public void run() {
-            SurespotLog.d(TAG, "Relogin task run.");
-            disposeSocket();
-            boolean reAuthing = tryReLogin();
-
-            if (!reAuthing) {
-
-                if (mListener != null) {
-                    mListener.onReconnectFailed();
-                }
-
-                userLoggedOut();
-                mTriesRelogin = 0;
-            }
-        }
-    }
-
-    private void stopReloginTimer() {
-        // cancel any disconnect that's been scheduled
-        SurespotLog.d(TAG, "stopReloginTimer");
-        synchronized (RELOGIN_TIMER_LOCK) {
-            if (mReloginTask != null) {
-                mReloginTask.cancel();
-                mReloginTask = null;
-            }
-
-            if (mReloginTimer != null) {
-                mReloginTimer.cancel();
-                mReloginTimer = null;
-            }
-        }
-    }
 
     private void disconnect() {
 
@@ -1162,43 +1082,46 @@ public class CommunicationService extends Service {
         }
     }
 
-    private class ReLoginCookieResponseHandler extends CookieResponseHandler {
-        @Override
-        public void onSuccess(int responseCode, String result, Cookie cookie) {
-            stopReloginTimer();
-            //    mTriesRelogin = 0;
-
-            //set the cookie
 
 
-            connect();
-        }
-
-        @Override
-        public void onFailure(Throwable arg0, int code, String content) {
-            stopReloginTimer();
-            if (mTriesRelogin++ > MAX_RELOGIN_RETRIES) {
-                // give up
-                SurespotLog.i(TAG, "Max login retries exceeded.  Giving up");
-                disposeSocket();
-
-                if (mListener != null) {
-                    mListener.onReconnectFailed();
-                }
-
-                userLoggedOut();
-                mTriesRelogin = 0;
-            }
-            else {
-                startReloginTimer();
-            }
-        }
-
-    }
-
-    private boolean tryReLogin() {
+    private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
-        return NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new ReLoginCookieResponseHandler());
+        NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
+            private String TAG = "ReLoginCookieResponseHandler";
+
+            @Override
+            public void onSuccess(int responseCode, String result, Cookie cookie) {
+                //try again
+                disposeSocket();
+                connect();
+            }
+
+            @Override
+            public void onFailure(Throwable arg0, int code, String content) {
+
+
+                //if we're getting 401 bail
+                if (code == 401) {
+                    // give up
+
+                    disposeSocket();
+
+                    if (mListener != null) {
+
+                        SurespotLog.i(TAG, "401 on reconnect, giving up.");
+                        mListener.on401();
+
+                    }
+
+                    userLoggedOut();
+                }
+                else {
+                    //try and connect again
+                    disposeSocket();
+                    connect();
+                }
+            }
+        });
     }
 
     private class BroadcastReceiverHandler extends BroadcastReceiver {
@@ -1311,7 +1234,7 @@ public class CommunicationService extends Service {
             if (args.length > 0) {
                 SurespotLog.d(TAG, "onConnectError: args: %s", args[0]);
             }
-            boolean reAuthing = false;
+
             setState(STATE_DISCONNECTED);
             onNotConnected();
 
@@ -1320,23 +1243,12 @@ public class CommunicationService extends Service {
                 if ("not authorized".equals(args[0])) {
                     SurespotLog.d(TAG, "got not authorized from websocket");
                     disposeSocket();
-                    reAuthing = tryReLogin();
-
-                    if (!reAuthing) {
-
-                        if (mListener != null) {
-                            mListener.onReconnectFailed();
-                        }
-
-                        //userLoggedOut();
-                        return;
-                    }
+                    tryReLogin();
+                    return;
                 }
             }
 
-            if (reAuthing) {
-                return;
-            }
+
 
             SurespotLog.i(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mSocketReconnectRetries);
 
@@ -1468,5 +1380,10 @@ public class CommunicationService extends Service {
             mHandler.post(runnable);
         }
     };
+
+    public static boolean isUIAttached() {
+        return !mMainActivityPaused;
+    }
+
 }
 

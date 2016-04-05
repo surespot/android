@@ -24,7 +24,6 @@ import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
@@ -85,7 +84,6 @@ public class ChatController {
 
     private int mMode = MODE_NORMAL;
 
-    private IAsyncCallbackTuple<String, Boolean> mCallback401;
     private IAsyncCallback<Boolean> mProgressCallback;
     private IAsyncCallback<Void> mSendIntentCallback;
     private IAsyncCallback<Friend> mTabShowingCallback;
@@ -93,15 +91,13 @@ public class ChatController {
     private boolean mHandlingAutoInvite;
     private String mUsername;
 
-    public ChatController(Context context, String username, FragmentManager fm,
-                          IAsyncCallbackTuple<String, Boolean> m401Handler, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
+    public ChatController(Context context, String username, FragmentManager fm, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
                           IAsyncCallback<Friend> tabShowingCallback) {
         SurespotLog.d(TAG, "constructor, username: %s", username);
         mContext = context;
         mUsername = username;
         mNetworkController = SurespotApplication.getNetworkController();
 
-        mCallback401 = m401Handler;
         mProgressCallback = progressCallback;
         mSendIntentCallback = sendIntentCallback;
 
@@ -385,9 +381,6 @@ public class ChatController {
                         getLatestMessagesAndControls(otherUser, e.getMessageId(), true);
                     }
                 }
-
-                ;
-
             }.execute();
 
         }
@@ -769,15 +762,6 @@ public class ChatController {
                     }
                 })
         );
-    }
-
-    public void reconnectFailed() {
-        logout();
-        mCallback401.handleResponse(null, false);
-    }
-
-    public void couldNotConnectToServer() {
-        mCallback401.handleResponse(mContext.getString(R.string.could_not_connect_to_server), true);
     }
 
     public void onBeforeConnect() {
@@ -1516,10 +1500,12 @@ public class ChatController {
     public synchronized void onPause() {
         SurespotLog.d(TAG, "onPause, mPaused: %b", mPaused);
         mPaused = true;
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().save();
 
-        }
+        //moved to commservice main activity paused
+//        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+//            SurespotApplication.getCommunicationService().save();
+//
+//        }
     }
 
     ChatAdapter getChatAdapter(String username) {

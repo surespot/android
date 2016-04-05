@@ -96,6 +96,7 @@ public class NetworkController {
                 }
 
                 SurespotLog.i(TAG, "authenticate");
+                //TODO exponential backoff
                 if (NetworkHelper.reLoginSync(SurespotApplication.getContext(), NetworkController.this, mUsername)) {
                     return response.request().newBuilder().build();
                 }

@@ -173,7 +173,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // otherwise show the signup activity
                 SurespotLog.d(TAG, "I was deleted and there are no other users so starting signup activity.");
                 Intent newIntent = new Intent(this, SignupActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 intent.putExtra("signingUp", true);
                 startActivity(newIntent);
                 finish();
@@ -181,7 +181,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             else {
                 SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
                 Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
-                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(newIntent);
                 finish();
             }
@@ -242,7 +242,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (!timedOut) {
                         SurespotLog.d(TAG, "Got 401, launching login intent.");
                         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
                     }
@@ -351,7 +351,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             newIntent.putExtras(extras);
         }
 
-        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         startActivity(newIntent);
         finish();
@@ -665,7 +665,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 newIntent.putExtras(extras);
             }
 
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(newIntent);
 
             finish();
@@ -827,7 +827,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         mBillingController = SurespotApplication.getBillingController();
 
-        SurespotApplication.setChatController(new ChatController(this, mUser, getFragmentManager(), m401Handler,
+        SurespotApplication.setChatController(new ChatController(this, mUser, getFragmentManager(),
                 new IAsyncCallback<Boolean>() {
                     @Override
                     public void handleResponse(Boolean inProgress) {
@@ -1357,7 +1357,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // protected Void doInBackground(Void... params) {
 
                 Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 // mChatController = null;
                 MainActivity.this.startActivity(finalIntent);
                 finish();
@@ -2315,16 +2315,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
 
         @Override
-        public void onReconnectFailed() {
-            if (!logIfChatControllerNull()) {
-                SurespotApplication.getChatController().reconnectFailed();
-            }
-        }
-
-        @Override
         public void onCouldNotConnectToServer() {
             if (!logIfChatControllerNull()) {
-                SurespotApplication.getChatController().couldNotConnectToServer();
+                Utils.makeLongToast(MainActivity.this, "Could not connect to the server.");
             }
         }
 
@@ -2339,13 +2332,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
 
         @Override
-        public void onAlreadyConnected() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(false);
-                }
-            });
+        public void on401() {
+            m401Handler.handleResponse("socket 401", false);
         }
 
         private boolean logIfChatControllerNull() {

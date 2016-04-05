@@ -98,12 +98,12 @@ public class SurespotGcmListenerService extends GcmListenerService {
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
             boolean sameUser = to.equals(IdentityController.getLoggedInUser());
             boolean tabOpenToUser = from.equals(ChatController.getCurrentChat());
-            boolean paused = ChatController.isPaused();
+            boolean uiAttached = CommunicationService.isUIAttached();
 
-            SurespotLog.d(TAG, "gcm is screen on: %b, paused: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, paused, hasLoggedInUser,
+            SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, uiAttached, hasLoggedInUser,
                     sameUser, tabOpenToUser);
 
-            if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && !paused) {
+            if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && uiAttached) {
                 SurespotLog.d(TAG, "not displaying gcm notification because the tab is open for it.");
                 return;
             }
