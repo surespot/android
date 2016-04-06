@@ -2317,7 +2317,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
         @Override
         public void onCouldNotConnectToServer() {
             if (!logIfChatControllerNull()) {
-                Utils.makeLongToast(MainActivity.this, "Could not connect to the server.");
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Utils.makeLongToast(MainActivity.this, "Could not connect to the server.");
+                    }
+                });
             }
         }
 

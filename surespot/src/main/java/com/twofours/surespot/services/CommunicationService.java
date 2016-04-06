@@ -456,6 +456,7 @@ public class CommunicationService extends Service {
                     SurespotLog.d(TAG, "sendImageMessage error status: %d, mResendTries: %d, MAX_RETRIES: %d", status, mResendTries, MAX_RETRIES_SEND_VIA_HTTP);
                     if (mResendTries++ >= MAX_RETRIES_SEND_VIA_HTTP) {
                         //TODO set all messages in queue errored
+                        //TODO notification
                         message.setErrorStatus(status);
                         ChatController chatController = SurespotApplication.getChatController();
                         if (chatController != null) {
@@ -806,8 +807,6 @@ public class CommunicationService extends Service {
         else {
             SurespotLog.d(TAG, "onConnected, mListener was null");
         }
-
-
 
         processNextMessage();
     }
