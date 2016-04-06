@@ -213,7 +213,7 @@
     <string name="restore_identity">restore identity %s</string>
     <string name="assign">assign</string>
     <string name="could_not_load_image">could not load image</string>
-    <string name="pan_and_zoom">move and zoom</string>
+    <string name="pan_and_zoom">pan and zoom</string>
     <string name="done">done</string>
     <string name="message_error_invalid">error sending message: invalid message</string>
     <string name="message_error_unauthorized">error sending message: unauthorized</string>
