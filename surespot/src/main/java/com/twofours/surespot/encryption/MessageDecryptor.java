@@ -101,7 +101,7 @@ public class MessageDecryptor {
 		@Override
 		public void run() {
 			final CharSequence plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
-					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.getData());
+					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
 
 			CharSequence plainData = null;
 			if (plainText != null) {

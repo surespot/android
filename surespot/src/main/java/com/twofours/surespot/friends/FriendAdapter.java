@@ -168,7 +168,7 @@ public class FriendAdapter extends BaseAdapter {
 		for (Friend friend : mFriends) {
 			if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
 				String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
-						friend.getAliasVersion(), friend.getAliasIv(), friend.getAliasData());
+						friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
 				SurespotLog.d(TAG, "setting alias for %s", friend.getName());
 				friend.setAliasPlain(plainText);

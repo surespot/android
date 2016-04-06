@@ -104,7 +104,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		else {
 			if (mChatFriends.size() > position - 1) {
 				String title = mChatFriends.get(position - 1).getNameOrAlias();
-				SurespotLog.v(TAG, "returning title %s for position %d", title, position);
+			//	SurespotLog.v(TAG, "returning title %s for position %d", title, position);
 				return title;
 			}
 		}

@@ -145,7 +145,7 @@ public class ImageMessageMenuFragment extends SherlockDialogFragment {
 									InputStream imageStream = MainActivity.getNetworkController().getFileStream(mActivity, mMessage.getData());
 
 									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
-											mMessage.getIv(), new BufferedInputStream(imageStream), fos);
+											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);
 
 									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
 									return true;

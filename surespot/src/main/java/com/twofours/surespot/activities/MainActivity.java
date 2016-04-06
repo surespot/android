@@ -1015,7 +1015,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnMeasureL
 								Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
 							}
 							else {
-								mChatController.setImageUrl(to, url, version, iv);
+								mChatController.setImageUrl(to, url, version, iv, true);
 							}
 						}
 					});
