@@ -343,5 +343,4 @@
   <string name="notification_message_no_from">%s: tienes un mensaje nuevo.</string>
   <string name="notification_invite_no_from">%s: tienes una invitación nueva.</string>
   <string name="notification_invite_accept_no_from">%s: Invitación de contacto aceptada.</string>
-  <string name="decrypt_update">Por favor, actualice surespot para descifrar.</string>
 </resources>

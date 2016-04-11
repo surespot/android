@@ -316,6 +316,5 @@
     <string name="no_audio_detected">pas d\'audio détecté - impossible d\'envoyer un message vocal</string>
     <string name="share_invite_link">part inviter lien</string>
     <string name="share_link_help">"Utilisez l'option de menu \"part inviter lien\" de partager un lien par email, sms, twitter, ou d'autres médias sociaux, qui lorsqu'il est cliqué installera surespot / vous invitez un ami à surespot"</string>
-    <string name="decrypt_update">S\'il vous plaît mettre à jour surespot à décrypter.</string>
 
 </resources>
