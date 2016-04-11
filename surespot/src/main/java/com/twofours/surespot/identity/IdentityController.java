@@ -1,5 +1,43 @@
 package com.twofours.surespot.identity;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.KeyguardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
+
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.activities.LoginActivity;
+import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.encryption.PrivateKeyPairs;
+import com.twofours.surespot.encryption.PublicKeys;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.IAsyncCallbackTuple;
+import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.ui.UIUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.nick.androidkeystore.android.security.KeyStore;
+import org.nick.androidkeystore.android.security.KeyStoreJb43;
+import org.nick.androidkeystore.android.security.KeyStoreKk;
+import org.nick.androidkeystore.android.security.KeyStoreM;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -17,54 +55,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.nick.androidkeystore.android.security.KeyStore;
-import org.nick.androidkeystore.android.security.KeyStoreJb43;
-import org.nick.androidkeystore.android.security.KeyStoreKk;
-import org.nick.androidkeystore.android.security.KeyStoreM;
-
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.KeyguardManager;
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Build;
-
 import ch.boye.httpclientandroidlib.client.HttpResponseException;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
-
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Ordering;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.twofours.surespot.R;
-import com.twofours.surespot.StateController;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.Tuple;
-import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.encryption.PrivateKeyPairs;
-import com.twofours.surespot.encryption.PublicKeys;
-import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.IAsyncCallbackTuple;
-import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.services.CredentialCachingService;
-import com.twofours.surespot.ui.UIUtils;
-
-import javax.crypto.SecretKey;
 
 public class IdentityController {
     private static final String TAG = "IdentityController";
@@ -84,7 +79,8 @@ public class IdentityController {
             SurespotApplication.getCachingService().login(identity, cookie, password);
             // if we're logging in we probably didn't just buy it
             SurespotApplication.getBillingController().clearJustPurchased();
-        } else {
+        }
+        else {
             SurespotLog.w(TAG, "getIdentity null");
         }
     }
@@ -114,7 +110,8 @@ public class IdentityController {
         if (internal) {
             filename = identity.getUsername() + IDENTITY_EXTENSION;
             identityDir = FileUtils.getIdentityDir(backupContext);
-        } else {
+        }
+        else {
             filename = caseInsensitivize(identity.getUsername()) + IDENTITY_EXTENSION;
             identityDir = FileUtils.getIdentityExportDir().getAbsolutePath();
         }
@@ -149,9 +146,11 @@ public class IdentityController {
                 // SurespotApplication.mBackupManager.dataChanged();
             }
             return identityFile;
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
         }
         return null;
@@ -181,7 +180,8 @@ public class IdentityController {
 
             byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
             return identityBytes;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "encryptIdentity");
         }
         return null;
@@ -208,7 +208,8 @@ public class IdentityController {
                 if (networkController == null) {
                     try {
                         networkController = new NetworkController(context, null, null);
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         context.finish();
                         return null;
                     }
@@ -241,7 +242,8 @@ public class IdentityController {
                                             SurespotLog.i(TAG, error, "exportIdentity");
                                             callback.handleResponse(null, null);
                                     }
-                                } else {
+                                }
+                                else {
                                     callback.handleResponse(null, null);
                                 }
                             }
@@ -280,10 +282,12 @@ public class IdentityController {
 
         if (exists && !overwrite) {
             return false;
-        } else {
+        }
+        else {
             if (exists) {
                 return identityFile.isFile() && identityFile.canWrite();
-            } else {
+            }
+            else {
 
                 try {
                     // make sure we'll have the space to write the identity file
@@ -292,7 +296,8 @@ public class IdentityController {
                     fos.close();
                     identityFile.delete();
                     return true;
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     return false;
                 }
             }
@@ -321,7 +326,20 @@ public class IdentityController {
 
         clearStoredPasswordForIdentity(context, username);
 
-        MainActivity.getNetworkController().clearCache();
+        NetworkController networkController = MainActivity.getNetworkController();
+
+        if (networkController == null) {
+            try {
+                networkController = new NetworkController(context, null, null);
+            }
+            catch (Exception e) {
+                SurespotLog.w(TAG, e, "error instantiating network controller");
+            }
+        }
+
+        if (networkController != null) {
+            networkController.clearCache();
+        }
         StateController.wipeState(context, username);
 
         synchronized (IDENTITY_FILE_LOCK) {
@@ -375,7 +393,8 @@ public class IdentityController {
         if (internal) {
             dir = FileUtils.getIdentityDir(context);
             identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
-        } else {
+        }
+        else {
             dir = FileUtils.getIdentityExportDir().getAbsolutePath();
             identityFilename = dir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
             checkCase = false;
@@ -413,7 +432,8 @@ public class IdentityController {
                 return decryptIdentity(idBytes, username, password, checkCase);
             }
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "loadIdentity");
         }
 
@@ -456,7 +476,8 @@ public class IdentityController {
             }
 
             return si;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
         }
         return null;
 
@@ -476,7 +497,8 @@ public class IdentityController {
             if (networkController == null) {
                 try {
                     networkController = new NetworkController(context, null, null);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     context.finish();
                     return;
                 }
@@ -492,7 +514,8 @@ public class IdentityController {
                                 SurespotApplication.getCachingService().updateIdentity(identity, true);
                                 callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
                                         true));
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
                                         false));
                             }
@@ -518,14 +541,16 @@ public class IdentityController {
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name,
                                                 finalusername), false));
                                 }
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
                                         false));
                             }
                         }
                     });
 
-        } else {
+        }
+        else {
             callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
         }
 
@@ -544,7 +569,8 @@ public class IdentityController {
             if (networkController == null) {
                 try {
                     networkController = new NetworkController(context, null, null);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     context.finish();
                     return;
                 }
@@ -560,7 +586,8 @@ public class IdentityController {
                                 SurespotApplication.getCachingService().updateIdentity(identity, true);
                                 callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
                                         true));
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
                                         false));
                             }
@@ -586,14 +613,16 @@ public class IdentityController {
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
                                                 false));
                                 }
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
                                         false));
                             }
                         }
                     });
 
-        } else {
+        }
+        else {
             callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
         }
 
@@ -638,12 +667,14 @@ public class IdentityController {
                                         SurespotLog.i(TAG, error, "exportIdentity");
                                         callback.handleResponse(null);
                                 }
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(null);
                             }
                         }
                     });
-        } else {
+        }
+        else {
             callback.handleResponse(null);
         }
 
@@ -663,7 +694,8 @@ public class IdentityController {
             FileUtils.writeFile(pkFile, keyPair);
 
             return pkFile;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
         }
         return null;
@@ -691,7 +723,8 @@ public class IdentityController {
             savePublicKeyPair(username, version, json.toString());
             SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
             return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "recreatePublicKeyPair");
         }
 
@@ -730,7 +763,8 @@ public class IdentityController {
         //if we have the keys for the version we want return them
         if (validatedKeys != null && wantedVersion == validatedKeyVersion) {
             return validatedKeys;
-        } else {
+        }
+        else {
             //get keys from server since the last validated version
             sDownloadedKeys = MainActivity.getNetworkController().getPublicKeysSync(username, Integer.toString(validatedKeyVersion + 1, 10));
 
@@ -759,14 +793,16 @@ public class IdentityController {
                         //TODO need to recheck somehow and eventually get all keys validated using v2 code
                         return getPublicKeyPair(username, version, wantedKey);
 
-                    } else {
+                    }
+                    else {
                         SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", username, version);
 
                         PublicKey previousDsaKey = null;
                         if (validatedKeys != null) {
                             //if we have a key validated start with that
                             previousDsaKey = validatedKeys.getDSAKey();
-                        } else {
+                        }
+                        else {
                             //otherwise start from ground zero
                             previousDsaKey = dsaKeys.get(1);
                         }
@@ -825,7 +861,8 @@ public class IdentityController {
                         SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", username);
                         return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
                     }
-                } catch (JSONException e) {
+                }
+                catch (JSONException e) {
                     SurespotLog.w(TAG, e, "recreatePublicKeyPair");
                 }
             }
@@ -849,7 +886,8 @@ public class IdentityController {
                 // alert alert
                 SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."), "could not verify DH key against server signature");
                 return null;
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "DH key successfully verified");
             }
 
@@ -858,12 +896,14 @@ public class IdentityController {
                 // alert alert
                 SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."), "could not verify DSA key against server signature");
                 return null;
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "DSA key successfully verified");
             }
 
             return jsonKeypair;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "recreatePublicIdentity");
         }
         return null;
@@ -966,7 +1006,8 @@ public class IdentityController {
             return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
                     EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")), lastModified);
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, "loadPublicKeyPair", e);
         }
         return null;
@@ -990,7 +1031,8 @@ public class IdentityController {
         if (service != null) {
             return service.getLoggedInUser();
 
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -1076,7 +1118,8 @@ public class IdentityController {
             // Utils.makeLongToast(context, "identity: " + username +
             // " revoked");
 
-        } else {
+        }
+        else {
             SurespotApplication.getCachingService().updateLatestVersion(username, version);
         }
 
@@ -1099,7 +1142,8 @@ public class IdentityController {
             if (Character.isUpperCase(c)) {
                 sb.append("_");
                 sb.append(c);
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -1114,7 +1158,8 @@ public class IdentityController {
 
             if (c == '_') {
                 sb.append(Character.toUpperCase(string.charAt(++i)));
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -1144,11 +1189,14 @@ public class IdentityController {
                 if (!USE_PUBLIC_KEYSTORE_M) {
                     mKs = KeyStoreM.getInstance();
                 }
-            } else if (IS_KK) {
+            }
+            else if (IS_KK) {
                 mKs = KeyStoreKk.getInstance();
-            } else if (IS_JB43) {
+            }
+            else if (IS_JB43) {
                 mKs = KeyStoreJb43.getInstance();
-            } else {
+            }
+            else {
                 mKs = KeyStore.getInstance();
             }
         }
@@ -1204,7 +1252,8 @@ public class IdentityController {
 
             try {
                 AndroidMKeystoreController.loadEncryptedPassword(context, username, true);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 // at some point, we may want to use KeyguardManager.createConfirmDeviceCredentialIntent
                 // but for now, we're not setting up the key in the keystore so that it must be manually unlocked by the user
             }
@@ -1270,8 +1319,9 @@ public class IdentityController {
     }
 
     public static boolean storePasswordForIdentity(Context activity, String username, String password) throws InvalidKeyException {
-        if (activity == null)
+        if (activity == null) {
             return false;
+        }
 
         if (isKeystoreUnlocked(activity, username)) {
             if (username != null && password != null) {
@@ -1300,7 +1350,8 @@ public class IdentityController {
                     ks = java.security.KeyStore.getInstance("AndroidKeyStore");
                     ks.load(null);
                     ks.deleteEntry(username);
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+                }
+                catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
                     e.printStackTrace();
                     SurespotLog.d(TAG, "Error clearing stored password: " + e.getMessage());
                     return false;
@@ -1321,7 +1372,8 @@ public class IdentityController {
         if (storedPassword != null) {
             try {
                 storePasswordForIdentity(context, username, password);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 Intent intent = new Intent(context, SurespotKeystoreActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 context.startActivity(intent);
@@ -1355,7 +1407,8 @@ public class IdentityController {
                     previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
                 }
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.e(TAG, e, "error generating update signatures");
         }
         return signatures;
