@@ -23,23 +23,11 @@ import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.network.SurespotCookieJar;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 
 public class RegistrationIntentService extends IntentService {
@@ -102,66 +90,7 @@ public class RegistrationIntentService extends IntentService {
      * @param id The new token.
      */
     private void sendRegistrationToServer(String id) {
-        if (IdentityController.hasLoggedInUser()) {
-
-            String username = IdentityController.getLoggedInUser();
-            //see if it's different for this user
-            String sentId = Utils.getUserSharedPrefsString(this, username, SurespotConstants.PrefNames.GCM_ID_SENT);
-
-            if (id.equals(sentId)) {
-                //if it's not different don't upload it
-                SurespotLog.i(TAG, "GCM id already registered on surespot server.");
-                return;
-            }
-
-            SurespotLog.i(TAG, "Attempting to register gcm id on surespot server.");
-
-            //TODO use application's network controller
-            okhttp3.Cookie cookie = IdentityController.getCookieForUser(IdentityController.getLoggedInUser());
-            if (cookie != null) {
-                SurespotCookieJar jar = new SurespotCookieJar();
-                jar.setCookie(cookie);
-
-                OkHttpClient client = new OkHttpClient.Builder()
-                        .cookieJar(jar)
-                        .build();
-
-                JSONObject params = new JSONObject();
-                try {
-                    params.put("gcmId", id);
-                }
-                catch (JSONException e) {
-                    SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
-                    return;
-                }
-
-                RequestBody body = RequestBody.create(NetworkController.JSON, params.toString());
-                Request request = new Request.Builder()
-                        .url(SurespotConfiguration.getBaseUrl() + "/registergcm")
-                        .post(body)
-                        .build();
-
-                Response response;
-                try {
-                    response = client.newCall(request).execute();
-                }
-                catch (IOException e) {
-                    SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
-                    return;
-                }
-
-                // success returns 204
-                if (response.code() == 204) {
-                    SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
-
-                    // the server and client match, we're golden
-                    Utils.putUserSharedPrefsString(this, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
-                }
-            }
-        }
-        else {
-            SurespotLog.i(TAG, "Can't save GCM id on surespot server as user is not logged in.");
-        }
+        SurespotApplication.getNetworkController().registerGcmId(this, id);
     }
 
     /**

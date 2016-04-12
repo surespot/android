@@ -29,7 +29,6 @@ import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.security.PublicKey;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -188,14 +187,10 @@ public class CredentialCachingService extends Service {
 
 		boolean hasCookie = false;
 		Cookie cookie = getCookie(username);
-		Date date = new Date();
-		Date expire = new Date(date.getTime() - 60 * 60 * 1000);
 
-		// if the cookie expires within the hour make them login again
-		//TODO check logic
-		if (cookie != null && cookie.expiresAt() < expire.getTime()) {
+		if (cookie != null)  {
 			hasCookie = true;
-			SurespotLog.d(TAG, "we have non expired cookie");
+			SurespotLog.d(TAG, "we have cookie");
 		}
 
 		boolean sessionSet = hasIdentity && (hasPassword || hasCookie);

@@ -719,56 +719,54 @@ public class NetworkController {
         post("/invites/" + friendname + "/" + action, responseHandler);
     }
 
-//	public void registerGcmId(final AsyncHttpResponseHandler responseHandler) {
-//		// make sure the gcm is set
-//		// use case:
-//		// user signs-up without google account (unlikely)
-//		// user creates google account
-//		// user opens app again, we have session so neither login or add user is called (which wolud set the gcm)
-//		// so we need to upload the gcm here if we haven't already
-//		// get the gcm id
-//
-//		final String gcmIdReceived = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED);
-//		String gcmIdSent = Utils.getSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT);
-//
-//		Map<String, String> params = new HashMap<String, String>();
-//
-//		boolean gcmUpdatedTemp = false;
-//		// update the gcmid if it differs
-//		if (gcmIdReceived != null && !gcmIdReceived.equals(gcmIdSent)) {
-//
-//			params.put("gcmId", gcmIdReceived);
-//			gcmUpdatedTemp = true;
-//		}
-//		else {
-//			SurespotLog.v(TAG, "GCM does not need updating on server.");
-//			return;
-//		}
-//
-//		// just be javascript already
-//		final boolean gcmUpdated = gcmUpdatedTemp;
-//
-//		post("/registergcm", new RequestParams(params), new AsyncHttpResponseHandler() {
-//
-//			@Override
-//			public void onSuccess(int responseCode, String result) {
-//
-//				// update shared prefs
-//				if (gcmUpdated) {
-//					Utils.putSharedPrefsString(SurespotApplication.getContext(), SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
-//				}
-//
-//				responseHandler.onSuccess(responseCode, result);
-//			}
-//
-//			@Override
-//			public void onFailure(Throwable arg0, String arg1) {
-//				responseHandler.onFailure(arg0, arg1);
-//			}
-//
-//		});
-//
-//	}
+	public void registerGcmId(Context context, String id) {
+
+        String username = mUsername;
+        //see if it's different for this user
+        String sentId = Utils.getUserSharedPrefsString(context, username, SurespotConstants.PrefNames.GCM_ID_SENT);
+
+        if (id.equals(sentId)) {
+            //if it's not different don't upload it
+            SurespotLog.i(TAG, "GCM id already registered on surespot server.");
+            return;
+        }
+
+        SurespotLog.i(TAG, "Attempting to register gcm id on surespot server.");
+
+
+
+        JSONObject params = new JSONObject();
+        try {
+            params.put("gcmId", id);
+        }
+        catch (JSONException e) {
+            SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
+            return;
+        }
+
+        RequestBody body = RequestBody.create(NetworkController.JSON, params.toString());
+        Request request = new Request.Builder()
+                .url(SurespotConfiguration.getBaseUrl() + "/registergcm")
+                .post(body)
+                .build();
+
+        Response response;
+        try {
+            response = mClient.newCall(request).execute();
+        }
+        catch (IOException e) {
+            SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
+            return;
+        }
+
+        // success returns 204
+        if (response.code() == 204) {
+            SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
+
+            // the server and client match, we're golden
+            Utils.putUserSharedPrefsString(context, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
+        }
+	}
 
     public void validate(String username, String password, String signature, Callback responseHandler) {
         JSONObject json = new JSONObject();
