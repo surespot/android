@@ -61,7 +61,8 @@ public class NetworkHelper {
 
         }
         else {
-            cookieResponseHandler.onFailure(null, 500, null);
+            //send 401 as we don't have a password
+            cookieResponseHandler.onFailure(null, 401, null);
         }
     }
 

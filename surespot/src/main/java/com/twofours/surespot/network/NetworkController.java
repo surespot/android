@@ -353,7 +353,7 @@ public class NetworkController {
 
                 if (cookie == null) {
                     SurespotLog.w(TAG, "did not get cookie from signup");
-                    responseHandler.onFailure(new IOException("Did not get cookie."), 500, "Did not get cookie.");
+                    responseHandler.onFailure(new IOException("Did not get cookie."), 401, "Did not get cookie.");
                 }
                 else {
                     setUnauthorized(false, false);
@@ -541,7 +541,7 @@ public class NetworkController {
                     Cookie cookie = extractConnectCookie(mCookieStore);
                     if (cookie == null) {
                         SurespotLog.w(TAG, "Did not get cookie from login.");
-                        responseHandler.onFailure(new Exception("Did not get cookie."), 500, "Did not get cookie.");
+                        responseHandler.onFailure(new Exception("Did not get cookie."), 401, "Did not get cookie.");
                     }
 
                     else {
