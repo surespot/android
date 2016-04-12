@@ -62,6 +62,9 @@ public class SurespotConstants {
 	// PROD false for production
 	public final static boolean LOGGING = true;
 
+	// PROD true for production
+	public final static boolean SSL_STRICT = false;
+
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";
 		public final static String GCM_ID_RECEIVED = "gcm_id_received";

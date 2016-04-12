@@ -93,8 +93,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" scope="TEST" name="json-20080701" level="project" />
     <orderEntry type="library" exported="" name="prov-1.53.0.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="json-20080701" level="project" />
     <orderEntry type="library" exported="" name="core-1.53.0.0" level="project" />
     <orderEntry type="library" exported="" name="acra-4.5.0" level="project" />
   </component>

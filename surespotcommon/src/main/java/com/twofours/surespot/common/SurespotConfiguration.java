@@ -1,15 +1,14 @@
 package com.twofours.surespot.common;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 public class SurespotConfiguration {
-	public static final int SSL_NOT_STRICT = 0;
 	private final static int IMAGE_DISPLAY_HEIGHT_MULT = 200;
 	// private final static int QR_DISPLAY_SIZE = 200;
 
@@ -34,7 +33,7 @@ public class SurespotConfiguration {
 			Properties properties = new Properties();
 			properties.load(rawResource);
 			mConfigProperties = properties;
-			mStrictSsl = Boolean.parseBoolean((String) properties.get("ssl_strict"));
+			mStrictSsl = Boolean.parseBoolean((String) properties.get("ssl_strict")) || SurespotConstants.SSL_STRICT;
 			mBaseUrl = (String) properties.get("baseUrl");
 			mGoogleApiLicenseKey = (String) properties.get("googleApiLicenseKey");
 			mGoogleApiKey = (String) properties.get("googleApiKey");

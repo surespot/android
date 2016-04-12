@@ -22,8 +22,17 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Cache;
 import okhttp3.Call;
@@ -54,7 +63,7 @@ public class NetworkController {
 
     private IAsyncCallbackTuple<String, Boolean> m401Handler;
 
-    public NetworkController()  {
+    public NetworkController() {
         SurespotLog.d(TAG, "constructor");
         mBaseUrl = SurespotConfiguration.getBaseUrl();
         mCookieStore = new SurespotCookieJar();
@@ -113,16 +122,56 @@ public class NetworkController {
 
         };
 
-
-
-
-        mClient = new OkHttpClient.Builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .cache(cache)
                 .cookieJar(mCookieStore)
                 .addInterceptor(logging)
                 .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
-                .authenticator(authenticator)
-                .build();
+                .authenticator(authenticator);
+
+        if (SurespotConfiguration.isSslCheckingStrict()) {
+
+
+            mClient = builder.build();
+        }
+        else {
+            try {
+                // Create a trust manager that does not validate certificate chains
+                final TrustManager[] trustAllCerts = new TrustManager[]{
+                        new X509TrustManager() {
+                            @Override
+                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                            }
+
+                            @Override
+                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                            }
+
+                            @Override
+                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                return new X509Certificate[0];
+                            }
+                        }
+                };
+
+                // Install the all-trusting trust manager
+                final SSLContext sslContext = SSLContext.getInstance("SSL");
+                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                // Create an ssl socket factory with our all-trusting manager
+                final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+                HostnameVerifier hostnameVerifier = new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                };
+                mClient = builder.sslSocketFactory(sslSocketFactory).hostnameVerifier(hostnameVerifier).build();
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
 //        if (mClient == null) {
 //            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
@@ -130,10 +179,10 @@ public class NetworkController {
 //        }
 
 
-
     }
 
-    public void setUsernameAnd401Handler (String username, IAsyncCallbackTuple<String, Boolean> the401Handler) {
+
+    public void setUsernameAnd401Handler(String username, IAsyncCallbackTuple<String, Boolean> the401Handler) {
         mUsername = username;
         m401Handler = the401Handler;
 
