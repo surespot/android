@@ -152,11 +152,14 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "createSocket, mSocket == null: %b", mSocket == null);
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
-            //TODO
-            // opts.sslContext = WebClientDevWrapper.getSSLContext();
-            opts.secure = true;
+
+            //override ssl context for self signed certs for dev
+            if (!SurespotConfiguration.isSslCheckingStrict()) {
+                opts.sslContext = SurespotApplication.getNetworkController().getSSLContext();
+                opts.hostnameVerifier = SurespotApplication.getNetworkController().getHostnameVerifier();
+            }
+
             opts.reconnection = false;
-            opts.hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
             opts.transports = new String[]{WebSocket.NAME};
 
             try {

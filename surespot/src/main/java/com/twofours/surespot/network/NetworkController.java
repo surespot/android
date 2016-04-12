@@ -61,6 +61,9 @@ public class NetworkController {
     private String mUsername;
     private int m401RetryCount = 0;
 
+    private SSLContext mSSLContext;
+    private HostnameVerifier mHostnameVerifier;
+
     private IAsyncCallbackTuple<String, Boolean> m401Handler;
 
     public NetworkController() {
@@ -155,18 +158,18 @@ public class NetworkController {
                 };
 
                 // Install the all-trusting trust manager
-                final SSLContext sslContext = SSLContext.getInstance("SSL");
-                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                mSSLContext  = SSLContext.getInstance("SSL");
+                mSSLContext.init(null, trustAllCerts, new java.security.SecureRandom());
                 // Create an ssl socket factory with our all-trusting manager
-                final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+                final SSLSocketFactory sslSocketFactory = mSSLContext.getSocketFactory();
 
-                HostnameVerifier hostnameVerifier = new HostnameVerifier() {
+                mHostnameVerifier = new HostnameVerifier() {
                     @Override
                     public boolean verify(String hostname, SSLSession session) {
                         return true;
                     }
                 };
-                mClient = builder.sslSocketFactory(sslSocketFactory).hostnameVerifier(hostnameVerifier).build();
+                mClient = builder.sslSocketFactory(sslSocketFactory).hostnameVerifier(mHostnameVerifier).build();
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
@@ -1079,5 +1082,13 @@ public class NetworkController {
 
     public String getUsername() {
         return mUsername;
+    }
+
+    public SSLContext getSSLContext() {
+        return mSSLContext;
+    }
+
+    public HostnameVerifier getHostnameVerifier() {
+        return mHostnameVerifier;
     }
 }
