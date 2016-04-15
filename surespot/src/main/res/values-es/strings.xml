@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">surespot</string>
   <string name="friends">Contactos</string>
   <string name="menu_settings">Ajustes</string>
@@ -20,11 +20,13 @@
   <string name="import_identity_label">Restaurar perfil...</string>
   <string name="export_identity_label">Exportar perfil...</string>
   <string name="delete_identity_user">Eliminar perfil: %s</string>
+  <string name="remove_identity_user">perfil eliminado: %s</string>
   <string name="import_identities">Restaurar perfil...</string>
   <string name="create_identity_label">Crear nuevo perfil...</string>
   <string name="no_identity_exported">No se ha exportado el perfil</string>
   <string name="no_identity_imported">No se ha restaurado el perfil</string>
   <string name="no_identity_deleted">No se ha eliminado el perfil</string>
+  <string name="no_identity_removed">perfil no eliminado</string>
   <string name="identity_imported_successfully">Perfil %s restaurado correctamente</string>
   <string name="could_not_import_identity">No se puede restaurar el perfil</string>
   <string name="could_not_restore_identity_name">No se puede restaurar el perfil %s</string>
@@ -50,6 +52,7 @@
   <string name="help_holdfriend">Mantén pulsado un contacto para ver las opciones.</string>
   <string name="help_imageZoom">Amplía las imágenes mediante un toque sobre ellas.</string>
   <string name="incorrect_password_or_key">Contraseña o clave incorrecta</string>
+  <string name="cannot_change_to_same_password">Tu contraseña nueva debe ser distinta a la antigua</string>
   <string name="no_such_user">No existe el usuario</string>
   <string name="roll_keys">Generar nuevo pares de claves</string>
   <string name="key_management">Generar nuevo pares de claves...</string>
@@ -104,7 +107,7 @@
   <string name="login_progress">Iniciando sesión</string>
   <string name="login_check_password">No se pudo iniciar sesión, asegúrate de que la contraseña es correcta.</string>
   <string name="login_try_again_later">Error al iniciar la sesión, inténtalo de nuevo más tarde.</string>
-  <string name="login_max_identities_reached">Lo sentimos, has alcanzado el número máximo de perfiles permitidos (%d).\n\nPuedes eliminar perfiles desde el menú de ajustes después de iniciar sesión.</string>
+  <string name="login_max_identities_reached">Lo sentimos, has alcanzado el número máximo de perfiles permitidos (%d).</string>
   <string name="local_cache_cleared">Limpiada la caché local</string>
   <string name="qr_pre_username_help">Escaneando este código QR se invitará</string>
   <string name="qr_post_username_help">a tus contactos en surespot, instalando la aplicación desde Google Play si es necesario.</string>
@@ -137,6 +140,7 @@
   <string name="create">Crear</string>
   <string name="passwords_do_not_match">Las contraseñas no coinciden</string>
   <string name="username_exists">Ese nombre de usuario ya está en uso, por favor introduce uno nuevo.</string>
+  <string name="secure_lock_screen_not_set_up">La pantalla de bloqueo no ofrece ninguna seguridad.\nPara una mayor privacidad te recomendamos que configures un bloqueo en tu terminal.\nVe a \'Ajustes -&gt; Seguridad -&gt; Pantalla\' para configurarla de forma segura</string>
   <string name="user_creation_throttled">Demasiados intentos de creación de usuario, inténtalo de nuevo dentro de un rato.</string>
   <string name="signup_update">Por favor actualiza surespot para crear un nuevo usuario</string>
   <string name="could_not_create_user">No se ha podido crear el usuario, por favor inténtalo de nuevo más tarde.</string>
@@ -190,6 +194,9 @@
   <string name="delete_identity_progress">Borrando perfil</string>
   <string name="could_not_delete_identity">No se ha podido borrar el perfil</string>
   <string name="identity_deleted">Perfil borrado</string>
+  <string name="delete_identity_from_device_progress">borrando perfil del dispositivo</string>
+  <string name="could_not_remove_identity_from_device">no se puede eliminar el perfil del dispositivo</string>
+  <string name="identity_removed_from_device">perfil eliminado del dispositivo</string>
   <string name="backup">Exportar</string>
   <string name="backup_identity">Exportar perfil %s</string>
   <string name="backed_up_identity_to_path">Exportar perfil %1$s a %2$s</string>
@@ -221,6 +228,7 @@
   <string name="select_none">Nada seleccionado</string>
   <string name="select_all">Elegir todo</string>
   <string name="delete_identity_message_warning">Borrando un perfil borrarás todos los mensajes enviados con ese perfil. Esta acción no se puede deshacer.</string>
+  <string name="remove_identity_from_device_message_warning">Borrar un perfil de un dispositivo eliminará el perfil de ese dispositivo, pero no borrará el perfil o los mensajes enviados del servidor.</string>
   <string name="identity_colon">perfil:</string>
   <string name="backup_location_note">Nota: puede ser o no una tarjeta SD extraible, dependiendo de tu dispositivo.</string>
   <string name="generate_new_keypairs">Genera un nuevo par de claves para el perfil seleccionado y anula el par actual. Ningún otro dispositivo podrá acceder a surespot usando este perfil.</string>
@@ -247,10 +255,13 @@
   <string name="pref_summary_export_identity">Copia de seguridad de tu perfil en Almacenamiento Local o en Google Drive.</string>
   <string name="pref_summary_import_identity">Restaura tu perfil desde el Almacenamiento Local o Google Drive.</string>
   <string name="pref_summary_delete_identity">Borrar un perfil no tiene marcha atrás.</string>
+  <string name="pref_summary_remove_identity_from_device">Eliminar un perfil de un dispositivo conserva dicho perfil en otros dispositivos.</string>
   <string name="pref_summary_regen_keys">Para los paranoicos.</string>
   <string name="pref_summary_message_debug_mode">Mostrar más información sobre los mensajes para depuración.</string>
   <string name="pref_title_delete_identity">Borrar perfil...</string>
   <string name="delete_identity">Borrar perfil</string>
+  <string name="pref_title_remove_identity_from_device">elimina el perfil del dispositivo...</string>
+  <string name="remove_identity_from_device">elimina el perfil del dispositivo</string>
   <string name="surespot_help">Ayuda de Surespot</string>
   <string name="backup_drive_button">Ejecutar exportación a Google Drive</string>
   <string name="could_not_backup_identity_to_google_drive">No se puede exportar el perfil a Google Drive</string>
@@ -272,6 +283,7 @@
   <string name="last_modified">Última modificación</string>
   <string name="help">Ayuda</string>
   <string name="menu_import">Importar</string>
+  <string name="menu_remove">eliminar perfil</string>
   <string name="backup_device">EXPORTAR PERFIL AL ALMACENAMIENTO LOCAL</string>
   <string name="backup_drive">EXPORTAR PERFIL A GOOGLE DRIVE</string>
   <string name="let_me_select">Seleccionar</string>
@@ -320,12 +332,13 @@
   <string name="message_hint">Introducir mensaje</string>
   <string name="invite_hint">Invitar usuario</string>
   <string name="recording_cancelled">Grabación cancelada</string>
-  <string name="share_invite_link">Enlace invition cuota</string>
+  <string name="share_invite_link">Enlace de invitación</string>
   <string name="share_link_help">Usa \"Compartir enlace de invitación\" del menú de opciones para compartir un enlace vía correo, SMS, Twitter o cualquier otra red social, que al pulsarlo instale surespot y envíe una invitación para unirse a tus contactos de surespot.</string>
   <string name="pref_stop_cache_logout_title">Borrar caché al salir</string>
   <string name="pref_stop_cache_logout_summary">Borra la memoria caché al salir</string>
   <string name="could_not_load_public_keys">No se pudo cargar las claves públicas</string>
   <string name="keystore_not_supported">Llavero no soportado</string>
+  <string name="keystore_not_unlocked">el llavero no estaba desbloqueado</string>
   <string name="pref_title_global_options">Opciones generales</string>
   <string name="store_password_in_keychain">Contraseña guardada en llavero</string>
   <string name="menu_assign_alias">Asignar Alias</string>
@@ -343,6 +356,4 @@
   <string name="notification_message_no_from">%s: tienes un mensaje nuevo.</string>
   <string name="notification_invite_no_from">%s: tienes una invitación nueva.</string>
   <string name="notification_invite_accept_no_from">%s: Invitación de contacto aceptada.</string>
-  <string name="whats_new_57_message">¡Nuevas características!\n\nGuardar clave en llavero.\n\nAlias de contactos (mantener pulsado el contacto en el Inicio).\n\nMejoras en el manejo de reconexión.\n\n!Gracias por ayudar al proyecto con vuestras donaciones!</string>
-  <string name="whats_new_57_title">Versión 58</string>
 </resources>

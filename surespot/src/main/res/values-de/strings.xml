@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">surespot</string>
   <string name="friends">Kontakte</string>
   <string name="menu_settings">Einstellungen</string>
@@ -20,11 +20,13 @@
   <string name="import_identity_label">Profil wiederherstellen</string>
   <string name="export_identity_label">Profil exportieren...</string>
   <string name="delete_identity_user">Profil löschen: %s</string>
+  <string name="remove_identity_user">Identität %s löschen</string>
   <string name="import_identities">Profil wiederherstellen...</string>
   <string name="create_identity_label">Neues Profil anlegen...</string>
   <string name="no_identity_exported">Noch kein Profil exportiert</string>
   <string name="no_identity_imported">Profil Import gescheitert </string>
   <string name="no_identity_deleted">Profil nicht gelöscht</string>
+  <string name="no_identity_removed">Keine Identität gelöscht</string>
   <string name="identity_imported_successfully">Profil %s erfolgreich wiederhergestellt</string>
   <string name="could_not_import_identity">Profil konnte nicht importiert werden</string>
   <string name="could_not_restore_identity_name">Profil %s konnte nicht importiert werden</string>
@@ -50,6 +52,7 @@
   <string name="help_holdfriend">Für Kontaktoptionen den Kontakt gedrückt halten.</string>
   <string name="help_imageZoom">Zur Vergrößerung auf das Bild tippen.</string>
   <string name="incorrect_password_or_key">Passwort oder Schlüssel ist falsch</string>
+  <string name="cannot_change_to_same_password">Dein neues Passwort muss sich von dem alten unterscheiden</string>
   <string name="no_such_user">Benutzer nicht gefunden</string>
   <string name="roll_keys">Erzeuge neues Schlüsselpaar</string>
   <string name="key_management">Erzeuge neues Schlüsselpaar...</string>
@@ -137,6 +140,7 @@
   <string name="create">Erstellen</string>
   <string name="passwords_do_not_match">Passwörter stimmen nicht überein</string>
   <string name="username_exists">Benutzername existiert bereits, bitte anderen Namen eingeben.</string>
+  <string name="secure_lock_screen_not_set_up">Eine sichere Bildschirmsperre wurde noch nicht eingerichtet.\nFür maximale Sicherheit empfehlen wir die Verwendung einer sicheren Bildschirmsperre.\nSuche dazu in den Einstellungen nach Bildschirmsperre.</string>
   <string name="user_creation_throttled">Zu viele Benutzeranfragen, bitte später erneut versuchen</string>
   <string name="signup_update">Bitte surespot aktualisieren um einen neuen Benutzer zu erstellen</string>
   <string name="could_not_create_user">Benutzer konnte nicht erstellt werden, bitte später erneut versuchen</string>
@@ -190,6 +194,9 @@
   <string name="delete_identity_progress">Profil löschen</string>
   <string name="could_not_delete_identity">Profil konnte nicht gelöscht werden</string>
   <string name="identity_deleted">Profil gelöscht</string>
+  <string name="delete_identity_from_device_progress">Identität von diesem Gerät löschen</string>
+  <string name="could_not_remove_identity_from_device">Identität konnte nicht vom Gerät entfernt werden</string>
+  <string name="identity_removed_from_device">Identität wurde von diesem Gerät entfernt</string>
   <string name="backup">Sichern</string>
   <string name="backup_identity">Profil %s sichern</string>
   <string name="backed_up_identity_to_path">Profil %1$s gesichert nach %2$s</string>
@@ -221,6 +228,7 @@
   <string name="select_none">Keine Auswahl</string>
   <string name="select_all">Alles auswählen</string>
   <string name="delete_identity_message_warning">Das Löschen eines Profils löscht alle Nachrichten die mit diesem Profil versendet wurden, auch beim Empfänger. Dieser Vorgang kann nicht rückgängig gemacht werden.</string>
+  <string name="remove_identity_from_device_message_warning">Das Löschen der Identität von einem Gerät löscht diese ausschließlich von diesem Gerät, jedoch nicht von anderen Geräten oder gesendete Nachrichten vom Server.</string>
   <string name="identity_colon">Profil:</string>
   <string name="backup_location_note">Hinweis: Je nach Gerät kann nicht festgestellt werden, ob dies die auswechselbaren SD-Karte ist.</string>
   <string name="generate_new_keypairs">Generiert ein neues privates Schlüsselpaar für das ausgewählte Profil und verwirft das aktuelle Schlüsselpaar. Alle anderen Geräte (z.B. verlorene oder gestohlene Telefone) sind danach nicht mehr in der Lage auf das ausgewählte surespot Profil zuzugreifen.</string>
@@ -247,10 +255,13 @@
   <string name="pref_summary_export_identity">Des Profil sollte auf dem Lokalen Datenträger oder Google Drive gesichert werden.</string>
   <string name="pref_summary_import_identity">Bitte das Profil vom Lokalen Datenträger oder Google Drive wiederherstellen.</string>
   <string name="pref_summary_delete_identity">Die Löschung eines Profils kann nicht rückgängig gemacht werden.</string>
+  <string name="pref_summary_remove_identity_from_device">Beim Löschen der Identität von einem Gerät wird diese nicht von anderen Geräten gelöscht.</string>
   <string name="pref_summary_regen_keys">Für extremen Sicherheitsbedarf</string>
   <string name="pref_summary_message_debug_mode">Zeigt zusätzliche Informationen zu den Mitteilungen für Entwicklungs-Zwecke an.</string>
   <string name="pref_title_delete_identity">Profil löschen ...</string>
   <string name="delete_identity">Profil löschen</string>
+  <string name="pref_title_remove_identity_from_device">Identität vom Gerät löschen...</string>
+  <string name="remove_identity_from_device">Identität von Gerät löschen</string>
   <string name="surespot_help">surespot Hilfe</string>
   <string name="backup_drive_button">Google Drive Export ausführen</string>
   <string name="could_not_backup_identity_to_google_drive">Google Drive Export konnte nicht ausgeführt werden</string>
@@ -272,6 +283,7 @@
   <string name="last_modified">zuletzt geändert</string>
   <string name="help">Hilfe</string>
   <string name="menu_import">Import</string>
+  <string name="menu_remove">Identität löschen</string>
   <string name="backup_device">PROFIL AUF LOKALEM DATENTRÄGER SICHERN</string>
   <string name="backup_drive">PROFIL AUF GOOGLE DRIVE SICHERN</string>
   <string name="let_me_select">bitte lass mich wählen</string>
@@ -326,6 +338,7 @@
   <string name="pref_stop_cache_logout_summary">Beendet den Zwischenspeicher-Dienst beim Logout</string>
   <string name="could_not_load_public_keys">Öffentliche Schlüssel konnten nicht geladen werden</string>
   <string name="keystore_not_supported">Funktion \"Schlüsselbund\" wird nicht unterstützt</string>
+  <string name="keystore_not_unlocked">Der Schlüsselspeicher ist nicht entsperrt.</string>
   <string name="pref_title_global_options">Allgemeine Optionen</string>
   <string name="store_password_in_keychain">Passwort im Schlüsselbund speichern</string>
   <string name="menu_assign_alias">Benutzername zuordnen</string>
