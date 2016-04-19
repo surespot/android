@@ -1,5 +1,27 @@
 package com.twofours.surespot;
 
+import android.content.Context;
+import android.os.AsyncTask;
+
+import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.FileUtils;
+import com.twofours.surespot.common.SurespotConstants;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
+import com.twofours.surespot.services.CredentialCachingService.VersionMap;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -16,27 +38,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.Context;
-import android.os.AsyncTask;
 import ch.boye.httpclientandroidlib.cookie.Cookie;
-
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.friends.Friend;
-import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
-import com.twofours.surespot.services.CredentialCachingService.VersionMap;
 
 public class StateController {
 	private static final String MESSAGES_PREFIX = "messages_";
@@ -294,7 +296,10 @@ public class StateController {
 				String localImageDir = FileUtils.getImageUploadDir(context);
 				FileUtils.deleteRecursive(new File(localImageDir));
 
-				SurespotApplication.getCachingService().clear();
+				CredentialCachingService ccs = SurespotApplication.getCachingService();
+				if (ccs != null) {
+					ccs.clear();
+				}
 
 				return null;
 			}

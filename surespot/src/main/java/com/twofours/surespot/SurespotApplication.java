@@ -1,24 +1,12 @@
 package com.twofours.surespot;
 
-import java.security.Security;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+
 import com.google.android.gcm.GCMRegistrar;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.EmojiParser;
@@ -27,7 +15,21 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.services.CredentialCachingService;
+
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+
+import java.security.Security;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
 formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.crash_toast_text, resDialogText = R.string.crash_dialog_text, resDialogOkToast = R.string.crash_dialog_ok_toast, resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
@@ -144,6 +146,20 @@ public class SurespotApplication extends Application {
 		}
 		catch (Exception e) {
 			SurespotLog.w(TAG, "onCreate", e);
+		}
+
+		boolean cacheCleared = Utils.getSharedPrefsBoolean(this, "cacheCleared65");
+
+		if (!cacheCleared) {
+
+			//wipe the cache
+			StateController.clearCache(this, new IAsyncCallback<Void>() {
+				@Override
+				public void handleResponse(Void result) {
+					SurespotLog.d(TAG, "cache cleared");
+					Utils.putSharedPrefsBoolean(SurespotApplication.this, "cacheCleared65", true);
+				}
+			});
 		}
 
 		// NetworkController.unregister(this, regId);
