@@ -13,6 +13,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
 import com.twofours.surespot.services.CredentialCachingService.VersionMap;
 
