@@ -17,7 +17,6 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -249,8 +248,8 @@ public class FriendAdapter extends BaseAdapter {
 			mFriendAliasDecryptor.decrypt(friendViewHolder.tvName, friend);
 		}
 
-		friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(
-				SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));
+		//friendViewHolder.tvName.setTextColor(mContext.getResources().getColor(
+		//		SurespotConfiguration.isBackgroundImageSet() ? R.color.surespotGrey : android.R.color.black));
 
 		if (friend.hasFriendImageAssigned()) {
 			FriendImageDownloader.download(friendViewHolder.avatarImage, friend);

@@ -297,9 +297,9 @@ public class ChatAdapter extends BaseAdapter {
 
         final SurespotMessage item = (SurespotMessage) getItem(position);
 
-        chatMessageViewHolder.tvText.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
-        chatMessageViewHolder.tvTime.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
-        chatMessageViewHolder.messageSize.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+        //chatMessageViewHolder.tvText.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+        //chatMessageViewHolder.tvTime.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+        //chatMessageViewHolder.messageSize.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
 
         if (!SurespotConstants.MimeTypes.TEXT.equals(item.getMimeType())) {
             SurespotLog.v(TAG, "rendering item: %s", item);

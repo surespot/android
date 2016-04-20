@@ -66,6 +66,7 @@ import io.socket.client.IO;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+import io.socket.engineio.client.EngineIOException;
 import io.socket.engineio.client.Transport;
 import io.socket.engineio.client.transports.WebSocket;
 import okhttp3.Call;
@@ -1230,8 +1231,14 @@ public class CommunicationService extends Service {
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
+
+
             if (args.length > 0) {
-                SurespotLog.d(TAG, "onConnectError: args: %s", args[0]);
+                String reason = args[0].toString();
+                if (args[0] instanceof EngineIOException) {
+                    reason = ((EngineIOException) args[0]).getCause().toString();
+                }
+                SurespotLog.d(TAG, "onConnectError: args: %s", reason);
             }
 
             setState(STATE_DISCONNECTED);

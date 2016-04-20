@@ -4,7 +4,7 @@
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="DefaultTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -12,25 +12,30 @@
         -->
     </style>
 
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
 
+    <!--<style name="Divider" parent="DefaultTheme">-->
+        <!--<item name="android:background">?android:attr/listDivider</item>-->
+    <!--</style>-->
 
+    <!--<style name="NotificationTitle" parent="DefaultTheme">-->
+        <!--<item name="android:textColor">?android:attr/textColorPrimaryInverse</item>-->
+        <!--<item name="android:textStyle">bold</item>-->
+    <!--</style>-->
+
+    <!--<style name="NotificationText" parent="DefaultTheme">-->
+        <!--<item name="android:textColor">?android:attr/textColorPrimaryInverse</item>-->
+    <!--</style>-->
+
+    <style name="BlackTheme" parent="android:Theme.Holo">
+
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
     </style>
 
-    <style name="Divider">
-        <item name="android:background">?android:attr/listDivider</item>
-    </style>
 
-    <style name="NotificationTitle">
-        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="NotificationText">
-        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
-    </style>
 
     <declare-styleable name="VolumeEnvelopeView">
         <attr name="color" format="color" />
