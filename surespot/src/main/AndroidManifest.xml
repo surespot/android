@@ -37,7 +37,7 @@
         android:name="com.twofours.surespot.SurespotApplication"
         android:icon="@drawable/surespotlauncher"
         android:label="surespot"
-        android:theme="@style/BlackTheme">
+        android:theme="@style/DefaultTheme">
 
         <meta-data
             android:name="com.google.android.gms.version"

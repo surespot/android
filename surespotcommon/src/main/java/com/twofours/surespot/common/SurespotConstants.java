@@ -45,7 +45,7 @@ public class SurespotConstants {
 	}
 
 	public final static int MESSAGE_IMAGE_DIMENSION = 800;
-	public final static int FRIEND_IMAGE_DIMENSION = 100;
+	public final static int FRIEND_IMAGE_DIMENSION = 200;
 
 	public final static int MAX_USERNAME_LENGTH = 20;
 	public final static int MAX_PASSWORD_LENGTH = 256;
