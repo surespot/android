@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "com.twofours.surespot"
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 20
         multiDexEnabled true
     }
 
@@ -20,7 +20,6 @@ android {
         }
         release {
             minifyEnabled true
-
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
         }
     }
