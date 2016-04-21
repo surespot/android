@@ -204,13 +204,16 @@ public class ExportIdentityActivity extends Activity {
     }
 
     private void exportLocally() {
-        // TODO progress
         final String user = (String) mSpinner.getSelectedItem();
         mDialog = UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
                 getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
                     @Override
                     public void handleResponse(String result) {
                         if (!TextUtils.isEmpty(result)) {
+                            if (mSpd == null) {
+                                mSpd = new SingleProgressDialog(ExportIdentityActivity.this, getString(R.string.progress_backup_identity_drive), 0);
+                            }
+                            mSpd.show();
                             exportIdentity(user, result);
                         }
                         else {
@@ -230,6 +233,7 @@ public class ExportIdentityActivity extends Activity {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
+                        mSpd.hide();
                         if (response == null) {
                             Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
                         }

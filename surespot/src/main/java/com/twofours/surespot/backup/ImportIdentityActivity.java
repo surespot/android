@@ -258,7 +258,6 @@ public class ImportIdentityActivity extends Activity {
                     boolean checked = ((RadioButton) view).isChecked();
 
 
-
                     if (checked) {
                         if (view.getTag().equals("drive")) {
                             if (mShowingLocal) {
@@ -396,49 +395,56 @@ public class ImportIdentityActivity extends Activity {
                         new IAsyncCallback<String>() {
                             @Override
                             public void handleResponse(String result) {
+
                                 if (!TextUtils.isEmpty(result)) {
+                                    if (mSpd == null) {
+                                        mSpd = new SingleProgressDialog(ImportIdentityActivity.this, getString(R.string.progress_restoring_identity), 0);
+                                    }
+                                    mSpd.show();
+
                                     IdentityController.importIdentity(ImportIdentityActivity.this, exportDir, user, result,
                                             new IAsyncCallback<IdentityOperationResult>() {
 
                                                 @Override
-                                                public void handleResponse(IdentityOperationResult response) {
+                                                public void handleResponse(final IdentityOperationResult response) {
+                                                    Runnable runnable = new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            mSpd.hide();
+                                                            Utils.makeLongToast(ImportIdentityActivity.this, response.getResultText());
 
-                                                    Utils.makeLongToast(ImportIdentityActivity.this, response.getResultText());
+                                                            if (response.getResultSuccess()) {
+                                                                // if launched
+                                                                // from
+                                                                // signup and
+                                                                // successful
+                                                                // import, go to
+                                                                // login
+                                                                // screen
+                                                                Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
 
-                                                    if (response.getResultSuccess()) {
-                                                        // if launched
-                                                        // from
-                                                        // signup and
-                                                        // successful
-                                                        // import, go to
-                                                        // login
-                                                        // screen
-                                                        Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
+                                                                if (mSignup) {
+                                                                    IdentityController.logout();
 
-                                                        if (mSignup) {
-                                                            IdentityController.logout();
-
-                                                            Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
-                                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                            startActivity(intent);
+                                                                    Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
+                                                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                    startActivity(intent);
+                                                                }
+                                                            }
                                                         }
+                                                    };
 
-                                                    }
-
+                                                    ImportIdentityActivity.this.runOnUiThread(runnable);
                                                 }
                                             });
                                 }
                                 else {
                                     Utils.makeToast(ImportIdentityActivity.this, getString(R.string.no_identity_imported));
                                 }
-
                             }
                         });
-
             }
-
         });
-
     }
 
     public void checkPermissionReadStorage(Activity activity) {
