@@ -254,9 +254,9 @@ public class FriendAdapter extends BaseAdapter {
 		if (friend.hasFriendImageAssigned()) {
 			FriendImageDownloader.download(friendViewHolder.avatarImage, friend);
 		}
-		//else {
-		//	friendViewHolder.avatarImage.setImageDrawable(friendViewHolder.avatarImage.getResources().getDrawable(android.R.drawable.sym_def_app_icon));
-		//}
+		else {
+			friendViewHolder.avatarImage.setImageResource(android.R.color.transparent);
+		}
 
 		if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.isDeleted()) {
 			friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
