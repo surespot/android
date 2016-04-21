@@ -57,7 +57,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ImportIdentityActivity extends Activity {
-    private static final String TAG = null;
+    private static final String TAG = "ImportIdentityActivity";
     private boolean mSignup;
 
     private TextView mAccountNameDisplay;
@@ -76,6 +76,7 @@ public class ImportIdentityActivity extends Activity {
     private ViewSwitcher mSwitcher;
     private SimpleAdapter mDriveAdapter;
     private AlertDialog mDialog;
+    private boolean mChooseAccountDialogShowing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -224,8 +225,8 @@ public class ImportIdentityActivity extends Activity {
         });
 
         mSwitcher = (ViewSwitcher) findViewById(R.id.restoreViewSwitcher);
-        RadioButton rbRestoreLocal = (RadioButton) findViewById(R.id.rbRestoreLocal);
-        RadioButton rbRestoreDrive = (RadioButton) findViewById(R.id.rbRestoreDrive);
+        final RadioButton rbRestoreLocal = (RadioButton) findViewById(R.id.rbRestoreLocal);
+        final RadioButton rbRestoreDrive = (RadioButton) findViewById(R.id.rbRestoreDrive);
         if (mMode == MODE_NORMAL) {
 
             rbRestoreLocal.setTag("local");
@@ -234,12 +235,29 @@ public class ImportIdentityActivity extends Activity {
 
             rbRestoreDrive.setTag("drive");
 
+
             OnClickListener rbClickListener = new OnClickListener() {
 
                 @Override
                 public void onClick(View view) {
+                    //if we're showing choose accounts do nothing
+                    if (mChooseAccountDialogShowing) {
+                        SurespotLog.d(TAG, "choose account dialog showing, not doing anything");
+                        //select previous value
+                        if (rbRestoreLocal.isChecked()) {
+                            rbRestoreDrive.setChecked(true);
+                        }
+                        else {
+                            rbRestoreLocal.setChecked(true);
+                        }
+                        return;
+                    }
+
+
                     // Is the button now checked?
                     boolean checked = ((RadioButton) view).isChecked();
+
+
 
                     if (checked) {
                         if (view.getTag().equals("drive")) {
@@ -801,7 +819,7 @@ public class ImportIdentityActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT:
-
+                mChooseAccountDialogShowing = false;
                 if (resultCode == Activity.RESULT_OK && data != null) {
 
                     SurespotLog.w("Preferences", "SELECTED ACCOUNT WITH EXTRA: %s", data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME));
@@ -887,6 +905,7 @@ public class ImportIdentityActivity extends Activity {
         Intent accountPickerIntent = AccountPicker.newChooseAccountIntent(null, null, ACCOUNT_TYPE, ask || mMode == MODE_DRIVE, descriptionText, null, null,
                 null);
         try {
+            mChooseAccountDialogShowing = true;
             startActivityForResult(accountPickerIntent, SurespotConstants.IntentRequestCodes.CHOOSE_GOOGLE_ACCOUNT);
         }
         catch (ActivityNotFoundException e) {
