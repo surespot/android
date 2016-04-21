@@ -106,6 +106,7 @@ public class SurespotConstants {
 		public final static int BACKGROUND_CACHE_NOTIFICATION = 16;
 		public final static int BACKGROUND_CHAT_SERVICE_NOTIFICATION = 17;
 		public final static int UNSENT_MESSAGE_NOTIFICATION = 18;
+		public final static int READ_EXTERNAL = 19;
 	}
 	
 	
