@@ -29,7 +29,14 @@
             android:visibility="gone" >
         </View>
 
-
+        <ImageView
+            android:id="@+id/friendAvatar"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:scaleType="centerCrop"
+            android:layout_gravity="left"
+            android:layout_marginRight="5dp" >
+        </ImageView>
 
         <TextView
             android:id="@+id/friendName"
@@ -68,15 +75,6 @@
                 android:visibility="gone" >
             </View>
         </FrameLayout>
-
-        <ImageView
-            android:id="@+id/friendAvatar"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
-            android:scaleType="centerCrop"
-            android:layout_gravity="right"
-            android:layout_marginLeft="5dp" >
-        </ImageView>
     </LinearLayout>
 
     <LinearLayout
