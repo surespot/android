@@ -443,7 +443,7 @@ public class ImportIdentityActivity extends Activity {
 
     public void checkPermissionReadStorage(Activity activity) {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL);
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
         }
         else {
             setupLocal();
@@ -454,7 +454,7 @@ public class ImportIdentityActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case SurespotConstants.IntentRequestCodes.READ_EXTERNAL: {
+            case SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE: {
                 //premission to read storage
                 if (grantResults.length > 0) {
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {

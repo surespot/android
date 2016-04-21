@@ -1,12 +1,6 @@
 package com.twofours.surespot.backup;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.GZIPOutputStream;
-
+import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,19 +8,20 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +34,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -58,6 +54,13 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.ui.SingleProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 public class ExportIdentityActivity extends Activity {
     private static final String TAG = "ExportIdentityActivity";
@@ -121,27 +124,15 @@ public class ExportIdentityActivity extends Activity {
 
         Button exportToSdCardButton = (Button) findViewById(R.id.bExportSd);
 
+
         exportToSdCardButton.setEnabled(FileUtils.isExternalStorageMounted());
 
         exportToSdCardButton.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                // TODO progress
-                final String user = (String) mSpinner.getSelectedItem();
-                mDialog = UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
-                        getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
-                            @Override
-                            public void handleResponse(String result) {
-                                if (!TextUtils.isEmpty(result)) {
-                                    exportIdentity(user, result);
-                                }
-                                else {
-                                    Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
-                                }
-                            }
-                        });
-
+                //get permission on M
+                checkPermissionWriteStorage(ExportIdentityActivity.this);
             }
         });
 
@@ -179,18 +170,76 @@ public class ExportIdentityActivity extends Activity {
         });
     }
 
+    public void checkPermissionWriteStorage(Activity activity) {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE);
+        }
+        else {
+            exportLocally();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE: {
+                //premission to read storage
+                if (grantResults.length > 0) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        exportLocally();
+                    }
+                    else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                            Utils.makeLongToast(this, getString(R.string.need_storage_permission));
+                        }
+                        else {
+                            //didn't want to give us permission
+                            Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void exportLocally() {
+        // TODO progress
+        final String user = (String) mSpinner.getSelectedItem();
+        mDialog = UIUtils.passwordDialog(ExportIdentityActivity.this, getString(R.string.backup_identity, user),
+                getString(R.string.enter_password_for, user), new IAsyncCallback<String>() {
+                    @Override
+                    public void handleResponse(String result) {
+                        if (!TextUtils.isEmpty(result)) {
+                            exportIdentity(user, result);
+                        }
+                        else {
+                            Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
+                        }
+                    }
+                });
+
+    }
+
+
     // //////// Local
     private void exportIdentity(String user, String password) {
         IdentityController.exportIdentity(ExportIdentityActivity.this, user, password, new IAsyncCallback<String>() {
             @Override
-            public void handleResponse(String response) {
-                if (response == null) {
-                    Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
-                }
-                else {
-                    Utils.makeLongToast(ExportIdentityActivity.this, response);
-                }
+            public void handleResponse(final String response) {
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response == null) {
+                            Utils.makeToast(ExportIdentityActivity.this, getString(R.string.no_identity_exported));
+                        }
+                        else {
+                            Utils.makeLongToast(ExportIdentityActivity.this, response);
+                        }
+                    }
+                };
 
+                ExportIdentityActivity.this.runOnUiThread(runnable);
             }
         });
     }

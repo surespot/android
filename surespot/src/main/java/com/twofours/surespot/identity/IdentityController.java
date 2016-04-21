@@ -354,7 +354,12 @@ public class IdentityController {
             username = getLastLoggedInUser(context);
         }
 
-        SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(context, username, password);
+        CredentialCachingService ccs = SurespotApplication.getCachingService();
+
+        SurespotIdentity identity = null;
+        if (ccs != null) {
+            identity = ccs.getIdentity(context, username, password);
+        }
         return identity;
     }
 
