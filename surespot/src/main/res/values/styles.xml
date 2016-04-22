@@ -1,16 +1,16 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
     <style name="DefaultTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+        <item name="android:buttonStyle">@style/surespotButton</item>
     </style>
+
+    <style name="BlackTheme" parent="android:Theme.Holo">
+        <item name="android:buttonStyle">@style/surespotButton</item>
+    </style>
+
+    <style name="surespotButton" parent="@android:style/Widget.Holo.ActionButton">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
 
 
     <!--<style name="Divider" parent="DefaultTheme">-->
@@ -26,21 +26,7 @@
         <!--<item name="android:textColor">?android:attr/textColorPrimaryInverse</item>-->
     <!--</style>-->
 
-    <style name="BlackTheme" parent="android:Theme.Holo">
-
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
-    </style>
-
-
-
     <declare-styleable name="VolumeEnvelopeView">
         <attr name="color" format="color" />
     </declare-styleable>
-
-
-
 </resources>
