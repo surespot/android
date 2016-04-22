@@ -288,21 +288,10 @@
     <string name="device_does_not_support_google_drive">Appareil non configuré pour Google Drive.</string>
     <string name="login_update">Veuillez mettre à jour surespot pour pouvoir vous identifier</string>
     <string name="help_agreement"><![CDATA["En cliquant sur OK vous acceptez les <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">termes d'utilisation</a> de surespot."]]></string>
-    <string name="billing_payment_required_voice">Vous n\'avez pas acheté les messages vocaux dans surespot</string>
     <string name="billing_getting_inventory">inventaire d\'achats en cours de rapatriement, veuillez réessayer dans une seconde</string>
-    <string name="billing_unavailable_message">vous devez posséder un compte Google dans votre appareil pour acheter les messages vocaux</string>
     <string name="billing_unavailable_title">paiement indisponible</string>
     <string name="billing_error">erreur de paiement</string>
     <string name="pref_billing">achats</string>
-    <string name="suppress_voice_purchase">ne pas me demander d\'acheter les messages vocaux (ferme l\'onglet)</string>
-    <string name="voice_messaging_purchase_1"><![CDATA["Ajoutez la messagerie vocale à votre surespot et rendez la communication cryptée encore plus facile ! Il suffit de maintenir enfoncé le bouton du microphone pour enregistrer et le relâcher pour envoyer. Parce que parfois il est plus facile de le dire que de le taper. <a href="http://youtu.be/3mifzH1DXDk">Video demonstration</a>."]]></string>
-    <string name="voice_messaging_purchase_button">cliquez ici pour acheter pour $1.99</string>
-    <string name="voice_message_suppress_purchase_ask">ne plus me demander</string>
-    <string name="pref_suppress_voice_purchase_ask_title">ne plus me demander</string>
-    <string name="pref_suppress_voice_purchase_ask_summary">ne plus me demander d\'acheter les messages vocaux</string>
-    <string name="menu_purchase_voice_messaging">acheter les messages vocaux</string>
-    <string name="purchase_voice_title">achat de la messagerie vocale</string>
-    <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">Vous devez mettre surespot à jour pour écouter ce message vocal.</a>"]]></string>
     <string name="user_exists_throttled">trop de tentatives, réessayez plus tard</string>
     <string name="user_exists_error">erreur lors de la vérification du nom d\'utilisateur</string>
     <string name="user_exists_progress">vérification du nom d\'utilisateur</string>

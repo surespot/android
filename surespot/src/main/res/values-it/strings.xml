@@ -287,21 +287,10 @@
   <string name="device_does_not_support_google_drive">Dispositivo non configurato per Google Drive.</string>
   <string name="login_update">Aggiorna surespot per effettuare il login</string>
   <string name="help_agreement"><![CDATA["Cliccando OK accetti i  <a href="https://www.surespot.me/documents/surespot_terms_of_service.html">termini di servizio</a> di surespot."]]></string>
-  <string name="billing_payment_required_voice">Messaggi vocali non acquistati</string>
   <string name="billing_getting_inventory">Scarico lista di acquisti, riprova tra qualche secondo</string>
-  <string name="billing_unavailable_message">Devi avere un account Google configurato sul tuo dispositivo per acquistare i messaggi vocali</string>
   <string name="billing_unavailable_title">Transazione non disponibile</string>
   <string name="billing_error">Errore di transazione</string>
   <string name="pref_billing">Acquisti</string>
-  <string name="suppress_voice_purchase">Non chiedermi più di acquistare i messaggi vocali (chiude la scheda)</string>
-  <string name="voice_messaging_purchase_1"><![CDATA["Aggiungi i messaggi vocali a surespot per rendere la messaggistica crittografata ancora più facile! Basta tenere premuto il bottone del microfono per registrare e lasciarlo per inviare. Perché ogni tanto è più facile a dirsi che scriversi. <a href="http://youtu.be/3mifzH1DXDk">Video dimostrazione</a>."]]></string>
-  <string name="voice_messaging_purchase_button">Tocca qua per acquistare a $1.99</string>
-  <string name="voice_message_suppress_purchase_ask">Non chiedermelo più</string>
-  <string name="pref_suppress_voice_purchase_ask_title">Non chiedermelo più</string>
-  <string name="pref_suppress_voice_purchase_ask_summary">Non chiedermi più di acquistare i messaggi vocali</string>
-  <string name="menu_purchase_voice_messaging">Acquista messaggi vocali</string>
-  <string name="purchase_voice_title">Acquista messaggi vocali</string>
-  <string name="voice_upgrade_required"><![CDATA["<a href="market://details?id=com.twofours.surespot">È necessario aggiornare surespot per ascoltare questo messaggio vocale.</a>"]]></string>
   <string name="user_exists_throttled">Troppi tentativi, riprova più tardi</string>
   <string name="user_exists_error">Errore durante il controllo dell\'username</string>
   <string name="user_exists_progress">Controllo username</string>
@@ -343,6 +332,4 @@
   <string name="notification_message_no_from">%s: Nuovo messaggio ricevuto.</string>
   <string name="notification_invite_no_from">%s: Nuovo invito ricevuto.</string>
   <string name="notification_invite_accept_no_from">%s: Invito accettato.</string>
-  <string name="whats_new_57_message">Nuove funzionalità!\n\nSalva la password nel portachiavi.\n\nAssegna dei nomi ai tuoi amici (tieni premuto sul nome dell\'amico nella home).\n\nMigliorata la gestione della connessione.\n\nGrazie per aver aiutato surespot con le vostre donazioni!</string>
-  <string name="whats_new_57_title">Versione 58</string>
 </resources>
