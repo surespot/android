@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.spongycastle.util.encoders.Hex;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -649,4 +650,9 @@ public class UIUtils {
         return TextUtils.isEmpty(alias) ? username : alias + " (" + username + ")";
     }
 
+    public static void setTheme(Activity activity) {
+        boolean black = Utils.getSharedPrefsBoolean(activity, SurespotConstants.PrefNames.BLACK);
+        SurespotLog.d(TAG, "black: %b", black);
+        activity.setTheme(black ? R.style.BlackTheme : R.style.DefaultTheme);
+    }
 }

@@ -49,6 +49,7 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.MultiProgressDialog;
+import com.twofours.surespot.ui.UIUtils;
 
 import java.security.InvalidKeyException;
 import java.util.List;
@@ -73,6 +74,7 @@ public class LoginActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
 
         SurespotLog.d(TAG, "onCreate");

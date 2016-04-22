@@ -14,7 +14,7 @@
         android:cacheColorHint="#00000000"
         android:divider="@drawable/list_divider_holo_light" 
         android:stackFromBottom="true"
-        android:transcriptMode="normal" />
+        android:transcriptMode="alwaysScroll" />
 
     <FrameLayout
         android:id="@+id/progressBar"

@@ -75,6 +75,7 @@ public class SurespotConstants {
 		public static final String APP_VERSION = "app_version";
 		public static final String KEYSTORE_ENABLED = "pref_enable_keystore";
 		public static final String VOICE_DISABLED = "pref_disable_voice";
+		public static final String BLACK = "pref_black";
 	}
 
 	public class MimeTypes {

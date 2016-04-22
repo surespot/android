@@ -198,6 +198,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
 
         SurespotLog.d(TAG, "onCreate");
