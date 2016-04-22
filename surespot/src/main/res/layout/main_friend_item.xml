@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/friendItemLayout"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"    
-    android:orientation="vertical" >
+<LinearLayout android:id="@+id/friendItemLayout"
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:clickable="false"
+              android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/statusLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <View
             android:id="@+id/friendInactive"
@@ -17,7 +18,7 @@
             android:layout_height="fill_parent"
             android:layout_gravity="center_vertical"
             android:background="@drawable/transparent_rectangle"
-            android:visibility="visible" >
+            android:visibility="visible">
         </View>
 
         <View
@@ -26,16 +27,16 @@
             android:layout_height="fill_parent"
             android:layout_gravity="center_vertical"
             android:background="@drawable/filled_blue_rectangle"
-            android:visibility="gone" >
+            android:visibility="gone">
         </View>
 
         <ImageView
             android:id="@+id/friendAvatar"
             android:layout_width="65dp"
             android:layout_height="65dp"
-            android:scaleType="centerCrop"
             android:layout_gravity="left"
-            android:layout_marginRight="5dp" >
+            android:layout_marginRight="5dp"
+            android:scaleType="centerCrop">
         </ImageView>
 
         <TextView
@@ -43,18 +44,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_weight="1"
             android:layout_marginLeft="10dp"
-            android:textSize="25sp" >
+            android:layout_weight="1"
+            android:textSize="25sp">
         </TextView>
-
 
 
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" >
+            android:layout_marginRight="10dp">
 
             <TextView
                 android:id="@+id/friendStatus"
@@ -63,7 +63,7 @@
                 android:layout_gravity="center_vertical"
                 android:gravity="center_vertical"
                 android:textColor="@color/surespotBlue"
-                android:textSize="15sp" >
+                android:textSize="15sp">
             </TextView>
 
             <View
@@ -72,7 +72,7 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:background="@drawable/filled_blue_circle"
-                android:visibility="gone" >
+                android:visibility="gone">
             </View>
         </FrameLayout>
     </LinearLayout>
@@ -81,9 +81,9 @@
         android:id="@+id/inviteLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
-        <TextView
+        <Button
             android:id="@+id/notificationItemBlock"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -92,10 +92,10 @@
             android:padding="3dp"
             android:tag="block"
             android:text="@string/block_underline"
-            android:textColor="@color/surespotBlue" >
-        </TextView>
+            android:textColor="@color/surespotBlue">
+        </Button>
 
-        <TextView
+        <Button
             android:id="@+id/notificationItemIgnore"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -104,10 +104,10 @@
             android:padding="3dp"
             android:tag="ignore"
             android:text="@string/ignore_underline"
-            android:textColor="@color/surespotBlue" >
-        </TextView>
+            android:textColor="@color/surespotBlue">
+        </Button>
 
-        <TextView
+        <Button
             android:id="@+id/notificationItemAccept"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -116,8 +116,8 @@
             android:padding="3dp"
             android:tag="accept"
             android:text="@string/accept_underline"
-            android:textColor="@color/surespotBlue" >
-        </TextView>
+            android:textColor="@color/surespotBlue">
+        </Button>
     </LinearLayout>
 
 </LinearLayout>

@@ -1,30 +1,11 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="DefaultTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <item name="android:buttonStyle">@style/surespotButton</item>
+        <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
     </style>
 
     <style name="BlackTheme" parent="android:Theme.Holo">
-        <item name="android:buttonStyle">@style/surespotButton</item>
+        <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
     </style>
-
-    <style name="surespotButton" parent="@android:style/Widget.Holo.ActionButton">
-        <item name="android:background">@android:color/transparent</item>
-    </style>
-
-
-
-    <!--<style name="Divider" parent="DefaultTheme">-->
-        <!--<item name="android:background">?android:attr/listDivider</item>-->
-    <!--</style>-->
-
-    <!--<style name="NotificationTitle" parent="DefaultTheme">-->
-        <!--<item name="android:textColor">?android:attr/textColorPrimaryInverse</item>-->
-        <!--<item name="android:textStyle">bold</item>-->
-    <!--</style>-->
-
-    <!--<style name="NotificationText" parent="DefaultTheme">-->
-        <!--<item name="android:textColor">?android:attr/textColorPrimaryInverse</item>-->
-    <!--</style>-->
 
     <declare-styleable name="VolumeEnvelopeView">
         <attr name="color" format="color" />

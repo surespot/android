@@ -10,8 +10,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -70,18 +70,19 @@ public class FriendFragment extends Fragment {
 		ChatController chatController = getMainActivity().getChatController();
 		if (chatController != null) {
 			mMainAdapter = chatController.getFriendAdapter();
-			mMainAdapter.setItemListeners(mClickListener, mLongClickListener);
 
 			mListView.setAdapter(mMainAdapter);
+			mListView.setOnItemClickListener(mClickListener);
+			mListView.setOnItemLongClickListener(mLongClickListener);
 		}
 
 		return view;
 	}
 
-	OnClickListener mClickListener = new OnClickListener() {
+	AdapterView.OnItemClickListener mClickListener = new AdapterView.OnItemClickListener() {
 		@Override
-		public void onClick(View view) {
-			Friend friend = (Friend) view.getTag();
+		public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+			Friend friend = ((FriendAdapter.FriendViewHolder) view.getTag()).friend;
 			if (friend.isFriend()) {
 
 				ChatController chatController = getMainActivity().getChatController();
@@ -93,10 +94,11 @@ public class FriendFragment extends Fragment {
 		}
 	};
 
-	OnLongClickListener mLongClickListener = new OnLongClickListener() {
+	AdapterView.OnItemLongClickListener mLongClickListener = new AdapterView.OnItemLongClickListener() {
 		@Override
-		public boolean onLongClick(View view) {
-			Friend friend = (Friend) view.getTag();
+		public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+			Friend friend = ((FriendAdapter.FriendViewHolder) view.getTag()).friend;
 
 			if (!friend.isInviter()) {
 				FriendMenuFragment dialog = new FriendMenuFragment();

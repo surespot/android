@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -40,8 +39,6 @@ public class FriendAdapter extends BaseAdapter {
 
 	ArrayList<Friend> mFriends = new ArrayList<Friend>();
 	private NotificationManager mNotificationManager;
-	private OnClickListener mClickListener;
-	private OnLongClickListener mLongClickListener;
 	private FriendAliasDecryptor mFriendAliasDecryptor;
 	private boolean mLoading;
 	private boolean mLoaded;
@@ -62,11 +59,6 @@ public class FriendAdapter extends BaseAdapter {
 		// clear invite notifications
 		mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-	}
-
-	public void setItemListeners(OnClickListener clickListener, OnLongClickListener longClickListener) {
-		mClickListener = clickListener;
-		mLongClickListener = longClickListener;
 	}
 
 	public synchronized boolean isLoading() {
@@ -216,14 +208,12 @@ public class FriendAdapter extends BaseAdapter {
 			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			convertView = inflater.inflate(R.layout.main_friend_item, parent, false);
 
-			((TextView) convertView.findViewById(R.id.notificationItemAccept)).setOnClickListener(FriendInviteResponseListener);
-			((TextView) convertView.findViewById(R.id.notificationItemBlock)).setOnClickListener(FriendInviteResponseListener);
-			((TextView) convertView.findViewById(R.id.notificationItemIgnore)).setOnClickListener(FriendInviteResponseListener);
+			convertView.findViewById(R.id.notificationItemAccept).setOnClickListener(FriendInviteResponseListener);
+			convertView.findViewById(R.id.notificationItemBlock).setOnClickListener(FriendInviteResponseListener);
+			convertView.findViewById(R.id.notificationItemIgnore).setOnClickListener(FriendInviteResponseListener);
 
 			friendViewHolder = new FriendViewHolder();
 			friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);
-			friendViewHolder.statusLayout.setOnClickListener(mClickListener);
-			friendViewHolder.statusLayout.setOnLongClickListener(mLongClickListener);
 
 			friendViewHolder.friendActive = convertView.findViewById(R.id.friendActive);
 			friendViewHolder.friendInactive = convertView.findViewById(R.id.friendInactive);
@@ -240,7 +230,8 @@ public class FriendAdapter extends BaseAdapter {
 			friendViewHolder = (FriendViewHolder) convertView.getTag();
 		}
 
-		friendViewHolder.statusLayout.setTag(friend);
+		//friendViewHolder.statusLayout.setTag(friend);
+		friendViewHolder.friend = friend;
 
 		friendViewHolder.tvName.setText(friend.getNameOrAlias());
 		// if alias not decrypted decrypt it
@@ -373,6 +364,7 @@ public class FriendAdapter extends BaseAdapter {
 		public ImageView avatarImage;
 		public View friendActive;
 		public View friendInactive;
+		public Friend friend;
 	}
 
 	public synchronized void sort() {
