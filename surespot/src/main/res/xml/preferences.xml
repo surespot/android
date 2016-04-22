@@ -105,7 +105,8 @@
             android:defaultValue="true"
             android:key="pref_black"
             android:title="@string/black"
-            android:summary="requires force stop or reboot to take effect"/>
+
+            android:summary="@string/requires_force_stop"/>
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_enable_keystore_control"

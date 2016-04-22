@@ -374,4 +374,5 @@
     <string name="need_storage_permission">surespot can not manage identities on the device without Storage permission.</string>
     <string name="enable_storage_permission">Please enable Storage permission for surespot under device app permission settings.</string>
     <string name="black">black</string>
+    <string name="requires_force_stop">requires force stop or reboot to take effect</string>
 </resources>

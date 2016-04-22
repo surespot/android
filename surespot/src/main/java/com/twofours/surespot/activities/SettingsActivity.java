@@ -134,7 +134,6 @@ public class SettingsActivity extends PreferenceActivity {
 				}
 			});
 
-			// global overrides
 			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
 			enableKeystorePref.setChecked(enableKeystore);
