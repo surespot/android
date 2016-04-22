@@ -39,6 +39,7 @@ public class DeleteIdentityActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_delete_identity);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.delete), true);

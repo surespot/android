@@ -80,6 +80,7 @@ public class ImportIdentityActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_import_identity);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.restore), true);

@@ -50,6 +50,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;
+import com.twofours.surespot.ui.UIUtils;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -73,6 +74,7 @@ public class SignupActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);

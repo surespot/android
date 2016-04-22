@@ -28,6 +28,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.ui.MultiProgressDialog;
+import com.twofours.surespot.ui.UIUtils;
 
 import java.io.IOException;
 import java.security.PrivateKey;
@@ -44,6 +45,7 @@ public class ChangePasswordActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
         Utils.configureActionBar(this, getString(R.string.password), getString(R.string.change_password_actionbar_right), true);

@@ -51,6 +51,7 @@ public class ManageKeysActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		UIUtils.setTheme(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage_keys);
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.keys), true);

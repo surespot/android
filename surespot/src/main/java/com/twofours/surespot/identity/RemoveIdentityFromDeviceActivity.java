@@ -30,6 +30,7 @@ public class RemoveIdentityFromDeviceActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		UIUtils.setTheme(this);
 		super.onCreate(savedInstanceState);
 		String savedUsername = null;
 		savedUsername = getIntent().getStringExtra("selectedUsername");

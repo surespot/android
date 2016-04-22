@@ -1,7 +1,5 @@
 package com.twofours.surespot.billing;
 
-import java.util.ArrayList;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,6 +26,8 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
+import java.util.ArrayList;
+
 @SuppressLint("InlinedApi")
 public class BillingActivity extends Activity {
 
@@ -40,6 +40,7 @@ public class BillingActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		UIUtils.setTheme(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
 		Utils.configureActionBar(this, getString(R.string.pay), getString(R.string.what_you_like), true);
