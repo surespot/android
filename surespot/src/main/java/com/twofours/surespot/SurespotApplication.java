@@ -148,18 +148,20 @@ public class SurespotApplication extends Application {
 		mStateController = new StateController(this);
 
 
-		boolean cacheCleared = Utils.getSharedPrefsBoolean(this, "cacheCleared66");
-
-		if (!cacheCleared) {
+		boolean oneTimeGotNoCase = Utils.getSharedPrefsBoolean(this, "66onetime");
+		if (!oneTimeGotNoCase) {
 
 			//wipe the cache
 			StateController.clearCache(this, new IAsyncCallback<Void>() {
 				@Override
 				public void handleResponse(Void result) {
 					SurespotLog.d(TAG, "cache cleared");
-					Utils.putSharedPrefsBoolean(SurespotApplication.this, "cacheCleared66", true);
+					Utils.putSharedPrefsBoolean(SurespotApplication.this, "66onetime", true);
 				}
 			});
+
+			//set the default theme to black
+			Utils.putSharedPrefsBoolean(SurespotApplication.this,SurespotConstants.PrefNames.BLACK, true);
 		}
 
 

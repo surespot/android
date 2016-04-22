@@ -652,7 +652,6 @@ public class UIUtils {
 
     public static void setTheme(Activity activity) {
         boolean black = Utils.getSharedPrefsBoolean(activity, SurespotConstants.PrefNames.BLACK);
-        SurespotLog.d(TAG, "black: %b", black);
         activity.setTheme(black ? R.style.BlackTheme : R.style.DefaultTheme);
     }
 }
