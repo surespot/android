@@ -19,6 +19,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -110,7 +111,7 @@ public class DeleteIdentityActivity extends Activity {
         SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
         // get a key update token from the server
-        SurespotApplication.getNetworkController().getDeleteToken(username, dPassword, authSignature, new Callback() {
+        SurespotApplication.getNetworkController().getDeleteToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 mMpd.decrProgress();
@@ -118,9 +119,9 @@ public class DeleteIdentityActivity extends Activity {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
                 if (response.isSuccessful()) {
-                    final String deleteToken = response.body().string();
+                    final String deleteToken = responseString;
                     new AsyncTask<Void, Void, DeleteIdentityWrapper>() {
                         @Override
                         protected DeleteIdentityWrapper doInBackground(Void... params) {
@@ -180,7 +181,7 @@ public class DeleteIdentityActivity extends Activity {
                 }
             }
 
-        });
+        }));
     }
 
     @Override

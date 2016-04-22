@@ -28,6 +28,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -146,7 +147,7 @@ public class ManageKeysActivity extends Activity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		SurespotApplication.getNetworkController().getKeyToken(username, dPassword, authSignature, new Callback() {
+		SurespotApplication.getNetworkController().getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback(){
 			@Override
 			public void onFailure(Call call, IOException e) {
 				mMpd.decrProgress();
@@ -154,7 +155,7 @@ public class ManageKeysActivity extends Activity {
 			}
 
 			@Override
-			public void onResponse(Call call, final Response response) throws IOException {
+			public void onResponse(Call call, Response response, final String responseString) throws IOException {
 				if (response.isSuccessful()) {
 					new AsyncTask<Void, Void, RollKeysWrapper>() {
 						@Override
@@ -163,14 +164,11 @@ public class ManageKeysActivity extends Activity {
 							String keyVersion = null;
 
 							try {
-								JSONObject json = new JSONObject(response.body().string());
+								JSONObject json = new JSONObject(responseString);
 								keyToken = json.getString("token");
 								SurespotLog.v(TAG, "received key token: " + keyToken);
 								keyVersion = json.getString("keyversion");
 							} catch (JSONException e) {
-								return null;
-							}
-							catch (IOException e) {
 								return null;
 							}
 
@@ -247,7 +245,7 @@ public class ManageKeysActivity extends Activity {
 
 
 
-		});
+		}));
 	}
 
 	@Override

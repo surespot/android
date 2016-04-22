@@ -27,6 +27,7 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -181,12 +182,12 @@ public class ChangePasswordActivity extends Activity {
 
                         protected void onPostExecute(final ChangePasswordWrapper result) {
                             if (result != null) {
-
                                 // upload all this crap to the server
                                 SurespotApplication.getNetworkController().changePassword(username, dPassword, result.password, result.authSig,
-                                        result.tokenSig, result.keyVersion, new Callback() {
+                                        result.tokenSig, result.keyVersion, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+
                                             @Override
-                                            public void onFailure(Call call, IOException e) {
+                                            public void onFailure(final Call call, final IOException e) {
                                                 SurespotLog.i(TAG, e, "changePassword");
                                                 mMpd.decrProgress();
                                                 resetFields();
@@ -195,7 +196,8 @@ public class ChangePasswordActivity extends Activity {
                                             }
 
                                             @Override
-                                            public void onResponse(Call call, Response response) throws IOException {
+                                            public void onResponse(final Call call, final Response response, String responseString) throws IOException {
+
                                                 if (response.isSuccessful()) {
                                                     // update the password
                                                     IdentityController.updatePassword(ChangePasswordActivity.this, identity, username, currentPassword,
@@ -213,10 +215,9 @@ public class ChangePasswordActivity extends Activity {
                                                     mMpd.decrProgress();
                                                     resetFields();
                                                     Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
-
                                                 }
                                             }
-                                        });
+                                        }));
                             }
                             else {
                                 mMpd.decrProgress();
