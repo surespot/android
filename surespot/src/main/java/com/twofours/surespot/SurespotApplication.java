@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.support.multidex.MultiDex;
 
 import com.twofours.surespot.billing.BillingController;
@@ -21,6 +20,10 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+
 import java.security.Security;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
@@ -30,9 +33,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-//@ReportsCrashes(mode = ReportingInteractionMode.DIALOG, formKey = "", // will not be used
-//formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.crash_toast_text, resDialogText = R.string.crash_dialog_text, resDialogOkToast = R.string.crash_dialog_ok_toast, resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
-// optional
+@ReportsCrashes(mode = ReportingInteractionMode.DIALOG,  // will not be used
+formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.crash_toast_text, resDialogText = R.string.crash_dialog_text, resDialogOkToast = R.string.crash_dialog_ok_toast, resDialogCommentPrompt = R.string.crash_dialog_comment_prompt)
 public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
@@ -84,46 +86,8 @@ public class SurespotApplication extends Application {
 		super.onCreate();
 
 		mContext = getApplicationContext();
-		// Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-		//
-		// @Override
-		// public void uncaughtException(Thread thread, Throwable ex) {
-		//
-		// StringWriter stackTrace = new StringWriter();
-		// ex.printStackTrace(new PrintWriter(stackTrace));
-		// System.err.println(stackTrace);
-		//
-		// new Thread() {
-		// @Override
-		// public void run() {
-		// Looper.prepare();
-		// Toast.makeText(SurespotApplication.this, "surespot just crashed. :(", Toast.LENGTH_SHORT).show();
-		// Looper.loop();
-		// };
-		// }.start();
-		//
-		//
-		// System.exit(1);
-		//
-		// }
-		// });
 
-		// String lastUser = Utils.getSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER);
-		// if (lastUser != null) {
-		// SurespotLog.v(TAG, "using shared prefs for user %s for ACRA", lastUser);
-		// ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-		// config.setSharedPreferenceName(lastUser);
-		// config.setSharedPreferenceMode(Context.MODE_PRIVATE);
-		// ACRA.setConfig(config);
-		//
-		// }
-		//
-		// boolean enableACRA = ACRA.getACRASharedPreferences().getBoolean(ACRA.PREF_ENABLE_ACRA, false);
-		// if (!enableACRA) {
-		//
-		// }
-
-	//	ACRA.init(this);
+		ACRA.init(this);
 
 		EmojiParser.init(this);
 
@@ -134,10 +98,9 @@ public class SurespotApplication extends Application {
 			info = manager.getPackageInfo(this.getPackageName(), 0);
 			mVersion = info.versionName;
 		}
-		catch (NameNotFoundException e) {
+		catch (PackageManager.NameNotFoundException e) {
 			mVersion = "unknown";
 		}
-
 
 
 		mUserAgent = "surespot/" + SurespotApplication.getVersion() + " (Android)";
@@ -174,7 +137,7 @@ public class SurespotApplication extends Application {
 		startService(chatIntent);
 
 		mBillingController = new BillingController(this);
-						
+
 		FileUtils.wipeImageCaptureDir(this);
 
 
