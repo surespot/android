@@ -41,6 +41,7 @@
 
         <TextView
             android:id="@+id/friendName"
+            android:textColor="?listItemText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -85,6 +86,7 @@
 
         <Button
             android:id="@+id/notificationItemBlock"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -97,6 +99,7 @@
 
         <Button
             android:id="@+id/notificationItemIgnore"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -109,6 +112,7 @@
 
         <Button
             android:id="@+id/notificationItemAccept"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
