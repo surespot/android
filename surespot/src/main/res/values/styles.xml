@@ -1,11 +1,17 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+
     <style name="DefaultTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
+        <item name="listItemText">@android:color/black</item>
     </style>
 
     <style name="BlackTheme" parent="android:Theme.Holo">
         <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
+        <item name="listItemText">@android:color/white</item>
     </style>
+
+
 
     <declare-styleable name="VolumeEnvelopeView">
         <attr name="color" format="color" />
