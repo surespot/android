@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         android:drawSelectorOnTop="false"
         android:cacheColorHint="#00000000"
-        android:divider="@drawable/list_divider_holo_light" 
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll" />
 
