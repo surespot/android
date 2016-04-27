@@ -41,7 +41,6 @@
 
         <TextView
             android:id="@+id/friendName"
-            android:textColor="?listItemText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
