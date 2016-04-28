@@ -31,3 +31,6 @@ Thumbs.db
 .gradle
 build/
 configuration.properties
+
+*.iml
+.directory
