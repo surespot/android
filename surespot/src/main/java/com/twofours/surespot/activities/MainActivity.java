@@ -71,7 +71,6 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
-import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
@@ -1263,14 +1262,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     public void uploadFriendImage(String name) {
-        MessageImageDownloader.evictCache();
         Intent intent = new Intent(this, ImageSelectActivity.class);
         intent.putExtra("to", name);
         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
         // set start intent to avoid restarting every rotation
         intent.putExtra("start", true);
         startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE);
-
     }
 
     private ImageCaptureHandler mImageCaptureHandler;
@@ -1300,7 +1297,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     return true;
                 }
 
-                MessageImageDownloader.evictCache();
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
                         Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
@@ -1326,7 +1322,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     return true;
                 }
 
-                MessageImageDownloader.evictCache();
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
 
@@ -1428,8 +1423,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotApplication.getCommunicationServiceNoThrow().clearServiceListener();
             }
         }
-
-        MessageImageDownloader.evictCache();
     }
 
     public static Context getContext() {
@@ -2184,11 +2177,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 //        dialog.show(fm, "voice_purchase");
 //
 //    }
-
-    @Override
-    public void onLowMemory() {
-        MessageImageDownloader.evictCache();
-    }
 
     private void setBackgroundImage() {
         // reset preference config for adapters

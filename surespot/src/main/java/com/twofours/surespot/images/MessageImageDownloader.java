@@ -19,7 +19,6 @@ package com.twofours.surespot.images;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
@@ -38,7 +37,6 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -52,7 +50,7 @@ import java.lang.ref.WeakReference;
  * <p>
  * It requires the INTERNET permission, which should be added to your application's manifest file.
  * </p>
- * <p/>
+ * <p>
  * A local cache of downloaded images is maintained internally to improve performance.
  */
 public class MessageImageDownloader {
@@ -71,11 +69,11 @@ public class MessageImageDownloader {
 
 
         if (bitmap == null) {
-            SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
+            SurespotLog.d(TAG, "bitmap not in cache: " + message.getData());
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
+            SurespotLog.d(TAG, "loading bitmap from cache: " + message.getData());
             cancelPotentialDownload(imageView, message);
             imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
@@ -166,24 +164,29 @@ public class MessageImageDownloader {
         @Override
         public void run() {
             Bitmap bitmap = null;
-            InputStream imageStream = null;
+            InputStream encryptedImageStream = null;
 
-            if (mMessage.getData().startsWith("file")) {
-                try {
-                    imageStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
-                }
-                catch (FileNotFoundException e) {
-                    SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+            //check disk cache before going to network
+            try {
+
+                encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(mMessage.getData());
+                if (encryptedImageStream != null) {
+                    SurespotLog.d(TAG, "got cached file entry for: %s,", mMessage.getData());
                 }
             }
-            else {
-                imageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+            catch (IOException e) {
+                SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", mMessage.getData());
+            }
+
+            if (encryptedImageStream == null) {
+                SurespotLog.d(TAG, "no cached file entry, making http call for: %s,", mMessage.getData());
+                encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
             }
 
             if (mCancelled) {
                 try {
-                    if (imageStream != null) {
-                        imageStream.close();
+                    if (encryptedImageStream != null) {
+                        encryptedImageStream.close();
                     }
                 }
                 catch (IOException e) {
@@ -192,14 +195,14 @@ public class MessageImageDownloader {
                 return;
             }
 
-            if (!mCancelled && imageStream != null) {
+            if (!mCancelled && encryptedImageStream != null) {
                 PipedOutputStream out = new PipedOutputStream();
                 PipedInputStream inputStream = null;
                 try {
                     inputStream = new PipedInputStream(out);
 
                     EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
-                            new BufferedInputStream(imageStream), out);
+                            new BufferedInputStream(encryptedImageStream), out);
 
                     if (mCancelled) {
                         mMessage.setLoaded(true);
@@ -229,8 +232,8 @@ public class MessageImageDownloader {
                 finally {
 
                     try {
-                        if (imageStream != null) {
-                            imageStream.close();
+                        if (encryptedImageStream != null) {
+                            encryptedImageStream.close();
                         }
                     }
                     catch (IOException e) {
@@ -344,11 +347,7 @@ public class MessageImageDownloader {
         return mBitmapCache.getBitmapFromMemCache(key);
     }
 
-    public static void evictCache() {
-        mBitmapCache.trimToSize(10);
-    }
-
-    public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
+    public static void moveCacheEntry(String sourceKey, String destKey) {
         Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
         if (bitmap != null) {
             mBitmapCache.remove(sourceKey);

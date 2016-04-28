@@ -23,6 +23,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
+import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
@@ -317,6 +318,11 @@ public class IdentityController {
         clearStoredPasswordForIdentity(context, username);
 
         SurespotApplication.getNetworkController().clearCache();
+        FileCacheController fcc = SurespotApplication.getFileCacheController();
+        if (fcc != null) {
+            fcc.clearCache();
+        }
+
         StateController.wipeState(context, username);
 
         synchronized (IDENTITY_FILE_LOCK) {

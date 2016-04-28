@@ -1004,15 +1004,6 @@ public class NetworkController {
 
     }
 
-    public void addCacheEntry(String key, byte[] data) {
-
-    }
-
-//    public HttpCacheEntry getCacheEntry(String key) {
-//        //    return mCachingHttpClient.getCacheEntry(key);
-//        return null;
-//    }
-
     public void removeCacheEntry(String url) {
 
         try {

@@ -1,7 +1,5 @@
 package com.twofours.surespot.images;
 
-import java.util.ArrayList;
-
 import android.graphics.Bitmap;
 
 import com.twofours.surespot.common.SurespotLog;
@@ -52,15 +50,5 @@ public class BitmapCache {
 	public void remove(String key) {
 		String md5Key = Utils.md5(key);
 		mMemoryCache.remove(md5Key);
-	}
-
-	public void evictExcept(ArrayList<Bitmap> preserve) {
-		mMemoryCache.evictExcept(preserve);
-
-	}
-
-	public void trimToSize(int size) {
-		mMemoryCache.trimToSize(size);
-		
 	}
 }

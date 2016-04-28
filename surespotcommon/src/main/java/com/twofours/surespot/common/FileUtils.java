@@ -1,5 +1,12 @@
 package com.twofours.surespot.common;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.text.TextUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,17 +17,10 @@ import java.util.Date;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.text.TextUtils;
-
 public class FileUtils {
 	private static final String STATE_DIR = "state";
 	private final static String HTTP = "http";
+	private final static String FILE = "file";
 	public final static String IDENTITIES_DIR = "identities";
 	private final static String PUBLICKEYS_DIR = "publicKeys";
 	private static final String TAG = "FileUtils";
@@ -28,6 +28,11 @@ public class FileUtils {
 	public static File getHttpCacheDir(Context context) {
 
 		return getCacheDir(context, HTTP);
+	}
+
+	public static File getFileCacheDir(Context context) {
+
+		return getCacheDir(context, FILE);
 	}
 
 	private static File getCacheDir(Context context, String unique) {

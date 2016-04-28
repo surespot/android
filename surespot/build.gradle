@@ -44,7 +44,7 @@ dependencies {
     compile project(':imageViewTouch')
     compile project(':androidkeystore')
     compile project(":ColorPickerPreference")
-    //using 3.0.1 because that's what socket.io-client-0.7.0 pulls down
+    compile 'com.jakewharton:disklrucache:2.0.2'
     compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.squareup.okhttp3:okhttp-ws:3.2.0'

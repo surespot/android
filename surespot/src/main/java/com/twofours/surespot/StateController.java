@@ -12,6 +12,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
@@ -300,6 +301,10 @@ public class StateController {
 
 				// network caches
 				SurespotApplication.getNetworkController().clearCache();
+				FileCacheController fcc = SurespotApplication.getFileCacheController();
+				if (fcc != null) {
+					fcc.clearCache();
+				}
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);
