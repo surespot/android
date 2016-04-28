@@ -45,7 +45,9 @@ dependencies {
     compile project(':androidkeystore')
     compile project(":ColorPickerPreference")
     //using 3.0.1 because that's what socket.io-client-0.7.0 pulls down
-    compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    compile 'com.squareup.okhttp3:okhttp-ws:3.2.0'
     compile('com.google.android.gms:play-services-gcm:8.4.0')
     compile('com.google.android.gms:play-services-drive:8.4.0')
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
