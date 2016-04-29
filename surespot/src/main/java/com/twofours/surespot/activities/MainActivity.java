@@ -716,7 +716,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (service instanceof CommunicationService.CommunicationServiceBinder) {
                 CommunicationService.CommunicationServiceBinder binder = (CommunicationService.CommunicationServiceBinder) service;
                 CommunicationService cts = binder.getService();
-                cts.setServiceListener(new CommunicationServiceListener());
 
                 SurespotApplication.setCommunicationService(cts);
                 mCommunicationServiceBound = true;
@@ -808,23 +807,10 @@ public class MainActivity extends Activity implements OnMeasureListener {
         // create the chat controller here if we know we're not going to need to login
         // so that if we come back from a restart (for example a rotation), the automatically
         // created fragments have a chat controller instance
-
         mMainHandler = new Handler(getMainLooper());
-
-        // make sure the transmission service knows the UI is present and is listening
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            if (SurespotApplication.getCommunicationService().getServiceListener() == null) {
-                SurespotLog.w(TAG, "No service listener - this should have been done when the service was bound to the main activity");
-                SurespotApplication.getCommunicationService().setServiceListener(new CommunicationServiceListener());
-            }
-        }
-        else {
-            SurespotLog.d(TAG, "chat transmission service was null");
-        }
 
         //set username
         SurespotApplication.getNetworkController().setUsernameAnd401Handler(mUser, m401Handler);
-
 
         mBillingController = SurespotApplication.getBillingController();
 
@@ -850,14 +836,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         }));
 
-        // TODO: Adam wants this option to appear regardless if the user entered through the notification or not
-//        String extraUnsentMessages = getIntent().getStringExtra(SurespotConstants.ExtraNames.UNSENT_MESSAGES);
-//        if ("true".equals(extraUnsentMessages) || SurespotApplication.getCommunicationService().hasUnsentMessages()) {
-//            SurespotApplication.getCommunicationService().setPromptingResendErroredMessages();
-//            showResendMessageDialog();
-//        }
-
-        SurespotApplication.getCommunicationService().initializeService();
+        SurespotApplication.getCommunicationService().initializeService(new CommunicationServiceListener());
 
         mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
         mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
@@ -873,31 +852,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         setupChatControls();
         launch();
     }
-
-//    private void showResendMessageDialog() {
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-//
-//        alertDialogBuilder.setTitle(getString(R.string.prompt_resend));
-//        alertDialogBuilder.setMessage(getString(R.string.prompt_resend_errored_messages));
-//
-//        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int id) {
-//                dialog.cancel();
-//                SurespotApplication.getCommunicationService().setResendErroredMessages();
-//            }
-//        });
-//
-//        alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int id) {
-//                dialog.cancel();
-//                SurespotApplication.getCommunicationService().setDoNotResendErroredMessages();
-//            }
-//        });
-//
-//        AlertDialog alertDialog = alertDialogBuilder.create();
-//        // show alert
-//        alertDialog.show();
-//    }
 
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
@@ -2317,12 +2271,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 public void run() {
                     MainActivity.this.setHomeProgress(false);
 
-                    //notify current adapter as unsent messages are now errored
-                    ChatController cc = SurespotApplication.getChatController();
-                    if (cc != null) {
-                        ChatAdapter ca = cc.getChatAdapter(mUser, false);
-                        if (ca != null) {
-                            ca.notifyDataSetChanged();
+                    if (mCurrentFriend != null) {
+                        //notify current adapter as unsent messages are now errored
+                        ChatController cc = SurespotApplication.getChatController();
+                        if (cc != null) {
+                            ChatAdapter ca = cc.getChatAdapter(mCurrentFriend.getName(), false);
+                            if (ca != null) {
+                                ca.notifyDataSetChanged();
+                            }
                         }
                     }
                 }
