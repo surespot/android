@@ -24,6 +24,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.View;
@@ -166,26 +167,29 @@ public class VoiceMessageDownloader {
 
 		@Override
 		public void run() {
+			if (mCancelled) {
+				return;
+			}
+
 			byte[] soundbytes = mMessage.getPlainBinaryData();
 			if (soundbytes == null) {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
-				
-				if (mCancelled) {					
-					return;
+
+				//check disk cache before going to network
+				try {
+
+					voiceStream = SurespotApplication.getFileCacheController().getEntry(mMessage.getData());
+					if (voiceStream != null) {
+						SurespotLog.d(TAG, "got cached file entry for voice: %s,", mMessage.getData());
+					}
+				}
+				catch (IOException e) {
+					SurespotLog.w(TAG, e, "error getting cached file entry for voice: %s,", mMessage.getData());
 				}
 
-				if (mMessage.getData().startsWith("file")) {
-					try {
-						SurespotLog.v(TAG, "loading voice stream from local file");
-						voiceStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
-					}
-					catch (FileNotFoundException e) {
-						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
-					}
-				}
-				else {
-					SurespotLog.v(TAG, "getting voice stream from cloud");
+				if (voiceStream == null) {
+					SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", mMessage.getData());
 					voiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 				}
 

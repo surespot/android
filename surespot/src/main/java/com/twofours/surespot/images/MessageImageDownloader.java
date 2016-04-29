@@ -163,6 +163,11 @@ public class MessageImageDownloader {
 
         @Override
         public void run() {
+            if (mCancelled) {
+                return;
+            }
+
+
             Bitmap bitmap = null;
             InputStream encryptedImageStream = null;
 

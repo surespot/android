@@ -1174,13 +1174,8 @@ public class ChatController {
                     boolean myMessage = lastMessage.getFrom().equals(mUsername);
 
                     if (myMessage) {
-                        if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+                        if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                             handleCachedFile(chatAdapter, lastMessage);
-                        }
-                        else {
-                            if (lastMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                                handleCachedFile(chatAdapter, lastMessage);
-                            }
                         }
                     }
 

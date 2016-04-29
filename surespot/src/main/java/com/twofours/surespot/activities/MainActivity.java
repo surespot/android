@@ -1184,7 +1184,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
     private void uploadPicture(final Uri selectedImageUri, String to) {
         // Utils.makeToast(this, getString(R.string.uploading_image));
-        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), selectedImageUri, mUser, to, false, true);
+        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), selectedImageUri, mUser, to, false);
 
 //        new IAsyncCallback<Boolean>() {
 //            @Override
@@ -1837,7 +1837,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                     SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-                    ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), imageUri, mUser, mCurrentFriend.getName(), true, false);
+                    ChatUtils.uploadPictureMessageAsync(
+                            this,
+                            SurespotApplication.getChatController(),
+                            imageUri,
+                            mUser,
+                            mCurrentFriend.getName(),
+                            true);
 //                            new IAsyncCallback<Boolean>() {
 //
 //                                @Override

@@ -14,13 +14,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.File;
@@ -281,15 +279,12 @@ public class VoiceController {
         else {
             try {
                 final String m4aFile = mSendingFile;
-                ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), SurespotApplication.getNetworkController(),
-                        Uri.fromFile(new File(m4aFile)), mFrom, mTo, new IAsyncCallback<Boolean>() {
-                            @Override
-                            public void handleResponse(Boolean result) {
-                                // delete files
-                                SurespotLog.v(TAG, "upload complete, deleting %s", m4aFile);
-                                new File(m4aFile).delete();
-                            }
-                        });
+                ChatUtils.uploadVoiceMessageAsync(
+                        activity,
+                        MainActivity.getChatController(),
+                        Uri.fromFile(new File(m4aFile)),
+                        mFrom,
+                        mTo);
             }
             catch (Exception e) {
                 SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
