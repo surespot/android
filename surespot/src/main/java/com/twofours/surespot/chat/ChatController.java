@@ -1586,7 +1586,7 @@ public class ChatController {
             ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
 
             try {
-                chatAdapter.addOrUpdateMessage(message, false, true, false);
+                chatAdapter.addOrUpdateMessage(message, false, true, true);
                 scrollToEnd(message.getTo());
                 SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
             }

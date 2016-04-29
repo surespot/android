@@ -396,17 +396,11 @@ public class ChatUtils {
                                     final SurespotMessage finalMessage = message;
                                     SurespotLog.v(TAG, "adding local voice message %s", finalMessage);
                                     //need to add the message synchronously immediately so we can pull it out later
-                                    chatController.addMessage(activity, finalMessage);
-
                                     activity.runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             //then update on UI thread async
-                                            ChatAdapter chatAdapter = chatController.getChatAdapter(finalMessage.getTo());
-                                            if (chatAdapter != null) {
-                                                chatAdapter.notifyDataSetChanged();
-                                            }
-
+                                            chatController.addMessage(activity, finalMessage);
                                         }
                                     });
 
