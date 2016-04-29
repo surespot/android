@@ -366,36 +366,37 @@ public class ChatController {
         SurespotLog.d(TAG, "handleCachedFile");
 
         SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
+        if (localMessage != null) {
+            synchronized (localMessage) {
+                // if the data is different we haven't updated the url to point externally
+                if (localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
+                    // add the remote cache entry for the new url
 
-        synchronized (localMessage) {
-            // if the data is different we haven't updated the url to point externally
-            if (localMessage != null && localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
-                // add the remote cache entry for the new url
+                    String localUri = localMessage.getData();
+                    String remoteUri = message.getData();
 
-                String localUri = localMessage.getData();
-                String remoteUri = message.getData();
+                    SurespotLog.d(TAG, "copying cache entries from %s to %s", localUri, remoteUri);
+                    // update in memory image cache
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                        SurespotApplication.getFileCacheController().moveCacheEntry(localUri, remoteUri);
+                        MessageImageDownloader.moveCacheEntry(localUri, remoteUri);
+                    }
 
-                SurespotLog.d(TAG, "copying cache entries from %s to %s", localUri, remoteUri);
-                // update in memory image cache
-                if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                    SurespotApplication.getFileCacheController().moveCacheEntry(localUri, remoteUri);
-                    MessageImageDownloader.moveCacheEntry(localUri, remoteUri);
+                    // delete the file
+                    try {
+                        SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
+
+                        File file = new File(new URI(localUri));
+                        file.delete();
+                    }
+                    catch (URISyntaxException e) {
+                        SurespotLog.w(TAG, e, "error deleting local file");
+                    }
+
+                    // update message to point to real location
+                    localMessage.setData(remoteUri);
+
                 }
-
-                // delete the file
-                try {
-                    SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
-
-                    File file = new File(new URI(localUri));
-                    file.delete();
-                }
-                catch (URISyntaxException e) {
-                    SurespotLog.w(TAG, e, "error deleting local file");
-                }
-
-                // update message to point to real location
-                localMessage.setData(remoteUri);
-
             }
         }
     }

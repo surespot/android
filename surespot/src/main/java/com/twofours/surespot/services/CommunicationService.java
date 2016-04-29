@@ -364,25 +364,27 @@ public class CommunicationService extends Service {
 
 
                 }
+                else {
 
 
-                //message processed successfully, onto the next
-                SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
-                mCurrentSendIv = nextMessage.getIv();
-                switch (nextMessage.getMimeType()) {
-                    case SurespotConstants.MimeTypes.TEXT:
-                        if (isMessageReadyToSend(nextMessage)) {
-                            sendTextMessage(nextMessage);
-                        }
-                        else {
-                            //start timer and try in a bit
-                        }
-                        break;
-                    case SurespotConstants.MimeTypes.IMAGE:
-                    case SurespotConstants.MimeTypes.M4A:
-                        sendImageMessage(nextMessage);
+                    //message processed successfully, onto the next
+                    SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
+                    mCurrentSendIv = nextMessage.getIv();
+                    switch (nextMessage.getMimeType()) {
+                        case SurespotConstants.MimeTypes.TEXT:
+                            if (isMessageReadyToSend(nextMessage)) {
+                                sendTextMessage(nextMessage);
+                            }
+                            else {
+                                //start timer and try in a bit
+                            }
+                            break;
+                        case SurespotConstants.MimeTypes.IMAGE:
+                        case SurespotConstants.MimeTypes.M4A:
+                            sendImageMessage(nextMessage);
 
-                        break;
+                            break;
+                    }
                 }
 //
 
@@ -1083,7 +1085,6 @@ public class CommunicationService extends Service {
     }
 
 
-
     private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
         NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
@@ -1253,7 +1254,6 @@ public class CommunicationService extends Service {
                     return;
                 }
             }
-
 
 
             SurespotLog.i(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mSocketReconnectRetries);
