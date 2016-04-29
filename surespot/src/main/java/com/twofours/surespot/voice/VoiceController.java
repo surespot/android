@@ -464,6 +464,7 @@ public class VoiceController {
 
     private static class SeekBarThread implements Runnable {
         private boolean mRun = true;
+        private int mLastPosition = 0;
 
         @Override
         public void run() {
@@ -485,6 +486,14 @@ public class VoiceController {
                             break;
                         }
 
+                        //currentPosition sometimes wrong making seeker skip...at least stop it going backwards
+                        //https://code.google.com/p/android/issues/detail?id=2559
+                        if (currentPosition < mLastPosition) {
+                            currentPosition = mLastPosition;
+                        }
+
+                        mLastPosition = currentPosition;
+
                         progress = (int) (((float) currentPosition / (float) mDuration) * SEEK_MAX);
                         // SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
                         // progress);
@@ -493,17 +502,12 @@ public class VoiceController {
                         if (progress < 0) {
                             progress = 0;
                         }
-                     //   if (progress/SEEK_MAX*100 > 95) {
-                    //        progress = SEEK_MAX;
-                   //     }
-
-                        // SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
+                        //SurespotLog.d(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
 
                         if (currentPosition < mDuration) {
                             if (!mRun) {
                                 break;
                             }
-
                         }
                     }
 
@@ -519,6 +523,7 @@ public class VoiceController {
                 }
             }
 
+            mLastPosition = 0;
             setProgress(mSeekBar, 0);
         }
 
