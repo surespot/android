@@ -175,7 +175,7 @@
     <string name="menu_save_to_gallery">save to gallery</string>
     <string name="menu_resend_message">resend message</string>
     <string name="error_sending_messages">Error Sending Message(s)</string>
-    <string name="error_sending_detail">Click to open Surespot and retry sending</string>
+    <string name="error_sending_detail">Click to open surespot and retry sending</string>
     <string name="prompt_resend_errored_messages">Resend errored message(s)?</string>
     <string name="prompt_resend">Resend?</string>
     <string name="menu_lock">lock</string>

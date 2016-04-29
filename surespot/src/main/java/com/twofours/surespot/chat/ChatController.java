@@ -1235,7 +1235,7 @@ public class ChatController {
         chatAdapter.sort();
         chatAdapter.doneCheckingSequence();
         // mark messages left in chatAdapter with no id as errored
-        chatAdapter.markErrored();
+       // chatAdapter.markErrored();
         chatAdapter.notifyDataSetChanged();
     }
 

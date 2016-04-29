@@ -55,6 +55,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -2311,14 +2312,21 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         @Override
         public void onCouldNotConnectToServer() {
-            if (!logIfChatControllerNull()) {
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Utils.makeLongToast(MainActivity.this, "Could not connect to the server.");
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    MainActivity.this.setHomeProgress(false);
+
+                    //notify current adapter as unsent messages are now errored
+                    ChatController cc = SurespotApplication.getChatController();
+                    if (cc != null) {
+                        ChatAdapter ca = cc.getChatAdapter(mUser, false);
+                        if (ca != null) {
+                            ca.notifyDataSetChanged();
+                        }
                     }
-                });
-            }
+                }
+            });
         }
 
         @Override

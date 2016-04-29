@@ -28,7 +28,6 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
-import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
@@ -92,14 +91,13 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
-    private static final int MAX_RETRIES_SEND_VIA_HTTP = 30;
-    private static final int MAX_RETRIES_MAIN_ACTIVITY_PAUSED = 20;
-    private static final int MAX_RETRIES = 60;
+    private static final int MAX_RETRIES_SEND_VIA_HTTP = 5;
+    private static final int MAX_RETRIES = 5;
 
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 10;
 
-    private int mResendTries = 0;
+    private int mHttpResendTries = 0;
     private Socket mSocket;
     private int mSocketReconnectRetries = 0;
     private Timer mResendViaHttpTimer;
@@ -119,17 +117,8 @@ public class CommunicationService extends Service {
         SurespotLog.i(TAG, "onCreate");
         setOnWifi();
         mConnectivityReceiver = new BroadcastReceiverHandler();
-        resetState();
         mNotificationManager = (NotificationManager) CommunicationService.this.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(CommunicationService.this);
-
-        loadUnsentMessages();
-    }
-
-    private void resetState() {
-        mSocketReconnectRetries = 0;
-        mResendTries = 0;
-
     }
 
     private synchronized void disposeSocket() {
@@ -250,6 +239,7 @@ public class CommunicationService extends Service {
                 disconnect();
             }
             mUsername = username;
+            loadUnsentMessages();
         }
 
         return connect();
@@ -307,14 +297,7 @@ public class CommunicationService extends Service {
     }
 
     public synchronized void processNextMessage() {
-
-//        synchronized (BACKGROUND_TIMER_LOCK) {
-//            if (mBackgroundTimer == null) {
-//                mBackgroundTimer = new Timer("backgroundTimer");
-//            }
-//        }
         synchronized (SEND_LOCK) {
-
 
             SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
 
@@ -396,9 +379,6 @@ public class CommunicationService extends Service {
     private void sendTextMessage(final SurespotMessage message) {
         SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
         synchronized (SEND_LOCK) {
-            if (mMainActivityPaused) {
-                sendMessageUsingHttp(message);
-            }
             if (getConnectionState() == STATE_CONNECTED) {
                 SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
                 JSONObject json = message.toJSONObjectSocket();
@@ -411,8 +391,7 @@ public class CommunicationService extends Service {
                 }
             }
             else {
-                //not connected - can't send it
-                mCurrentSendIv = null;
+                sendMessageUsingHttp(message);
             }
         }
     }
@@ -459,34 +438,14 @@ public class CommunicationService extends Service {
                 //if message errored
                 int status = result.first;
                 if (status != 200) {
-                    //if we've hit retry limit stop retrying and set messages errored
-                    SurespotLog.d(TAG, "sendImageMessage error status: %d, mResendTries: %d, MAX_RETRIES: %d", status, mResendTries, MAX_RETRIES_SEND_VIA_HTTP);
-                    if (mResendTries++ >= MAX_RETRIES_SEND_VIA_HTTP) {
-                        //TODO set all messages in queue errored
-                        //TODO notification
-                        message.setErrorStatus(status);
-                        ChatController chatController = SurespotApplication.getChatController();
-                        if (chatController != null) {
-                            ChatAdapter chatAdapter = chatController.getChatAdapter(message.getTo(), false);
-                            if (chatAdapter != null) {
-                                SurespotMessage adapterMessage = chatAdapter.getMessageByIv(message.getIv());
-                                if (adapterMessage != null) {
-                                    adapterMessage.setErrorStatus(status);
-                                    chatAdapter.notifyDataSetChanged();
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        //try and send next message again
-                        scheduleResendTimer();
+                    //try and send next message again
+                    if (!scheduleResendTimer()) {
+                        errorMessageQueue(false);
                     }
                 }
                 else {
                     //success
-                    mResendTries = 0;
                     mSendQueue.remove(message);
-
 
                     //update local message with server data
                     SurespotLog.d(TAG, "sendImageMessage received response: %s", result.second);
@@ -533,7 +492,10 @@ public class CommunicationService extends Service {
 
                     }
                     catch (JSONException e) {
-                        //TODO notification
+                        //try and send next message again
+                        if (!scheduleResendTimer()) {
+                            errorMessageQueue(false);
+                        }
                     }
 
 
@@ -556,7 +518,10 @@ public class CommunicationService extends Service {
                     mCurrentSendIv = null;
                 }
                 SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
-                //TODO start resend task?
+                //try and send next message again
+                if (!scheduleResendTimer()) {
+                    errorMessageQueue(false);
+                }
             }
 
             @Override
@@ -579,37 +544,27 @@ public class CommunicationService extends Service {
                             processNextMessage();
                         }
                         else {
-                            //if we've hit retry limit stop retrying and set messages errored
-                            if (mResendTries++ >= MAX_RETRIES_SEND_VIA_HTTP) {
-                                //TODO set all messages in queue errored
-                                message.setErrorStatus(status);
-                                ChatController chatController = SurespotApplication.getChatController();
-                                if (chatController != null) {
-                                    ChatAdapter chatAdapter = chatController.getChatAdapter(message.getTo(), false);
-                                    if (chatAdapter != null) {
-                                        SurespotMessage adapterMessage = chatAdapter.getMessageByIv(message.getIv());
-                                        if (adapterMessage != null) {
-                                            adapterMessage.setErrorStatus(status);
-                                            chatAdapter.notifyDataSetChanged();
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                //try and send next message again
-                                scheduleResendTimer();
+                            //try and send next message again
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue(false);
                             }
                         }
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, e, "JSON received from server");
-                        //TODO schedule resend here?
+                        //try and send next message again
+                        if (!scheduleResendTimer()) {
+                            errorMessageQueue(false);
+                        }
                     }
 
                 }
                 else {
                     SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
-                    //TODO schedule resend here?
+                    //try and send next message again
+                    if (!scheduleResendTimer()) {
+                        errorMessageQueue(false);
+                    }
                 }
             }
         }));
@@ -656,20 +611,45 @@ public class CommunicationService extends Service {
         // If message is in resend buffer, simply retry connection and it will be sent once connected.
         // If message is not in resend buffer, then simply attempt to send the message again
 
-        if (getConnectionState() == STATE_DISCONNECTED) {
-            mSocketReconnectRetries = 0; // start over in terms of retries (?)
-            connect();
-        }
-
-        if (mSendQueue.contains(message)) {
-            // do nothing - message will transmit when we reconnect
-        }
-        else {
-            // resend the message
-            //  sendMessage(message);
-        }
+//        if (getConnectionState() == STATE_DISCONNECTED) {
+//            mSocketReconnectRetries = 0; // start over in terms of retries (?)
+//            connect();
+//        }
+//
+//        if (mSendQueue.contains(message)) {
+//            // do nothing - message will transmit when we reconnect
+//        }
+//        else {
+//            // resend the message
+//            //  sendMessage(message);
+//        }
     }
 
+
+    public void errorMessageQueue(boolean socket) {
+        SurespotLog.d(TAG, "errorMessageQueue");
+        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
+        while (iterator.hasNext()) {
+            SurespotMessage message = iterator.next();
+            message.setErrorStatus(500);
+        }
+        saveUnsentMessages();
+        saveMessages();
+
+        //notify UI
+        if (mListener != null) {
+            mListener.onCouldNotConnectToServer();
+        }
+
+        // raise Android notifications for unsent messages so the user can re-enter the app and retry sending
+        if (!CommunicationService.this.mSendQueue.isEmpty()) {
+            raiseNotificationForUnsentMessages();
+        }
+
+        //cancel timers
+        stopReconnectionAttempts();
+        stopResendTimer();
+    }
 
     public void clearMessageQueue(String friendname) {
         Iterator<SurespotMessage> iterator = mSendQueue.iterator();
@@ -696,9 +676,9 @@ public class CommunicationService extends Service {
 
     public void setServiceListener(ITransmissionServiceListener listener) {
         mListener = listener;
-        if (mListener != null) {
-            mSocketReconnectRetries = 0; // clear state related to retrying connections
-        }
+//        if (mListener != null) {
+//            mSocketReconnectRetries = 0; // clear state related to retrying connections
+//        }
     }
 
     public ITransmissionServiceListener getServiceListener() {
@@ -784,6 +764,7 @@ public class CommunicationService extends Service {
     }
 
     private void loadUnsentMessages() {
+        mSendQueue.clear();
         Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages(mUsername).iterator();
         while (iterator.hasNext()) {
             SurespotMessage message = iterator.next();
@@ -807,8 +788,6 @@ public class CommunicationService extends Service {
 
         stopReconnectionAttempts();
         stopResendTimer();
-
-        //tell chat controller
 
 
         // tell any listeners that we're connected
@@ -880,6 +859,7 @@ public class CommunicationService extends Service {
                 mReconnectTask = null;
                 SurespotLog.d(TAG, "Cancelled reconnect task: " + cancel);
             }
+            mSocketReconnectRetries = 0;
         }
     }
 
@@ -906,30 +886,38 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void scheduleResendTimer() {
-        int timerInterval = generateInterval(mResendTries++);
-        SurespotLog.d(TAG, "resend timer try %d starting another task in: %d", mResendTries - 1, timerInterval);
+    private boolean scheduleResendTimer() {
+        SurespotLog.d(TAG, "scheduleResendTimer, mHttpResendTries: %d, MAX_RETRIES: %d", mHttpResendTries, MAX_RETRIES_SEND_VIA_HTTP);
 
-        synchronized (SEND_LOCK) {
+        if (mHttpResendTries++ < MAX_RETRIES_SEND_VIA_HTTP) {
+            int timerInterval = generateInterval(mHttpResendTries);
+            SurespotLog.d(TAG, "resend timer try %d starting another task in: %d", mHttpResendTries - 1, timerInterval);
+
+            synchronized (SEND_LOCK) {
 
 
-            if (mResendTask != null) {
-                mResendTask.cancel();
-                mResendTask = null;
+                if (mResendTask != null) {
+                    mResendTask.cancel();
+                    mResendTask = null;
+                }
+
+
+                if (mResendViaHttpTimer != null) {
+                    mResendViaHttpTimer.cancel();
+                    mResendViaHttpTimer = null;
+                }
+
+
+                // Is there ever a case where we don't want to try a reconnect?
+                ProcessNextMessageTask reconnectTask = new ProcessNextMessageTask();
+                mResendViaHttpTimer = new Timer("processNextMessageTimer");
+                mResendViaHttpTimer.schedule(reconnectTask, timerInterval);
+                mResendTask = reconnectTask;
             }
-
-
-            if (mResendViaHttpTimer != null) {
-                mResendViaHttpTimer.cancel();
-                mResendViaHttpTimer = null;
-            }
-
-
-            // Is there ever a case where we don't want to try a reconnect?
-            ProcessNextMessageTask reconnectTask = new ProcessNextMessageTask();
-            mResendViaHttpTimer = new Timer("processNextMessageTimer");
-            mResendViaHttpTimer.schedule(reconnectTask, timerInterval);
-            mResendTask = reconnectTask;
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -944,6 +932,7 @@ public class CommunicationService extends Service {
                 mResendTask = null;
                 SurespotLog.d(TAG, "Cancelled resend task: " + cancel);
             }
+            mHttpResendTries = 0;
         }
     }
 
@@ -972,9 +961,6 @@ public class CommunicationService extends Service {
 
     private synchronized void setState(int state) {
         mConnectionState = state;
-        if (state == STATE_CONNECTED) {
-            mSocketReconnectRetries = 0;
-        }
     }
 
     private class ReconnectTask extends TimerTask {
@@ -1217,10 +1203,12 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "mSocket.io connection established");
             setOnWifi();
             setState(STATE_CONNECTED);
+
+            onConnected();
+
             if (SurespotApplication.getChatController() != null) {
                 SurespotApplication.getChatController().onResume(true);
             }
-            onConnected();
         }
     };
 
@@ -1229,7 +1217,6 @@ public class CommunicationService extends Service {
         public void call(Object... args) {
             SurespotLog.d(TAG, "Connection terminated.");
             setState(STATE_DISCONNECTED);
-            mSocketReconnectRetries = 0;
             synchronized (SEND_LOCK) {
                 mCurrentSendIv = null;
             }
@@ -1270,23 +1257,17 @@ public class CommunicationService extends Service {
 
             setOnWifi();
             // kick off another task
-            if ((!mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES) || (mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES_MAIN_ACTIVITY_PAUSED)) {
+            if (!mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES) {
                 scheduleReconnectionAttempt();
+                //try and send message via http
+                processNextMessage();
             }
             else {
                 SurespotLog.i(TAG, "Socket.io reconnect retries exhausted, giving up.");
 
-                if (mListener != null) {
-                    mListener.onCouldNotConnectToServer();
-                }
 
-                // raise Android notifications for unsent messages so the user can re-enter the app and retry sending
-                if (mMainActivityPaused && !CommunicationService.this.mSendQueue.isEmpty()) {
-                    raiseNotificationForUnsentMessages();
-                }
-
-                // TODO: is this appropriate to call?  I believe so, we make the user log in again anyway in this scenario
-                //userLoggedOut();
+                //mark all messages errored
+                errorMessageQueue(true);
             }
         }
     };
@@ -1400,6 +1381,7 @@ public class CommunicationService extends Service {
     public static boolean isUIAttached() {
         return !mMainActivityPaused;
     }
+
 
 }
 
