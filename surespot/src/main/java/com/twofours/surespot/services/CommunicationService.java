@@ -43,7 +43,6 @@ import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -322,7 +321,7 @@ public class CommunicationService extends Service {
 
             SurespotMessage nextMessage = mSendQueue.peek();
             if (nextMessage != null) {
-
+                SurespotLog.d(TAG, "processNextMessage, currentIv: %s, message iv: %s", mCurrentSendIv, nextMessage.getIv());
                 if (mCurrentSendIv == nextMessage.getIv()) {
                     if (nextMessage.getId() != null) {
                         SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
@@ -365,11 +364,11 @@ public class CommunicationService extends Service {
 
                 }
                 else {
-
+                    mCurrentSendIv = nextMessage.getIv();
 
                     //message processed successfully, onto the next
                     SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
-                    mCurrentSendIv = nextMessage.getIv();
+
                     switch (nextMessage.getMimeType()) {
                         case SurespotConstants.MimeTypes.TEXT:
                             if (isMessageReadyToSend(nextMessage)) {
@@ -396,10 +395,10 @@ public class CommunicationService extends Service {
 
     private void sendTextMessage(final SurespotMessage message) {
         SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
-        if (mMainActivityPaused) {
-            sendMessageUsingHttp(message);
-        }
-        else {
+        synchronized (SEND_LOCK) {
+            if (mMainActivityPaused) {
+                sendMessageUsingHttp(message);
+            }
             if (getConnectionState() == STATE_CONNECTED) {
                 SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
                 JSONObject json = message.toJSONObjectSocket();
@@ -410,12 +409,6 @@ public class CommunicationService extends Service {
                 if (mSocket != null) {
                     mSocket.send(json);
                 }
-            }
-            else {
-                //not connected, clear current iv so queue can proceed
-
-                mCurrentSendIv = null;
-
             }
         }
     }
@@ -455,6 +448,10 @@ public class CommunicationService extends Service {
 
             @Override
             protected void onPostExecute(Tuple<Integer, JSONObject> result) {
+                synchronized (SEND_LOCK) {
+                    mCurrentSendIv = null;
+                }
+
                 //if message errored
                 int status = result.first;
                 if (status != 200) {
@@ -482,12 +479,10 @@ public class CommunicationService extends Service {
                     }
                 }
                 else {
+                    //success
                     mResendTries = 0;
                     mSendQueue.remove(message);
-                    //clear current iv so queue can proceed
-                    synchronized (SEND_LOCK) {
-                        mCurrentSendIv = null;
-                    }
+
 
                     //update local message with server data
                     SurespotLog.d(TAG, "sendImageMessage received response: %s", result.second);
@@ -553,11 +548,18 @@ public class CommunicationService extends Service {
 
             @Override
             public void onFailure(Call call, IOException e) {
+                synchronized (SEND_LOCK) {
+                    mCurrentSendIv = null;
+                }
                 SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
+                //TODO start resend task?
             }
 
             @Override
             public void onResponse(Call call, Response response, String responseString) throws IOException {
+                synchronized (SEND_LOCK) {
+                    mCurrentSendIv = null;
+                }
                 if (response.isSuccessful()) {
                     try {
                         JSONObject json = new JSONObject(responseString);
@@ -597,15 +599,15 @@ public class CommunicationService extends Service {
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, e, "JSON received from server");
+                        //TODO schedule resend here?
                     }
 
                 }
                 else {
                     SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
+                    //TODO schedule resend here?
                 }
             }
-
-
         }));
     }
 
@@ -905,6 +907,8 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "resend timer try %d starting another task in: %d", mResendTries - 1, timerInterval);
 
         synchronized (SEND_LOCK) {
+
+
             if (mResendTask != null) {
                 mResendTask.cancel();
                 mResendTask = null;
@@ -1063,10 +1067,6 @@ public class CommunicationService extends Service {
             mSocket.disconnect();
             disposeSocket();
         }
-
-
-        processNextMessage();
-
     }
 
     private boolean isMessageReadyToSend(SurespotMessage message) {
