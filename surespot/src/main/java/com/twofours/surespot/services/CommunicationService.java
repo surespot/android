@@ -410,6 +410,10 @@ public class CommunicationService extends Service {
                     mSocket.send(json);
                 }
             }
+            else {
+                //not connected - can't send it
+                mCurrentSendIv = null;
+            }
         }
     }
 
@@ -1226,6 +1230,9 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "Connection terminated.");
             setState(STATE_DISCONNECTED);
             mSocketReconnectRetries = 0;
+            synchronized (SEND_LOCK) {
+                mCurrentSendIv = null;
+            }
         }
     };
 
@@ -1233,6 +1240,9 @@ public class CommunicationService extends Service {
         @Override
         public void call(Object... args) {
 
+            synchronized (SEND_LOCK) {
+                mCurrentSendIv = null;
+            }
 
             if (args.length > 0) {
                 String reason = args[0].toString();
