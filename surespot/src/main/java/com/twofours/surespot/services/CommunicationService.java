@@ -286,7 +286,8 @@ public class CommunicationService extends Service {
         synchronized (SEND_LOCK) {
             SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
             SurespotMessage nextMessage = mSendQueue.peek();
-            if (nextMessage != null) {
+            //if the message is errored don't resend it
+            if (nextMessage != null && nextMessage.getErrorStatus() == 0) {
                 SurespotLog.d(TAG, "processNextMessage, currentIv: %s, message iv: %s", mCurrentSendIv, nextMessage.getIv());
                 if (mCurrentSendIv == nextMessage.getIv()) {
                     if (nextMessage.getId() != null) {
@@ -604,11 +605,11 @@ public class CommunicationService extends Service {
         SurespotLog.d(TAG, "errorMessageQueue");
         setState(STATE_ERRORED);
 
-        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
-        while (iterator.hasNext()) {
-            SurespotMessage message = iterator.next();
-            message.setErrorStatus(500);
-        }
+//        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
+//        while (iterator.hasNext()) {
+//            SurespotMessage message = iterator.next();
+//            message.setErrorStatus(500);
+//        }
         saveUnsentMessages();
         saveMessages();
 

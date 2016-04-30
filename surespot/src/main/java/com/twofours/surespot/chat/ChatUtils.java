@@ -14,7 +14,9 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.util.Base64;
+import android.widget.TextView;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -246,9 +248,9 @@ public class ChatUtils {
                                 }
                                 catch (IOException e) {
                                     SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-                                    if (finalMessage != null) {
-                                        finalMessage.setErrorStatus(500);
-                                    }
+//                                    if (finalMessage != null) {
+//                                        finalMessage.setErrorStatus(500);
+//                                    }
                                     //TODO notification with retry?
                                     //   callback.handleResponse(true);
                                     return;
@@ -847,6 +849,44 @@ public class ChatUtils {
             return null;
         }
         return unicodeEscaped(ch.charValue());
+    }
+
+    public static void setMessageErrorText(Context context, TextView textView, SurespotMessage message) {
+        String statusText = null;
+        switch (message.getErrorStatus()) {
+            case 400:
+                statusText = context.getString(R.string.message_error_invalid);
+                break;
+            case 402:
+//			// if it's voice message they need to have upgraded, otherwise fall through to 403
+//			if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//				statusText = context.getString(R.string.billing_payment_required_voice);
+//				break;
+//			}
+            case 403:
+                statusText = context.getString(R.string.message_error_unauthorized);
+                break;
+            case 404:
+                statusText = context.getString(R.string.message_error_unauthorized);
+                break;
+            case 429:
+                statusText = context.getString(R.string.error_message_throttled);
+                break;
+            case 500:
+
+                //if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                    statusText = context.getString(R.string.error_message_generic);
+//                }
+//                else {
+//                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//                        statusText = context.getString(R.string.error_message_resend);
+//                    }
+//                }
+
+                break;
+        }
+
+        textView.setText(statusText);
     }
 
     public static class CodePoint {
