@@ -105,7 +105,6 @@ public class CommunicationService extends Service {
     private Timer mBackgroundTimer;
     private Object BACKGROUND_TIMER_LOCK = new Object();
     private int mConnectionState;
-    private boolean mOnWifi;
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
     private String mCurrentSendIv;
@@ -115,7 +114,6 @@ public class CommunicationService extends Service {
     @Override
     public void onCreate() {
         SurespotLog.i(TAG, "onCreate");
-        setOnWifi();
         mConnectivityReceiver = new BroadcastReceiverHandler();
         mNotificationManager = (NotificationManager) CommunicationService.this.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(CommunicationService.this);
@@ -197,26 +195,14 @@ public class CommunicationService extends Service {
     // sets if the main activity is paused or not
     public void setMainActivityPaused(boolean paused) {
         mMainActivityPaused = paused;
-        // changed with not keeping socket open: checkScheduleDisconnect();
-        // changed with not keeping socket open: checkReconnect();
         if (paused) {
-            // changed with not keeping socket open:
-            /*
-            if (getConnectionState() != STATE_CONNECTED && mEverConnected) {
-                scheduleGiveUpReconnecting();
-            }
-            */
-
             save();
             disconnect();
         }
         else {
             connect();
-            // changed with not keeping socket open: cancelDisconnectTimer();
-            // changed with not keeping socket open: cancelGiveUpReconnectingTimer();
         }
     }
-
 
     // Notify the service that the user logged out
     public void userLoggedOut() {
@@ -298,12 +284,7 @@ public class CommunicationService extends Service {
 
     public synchronized void processNextMessage() {
         synchronized (SEND_LOCK) {
-
-
-
             SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
-
-
             SurespotMessage nextMessage = mSendQueue.peek();
             if (nextMessage != null) {
                 SurespotLog.d(TAG, "processNextMessage, currentIv: %s, message iv: %s", mCurrentSendIv, nextMessage.getIv());
@@ -311,8 +292,6 @@ public class CommunicationService extends Service {
                     if (nextMessage.getId() != null) {
                         SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
                         //set the resend id
-
-
                         if (SurespotApplication.getChatController() != null) {
 
                             // set the last received id so the server knows which messages to check
@@ -691,7 +670,7 @@ public class CommunicationService extends Service {
         disposeSocket();
     }
 
-    public void initializeService(ITransmissionServiceListener listener ) {
+    public void initializeService(ITransmissionServiceListener listener) {
         if (mConnectivityReceiver != null) {
             unregisterReceiver();
         }
@@ -1052,18 +1031,6 @@ public class CommunicationService extends Service {
         return !TextUtils.isEmpty(message.getData()) && !TextUtils.isEmpty(message.getFromVersion()) && !TextUtils.isEmpty(message.getToVersion());
     }
 
-
-    private void setOnWifi() {
-        // get the initial state...sometimes when the app starts it says "hey i'm on wifi" which creates a reconnect
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo != null) {
-            mOnWifi = (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
-            SurespotLog.d(TAG, "setOnWifi, set mOnWifi to: %b", mOnWifi);
-        }
-    }
-
-
     private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
         NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
@@ -1105,7 +1072,6 @@ public class CommunicationService extends Service {
     }
 
     private class BroadcastReceiverHandler extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             SurespotLog.d(TAG, "onReceive");
@@ -1116,59 +1082,13 @@ public class CommunicationService extends Service {
                 if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
                     SurespotLog.d(TAG, "onReceive,  CONNECTED");
                     synchronized (CommunicationService.this) {
-                        boolean wasOnWifi = mOnWifi;
-                        setOnWifi();
-
-
-                        /*if (getConnectionState() == STATE_CONNECTED && mSocket != null && mSocket.isConnected()) {
-                            SurespotLog.d(TAG, "onReceive, mSocket already connected doing nothing");
-                            return;
-                        }*/
-
-                        //if our wifi state changed reconnect
-                        if (wasOnWifi != mOnWifi) {
-                            SurespotLog.d(TAG, "onReceive, (re)connecting the mSocket");
-                            disconnect();
-                            connect();
-                        }
-
+                        connect();
                         processNextMessage();
                     }
                     return;
                 }
             }
-//            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-//            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-//            if (networkInfo != null) {
-//                SurespotLog.d(TAG, "isconnected: " + networkInfo.isConnected());
-//                SurespotLog.d(TAG, "failover: " + networkInfo.isFailover());
-//                SurespotLog.d(TAG, "reason: " + networkInfo.getReason());
-//                SurespotLog.d(TAG, "type: " + networkInfo.getTypeName());
-//
-//                // if it's not a failover and wifi is now active then initiate reconnect
-//                if (!networkInfo.isFailover() && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected())) {
-//                    synchronized (CommunicationService.this) {
-//                        // if we're not connecting, connect
-//                        if (getConnectionState() != STATE_CONNECTING && !mOnWifi) {
-//                            mOnWifi = true;
-//
-//                            if (!mMainActivityPaused && mListener != null) {
-//                                SurespotLog.d(TAG, "Network switch, Reconnecting...");
-//
-//                                setState(STATE_CONNECTING);
-//
-//                                disconnect();
-//                                connect();
-//                            }
-//                        }
-//                    }
-//                }
-//            } else {
-//                SurespotLog.d(TAG, "networkinfo null");
-//            }
         }
-
-
     }
 
     private void debugIntent(Intent intent, String tag) {
@@ -1190,7 +1110,6 @@ public class CommunicationService extends Service {
         @Override
         public void call(Object... args) {
             SurespotLog.d(TAG, "mSocket.io connection established");
-            setOnWifi();
             setState(STATE_CONNECTED);
 
             onConnected();
@@ -1241,10 +1160,8 @@ public class CommunicationService extends Service {
                 }
             }
 
-
             SurespotLog.i(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mSocketReconnectRetries);
 
-            setOnWifi();
             // kick off another task
             if (!mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES) {
                 scheduleReconnectionAttempt();
@@ -1369,7 +1286,6 @@ public class CommunicationService extends Service {
     public static boolean isUIAttached() {
         return !mMainActivityPaused;
     }
-
 
 }
 
