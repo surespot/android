@@ -1826,40 +1826,6 @@ public class ChatController {
         }
     }
 
-    public void resendMessage(SurespotMessage message) {
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().resendMessage(message);
-        }
-    }
-
-    public void resendFileMessage(String to, final String messageIv) {
-//		final ChatAdapter chatAdapter = mChatAdapters.get(to);
-//		final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
-//
-//		// reset status flags
-//		message.setErrorStatus(0);
-//		message.setAlreadySent(false);
-//		chatAdapter.notifyDataSetChanged();
-//		setProgress("resend", true);
-//		ChatUtils.resendFileMessage(mNetworkController, message, new IAsyncCallback<Integer>() {
-//
-//			@Override
-//			public void handleResponse(Integer result) {
-//				setProgress("resend", false);
-//				if (result == 200) {
-//					message.setErrorStatus(0);
-//				}
-//				else {
-//					message.setErrorStatus(result);
-//				}
-//
-//				message.setAlreadySent(true);
-//				chatAdapter.notifyDataSetChanged();
-//			}
-//		});
-
-    }
-
     public FriendAdapter getFriendAdapter() {
         return mFriendAdapter;
     }

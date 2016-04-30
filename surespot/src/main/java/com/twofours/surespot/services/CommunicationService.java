@@ -580,26 +580,6 @@ public class CommunicationService extends Service {
         return getConnectionState() == CommunicationService.STATE_CONNECTED;
     }
 
-    public void resendMessage(SurespotMessage message) {
-        // user wants to resend the message.  Retry connection if we have given up/are not connected.
-        // If message is in resend buffer, simply retry connection and it will be sent once connected.
-        // If message is not in resend buffer, then simply attempt to send the message again
-
-//        if (getConnectionState() == STATE_DISCONNECTED) {
-//            mSocketReconnectRetries = 0; // start over in terms of retries (?)
-//            connect();
-//        }
-//
-//        if (mSendQueue.contains(message)) {
-//            // do nothing - message will transmit when we reconnect
-//        }
-//        else {
-//            // resend the message
-//            //  sendMessage(message);
-//        }
-    }
-
-
     public void errorMessageQueue() {
         int mCurrentState = mConnectionState;
         SurespotLog.d(TAG, "errorMessageQueue");
