@@ -23,7 +23,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 	private byte[] mPlainBinaryData;
 	private Integer dataSize;
 	private Integer mId;
-	private Integer mResendId;
 	private int mErrorStatus;
 	private String mMimeType;
 	private Date mDateTime;
@@ -117,14 +116,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		mId = id;
 	}
 
-	public Integer getResendId() {
-		return mResendId;
-	}
-
-	public void setResendId(Integer resendId) {
-		this.mResendId = resendId;
-	}
-
 	public String getOtherUser() {
 		return ChatUtils.getOtherUser(this.mFrom, this.mTo);
 	}
@@ -203,11 +194,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			chatMessage.setErrorStatus(errorStatus);
 		}
 
-		Integer resendId = jsonMessage.optInt("resendId");
-		if (resendId > 0) {
-			chatMessage.setResendId(resendId);
-		}
-
 		long datetime = jsonMessage.optLong("datetime");
 		if (datetime > 0) {
 			chatMessage.setDateTime(new Date(datetime));
@@ -246,10 +232,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 				message.put("id", this.getId());
 			}
 
-			if (this.getResendId() != null) {
-				message.put("resendId", this.getResendId());
-			}
-
 			if (this.getDateTime() != null) {
 				message.put("datetime", this.getDateTime().getTime());
 			}
@@ -280,10 +262,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 			message.put("data", this.getData());
 			message.put("hashed", this.isHashed());
 
-			if (this.getResendId() != null) {
-				message.put("resendId", this.getResendId());
-			}
-				
 			return message;
 		}
 		catch (JSONException e) {
@@ -305,8 +283,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		result = prime * result + ((mIv == null) ? 0 : mIv.hashCode());
 		result = prime * result + ((mMimeType == null) ? 0 : mMimeType.hashCode());
 		result = prime * result + ((mPlainData == null) ? 0 : mPlainData.hashCode());
-		result = prime * result + ((mResendId == null) ? 0 : mResendId.hashCode());
-
 		result = prime * result + ((mTo == null) ? 0 : mTo.hashCode());
 		result = prime * result + ((mToVersion == null) ? 0 : mToVersion.hashCode());
 		result = prime * result + (mHashed ? 1 : 0);
@@ -473,7 +449,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 		// sb.append("\tdeletedTo: " + getDeletedTo() + "\n");
 		sb.append("\tshareable: " + isShareable() + "\n");
 		sb.append("\terrorStatus: " + getErrorStatus() + "\n");
-		sb.append("\tresendId: " + getResendId() + "\n");
 		sb.append("\tdatetime: " + getDateTime() + "\n");
 		sb.append("\tgcm: " + isGcm() + "\n");		
 		sb.append("\tvoicePlayed: " + isVoicePlayed() + "\n");

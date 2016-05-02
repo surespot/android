@@ -303,40 +303,7 @@ public class CommunicationService extends Service {
             if (nextMessage != null) {
                 SurespotLog.d(TAG, "processNextMessage, currentIv: %s, next message iv: %s", mCurrentSendIv, nextMessage.getIv());
                 if (mCurrentSendIv == nextMessage.getIv()) {
-                                            SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
-//                    if (nextMessage.getId() != null) {
-//                        SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
-//                        //set the resend id
-//                        if (SurespotApplication.getChatController() != null) {
-//
-//                            // set the last received id so the server knows which messages to check
-//                            String otherUser = nextMessage.getOtherUser();
-//
-//                            // String username = message.getFrom();
-//                            Integer lastMessageID = null;
-//                            // ideally get the last id from the fragment's chat adapter
-//                            ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(otherUser);
-//                            if (chatAdapter != null) {
-//                                SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
-//                                if (lastMessage != null) {
-//                                    lastMessageID = lastMessage.getId();
-//                                }
-//                            }
-//
-//                            // failing that use the last viewed id
-//                            if (lastMessageID == null) {
-//                                if (SurespotApplication.getChatController().getFriendAdapter() != null) {
-//                                    SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
-//                                }
-//                            }
-//
-//                            if (lastMessageID == null) {
-//                                lastMessageID = 0;
-//                            }
-//                            SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
-//                            nextMessage.setResendId(lastMessageID);
-//                        }
-                    //}
+                    SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
                 }
                 else {
                     mCurrentSendIv = nextMessage.getIv();
@@ -420,7 +387,6 @@ public class CommunicationService extends Service {
             @Override
             protected void onPostExecute(Tuple<Integer, JSONObject> result) {
                 synchronized (SEND_LOCK) {
-
 
 
                     //if message errored
@@ -1269,7 +1235,7 @@ public class CommunicationService extends Service {
                             }
                         }
 
-                       removeQueuedMessage(message);
+                        removeQueuedMessage(message);
 
                         if (mMainActivityPaused) {
                             // make sure to save out messages because main activity will reload and base message status on saved messages
