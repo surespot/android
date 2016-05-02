@@ -88,7 +88,6 @@ public class CommunicationService extends Service {
     public static String mCurrentChat;
     Handler mHandler = new Handler(Looper.getMainLooper());
 
-    public static final int STATE_ERRORED = 3;
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
@@ -109,6 +108,7 @@ public class CommunicationService extends Service {
     private NotificationCompat.Builder mBuilder;
     private String mCurrentSendIv;
     private ProcessNextMessageTask mResendTask;
+    private boolean mErrored;
 
 
     @Override
@@ -283,46 +283,60 @@ public class CommunicationService extends Service {
     }
 
     public synchronized void processNextMessage() {
+
         synchronized (SEND_LOCK) {
+            //if we're ERRORED do nothing
+            if (mErrored) {
+                SurespotLog.d(TAG, "processNextMessage in ERRORED state, doing nothing");
+                return;
+            }
+
             SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
             SurespotMessage nextMessage = mSendQueue.peek();
-            //if the message is errored don't resend it
-            if (nextMessage != null && nextMessage.getErrorStatus() == 0) {
-                SurespotLog.d(TAG, "processNextMessage, currentIv: %s, message iv: %s", mCurrentSendIv, nextMessage.getIv());
+            //if the message is errored don't resend it, remove from queue
+            while (nextMessage != null && nextMessage.getErrorStatus() > 0) {
+                SurespotLog.d(TAG, "processNextMessage, removing errored message: %s", nextMessage.getIv());
+                mSendQueue.remove(nextMessage);
+                nextMessage = mSendQueue.peek();
+            }
+
+            if (nextMessage != null) {
+                SurespotLog.d(TAG, "processNextMessage, currentIv: %s, next message iv: %s", mCurrentSendIv, nextMessage.getIv());
                 if (mCurrentSendIv == nextMessage.getIv()) {
-                    if (nextMessage.getId() != null) {
-                        SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
-                        //set the resend id
-                        if (SurespotApplication.getChatController() != null) {
-
-                            // set the last received id so the server knows which messages to check
-                            String otherUser = nextMessage.getOtherUser();
-
-                            // String username = message.getFrom();
-                            Integer lastMessageID = null;
-                            // ideally get the last id from the fragment's chat adapter
-                            ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(otherUser);
-                            if (chatAdapter != null) {
-                                SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
-                                if (lastMessage != null) {
-                                    lastMessageID = lastMessage.getId();
-                                }
-                            }
-
-                            // failing that use the last viewed id
-                            if (lastMessageID == null) {
-                                if (SurespotApplication.getChatController().getFriendAdapter() != null) {
-                                    SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
-                                }
-                            }
-
-                            if (lastMessageID == null) {
-                                lastMessageID = 0;
-                            }
-                            SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
-                            nextMessage.setResendId(lastMessageID);
-                        }
-                    }
+                                            SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
+//                    if (nextMessage.getId() != null) {
+//                        SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
+//                        //set the resend id
+//                        if (SurespotApplication.getChatController() != null) {
+//
+//                            // set the last received id so the server knows which messages to check
+//                            String otherUser = nextMessage.getOtherUser();
+//
+//                            // String username = message.getFrom();
+//                            Integer lastMessageID = null;
+//                            // ideally get the last id from the fragment's chat adapter
+//                            ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(otherUser);
+//                            if (chatAdapter != null) {
+//                                SurespotMessage lastMessage = chatAdapter.getLastMessageWithId();
+//                                if (lastMessage != null) {
+//                                    lastMessageID = lastMessage.getId();
+//                                }
+//                            }
+//
+//                            // failing that use the last viewed id
+//                            if (lastMessageID == null) {
+//                                if (SurespotApplication.getChatController().getFriendAdapter() != null) {
+//                                    SurespotApplication.getChatController().getFriendAdapter().getFriend(otherUser).getLastViewedMessageId();
+//                                }
+//                            }
+//
+//                            if (lastMessageID == null) {
+//                                lastMessageID = 0;
+//                            }
+//                            SurespotLog.d(TAG, "setting resendId, otheruser: " + otherUser + ", id: " + lastMessageID);
+//                            nextMessage.setResendId(lastMessageID);
+//                        }
+                    //}
                 }
                 else {
                     mCurrentSendIv = nextMessage.getIv();
@@ -341,7 +355,7 @@ public class CommunicationService extends Service {
                             break;
                         case SurespotConstants.MimeTypes.IMAGE:
                         case SurespotConstants.MimeTypes.M4A:
-                            sendImageMessage(nextMessage);
+                            sendFileMessage(nextMessage);
 
                             break;
                     }
@@ -370,8 +384,8 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void sendImageMessage(final SurespotMessage message) {
-        SurespotLog.d(TAG, "sendImageMessage, iv: %s", message.getIv());
+    private void sendFileMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "sendFileMessage, iv: %s", message.getIv());
         new AsyncTask<Void, Void, Tuple<Integer, JSONObject>>() {
             @Override
             protected Tuple<Integer, JSONObject> doInBackground(Void... voids) {
@@ -387,11 +401,11 @@ public class CommunicationService extends Service {
 
                     }
                     catch (FileNotFoundException e) {
-                        SurespotLog.w(TAG, e, "sendImageMessage");
+                        SurespotLog.w(TAG, e, "sendFileMessage");
                         return new Tuple<>(500, null);
                     }
                     catch (JSONException e) {
-                        SurespotLog.w(TAG, e, "sendImageMessage");
+                        SurespotLog.w(TAG, e, "sendFileMessage");
                         return new Tuple<>(500, null);
                     }
 
@@ -406,30 +420,33 @@ public class CommunicationService extends Service {
             @Override
             protected void onPostExecute(Tuple<Integer, JSONObject> result) {
                 synchronized (SEND_LOCK) {
-                    mCurrentSendIv = null;
-                }
 
-                //if message errored
-                int status = result.first;
-                if (status != 200) {
-                    //try and send next message again
-                    if (!scheduleResendTimer()) {
-                        errorMessageQueue();
+
+
+                    //if message errored
+                    int status = result.first;
+                    if (status != 200) {
+                        //try and send next message again
+                        if (!scheduleResendTimer()) {
+                            errorMessageQueue();
+                        }
                     }
-                }
-                else {
-                    //success
-                    mSendQueue.remove(message);
+                    else {
+                        //success
+                        mErrored = false;
 
-                    //update local message with server data
-                    SurespotLog.d(TAG, "sendImageMessage received response: %s", result.second);
+                        //need to remove the message from the queue before setting the current send iv to null
+                        removeQueuedMessage(message);
 
-                    JSONObject serverData = result.second;
-                    try {
-                        int serverId = serverData.getInt("id");
-                        //   String url = serverData.getString("url");
-                        long datetime = serverData.getLong("time");
-                        int size = serverData.getInt("size");
+                        //update local message with server data
+                        SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
+
+//                        JSONObject serverData = result.second;
+//                        try {
+//                            int serverId = serverData.getInt("id");
+//                            //   String url = serverData.getString("url");
+//                            long datetime = serverData.getLong("time");
+//                            int size = serverData.getInt("size");
 
                         //create a new message purely to update cached file location
 //                        SurespotMessage newMessage = new SurespotMessage();
@@ -464,21 +481,20 @@ public class CommunicationService extends Service {
 //                        }
 
 
-                    }
-                    catch (JSONException e) {
-                        //try and send next message again
-                        if (!scheduleResendTimer()) {
-                            errorMessageQueue();
-                        }
+//                        }
+//                        catch (JSONException e) {
+//                            //try and send next message again
+//                            if (!scheduleResendTimer()) {
+//                                errorMessageQueue();
+//                            }
+//                        }
                     }
 
-
-                    processNextMessage();
                 }
+                mCurrentSendIv = null;
+                processNextMessage();
             }
         }.execute();
-
-
     }
 
     private void sendMessageUsingHttp(final SurespotMessage message) {
@@ -490,54 +506,59 @@ public class CommunicationService extends Service {
             public void onFailure(Call call, IOException e) {
                 synchronized (SEND_LOCK) {
                     mCurrentSendIv = null;
-                }
-                SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
-                //try and send next message again
-                if (!scheduleResendTimer()) {
-                    errorMessageQueue();
+
+                    SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
+                    //try and send next message again
+                    if (!scheduleResendTimer()) {
+                        errorMessageQueue();
+                    }
                 }
             }
 
             @Override
             public void onResponse(Call call, Response response, String responseString) throws IOException {
                 synchronized (SEND_LOCK) {
-                    mCurrentSendIv = null;
-                }
-                if (response.isSuccessful()) {
-                    try {
-                        JSONObject json = new JSONObject(responseString);
-                        JSONArray messages = json.getJSONArray("messageStatus");
-                        JSONObject messageAndStatus = messages.getJSONObject(0);
-                        JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
-                        int status = messageAndStatus.getInt("status");
 
-                        if (status == 204) {
-                            SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
-                            mSendQueue.remove(messageReceived);
-                            SurespotApplication.getChatController().handleMessage(messageReceived);
-                            processNextMessage();
+
+                    if (response.isSuccessful()) {
+                        mErrored = false;
+                        try {
+                            JSONObject json = new JSONObject(responseString);
+                            JSONArray messages = json.getJSONArray("messageStatus");
+                            JSONObject messageAndStatus = messages.getJSONObject(0);
+                            JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
+                            int status = messageAndStatus.getInt("status");
+
+                            if (status == 204) {
+                                SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                                SurespotApplication.getChatController().handleMessage(messageReceived);
+                                //need to remove the message from the queue before setting the current send iv to null
+                                removeQueuedMessage(messageReceived);
+                                mCurrentSendIv = null;
+                                processNextMessage();
+                            }
+                            else {
+                                //try and send next message again
+                                if (!scheduleResendTimer()) {
+                                    errorMessageQueue();
+                                }
+                            }
                         }
-                        else {
+                        catch (JSONException e) {
+                            SurespotLog.w(TAG, e, "JSON received from server");
                             //try and send next message again
                             if (!scheduleResendTimer()) {
                                 errorMessageQueue();
                             }
                         }
+
                     }
-                    catch (JSONException e) {
-                        SurespotLog.w(TAG, e, "JSON received from server");
+                    else {
+                        SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
                         //try and send next message again
                         if (!scheduleResendTimer()) {
                             errorMessageQueue();
                         }
-                    }
-
-                }
-                else {
-                    SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
-                    //try and send next message again
-                    if (!scheduleResendTimer()) {
-                        errorMessageQueue();
                     }
                 }
             }
@@ -583,7 +604,6 @@ public class CommunicationService extends Service {
     public void errorMessageQueue() {
         int mCurrentState = mConnectionState;
         SurespotLog.d(TAG, "errorMessageQueue");
-        setState(STATE_ERRORED);
 
 //        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
 //        while (iterator.hasNext()) {
@@ -600,13 +620,16 @@ public class CommunicationService extends Service {
 
 
         // raise Android notifications for unsent messages so the user can re-enter the app and retry sending if we haven't already
-        if (mCurrentState != STATE_ERRORED && !CommunicationService.this.mSendQueue.isEmpty()) {
+        if (!mErrored && !CommunicationService.this.mSendQueue.isEmpty()) {
             raiseNotificationForUnsentMessages();
         }
 
         //cancel timers
         stopReconnectionAttempts();
         stopResendTimer();
+
+        mErrored = true;
+        mCurrentSendIv = null;
     }
 
     public void clearMessageQueue(String friendname) {
@@ -620,9 +643,18 @@ public class CommunicationService extends Service {
     }
 
     public void removeQueuedMessage(SurespotMessage message) {
-        synchronized (SEND_LOCK) {
-            mSendQueue.remove(message);
+        boolean removed = false;
+
+        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
+        while (iterator.hasNext()) {
+            SurespotMessage m = iterator.next();
+            if (m.getIv().equals(message.getIv())) {
+                iterator.remove();
+                removed = true;
+            }
         }
+
+        SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
     }
 
 
@@ -733,6 +765,7 @@ public class CommunicationService extends Service {
     // notify listeners that we've connected
     private void onConnected() {
         SurespotLog.d(TAG, "onConnected");
+        mErrored = false;
 
         stopReconnectionAttempts();
         stopResendTimer();
@@ -1236,15 +1269,7 @@ public class CommunicationService extends Service {
                             }
                         }
 
-                        // the UI might have already removed the message from the resend buffer.  That's okay.
-                        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
-                        while (iterator.hasNext()) {
-                            message = iterator.next();
-                            if (message.getIv().equals(message.getIv())) {
-                                iterator.remove();
-                                break;
-                            }
-                        }
+                       removeQueuedMessage(message);
 
                         if (mMainActivityPaused) {
                             // make sure to save out messages because main activity will reload and base message status on saved messages

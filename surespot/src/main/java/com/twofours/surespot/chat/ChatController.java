@@ -73,7 +73,6 @@ public class ChatController {
     private Context mContext;
     public static final int MODE_NORMAL = 0;
     public static final int MODE_SELECT = 1;
-    //   private final StatusLine mImageStatusLine = new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, "");
 
     private int mMode = MODE_NORMAL;
 
@@ -157,7 +156,6 @@ public class ChatController {
     // this is wired up to listen for a message from the CommunicationService.  It's UI stuff
     public void connected() {
         getFriendsAndData();
-        //resendMessages();
     }
 
     private void handleAutoInvite() {
@@ -2207,10 +2205,7 @@ public class ChatController {
                     iAsyncCallback.handleResponse(false);
                 }
             }
-
-
         }));
-
     }
 
     public void assignFriendAlias(final String name, String alias, final IAsyncCallback<Boolean> iAsyncCallback) {
