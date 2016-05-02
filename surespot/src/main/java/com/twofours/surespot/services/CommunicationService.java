@@ -32,6 +32,7 @@ import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -91,7 +92,7 @@ public class CommunicationService extends Service {
     public static final int STATE_CONNECTING = 2;
     public static final int STATE_CONNECTED = 1;
     public static final int STATE_DISCONNECTED = 0;
-    private static final int MAX_RETRIES = 5;
+    private static final int MAX_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
     private static final int MAX_RETRY_DELAY = 10;
@@ -551,6 +552,10 @@ public class CommunicationService extends Service {
         saveState(null, true);
         saveMessages();
         saveUnsentMessages();
+
+        if (mSendQueue.size() == 0) {
+            FileUtils.wipeImageCaptureDir(this);
+        }
     }
 
     public void clearServiceListener() {
