@@ -826,14 +826,15 @@ public class NetworkController {
         try {
             response = mClient.newCall(request).execute();
             int statusCode = response.code();
-            if (statusCode == 200) {
-
-                String responseBody = response.body().string();
-                JSONObject jsonBody = new JSONObject(responseBody);
-                return new Tuple<>(200, jsonBody);
-            }
-            else {
-                SurespotLog.w(TAG, "error uploading file, response code: %d", statusCode);
+            switch (statusCode) {
+                case 200:
+                    String responseBody = response.body().string();
+                    JSONObject jsonBody = new JSONObject(responseBody);
+                    return new Tuple<>(200, jsonBody);
+                case 409:
+                    return new Tuple<>(409, null);
+                default:
+                    SurespotLog.w(TAG, "error uploading file, response code: %d", statusCode);
             }
         }
         catch (IOException e) {
