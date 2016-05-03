@@ -486,7 +486,7 @@ public class ChatController {
     }
 
     private void getLatestData(final boolean mayBeCacheClear) {
-        SurespotLog.d(TAG, "getLatestData");
+        SurespotLog.v(TAG, "getLatestData");
         // setMessagesLoading(true);
 
         JSONArray spotIds = new JSONArray();
@@ -508,8 +508,6 @@ public class ChatController {
         }
 
         mNetworkController.getLatestData(mLatestUserControlId, spotIds, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
-
-
                     @Override
                     public void onFailure(Call call, IOException e) {
                         Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
@@ -523,7 +521,7 @@ public class ChatController {
                             JSONObject jsonResponse = null;
                             try {
                                 jsonResponse = new JSONObject(responseString);
-                                SurespotLog.d(TAG, "getlatestData success, response: %s, statusCode: %d", jsonResponse, response.code());
+                                SurespotLog.v(TAG, "getlatestData success, response: %s, statusCode: %d", jsonResponse, response.code());
                             }
                             catch (JSONException e) {
                                 Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
@@ -1282,7 +1280,6 @@ public class ChatController {
         if (!TextUtils.isEmpty(mUsername)) {
             String spot = ChatUtils.getSpot(mUsername, username);
             ChatAdapter chatAdapter = mChatAdapters.get(username);
-            // TODO: will need to take into account "errored" messages here and show them
             if (replace) {
                 chatAdapter.setMessages(SurespotApplication.getStateController().loadMessages(mUsername, spot));
             }
@@ -1856,7 +1853,7 @@ public class ChatController {
                 public void onResponse(Call call, final Response response, final String responseString) throws IOException {
 
                     if (response.isSuccessful()) {
-                        SurespotLog.d(TAG, "getFriends success.");
+                        SurespotLog.v(TAG, "getFriends success.");
                         ArrayList<Friend> friends = new ArrayList<Friend>();
                         boolean userSuddenlyHasFriends = false;
                         try {
@@ -1871,7 +1868,7 @@ public class ChatController {
                                     Friend friend = Friend.toFriend(jsonFriend);
                                     friends.add(friend);
 
-                                    SurespotLog.d(TAG, "getFriendsAndData, adding friend: %s", friend);
+                                    SurespotLog.v(TAG, "getFriendsAndData, adding friend: %s", friend);
                                 }
                             }
                             if (friends.size() > 0) {
