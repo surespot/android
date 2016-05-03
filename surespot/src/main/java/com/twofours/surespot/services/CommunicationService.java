@@ -101,9 +101,9 @@ public class CommunicationService extends Service {
     private Socket mSocket;
     private int mSocketReconnectRetries = 0;
     private Timer mResendViaHttpTimer;
-    private Object SEND_LOCK = new Object();
+    //private Object SEND_LOCK = new Object();
     private Timer mBackgroundTimer;
-    private Object BACKGROUND_TIMER_LOCK = new Object();
+    //private Object BACKGROUND_TIMER_LOCK = new Object();
     private int mConnectionState;
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
@@ -285,71 +285,70 @@ public class CommunicationService extends Service {
 
     public synchronized void processNextMessage() {
 
-        synchronized (SEND_LOCK) {
-            //if we're ERRORED do nothing
-            if (mErrored) {
-                SurespotLog.d(TAG, "processNextMessage in ERRORED state, doing nothing");
-                return;
-            }
-
-            SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
-            SurespotMessage nextMessage = mSendQueue.peek();
-            //if the message is errored don't resend it, remove from queue
-            while (nextMessage != null && nextMessage.getErrorStatus() > 0) {
-                SurespotLog.d(TAG, "processNextMessage, removing errored message: %s", nextMessage.getIv());
-                removeQueuedMessage(nextMessage);
-                nextMessage = mSendQueue.peek();
-            }
-
-            if (nextMessage != null) {
-                SurespotLog.d(TAG, "processNextMessage, currentIv: %s, next message iv: %s", mCurrentSendIv, nextMessage.getIv());
-                if (mCurrentSendIv == nextMessage.getIv()) {
-                    SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
-                }
-                else {
-                    mCurrentSendIv = nextMessage.getIv();
-
-                    //message processed successfully, onto the next
-                    SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
-
-                    switch (nextMessage.getMimeType()) {
-                        case SurespotConstants.MimeTypes.TEXT:
-                            if (isMessageReadyToSend(nextMessage)) {
-                                sendTextMessage(nextMessage);
-                            }
-                            else {
-                                //start timer and try in a bit
-                            }
-                            break;
-                        case SurespotConstants.MimeTypes.IMAGE:
-                        case SurespotConstants.MimeTypes.M4A:
-                            sendFileMessage(nextMessage);
-
-                            break;
-                    }
-                }
-            }
+        //if we're ERRORED do nothing
+        if (mErrored) {
+            SurespotLog.d(TAG, "processNextMessage in ERRORED state, doing nothing");
+            return;
         }
-    }
 
-    private void sendTextMessage(final SurespotMessage message) {
-        SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
-        synchronized (SEND_LOCK) {
-            if (getConnectionState() == STATE_CONNECTED) {
-                SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
-                JSONObject json = message.toJSONObjectSocket();
-                SurespotLog.d(TAG, "sendTextMessage, json: %s", json);
-                //String s = json.toString();
-                //SurespotLog.d(TAG, "sendmessage, message string: %s", s);
+        SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
+        SurespotMessage nextMessage = mSendQueue.peek();
+        //if the message is errored don't resend it, remove from queue
+        while (nextMessage != null && nextMessage.getErrorStatus() > 0) {
+            SurespotLog.d(TAG, "processNextMessage, removing errored message: %s", nextMessage.getIv());
+            removeQueuedMessage(nextMessage);
+            nextMessage = mSendQueue.peek();
+        }
 
-                if (mSocket != null) {
-                    mSocket.send(json);
-                }
+        if (nextMessage != null) {
+            SurespotLog.d(TAG, "processNextMessage, currentIv: %s, next message iv: %s", mCurrentSendIv, nextMessage.getIv());
+            if (mCurrentSendIv == nextMessage.getIv()) {
+                SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
             }
             else {
-                sendMessageUsingHttp(message);
+                mCurrentSendIv = nextMessage.getIv();
+
+                //message processed successfully, onto the next
+                SurespotLog.i(TAG, "processNextMessage() sending message, iv: %s", nextMessage.getIv());
+
+                switch (nextMessage.getMimeType()) {
+                    case SurespotConstants.MimeTypes.TEXT:
+                        if (isMessageReadyToSend(nextMessage)) {
+                            sendTextMessage(nextMessage);
+                        }
+                        else {
+                            //start timer and try in a bit
+                        }
+                        break;
+                    case SurespotConstants.MimeTypes.IMAGE:
+                    case SurespotConstants.MimeTypes.M4A:
+                        sendFileMessage(nextMessage);
+
+                        break;
+                }
             }
         }
+
+    }
+
+    private synchronized void sendTextMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
+
+        if (getConnectionState() == STATE_CONNECTED) {
+            SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
+            JSONObject json = message.toJSONObjectSocket();
+            SurespotLog.d(TAG, "sendTextMessage, json: %s", json);
+            //String s = json.toString();
+            //SurespotLog.d(TAG, "sendmessage, message string: %s", s);
+
+            if (mSocket != null) {
+                mSocket.send(json);
+            }
+        }
+        else {
+            sendMessageUsingHttp(message);
+        }
+
     }
 
     private void
@@ -393,7 +392,7 @@ public class CommunicationService extends Service {
 
             @Override
             protected void onPostExecute(Tuple<Integer, JSONObject> result) {
-                synchronized (SEND_LOCK) {
+                synchronized (CommunicationService.this) {
                     messageSendCompleted(message);
 
                     //if message errored
@@ -476,78 +475,74 @@ public class CommunicationService extends Service {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                synchronized (SEND_LOCK) {
-                    messageSendCompleted(message);
+                messageSendCompleted(message);
 
-                    SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
+                SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
+                //try and send next message again
+                if (!scheduleResendTimer()) {
+                    errorMessageQueue();
+                }
+            }
+
+            @Override
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
+                messageSendCompleted(message);
+
+
+                if (response.isSuccessful()) {
+                    mErrored = false;
+                    try {
+                        JSONObject json = new JSONObject(responseString);
+                        JSONArray messages = json.getJSONArray("messageStatus");
+                        JSONObject messageAndStatus = messages.getJSONObject(0);
+                        JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
+                        int status = messageAndStatus.getInt("status");
+
+                        if (status == 204) {
+                            SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                            SurespotApplication.getChatController().handleMessage(messageReceived);
+                            //need to remove the message from the queue before setting the current send iv to null
+                            removeQueuedMessage(messageReceived);
+                            processNextMessage();
+                        }
+                        else {
+                            //try and send next message again
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue();
+                            }
+                        }
+                    }
+                    catch (JSONException e) {
+                        SurespotLog.w(TAG, e, "JSON received from server");
+                        //try and send next message again
+                        if (!scheduleResendTimer()) {
+                            errorMessageQueue();
+                        }
+                    }
+
+                }
+                else {
+                    SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
                     //try and send next message again
                     if (!scheduleResendTimer()) {
                         errorMessageQueue();
                     }
                 }
             }
-
-            @Override
-            public void onResponse(Call call, Response response, String responseString) throws IOException {
-                synchronized (SEND_LOCK) {
-                    messageSendCompleted(message);
-
-
-                    if (response.isSuccessful()) {
-                        mErrored = false;
-                        try {
-                            JSONObject json = new JSONObject(responseString);
-                            JSONArray messages = json.getJSONArray("messageStatus");
-                            JSONObject messageAndStatus = messages.getJSONObject(0);
-                            JSONObject jsonMessage = messageAndStatus.getJSONObject("message");
-                            int status = messageAndStatus.getInt("status");
-
-                            if (status == 204) {
-                                SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
-                                SurespotApplication.getChatController().handleMessage(messageReceived);
-                                //need to remove the message from the queue before setting the current send iv to null
-                                removeQueuedMessage(messageReceived);
-                                processNextMessage();
-                            }
-                            else {
-                                //try and send next message again
-                                if (!scheduleResendTimer()) {
-                                    errorMessageQueue();
-                                }
-                            }
-                        }
-                        catch (JSONException e) {
-                            SurespotLog.w(TAG, e, "JSON received from server");
-                            //try and send next message again
-                            if (!scheduleResendTimer()) {
-                                errorMessageQueue();
-                            }
-                        }
-
-                    }
-                    else {
-                        SurespotLog.w(TAG, "sendMessagesUsingHttp response error code: %d", response.code());
-                        //try and send next message again
-                        if (!scheduleResendTimer()) {
-                            errorMessageQueue();
-                        }
-                    }
-                }
-            }
         }));
     }
 
-    public void messageSendCompleted(SurespotMessage message) {
+    public synchronized void messageSendCompleted(SurespotMessage message) {
         //if we're not onto a different message, set the current message pointer to null
-        synchronized (SEND_LOCK) {
-            if (message.getIv().equals(mCurrentSendIv)) {
-                SurespotLog.d(TAG, "messageSendCompleted iv's the same, setting to null, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
-                mCurrentSendIv = null;
-            }
-            else {
-                SurespotLog.d(TAG, "messageSendCompleted iv's not the same, doing nothing, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
-            }
+
+        if (message.getIv().equals(mCurrentSendIv)) {
+            SurespotLog.d(TAG, "messageSendCompleted iv's the same, setting to null, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
+            mCurrentSendIv = null;
         }
+        else {
+            SurespotLog.d(TAG, "messageSendCompleted iv's not the same, doing nothing, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
+        }
+
     }
 
     public int getConnectionState() {
@@ -708,7 +703,7 @@ public class CommunicationService extends Service {
 
     public void saveState(String username, boolean fromSave) {
 
-        SurespotLog.d(TAG, "saveState");
+        SurespotLog.d(TAG, "saveState username: %s", username);
 
         if (username == null) {
             if (!fromSave) {
@@ -817,72 +812,66 @@ public class CommunicationService extends Service {
     }
 
     // stop reconnection attempts
-    private void stopReconnectionAttempts() {
-        synchronized (BACKGROUND_TIMER_LOCK) {
-            if (mBackgroundTimer != null) {
-                mBackgroundTimer.cancel();
-                mBackgroundTimer = null;
-            }
-            if (mReconnectTask != null) {
-                boolean cancel = mReconnectTask.cancel();
-                mReconnectTask = null;
-                SurespotLog.d(TAG, "Cancelled reconnect task: " + cancel);
-            }
-            mSocketReconnectRetries = 0;
+    private synchronized void stopReconnectionAttempts() {
+        if (mBackgroundTimer != null) {
+            mBackgroundTimer.cancel();
+            mBackgroundTimer = null;
         }
+        if (mReconnectTask != null) {
+            boolean cancel = mReconnectTask.cancel();
+            mReconnectTask = null;
+            SurespotLog.d(TAG, "Cancelled reconnect task: " + cancel);
+        }
+        mSocketReconnectRetries = 0;
     }
 
-    private void scheduleReconnectionAttempt() {
+    private synchronized void scheduleReconnectionAttempt() {
         int timerInterval = generateInterval(mSocketReconnectRetries++);
         SurespotLog.d(TAG, "reconnection timer try %d starting another task in: %d", mSocketReconnectRetries - 1, timerInterval);
 
-        synchronized (BACKGROUND_TIMER_LOCK) {
-            if (mReconnectTask != null) {
-                mReconnectTask.cancel();
-                mReconnectTask = null;
-            }
-
-            if (mBackgroundTimer != null) {
-                mBackgroundTimer.cancel();
-                mBackgroundTimer = null;
-            }
-
-            // Is there ever a case where we don't want to try a reconnect?
-            ReconnectTask reconnectTask = new ReconnectTask();
-            mBackgroundTimer = new Timer("backgroundTimer");
-            mBackgroundTimer.schedule(reconnectTask, timerInterval);
-            mReconnectTask = reconnectTask;
+        if (mReconnectTask != null) {
+            mReconnectTask.cancel();
+            mReconnectTask = null;
         }
+
+        if (mBackgroundTimer != null) {
+            mBackgroundTimer.cancel();
+            mBackgroundTimer = null;
+        }
+
+        // Is there ever a case where we don't want to try a reconnect?
+        ReconnectTask reconnectTask = new ReconnectTask();
+        mBackgroundTimer = new Timer("backgroundTimer");
+        mBackgroundTimer.schedule(reconnectTask, timerInterval);
+        mReconnectTask = reconnectTask;
     }
 
-    private boolean scheduleResendTimer() {
+    private synchronized boolean scheduleResendTimer() {
         SurespotLog.d(TAG, "scheduleResendTimer, mHttpResendTries: %d, MAX_RETRIES: %d", mHttpResendTries, MAX_RETRIES);
 
         if (mHttpResendTries++ < MAX_RETRIES) {
             int timerInterval = generateInterval(mHttpResendTries);
             SurespotLog.d(TAG, "resend timer try %d starting another task in: %d", mHttpResendTries - 1, timerInterval);
 
-            synchronized (SEND_LOCK) {
 
-
-                if (mResendTask != null) {
-                    mResendTask.cancel();
-                    mResendTask = null;
-                }
-
-
-                if (mResendViaHttpTimer != null) {
-                    mResendViaHttpTimer.cancel();
-                    mResendViaHttpTimer = null;
-                }
-
-
-                // Is there ever a case where we don't want to try a reconnect?
-                ProcessNextMessageTask reconnectTask = new ProcessNextMessageTask();
-                mResendViaHttpTimer = new Timer("processNextMessageTimer");
-                mResendViaHttpTimer.schedule(reconnectTask, timerInterval);
-                mResendTask = reconnectTask;
+            if (mResendTask != null) {
+                mResendTask.cancel();
+                mResendTask = null;
             }
+
+
+            if (mResendViaHttpTimer != null) {
+                mResendViaHttpTimer.cancel();
+                mResendViaHttpTimer = null;
+            }
+
+
+            // Is there ever a case where we don't want to try a reconnect?
+            ProcessNextMessageTask reconnectTask = new ProcessNextMessageTask();
+            mResendViaHttpTimer = new Timer("processNextMessageTimer");
+            mResendViaHttpTimer.schedule(reconnectTask, timerInterval);
+            mResendTask = reconnectTask;
+
             return true;
         }
         else {
@@ -890,19 +879,19 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void stopResendTimer() {
-        synchronized (BACKGROUND_TIMER_LOCK) {
-            if (mResendViaHttpTimer != null) {
-                mResendViaHttpTimer.cancel();
-                mResendViaHttpTimer = null;
-            }
-            if (mResendTask != null) {
-                boolean cancel = mResendTask.cancel();
-                mResendTask = null;
-                SurespotLog.d(TAG, "Cancelled resend task: " + cancel);
-            }
-            mHttpResendTries = 0;
+    private synchronized void stopResendTimer() {
+
+        if (mResendViaHttpTimer != null) {
+            mResendViaHttpTimer.cancel();
+            mResendViaHttpTimer = null;
         }
+        if (mResendTask != null) {
+            boolean cancel = mResendTask.cancel();
+            mResendTask = null;
+            SurespotLog.d(TAG, "Cancelled resend task: " + cancel);
+        }
+        mHttpResendTries = 0;
+
     }
 
 
