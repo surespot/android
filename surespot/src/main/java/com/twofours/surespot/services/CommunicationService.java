@@ -1081,6 +1081,7 @@ public class CommunicationService extends Service {
                 if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
                     SurespotLog.d(TAG, "onReceive,  CONNECTED");
                     synchronized (CommunicationService.this) {
+                        mErrored = false;
                         connect();
                         processNextMessage();
                     }
