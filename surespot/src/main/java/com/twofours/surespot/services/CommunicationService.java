@@ -393,7 +393,8 @@ public class CommunicationService extends Service {
 
                     //if message errored
                     int status = result.first;
-                    if (status != 200) {
+                    //409 on duplicate, treat as success
+                    if (status != 200 && status != 409) {
                         //try and send next message again
                         if (!scheduleResendTimer()) {
                             errorMessageQueue();
