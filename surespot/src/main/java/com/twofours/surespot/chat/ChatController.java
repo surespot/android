@@ -387,7 +387,7 @@ public class ChatController {
                         File file = new File(new URI(localUri));
                         file.delete();
                     }
-                    catch (URISyntaxException e) {
+                    catch (Exception e) {
                         SurespotLog.w(TAG, e, "error deleting local file");
                     }
 
@@ -1180,6 +1180,7 @@ public class ChatController {
 
                     boolean added = applyControlMessages(chatAdapter, lastMessage, false, false, false);
 
+                    SurespotApplication.getCommunicationService().messageSendCompleted(lastMessage);
                     SurespotApplication.getCommunicationService().removeQueuedMessage(lastMessage);
                     if (added && myMessage) {
                         sentByMeCount++;

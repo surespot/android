@@ -297,7 +297,7 @@ public class CommunicationService extends Service {
             //if the message is errored don't resend it, remove from queue
             while (nextMessage != null && nextMessage.getErrorStatus() > 0) {
                 SurespotLog.d(TAG, "processNextMessage, removing errored message: %s", nextMessage.getIv());
-                mSendQueue.remove(nextMessage);
+                removeQueuedMessage(nextMessage);
                 nextMessage = mSendQueue.peek();
             }
 
@@ -352,7 +352,8 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void sendFileMessage(final SurespotMessage message) {
+    private void
+    sendFileMessage(final SurespotMessage message) {
         SurespotLog.d(TAG, "sendFileMessage, iv: %s", message.getIv());
         new AsyncTask<Void, Void, Tuple<Integer, JSONObject>>() {
             @Override
@@ -458,7 +459,7 @@ public class CommunicationService extends Service {
                     }
 
                 }
-                mCurrentSendIv = null;
+                messageSendCompleted(message);
                 processNextMessage();
             }
         }.execute();
@@ -472,7 +473,7 @@ public class CommunicationService extends Service {
             @Override
             public void onFailure(Call call, IOException e) {
                 synchronized (SEND_LOCK) {
-                    mCurrentSendIv = null;
+                    messageSendCompleted(message);
 
                     SurespotLog.w(TAG, e, "sendMessagesUsingHttp onFailure");
                     //try and send next message again
@@ -501,7 +502,7 @@ public class CommunicationService extends Service {
                                 SurespotApplication.getChatController().handleMessage(messageReceived);
                                 //need to remove the message from the queue before setting the current send iv to null
                                 removeQueuedMessage(messageReceived);
-                                mCurrentSendIv = null;
+                                messageSendCompleted(message);
                                 processNextMessage();
                             }
                             else {
@@ -532,6 +533,18 @@ public class CommunicationService extends Service {
         }));
     }
 
+    public void messageSendCompleted(SurespotMessage message) {
+        //if we're not onto a different message, set the current message pointer to null
+        synchronized (SEND_LOCK) {
+            if (message.getIv().equals(mCurrentSendIv)) {
+                SurespotLog.d(TAG, "messageSendCompleted iv's the same, setting to null, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
+                mCurrentSendIv = null;
+            }
+            else {
+                SurespotLog.d(TAG, "messageSendCompleted iv's not the same, doing nothing, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
+            }
+        }
+    }
 
     public int getConnectionState() {
         return mConnectionState;
@@ -1110,19 +1123,19 @@ public class CommunicationService extends Service {
         public void call(Object... args) {
             SurespotLog.d(TAG, "Connection terminated.");
             setState(STATE_DISCONNECTED);
-            synchronized (SEND_LOCK) {
-                mCurrentSendIv = null;
-            }
+//            synchronized (SEND_LOCK) {
+//                mCurrentSendIv = null;
+//            }
         }
     };
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-
-            synchronized (SEND_LOCK) {
-                mCurrentSendIv = null;
-            }
+//
+//            synchronized (SEND_LOCK) {
+//                mCurrentSendIv = null;
+//            }
 
             if (args.length > 0) {
                 String reason = args[0].toString();
@@ -1240,6 +1253,7 @@ public class CommunicationService extends Service {
                             }
                         }
 
+                        messageSendCompleted(message);
                         removeQueuedMessage(message);
 
                         if (mMainActivityPaused) {
