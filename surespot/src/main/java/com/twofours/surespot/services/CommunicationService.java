@@ -361,11 +361,16 @@ public class CommunicationService extends Service {
                 //post message via http if we have network controller for the from user
                 NetworkController networkController = SurespotApplication.getNetworkController();
                 if (networkController != null && message.getFrom().equals(networkController.getUsername())) {
-
+                    //get their latest version
+                    String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getTo());
+                    if (theirLatestVersion == null) {
+                        //resend
+                        return new Tuple<>(0, null);
+                    }
                     FileInputStream uploadStream;
                     try {
                         uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
-                        return networkController.postFileStreamSync(IdentityController.getOurLatestVersion(message.getFrom()), message.getTo(), IdentityController.getTheirLatestVersion(message.getTo()),
+                        return networkController.postFileStreamSync(IdentityController.getOurLatestVersion(message.getFrom()), message.getTo(), theirLatestVersion,
                                 message.getIv(), uploadStream, message.getMimeType());
 
                     }
@@ -389,7 +394,7 @@ public class CommunicationService extends Service {
             @Override
             protected void onPostExecute(Tuple<Integer, JSONObject> result) {
                 synchronized (SEND_LOCK) {
-
+                    messageSendCompleted(message);
 
                     //if message errored
                     int status = result.first;
@@ -403,12 +408,12 @@ public class CommunicationService extends Service {
                     else {
                         //success
                         mErrored = false;
-
+                        SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
                         //need to remove the message from the queue before setting the current send iv to null
                         removeQueuedMessage(message);
-
+                        processNextMessage();
                         //update local message with server data
-                        SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
+
 
 //                        JSONObject serverData = result.second;
 //                        try {
@@ -457,11 +462,9 @@ public class CommunicationService extends Service {
 //                                errorMessageQueue();
 //                            }
 //                        }
-                    }
 
+                    }
                 }
-                messageSendCompleted(message);
-                processNextMessage();
             }
         }.execute();
     }
@@ -487,6 +490,7 @@ public class CommunicationService extends Service {
             @Override
             public void onResponse(Call call, Response response, String responseString) throws IOException {
                 synchronized (SEND_LOCK) {
+                    messageSendCompleted(message);
 
 
                     if (response.isSuccessful()) {
@@ -503,7 +507,6 @@ public class CommunicationService extends Service {
                                 SurespotApplication.getChatController().handleMessage(messageReceived);
                                 //need to remove the message from the queue before setting the current send iv to null
                                 removeQueuedMessage(messageReceived);
-                                messageSendCompleted(message);
                                 processNextMessage();
                             }
                             else {
