@@ -353,12 +353,13 @@ public class CommunicationService extends Service {
                     String ourLatestVersion = IdentityController.getOurLatestVersion(message.getFrom());
                     String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getTo());
 
-//                    if (theirLatestVersion == null) {
-//                        SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", chatMessage.getIv());
-//                        //retry
-//                        chatMessage.setErrorStatus(0);
-                    //return false;
-//                    }
+                    if (theirLatestVersion == null) {
+                        SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
+                        //retry
+                        message.setErrorStatus(0);
+                        return false;
+                    }
+
                     byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
                     String result = EncryptionController.symmetricEncrypt(ourLatestVersion, message.getTo(), theirLatestVersion, message.getPlainData().toString(), iv);
 
@@ -380,9 +381,15 @@ public class CommunicationService extends Service {
                 }
 
                 protected void onPostExecute(Boolean success) {
-                    SurespotApplication.getChatController().updateMessage(message);
+                    SurespotApplication.getChatController().addMessage(message);
                     if (success) {
                         sendTextMessage(message);
+                    }
+                    else {
+                        messageSendCompleted(message);
+                        if (!scheduleResendTimer()) {
+                            errorMessageQueue();
+                        }
                     }
                 }
             }.execute();
@@ -427,12 +434,12 @@ public class CommunicationService extends Service {
 
                         final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
                         final String theirVersion = IdentityController.getTheirLatestVersion(message.getTo());
-                        //if (theirVersion  == null) {
-//                        SurespotLog.d(TAG, "could not encrypt file  message - could not get latest version, iv: %s", chatMessage.getIv());
-//                        //retry
-//                        chatMessage.setErrorStatus(0);
-                        //return false;
-//                    }
+                        if (theirVersion == null) {
+                            SurespotLog.d(TAG, "could not encrypt file  message - could not get latest version, iv: %s", message.getIv());
+                            //retry
+                            message.setErrorStatus(0);
+                            return false;
+                        }
                         final String iv = message.getIv();
 
 
@@ -489,9 +496,15 @@ public class CommunicationService extends Service {
                 }
 
                 protected void onPostExecute(Boolean success) {
-                    SurespotApplication.getChatController().updateMessage(message);
+                    SurespotApplication.getChatController().addMessage(message);
                     if (success) {
                         sendFileMessage(message);
+                    }
+                    else {
+                        messageSendCompleted(message);
+                        if (!scheduleResendTimer()) {
+                            errorMessageQueue();
+                        }
                     }
                 }
             }.execute();
@@ -531,8 +544,6 @@ public class CommunicationService extends Service {
                         SurespotLog.w(TAG, e, "sendFileMessage");
                         return new Tuple<>(500, null);
                     }
-
-
                 }
                 else {
                     SurespotLog.i(TAG, "network controller null or different user");
@@ -561,57 +572,6 @@ public class CommunicationService extends Service {
                         //need to remove the message from the queue before setting the current send iv to null
                         removeQueuedMessage(message);
                         processNextMessage();
-                        //update local message with server data
-
-
-//                        JSONObject serverData = result.second;
-//                        try {
-//                            int serverId = serverData.getInt("id");
-//                            //   String url = serverData.getString("url");
-//                            long datetime = serverData.getLong("time");
-//                            int size = serverData.getInt("size");
-
-                        //create a new message purely to update cached file location
-//                        SurespotMessage newMessage = new SurespotMessage();
-//                        newMessage.setIv(message.getIv());
-//                        newMessage.setData(url);
-//                        newMessage.setDateTime(new Date(datetime));
-//                        newMessage.setId(serverId);
-//                        newMessage.setDataSize(size);
-//                        newMessage.setMimeType(message.getMimeType());
-
-                        //set server data in original message
-//                        message.setData(url);
-//                        message.setDateTime(new Date(datetime));
-//                        message.setId(serverId);
-//                        message.setDataSize(size);
-
-//                        ChatController chatController = SurespotApplication.getChatController();
-//                        if (chatController != null) {
-//                            ChatAdapter chatAdapter = chatController.getChatAdapter(message.getTo(), false);
-//                            if (chatAdapter != null) {
-//                                SurespotMessage adapterMessage = chatAdapter.getMessageByIv(message.getIv());
-//                                if (adapterMessage != null) {
-//
-//                                    chatController.handleCachedFile(chatAdapter, message);
-//                                    //set server data in adapter message
-//                                    adapterMessage.setDateTime(new Date(datetime));
-//                                    adapterMessage.setId(serverId);
-//                                    adapterMessage.setDataSize(size);
-//                                    chatAdapter.notifyDataSetChanged();
-//                                }
-//                            }
-//                        }
-
-
-//                        }
-//                        catch (JSONException e) {
-//                            //try and send next message again
-//                            if (!scheduleResendTimer()) {
-//                                errorMessageQueue();
-//                            }
-//                        }
-
                     }
                 }
             }
@@ -650,7 +610,6 @@ public class CommunicationService extends Service {
 
                         if (status == 204) {
                             SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
-                            SurespotApplication.getChatController().handleMessage(messageReceived);
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(messageReceived);
                             processNextMessage();
@@ -735,14 +694,8 @@ public class CommunicationService extends Service {
     }
 
     public void errorMessageQueue() {
-        int mCurrentState = mConnectionState;
         SurespotLog.d(TAG, "errorMessageQueue");
 
-//        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
-//        while (iterator.hasNext()) {
-//            SurespotMessage message = iterator.next();
-//            message.setErrorStatus(500);
-//        }
         saveUnsentMessages();
         saveMessages();
 
@@ -885,6 +838,9 @@ public class CommunicationService extends Service {
             if (!mSendQueue.contains(message)) {
                 mSendQueue.add(message);
             }
+
+            //make sure the message is in the adapter so we can see it
+            SurespotApplication.getChatController().addMessage(message);
         }
         SurespotLog.d(TAG, "loaded: " + mSendQueue.size() + " unsent messages.");
     }
@@ -1341,7 +1297,7 @@ public class CommunicationService extends Service {
 
                         if (message != null) {
                             //update chat controller message
-                            SurespotApplication.getChatController().updateMessage(message);
+                            SurespotApplication.getChatController().addMessage(message);
                         }
                     }
                     catch (JSONException e) {

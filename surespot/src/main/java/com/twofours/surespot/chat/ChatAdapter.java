@@ -122,49 +122,51 @@ public class ChatAdapter extends BaseAdapter {
             // SurespotLog.v(TAG, "addMessage, updating message");
             SurespotMessage updateMessage = mMessages.get(index);
 
-            SurespotLog.v(TAG, "updating message: %s", updateMessage);
-            // SurespotLog.v(TAG, "new message: %s", message);
+            if (updateMessage != null) {
+                SurespotLog.v(TAG, "updating message: %s", updateMessage);
+                // SurespotLog.v(TAG, "new message: %s", message);
 
-            // don't update unless we have an id
-            if (message.getId() != null) {
-                // if the id is null 'tis the same as adding the message
-                added = updateMessage.getId() == null;
-                updateMessage.setId(message.getId());
+                // don't update unless we have an id
+                if (message.getId() != null) {
+                    // if the id is null 'tis the same as adding the message
+                    added = updateMessage.getId() == null;
+                    updateMessage.setId(message.getId());
 
-                if (message.getDateTime() != null) {
-                    updateMessage.setDateTime(message.getDateTime());
-                }
-                if (message.getData() != null) {
-                    updateMessage.setData(message.getData());
-                }
-                if (!message.isGcm()) {
-                    updateMessage.setGcm(message.isGcm());
-                }
-                if (message.getDataSize() != null) {
-                    updateMessage.setDataSize(message.getDataSize());
-                }
+                    if (message.getDateTime() != null) {
+                        updateMessage.setDateTime(message.getDateTime());
+                    }
+                    if (message.getData() != null) {
+                        updateMessage.setData(message.getData());
+                    }
+                    if (!message.isGcm()) {
+                        updateMessage.setGcm(message.isGcm());
+                    }
+                    if (message.getDataSize() != null) {
+                        updateMessage.setDataSize(message.getDataSize());
+                    }
 
-                // clear error status
-                updateMessage.setErrorStatus(0);
-            }
-            //
-            else {
-                //message updated by communication controller after encryption
-                //update plain data, their version, our version
-                if (!updateMessage.getToVersion().equals(message.getToVersion())) {
-                    updateMessage.setToVersion(message.getTheirVersion());
+                    // clear error status
+                    updateMessage.setErrorStatus(0);
                 }
+                //
+                else {
+                    //message updated by communication controller after encryption
+                    //update plain data, their version, our version
+                    if (message.getToVersion() != null) {
+                        updateMessage.setToVersion(message.getToVersion());
+                    }
 
-                if (!updateMessage.getFromVersion().equals(message.getFromVersion())) {
-                    updateMessage.setFromVersion(message.getFromVersion());
-                }
+                    if (message.getFromVersion() != null) {
+                        updateMessage.setFromVersion(message.getFromVersion());
+                    }
 
-                if (updateMessage.getData() == null) {
-                    updateMessage.setData(message.getData());
-                }
+                    if (message.getData() != null) {
+                        updateMessage.setData(message.getData());
+                    }
 
-                if (updateMessage.getErrorStatus() != message.getErrorStatus()) {
-                    updateMessage.setErrorStatus(message.getErrorStatus());
+                    if (updateMessage.getErrorStatus() != message.getErrorStatus()) {
+                        updateMessage.setErrorStatus(message.getErrorStatus());
+                    }
                 }
             }
         }
@@ -336,10 +338,10 @@ public class ChatAdapter extends BaseAdapter {
         else {
             if (item.getId() == null) {
                 // if it's a text message or we're sending
-           //     if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                //     if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-                    chatMessageViewHolder.tvTime.setText(R.string.message_sending);
-                    //
+                chatMessageViewHolder.tvTime.setText(R.string.message_sending);
+                //
 //                    SurespotLog.v(TAG, "getView, item.getId() is null, a text message or not loaded from disk, setting status text to sending...");
 //                }
 //                else {

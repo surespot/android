@@ -1,7 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.lang.reflect.Field;
-
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Intent;
@@ -99,7 +97,7 @@ public class ChatFragment extends Fragment {
 
 							Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
 							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
+							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject(false).toString());
 							ChatFragment.this.getActivity().startActivity(newIntent);
 						}
 					}

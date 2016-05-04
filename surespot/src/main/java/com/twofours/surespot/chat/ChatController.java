@@ -1516,31 +1516,18 @@ public class ChatController {
         }
     }
 
-    public void updateMessage(SurespotMessage message) {
-        if (message.getFrom().equals(mUsername)) {
-            if (mChatAdapters != null) {
-                ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
-                if (chatAdapter != null) {
-                    try {
-                        chatAdapter.addOrUpdateMessage(message, false, false, true);
-                    }
-                    catch (Exception e) {
-                        SurespotLog.e(TAG, e, "updateMessage");
-                    }
-                }
-            }
-        }
-    }
 
-    void addMessage(SurespotMessage message) {
+    public void addMessage(SurespotMessage message) {
         if (message.getFrom().equals(mUsername)) {
             if (mChatAdapters != null) {
                 ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
                 if (chatAdapter != null) {
                     try {
-                        chatAdapter.addOrUpdateMessage(message, false, true, true);
-                        scrollToEnd(message.getTo());
+                        boolean added = chatAdapter.addOrUpdateMessage(message, false, true, true);
                         SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
+                        if (added) {
+                            scrollToEnd(message.getTo());
+                        }
                     }
                     catch (Exception e) {
                         SurespotLog.e(TAG, e, "addMessage");
