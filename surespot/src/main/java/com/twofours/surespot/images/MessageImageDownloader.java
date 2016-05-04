@@ -19,6 +19,7 @@ package com.twofours.surespot.images;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
@@ -270,8 +271,7 @@ public class MessageImageDownloader {
             else if (!TextUtils.isEmpty(mMessage.getPlainData())) {
                 //load unencrypted image from disk
                 try {
-                    //CommunicationService.this.getContentResolver().openInputStream(Uri.parse(message.getPlainData().toString()));
-                    bitmap = ChatUtils.getSampledImage(Utils.inputStreamToBytes(new FileInputStream(mMessage.getPlainData().toString())));
+                    bitmap = ChatUtils.getSampledImage(Utils.inputStreamToBytes(new FileInputStream(Uri.parse(mMessage.getPlainData().toString()).getPath())));
                     SurespotLog.d(TAG, "loaded unencrypted bitmap from: %s, null: %b", mMessage.getPlainData().toString(), bitmap == null);
                 }
 

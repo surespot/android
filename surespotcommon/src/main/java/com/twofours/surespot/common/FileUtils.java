@@ -139,17 +139,17 @@ public class FileUtils {
 
     }
 
-    public static String getImageUploadDir(Context context) {
-        return getCacheDir(context, ".uploadedImages").getPath();
+    public static String getFileUploadDir(Context context) {
+        return getCacheDir(context, ".uploadedFiles").getPath();
     }
 
-    public static void wipeImageUploadDir(Context context) {
-        SurespotLog.d(TAG, "wipeImageUploadDir");
-        File dir = new File(getImageUploadDir(context));
+    public static void wipeFileUploadDir(Context context) {
+        SurespotLog.d(TAG, "wipeFileUploadDir");
+        File dir = new File(getFileUploadDir(context));
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : files) {
-                SurespotLog.d(TAG, "wipeImageUploadDir deleting file: %s", file.getAbsolutePath());
+                SurespotLog.d(TAG, "wipeFileUploadDir deleting file: %s", file.getAbsolutePath());
                 file.delete();
             }
         }

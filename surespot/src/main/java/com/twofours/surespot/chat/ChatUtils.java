@@ -25,7 +25,6 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
@@ -38,7 +37,6 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,7 +127,7 @@ public class ChatUtils {
 
     public static File getTempImageUploadFile(Context context) {
         // save unencrypted image locally until we can send it
-        String localImageDir = FileUtils.getImageUploadDir(context);
+        String localImageDir = FileUtils.getFileUploadDir(context);
         new File(localImageDir).mkdirs();
 
         try {
@@ -243,6 +241,59 @@ public class ChatUtils {
         SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
     }
 
+
+    public static void uploadVoiceMessageAsync(
+            final Activity activity,
+            final ChatController chatController,
+            final Uri audioUri,
+            final String from,
+            final String to) {
+
+        Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                SurespotLog.v(TAG, "uploadVoiceMessageAsync");
+                try {
+                    final File localImageFile = getTempImageUploadFile(activity);
+                    final String localImageUri = Uri.fromFile(localImageFile).toString();
+                    SurespotLog.d(TAG, "saving copy of unencrypted voice to: %s", localImageFile.getAbsolutePath());
+
+
+                    Utils.copyStreamToFile(activity.getContentResolver().openInputStream(audioUri), localImageFile);
+                    String iv = EncryptionController.getStringIv();
+                    SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.M4A, localImageUri, iv);
+                    final SurespotMessage finalMessage = message;
+
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SurespotLog.d(TAG, "adding local voice message %s", finalMessage);
+                            chatController.addMessage(finalMessage);
+                        }
+                    });
+
+                    if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                        SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
+                        SurespotApplication.getCommunicationService().processNextMessage();
+                    }
+                    else {
+                        //TODO mark errored? error notification? error toast?
+
+                    }
+                }
+                catch (IOException e) {
+                    //TODO mark errored
+                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
+                    //callback.handleResponse(false);
+                }
+            }
+        };
+
+        SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+
+    }
+
     public static void uploadFriendImageAsync(final Activity activity, final NetworkController networkController, final Uri imageUri, final String friendName,
                                               final IAsyncCallbackTriplet<String, String, String> callback) {
 
@@ -285,125 +336,6 @@ public class ChatUtils {
 
     }
 
-    public static void uploadVoiceMessageAsync(
-            final Activity activity,
-            final ChatController chatController,
-            final Uri audioUri,
-            final String from,
-            final String to) {
-
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                SurespotLog.v(TAG, "uploadVoiceMessageAsync");
-                try {
-                    InputStream dataStream = null;
-
-                    dataStream = activity.getContentResolver().openInputStream(audioUri);
-
-                    if (dataStream != null) {
-
-                        PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-                        final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-
-                        final String ourVersion = IdentityController.getOurLatestVersion();
-                        final String theirVersion = IdentityController.getTheirLatestVersion(to);
-
-                        final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
-                                encryptionOutputStream);
-
-                        // save encrypted audio locally until we receive server confirmation
-                        String localImageDir = FileUtils.getImageUploadDir(activity);
-                        new File(localImageDir).mkdirs();
-
-                        String localImageFilename = localImageDir + File.separator
-                                + URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
-                        final File localImageFile = new File(localImageFilename);
-
-                        localImageFile.createNewFile();
-                        final String localImageUri = Uri.fromFile(localImageFile).toString();
-                        SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
-
-                        Runnable saveFileRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-
-                                SurespotMessage message = null;
-                                // save encrypted voice message to disk
-                                FileOutputStream fileSaveStream;
-                                try {
-                                    fileSaveStream = new FileOutputStream(localImageFile);
-
-                                    int bufferSize = 1024;
-                                    byte[] buffer = new byte[bufferSize];
-
-                                    int len = 0;
-                                    while ((len = encryptionInputStream.read(buffer)) != -1) {
-                                        fileSaveStream.write(buffer, 0, len);
-                                    }
-                                    fileSaveStream.close();
-                                    encryptionInputStream.close();
-
-                                    //add to file cache
-                                    FileCacheController fcc = SurespotApplication.getFileCacheController();
-                                    if (fcc != null) {
-                                        fcc.putEntry(localImageUri, new FileInputStream(localImageFile));
-                                    }
-
-                                    message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.M4A, localImageUri, iv);
-                                    message.setId(null);
-
-                                    final SurespotMessage finalMessage = message;
-                                    SurespotLog.v(TAG, "adding local voice message %s", finalMessage);
-                                    //need to add the message synchronously immediately so we can pull it out later
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            //then update on UI thread async
-                                            chatController.addMessage(finalMessage);
-                                        }
-                                    });
-
-                                }
-                                catch (IOException e) {
-                                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-                                    if (message != null) {
-                                        message.setErrorStatus(500);
-                                    }
-                                    //callback.handleResponse(true);
-                                    return;
-                                }
-
-                                final SurespotMessage finalMessage = message;
-
-                                if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
-                                    SurespotApplication.getCommunicationService().processNextMessage();
-                                }
-                                //else ? TODO wtf owen set errored immediately
-                            }
-                        };
-
-                        SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
-
-                    }
-                    else {
-                        //TODO mark errored
-                        //callback.handleResponse(false);
-                    }
-                }
-                catch (IOException e) {
-                    //TODO mark errored
-                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-                    //callback.handleResponse(false);
-                }
-            }
-        };
-
-        SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
-
-    }
 
     public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate, int maxDimension) {
         //

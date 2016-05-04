@@ -459,7 +459,9 @@ public class CommunicationService extends Service {
                         encryptionInputStream.close();
 
                         //move bitmap cache
-                        MessageImageDownloader.moveCacheEntry(message.getPlainData().toString(), localImageUri);
+                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+                            MessageImageDownloader.moveCacheEntry(message.getPlainData().toString(), localImageUri);
+                        }
 
                         //add encrypted local file to file cache
                         FileCacheController fcc = SurespotApplication.getFileCacheController();
@@ -714,7 +716,7 @@ public class CommunicationService extends Service {
         saveUnsentMessages();
 
         if (mSendQueue.size() == 0) {
-            FileUtils.wipeImageUploadDir(this);
+            FileUtils.wipeFileUploadDir(this);
         }
     }
 
