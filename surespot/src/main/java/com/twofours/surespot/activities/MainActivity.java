@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
@@ -105,7 +106,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallbackTuple<String, Boolean> m401Handler;
 
-    private boolean mBindingCommunicationService;
     private boolean mCacheServiceBound;
     private boolean mCommunicationServiceBound;
     private Menu mMenuOverflow;
@@ -1771,49 +1771,41 @@ public class MainActivity extends Activity implements OnMeasureListener {
                             mUser,
                             mCurrentFriend.getName(),
                             true);
-//                            new IAsyncCallback<Boolean>() {
-//
-//                                @Override
-//                                public void handleResponse(Boolean errorHandled) {
-                    //showing notification now
-//                                    if (!errorHandled) {
-//                                        Runnable runnable = new Runnable() {
-//
-//                                            @Override
-//                                            public void run() {
-//                                                Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-//
-//                                            }
-//                                        };
-//
-//                                        getMainHandler().post(runnable);
-//                                    }
-                    //                }
-                    //            });
                 }
-                else {
-                    if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
-                        // TODO implement
+            }
+        }
+        else {
+            if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
+                Utils.configureActionBar(this, "", mUser, true);
+                if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+
+                    ArrayList<Parcelable> uris = extras.getParcelableArrayList(Intent.EXTRA_STREAM);
+                    for (Parcelable p : uris) {
+                        final Uri imageUri = (Uri) p;
+
+                        SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
+
+                        ChatUtils.uploadPictureMessageAsync(
+                                this,
+                                SurespotApplication.getChatController(),
+                                imageUri,
+                                mUser,
+                                mCurrentFriend.getName(),
+                                true);
                     }
                 }
-
             }
-            Utils.clearIntent(getIntent());
         }
+
+
+        Utils.clearIntent(getIntent());
     }
+
 
     private void sendMessage(String username) {
         final String message = mEtMessage.getText().toString();
         if (!message.isEmpty()) {
             SurespotApplication.getChatController().sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
-
-            //final String userName = username;
-            // TEST: this mimicks the user sending 30 messages and closing the activity
-            //for (int n = 0; n < 30; n++) {
-            //	SurespotApplication.getChatController().sendMessage(userName, message + ":" + n, SurespotConstants.MimeTypes.TEXT);
-            //}
-            //finish();
-
             TextKeyListener.clear(mEtMessage.getText());
         }
     }
@@ -2205,7 +2197,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
 
     private void bindChatTransmissionService() {
-        mBindingCommunicationService = true;
         SurespotLog.d(TAG, "binding chat transmission service");
         Intent chatIntent = new Intent(this, CommunicationService.class);
         startService(chatIntent);
