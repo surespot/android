@@ -1138,35 +1138,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     private void uploadPicture(final Uri selectedImageUri, String to) {
-        // Utils.makeToast(this, getString(R.string.uploading_image));
         ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), selectedImageUri, mUser, to, false);
-
-//        new IAsyncCallback<Boolean>() {
-//            @Override
-//            public void handleResponse(Boolean errorHandled) {
-//                // delete local image
-//                try {
-//                    File file = new File(new URI(selectedImageUri.toString()));
-//
-//                    boolean b = file.delete();
-//                    SurespotLog.d(TAG, "deleted temp image file: %b", b);
-//                }
-//                catch (URISyntaxException e) {
-//                }
-//
-//                if (!errorHandled) {
-//                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-//                    Runnable runnable = new Runnable() {
-//
-//                        @Override
-//                        public void run() {
-//                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-//                        }
-//                    };
-//                    getMainHandler().post(runnable);
-//                }
-//            }
-//        });
     }
 
     @Override

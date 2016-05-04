@@ -10,6 +10,7 @@ import android.support.multidex.MultiDex;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.EmojiParser;
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -144,6 +145,7 @@ public class SurespotApplication extends Application {
 		startService(chatIntent);
 
 		mBillingController = new BillingController(this);
+		FileUtils.wipeImageCaptureDir(this);
 	}
 
 	private boolean versionChanged(Context context) {

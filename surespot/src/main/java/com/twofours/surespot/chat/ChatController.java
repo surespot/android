@@ -1,6 +1,5 @@
 package com.twofours.surespot.chat;
 
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -322,6 +321,7 @@ public class ChatController {
         }
 
     }
+
 
     private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
             throws SurespotMessageSequenceException {
@@ -1107,30 +1107,6 @@ public class ChatController {
         enableMenuItems(friend);
     }
 
-    public SurespotMessage handleErrorMessage(SurespotErrorMessage errorMessage) {
-        SurespotMessage message = null;
-
-        // this logic is also done in the chat transmission service (but after this call) so that if the UI is not available,
-        // the mResendBuffer is still updated properly
-        Iterator<SurespotMessage> iterator = SurespotApplication.getCommunicationService().getSendQueue().iterator();
-        while (iterator.hasNext()) {
-            message = iterator.next();
-            if (message.getIv().equals(errorMessage.getId())) {
-                iterator.remove();
-                message.setErrorStatus(errorMessage.getStatus());
-                break;
-            }
-        }
-
-        if (message != null) {
-            ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
-            if (chatAdapter != null) {
-                chatAdapter.notifyDataSetChanged();
-            }
-        }
-
-        return message;
-    }
 
     private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
         // if it's an image blow the http cache entry away
@@ -1232,7 +1208,7 @@ public class ChatController {
         chatAdapter.sort();
         chatAdapter.doneCheckingSequence();
         // mark messages left in chatAdapter with no id as errored
-       // chatAdapter.markErrored();
+        // chatAdapter.markErrored();
         chatAdapter.notifyDataSetChanged();
     }
 
@@ -1525,77 +1501,55 @@ public class ChatController {
 
             // build a message without the encryption values set as they could take a while
 
-            final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText), new String(
+            final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mUsername, username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText), new String(
                     ChatUtils.base64EncodeNowrap(iv)));
 
             try {
                 chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
                 SurespotApplication.getCommunicationService().enqueueMessage(chatMessage);
+                SurespotApplication.getCommunicationService().processNextMessage();
             }
             catch (SurespotMessageSequenceException e) {
                 // not gonna happen
                 SurespotLog.w(TAG, e, "sendMessage");
             }
-
-            // do encryption in background
-            new AsyncTask<Void, Void, Boolean>() {
-
-                @Override
-                protected Boolean doInBackground(Void... arg0) {
-                    String ourLatestVersion = IdentityController.getOurLatestVersion();
-                    String theirLatestVersion = IdentityController.getTheirLatestVersion(username);
-
-                    String result = EncryptionController.symmetricEncrypt(ourLatestVersion, username, theirLatestVersion, plainText, iv);
-
-                    if (result != null) {
-                        chatMessage.setData(result);
-                        chatMessage.setFromVersion(ourLatestVersion);
-                        chatMessage.setToVersion(theirLatestVersion);
-
-                        SurespotLog.d(TAG, "sending message to chat controller iv: %s", chatMessage.getIv());
-                        SurespotApplication.getCommunicationService().processNextMessage();
-                        return true;
-                    }
-                    else {
-                        SurespotLog.d(TAG, "could not encrypt message, iv: %s", chatMessage.getIv());
-                        chatMessage.setErrorStatus(500);
-
-                        return false;
-                    }
-                }
-
-                protected void onPostExecute(Boolean success) {
-                    // if success is false we will have set an error status in the message so notify
-                    if (!success) {
-                        chatAdapter.notifyDataSetChanged();
-                    }
-                }
-
-                ;
-
-            }.execute();
-        }
-
-    }
-
-    void addMessage(Activity activity, SurespotMessage message) {
-        if (mChatAdapters != null) {
-            ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
-
-            try {
-                chatAdapter.addOrUpdateMessage(message, false, true, true);
-                scrollToEnd(message.getTo());
-                SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
-            }
-            catch (Exception e) {
-                SurespotLog.e(TAG, e, "addMessage");
-            }
-        }
-        else {
-            // TODO: we should tell the user there was an error sending the message if surespot UI is not actively running (via a notification)
-            Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
         }
     }
+
+    public void updateMessage(SurespotMessage message) {
+        if (message.getFrom().equals(mUsername)) {
+            if (mChatAdapters != null) {
+                ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
+                if (chatAdapter != null) {
+                    try {
+                        chatAdapter.addOrUpdateMessage(message, false, false, true);
+                    }
+                    catch (Exception e) {
+                        SurespotLog.e(TAG, e, "updateMessage");
+                    }
+                }
+            }
+        }
+    }
+
+    void addMessage(SurespotMessage message) {
+        if (message.getFrom().equals(mUsername)) {
+            if (mChatAdapters != null) {
+                ChatAdapter chatAdapter = mChatAdapters.get(message.getTo());
+                if (chatAdapter != null) {
+                    try {
+                        chatAdapter.addOrUpdateMessage(message, false, true, true);
+                        scrollToEnd(message.getTo());
+                        SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
+                    }
+                    catch (Exception e) {
+                        SurespotLog.e(TAG, e, "addMessage");
+                    }
+                }
+            }
+        }
+    }
+
 
     public static String getCurrentChat() {
         if (SurespotApplication.getCommunicationServiceNoThrow() == null) {

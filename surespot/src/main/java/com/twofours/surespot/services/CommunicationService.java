@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
@@ -37,7 +38,10 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.images.FileCacheController;
+import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
@@ -47,9 +51,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -313,27 +324,75 @@ public class CommunicationService extends Service {
 
                 switch (nextMessage.getMimeType()) {
                     case SurespotConstants.MimeTypes.TEXT:
-                        if (isMessageReadyToSend(nextMessage)) {
-                            sendTextMessage(nextMessage);
-                        }
-                        else {
-                            //start timer and try in a bit
-                        }
+                        prepAndSendTextMessage(nextMessage);
                         break;
                     case SurespotConstants.MimeTypes.IMAGE:
                     case SurespotConstants.MimeTypes.M4A:
-                        sendFileMessage(nextMessage);
-
+                        prepAndSendFileMessage(nextMessage);
                         break;
                 }
             }
         }
-
     }
 
-    private synchronized void sendTextMessage(final SurespotMessage message) {
-        SurespotLog.d(TAG, "sendTextMessage, iv: %s", message.getIv());
+    private boolean isMessageReadyToSend(SurespotMessage message) {
+        return !TextUtils.isEmpty(message.getData()) && !TextUtils.isEmpty(message.getFromVersion()) && !TextUtils.isEmpty(message.getToVersion());
+    }
 
+
+    private synchronized void prepAndSendTextMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "prepAndSendTextMessage, iv: %s", message.getIv());
+
+        //make sure message is encrypted
+        if (!isMessageReadyToSend(message)) {
+            // do encryption in background
+            new AsyncTask<Void, Void, Boolean>() {
+
+                @Override
+                protected Boolean doInBackground(Void... arg0) {
+                    String ourLatestVersion = IdentityController.getOurLatestVersion(message.getFrom());
+                    String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getTo());
+
+//                    if (theirLatestVersion == null) {
+//                        SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", chatMessage.getIv());
+//                        //retry
+//                        chatMessage.setErrorStatus(0);
+                    //return false;
+//                    }
+                    byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
+                    String result = EncryptionController.symmetricEncrypt(ourLatestVersion, message.getTo(), theirLatestVersion, message.getPlainData().toString(), iv);
+
+                    if (result != null) {
+                        //update unsent message
+                        message.setData(result);
+                        message.setFromVersion(ourLatestVersion);
+                        message.setToVersion(theirLatestVersion);
+
+                        SurespotLog.d(TAG, "sending message to chat controller iv: %s", message.getIv());
+                        processNextMessage();
+                        return true;
+                    }
+                    else {
+                        SurespotLog.d(TAG, "could not encrypt message, iv: %s", message.getIv());
+                        message.setErrorStatus(500);
+                        return false;
+                    }
+                }
+
+                protected void onPostExecute(Boolean success) {
+                    SurespotApplication.getChatController().updateMessage(message);
+                    if (success) {
+                        sendTextMessage(message);
+                    }
+                }
+            }.execute();
+        }
+        else {
+            sendTextMessage(message);
+        }
+    }
+
+    private void sendTextMessage(SurespotMessage message) {
         if (getConnectionState() == STATE_CONNECTED) {
             SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
             JSONObject json = message.toJSONObjectSocket();
@@ -348,11 +407,100 @@ public class CommunicationService extends Service {
         else {
             sendMessageUsingHttp(message);
         }
-
     }
 
-    private void
-    sendFileMessage(final SurespotMessage message) {
+    private void prepAndSendFileMessage(final SurespotMessage message) {
+        if (!isMessageReadyToSend(message)) {
+
+
+            new AsyncTask<Void, Void, Boolean>() {
+
+                @Override
+                protected Boolean doInBackground(Void... arg0) {
+                    //make sure it's pointing to a local file
+                    if (message.getPlainData() == null || !message.getPlainData().toString().startsWith("file")) {
+                        message.setErrorStatus(500);
+                        return false;
+                    }
+
+                    try {
+
+                        final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
+                        final String theirVersion = IdentityController.getTheirLatestVersion(message.getTo());
+                        //if (theirVersion  == null) {
+//                        SurespotLog.d(TAG, "could not encrypt file  message - could not get latest version, iv: %s", chatMessage.getIv());
+//                        //retry
+//                        chatMessage.setErrorStatus(0);
+                        //return false;
+//                    }
+                        final String iv = message.getIv();
+
+
+                        // save encrypted image to disk
+                        InputStream fileInputStream = CommunicationService.this.getContentResolver().openInputStream(Uri.parse(message.getPlainData().toString()));
+                        File localImageFile = ChatUtils.getTempImageUploadFile(CommunicationService.this);
+                        OutputStream fileSaveStream = new FileOutputStream(localImageFile);
+                        String localImageUri = Uri.fromFile(localImageFile).toString();
+                        SurespotLog.d(TAG, "encrypting file iv: %s, from %s to encrypted file %s", iv, message.getPlainData().toString(), localImageUri);
+
+                        //encrypt
+                        PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+                        final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
+                        EncryptionController.runEncryptTask(ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+
+                        int bufferSize = 1024;
+                        byte[] buffer = new byte[bufferSize];
+
+                        int len = 0;
+                        while ((len = encryptionInputStream.read(buffer)) != -1) {
+                            fileSaveStream.write(buffer, 0, len);
+                        }
+                        fileSaveStream.close();
+                        encryptionInputStream.close();
+
+                        //move bitmap cache
+                        MessageImageDownloader.moveCacheEntry(message.getPlainData().toString(), localImageUri);
+
+                        //add encrypted local file to file cache
+                        FileCacheController fcc = SurespotApplication.getFileCacheController();
+                        if (fcc != null) {
+                            fcc.putEntry(localImageUri, new FileInputStream(localImageFile));
+                        }
+
+
+                        boolean deleted = new File(Uri.parse(message.getPlainData().toString()).getPath()).delete();
+                        SurespotLog.d(TAG, "deleting unencrypted file %s, iv: %s, success: %b", message.getPlainData().toString(), iv, deleted);
+
+                        message.setPlainData(null);
+                        message.setData(localImageUri);
+                        message.setFromVersion(ourVersion);
+                        message.setToVersion(theirVersion);
+
+                        return true;
+                    }
+                    catch (IOException e) {
+                        SurespotLog.w(TAG, e, "prepAndSendFileMessage");
+                        message.setErrorStatus(500);
+                        return false;
+                    }
+
+                }
+
+                protected void onPostExecute(Boolean success) {
+                    SurespotApplication.getChatController().updateMessage(message);
+                    if (success) {
+                        sendFileMessage(message);
+                    }
+                }
+            }.execute();
+        }
+        else {
+            sendFileMessage(message);
+        }
+    }
+
+
+    private void sendFileMessage(final SurespotMessage message) {
         SurespotLog.d(TAG, "sendFileMessage, iv: %s", message.getIv());
         new AsyncTask<Void, Void, Tuple<Integer, JSONObject>>() {
             @Override
@@ -360,17 +508,17 @@ public class CommunicationService extends Service {
                 //post message via http if we have network controller for the from user
                 NetworkController networkController = SurespotApplication.getNetworkController();
                 if (networkController != null && message.getFrom().equals(networkController.getUsername())) {
-                    //get their latest version
-                    String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getTo());
-                    if (theirLatestVersion == null) {
-                        //resend
-                        return new Tuple<>(0, null);
-                    }
+
                     FileInputStream uploadStream;
                     try {
                         uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
-                        return networkController.postFileStreamSync(IdentityController.getOurLatestVersion(message.getFrom()), message.getTo(), theirLatestVersion,
-                                message.getIv(), uploadStream, message.getMimeType());
+                        return networkController.postFileStreamSync(
+                                message.getOurVersion(),
+                                message.getTo(),
+                                message.getTheirVersion(),
+                                message.getIv(),
+                                uploadStream,
+                                message.getMimeType());
 
                     }
                     catch (FileNotFoundException e) {
@@ -566,7 +714,7 @@ public class CommunicationService extends Service {
         saveUnsentMessages();
 
         if (mSendQueue.size() == 0) {
-            FileUtils.wipeImageCaptureDir(this);
+            FileUtils.wipeImageUploadDir(this);
         }
     }
 
@@ -1018,9 +1166,6 @@ public class CommunicationService extends Service {
         }
     }
 
-    private boolean isMessageReadyToSend(SurespotMessage message) {
-        return !TextUtils.isEmpty(message.getData()) && !TextUtils.isEmpty(message.getFromVersion()) && !TextUtils.isEmpty(message.getToVersion());
-    }
 
     private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
@@ -1179,7 +1324,23 @@ public class CommunicationService extends Service {
                         JSONObject jsonMessage = (JSONObject) args[0];
                         SurespotLog.d(TAG, "received messageError: " + jsonMessage.toString());
                         SurespotErrorMessage errorMessage = SurespotErrorMessage.toSurespotErrorMessage(jsonMessage);
-                        SurespotMessage message = SurespotApplication.getChatController().handleErrorMessage(errorMessage);
+
+                        //if the server says it errored we're fucked so don't bother trying to send it again
+                        SurespotMessage message = null;
+                        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
+                        while (iterator.hasNext()) {
+                            message = iterator.next();
+                            if (message.getIv().equals(errorMessage.getId())) {
+                                iterator.remove();
+                                message.setErrorStatus(errorMessage.getStatus());
+                                break;
+                            }
+                        }
+
+                        if (message != null) {
+                            //update chat controller message
+                            SurespotApplication.getChatController().updateMessage(message);
+                        }
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, "on messageError", e);

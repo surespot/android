@@ -147,6 +147,26 @@ public class ChatAdapter extends BaseAdapter {
                 // clear error status
                 updateMessage.setErrorStatus(0);
             }
+            //
+            else {
+                //message updated by communication controller after encryption
+                //update plain data, their version, our version
+                if (!updateMessage.getToVersion().equals(message.getToVersion())) {
+                    updateMessage.setToVersion(message.getTheirVersion());
+                }
+
+                if (!updateMessage.getFromVersion().equals(message.getFromVersion())) {
+                    updateMessage.setFromVersion(message.getFromVersion());
+                }
+
+                if (updateMessage.getData() == null) {
+                    updateMessage.setData(message.getData());
+                }
+
+                if (updateMessage.getErrorStatus() != message.getErrorStatus()) {
+                    updateMessage.setErrorStatus(message.getErrorStatus());
+                }
+            }
         }
 
         if (sort) {
@@ -374,7 +394,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");
-                if (!TextUtils.isEmpty(item.getData())) {
+                if (!TextUtils.isEmpty(item.getData()) || !TextUtils.isEmpty(item.getPlainData())) {
                     mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
                 }
 
