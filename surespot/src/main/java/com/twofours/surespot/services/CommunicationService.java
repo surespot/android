@@ -97,7 +97,6 @@ public class CommunicationService extends Service {
     private static boolean mMainActivityPaused = false;
 
     private ReconnectTask mReconnectTask;
-    public static String mCurrentChat;
     Handler mHandler = new Handler(Looper.getMainLooper());
 
     public static final int STATE_CONNECTING = 2;
@@ -237,7 +236,7 @@ public class CommunicationService extends Service {
                 disconnect();
             }
             mUsername = username;
-            loadUnsentMessages();
+            loadMessageQueue();
         }
 
         return connect();
@@ -613,7 +612,7 @@ public class CommunicationService extends Service {
                             SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(messageReceived);
-                            SurespotApplication.getChatController().handleMessage(messageReceived);
+                            //SurespotApplication.getChatController().handleMessage(messageReceived);
                             processNextMessage();
                         }
                         else {
@@ -674,7 +673,7 @@ public class CommunicationService extends Service {
         }
         saveState(null, true);
         saveMessages();
-        saveUnsentMessages();
+        saveMessageQueue();
 
         if (mSendQueue.size() == 0) {
             FileUtils.wipeFileUploadDir(this);
@@ -698,7 +697,7 @@ public class CommunicationService extends Service {
     public void errorMessageQueue() {
         SurespotLog.d(TAG, "errorMessageQueue");
 
-        saveUnsentMessages();
+        saveMessageQueue();
         saveMessages();
 
         //notify UI
@@ -740,6 +739,10 @@ public class CommunicationService extends Service {
                 iterator.remove();
                 removed = true;
             }
+        }
+
+        if (removed) {
+            saveMessageQueue();
         }
 
         SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
@@ -814,8 +817,8 @@ public class CommunicationService extends Service {
             if (!fromSave) {
                 saveMessages();
             }
-            SurespotLog.d(TAG, "saving last chat: %s", mCurrentChat);
-            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, mCurrentChat);
+            SurespotLog.d(TAG, "saving last chat: %s", SurespotApplication.getChatController().getCurrentChat());
+            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, SurespotApplication.getChatController().getCurrentChat());
             if (!fromSave) {
                 saveFriends();
             }
@@ -826,12 +829,12 @@ public class CommunicationService extends Service {
     }
 
 
-    public void saveUnsentMessages() {
+    public void saveMessageQueue() {
         SurespotLog.d(TAG, "saving: " + mSendQueue.size() + " unsent messages.");
         SurespotApplication.getStateController().saveUnsentMessages(mUsername, mSendQueue);
     }
 
-    private void loadUnsentMessages() {
+    private void loadMessageQueue() {
         mSendQueue.clear();
         Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages(mUsername).iterator();
         while (iterator.hasNext()) {

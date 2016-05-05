@@ -151,7 +151,7 @@ public class StateController {
 						FileUtils.writeFile(filename, messageString);
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, e, "saveUnsentMessages");
+						SurespotLog.w(TAG, e, "saveMessageQueue");
 					}
 				}
 				else {
@@ -159,7 +159,7 @@ public class StateController {
 						new File(filename).delete();
 					}
 					catch (Exception ex) {
-						SurespotLog.w(TAG, ex, "saveUnsentMessages");
+						SurespotLog.w(TAG, ex, "saveMessageQueue");
 					}
 				}
 			}
@@ -168,7 +168,7 @@ public class StateController {
 					new File(filename).delete();
 				}
 				catch (Exception ex) {
-					SurespotLog.w(TAG, ex, "saveUnsentMessages");
+					SurespotLog.w(TAG, ex, "saveMessageQueue");
 				}
 			}
 		}

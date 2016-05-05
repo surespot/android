@@ -81,6 +81,7 @@ public class ChatController {
     private AutoInviteData mAutoInviteData;
     private boolean mHandlingAutoInvite;
     private String mUsername;
+    private String mCurrentChat;
 
     public ChatController(Context context, String username, FragmentManager fm, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
                           IAsyncCallback<Friend> tabShowingCallback) {
@@ -251,7 +252,7 @@ public class ChatController {
                         friend.setAvailableMessageId(messageId, false);
 
                         // if the chat is showing set the last viewed id the id of the message we just received
-                        if (otherUser.equals(SurespotApplication.getCommunicationService().mCurrentChat)) {
+                        if (otherUser.equals(mCurrentChat)) {
 
                             friend.setLastViewedMessageId(messageId);
 
@@ -1093,7 +1094,7 @@ public class ChatController {
             // force the controls to update
             CommunicationService cts = SurespotApplication.getCommunicationServiceNoThrow();
             if (cts != null) {
-                if (friend != null && cts.mCurrentChat != null && cts.mCurrentChat.equals(deletedUser)) {
+                if (friend != null && mCurrentChat != null && mCurrentChat.equals(deletedUser)) {
                     mTabShowingCallback.handleResponse(friend);
                 }
             }
@@ -1174,7 +1175,7 @@ public class ChatController {
 
                 // if the current chat is showing or
                 // all the new messages are mine then i've viewed them all
-                if (username.equals(SurespotApplication.getCommunicationService().mCurrentChat) || sentByMeCount == delta) {
+                if (username.equals(mCurrentChat) || sentByMeCount == delta) {
                     friend.setLastViewedMessageId(availableId);
                 }
                 else {
@@ -1352,7 +1353,7 @@ public class ChatController {
 
         // moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
-        clearMessageNotification(mUsername, SurespotApplication.getCommunicationService().mCurrentChat);
+        clearMessageNotification(mUsername, mCurrentChat);
     }
 
     public synchronized void onPause() {
@@ -1428,7 +1429,7 @@ public class ChatController {
         mTabShowingCallback.handleResponse(friend);
         if (friend != null) {
             if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getCommunicationService().mCurrentChat = username;
+                mCurrentChat = username;
             }
             mChatPagerAdapter.addChatFriend(friend);
             friend.setChatActive(true);
@@ -1449,7 +1450,7 @@ public class ChatController {
 
         }
         else {
-            SurespotApplication.getCommunicationService().mCurrentChat = null;
+            mCurrentChat = null;
             mViewPager.setCurrentItem(0, true);
             mNotificationManager.cancel(loggedInUser + ":" + username, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
             mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
@@ -1522,11 +1523,11 @@ public class ChatController {
     }
 
 
-    public static String getCurrentChat() {
+    public String getCurrentChat() {
         if (SurespotApplication.getCommunicationServiceNoThrow() == null) {
             return null;
         }
-        return SurespotApplication.getCommunicationService().mCurrentChat;
+        return mCurrentChat;
     }
 
     public static boolean isPaused() {
@@ -1756,7 +1757,7 @@ public class ChatController {
     }
 
     public boolean isFriendDeleted() {
-        return getFriendAdapter().getFriend(SurespotApplication.getCommunicationService().mCurrentChat).isDeleted();
+        return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
     }
 
     private void getFriendsAndData() {
@@ -1848,7 +1849,7 @@ public class ChatController {
 
                     position = mViewPager.getCurrentItem();
                     setCurrentChat(mChatPagerAdapter.getChatName(position));
-                    SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", SurespotApplication.getCommunicationService().mCurrentChat, position);
+                    SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
                 }
             }
         }
@@ -1879,7 +1880,7 @@ public class ChatController {
 
                     position = mViewPager.getCurrentItem();
                     setCurrentChat(mChatPagerAdapter.getChatName(position));
-                    SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", SurespotApplication.getCommunicationService().mCurrentChat, position);
+                    SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
                 }
             }
         }
@@ -1902,7 +1903,7 @@ public class ChatController {
     }
 
     public void enableMenuItems(Friend friend) {
-        boolean enabled = mMode != MODE_SELECT && SurespotApplication.getCommunicationService().mCurrentChat != null;
+        boolean enabled = mMode != MODE_SELECT && mCurrentChat != null;
         SurespotLog.v(TAG, "enableMenuItems, enabled: %b", enabled);
 
         boolean isDeleted = false;
