@@ -239,56 +239,51 @@ public class ChatController {
                 }
 
                 protected void onPostExecute(Void result) {
-                    try {
-                        boolean added = applyControlMessages(chatAdapter, message, false, true, true);
-                        scrollToEnd(otherUser);
 
-                        Friend friend = mFriendAdapter.getFriend(otherUser);
-                        if (friend != null) {
-                            int messageId = message.getId();
+                    boolean added = applyControlMessages(chatAdapter, message, false, true, true);
+                    scrollToEnd(otherUser);
 
-                            // always update the available id
-                            friend.setAvailableMessageId(messageId, false);
+                    Friend friend = mFriendAdapter.getFriend(otherUser);
+                    if (friend != null) {
+                        int messageId = message.getId();
 
-                            // if the chat is showing set the last viewed id the id of the message we just received
-                            if (otherUser.equals(SurespotApplication.getCommunicationService().mCurrentChat)) {
+                        // always update the available id
+                        friend.setAvailableMessageId(messageId, false);
 
-                                friend.setLastViewedMessageId(messageId);
+                        // if the chat is showing set the last viewed id the id of the message we just received
+                        if (otherUser.equals(SurespotApplication.getCommunicationService().mCurrentChat)) {
 
-                                // if it was a voice message from the other user set play flag
-                                // TODO wrap in preference
-                                if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                                    message.setPlayMedia(true);
-                                }
+                            friend.setLastViewedMessageId(messageId);
 
-                            }
-                            // chat not showing
-                            else {
-                                // if it's my message increment the count by one to account for it as I may have unread messages from the
-                                // other user; we
-                                // can't just set the last viewed to the latest message
-                                if (ChatUtils.isMyMessage(message) && added) {
-                                    int adjustedLastViewedId = friend.getLastViewedMessageId() + 1;
-                                    if (adjustedLastViewedId < messageId) {
-                                        friend.setLastViewedMessageId(adjustedLastViewedId);
-                                    }
-                                    else {
-                                        friend.setLastViewedMessageId(messageId);
-                                    }
-                                }
+                            // if it was a voice message from the other user set play flag
+                            // TODO wrap in preference
+                            if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                                message.setPlayMedia(true);
                             }
 
-                            mFriendAdapter.sort();
-                            mFriendAdapter.notifyDataSetChanged();
-
-                            SurespotApplication.getCommunicationService().saveIfMainActivityPaused();
+                        }
+                        // chat not showing
+                        else {
+                            // if it's my message increment the count by one to account for it as I may have unread messages from the
+                            // other user; we
+                            // can't just set the last viewed to the latest message
+                            if (ChatUtils.isMyMessage(message) && added) {
+                                int adjustedLastViewedId = friend.getLastViewedMessageId() + 1;
+                                if (adjustedLastViewedId < messageId) {
+                                    friend.setLastViewedMessageId(adjustedLastViewedId);
+                                }
+                                else {
+                                    friend.setLastViewedMessageId(messageId);
+                                }
+                            }
                         }
 
+                        mFriendAdapter.sort();
+                        mFriendAdapter.notifyDataSetChanged();
+
+                        SurespotApplication.getCommunicationService().saveIfMainActivityPaused();
                     }
-                    catch (SurespotMessageSequenceException e) {
-                        SurespotLog.d(TAG, "handleMessage: %s", e.getMessage());
-                        getLatestMessagesAndControls(otherUser, e.getMessageId(), true);
-                    }
+
                 }
             }.execute();
 
@@ -323,8 +318,7 @@ public class ChatController {
     }
 
 
-    private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify)
-            throws SurespotMessageSequenceException {
+    private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {
         // see if we have applicable control messages and apply them if necessary
         ArrayList<SurespotControlMessage> controlMessages = chatAdapter.getControlMessages();
         ArrayList<SurespotControlMessage> applicableControlMessages = new ArrayList<SurespotControlMessage>();
@@ -489,6 +483,7 @@ public class ChatController {
         SurespotLog.v(TAG, "getLatestData");
         // setMessagesLoading(true);
 
+        //get messages from server for open tabs
         JSONArray spotIds = new JSONArray();
         for (Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
             JSONObject spot = new JSONObject();
@@ -1165,13 +1160,6 @@ public class ChatController {
                 SurespotLog.w(TAG, e, "jsonStringsToMessages");
 
             }
-            catch (SurespotMessageSequenceException e) {
-                // shouldn't happen
-                SurespotLog.w(TAG, e, "handleMessages");
-                // getLatestMessagesAndControls(username, e.getMessageId(), -1);
-                // setProgress(username, false);
-                return;
-            }
 
             if (lastMessage != null) {
                 Friend friend = mFriendAdapter.getFriend(username);
@@ -1504,15 +1492,11 @@ public class ChatController {
             final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mUsername, username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText), new String(
                     ChatUtils.base64EncodeNowrap(iv)));
 
-            try {
-                chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
-                SurespotApplication.getCommunicationService().enqueueMessage(chatMessage);
-                SurespotApplication.getCommunicationService().processNextMessage();
-            }
-            catch (SurespotMessageSequenceException e) {
-                // not gonna happen
-                SurespotLog.w(TAG, e, "sendMessage");
-            }
+
+            chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
+            SurespotApplication.getCommunicationService().enqueueMessage(chatMessage);
+            SurespotApplication.getCommunicationService().processNextMessage();
+
         }
     }
 
@@ -2036,14 +2020,11 @@ public class ChatController {
                 //
                 // @Override
                 // public void run() {
-                try {
-                    return applyControlMessages(chatAdapter, message, false, true, false);
-                }
-                catch (SurespotMessageSequenceException e) {
-                }
+
+                return applyControlMessages(chatAdapter, message, false, true, false);
+
                 // }
                 // });
-                return false;
             }
         }
     }

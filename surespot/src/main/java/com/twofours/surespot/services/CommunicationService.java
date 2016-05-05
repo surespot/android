@@ -579,6 +579,7 @@ public class CommunicationService extends Service {
     }
 
     private void sendMessageUsingHttp(final SurespotMessage message) {
+        SurespotLog.d(TAG, "sendMessagesUsingHttp, iv: %s", message.getIv());
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
         SurespotApplication.getNetworkController().postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
@@ -612,6 +613,7 @@ public class CommunicationService extends Service {
                             SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(messageReceived);
+                            SurespotApplication.getChatController().handleMessage(messageReceived);
                             processNextMessage();
                         }
                         else {
