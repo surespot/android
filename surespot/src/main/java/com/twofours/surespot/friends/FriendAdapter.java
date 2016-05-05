@@ -328,6 +328,7 @@ public class FriendAdapter extends BaseAdapter {
 
                 @Override
                 public void onResponse(Call call, Response response, String responseString) throws IOException {
+                    SurespotLog.i(TAG, "respondToInvite, code: %d", response.code());
                     if (response.isSuccessful()) {
 
                         SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
@@ -347,8 +348,18 @@ public class FriendAdapter extends BaseAdapter {
                         Collections.sort(mFriends);
                         notifyDataSetChanged();
                     } else {
-                        SurespotLog.i(TAG, "respondToInvite");
-                        Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                        //if we got a 404 delete the user
+//                        if (response.code() == 404) {
+//                            SurespotLog.i(TAG, "respondToInvite got 404, deleting friend: %s from user: %s", friendname, IdentityController.getLoggedInUser());
+//                            mFriends.remove(position);
+//                            mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname,
+//                                    SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+//                            Collections.sort(mFriends);
+//                            notifyDataSetChanged();
+//                        }
+//                        else {
+                            Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                        //}
                     }
                 }
             }));
