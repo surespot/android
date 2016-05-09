@@ -1221,6 +1221,7 @@ public class CommunicationService extends Service {
         public void call(Object... args) {
             SurespotLog.d(TAG, "Connection terminated.");
             setState(STATE_DISCONNECTED);
+            processNextMessage();
         }
     };
 
