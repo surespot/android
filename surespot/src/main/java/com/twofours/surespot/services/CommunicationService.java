@@ -367,9 +367,6 @@ public class CommunicationService extends Service {
                         message.setData(result);
                         message.setFromVersion(ourLatestVersion);
                         message.setToVersion(theirLatestVersion);
-
-                        SurespotLog.d(TAG, "sending message to chat controller iv: %s", message.getIv());
-                        processNextMessage();
                         return true;
                     }
                     else {
@@ -612,7 +609,6 @@ public class CommunicationService extends Service {
                             SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(messageReceived);
-                            //SurespotApplication.getChatController().handleMessage(messageReceived);
                             processNextMessage();
                         }
                         else {
@@ -1225,20 +1221,12 @@ public class CommunicationService extends Service {
         public void call(Object... args) {
             SurespotLog.d(TAG, "Connection terminated.");
             setState(STATE_DISCONNECTED);
-//            synchronized (SEND_LOCK) {
-//                mCurrentSendIv = null;
-//            }
         }
     };
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-//
-//            synchronized (SEND_LOCK) {
-//                mCurrentSendIv = null;
-//            }
-
             if (args.length > 0) {
                 String reason = args[0].toString();
                 if (args[0] instanceof EngineIOException) {
@@ -1304,6 +1292,7 @@ public class CommunicationService extends Service {
                             //update chat controller message
                             SurespotApplication.getChatController().addMessage(message);
                         }
+                        processNextMessage();
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, "on messageError", e);
