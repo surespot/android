@@ -36,7 +36,7 @@ public class VoiceController {
     private static String mTo = null;
 
     public static final int SEND_THRESHOLD = 3500;
-    public static final int MAX_TIME = 60000;
+    public static final int MAX_TIME = 10000;
     public static final int INTERVAL = 50;
     private static final int SEEK_MAX = 1000;
 
