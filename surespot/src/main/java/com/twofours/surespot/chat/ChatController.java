@@ -281,13 +281,9 @@ public class ChatController {
 
                         mFriendAdapter.sort();
                         mFriendAdapter.notifyDataSetChanged();
-
-                        SurespotApplication.getCommunicationService().saveIfMainActivityPaused();
                     }
-
                 }
             }.execute();
-
         }
         else {
             SurespotLog.d(TAG, "ChatAdapter not open for user: %s", otherUser);
@@ -1408,7 +1404,7 @@ public class ChatController {
     public void destroyChatAdapter(String username) {
         SurespotLog.d(TAG, "destroying chat adapter for: %s", username);
         if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().saveState(username, false);
+            SurespotApplication.getCommunicationService().saveMessages(username);
         }
         mChatAdapters.remove(username);
     }
@@ -1509,7 +1505,7 @@ public class ChatController {
                 if (chatAdapter != null) {
                     try {
                         boolean added = chatAdapter.addOrUpdateMessage(message, false, true, true);
-                        SurespotApplication.getCommunicationService().saveState(message.getTo(), false);
+                        SurespotApplication.getCommunicationService().saveMessages(message.getTo());
                         if (added) {
                             scrollToEnd(message.getTo());
                         }
@@ -1590,7 +1586,7 @@ public class ChatController {
 
             ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
             chatAdapter.deleteMessageByIv(message.getIv());
-            SurespotApplication.getCommunicationService().saveState(otherUser, false);
+            SurespotApplication.getCommunicationService().saveMessages(otherUser);
 
             // if it's an file message, delete the local file
             if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {

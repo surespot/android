@@ -111,9 +111,7 @@ public class CommunicationService extends Service {
     private Socket mSocket;
     private int mSocketReconnectRetries = 0;
     private Timer mResendViaHttpTimer;
-    //private Object SEND_LOCK = new Object();
     private Timer mBackgroundTimer;
-    //private Object BACKGROUND_TIMER_LOCK = new Object();
     private int mConnectionState;
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
@@ -662,14 +660,15 @@ public class CommunicationService extends Service {
 
     // saves all data and current state for user, general
     public synchronized void save() {
-        if (mUsername != null) {
-            saveFriends();
-            saveMessages(mUsername);
-            saveState(mUsername, true);
-        }
-        saveState(null, true);
+        SurespotLog.d(TAG, "save");
+        saveFriends();
         saveMessages();
         saveMessageQueue();
+
+        if (SurespotApplication.getChatController() != null) {
+            SurespotLog.d(TAG, "saving last chat: %s", SurespotApplication.getChatController().getCurrentChat());
+            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, SurespotApplication.getChatController().getCurrentChat());
+        }
 
         if (mSendQueue.size() == 0) {
             FileUtils.wipeFileUploadDir(this);
@@ -680,7 +679,7 @@ public class CommunicationService extends Service {
         mListener = null;
     }
 
-    public void saveIfMainActivityPaused() {
+    private void saveIfMainActivityPaused() {
         if (mMainActivityPaused) {
             save();
         }
@@ -768,6 +767,7 @@ public class CommunicationService extends Service {
         SurespotLog.i(TAG, "onDestroy");
         unregisterReceiver();
         disposeSocket();
+        save();
     }
 
     public void initializeService(ITransmissionServiceListener listener) {
@@ -781,7 +781,7 @@ public class CommunicationService extends Service {
 
     // chat adapters and state
 
-    public synchronized void saveMessages() {
+    private synchronized void saveMessages() {
         // save last 30? messages
         SurespotLog.d(TAG, "saveMessages");
         if (mUsername != null) {
@@ -805,31 +805,7 @@ public class CommunicationService extends Service {
         }
     }
 
-    public void saveState(String username, boolean fromSave) {
-
-        SurespotLog.d(TAG, "saveState username: %s", username);
-
-        if (username == null) {
-            if (!fromSave) {
-                saveMessages();
-            }
-
-            if (SurespotApplication.getChatController() != null) {
-                SurespotLog.d(TAG, "saving last chat: %s", SurespotApplication.getChatController().getCurrentChat());
-                Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, SurespotApplication.getChatController().getCurrentChat());
-            }
-
-            if (!fromSave) {
-                saveFriends();
-            }
-        }
-        else if (!fromSave) {
-            saveMessages(username);
-        }
-    }
-
-
-    public void saveMessageQueue() {
+    private void saveMessageQueue() {
         SurespotLog.d(TAG, "saving: " + mSendQueue.size() + " unsent messages.");
         SurespotApplication.getStateController().saveUnsentMessages(mUsername, mSendQueue);
     }
@@ -851,8 +827,10 @@ public class CommunicationService extends Service {
     }
 
     private void saveFriends() {
-        if (SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
-            SurespotApplication.getChatController().saveFriends();
+        if (SurespotApplication.getChatController() != null) {
+            if (SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
+                SurespotApplication.getChatController().saveFriends();
+            }
         }
     }
 
@@ -1117,7 +1095,7 @@ public class CommunicationService extends Service {
 //        if (SurespotApplication.getChatController() != null) {
 //            SurespotApplication.getChatController().onPause();
 //        } else {
-        save();
+        //save();
         //}
 
         SurespotLog.d(TAG, "disconnect.");
@@ -1340,7 +1318,6 @@ public class CommunicationService extends Service {
                 @Override
                 public void run() {
                     SurespotLog.d(TAG, "onMessage, args: %s", args[0]);
-                    // we need to be careful here about what is UI and what needs to be done to confirm receipt of sent message, error, etc
                     try {
                         JSONObject jsonMessage = (JSONObject) args[0];
                         SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
@@ -1367,12 +1344,7 @@ public class CommunicationService extends Service {
 
                         messageSendCompleted(message);
                         removeQueuedMessage(message);
-
-                        if (mMainActivityPaused) {
-                            // make sure to save out messages because main activity will reload and base message status on saved messages
-                            save();
-                        }
-
+                        saveIfMainActivityPaused();
 
                     }
                     catch (JSONException e) {
