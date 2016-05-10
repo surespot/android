@@ -132,7 +132,7 @@ public class SurespotApplication extends Application {
 			});
 
 			//set the default theme to black
-			Utils.putSharedPrefsBoolean(SurespotApplication.this,SurespotConstants.PrefNames.BLACK, true);
+			//Utils.putSharedPrefsBoolean(SurespotApplication.this,SurespotConstants.PrefNames.BLACK, true);
 		}
 
 
