@@ -186,14 +186,18 @@ public class NetworkController {
 
 
     public void setUsernameAnd401Handler(String username, IAsyncCallbackTuple<String, Boolean> the401Handler) {
+        SurespotLog.d(TAG, "setUsernameAnd401Handler, username: %s", username);
         mUsername = username;
         m401Handler = the401Handler;
+        mCookieStore.clear();
 
         if (username != null) {
             Cookie cookie = IdentityController.getCookieForUser(username);
             if (cookie != null) {
+                SurespotLog.d(TAG, "setUsernameAnd401Handler, got cookie for username: %s", username);
                 mCookieStore.setCookie(cookie);
             }
+
         }
     }
 
