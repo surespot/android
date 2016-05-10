@@ -813,8 +813,12 @@ public class CommunicationService extends Service {
             if (!fromSave) {
                 saveMessages();
             }
-            SurespotLog.d(TAG, "saving last chat: %s", SurespotApplication.getChatController().getCurrentChat());
-            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, SurespotApplication.getChatController().getCurrentChat());
+
+            if (SurespotApplication.getChatController() != null) {
+                SurespotLog.d(TAG, "saving last chat: %s", SurespotApplication.getChatController().getCurrentChat());
+                Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, SurespotApplication.getChatController().getCurrentChat());
+            }
+
             if (!fromSave) {
                 saveFriends();
             }
