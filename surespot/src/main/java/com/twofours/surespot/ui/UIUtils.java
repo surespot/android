@@ -53,6 +53,7 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.google.zxing.integration.android.IntentIntegrator;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.backup.ExportIdentityActivity;
@@ -360,6 +361,27 @@ public class UIUtils {
         AlertDialog dialog = builder.create();
         dialog.setView(dialogLayout, 0, 0, 0, 0);
         dialog.show();
+        return dialog;
+    }
+
+    public static AlertDialog showQRReaderDialog(Activity activity){
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View scannerLayout = inflater.inflate(R.layout.qr_reader_layout, null, false);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity).setTitle(null);
+        AlertDialog dialog = builder.create();
+        dialog.setView(scannerLayout, 0, 0, 0, 0);
+
+        IntentIntegrator integrator = new IntentIntegrator(activity);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+
+        
+
+        integrator.setPrompt("Scan users QR code");
+        integrator.initiateScan();
+
+        dialog.show();
+
         return dialog;
     }
 
