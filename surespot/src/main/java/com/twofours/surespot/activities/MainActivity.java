@@ -30,6 +30,7 @@ import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -52,6 +53,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.zxing.integration.android.IntentIntegrator;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
@@ -1901,6 +1903,11 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     }
                 }
             }));
+        }else{
+            // Button has been pressed with no text in the invite field
+            // Launch QR reader to scan code
+            mDialog = UIUtils.showQRReaderDialog(MainActivity.this);
+
         }
     }
 
