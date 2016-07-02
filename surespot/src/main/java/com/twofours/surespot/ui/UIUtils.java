@@ -30,6 +30,7 @@ import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.test.ActivityInstrumentationTestCase2;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -364,25 +365,14 @@ public class UIUtils {
         return dialog;
     }
 
-    public static AlertDialog showQRReaderDialog(Activity activity){
-        LayoutInflater inflater = activity.getLayoutInflater();
-        View scannerLayout = inflater.inflate(R.layout.qr_reader_layout, null, false);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity).setTitle(null);
-        AlertDialog dialog = builder.create();
-        dialog.setView(scannerLayout, 0, 0, 0, 0);
-
+    public static void showQRScanner(Activity activity){
         IntentIntegrator integrator = new IntentIntegrator(activity);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-
-        
 
         integrator.setPrompt("Scan users QR code");
         integrator.initiateScan();
 
-        dialog.show();
 
-        return dialog;
     }
 
     public static AlertDialog showHelpDialog(final Activity activity, int titleStringId, View view, final boolean firstTime) {

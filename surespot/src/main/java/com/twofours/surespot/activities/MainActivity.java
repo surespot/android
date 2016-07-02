@@ -54,6 +54,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
@@ -1133,6 +1134,25 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
+                break;
+
+            case SurespotConstants.IntentRequestCodes.QR_CODE_NOTIFICATION:
+                IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+                String autoInvitePath = SurespotConfiguration.getBaseUrl().replaceFirst(":\\d+", "") + "/autoinvite/";
+                if (scanResult != null && scanResult.getContents().contains(autoInvitePath)){
+                    //Use the data from the QR Code to initiate a friend request
+                    String qrContents = scanResult.getContents();
+                    int usernameEnd = qrContents.indexOf("/qr");
+                    String qrUsername = qrContents.substring(autoInvitePath.length() ,usernameEnd);
+
+                    mEtInvite.setText(qrUsername);
+                    inviteFriend();
+
+                    //Reset the text field for cases where user invite is not completed
+                    mEtInvite.setText("");
+                }
+
             default:
                 super.onActivityResult(requestCode, resultCode, data);
         }
@@ -1906,7 +1926,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }else{
             // Button has been pressed with no text in the invite field
             // Launch QR reader to scan code
-            mDialog = UIUtils.showQRReaderDialog(MainActivity.this);
+            UIUtils.showQRScanner(MainActivity.this);
 
         }
     }
