@@ -368,8 +368,9 @@ public class UIUtils {
     public static void showQRScanner(Activity activity){
         IntentIntegrator integrator = new IntentIntegrator(activity);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-
         integrator.setPrompt("Scan contact QR code");
+        integrator.setBeepEnabled(false);
+
         integrator.initiateScan();
     }
 
