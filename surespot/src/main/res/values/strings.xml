@@ -365,4 +365,5 @@
     <string name="black">black</string>
     <string name="requires_force_stop">requires force stop or reboot to take effect</string>
     <string name="unknown_message_mime_type">unknown message mime type</string>
+    <string name="qr_scan_invalid">Invalid QR code</string>
 </resources>

@@ -314,7 +314,7 @@ public class UIUtils {
 
     private static String buildExternalInviteUrl(String username) {
         try {
-            return "https://server.surespot.me/autoinvite/" + URLEncoder.encode(username, "UTF-8") + "/social";
+            return SurespotConstants.Url.INVITE_URL + URLEncoder.encode(username, "UTF-8") + "/social";
         }
         catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
@@ -336,7 +336,7 @@ public class UIUtils {
 
         String inviteUrl = null;
         try {
-            inviteUrl = "https://server.surespot.me/autoinvite/" + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
+            inviteUrl = SurespotConstants.Url.INVITE_URL + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
         }
         catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
@@ -369,10 +369,8 @@ public class UIUtils {
         IntentIntegrator integrator = new IntentIntegrator(activity);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
 
-        integrator.setPrompt("Scan users QR code");
+        integrator.setPrompt("Scan contact QR code");
         integrator.initiateScan();
-
-
     }
 
     public static AlertDialog showHelpDialog(final Activity activity, int titleStringId, View view, final boolean firstTime) {

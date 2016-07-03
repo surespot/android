@@ -41,6 +41,7 @@ import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -1137,26 +1138,31 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 break;
 
             case SurespotConstants.IntentRequestCodes.QR_CODE_NOTIFICATION:
-                IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+                if (resultCode == Activity.RESULT_OK ){
+                    IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 
-                String autoInvitePath = SurespotConfiguration.getBaseUrl().replaceFirst(":\\d+", "") + "/autoinvite/";
-                if (scanResult != null && scanResult.getContents().contains(autoInvitePath)){
-                    //Use the data from the QR Code to initiate a friend request
-                    String qrContents = scanResult.getContents();
-                    int usernameEnd = qrContents.indexOf("/qr");
-                    String qrUsername = qrContents.substring(autoInvitePath.length() ,usernameEnd);
+                    if (scanResult != null && scanResult.getContents() != null){
+                        if (scanResult.getContents().contains(SurespotConstants.Url.INVITE_URL)){
+                            // We have scanned a QR code that contains a surespot URL
+                            // Use the data from the QR Code to initiate a friend request
+                            String qrContents = scanResult.getContents();
+                            int usernameEnd = qrContents.indexOf("/qr");
+                            String qrUsername = qrContents.substring(SurespotConstants.Url.INVITE_URL.length() ,usernameEnd);
 
-                    mEtInvite.setText(qrUsername);
-                    inviteFriend();
+                            mEtInvite.setText(qrUsername);
+                            inviteFriend();
 
-                    //Reset the text field for cases where user invite is not completed
-                    mEtInvite.setText("");
+                            //Reset the text field for cases where user invite is not completed
+                            mEtInvite.setText("");
+                        }else{
+                            //An invalid QR code has been scanned and should be ignored
+                            Utils.makeToast(MainActivity.this, getString(R.string.qr_scan_invalid));
+                        }
+                    }
                 }
-
             default:
                 super.onActivityResult(requestCode, resultCode, data);
         }
-
     }
 
     private void uploadPicture(final Uri selectedImageUri, String to) {
@@ -1927,7 +1933,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
             // Button has been pressed with no text in the invite field
             // Launch QR reader to scan code
             UIUtils.showQRScanner(MainActivity.this);
-
         }
     }
 
