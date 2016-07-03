@@ -30,6 +30,7 @@ import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,6 +41,7 @@ import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -52,6 +54,8 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
@@ -1131,10 +1135,34 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
+                break;
+
+            case SurespotConstants.IntentRequestCodes.QR_CODE_NOTIFICATION:
+                if (resultCode == Activity.RESULT_OK ){
+                    IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+                    if (scanResult != null && scanResult.getContents() != null){
+                        if (scanResult.getContents().contains(SurespotConstants.Url.INVITE_URL)){
+                            // We have scanned a QR code that contains a surespot URL
+                            // Use the data from the QR Code to initiate a friend request
+                            String qrContents = scanResult.getContents();
+                            int usernameEnd = qrContents.indexOf("/qr");
+                            String qrUsername = qrContents.substring(SurespotConstants.Url.INVITE_URL.length() ,usernameEnd);
+
+                            mEtInvite.setText(qrUsername);
+                            inviteFriend();
+
+                            //Reset the text field for cases where user invite is not completed
+                            mEtInvite.setText("");
+                        }else{
+                            //An invalid QR code has been scanned and should be ignored
+                            Utils.makeToast(MainActivity.this, getString(R.string.qr_scan_invalid));
+                        }
+                    }
+                }
             default:
                 super.onActivityResult(requestCode, resultCode, data);
         }
-
     }
 
     private void uploadPicture(final Uri selectedImageUri, String to) {
@@ -1901,6 +1929,10 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     }
                 }
             }));
+        }else{
+            // Button has been pressed with no text in the invite field
+            // Launch QR reader to scan code
+            UIUtils.showQRScanner(MainActivity.this);
         }
     }
 

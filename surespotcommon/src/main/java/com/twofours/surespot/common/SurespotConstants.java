@@ -109,6 +109,11 @@ public class SurespotConstants {
 		public final static int UNSENT_MESSAGE_NOTIFICATION = 18;
 		public final static int READ_EXTERNAL_STORAGE = 19;
 		public final static int WRITE_EXTERNAL_STORAGE = 20;
+		public final static int QR_CODE_NOTIFICATION = 49374;
+	}
+
+	public class Url{
+		public final static String INVITE_URL = "https://server.surespot.me/autoinvite/";
 	}
 	
 	

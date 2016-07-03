@@ -30,6 +30,7 @@ import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
+import android.test.ActivityInstrumentationTestCase2;
 import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -53,6 +54,7 @@ import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.google.zxing.integration.android.IntentIntegrator;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.backup.ExportIdentityActivity;
@@ -312,7 +314,7 @@ public class UIUtils {
 
     private static String buildExternalInviteUrl(String username) {
         try {
-            return "https://server.surespot.me/autoinvite/" + URLEncoder.encode(username, "UTF-8") + "/social";
+            return SurespotConstants.Url.INVITE_URL + URLEncoder.encode(username, "UTF-8") + "/social";
         }
         catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
@@ -334,7 +336,7 @@ public class UIUtils {
 
         String inviteUrl = null;
         try {
-            inviteUrl = "https://server.surespot.me/autoinvite/" + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
+            inviteUrl = SurespotConstants.Url.INVITE_URL + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
         }
         catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
@@ -361,6 +363,15 @@ public class UIUtils {
         dialog.setView(dialogLayout, 0, 0, 0, 0);
         dialog.show();
         return dialog;
+    }
+
+    public static void showQRScanner(Activity activity){
+        IntentIntegrator integrator = new IntentIntegrator(activity);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+        integrator.setPrompt("Scan contact QR code");
+        integrator.setBeepEnabled(false);
+
+        integrator.initiateScan();
     }
 
     public static AlertDialog showHelpDialog(final Activity activity, int titleStringId, View view, final boolean firstTime) {
