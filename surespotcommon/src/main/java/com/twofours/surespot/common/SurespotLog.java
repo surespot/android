@@ -10,22 +10,13 @@ public class SurespotLog {
 		mLogging = logging;
 	}
 
-	// by using string.format we avoid string concat overhead when logging is disabled
-	public static void w(String tag, String msg, Object... msgArgs) {
-		if (mLogging) {
-			if (msg == null) msg = "";
-			Log.w(tag, tag + ": " + String.format(msg, msgArgs));
-		}
-	}
 
-	public static void w(String tag, Throwable tr, String msg, Object... msgArgs) {
-		String message = null;
+	public static void v(String tag, String msg) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			message = tag + ": " + String.format(msg, msgArgs);
-			// Log.w(tag, msg +", " + tr.getMessage());
-			Log.w(tag, message, tr);
+			Log.v(tag, tag + ": " + msg);
 		}
+
 	}
 
 	public static void v(String tag, String msg, Object... msgArgs) {
@@ -34,6 +25,13 @@ public class SurespotLog {
 			Log.v(tag, tag + ": " + String.format(msg, msgArgs));
 		}
 
+	}
+
+	public static void v(String tag, Throwable tr, String msg, Object... msgArgs) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.v(tag, tag + ": " + String.format(msg, msgArgs), tr);
+		}
 	}
 
 	public static void d(String tag, String msg) {
@@ -51,6 +49,54 @@ public class SurespotLog {
 			Log.d(tag, tag + ": " + String.format(msg, msgArgs));
 		}
 
+	}
+
+
+	public static void i(String tag, String msg) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.i(tag, tag + ": " + msg);
+		}
+	}
+
+
+	public static void i(String tag, String msg, Object... msgArgs) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.i(tag, tag + ": " + String.format(msg, msgArgs));
+		}
+	}
+
+	public static void i(String tag, Throwable tr, String msg, Object... msgArgs) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.i(tag, tag + ": " + String.format(msg, msgArgs), tr);
+		}
+	}
+
+	public static void w(String tag, String msg) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.w(tag, tag + ": " + msg);
+		}
+	}
+
+	// by using string.format we avoid string concat overhead when logging is disabled
+	public static void w(String tag, String msg, Object... msgArgs) {
+		if (mLogging) {
+			if (msg == null) msg = "";
+			Log.w(tag, tag + ": " + String.format(msg, msgArgs));
+		}
+	}
+
+	public static void w(String tag, Throwable tr, String msg, Object... msgArgs) {
+		String message = null;
+		if (mLogging) {
+			if (msg == null) msg = "";
+			message = tag + ": " + String.format(msg, msgArgs);
+			// Log.w(tag, msg +", " + tr.getMessage());
+			Log.w(tag, message, tr);
+		}
 	}
 
 	public static void e(String tag, Throwable tr, String msg, Object... msgArgs) {
@@ -77,26 +123,8 @@ public class SurespotLog {
 //		}
 	}
 
-	public static void i(String tag, String msg, Object... msgArgs) {
-		if (mLogging) {
-			if (msg == null) msg = "";
-			Log.i(tag, tag + ": " + String.format(msg, msgArgs));
-		}
-	}
 
-	public static void i(String tag, Throwable tr, String msg, Object... msgArgs) {
-		if (mLogging) {
-			if (msg == null) msg = "";
-			Log.i(tag, tag + ": " + String.format(msg, msgArgs), tr);
-		}
-	}
 
-	public static void v(String tag, Throwable tr, String msg, Object... msgArgs) {
-		if (mLogging) {
-			if (msg == null) msg = "";
-			Log.v(tag, tag + ": " + String.format(msg, msgArgs), tr);
-		}
-	}
 
 	public static boolean isLogging() {
 		return mLogging;
