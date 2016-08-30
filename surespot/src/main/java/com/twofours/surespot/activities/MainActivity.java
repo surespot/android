@@ -2260,7 +2260,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         @Override
         public void on401() {
-            m401Handler.handleResponse("socket 401", false);
+            m401Handler.handleResponse(getString(R.string.unauthorized), false);
         }
 
         private boolean logIfChatControllerNull() {
