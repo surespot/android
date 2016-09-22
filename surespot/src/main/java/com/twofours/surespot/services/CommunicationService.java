@@ -249,8 +249,8 @@ public class CommunicationService extends Service {
 
         SurespotLog.d(TAG, "connect, mSocket: " + mSocket + ", connected: " + (mSocket != null ? mSocket.connected() : false) + ", state: " + mConnectionState);
 
-        if (getConnectionState() == STATE_CONNECTED && mSocket != null && mSocket.connected()) {
-            onConnected();
+        if (getConnectionState() == STATE_CONNECTED) {
+            //onConnected();
             return true;
         }
 
@@ -265,10 +265,10 @@ public class CommunicationService extends Service {
 
         SurespotApplication.getChatController().onBeforeConnect();
 
-        if (getConnectionState() == STATE_CONNECTED) {
-            onConnected();
-            return true;
-        }
+//        if (getConnectionState() == STATE_CONNECTED) {
+//         //   onConnected();
+//            return true;
+//        }
 
         try {
             createSocket();
