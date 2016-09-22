@@ -541,7 +541,7 @@ public class ChatController {
                                                     SurespotLog.d(TAG, "Signatures updated");
                                                 }
                                                 else {
-                                                    SurespotLog.d(TAG, "Signatures update failed, code: ", response.code());
+                                                    SurespotLog.d(TAG, "Signatures update failed, code: %d", response.code());
                                                 }
                                             }
                                         });
