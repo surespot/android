@@ -553,19 +553,26 @@ public class CommunicationService extends Service {
                     //if message errored
                     int status = result.first;
                     //409 on duplicate, treat as success
-                    if (status != 200 && status != 409) {
-                        //try and send next message again
-                        if (!scheduleResendTimer()) {
+
+                    switch (status) {
+                        case 200:
+                        case 409:
+                            //try and send next message again
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue();
+                            }
+                            break;
+                        case 401:
+                            //401
+                            //don't try and resend, just error
                             errorMessageQueue();
-                        }
-                    }
-                    else {
-                        //success
-                        mErrored = false;
-                        SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
-                        //need to remove the message from the queue before setting the current send iv to null
-                        removeQueuedMessage(message);
-                        processNextMessage();
+                        default:
+                            //success
+                            mErrored = false;
+                            SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
+                            //need to remove the message from the queue before setting the current send iv to null
+                            removeQueuedMessage(message);
+                            processNextMessage();
                     }
                 }
             }
@@ -574,6 +581,7 @@ public class CommunicationService extends Service {
 
     private void sendMessageUsingHttp(final SurespotMessage message) {
         SurespotLog.d(TAG, "sendMessagesUsingHttp, iv: %s", message.getIv());
+
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
         SurespotApplication.getNetworkController().postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {

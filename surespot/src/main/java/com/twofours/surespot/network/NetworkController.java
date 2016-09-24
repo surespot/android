@@ -835,6 +835,8 @@ public class NetworkController {
                     String responseBody = response.body().string();
                     JSONObject jsonBody = new JSONObject(responseBody);
                     return new Tuple<>(200, jsonBody);
+                case 401:
+                    return new Tuple<>(401, null);
                 case 409:
                     return new Tuple<>(409, null);
                 default:
