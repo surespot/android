@@ -45,9 +45,9 @@ dependencies {
     compile project(':androidkeystore')
     compile project(":ColorPickerPreference")
     compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
-    compile 'com.squareup.okhttp3:okhttp-ws:3.2.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.squareup.okhttp3:okhttp-ws:3.4.1'
     compile('com.google.android.gms:play-services-gcm:8.4.0')
     compile('com.google.android.gms:play-services-drive:8.4.0')
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
