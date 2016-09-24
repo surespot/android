@@ -75,7 +75,6 @@ import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
-import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
@@ -104,7 +103,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private static Context mContext = null;
     private static Handler mMainHandler = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
-    private IAsyncCallbackTuple<String, Boolean> m401Handler;
+    private IAsyncCallback<Object> m401Handler;
 
     private boolean mCacheServiceBound;
     private boolean mCommunicationServiceBound;
@@ -230,38 +229,24 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 
-        m401Handler = new IAsyncCallbackTuple<String, Boolean>() {
+        m401Handler = new IAsyncCallback<Object>() {
 
             @Override
-            public void handleResponse(final String message, final Boolean timedOut) {
-                SurespotLog.d(TAG, "Got 401, checking authorization.");
-                if (!SurespotApplication.getNetworkController().isUnauthorized()) {
+            public void handleResponse(Object unused) {
+                SurespotLog.d(TAG, "Got 401, launching login intent.");
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
 
-                    // if we just timed out, don't blow away the cookie or go to login screen
-                    SurespotApplication.getNetworkController().setUnauthorized(true, !timedOut);
 
-                    if (!timedOut) {
-                        SurespotLog.d(TAG, "Got 401, launching login intent.");
-                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Utils.makeToast(MainActivity.this, getString(R.string.unauthorized));
                     }
-
-                    if (!TextUtils.isEmpty(message)) {
-                        Runnable runnable = new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Utils.makeToast(MainActivity.this, message);
-
-                            }
-                        };
-                        MainActivity.this.runOnUiThread(runnable);
-                    }
-
-
-                }
+                };
+                MainActivity.this.runOnUiThread(runnable);
             }
         };
 
@@ -2260,7 +2245,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         @Override
         public void on401() {
-            m401Handler.handleResponse(getString(R.string.unauthorized), false);
+            m401Handler.handleResponse(null);
         }
 
         private boolean logIfChatControllerNull() {

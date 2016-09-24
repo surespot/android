@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -64,7 +63,7 @@ public class NetworkController {
     private SSLContext mSSLContext;
     private HostnameVerifier mHostnameVerifier;
 
-    private IAsyncCallbackTuple<String, Boolean> m401Handler;
+    private IAsyncCallback<Object> m401Handler;
 
     public NetworkController() {
         SurespotLog.d(TAG, "constructor");
@@ -90,8 +89,9 @@ public class NetworkController {
                 if (response.request().url().pathSegments().contains("login")) {
                     SurespotLog.i(TAG, "authenticate re-login failed, giving up");
                     m401RetryCount = 0;
+                    setUnauthorized(true, true);
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(null);
                     }
 
                     return null;
@@ -100,8 +100,9 @@ public class NetworkController {
                 if (m401RetryCount++ >= 5) {
                     SurespotLog.i(TAG, "authenticate giving up");
                     m401RetryCount = 0;
+                    setUnauthorized(true, true);
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(null);
                     }
 
                     return null;
@@ -114,8 +115,9 @@ public class NetworkController {
                 }
                 else {
                     m401RetryCount = 0;
+                    setUnauthorized(true, true);
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(null);
                     }
 
                     return null;
@@ -185,7 +187,7 @@ public class NetworkController {
     }
 
 
-    public void setUsernameAnd401Handler(String username, IAsyncCallbackTuple<String, Boolean> the401Handler) {
+    public void setUsernameAnd401Handler(String username, IAsyncCallback<Object> the401Handler) {
         SurespotLog.d(TAG, "setUsernameAnd401Handler, username: %s", username);
         mUsername = username;
         m401Handler = the401Handler;
@@ -679,23 +681,30 @@ public class NetworkController {
 
     public String getPublicKeysSync(String username, String version) {
         try {
-            return getSync("/publickeys/" + username + "/since/" + version).body().string();
+            Response response = getSync("/publickeys/" + username + "/since/" + version);
+            if (response.code() == 200) {
+                return response.body().string();
+            }
         }
         catch (IOException e) {
-            return null;
-        }
 
+        }
+        return null;
     }
 
 
     public String getKeyVersionSync(String username) {
         SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
         try {
-            return getSync("/keyversion/" + username).body().string();
+            Response response = getSync("/keyversion/" + username);
+            if (response.code() == 200) {
+                return response.body().string();
+            }
         }
         catch (IOException e) {
-            return null;
+
         }
+        return null;
 
     }
 

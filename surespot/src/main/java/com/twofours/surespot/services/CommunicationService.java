@@ -54,7 +54,6 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -530,11 +529,7 @@ public class CommunicationService extends Service {
                                 message.getMimeType());
 
                     }
-                    catch (FileNotFoundException e) {
-                        SurespotLog.w(TAG, e, "sendFileMessage");
-                        return new Tuple<>(500, null);
-                    }
-                    catch (JSONException e) {
+                    catch (Exception e) {
                         SurespotLog.w(TAG, e, "sendFileMessage");
                         return new Tuple<>(500, null);
                     }
@@ -553,26 +548,46 @@ public class CommunicationService extends Service {
                     //if message errored
                     int status = result.first;
                     //409 on duplicate, treat as success
+//                    if (status != 200 && status != 409) {
+//                        //try and send next message again
+//                        if (!scheduleResendTimer()) {
+//                            errorMessageQueue();
+//                        }
+//                    }
+//                    else {
+//                        //success
+//                        mErrored = false;
+//                        SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
+//                        //need to remove the message from the queue before setting the current send iv to null
+//                        removeQueuedMessage(message);
+//                        processNextMessage();
+//                    }
+
 
                     switch (status) {
-                        case 200:
-                        case 409:
-                            //try and send next message again
-                            if (!scheduleResendTimer()) {
-                                errorMessageQueue();
-                            }
-                            break;
+
+
                         case 401:
                             //401
                             //don't try and resend, just error
                             errorMessageQueue();
-                        default:
+                            break;
+                        case 200:
+                        case 409:
                             //success
                             mErrored = false;
                             SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(message);
                             processNextMessage();
+                            break;
+                        default:
+                            //try and send next message again
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue();
+                            }
+                            break;
+
                     }
                 }
             }
