@@ -74,4 +74,4 @@
 
 -keepattributes *Annotation*
 
--dontobfuscate
+#-dontobfuscate

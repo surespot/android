@@ -534,7 +534,7 @@ public class LoginActivity extends Activity {
         SurespotLog.d(TAG, "updatePassword, username: %s, keystore enabled: %b", username, enableKeystore);
         String password = null;
         if (enableKeystore) {
-            password = IdentityController.getStoredPasswordForIdentity(LoginActivity.this, username);
+            password = IdentityController.getKeyStorePasswordForIdentity(LoginActivity.this, username);
 
             if (password != null) {
                 mEtPassword.setText(password);

@@ -200,7 +200,7 @@ public class ChangePasswordActivity extends Activity {
 
                                                 if (response.isSuccessful()) {
                                                     // update the password
-                                                    IdentityController.updatePassword(ChangePasswordActivity.this, identity, username, currentPassword,
+                                                    IdentityController.updatePassword(ChangePasswordActivity.this, identity, username,
                                                             newPassword, result.salt);
                                                     resetFields();
                                                     mMpd.decrProgress();

@@ -55,8 +55,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -72,6 +74,7 @@ public class IdentityController {
     public static final Object IDENTITY_FILE_LOCK = new Object();
     private static boolean mHasIdentity;
     private static KeyStore mKs;
+    private static Map<String, String> mPasswords = new HashMap<>(5);
 
     private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie, String password) {
         // load the identity
@@ -81,6 +84,7 @@ public class IdentityController {
             SurespotApplication.getCachingService().login(identity, cookie, password);
             // if we're logging in we probably didn't just buy it
             // SurespotApplication.getBillingController().clearJustPurchased();
+            mPasswords.put(identity.getUsername(), password);
         }
         else {
             SurespotLog.w(TAG, "getIdentity null");
@@ -93,10 +97,9 @@ public class IdentityController {
         identity.addKeyPairs("1", keyPairDH, keyPairECDSA);
         saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
         setLoggedInUser(context, identity, cookie, password);
-
     }
 
-    public static void updatePassword(Context context, SurespotIdentity identity, String username, String currentPassword, String newPassword, String newSalt) {
+    public static void updatePassword(Context context, SurespotIdentity identity, String username, String newPassword, String newSalt) {
         if (identity != null) {
             identity.setSalt(newSalt);
             saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
@@ -1260,27 +1263,43 @@ public class IdentityController {
     public static String getStoredPasswordForIdentity(Context context, String username) {
         SurespotLog.d(TAG, "getStoredPasswordForIdentity: %s", username);
 
+
         if (username != null) {
-            if (USE_PUBLIC_KEYSTORE_M) {
-                try {
-                    return AndroidMKeystoreController.loadEncryptedPassword(context, username, false);
-                }
-                catch (InvalidKeyException e) {
-                    SurespotLog.d(TAG, "InvalidKeyException loading encrypted password for %s: " + e.getMessage(), username);
-                    return null;
-                }
+            //see if we have it in RAM
+            String password = mPasswords.get(username);
+            if (password != null) {
+                return password;
             }
 
-            if (isKeystoreUnlocked(context, username)) {
-                byte[] secret = mKs.get(username);
-                if (secret != null) {
-                    SurespotLog.d(TAG, "getStoredPasswordForIdentity...found password for %s", username);
-                    return new String(secret);
-                }
+            return getKeyStorePasswordForIdentity(context, username);
+        }
+
+        return null;
+    }
+
+    public static String getKeyStorePasswordForIdentity(Context context, String username) {
+        SurespotLog.d(TAG, "getKeyStorePasswordForIdentity: %s", username);
+
+
+        if (USE_PUBLIC_KEYSTORE_M) {
+            try {
+                return AndroidMKeystoreController.loadEncryptedPassword(context, username, false);
             }
-            else {
-                SurespotLog.d(TAG, "getStoredPasswordForIdentity...keystore locked");
+            catch (InvalidKeyException e) {
+                SurespotLog.d(TAG, "InvalidKeyException loading encrypted password for %s: " + e.getMessage(), username);
+                return null;
             }
+        }
+
+        if (isKeystoreUnlocked(context, username)) {
+            byte[] secret = mKs.get(username);
+            if (secret != null) {
+                SurespotLog.d(TAG, "getStoredPasswordForIdentity...found password for %s", username);
+                return new String(secret);
+            }
+        }
+        else {
+            SurespotLog.d(TAG, "getStoredPasswordForIdentity...keystore locked");
         }
 
         return null;
@@ -1335,8 +1354,9 @@ public class IdentityController {
     }
 
     private static void updateKeychainPassword(Context context, String username, String password) {
+        mPasswords.put(username, password);
         //update stored password if we have one
-        String storedPassword = getStoredPasswordForIdentity(context, username);
+        String storedPassword = getKeyStorePasswordForIdentity(context, username);
         if (storedPassword != null) {
             try {
                 storePasswordForIdentity(context, username, password);
@@ -1347,6 +1367,7 @@ public class IdentityController {
                 context.startActivity(intent);
             }
         }
+
     }
 
     public static JSONObject updateSignatures(Context context) {
