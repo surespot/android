@@ -496,10 +496,17 @@ public class ChatUtils {
 
 
             String[] projection = {Images.Media.ORIENTATION}; //{Images.ImageColumns.ORIENTATION};
-            Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
-            if (c.moveToFirst()) {
-                SurespotLog.d(TAG, "Image orientation: %d", c.getInt(0));
-                return c.getInt(0);
+            cursor c = null;
+            try{
+                c = context.getContentResolver().query(uri, projection, null, null, null);
+                if (c.moveToFirst()) {
+                    SurespotLog.d(TAG, "Image orientation: %d", c.getInt(0));
+                    return c.getInt(0);
+                }
+            } finally {
+                if (c != null && !c.isClosed()) {
+                    c.close();
+                }
             }
 
         }
@@ -536,6 +543,7 @@ public class ChatUtils {
                     cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             result = cursor.getString(column_index);
+            cursor.close();
         }
         return result;
     }
@@ -546,7 +554,9 @@ public class ChatUtils {
         int column_index
                 = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
-        return cursor.getString(column_index);
+        String result = cursor.getString(column_index);
+        cursor.close();
+        return result;
     }
 
     @android.annotation.SuppressLint("NewApi")
