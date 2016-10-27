@@ -595,14 +595,14 @@ public class ChatUtils {
         return 0;
     }
 
-    public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages, boolean withPlain) {
+    public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
         // avoid concurrent modification issues
         synchronized (messages) {
             SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
             JSONArray jsonMessages = new JSONArray();
 
             for (SurespotMessage message : messageArray) {
-                jsonMessages.put(message.toJSONObject(withPlain));
+                jsonMessages.put(message.toJSONObject());
             }
 
             return jsonMessages;

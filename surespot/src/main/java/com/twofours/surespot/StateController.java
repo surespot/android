@@ -145,7 +145,7 @@ public class StateController {
 			if (messages != null && messages.size() > 0) {
 				if (messages.size() > 0) {
 
-					String messageString = ChatUtils.chatMessagesToJson(messages, true).toString();
+					String messageString = ChatUtils.chatMessagesToJson(messages).toString();
 
 					try {
 						FileUtils.writeFile(filename, messageString);
@@ -217,7 +217,7 @@ public class StateController {
 				}
 
 				SurespotLog.v(TAG, "saving %s messages", saveSize);
-				String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize), true)
+				String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize))
 						.toString();
 				try {
 					FileUtils.writeFile(filename, sMessages);

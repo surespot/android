@@ -97,7 +97,7 @@ public class ChatFragment extends Fragment {
 
 							Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
 							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject(false).toString());
+							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject().toString());
 							ChatFragment.this.getActivity().startActivity(newIntent);
 						}
 					}

@@ -24,7 +24,7 @@ public class TextMessageMenuFragment extends DialogFragment {
         TextMessageMenuFragment f = new TextMessageMenuFragment();
 
         Bundle args = new Bundle();
-        args.putString("message", message.toJSONObject(false).toString());
+        args.putString("message", message.toJSONObject().toString());
 
         // plain text is not converted to json string so store it separately
         if (message.getPlainData() != null) {

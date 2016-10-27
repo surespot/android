@@ -204,7 +204,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         return chatMessage;
     }
 
-    public JSONObject toJSONObject(boolean withPlain) {
+    public JSONObject toJSONObject() {
         JSONObject message = new JSONObject();
 
         try {
@@ -235,11 +235,6 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             if (this.getDataSize() != null) {
                 message.put("dataSize", this.getDataSize());
             }
-
-            if (withPlain) {
-                message.put("plainData", this.getPlainData());
-            }
-
 
             return message;
         }

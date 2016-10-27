@@ -43,7 +43,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
 		Bundle args = new Bundle();
-		args.putString("message", message.toJSONObject(false).toString());
+		args.putString("message", message.toJSONObject().toString());
 		f.setArguments(args);
 
 		return f;

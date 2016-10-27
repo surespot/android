@@ -29,6 +29,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
@@ -547,22 +548,6 @@ public class CommunicationService extends Service {
 
                     //if message errored
                     int status = result.first;
-                    //409 on duplicate, treat as success
-//                    if (status != 200 && status != 409) {
-//                        //try and send next message again
-//                        if (!scheduleResendTimer()) {
-//                            errorMessageQueue();
-//                        }
-//                    }
-//                    else {
-//                        //success
-//                        mErrored = false;
-//                        SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
-//                        //need to remove the message from the queue before setting the current send iv to null
-//                        removeQueuedMessage(message);
-//                        processNextMessage();
-//                    }
-
 
                     switch (status) {
 
@@ -573,10 +558,30 @@ public class CommunicationService extends Service {
                             errorMessageQueue();
                             break;
                         case 200:
+                            //update the message with returned data
+                            SurespotLog.d(TAG, "sendFileMessage received 200, response: %s, updating UI", result.second);
+                            JSONObject fileData = result.second;
+                            try {
+                                message.setId(fileData.getInt("id"));
+                                message.setData(fileData.getString("url"));
+                                message.setDataSize(fileData.getInt("size"));
+                                message.setDateTime(new Date(fileData.getLong("time")));
+                            }
+                            catch (JSONException e) {
+                                //json error
+                                SurespotLog.w(TAG, e, "sendFileMessage: json error parsing file http response.");
+                            }
+                            //deliberate fall through to 409
                         case 409:
+                            SurespotLog.d(TAG, "sendFileMessage received 409");
                             //success
                             mErrored = false;
-                            SurespotLog.d(TAG, "sendFileMessage received response: %s", result.second);
+
+                            //update ui
+                            ChatController cc = SurespotApplication.getChatController();
+                            if (cc != null) {
+                                cc.handleMessage(message);
+                            }
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(message);
                             processNextMessage();
@@ -628,6 +633,11 @@ public class CommunicationService extends Service {
 
                         if (status == 204) {
                             SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                            //update the UI
+                            ChatController cc = SurespotApplication.getChatController();
+                            if (cc != null) {
+                                cc.handleMessage(messageReceived);
+                            }
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(messageReceived);
                             processNextMessage();
@@ -859,7 +869,9 @@ public class CommunicationService extends Service {
 
     // notify listeners that we've connected
     private void onConnected() {
-        SurespotLog.d(TAG, "onConnected");
+        SurespotLog.d(TAG, "onConnected, mErrored: %b", mErrored);
+
+        //if we reconnected after error
         mErrored = false;
 
         stopReconnectionAttempts();
@@ -1241,6 +1253,8 @@ public class CommunicationService extends Service {
                 SurespotLog.d(TAG, "onConnectError: args: %s", reason);
             }
 
+            //force queue
+            mCurrentSendIv = null;
             setState(STATE_DISCONNECTED);
             onNotConnected();
 

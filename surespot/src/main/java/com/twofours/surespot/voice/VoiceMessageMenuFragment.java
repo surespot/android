@@ -27,7 +27,7 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
 
 		Bundle args = new Bundle();
-		args.putString("message", message.toJSONObject(false).toString());
+		args.putString("message", message.toJSONObject().toString());
 		f.setArguments(args);
 
 		return f;
