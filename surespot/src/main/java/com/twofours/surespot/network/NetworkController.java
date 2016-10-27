@@ -160,7 +160,7 @@ public class NetworkController {
                 };
 
                 // Install the all-trusting trust manager
-                mSSLContext  = SSLContext.getInstance("SSL");
+                mSSLContext = SSLContext.getInstance("SSL");
                 mSSLContext.init(null, trustAllCerts, new java.security.SecureRandom());
                 // Create an ssl socket factory with our all-trusting manager
                 final SSLSocketFactory sslSocketFactory = mSSLContext.getSocketFactory();
@@ -623,6 +623,11 @@ public class NetworkController {
         catch (IOException e) {
             return null;
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
 
         if (response.isSuccessful()) {
             Cookie cookie = extractConnectCookie(mCookieStore);
@@ -695,14 +700,20 @@ public class NetworkController {
 
     public String getKeyVersionSync(String username) {
         SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
+        Response response = null;
         try {
-            Response response = getSync("/keyversion/" + username);
+            response = getSync("/keyversion/" + username);
             if (response.code() == 200) {
                 return response.body().string();
             }
         }
         catch (IOException e) {
 
+        }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
         }
         return null;
 
@@ -735,7 +746,7 @@ public class NetworkController {
         post("/invites/" + friendname + "/" + action, responseHandler);
     }
 
-	public void registerGcmId(Context context, String id) {
+    public void registerGcmId(Context context, String id) {
 
         String username = mUsername;
         //see if it's different for this user
@@ -748,7 +759,6 @@ public class NetworkController {
         }
 
         SurespotLog.i(TAG, "Attempting to register gcm id on surespot server.");
-
 
 
         JSONObject params = new JSONObject();
@@ -766,7 +776,7 @@ public class NetworkController {
                 .post(body)
                 .build();
 
-        Response response;
+        Response response = null;
         try {
             response = mClient.newCall(request).execute();
         }
@@ -774,15 +784,20 @@ public class NetworkController {
             SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
             return;
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
 
         // success returns 204
-        if (response.code() == 204) {
+        if (response != null && response.code() == 204) {
             SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
 
             // the server and client match, we're golden
             Utils.putUserSharedPrefsString(context, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
         }
-	}
+    }
 
     public void validate(String username, String password, String signature, Callback responseHandler) {
         JSONObject json = new JSONObject();
@@ -835,7 +850,7 @@ public class NetworkController {
                 .post(RequestBodyUtil.create(MediaType.parse("application/octet-stream"), fileInputStream))
                 .build();
 
-        Response response;
+        Response response = null;
         try {
             response = mClient.newCall(request).execute();
             int statusCode = response.code();
@@ -855,6 +870,11 @@ public class NetworkController {
         catch (IOException e) {
             SurespotLog.w(TAG, e, "error uploading file");
             return new Tuple<>(500, null);
+        }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
         }
 
 
@@ -891,7 +911,7 @@ public class NetworkController {
                 .post(RequestBodyUtil.create(MediaType.parse("application/octet-stream"), fileInputStream))
                 .build();
 
-        Response response;
+        Response response = null;
         String responseBody = null;
 
         try {
@@ -907,6 +927,11 @@ public class NetworkController {
         catch (IOException e) {
             SurespotLog.w(TAG, e, "error uploading friend image");
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
 
         final String finalResponseBody = responseBody;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -919,7 +944,7 @@ public class NetworkController {
 
     public InputStream getFileStream(Context context, final String url) {
 
-        Response response;
+        Response response = null;
         try {
             Request request = new Request.Builder().url(url).build();
             response = mClient.newCall(request).execute();
@@ -928,8 +953,14 @@ public class NetworkController {
             return null;
         }
 
-        if (response.code() == 200) {
-            return response.body().byteStream();
+        if (response != null) {
+            if (response.code() == 200) {
+                return response.body().byteStream();
+            }
+
+            else {
+                response.body().close();
+            }
         }
 
         return null;

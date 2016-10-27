@@ -43,6 +43,9 @@ public class MainThreadCallbackWrapper implements Callback {
                 catch (IOException e) {
                     mCallback.onFailure(call, e);
                 }
+                finally {
+                    response.body().close();
+                }
             }
         });
     }
