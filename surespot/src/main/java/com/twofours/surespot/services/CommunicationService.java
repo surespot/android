@@ -552,10 +552,8 @@ public class CommunicationService extends Service {
 
                     //if message errored
                     int status = result.first;
-
+                    SurespotMessage newMessage = null;
                     switch (status) {
-
-
                         case 401:
                             //401
                             //don't try and resend, just error
@@ -565,11 +563,14 @@ public class CommunicationService extends Service {
                             //update the message with returned data
                             SurespotLog.d(TAG, "sendFileMessage received 200, response: %s, updating UI", result.second);
                             JSONObject fileData = result.second;
+
+                            //create a new message and set returned data so handle message works properly
                             try {
-                                message.setId(fileData.getInt("id"));
-                                message.setData(fileData.getString("url"));
-                                message.setDataSize(fileData.getInt("size"));
-                                message.setDateTime(new Date(fileData.getLong("time")));
+                                newMessage = SurespotMessage.toSurespotMessage(message.toJSONObject());
+                                newMessage.setId(fileData.getInt("id"));
+                                newMessage.setData(fileData.getString("url"));
+                                newMessage.setDataSize(fileData.getInt("size"));
+                                newMessage.setDateTime(new Date(fileData.getLong("time")));
                             }
                             catch (JSONException e) {
                                 //json error
@@ -583,8 +584,8 @@ public class CommunicationService extends Service {
 
                             //update ui
                             ChatController cc = SurespotApplication.getChatController();
-                            if (cc != null) {
-                                cc.handleMessage(message, new IAsyncCallback<Object>() {
+                            if (cc != null && newMessage != null) {
+                                cc.handleMessage(newMessage, new IAsyncCallback<Object>() {
                                     @Override
                                     public void handleResponse(Object result) {
                                         if (mMainActivityPaused) {
@@ -1259,7 +1260,10 @@ public class CommunicationService extends Service {
         @Override
         public void call(Object... args) {
             SurespotLog.d(TAG, "Connection terminated.");
+            mCurrentSendIv = null;
             setState(STATE_DISCONNECTED);
+            onNotConnected();
+            connect();
             processNextMessage();
         }
     };

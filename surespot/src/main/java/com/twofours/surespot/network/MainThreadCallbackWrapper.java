@@ -33,7 +33,21 @@ public class MainThreadCallbackWrapper implements Callback {
     @Override
     public void onResponse(final Call call, final Response response) throws IOException {
         //force body to download
-        final String responseString = response.body().string();
+        //catch the ioexception here otherwise it is never propogated @(%*&#(&@(*
+        //https://github.com/square/okhttp/issues/1066
+        //why'd I switch to okhttp???
+
+        String bodyString = null;
+        try {
+            bodyString = response.body().string();
+            response.body().close();
+        }
+        catch (IOException e) {
+            mCallback.onFailure(call, e);
+            return;
+        }
+
+        final String responseString = bodyString;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -43,12 +57,10 @@ public class MainThreadCallbackWrapper implements Callback {
                 catch (IOException e) {
                     mCallback.onFailure(call, e);
                 }
-                finally {
-                    response.body().close();
-                }
             }
         });
     }
+
     private void runOnUiThread(Runnable task) {
         new Handler(Looper.getMainLooper()).post(task);
     }
@@ -56,6 +68,7 @@ public class MainThreadCallbackWrapper implements Callback {
     public interface MainThreadCallback {
 
         void onFailure(Call call, IOException e);
+
         void onResponse(Call call, Response response, String responseString) throws IOException;
     }
 

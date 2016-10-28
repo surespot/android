@@ -268,7 +268,7 @@ public class UIUtils {
                     try {
                         json = new JSONObject(response.body().string());
                     }
-                    catch (JSONException e) {
+                    catch (Exception e) {
                         SurespotLog.i(TAG, e, "getShortUrl error");
                         launchInviteApp(context, progressDialog, longUrl);
                         return;
