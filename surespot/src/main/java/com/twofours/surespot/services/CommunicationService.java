@@ -44,6 +44,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.CookieResponseHandler;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
@@ -404,6 +405,9 @@ public class CommunicationService extends Service {
             if (mSocket != null) {
                 mSocket.send(json);
             }
+//            else {
+//                sendMessageUsingHttp(message);
+//            }
         }
         else {
             sendMessageUsingHttp(message);
@@ -580,7 +584,14 @@ public class CommunicationService extends Service {
                             //update ui
                             ChatController cc = SurespotApplication.getChatController();
                             if (cc != null) {
-                                cc.handleMessage(message);
+                                cc.handleMessage(message, new IAsyncCallback<Object>() {
+                                    @Override
+                                    public void handleResponse(Object result) {
+                                        if (mMainActivityPaused) {
+                                            saveMessages(message.getOtherUser());
+                                        }
+                                    }
+                                });
                             }
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(message);
@@ -632,15 +643,26 @@ public class CommunicationService extends Service {
                         int status = messageAndStatus.getInt("status");
 
                         if (status == 204) {
-                            SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
+                            final SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
                             //update the UI
                             ChatController cc = SurespotApplication.getChatController();
                             if (cc != null) {
-                                cc.handleMessage(messageReceived);
+                                cc.handleMessage(messageReceived, new IAsyncCallback<Object>() {
+                                    @Override
+                                    public void handleResponse(Object result) {
+                                        if (mMainActivityPaused) {
+                                            saveMessages(message.getOtherUser());
+                                        }
+
+                                        //need to remove the message from the queue before setting the current send iv to null
+
+                                        removeQueuedMessage(messageReceived);
+                                        processNextMessage();
+                                    }
+                                });
+
                             }
-                            //need to remove the message from the queue before setting the current send iv to null
-                            removeQueuedMessage(messageReceived);
-                            processNextMessage();
+
                         }
                         else {
                             //try and send next message again
@@ -931,7 +953,7 @@ public class CommunicationService extends Service {
         }
 
         int reconnectTime = (int) (Math.random() * timerInterval);
-        SurespotLog.d(TAG, "generated reconnect time: %d for k: %d", reconnectTime, k);
+        SurespotLog.d(TAG, "generated interval: %d for k: %d", reconnectTime, k);
         return reconnectTime;
     }
 
@@ -1256,6 +1278,7 @@ public class CommunicationService extends Service {
             //force queue
             mCurrentSendIv = null;
             setState(STATE_DISCONNECTED);
+            // disposeSocket();
             onNotConnected();
 
 
@@ -1356,38 +1379,49 @@ public class CommunicationService extends Service {
                 public void run() {
                     SurespotLog.d(TAG, "onMessage, args: %s", args[0]);
                     try {
-                        JSONObject jsonMessage = (JSONObject) args[0];
+                        final JSONObject jsonMessage = (JSONObject) args[0];
                         SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
-                        SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-                        SurespotApplication.getChatController().handleMessage(message);
-
-                        // see if we have deletes
-                        String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
-                        if (sDeleteControlMessages != null) {
-                            JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
-
-                            if (deleteControlMessages.length() > 0) {
-                                for (int i = 0; i < deleteControlMessages.length(); i++) {
+                        final SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
+                        SurespotApplication.getChatController().handleMessage(message, new IAsyncCallback<Object>() {
+                            @Override
+                            public void handleResponse(Object result) {
+                                // see if we have deletes
+                                String sDeleteControlMessages = jsonMessage.optString("deleteControlMessages", null);
+                                if (sDeleteControlMessages != null) {
                                     try {
-                                        SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
-                                        SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
+                                        JSONArray deleteControlMessages = new JSONArray(sDeleteControlMessages);
+
+                                        if (deleteControlMessages.length() > 0) {
+                                            for (int i = 0; i < deleteControlMessages.length(); i++) {
+                                                try {
+                                                    SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
+                                                    SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
+                                                }
+                                                catch (JSONException e) {
+                                                    SurespotLog.w(TAG, e, "on control");
+                                                }
+                                            }
+                                        }
                                     }
                                     catch (JSONException e) {
-                                        SurespotLog.w(TAG, "on control", e);
+                                        SurespotLog.w(TAG, e, "on control");
                                     }
                                 }
-                            }
-                        }
 
-                        messageSendCompleted(message);
-                        removeQueuedMessage(message);
-                        saveIfMainActivityPaused();
+                                messageSendCompleted(message);
+                                removeQueuedMessage(message);
+                                saveIfMainActivityPaused();
+                                processNextMessage();
+                            }
+                        });
+
 
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, "on message", e);
+                        processNextMessage();
                     }
-                    processNextMessage();
+
                 }
             };
 

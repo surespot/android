@@ -190,7 +190,7 @@ public class ChatController {
         }
     }
 
-    public void handleMessage(final SurespotMessage message) {
+    public void handleMessage(final SurespotMessage message, final IAsyncCallback<Object> callback) {
         SurespotLog.d(TAG, "handleMessage %s", message);
         final String otherUser = message.getOtherUser();
 
@@ -282,6 +282,8 @@ public class ChatController {
                         mFriendAdapter.sort();
                         mFriendAdapter.notifyDataSetChanged();
                     }
+
+                    callback.handleResponse(null);
                 }
             }.execute();
         }
