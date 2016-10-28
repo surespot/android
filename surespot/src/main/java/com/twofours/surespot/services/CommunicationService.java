@@ -1262,6 +1262,7 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "Connection terminated.");
             mCurrentSendIv = null;
             setState(STATE_DISCONNECTED);
+            //disposeSocket();
             onNotConnected();
             connect();
             processNextMessage();
@@ -1298,8 +1299,11 @@ public class CommunicationService extends Service {
             SurespotLog.i(TAG, "an Error occured, attempting reconnect with exponential backoff, retries: %d", mSocketReconnectRetries);
 
             // kick off another task
-            if (!mMainActivityPaused && mSocketReconnectRetries < MAX_RETRIES) {
-                scheduleReconnectionAttempt();
+            if (mSocketReconnectRetries < MAX_RETRIES) {
+                if (!mMainActivityPaused) {
+                    scheduleReconnectionAttempt();
+                }
+
                 //try and send messages via http
                 processNextMessage();
             }
