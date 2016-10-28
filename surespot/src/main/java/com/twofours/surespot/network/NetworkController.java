@@ -178,6 +178,8 @@ public class NetworkController {
             }
         }
 
+        mClient.dispatcher().setMaxRequestsPerHost(16);
+
 //        if (mClient == null) {
 //            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
 //            throw new Exception("Fatal error, could not create http clients..is storage space available?");
