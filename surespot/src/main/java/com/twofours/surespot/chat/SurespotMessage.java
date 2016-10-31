@@ -1,5 +1,7 @@
 package com.twofours.surespot.chat;
 
+import android.text.TextUtils;
+
 import com.twofours.surespot.common.SurespotLog;
 
 import org.json.JSONException;
@@ -171,8 +173,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         chatMessage.setIv(jsonMessage.getString("iv"));
         chatMessage.setData(jsonMessage.optString("data"));
         chatMessage.setMimeType(jsonMessage.getString("mimeType"));
-        chatMessage.setToVersion(jsonMessage.getString("toVersion"));
-        chatMessage.setFromVersion(jsonMessage.getString("fromVersion"));
+        chatMessage.setToVersion(jsonMessage.optString("toVersion"));
+        chatMessage.setFromVersion(jsonMessage.optString("fromVersion"));
         chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
         chatMessage.setVoicePlayed(jsonMessage.optBoolean("voicePlayed", false));
         chatMessage.setHashed(jsonMessage.optBoolean("hashed", false));
@@ -199,12 +201,15 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             chatMessage.setDataSize(dataSize);
         }
 
-        chatMessage.setPlainData(jsonMessage.optString("plainData", null));
+        //set plain data if encrypted data not present
+        if (TextUtils.isEmpty(chatMessage.getData())) {
+            chatMessage.setPlainData(jsonMessage.optString("plainData", null));
+        }
 
         return chatMessage;
     }
 
-    public JSONObject toJSONObject() {
+    public JSONObject toJSONObject(boolean withPlain) {
         JSONObject message = new JSONObject();
 
         try {
@@ -235,6 +240,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             if (this.getDataSize() != null) {
                 message.put("dataSize", this.getDataSize());
             }
+
+            //if we don't have encrypted data, save plain data (for unsent messages only)
+            if (TextUtils.isEmpty(this.getData()) && withPlain) {
+                message.put("plainData", this.getPlainData());
+            }
+
 
             return message;
         }

@@ -595,14 +595,14 @@ public class ChatUtils {
         return 0;
     }
 
-    public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
+    public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages, boolean withPlain) {
         // avoid concurrent modification issues
         synchronized (messages) {
             SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
             JSONArray jsonMessages = new JSONArray();
 
             for (SurespotMessage message : messageArray) {
-                jsonMessages.put(message.toJSONObject());
+                jsonMessages.put(message.toJSONObject(withPlain));
             }
 
             return jsonMessages;
@@ -619,7 +619,7 @@ public class ChatUtils {
             }
         }
         catch (JSONException e) {
-            SurespotLog.w(TAG, "jsonStringToChatMessages", e);
+            SurespotLog.w(TAG, e, "jsonStringToChatMessages");
         }
         return messages;
 
@@ -635,7 +635,7 @@ public class ChatUtils {
             }
         }
         catch (JSONException e) {
-            SurespotLog.w(TAG, "jsonStringsToMessages", e);
+            SurespotLog.w(TAG, e, "jsonStringsToMessages");
         }
         return messages;
 

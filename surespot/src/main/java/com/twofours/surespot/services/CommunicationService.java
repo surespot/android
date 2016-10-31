@@ -228,6 +228,7 @@ public class CommunicationService extends Service {
     }
 
     public synchronized boolean connect(String username) {
+        SurespotLog.d(TAG, "connect, username: %s, musername: %s", username, mUsername);
         if (!username.equals(mUsername)) {
             SurespotLog.d(TAG, "Setting user name to " + username + " and connecting");
             //don't need to disconnect 1st time through when mUsername will be null
@@ -235,9 +236,9 @@ public class CommunicationService extends Service {
                 disconnect();
             }
             mUsername = username;
-            loadMessageQueue();
         }
 
+        loadMessageQueue();
         return connect();
     }
 
@@ -263,13 +264,7 @@ public class CommunicationService extends Service {
         }
 
         setState(STATE_CONNECTING);
-
         SurespotApplication.getChatController().onBeforeConnect();
-
-//        if (getConnectionState() == STATE_CONNECTED) {
-//         //   onConnected();
-//            return true;
-//        }
 
         try {
             createSocket();
@@ -405,9 +400,6 @@ public class CommunicationService extends Service {
             if (mSocket != null) {
                 mSocket.send(json);
             }
-//            else {
-//                sendMessageUsingHttp(message);
-//            }
         }
         else {
             sendMessageUsingHttp(message);
@@ -566,7 +558,7 @@ public class CommunicationService extends Service {
 
                             //create a new message and set returned data so handle message works properly
                             try {
-                                newMessage = SurespotMessage.toSurespotMessage(message.toJSONObject());
+                                newMessage = SurespotMessage.toSurespotMessage(message.toJSONObject(false));
                                 newMessage.setId(fileData.getInt("id"));
                                 newMessage.setData(fileData.getString("url"));
                                 newMessage.setDataSize(fileData.getInt("size"));
@@ -756,7 +748,6 @@ public class CommunicationService extends Service {
             mListener.onCouldNotConnectToServer();
         }
 
-
         // raise Android notifications for unsent messages so the user can re-enter the app and retry sending if we haven't already
         if (!mErrored && !CommunicationService.this.mSendQueue.isEmpty()) {
             raiseNotificationForUnsentMessages();
@@ -822,7 +813,7 @@ public class CommunicationService extends Service {
     public void onDestroy() {
         SurespotLog.i(TAG, "onDestroy");
         unregisterReceiver();
-        disposeSocket();
+        disconnect();
         save();
     }
 
@@ -868,7 +859,8 @@ public class CommunicationService extends Service {
 
     private void loadMessageQueue() {
         mSendQueue.clear();
-        Iterator<SurespotMessage> iterator = SurespotApplication.getStateController().loadUnsentMessages(mUsername).iterator();
+        List<SurespotMessage> unsentMessages = SurespotApplication.getStateController().loadUnsentMessages(mUsername);
+        Iterator<SurespotMessage> iterator = unsentMessages.iterator();
         while (iterator.hasNext()) {
             SurespotMessage message = iterator.next();
 
@@ -1149,13 +1141,6 @@ public class CommunicationService extends Service {
 
 
     private void disconnect() {
-
-//        if (SurespotApplication.getChatController() != null) {
-//            SurespotApplication.getChatController().onPause();
-//        } else {
-        //save();
-        //}
-
         SurespotLog.d(TAG, "disconnect.");
         setState(STATE_DISCONNECTED);
 
@@ -1165,7 +1150,6 @@ public class CommunicationService extends Service {
         }
     }
 
-
     private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
         NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
@@ -1174,20 +1158,14 @@ public class CommunicationService extends Service {
             @Override
             public void onSuccess(int responseCode, String result, Cookie cookie) {
                 //try again
-                disposeSocket();
                 connect();
             }
 
             @Override
             public void onFailure(Throwable arg0, int code, String content) {
-
-
                 //if we're getting 401 bail
                 if (code == 401) {
                     // give up
-
-                    disposeSocket();
-
                     if (mListener != null) {
 
                         SurespotLog.i(TAG, "401 on reconnect, giving up.");
@@ -1199,7 +1177,6 @@ public class CommunicationService extends Service {
                 }
                 else {
                     //try and connect again
-                    disposeSocket();
                     connect();
                 }
             }
@@ -1218,6 +1195,7 @@ public class CommunicationService extends Service {
                     SurespotLog.d(TAG, "onReceive,  CONNECTED");
                     synchronized (CommunicationService.this) {
                         mErrored = false;
+                        disconnect();
                         connect();
                         processNextMessage();
                     }
@@ -1261,8 +1239,7 @@ public class CommunicationService extends Service {
         public void call(Object... args) {
             SurespotLog.d(TAG, "Connection terminated.");
             mCurrentSendIv = null;
-            setState(STATE_DISCONNECTED);
-            //disposeSocket();
+            disconnect();
             onNotConnected();
             connect();
             processNextMessage();
@@ -1282,15 +1259,13 @@ public class CommunicationService extends Service {
 
             //force queue
             mCurrentSendIv = null;
-            setState(STATE_DISCONNECTED);
-            // disposeSocket();
+            disconnect();
             onNotConnected();
 
 
             if (args.length > 0) {
                 if ("not authorized".equals(args[0])) {
                     SurespotLog.d(TAG, "got not authorized from websocket");
-                    disposeSocket();
                     tryReLogin();
                     return;
                 }
@@ -1375,8 +1350,6 @@ public class CommunicationService extends Service {
             };
             mHandler.post(runnable);
         }
-
-
     };
 
     private Emitter.Listener onMessage = new Emitter.Listener() {
@@ -1429,7 +1402,6 @@ public class CommunicationService extends Service {
                         SurespotLog.w(TAG, "on message", e);
                         processNextMessage();
                     }
-
                 }
             };
 
@@ -1440,6 +1412,5 @@ public class CommunicationService extends Service {
     public static boolean isUIAttached() {
         return !mMainActivityPaused;
     }
-
 }
 

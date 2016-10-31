@@ -138,8 +138,6 @@ public class ChatController {
                 mIndicator.notifyDataSetChanged();
             }
         });
-
-        onResume(false);
     }
 
     public void setAutoInviteData(AutoInviteData autoInviteData) {
