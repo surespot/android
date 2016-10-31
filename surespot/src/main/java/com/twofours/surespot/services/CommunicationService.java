@@ -284,6 +284,7 @@ public class CommunicationService extends Service {
 
         if (!mSendQueue.contains(message)) {
             mSendQueue.add(message);
+            saveMessageQueue();
         }
     }
 
@@ -769,6 +770,7 @@ public class CommunicationService extends Service {
                 iterator.remove();
             }
         }
+        saveMessageQueue();
     }
 
     public void removeQueuedMessage(SurespotMessage message) {
