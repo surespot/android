@@ -215,7 +215,7 @@ public class CommunicationService extends Service {
     }
 
     // Notify the service that the user logged out
-    public void userLoggedOut() {
+    public synchronized void userLoggedOut() {
         if (mUsername != null) {
             SurespotLog.d(TAG, "user logging out: " + mUsername);
 
@@ -277,7 +277,7 @@ public class CommunicationService extends Service {
         return false;
     }
 
-    public void enqueueMessage(SurespotMessage message) {
+    public synchronized void enqueueMessage(SurespotMessage message) {
         if (getConnectionState() == STATE_DISCONNECTED) {
             connect();
         }
@@ -758,7 +758,7 @@ public class CommunicationService extends Service {
         return getConnectionState() == CommunicationService.STATE_CONNECTED;
     }
 
-    public void errorMessageQueue() {
+    public synchronized void errorMessageQueue() {
         SurespotLog.d(TAG, "errorMessageQueue");
 
         saveMessageQueue();
@@ -782,7 +782,7 @@ public class CommunicationService extends Service {
         mCurrentSendIv = null;
     }
 
-    public void clearMessageQueue(String friendname) {
+    public synchronized void clearMessageQueue(String friendname) {
         Iterator<SurespotMessage> iterator = mSendQueue.iterator();
         while (iterator.hasNext()) {
             SurespotMessage message = iterator.next();
@@ -793,7 +793,7 @@ public class CommunicationService extends Service {
         saveMessageQueue();
     }
 
-    public void removeQueuedMessage(SurespotMessage message) {
+    public synchronized void removeQueuedMessage(SurespotMessage message) {
         boolean removed = false;
 
         Iterator<SurespotMessage> iterator = mSendQueue.iterator();
@@ -874,12 +874,12 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void saveMessageQueue() {
+    private synchronized void saveMessageQueue() {
         SurespotLog.d(TAG, "saving: " + mSendQueue.size() + " unsent messages.");
         SurespotApplication.getStateController().saveUnsentMessages(mUsername, mSendQueue);
     }
 
-    private void loadMessageQueue() {
+    private synchronized void loadMessageQueue() {
         mSendQueue.clear();
         List<SurespotMessage> unsentMessages = SurespotApplication.getStateController().loadUnsentMessages(mUsername);
         Iterator<SurespotMessage> iterator = unsentMessages.iterator();
