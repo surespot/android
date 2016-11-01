@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager.LayoutParams;
 
@@ -38,7 +40,7 @@ public class ImageViewActivity extends Activity {
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 
         setContentView(R.layout.activity_image_view);
-        Utils.configureActionBar(this, "", getString(R.string.pan_and_zoom), true);
+        Utils.configureActionBar(this, null, getString(R.string.pan_and_zoom), true);
 
         String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
 
@@ -113,6 +115,14 @@ public class ImageViewActivity extends Activity {
 
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_blank, menu);
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -123,7 +133,5 @@ public class ImageViewActivity extends Activity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-
     }
-
 }
