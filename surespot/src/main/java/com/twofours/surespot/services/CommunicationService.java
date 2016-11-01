@@ -416,85 +416,96 @@ public class CommunicationService extends Service {
                 @Override
                 protected Boolean doInBackground(Void... arg0) {
                     //make sure it's pointing to a local file
-                    if (message.getPlainData() == null || !message.getPlainData().toString().startsWith("file")) {
-                        message.setErrorStatus(500);
-                        return false;
-                    }
 
-                    try {
+                    synchronized (message) {
+                        //could be null because it's already being processed
+                        if (message.getPlainData() == null) {
+                            SurespotLog.d(TAG, "prepAndSendFileMessage: plainData null, already processed, doing nothing");
+                            return null;
+                        }
 
-                        final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
-                        final String theirVersion = IdentityController.getTheirLatestVersion(message.getTo());
-                        if (theirVersion == null) {
-                            SurespotLog.d(TAG, "could not encrypt file  message - could not get latest version, iv: %s", message.getIv());
-                            //retry
-                            message.setErrorStatus(0);
+                        if (!message.getPlainData().toString().startsWith("file")) {
+                            message.setErrorStatus(500);
                             return false;
                         }
-                        final String iv = message.getIv();
+
+                        try {
+
+                            final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
+                            final String theirVersion = IdentityController.getTheirLatestVersion(message.getTo());
+                            if (theirVersion == null) {
+                                SurespotLog.d(TAG, "prepAndSendFileMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
+                                //retry
+                                message.setErrorStatus(0);
+                                return false;
+                            }
+                            final String iv = message.getIv();
 
 
-                        // save encrypted image to disk
-                        InputStream fileInputStream = CommunicationService.this.getContentResolver().openInputStream(Uri.parse(message.getPlainData().toString()));
-                        File localImageFile = ChatUtils.getTempImageUploadFile(CommunicationService.this);
-                        OutputStream fileSaveStream = new FileOutputStream(localImageFile);
-                        String localImageUri = Uri.fromFile(localImageFile).toString();
-                        SurespotLog.d(TAG, "encrypting file iv: %s, from %s to encrypted file %s", iv, message.getPlainData().toString(), localImageUri);
+                            // save encrypted image to disk
+                            InputStream fileInputStream = CommunicationService.this.getContentResolver().openInputStream(Uri.parse(message.getPlainData().toString()));
+                            File localImageFile = ChatUtils.getTempImageUploadFile(CommunicationService.this);
+                            OutputStream fileSaveStream = new FileOutputStream(localImageFile);
+                            String localImageUri = Uri.fromFile(localImageFile).toString();
+                            SurespotLog.d(TAG, "prepAndSendFileMessage: encrypting file iv: %s, from %s to encrypted file %s", iv, message.getPlainData().toString(), localImageUri);
 
-                        //encrypt
-                        PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-                        final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-                        EncryptionController.runEncryptTask(ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+                            //encrypt
+                            PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+                            final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
+                            EncryptionController.runEncryptTask(ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
 
-                        int bufferSize = 1024;
-                        byte[] buffer = new byte[bufferSize];
+                            int bufferSize = 1024;
+                            byte[] buffer = new byte[bufferSize];
 
-                        int len = 0;
-                        while ((len = encryptionInputStream.read(buffer)) != -1) {
-                            fileSaveStream.write(buffer, 0, len);
+                            int len = 0;
+                            while ((len = encryptionInputStream.read(buffer)) != -1) {
+                                fileSaveStream.write(buffer, 0, len);
+                            }
+                            fileSaveStream.close();
+                            encryptionInputStream.close();
+
+                            //move bitmap cache
+                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+                                MessageImageDownloader.moveCacheEntry(message.getPlainData().toString(), localImageUri);
+                            }
+
+                            //add encrypted local file to file cache
+                            FileCacheController fcc = SurespotApplication.getFileCacheController();
+                            if (fcc != null) {
+                                fcc.putEntry(localImageUri, new FileInputStream(localImageFile));
+                            }
+
+
+                            boolean deleted = new File(Uri.parse(message.getPlainData().toString()).getPath()).delete();
+                            SurespotLog.d(TAG, "prepAndSendFileMessage: deleting unencrypted file %s, iv: %s, success: %b", message.getPlainData().toString(), iv, deleted);
+
+                            message.setPlainData(null);
+                            message.setData(localImageUri);
+                            message.setFromVersion(ourVersion);
+                            message.setToVersion(theirVersion);
+
+                            return true;
                         }
-                        fileSaveStream.close();
-                        encryptionInputStream.close();
-
-                        //move bitmap cache
-                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-                            MessageImageDownloader.moveCacheEntry(message.getPlainData().toString(), localImageUri);
+                        catch (IOException e) {
+                            SurespotLog.w(TAG, e, "prepAndSendFileMessage");
+                            message.setErrorStatus(500);
+                            return false;
                         }
 
-                        //add encrypted local file to file cache
-                        FileCacheController fcc = SurespotApplication.getFileCacheController();
-                        if (fcc != null) {
-                            fcc.putEntry(localImageUri, new FileInputStream(localImageFile));
-                        }
-
-
-                        boolean deleted = new File(Uri.parse(message.getPlainData().toString()).getPath()).delete();
-                        SurespotLog.d(TAG, "deleting unencrypted file %s, iv: %s, success: %b", message.getPlainData().toString(), iv, deleted);
-
-                        message.setPlainData(null);
-                        message.setData(localImageUri);
-                        message.setFromVersion(ourVersion);
-                        message.setToVersion(theirVersion);
-
-                        return true;
                     }
-                    catch (IOException e) {
-                        SurespotLog.w(TAG, e, "prepAndSendFileMessage");
-                        message.setErrorStatus(500);
-                        return false;
-                    }
-
                 }
 
                 protected void onPostExecute(Boolean success) {
-                    SurespotApplication.getChatController().addMessage(message);
-                    if (success) {
-                        sendFileMessage(message);
-                    }
-                    else {
-                        messageSendCompleted(message);
-                        if (!scheduleResendTimer()) {
-                            errorMessageQueue();
+                    if (success != null) {
+                        SurespotApplication.getChatController().addMessage(message);
+                        if (success) {
+                            sendFileMessage(message);
+                        }
+                        else {
+                            messageSendCompleted(message);
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue();
+                            }
                         }
                     }
                 }
