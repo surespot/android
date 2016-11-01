@@ -51,6 +51,7 @@ public class ImageSelectActivity extends Activity {
     private String mTo;
     private String mFrom;
     private int mSize;
+    private boolean mFriendImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +86,7 @@ public class ImageSelectActivity extends Activity {
             mTo = savedInstanceState.getString("to");
             mFrom = savedInstanceState.getString("from");
             mSize = savedInstanceState.getInt("size");
+            mFriendImage = savedInstanceState.getBoolean("friendImage");
 
             setTitle();
             setButtonText();
@@ -104,6 +106,7 @@ public class ImageSelectActivity extends Activity {
             mTo = getIntent().getStringExtra("to");
             mFrom = getIntent().getStringExtra("from");
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
+            mFriendImage = getIntent().getBooleanExtra("friendImage", false);
 
             setTitle();
             setButtonText();
@@ -113,11 +116,13 @@ public class ImageSelectActivity extends Activity {
             Intent intent = new Intent();
             intent.setType("image/*");
             int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-            if (currentapiVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            //if we can select multiple, and we're not selecting a (single) friend image
+            if (currentapiVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !mFriendImage) {
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 plural = "s";
             }
             intent.setAction(Intent.ACTION_GET_CONTENT);
+            SurespotLog.d(TAG, "startActivityForResult, friendImage: %b", mFriendImage);
             startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image) + plural), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
         }
 
@@ -129,22 +134,33 @@ public class ImageSelectActivity extends Activity {
             finish();
         }
         else {
+
             new AsyncTask<Void, Void, Void>() {
                 protected Void doInBackground(Void... params) {
+                    if (!mFriendImage) {
 
-                    for (File file : mCompressedImagePaths) {
-                        ChatUtils.uploadPictureMessageAsync(
-                                ImageSelectActivity.this,
-                                SurespotApplication.getChatController(),
-                                Uri.fromFile(file),
-                                mFrom,
-                                mTo,
-                                false);
+                        for (File file : mCompressedImagePaths) {
+                            ChatUtils.uploadPictureMessageAsync(
+                                    ImageSelectActivity.this,
+                                    SurespotApplication.getChatController(),
+                                    Uri.fromFile(file),
+                                    mFrom,
+                                    mTo,
+                                    false);
+
+                        }
+                    }
+                    else {
+                        Intent dataIntent = new Intent();
+                        dataIntent.putExtra("to", mTo);
+                        dataIntent.setData(Uri.fromFile(mCompressedImagePaths.get(0)));
+                        setResult(Activity.RESULT_OK, dataIntent);
                     }
                     finish();
                     return null;
                 }
             }.execute();
+
         }
     }
 
@@ -165,7 +181,7 @@ public class ImageSelectActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
-        SurespotLog.v(TAG, "onActivityResult, requestCode: " + requestCode);
+        SurespotLog.d(TAG, "onActivityResult, requestCode: %d, friendImage: %b", requestCode, mFriendImage);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
@@ -184,7 +200,7 @@ public class ImageSelectActivity extends Activity {
                                 mPaths.add(result.mFile.toString());
                                 bitmaps.add(result.mBitmap);
                             }
-                            else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                            else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !mFriendImage) {
                                 handleMultipleImageSelection(bitmaps, data);
                             }
                             else {
@@ -195,12 +211,14 @@ public class ImageSelectActivity extends Activity {
 
                         protected void onPostExecute(ArrayList<Bitmap> results) {
                             if (results != null) {
-                                if (results.size() == 1) {
+                                if (results.size() == 1 || mFriendImage) {
                                     setImage(results, true);
                                 }
                                 else {
-                                    // just send them
-                                    sendImages();
+                                    // just send them if we're not selecting a friend image
+                                    if (!mFriendImage) {
+                                        sendImages();
+                                    }
                                 }
                             }
                             else {
@@ -291,6 +309,7 @@ public class ImageSelectActivity extends Activity {
         outState.putStringArrayList("paths", mPaths);
         outState.putString("to", mTo);
         outState.putInt("size", mSize);
+        outState.putBoolean("friendImage", mFriendImage);
     }
 
     private synchronized File createImageFile(String suffix) throws IOException {

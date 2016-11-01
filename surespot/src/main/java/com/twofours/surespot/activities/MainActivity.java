@@ -1154,6 +1154,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
         // set start intent to avoid restarting every rotation
         intent.putExtra("start", true);
+        intent.putExtra("friendImage", true);
         startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE);
     }
 
@@ -1192,7 +1193,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
                         // set start intent to avoid restarting every rotation
                         intent.putExtra("start", true);
-                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+                        intent.putExtra("friendImage", false);
+                        startActivity(intent);
                         return null;
                     }
 
