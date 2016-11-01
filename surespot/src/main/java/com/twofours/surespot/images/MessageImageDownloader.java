@@ -182,25 +182,8 @@ public class MessageImageDownloader {
             String messageString = null;
             if (!TextUtils.isEmpty(messageData)) {
 
-
-                InputStream encryptedImageStream = null;
-
-                //check disk cache before going to network
-                try {
-
-                    encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(messageData);
-                    if (encryptedImageStream != null) {
-                        SurespotLog.d(TAG, "got cached file entry for: %s,", messageData);
-                    }
-                }
-                catch (IOException e) {
-                    SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", messageData);
-                }
-
-                if (encryptedImageStream == null) {
-                    SurespotLog.d(TAG, "no cached file entry, making http call for: %s,", messageData);
-                    encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), messageData);
-                }
+                SurespotLog.d(TAG, "BitmapDownloaderTask getting %s,", messageData);
+                InputStream encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(messageData);
 
                 if (mCancelled) {
                     try {

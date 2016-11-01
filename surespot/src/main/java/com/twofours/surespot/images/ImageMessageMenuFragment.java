@@ -136,7 +136,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
 									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-									InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(mActivity, mMessage.getData());
+									InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(mMessage.getData());
 
 									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);

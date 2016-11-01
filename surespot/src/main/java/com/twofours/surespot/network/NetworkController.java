@@ -47,7 +47,6 @@ import okhttp3.Response;
 import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
 
-
 public class NetworkController {
     protected static final String TAG = "NetworkController";
     public static final MediaType JSON
@@ -950,8 +949,20 @@ public class NetworkController {
         });
     }
 
-    public InputStream getFileStream(Context context, final String url) {
+    public InputStream getFileStream(final String url) {
+        //check disk cache before going to network
+        try {
+            InputStream encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(url);
+            if (encryptedImageStream != null) {
+                SurespotLog.d(TAG, "getFileStream: returning cached file entry for: %s,", url);
+                return encryptedImageStream;
+            }
+        }
+        catch (IOException e) {
+            SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", url);
+        }
 
+        SurespotLog.d(TAG, "getFileStream: no cached file entry for: %s, making network call", url);
         Response response = null;
         try {
             Request request = new Request.Builder().url(url).build();

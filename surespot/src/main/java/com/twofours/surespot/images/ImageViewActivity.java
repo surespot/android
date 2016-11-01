@@ -53,7 +53,7 @@ public class ImageViewActivity extends Activity {
                     @Override
                     protected Bitmap doInBackground(Void... params) {
 
-                        InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(ImageViewActivity.this, message.getData());
+                        InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(message.getData());
 
                         Bitmap bitmap = null;
                         PipedOutputStream out = new PipedOutputStream();

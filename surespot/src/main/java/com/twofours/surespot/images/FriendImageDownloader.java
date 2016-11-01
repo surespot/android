@@ -166,7 +166,7 @@ public class FriendImageDownloader {
 			Bitmap bitmap = null;
 			InputStream imageStream = null;
 
-			imageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mFriend.getImageUrl());
+			imageStream = SurespotApplication.getNetworkController().getFileStream(mFriend.getImageUrl());
 
 			if (mCancelled) {
 				try {
