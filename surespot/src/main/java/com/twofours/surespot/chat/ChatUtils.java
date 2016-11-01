@@ -496,7 +496,7 @@ public class ChatUtils {
 
 
             String[] projection = {Images.Media.ORIENTATION}; //{Images.ImageColumns.ORIENTATION};
-            cursor c = null;
+            Cursor c = null;
             try{
                 c = context.getContentResolver().query(uri, projection, null, null, null);
                 if (c.moveToFirst()) {
