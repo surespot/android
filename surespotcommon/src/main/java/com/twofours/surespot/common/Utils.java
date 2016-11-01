@@ -90,6 +90,12 @@ public class Utils {
 		in.close();
 		out.close();
 	}
+
+	public static void bytesToFile(byte[] bytes, File dst) throws IOException {
+		OutputStream out = new FileOutputStream(dst);
+		out.write(bytes);
+		out.close();
+	}
 	// public static byte[] base64Encode(byte[] buf) {
 	// return Base64.encode(buf, Base64.NO_WRAP | Base64.URL_SAFE);
 	// }

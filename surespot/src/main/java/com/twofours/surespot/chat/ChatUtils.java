@@ -259,10 +259,12 @@ public class ChatUtils {
                     final String localImageUri = Uri.fromFile(localImageFile).toString();
                     SurespotLog.d(TAG, "saving copy of unencrypted voice to: %s", localImageFile.getAbsolutePath());
 
+                    byte[] audioBytes = Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(audioUri));
+                    Utils.bytesToFile(audioBytes, localImageFile);
 
-                    Utils.copyStreamToFile(activity.getContentResolver().openInputStream(audioUri), localImageFile);
                     String iv = EncryptionController.getStringIv();
                     SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.M4A, localImageUri, iv);
+                    message.setPlainBinaryData(audioBytes);
                     final SurespotMessage finalMessage = message;
 
                     activity.runOnUiThread(new Runnable() {
