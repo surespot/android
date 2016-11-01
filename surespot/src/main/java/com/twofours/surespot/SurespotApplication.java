@@ -15,6 +15,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
@@ -24,6 +25,7 @@ import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
+import java.io.IOException;
 import java.security.Security;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
@@ -50,6 +52,7 @@ public class SurespotApplication extends Application {
 	public static final int CORE_POOL_SIZE = 24;
 	public static final int MAXIMUM_POOL_SIZE = Integer.MAX_VALUE;
 	public static final int KEEP_ALIVE = 1;
+	private static FileCacheController mFileCacheController;
 
 	public static ChatController getChatController() {
 		return mChatController;
@@ -109,7 +112,12 @@ public class SurespotApplication extends Application {
 
 		SurespotConfiguration.LoadConfigProperties(getApplicationContext());
 		mStateController = new StateController(this);
-
+		try {
+			mFileCacheController = new FileCacheController(this);
+		}
+		catch (IOException e) {
+			SurespotLog.w(TAG, e, "could not create file cache controller");
+		}
 
 		boolean oneTimeGotNoCase = Utils.getSharedPrefsBoolean(this, "66onetime");
 		if (!oneTimeGotNoCase) {
@@ -124,7 +132,7 @@ public class SurespotApplication extends Application {
 			});
 
 			//set the default theme to black
-			Utils.putSharedPrefsBoolean(SurespotApplication.this,SurespotConstants.PrefNames.BLACK, true);
+			//Utils.putSharedPrefsBoolean(SurespotApplication.this,SurespotConstants.PrefNames.BLACK, true);
 		}
 
 
@@ -137,10 +145,7 @@ public class SurespotApplication extends Application {
 		startService(chatIntent);
 
 		mBillingController = new BillingController(this);
-
 		FileUtils.wipeImageCaptureDir(this);
-
-
 	}
 
 	private boolean versionChanged(Context context) {
@@ -208,5 +213,9 @@ public class SurespotApplication extends Application {
 
 	public static Context getContext() {
 		return mContext;
+	}
+
+	public static FileCacheController getFileCacheController() {
+		return mFileCacheController;
 	}
 }

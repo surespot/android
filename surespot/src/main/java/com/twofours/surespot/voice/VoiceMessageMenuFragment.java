@@ -1,7 +1,5 @@
 package com.twofours.surespot.voice;
 
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -11,25 +9,25 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
+import java.util.ArrayList;
+
 public class VoiceMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "VoiceMessageMenuFragment";
 	private SurespotMessage mMessage;
 	private ArrayList<String> mItems;
-	private BillingController mBillingController;
+//	private BillingController mBillingController;
 
 	public static DialogFragment newInstance(SurespotMessage message) {
 		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
 
 		Bundle args = new Bundle();
-		args.putString("message", message.toJSONObject().toString());
+		args.putString("message", message.toJSONObject(false).toString());
 		f.setArguments(args);
 
 		return f;
@@ -45,7 +43,7 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 
 		final MainActivity mActivity = (MainActivity) getActivity();
 
-		mBillingController = SurespotApplication.getBillingController();
+	//	mBillingController = SurespotApplication.getBillingController();
 
 		mItems = new ArrayList<String>(2);
 
@@ -56,11 +54,6 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 //		if (!mBillingController.hasVoiceMessaging()) {
 //			mItems.add(getString(R.string.menu_purchase_voice_messaging));
 //		}
-
-		// if we have an errored voice message we can resend it
-		if (mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getErrorStatus() > 0) {
-			mItems.add(getString(R.string.menu_resend_message));
-		}
 
 		// can always delete
 		mItems.add(getString(R.string.menu_delete_message));
@@ -93,11 +86,6 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 						mActivity.getChatController().deleteMessage(mMessage);
 					}
 
-					return;
-				}
-
-				if (itemText.equals(getString(R.string.menu_resend_message))) {
-					mActivity.getChatController().resendFileMessage(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 

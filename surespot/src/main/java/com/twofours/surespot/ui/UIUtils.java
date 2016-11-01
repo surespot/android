@@ -145,44 +145,6 @@ public class UIUtils {
 
     }
 
-    public static void setMessageErrorText(Context context, TextView textView, SurespotMessage message) {
-        String statusText = null;
-        switch (message.getErrorStatus()) {
-            case 400:
-                statusText = context.getString(R.string.message_error_invalid);
-                break;
-            case 402:
-//			// if it's voice message they need to have upgraded, otherwise fall through to 403
-//			if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-//				statusText = context.getString(R.string.billing_payment_required_voice);
-//				break;
-//			}
-            case 403:
-                statusText = context.getString(R.string.message_error_unauthorized);
-                break;
-            case 404:
-                statusText = context.getString(R.string.message_error_unauthorized);
-                break;
-            case 429:
-                statusText = context.getString(R.string.error_message_throttled);
-                break;
-            case 500:
-
-                if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-                    statusText = context.getString(R.string.error_message_generic);
-                }
-                else {
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                        statusText = context.getString(R.string.error_message_resend);
-                    }
-                }
-
-                break;
-        }
-
-        textView.setText(statusText);
-    }
-
     public static int getResumePosition(int currentPos, int currentSize) {
         // if we have less messages total than the minimum, just return the current position
         if (currentSize <= SurespotConstants.SAVE_MESSAGE_MINIMUM) {
@@ -306,7 +268,7 @@ public class UIUtils {
                     try {
                         json = new JSONObject(response.body().string());
                     }
-                    catch (JSONException e) {
+                    catch (Exception e) {
                         SurespotLog.i(TAG, e, "getShortUrl error");
                         launchInviteApp(context, progressDialog, longUrl);
                         return;

@@ -12,6 +12,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
@@ -59,7 +60,7 @@ public class StateController {
 		mContext = context;
 	}
 
-	public FriendState loadFriends(String username) {
+	public synchronized FriendState loadFriends(String username) {
 		String filename = getFilename(username, FRIENDS);
 		ArrayList<Friend> friends = new ArrayList<Friend>();
 		if (filename != null) {
@@ -144,13 +145,13 @@ public class StateController {
 			if (messages != null && messages.size() > 0) {
 				if (messages.size() > 0) {
 
-					String messageString = ChatUtils.chatMessagesToJson(messages).toString();
+					String messageString = ChatUtils.chatMessagesToJson(messages, true).toString();
 
 					try {
 						FileUtils.writeFile(filename, messageString);
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, e, "saveUnsentMessages");
+						SurespotLog.w(TAG, e, "saveMessageQueue");
 					}
 				}
 				else {
@@ -158,7 +159,7 @@ public class StateController {
 						new File(filename).delete();
 					}
 					catch (Exception ex) {
-						SurespotLog.w(TAG, ex, "saveUnsentMessages");
+						SurespotLog.w(TAG, ex, "saveMessageQueue");
 					}
 				}
 			}
@@ -167,14 +168,14 @@ public class StateController {
 					new File(filename).delete();
 				}
 				catch (Exception ex) {
-					SurespotLog.w(TAG, ex, "saveUnsentMessages");
+					SurespotLog.w(TAG, ex, "saveMessageQueue");
 				}
 			}
 		}
 
 	}
 
-	public List<SurespotMessage> loadUnsentMessages(String username) {
+	public synchronized List<SurespotMessage> loadUnsentMessages(String username) {
 		String filename = getFilename(username, UNSENT_MESSAGES);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		if (filename != null) {
@@ -216,7 +217,7 @@ public class StateController {
 				}
 
 				SurespotLog.v(TAG, "saving %s messages", saveSize);
-				String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize))
+				String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize), true)
 						.toString();
 				try {
 					FileUtils.writeFile(filename, sMessages);
@@ -236,7 +237,7 @@ public class StateController {
 		}
 	}
 
-	public ArrayList<SurespotMessage> loadMessages(String user, String spot) {
+	public synchronized ArrayList<SurespotMessage> loadMessages(String user, String spot) {
 		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		if (filename != null) {
@@ -255,7 +256,6 @@ public class StateController {
 				Iterator<SurespotMessage> iterator = ChatUtils.jsonStringToChatMessages(sMessages).iterator();
 				while (iterator.hasNext()) {
 					SurespotMessage message = iterator.next();
-					message.setAlreadySent(true);
 					messages.add(message);
 				}
 				SurespotLog.v(TAG, "loaded: %d messages.", messages.size());
@@ -285,7 +285,7 @@ public class StateController {
 		FileUtils.deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 	}
 
-	public static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
+	public synchronized static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
 		new AsyncTask<Void, Void, Void>() {
 			protected Void doInBackground(Void... params) {
 				// clear out some shiznit
@@ -300,12 +300,16 @@ public class StateController {
 
 				// network caches
 				SurespotApplication.getNetworkController().clearCache();
+				FileCacheController fcc = SurespotApplication.getFileCacheController();
+				if (fcc != null) {
+					fcc.clearCache();
+				}
 
 				// captured image dir
 				FileUtils.wipeImageCaptureDir(context);
 
 				// uploaded images dir
-				String localImageDir = FileUtils.getImageUploadDir(context);
+				String localImageDir = FileUtils.getFileUploadDir(context);
 				FileUtils.deleteRecursive(new File(localImageDir));
 
 				CredentialCachingService ccs = SurespotApplication.getCachingService();
@@ -323,7 +327,7 @@ public class StateController {
 		}.execute();
 	}
 
-	public static void wipeUserState(Context context, String username, String otherUsername) {
+	public synchronized static void wipeUserState(Context context, String username, String otherUsername) {
 		String publicKeyDir = FileUtils.getPublicKeyDir(context) + File.separator + otherUsername;
 		FileUtils.deleteRecursive(new File(publicKeyDir));
 
@@ -338,7 +342,7 @@ public class StateController {
 		}
 	}
 
-	public void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {
+	public synchronized void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {
 		if (username == null || password == null || secrets == null) {
 			return;
 		}
@@ -385,7 +389,7 @@ public class StateController {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<SharedSecretKey, byte[]> loadSharedSecrets(String username, String password) {
+	public synchronized Map<SharedSecretKey, byte[]> loadSharedSecrets(String username, String password) {
 		if (username == null || password == null) {
 			return null;
 		}			
@@ -436,7 +440,7 @@ public class StateController {
 		return map;
 	}
 
-	public Cookie loadCookie(String username, String password) {
+	public synchronized Cookie loadCookie(String username, String password) {
 		if (username == null || password == null) {
 			return null;
 		}
@@ -480,7 +484,7 @@ public class StateController {
 		return null;
 	}
 
-	public void saveCookie(final String username, final String password, final Cookie cookie) {
+	public synchronized void saveCookie(final String username, final String password, final Cookie cookie) {
 		if (username == null || password == null || cookie == null) {
 			return;
 		}

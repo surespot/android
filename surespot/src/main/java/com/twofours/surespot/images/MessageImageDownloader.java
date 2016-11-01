@@ -21,6 +21,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -38,7 +39,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -67,15 +68,20 @@ public class MessageImageDownloader {
     }
 
     public void download(ImageView imageView, SurespotMessage message) {
-        Bitmap bitmap = getBitmapFromCache(message.getData());
+        String uri = TextUtils.isEmpty(message.getData()) ? message.getPlainData().toString() : message.getData();
+
+        if (uri == null) {
+            return;
+        }
+        Bitmap bitmap = getBitmapFromCache(uri);
 
 
         if (bitmap == null) {
-            SurespotLog.v(TAG, "bitmap not in cache: " + message.getData());
+            SurespotLog.d(TAG, "bitmap not in memory cache: " + uri);
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.v(TAG, "loading bitmap from cache: " + message.getData());
+            SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
             cancelPotentialDownload(imageView, message);
             imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
@@ -165,86 +171,112 @@ public class MessageImageDownloader {
 
         @Override
         public void run() {
-            Bitmap bitmap = null;
-            InputStream imageStream = null;
-
-            if (mMessage.getData().startsWith("file")) {
-                try {
-                    imageStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
-                }
-                catch (FileNotFoundException e) {
-                    SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-                }
-            }
-            else {
-                imageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
-            }
-
             if (mCancelled) {
-                try {
-                    if (imageStream != null) {
-                        imageStream.close();
-                    }
-                }
-                catch (IOException e) {
-                    SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-                }
                 return;
             }
 
-            if (!mCancelled && imageStream != null) {
-                PipedOutputStream out = new PipedOutputStream();
-                PipedInputStream inputStream = null;
+            Bitmap bitmap = null;
+
+            //if we have encrypted url (local or not)
+            if (!TextUtils.isEmpty(getMessage().getData())) {
+
+
+                InputStream encryptedImageStream = null;
+
+                //check disk cache before going to network
                 try {
-                    inputStream = new PipedInputStream(out);
 
-                    EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
-                            new BufferedInputStream(imageStream), out);
-
-                    if (mCancelled) {
-                        mMessage.setLoaded(true);
-                        mMessage.setLoading(false);
-                        mChatAdapter.checkLoaded();
-                        return;
+                    encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(mMessage.getData());
+                    if (encryptedImageStream != null) {
+                        SurespotLog.d(TAG, "got cached file entry for: %s,", mMessage.getData());
                     }
-
-                    byte[] bytes = Utils.inputStreamToBytes(inputStream);
-                    if (mCancelled) {
-                        mMessage.setLoaded(true);
-                        mMessage.setLoading(false);
-                        mChatAdapter.checkLoaded();
-                        return;
-                    }
-
-                    bitmap = ChatUtils.getSampledImage(bytes);
-                }
-                catch (InterruptedIOException ioe) {
-
-                    SurespotLog.w(TAG, ioe, "MessageImage ioe");
-
                 }
                 catch (IOException e) {
-                    SurespotLog.w(TAG, e, "MessageImage e");
+                    SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", mMessage.getData());
                 }
-                finally {
 
+                if (encryptedImageStream == null) {
+                    SurespotLog.d(TAG, "no cached file entry, making http call for: %s,", mMessage.getData());
+                    encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+                }
+
+                if (mCancelled) {
                     try {
-                        if (imageStream != null) {
-                            imageStream.close();
+                        if (encryptedImageStream != null) {
+                            encryptedImageStream.close();
                         }
                     }
                     catch (IOException e) {
                         SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
                     }
+                    return;
+                }
 
+                if (!mCancelled && encryptedImageStream != null) {
+                    PipedOutputStream out = new PipedOutputStream();
+                    PipedInputStream inputStream = null;
                     try {
-                        if (inputStream != null) {
-                            inputStream.close();
+                        inputStream = new PipedInputStream(out);
+
+                        EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
+                                new BufferedInputStream(encryptedImageStream), out);
+
+                        if (mCancelled) {
+                            mMessage.setLoaded(true);
+                            mMessage.setLoading(false);
+                            mChatAdapter.checkLoaded();
+                            return;
                         }
+
+                        byte[] bytes = Utils.inputStreamToBytes(inputStream);
+                        if (mCancelled) {
+                            mMessage.setLoaded(true);
+                            mMessage.setLoading(false);
+                            mChatAdapter.checkLoaded();
+                            return;
+                        }
+
+                        bitmap = ChatUtils.getSampledImage(bytes);
+                    }
+                    catch (InterruptedIOException ioe) {
+
+                        SurespotLog.w(TAG, ioe, "MessageImage ioe");
+
                     }
                     catch (IOException e) {
-                        SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+                        SurespotLog.w(TAG, e, "MessageImage e");
                     }
+                    finally {
+
+                        try {
+                            if (encryptedImageStream != null) {
+                                encryptedImageStream.close();
+                            }
+                        }
+                        catch (IOException e) {
+                            SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+                        }
+
+                        try {
+                            if (inputStream != null) {
+                                inputStream.close();
+                            }
+                        }
+                        catch (IOException e) {
+                            SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+                        }
+                    }
+                }
+            }
+            else if (!TextUtils.isEmpty(mMessage.getPlainData())) {
+                //load unencrypted image from disk
+                try {
+                    bitmap = ChatUtils.getSampledImage(Utils.inputStreamToBytes(new FileInputStream(Uri.parse(mMessage.getPlainData().toString()).getPath())));
+                    SurespotLog.d(TAG, "loaded unencrypted bitmap from: %s, null: %b", mMessage.getPlainData().toString(), bitmap == null);
+                }
+
+                catch (IOException e) {
+                    SurespotLog.w(TAG, e, "MessageImageDownloaderTask loading unencrypted image from disk");
                 }
             }
 
@@ -291,9 +323,7 @@ public class MessageImageDownloader {
                         }
                     });
                 }
-
             }
-
         }
     }
 
@@ -335,24 +365,26 @@ public class MessageImageDownloader {
      * @param bitmap The newly downloaded bitmap.
      */
     public static void addBitmapToCache(String key, Bitmap bitmap) {
-        if (bitmap != null) {
+        if (key != null && bitmap != null) {
             mBitmapCache.addBitmapToMemoryCache(key, bitmap);
         }
     }
 
     private static Bitmap getBitmapFromCache(String key) {
-        return mBitmapCache.getBitmapFromMemCache(key);
+        if (key != null) {
+            return mBitmapCache.getBitmapFromMemCache(key);
+        }
+
+        return null;
     }
 
-    public static void evictCache() {
-        mBitmapCache.trimToSize(10);
-    }
-
-    public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
-        Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
-        if (bitmap != null) {
-            mBitmapCache.remove(sourceKey);
-            mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+    public static void moveCacheEntry(String sourceKey, String destKey) {
+        if (sourceKey != null && destKey != null) {
+            Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
+            if (bitmap != null) {
+                mBitmapCache.remove(sourceKey);
+                mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+            }
         }
     }
 }

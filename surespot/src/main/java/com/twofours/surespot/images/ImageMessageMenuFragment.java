@@ -1,15 +1,5 @@
 package com.twofours.surespot.images;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.ListIterator;
-import java.util.Observable;
-import java.util.Observer;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -33,6 +23,16 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.ListIterator;
+import java.util.Observable;
+import java.util.Observer;
+
 public class ImageMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "ImageMessageMenuFragment";
 	private SurespotMessage mMessage;
@@ -43,7 +43,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
 		Bundle args = new Bundle();
-		args.putString("message", message.toJSONObject().toString());
+		args.putString("message", message.toJSONObject(false).toString());
 		f.setArguments(args);
 
 		return f;
@@ -88,14 +88,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 		}
 
 		mItems = new ArrayList<String>(5);
-
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		// builder.setTitle(R.string.pick_color);
-
-		// if we have an errored image we can resend it
-		if (mMessage.getFrom().equals(IdentityController.getLoggedInUser()) && mMessage.getErrorStatus() > 0) {
-			mItems.add(getString(R.string.menu_resend_message));
-		}
 
 		// if it's not our message we can save it to gallery
 		if (!mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
@@ -201,12 +194,6 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 					return;
 				}
-
-				if (itemText.equals(getString(R.string.menu_resend_message))) {
-					mActivity.getChatController().resendFileMessage(mMessage.getTo(), mMessage.getIv());
-					return;
-				}
-
 			}
 		});
 

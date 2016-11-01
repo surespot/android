@@ -33,7 +33,7 @@ public class SurespotConfiguration {
 			Properties properties = new Properties();
 			properties.load(rawResource);
 			mConfigProperties = properties;
-			mStrictSsl = Boolean.parseBoolean((String) properties.get("ssl_strict")) || SurespotConstants.SSL_STRICT;
+			mStrictSsl = SurespotConstants.SSL_STRICT;
 			mBaseUrl = (String) properties.get("baseUrl");
 			mGoogleApiLicenseKey = (String) properties.get("googleApiLicenseKey");
 			mGoogleApiKey = (String) properties.get("googleApiKey");

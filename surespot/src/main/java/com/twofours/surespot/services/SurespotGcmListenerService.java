@@ -97,7 +97,19 @@ public class SurespotGcmListenerService extends GcmListenerService {
             }
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
             boolean sameUser = to.equals(IdentityController.getLoggedInUser());
-            boolean tabOpenToUser = from.equals(ChatController.getCurrentChat());
+
+            //if current chat controller is for to user
+            boolean tabOpenToUser = false;
+            ChatController chatController = SurespotApplication.getChatController();
+            if (chatController != null) {
+                if (to.equals(chatController.getUsername())) {
+                    //if tab is open on from user
+                    if (from.equals(chatController.getCurrentChat())) {
+                        tabOpenToUser = true;
+                    }
+                }
+            }
+
             boolean uiAttached = CommunicationService.isUIAttached();
 
             SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, uiAttached, hasLoggedInUser,
@@ -117,7 +129,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 if (sm != null) {
                     sm.setGcm(true);
                     // see if we can add it to existing chat controller
-                    ChatController chatController = SurespotApplication.getChatController();
                     boolean added = false;
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {

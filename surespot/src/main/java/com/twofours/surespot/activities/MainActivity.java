@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
@@ -55,6 +56,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
+import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -71,10 +73,8 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
-import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
-import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
@@ -103,9 +103,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private static Context mContext = null;
     private static Handler mMainHandler = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
-    private IAsyncCallbackTuple<String, Boolean> m401Handler;
+    private IAsyncCallback<Object> m401Handler;
 
-    private boolean mBindingCommunicationService;
     private boolean mCacheServiceBound;
     private boolean mCommunicationServiceBound;
     private Menu mMenuOverflow;
@@ -230,38 +229,24 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 
-        m401Handler = new IAsyncCallbackTuple<String, Boolean>() {
+        m401Handler = new IAsyncCallback<Object>() {
 
             @Override
-            public void handleResponse(final String message, final Boolean timedOut) {
-                SurespotLog.d(TAG, "Got 401, checking authorization.");
-                if (!SurespotApplication.getNetworkController().isUnauthorized()) {
+            public void handleResponse(Object unused) {
+                SurespotLog.d(TAG, "Got 401, launching login intent.");
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
 
-                    // if we just timed out, don't blow away the cookie or go to login screen
-                    SurespotApplication.getNetworkController().setUnauthorized(true, !timedOut);
 
-                    if (!timedOut) {
-                        SurespotLog.d(TAG, "Got 401, launching login intent.");
-                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Utils.makeToast(MainActivity.this, getString(R.string.unauthorized));
                     }
-
-                    if (!TextUtils.isEmpty(message)) {
-                        Runnable runnable = new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Utils.makeToast(MainActivity.this, message);
-
-                            }
-                        };
-                        MainActivity.this.runOnUiThread(runnable);
-                    }
-
-
-                }
+                };
+                MainActivity.this.runOnUiThread(runnable);
             }
         };
 
@@ -716,7 +701,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (service instanceof CommunicationService.CommunicationServiceBinder) {
                 CommunicationService.CommunicationServiceBinder binder = (CommunicationService.CommunicationServiceBinder) service;
                 CommunicationService cts = binder.getService();
-                cts.setServiceListener(new CommunicationServiceListener());
 
                 SurespotApplication.setCommunicationService(cts);
                 mCommunicationServiceBound = true;
@@ -808,23 +792,10 @@ public class MainActivity extends Activity implements OnMeasureListener {
         // create the chat controller here if we know we're not going to need to login
         // so that if we come back from a restart (for example a rotation), the automatically
         // created fragments have a chat controller instance
-
         mMainHandler = new Handler(getMainLooper());
-
-        // make sure the transmission service knows the UI is present and is listening
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            if (SurespotApplication.getCommunicationService().getServiceListener() == null) {
-                SurespotLog.w(TAG, "No service listener - this should have been done when the service was bound to the main activity");
-                SurespotApplication.getCommunicationService().setServiceListener(new CommunicationServiceListener());
-            }
-        }
-        else {
-            SurespotLog.d(TAG, "chat transmission service was null");
-        }
 
         //set username
         SurespotApplication.getNetworkController().setUsernameAnd401Handler(mUser, m401Handler);
-
 
         mBillingController = SurespotApplication.getBillingController();
 
@@ -850,14 +821,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         }));
 
-        // TODO: Adam wants this option to appear regardless if the user entered through the notification or not
-//        String extraUnsentMessages = getIntent().getStringExtra(SurespotConstants.ExtraNames.UNSENT_MESSAGES);
-//        if ("true".equals(extraUnsentMessages) || SurespotApplication.getCommunicationService().hasUnsentMessages()) {
-//            SurespotApplication.getCommunicationService().setPromptingResendErroredMessages();
-//            showResendMessageDialog();
-//        }
-
-        SurespotApplication.getCommunicationService().initializeService();
+        SurespotApplication.getCommunicationService().initializeService(new CommunicationServiceListener());
 
         mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
         mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
@@ -873,31 +837,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         setupChatControls();
         launch();
     }
-
-//    private void showResendMessageDialog() {
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-//
-//        alertDialogBuilder.setTitle(getString(R.string.prompt_resend));
-//        alertDialogBuilder.setMessage(getString(R.string.prompt_resend_errored_messages));
-//
-//        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int id) {
-//                dialog.cancel();
-//                SurespotApplication.getCommunicationService().setResendErroredMessages();
-//            }
-//        });
-//
-//        alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int id) {
-//                dialog.cancel();
-//                SurespotApplication.getCommunicationService().setDoNotResendErroredMessages();
-//            }
-//        });
-//
-//        AlertDialog alertDialog = alertDialogBuilder.create();
-//        // show alert
-//        alertDialog.show();
-//    }
 
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
@@ -1105,27 +1044,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "onActivityResult, requestCode: " + requestCode);
 
         switch (requestCode) {
-            case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
-                if (resultCode == RESULT_OK) {
-                    final Uri selectedImageUri = data.getData();
-                    String to = data.getStringExtra("to");
-                    SurespotLog.d(TAG, "to: " + to);
-
-                    String urisExtra = data.getStringExtra("uris");
-                    String[] uris = urisExtra.split("~~~~");
-
-                    if (uris == null || uris.length == 0) {
-                        if (selectedImageUri != null) {
-                            uploadPicture(selectedImageUri, to);
-                        }
-                    }
-                    else {
-                        for (String uri : uris) {
-                            uploadPicture(Uri.parse(uri), to);
-                        }
-                    }
-                }
-                break;
             case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
                 if (resultCode == RESULT_OK) {
                     if (mImageCaptureHandler != null) {
@@ -1183,38 +1101,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
     }
 
-    private void uploadPicture(final Uri selectedImageUri, String to) {
-        // Utils.makeToast(this, getString(R.string.uploading_image));
-        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), selectedImageUri, mUser, to, false, true);
-
-//        new IAsyncCallback<Boolean>() {
-//            @Override
-//            public void handleResponse(Boolean errorHandled) {
-//                // delete local image
-//                try {
-//                    File file = new File(new URI(selectedImageUri.toString()));
-//
-//                    boolean b = file.delete();
-//                    SurespotLog.d(TAG, "deleted temp image file: %b", b);
-//                }
-//                catch (URISyntaxException e) {
-//                }
-//
-//                if (!errorHandled) {
-//                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-//                    Runnable runnable = new Runnable() {
-//
-//                        @Override
-//                        public void run() {
-//                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-//                        }
-//                    };
-//                    getMainHandler().post(runnable);
-//                }
-//            }
-//        });
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -1263,14 +1149,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     public void uploadFriendImage(String name) {
-        MessageImageDownloader.evictCache();
         Intent intent = new Intent(this, ImageSelectActivity.class);
         intent.putExtra("to", name);
         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
         // set start intent to avoid restarting every rotation
         intent.putExtra("start", true);
         startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FRIEND_IMAGE);
-
     }
 
     private ImageCaptureHandler mImageCaptureHandler;
@@ -1300,11 +1184,11 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     return true;
                 }
 
-                MessageImageDownloader.evictCache();
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
                         Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
                         intent.putExtra("to", currentChat);
+                        intent.putExtra("from", mUser);
                         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
                         // set start intent to avoid restarting every rotation
                         intent.putExtra("start", true);
@@ -1326,7 +1210,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     return true;
                 }
 
-                MessageImageDownloader.evictCache();
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
 
@@ -1428,8 +1311,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotApplication.getCommunicationServiceNoThrow().clearServiceListener();
             }
         }
-
-        MessageImageDownloader.evictCache();
     }
 
     public static Context getContext() {
@@ -1844,50 +1725,48 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                     SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-                    ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), SurespotApplication.getNetworkController(), imageUri, mUser, mCurrentFriend.getName(), true, false);
-//                            new IAsyncCallback<Boolean>() {
-//
-//                                @Override
-//                                public void handleResponse(Boolean errorHandled) {
-                    //showing notification now
-//                                    if (!errorHandled) {
-//                                        Runnable runnable = new Runnable() {
-//
-//                                            @Override
-//                                            public void run() {
-//                                                Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_image));
-//
-//                                            }
-//                                        };
-//
-//                                        getMainHandler().post(runnable);
-//                                    }
-                    //                }
-                    //            });
+                    ChatUtils.uploadPictureMessageAsync(
+                            this,
+                            SurespotApplication.getChatController(),
+                            imageUri,
+                            mUser,
+                            mCurrentFriend.getName(),
+                            true);
                 }
-                else {
-                    if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
-                        // TODO implement
+            }
+        }
+        else {
+            if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
+                Utils.configureActionBar(this, "", mUser, true);
+                if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+
+                    ArrayList<Parcelable> uris = extras.getParcelableArrayList(Intent.EXTRA_STREAM);
+                    for (Parcelable p : uris) {
+                        final Uri imageUri = (Uri) p;
+
+                        SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
+
+                        ChatUtils.uploadPictureMessageAsync(
+                                this,
+                                SurespotApplication.getChatController(),
+                                imageUri,
+                                mUser,
+                                mCurrentFriend.getName(),
+                                true);
                     }
                 }
-
             }
-            Utils.clearIntent(getIntent());
         }
+
+
+        Utils.clearIntent(getIntent());
     }
+
 
     private void sendMessage(String username) {
         final String message = mEtMessage.getText().toString();
         if (!message.isEmpty()) {
             SurespotApplication.getChatController().sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
-
-            //final String userName = username;
-            // TEST: this mimicks the user sending 30 messages and closing the activity
-            //for (int n = 0; n < 30; n++) {
-            //	SurespotApplication.getChatController().sendMessage(userName, message + ":" + n, SurespotConstants.MimeTypes.TEXT);
-            //}
-            //finish();
-
             TextKeyListener.clear(mEtMessage.getText());
         }
     }
@@ -2185,11 +2064,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 //
 //    }
 
-    @Override
-    public void onLowMemory() {
-        MessageImageDownloader.evictCache();
-    }
-
     private void setBackgroundImage() {
         // reset preference config for adapters
         SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -2284,7 +2158,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
 
     private void bindChatTransmissionService() {
-        mBindingCommunicationService = true;
         SurespotLog.d(TAG, "binding chat transmission service");
         Intent chatIntent = new Intent(this, CommunicationService.class);
         startService(chatIntent);
@@ -2317,14 +2190,23 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         @Override
         public void onCouldNotConnectToServer() {
-            if (!logIfChatControllerNull()) {
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Utils.makeLongToast(MainActivity.this, "Could not connect to the server.");
+            MainActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    MainActivity.this.setHomeProgress(false);
+
+                    if (mCurrentFriend != null) {
+                        //notify current adapter as unsent messages are now errored
+                        ChatController cc = SurespotApplication.getChatController();
+                        if (cc != null) {
+                            ChatAdapter ca = cc.getChatAdapter(mCurrentFriend.getName(), false);
+                            if (ca != null) {
+                                ca.notifyDataSetChanged();
+                            }
+                        }
                     }
-                });
-            }
+                }
+            });
         }
 
         @Override
@@ -2339,7 +2221,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         @Override
         public void on401() {
-            m401Handler.handleResponse("socket 401", false);
+            m401Handler.handleResponse(null);
         }
 
         private boolean logIfChatControllerNull() {

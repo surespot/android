@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -64,7 +63,7 @@ public class NetworkController {
     private SSLContext mSSLContext;
     private HostnameVerifier mHostnameVerifier;
 
-    private IAsyncCallbackTuple<String, Boolean> m401Handler;
+    private IAsyncCallback<Object> m401Handler;
 
     public NetworkController() {
         SurespotLog.d(TAG, "constructor");
@@ -90,8 +89,9 @@ public class NetworkController {
                 if (response.request().url().pathSegments().contains("login")) {
                     SurespotLog.i(TAG, "authenticate re-login failed, giving up");
                     m401RetryCount = 0;
+                    setUnauthorized(true, true);
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(null);
                     }
 
                     return null;
@@ -100,8 +100,9 @@ public class NetworkController {
                 if (m401RetryCount++ >= 5) {
                     SurespotLog.i(TAG, "authenticate giving up");
                     m401RetryCount = 0;
+                    setUnauthorized(true, true);
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(null);
                     }
 
                     return null;
@@ -114,8 +115,9 @@ public class NetworkController {
                 }
                 else {
                     m401RetryCount = 0;
+                    setUnauthorized(true, true);
                     if (m401Handler != null) {
-                        m401Handler.handleResponse(SurespotApplication.getContext().getString(R.string.unauthorized), false);
+                        m401Handler.handleResponse(null);
                     }
 
                     return null;
@@ -158,7 +160,7 @@ public class NetworkController {
                 };
 
                 // Install the all-trusting trust manager
-                mSSLContext  = SSLContext.getInstance("SSL");
+                mSSLContext = SSLContext.getInstance("SSL");
                 mSSLContext.init(null, trustAllCerts, new java.security.SecureRandom());
                 // Create an ssl socket factory with our all-trusting manager
                 final SSLSocketFactory sslSocketFactory = mSSLContext.getSocketFactory();
@@ -176,6 +178,8 @@ public class NetworkController {
             }
         }
 
+        mClient.dispatcher().setMaxRequestsPerHost(16);
+
 //        if (mClient == null) {
 //            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
 //            throw new Exception("Fatal error, could not create http clients..is storage space available?");
@@ -185,15 +189,19 @@ public class NetworkController {
     }
 
 
-    public void setUsernameAnd401Handler(String username, IAsyncCallbackTuple<String, Boolean> the401Handler) {
+    public void setUsernameAnd401Handler(String username, IAsyncCallback<Object> the401Handler) {
+        SurespotLog.d(TAG, "setUsernameAnd401Handler, username: %s", username);
         mUsername = username;
         m401Handler = the401Handler;
+        mCookieStore.clear();
 
         if (username != null) {
             Cookie cookie = IdentityController.getCookieForUser(username);
             if (cookie != null) {
+                SurespotLog.d(TAG, "setUsernameAnd401Handler, got cookie for username: %s", username);
                 mCookieStore.setCookie(cookie);
             }
+
         }
     }
 
@@ -617,6 +625,11 @@ public class NetworkController {
         catch (IOException e) {
             return null;
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
 
         if (response.isSuccessful()) {
             Cookie cookie = extractConnectCookie(mCookieStore);
@@ -674,24 +687,43 @@ public class NetworkController {
 
 
     public String getPublicKeysSync(String username, String version) {
+        Response response = null;
         try {
-            return getSync("/publickeys/" + username + "/since/" + version).body().string();
+            response = getSync("/publickeys/" + username + "/since/" + version);
+            if (response.code() == 200) {
+                return response.body().string();
+            }
         }
         catch (IOException e) {
-            return null;
+            SurespotLog.w(TAG, e, "Error: getPublicKeysSync.");
         }
-
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
+        return null;
     }
 
 
     public String getKeyVersionSync(String username) {
         SurespotLog.i(TAG, "getKeyVersionSync, username: %s", username);
+        Response response = null;
         try {
-            return getSync("/keyversion/" + username).body().string();
+            response = getSync("/keyversion/" + username);
+            if (response.code() == 200) {
+                return response.body().string();
+            }
         }
         catch (IOException e) {
-            return null;
+            SurespotLog.w(TAG, e, "Error: getKeyVersionSync.");
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
+        return null;
 
     }
 
@@ -722,7 +754,7 @@ public class NetworkController {
         post("/invites/" + friendname + "/" + action, responseHandler);
     }
 
-	public void registerGcmId(Context context, String id) {
+    public void registerGcmId(Context context, String id) {
 
         String username = mUsername;
         //see if it's different for this user
@@ -735,7 +767,6 @@ public class NetworkController {
         }
 
         SurespotLog.i(TAG, "Attempting to register gcm id on surespot server.");
-
 
 
         JSONObject params = new JSONObject();
@@ -753,7 +784,7 @@ public class NetworkController {
                 .post(body)
                 .build();
 
-        Response response;
+        Response response = null;
         try {
             response = mClient.newCall(request).execute();
         }
@@ -761,15 +792,20 @@ public class NetworkController {
             SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
             return;
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
 
         // success returns 204
-        if (response.code() == 204) {
+        if (response != null && response.code() == 204) {
             SurespotLog.i(TAG, "Successfully saved GCM id on surespot server.");
 
             // the server and client match, we're golden
             Utils.putUserSharedPrefsString(context, username, SurespotConstants.PrefNames.GCM_ID_SENT, id);
         }
-	}
+    }
 
     public void validate(String username, String password, String signature, Callback responseHandler) {
         JSONObject json = new JSONObject();
@@ -822,23 +858,31 @@ public class NetworkController {
                 .post(RequestBodyUtil.create(MediaType.parse("application/octet-stream"), fileInputStream))
                 .build();
 
-        Response response;
+        Response response = null;
         try {
             response = mClient.newCall(request).execute();
             int statusCode = response.code();
-            if (statusCode == 200) {
-
-                String responseBody = response.body().string();
-                JSONObject jsonBody = new JSONObject(responseBody);
-                return new Tuple<>(200, jsonBody);
-            }
-            else {
-                SurespotLog.w(TAG, "error uploading file, response code: %d", statusCode);
+            switch (statusCode) {
+                case 200:
+                    String responseBody = response.body().string();
+                    JSONObject jsonBody = new JSONObject(responseBody);
+                    return new Tuple<>(200, jsonBody);
+                case 401:
+                    return new Tuple<>(401, null);
+                case 409:
+                    return new Tuple<>(409, null);
+                default:
+                    SurespotLog.w(TAG, "error uploading file, response code: %d", statusCode);
             }
         }
         catch (IOException e) {
             SurespotLog.w(TAG, e, "error uploading file");
             return new Tuple<>(500, null);
+        }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
         }
 
 
@@ -875,7 +919,7 @@ public class NetworkController {
                 .post(RequestBodyUtil.create(MediaType.parse("application/octet-stream"), fileInputStream))
                 .build();
 
-        Response response;
+        Response response = null;
         String responseBody = null;
 
         try {
@@ -891,6 +935,11 @@ public class NetworkController {
         catch (IOException e) {
             SurespotLog.w(TAG, e, "error uploading friend image");
         }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
+        }
 
         final String finalResponseBody = responseBody;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -903,7 +952,7 @@ public class NetworkController {
 
     public InputStream getFileStream(Context context, final String url) {
 
-        Response response;
+        Response response = null;
         try {
             Request request = new Request.Builder().url(url).build();
             response = mClient.newCall(request).execute();
@@ -912,8 +961,14 @@ public class NetworkController {
             return null;
         }
 
-        if (response.code() == 200) {
-            return response.body().byteStream();
+        if (response != null) {
+            if (response.code() == 200) {
+                return response.body().byteStream();
+            }
+
+            else {
+                response.body().close();
+            }
         }
 
         return null;
@@ -1003,15 +1058,6 @@ public class NetworkController {
         putJSON("/users/password", params, asyncHttpResponseHandler);
 
     }
-
-    public void addCacheEntry(String key, byte[] data) {
-
-    }
-
-//    public HttpCacheEntry getCacheEntry(String key) {
-//        //    return mCachingHttpClient.getCacheEntry(key);
-//        return null;
-//    }
 
     public void removeCacheEntry(String url) {
 

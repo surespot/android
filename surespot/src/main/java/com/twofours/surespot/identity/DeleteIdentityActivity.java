@@ -28,7 +28,6 @@ import java.security.PrivateKey;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class DeleteIdentityActivity extends Activity {
@@ -140,7 +139,8 @@ public class DeleteIdentityActivity extends Activity {
                             if (result != null) {
                                 // upload all this crap to the server
                                 SurespotApplication.getNetworkController().deleteUser(username, dPassword, result.authSig, result.tokenSig,
-                                        result.keyVersion, new Callback() {
+                                        result.keyVersion, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback()
+                                {
                                             @Override
                                             public void onFailure(Call call, IOException e) {
                                                 SurespotLog.i(TAG, e, "deleteIdentity");
@@ -149,7 +149,7 @@ public class DeleteIdentityActivity extends Activity {
                                             }
 
                                             @Override
-                                            public void onResponse(Call call, Response response) throws IOException {
+                                            public void onResponse(Call call, Response response, String responseString) throws IOException {
                                                 if (response.isSuccessful()) {
                                                     // delete the identity stuff locally
                                                     IdentityController.deleteIdentity(DeleteIdentityActivity.this, username, false);
@@ -165,7 +165,7 @@ public class DeleteIdentityActivity extends Activity {
 
 
                                             }
-                                        });
+                                        }));
                             }
                             else {
                                 mMpd.decrProgress();

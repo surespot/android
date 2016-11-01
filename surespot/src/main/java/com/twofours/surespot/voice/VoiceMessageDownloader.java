@@ -16,16 +16,9 @@
 
 package com.twofours.surespot.voice;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.lang.ref.WeakReference;
-
 import android.net.Uri;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.SeekBar;
 
@@ -37,7 +30,17 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.ui.UIUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.lang.ref.WeakReference;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -166,77 +169,37 @@ public class VoiceMessageDownloader {
 
 		@Override
 		public void run() {
+			if (mCancelled) {
+				return;
+			}
+
 			byte[] soundbytes = mMessage.getPlainBinaryData();
 			if (soundbytes == null) {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
-				
-				if (mCancelled) {					
-					return;
-				}
 
-				if (mMessage.getData().startsWith("file")) {
-					try {
-						SurespotLog.v(TAG, "loading voice stream from local file");
-						voiceStream = MainActivity.getContext().getContentResolver().openInputStream(Uri.parse(mMessage.getData()));
-					}
-					catch (FileNotFoundException e) {
-						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
-					}
-				}
-				else {
-					SurespotLog.v(TAG, "getting voice stream from cloud");
-					voiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
-				}
+				//see if we have unencrypted local file
+				if (!TextUtils.isEmpty(mMessage.getData())) {
 
-				if (mCancelled) {
+
+					//check disk cache before going to network
 					try {
+
+						voiceStream = SurespotApplication.getFileCacheController().getEntry(mMessage.getData());
 						if (voiceStream != null) {
-							voiceStream.close();
+							SurespotLog.d(TAG, "got cached file entry for voice: %s,", mMessage.getData());
 						}
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+						SurespotLog.w(TAG, e, "error getting cached file entry for voice: %s,", mMessage.getData());
 					}
-					return;
-				}
 
-				if (!mCancelled && voiceStream != null) {
-					PipedOutputStream out = new PipedOutputStream();
-					PipedInputStream inputStream = null;
-					try {
-						inputStream = new PipedInputStream(out);
-
-						if (mCancelled) {
-							mMessage.setLoaded(true);
-							mMessage.setLoading(false);
-							mChatAdapter.checkLoaded();
-							return;
-						}
-
-						EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
-								voiceStream, out);
-
-						soundbytes = Utils.inputStreamToBytes(inputStream);
-
-						if (mCancelled) {
-							mMessage.setPlainBinaryData(soundbytes);
-							mMessage.setLoaded(true);
-							mMessage.setLoading(false);
-							mChatAdapter.checkLoaded();
-							return;
-						}
+					if (voiceStream == null) {
+						SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", mMessage.getData());
+						voiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
 					}
-					catch (InterruptedIOException ioe) {
 
-						SurespotLog.w(TAG, ioe, "VoiceMessageDownloaderTask");
-
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
-					}
-					finally {
-
+					if (mCancelled) {
 						try {
 							if (voiceStream != null) {
 								voiceStream.close();
@@ -245,21 +208,79 @@ public class VoiceMessageDownloader {
 						catch (IOException e) {
 							SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
 						}
+						return;
+					}
 
+					if (!mCancelled && voiceStream != null) {
+						PipedOutputStream out = new PipedOutputStream();
+						PipedInputStream inputStream = null;
 						try {
-							if (inputStream != null) {
-								inputStream.close();
+							inputStream = new PipedInputStream(out);
+
+							if (mCancelled) {
+								mMessage.setLoaded(true);
+								mMessage.setLoading(false);
+								mChatAdapter.checkLoaded();
+								return;
 							}
+
+							EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
+									voiceStream, out);
+
+							soundbytes = Utils.inputStreamToBytes(inputStream);
+
+							if (mCancelled) {
+								mMessage.setPlainBinaryData(soundbytes);
+								mMessage.setLoaded(true);
+								mMessage.setLoading(false);
+								mChatAdapter.checkLoaded();
+								return;
+							}
+						}
+						catch (InterruptedIOException ioe) {
+
+							SurespotLog.w(TAG, ioe, "VoiceMessageDownloaderTask");
+
 						}
 						catch (IOException e) {
 							SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
 						}
+						finally {
+
+							try {
+								if (voiceStream != null) {
+									voiceStream.close();
+								}
+							}
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+							}
+
+							try {
+								if (inputStream != null) {
+									inputStream.close();
+								}
+							}
+							catch (IOException e) {
+								SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+							}
+						}
+					}
+				}
+				else if (!TextUtils.isEmpty(mMessage.getPlainData())) {
+					try {
+						soundbytes = Utils.inputStreamToBytes(new FileInputStream(Uri.parse(mMessage.getPlainData().toString()).getPath()));
+						SurespotLog.d(TAG, "loaded unencrypted voice from: %s, null: %b", mMessage.getPlainData().toString(), soundbytes == null);
+					}
+					catch (IOException e) {
+						SurespotLog.w(TAG, e, "error loading unencrypted voice from disk");
 					}
 				}
 			}
 			else {
 				SurespotLog.v(TAG, "getting voice stream from cache");
 			}
+
 			if (soundbytes != null) {
 
 				mMessage.setPlainBinaryData(soundbytes);

@@ -14,13 +14,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.File;
@@ -38,7 +36,7 @@ public class VoiceController {
     private static String mTo = null;
 
     public static final int SEND_THRESHOLD = 3500;
-    public static final int MAX_TIME = 60000;
+    public static final int MAX_TIME = 10000;
     public static final int INTERVAL = 50;
     private static final int SEEK_MAX = 1000;
 
@@ -281,15 +279,12 @@ public class VoiceController {
         else {
             try {
                 final String m4aFile = mSendingFile;
-                ChatUtils.uploadVoiceMessageAsync(activity, MainActivity.getChatController(), SurespotApplication.getNetworkController(),
-                        Uri.fromFile(new File(m4aFile)), mFrom, mTo, new IAsyncCallback<Boolean>() {
-                            @Override
-                            public void handleResponse(Boolean result) {
-                                // delete files
-                                SurespotLog.v(TAG, "upload complete, deleting %s", m4aFile);
-                                new File(m4aFile).delete();
-                            }
-                        });
+                ChatUtils.uploadVoiceMessageAsync(
+                        activity,
+                        MainActivity.getChatController(),
+                        Uri.fromFile(new File(m4aFile)),
+                        mFrom,
+                        mTo);
             }
             catch (Exception e) {
                 SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
@@ -469,6 +464,7 @@ public class VoiceController {
 
     private static class SeekBarThread implements Runnable {
         private boolean mRun = true;
+        private int mLastPosition = 0;
 
         @Override
         public void run() {
@@ -490,6 +486,14 @@ public class VoiceController {
                             break;
                         }
 
+                        //currentPosition sometimes wrong making seeker skip...at least stop it going backwards
+                        //https://code.google.com/p/android/issues/detail?id=2559
+                        if (currentPosition < mLastPosition) {
+                            currentPosition = mLastPosition;
+                        }
+
+                        mLastPosition = currentPosition;
+
                         progress = (int) (((float) currentPosition / (float) mDuration) * SEEK_MAX);
                         // SurespotLog.v(TAG, "SeekBarThread: %s, currentPosition: %d, duration: %d, percent: %d", mSeekBar, currentPosition, mDuration,
                         // progress);
@@ -498,17 +502,12 @@ public class VoiceController {
                         if (progress < 0) {
                             progress = 0;
                         }
-                     //   if (progress/SEEK_MAX*100 > 95) {
-                    //        progress = SEEK_MAX;
-                   //     }
-
-                        // SurespotLog.v(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
+                        //SurespotLog.d(TAG, "setting seekBar: %s, progress: %d", mSeekBar, progress);
 
                         if (currentPosition < mDuration) {
                             if (!mRun) {
                                 break;
                             }
-
                         }
                     }
 
@@ -524,6 +523,7 @@ public class VoiceController {
                 }
             }
 
+            mLastPosition = 0;
             setProgress(mSeekBar, 0);
         }
 

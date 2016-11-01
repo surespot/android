@@ -20,7 +20,6 @@ import com.twofours.surespot.encryption.MessageDecryptor;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.ui.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
 
@@ -92,7 +91,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     // update the id and sent status of the message once we received
-    private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) throws SurespotMessageSequenceException {
+    private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) {
 
         // SurespotLog.v(TAG, "addMessage, could not find message");
 
@@ -110,7 +109,7 @@ public class ChatAdapter extends BaseAdapter {
         // throw new SurespotMessageSequenceException(previousId);
         // }
         //
-       // SurespotLog.v(TAG, "addOrUpdateMessage: %s", message);
+        // SurespotLog.v(TAG, "addOrUpdateMessage: %s", message);
 
         int index = mMessages.indexOf(message);
         boolean added = false;
@@ -118,34 +117,57 @@ public class ChatAdapter extends BaseAdapter {
 
             mMessages.add(message);
             added = true;
-        } else {
+        }
+        else {
             // SurespotLog.v(TAG, "addMessage, updating message");
             SurespotMessage updateMessage = mMessages.get(index);
 
-            SurespotLog.v(TAG, "updating message: %s", updateMessage);
-            // SurespotLog.v(TAG, "new message: %s", message);
+            if (updateMessage != null) {
+                SurespotLog.v(TAG, "updating message: %s", updateMessage);
+                // SurespotLog.v(TAG, "new message: %s", message);
 
-            // don't update unless we have an id
-            if (message.getId() != null) {
-                // if the id is null 'tis the same as adding the message
-                added = updateMessage.getId() == null;
-                updateMessage.setId(message.getId());
+                // don't update unless we have an id
+                if (message.getId() != null) {
+                    // if the id is null 'tis the same as adding the message
+                    added = updateMessage.getId() == null;
+                    updateMessage.setId(message.getId());
 
-                if (message.getDateTime() != null) {
-                    updateMessage.setDateTime(message.getDateTime());
-                }
-                if (message.getData() != null) {
-                    updateMessage.setData(message.getData());
-                }
-                if (!message.isGcm()) {
-                    updateMessage.setGcm(message.isGcm());
-                }
-                if (message.getDataSize() != null) {
-                    updateMessage.setDataSize(message.getDataSize());
-                }
+                    if (message.getDateTime() != null) {
+                        updateMessage.setDateTime(message.getDateTime());
+                    }
+                    if (message.getData() != null) {
+                        updateMessage.setData(message.getData());
+                    }
+                    if (!message.isGcm()) {
+                        updateMessage.setGcm(message.isGcm());
+                    }
+                    if (message.getDataSize() != null) {
+                        updateMessage.setDataSize(message.getDataSize());
+                    }
 
-                // clear error status
-                updateMessage.setErrorStatus(0);
+                    // clear error status
+                    updateMessage.setErrorStatus(0);
+                }
+                //
+                else {
+                    //message updated by communication controller after encryption
+                    //update plain data, their version, our version
+                    if (message.getToVersion() != null) {
+                        updateMessage.setToVersion(message.getToVersion());
+                    }
+
+                    if (message.getFromVersion() != null) {
+                        updateMessage.setFromVersion(message.getFromVersion());
+                    }
+
+                    if (message.getData() != null) {
+                        updateMessage.setData(message.getData());
+                    }
+
+                    if (updateMessage.getErrorStatus() != message.getErrorStatus()) {
+                        updateMessage.setErrorStatus(message.getErrorStatus());
+                    }
+                }
             }
         }
 
@@ -159,7 +181,8 @@ public class ChatAdapter extends BaseAdapter {
         synchronized (mMessages) {
             if (mMessages.indexOf(message) == -1) {
                 mMessages.add(0, message);
-            } else {
+            }
+            else {
                 SurespotLog.v(TAG, "insertMessage, message already present: %s", message);
             }
         }
@@ -179,11 +202,8 @@ public class ChatAdapter extends BaseAdapter {
         synchronized (mMessages) {
 
             for (SurespotMessage message : messages) {
-                try {
-                    addOrUpdateMessage(message, false, false);
-                } catch (SurespotMessageSequenceException e) {
-                    SurespotLog.i(TAG, e, "addOrUpdateMessage");
-                }
+                addOrUpdateMessage(message, false, false);
+
             }
 
             sort();
@@ -210,7 +230,8 @@ public class ChatAdapter extends BaseAdapter {
         String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
         if (otherUser.equals(message.getFrom())) {
             return TYPE_THEM;
-        } else {
+        }
+        else {
             return TYPE_US;
         }
     }
@@ -237,7 +258,7 @@ public class ChatAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         // SurespotLog.v(TAG, "getView, pos: " + position);
         final int type = getItemViewType(position);
-        boolean bgImageSet = SurespotConfiguration.isBackgroundImageSet();
+        // boolean bgImageSet = SurespotConfiguration.isBackgroundImageSet();
         ChatMessageViewHolder chatMessageViewHolder = null;
 
         // check type again based on http://stackoverflow.com/questions/12018997/why-does-getview-return-wrong-convertview-objects-on-separatedlistadapter
@@ -248,7 +269,8 @@ public class ChatAdapter extends BaseAdapter {
             if (currentViewHolder.type != type) {
                 SurespotLog.v(TAG, "types do not match, creating new view for the row");
                 convertView = null;
-            } else {
+            }
+            else {
                 chatMessageViewHolder = currentViewHolder;
             }
         }
@@ -301,39 +323,41 @@ public class ChatAdapter extends BaseAdapter {
         //chatMessageViewHolder.tvTime.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
         //chatMessageViewHolder.messageSize.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
 
-        if (!SurespotConstants.MimeTypes.TEXT.equals(item.getMimeType())) {
-            SurespotLog.v(TAG, "rendering item: %s", item);
-        }
+//        if (!SurespotConstants.MimeTypes.TEXT.equals(item.getMimeType())) {
+//            SurespotLog.v(TAG, "rendering item: %s", item);
+//        }
 
         if (item.getErrorStatus() > 0) {
             SurespotLog.v(TAG, "item has error: %s", item);
-            UIUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
-        } else {
+            ChatUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
+        }
+        else {
             if (item.getId() == null) {
                 // if it's a text message or we're sending
-                if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || !item.isAlreadySent()) {
-                    // TODO: HEREHERE: determine if status should be "sending..." or "error sending message" (depending on presence in resend buffer??)
-                 //   if (SurespotApplication.getCommunicationService().messageIsInResendBuffer(item)) {
-                        chatMessageViewHolder.tvTime.setText(R.string.message_sending);
-                //    } else {
-                //        chatMessageViewHolder.tvTime.setText(R.string.error_sending_message);
-                 //   }
-                    SurespotLog.v(TAG, "getView, item.getId() is null, a text message or not loaded from disk, setting status text to sending...");
-                } else {
-                    if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                        chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
-                        SurespotLog.v(TAG, "getView, item.getId() is null, an image or voice message, setting status text to loading and decrypting...");
-                    }
-                }
-            } else {
+                //     if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+
+                chatMessageViewHolder.tvTime.setText(R.string.message_sending);
+                //
+//                    SurespotLog.v(TAG, "getView, item.getId() is null, a text message or not loaded from disk, setting status text to sending...");
+//                }
+//                else {
+//                    if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//                        chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
+//                        SurespotLog.v(TAG, "getView, item.getId() is null, an image or voice message, setting status text to loading and decrypting...");
+//                    }
+//                }
+            }
+            else {
                 if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
                     chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
-                } else {
+                }
+                else {
 
                     if (item.getDateTime() != null) {
                         chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
                                 + DateFormat.getTimeFormat(mContext).format(item.getDateTime()));
-                    } else {
+                    }
+                    else {
                         chatMessageViewHolder.tvTime.setText("");
                         SurespotLog.v(TAG, "getView, item: %s", item);
                     }
@@ -352,13 +376,15 @@ public class ChatAdapter extends BaseAdapter {
             if (item.getPlainData() != null) {
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.tvText.setText(item.getPlainData());
-            } else {
+            }
+            else {
                 chatMessageViewHolder.tvText.setText("");
                 mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
             }
             chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
             chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-        } else {
+        }
+        else {
             if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
@@ -366,7 +392,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");
-                if (!TextUtils.isEmpty(item.getData())) {
+                if (!TextUtils.isEmpty(item.getData()) || !TextUtils.isEmpty(item.getPlainData())) {
                     mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
                 }
 
@@ -374,11 +400,13 @@ public class ChatAdapter extends BaseAdapter {
 
                     chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
                     chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
-                } else {
+                }
+                else {
                     chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
                     chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
                 }
-            } else {
+            }
+            else {
                 if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                     chatMessageViewHolder.imageView.setVisibility(View.GONE);
                     chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
@@ -394,7 +422,8 @@ public class ChatAdapter extends BaseAdapter {
                             SurespotLog.v(TAG, "chatAdapter setting played to visible");
                             chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
                             chatMessageViewHolder.voicePlay.setVisibility(View.GONE);
-                        } else {
+                        }
+                        else {
                             SurespotLog.v(TAG, "chatAdapter setting played to gone");
                             chatMessageViewHolder.voicePlayed.setVisibility(View.GONE);
                             chatMessageViewHolder.voicePlay.setVisibility(View.VISIBLE);
@@ -463,7 +492,7 @@ public class ChatAdapter extends BaseAdapter {
 
     }
 
-    public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) throws SurespotMessageSequenceException {
+    public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {
         boolean added = false;
         synchronized (mMessages) {
             added = addOrUpdateMessage(message, checkSequence, sort);
@@ -624,24 +653,6 @@ public class ChatAdapter extends BaseAdapter {
 
     public ArrayList<SurespotControlMessage> getControlMessages() {
         return mControlMessages;
-    }
-
-    // after updating this is called to mark any messages we didn't get back from the server (ie. have no id set) as errored
-    public void markErrored() {
-
-        synchronized (mMessages) {
-            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
-                SurespotMessage message = iterator.next();
-
-                if (message.getId() == null) {
-
-                    if (message.getErrorStatus() == 0 && message.isAlreadySent()) {
-                        SurespotLog.v(TAG, "marking messages errored for user: %s", message.getOtherUser());
-                        message.setErrorStatus(500);
-                    }
-                }
-            }
-        }
     }
 
 }

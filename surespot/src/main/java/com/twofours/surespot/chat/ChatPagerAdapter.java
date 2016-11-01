@@ -1,8 +1,5 @@
 package com.twofours.surespot.chat;
 
-import java.util.ArrayList;
-import java.util.ListIterator;
-
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -15,6 +12,9 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.ui.SurespotFragmentPagerAdapter;
 import com.viewpagerindicator.IconProvider;
+
+import java.util.ArrayList;
+import java.util.ListIterator;
 
 public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements IconProvider {
 
@@ -29,11 +29,11 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 	@Override
 	public Fragment getItem(int i) {
-		SurespotLog.d(TAG, "getItem, I: " + i);
+		SurespotLog.v(TAG, "getItem, I: " + i);
 		if (i == 0) {
 
 			FriendFragment ff = new FriendFragment();
-			SurespotLog.d(TAG, "created new friend fragment: " + ff);
+			SurespotLog.v(TAG, "created new friend fragment: " + ff);
 
 			// ff.setRetainInstance(true);
 
@@ -42,7 +42,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		else {
 			String name = mChatFriends.get(i - 1).getName();
 			ChatFragment cf = ChatFragment.newInstance(name);
-			SurespotLog.d(TAG, "created new chat fragment: " + cf);
+			SurespotLog.v(TAG, "created new chat fragment: " + cf);
 
 			// cf.setRetainInstance(true);
 
@@ -53,9 +53,9 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 	@Override
 	public int getItemPosition(Object object) {
-		SurespotLog.d(TAG, "getItemPosition, object: " + object.getClass().getName());
+		SurespotLog.v(TAG, "getItemPosition, object: " + object.getClass().getName());
 		if (object instanceof FriendFragment) {
-			SurespotLog.d(TAG, "getItemPosition, returning 0");
+			SurespotLog.v(TAG, "getItemPosition, returning 0");
 			return 0;
 		}
 
@@ -65,11 +65,11 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		int index = getFriendIndex(user);
 
 		if (index == -1) {
-			SurespotLog.d(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
+			SurespotLog.v(TAG, "getItemPosition, returning POSITION_NONE for: " + user);
 			return POSITION_NONE;
 		}
 		else {
-			SurespotLog.d(TAG, "getItemPosition, returning " + (index + 1) + " for: " + user);
+			SurespotLog.v(TAG, "getItemPosition, returning " + (index + 1) + " for: " + user);
 			return index + 1;
 		}
 	}
@@ -80,7 +80,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		while (iterator.hasNext()) {
 			if (iterator.next().getName().equals(username)) {
 				int index = iterator.previousIndex();
-				SurespotLog.d(TAG, "friend index for %s: %d", username, index);
+				SurespotLog.v(TAG, "friend index for %s: %d", username, index);
 				return index;
 			}
 		}
@@ -182,7 +182,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		String fragname = makeFragmentName(viewId, friend.getName().hashCode());
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
 
-		// SurespotLog.d(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
+		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());
 		if (fragment != null) {
 			// blow the fragment away

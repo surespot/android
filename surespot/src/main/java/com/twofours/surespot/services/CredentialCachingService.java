@@ -99,7 +99,7 @@ public class CredentialCachingService extends Service {
 			public String load(String key) throws Exception {
 
 				String version = SurespotApplication.getNetworkController().getKeyVersionSync(key);
-				SurespotLog.v(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", key, version);
+				SurespotLog.d(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", key, version);
 				return version;
 			}
 		};

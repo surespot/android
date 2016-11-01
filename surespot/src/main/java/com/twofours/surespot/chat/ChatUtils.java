@@ -14,7 +14,9 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.util.Base64;
+import android.widget.TextView;
 
+import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -40,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,9 +75,9 @@ public class ChatUtils {
         return message.getFrom().equals(IdentityController.getLoggedInUser());
     }
 
-    public static SurespotMessage buildPlainMessage(String to, String mimeType, CharSequence plainData, String iv) {
+    public static SurespotMessage buildPlainMessage(String from, String to, String mimeType, CharSequence plainData, String iv) {
         SurespotMessage chatMessage = new SurespotMessage();
-        chatMessage.setFrom(IdentityController.getLoggedInUser());
+        chatMessage.setFrom(from);
         chatMessage.setTo(to);
         chatMessage.setPlainData(plainData);
         chatMessage.setIv(iv);
@@ -85,241 +88,210 @@ public class ChatUtils {
         return chatMessage;
     }
 
-    public static SurespotMessage buildPlainBinaryMessage(String to, String mimeType, byte[] plainData, String iv) {
-        SurespotMessage chatMessage = new SurespotMessage();
-        chatMessage.setFrom(IdentityController.getLoggedInUser());
-        chatMessage.setTo(to);
-        chatMessage.setPlainBinaryData(plainData);
-        chatMessage.setIv(iv);
-        chatMessage.setHashed(true);
+//    public static SurespotMessage buildPlainBinaryMessage(String to, String mimeType, byte[] plainData, String iv) {
+//        SurespotMessage chatMessage = new SurespotMessage();
+//        chatMessage.setFrom(IdentityController.getLoggedInUser());
+//        chatMessage.setTo(to);
+//        chatMessage.setPlainBinaryData(plainData);
+//        chatMessage.setIv(iv);
+//        chatMessage.setHashed(true);
+//
+//        // store the mime type outside teh encrypted envelope, this way we can offload resources
+//        // by mime type
+//        chatMessage.setMimeType(mimeType);
+//        return chatMessage;
+//    }
 
-        // store the mime type outside teh encrypted envelope, this way we can offload resources
-        // by mime type
-        chatMessage.setMimeType(mimeType);
-        return chatMessage;
+//    public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
+//        //might not be connected to network
+//        String theirVersion = IdentityController.getTheirLatestVersion(to);
+//        if (theirVersion == null) {
+//            return null;
+//        }
+//
+//        SurespotMessage chatMessage = new SurespotMessage();
+//        chatMessage.setFrom(IdentityController.getLoggedInUser());
+//        chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
+//        chatMessage.setTo(to);
+//        chatMessage.setToVersion(theirVersion);
+//        chatMessage.setData(cipherData);
+//        chatMessage.setPlainData(plainData);
+//        chatMessage.setIv(iv);
+//        chatMessage.setHashed(true);
+//
+//        // store the mime type outside teh encrypted envelope, this way we can offload resources
+//        // by mime type
+//        chatMessage.setMimeType(mimeType);
+//        return chatMessage;
+//    }
+
+    public static File getTempImageUploadFile(Context context) {
+        // save unencrypted image locally until we can send it
+        String localImageDir = FileUtils.getFileUploadDir(context);
+        new File(localImageDir).mkdirs();
+
+        try {
+            String localImageFilename = localImageDir + File.separator + URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
+            final File localImageFile = new File(localImageFilename);
+            localImageFile.createNewFile();
+            return localImageFile;
+        }
+        catch (UnsupportedEncodingException e) {
+            SurespotLog.w(TAG, e, "getTempImageUploadFile");
+        }
+        catch (IOException e) {
+            SurespotLog.w(TAG, e, "getTempImageUploadFile");
+        }
+
+        return null;
     }
 
-    public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
-        SurespotMessage chatMessage = new SurespotMessage();
-        chatMessage.setFrom(IdentityController.getLoggedInUser());
-        chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
-        chatMessage.setTo(to);
-        chatMessage.setToVersion(IdentityController.getTheirLatestVersion(to));
-        chatMessage.setData(cipherData);
-        chatMessage.setPlainData(plainData);
-        chatMessage.setIv(iv);
-        chatMessage.setHashed(true);
-
-        // store the mime type outside teh encrypted envelope, this way we can offload resources
-        // by mime type
-        chatMessage.setMimeType(mimeType);
-        return chatMessage;
-    }
-
-    public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
-                                                 final Uri imageUri, final String from, final String to, final boolean scale, final boolean delete) {
+    public static void uploadPictureMessageAsync(final Activity activity, final ChatController chatController,
+                                                 final Uri imageUri, final String from, final String to, final boolean scale) {
 
         Runnable runnable = new Runnable() {
 
             @Override
             public void run() {
-                SurespotLog.v(TAG, "uploadPictureMessageAsync");
+                SurespotLog.d(TAG, "uploadPictureMessageAsync");
                 try {
                     Bitmap bitmap = null;
-                    InputStream dataStream = null;
+                    final File localImageFile = getTempImageUploadFile(activity);
+                    final String localImageUri = Uri.fromFile(localImageFile).toString();
+                    SurespotLog.d(TAG, "saving copy of unencrypted image to: %s", localImageFile.getAbsolutePath());
+
+                    //scale to file
                     if (scale) {
-                        SurespotLog.v(TAG, "scalingImage");
+                        SurespotLog.d(TAG, "scalingImage");
                         bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConstants.MESSAGE_IMAGE_DIMENSION);
 
                         if (bitmap != null) {
                             final Bitmap finalBitmap = bitmap;
-                            final PipedOutputStream pos = new PipedOutputStream();
-                            dataStream = new PipedInputStream(pos);
+                            final FileOutputStream fos = new FileOutputStream(localImageFile);
                             Runnable runnable = new Runnable() {
                                 @Override
                                 public void run() {
-                                    SurespotLog.v(TAG, "compressingImage");
-                                    finalBitmap.compress(Bitmap.CompressFormat.JPEG, 75, pos);
+                                    SurespotLog.d(TAG, "compressingImage");
+                                    finalBitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
                                     try {
-                                        pos.close();
-                                        SurespotLog.v(TAG, "imageCompressed");
-                                    } catch (IOException e) {
+                                        fos.close();
+                                        SurespotLog.d(TAG, "imageCompressed");
+                                    }
+                                    catch (IOException e) {
                                         SurespotLog.w(TAG, e, "error compressing image");
                                     }
                                 }
                             };
                             SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
                         }
-                    } else {
-                        dataStream = activity.getContentResolver().openInputStream(imageUri);
+                    }
+                    else {
+                        Utils.copyStreamToFile(activity.getContentResolver().openInputStream(imageUri), localImageFile);
                     }
 
-                    if (dataStream != null) {
-
-                        PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-                        final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-
-                        final String ourVersion = IdentityController.getOurLatestVersion();
-                        final String theirVersion = IdentityController.getTheirLatestVersion(to);
-
-                        final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
-                                encryptionOutputStream);
-
-                        if (scale) {
-                            // use iv as key
-
-                            if (bitmap != null) {
-                                // scale to display size
-                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
-                                bitmap = getSampledImage(bos.toByteArray());
-                                bos.close();
-
-                            }
-                        } else {
-                            // scale to display size
-                            bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
-                        }
-
-                        // save encrypted image locally until we receive server confirmation
-                        String localImageDir = FileUtils.getImageUploadDir(activity);
-
-                        new File(localImageDir).mkdirs();
-
-                        String localImageFilename = localImageDir + File.separator
-                                + URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
-                        final File localImageFile = new File(localImageFilename);
-
-                        localImageFile.createNewFile();
-                        String localImageUri = Uri.fromFile(localImageFile).toString();
-                        SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
-                        SurespotMessage message = null;
+                    //scale for display
+                    if (scale) {
                         if (bitmap != null) {
-                            SurespotLog.v(TAG, "adding bitmap to cache: %s", localImageUri);
-
-                            MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
-                            message = buildMessage(to, SurespotConstants.MimeTypes.IMAGE, null, iv, localImageUri);
-                            message.setId(null);
-
-                            final SurespotMessage finalMessage = message;
-
-                            activity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    SurespotLog.v(TAG, "adding local image message %s", finalMessage);
-                                    chatController.addMessage(activity, finalMessage);
-                                }
-                            });
+                            // scale to display size
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 75, bos);
+                            bitmap = getSampledImage(bos.toByteArray());
+                            bos.close();
                         }
+                    }
+                    else {
+                        // scale to display size
+                        bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
+                    }
 
+                    if (bitmap != null) {
+                        SurespotLog.d(TAG, "adding unencrypted bitmap to memory cache: %s", localImageUri);
+
+                        String iv = EncryptionController.getStringIv();
+                        MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
+                        SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.IMAGE, localImageUri, iv);
                         final SurespotMessage finalMessage = message;
-                        Runnable saveFileRunnable = new Runnable() {
+
+                        activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-
-                                // save encrypted image to disk
-                                FileOutputStream fileSaveStream;
-                                try {
-                                    fileSaveStream = new FileOutputStream(localImageFile);
-
-                                    int bufferSize = 1024;
-                                    byte[] buffer = new byte[bufferSize];
-
-                                    int len = 0;
-                                    while ((len = encryptionInputStream.read(buffer)) != -1) {
-                                        fileSaveStream.write(buffer, 0, len);
-                                    }
-                                    fileSaveStream.close();
-                                    encryptionInputStream.close();
-
-                                } catch (IOException e) {
-                                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-                                    if (finalMessage != null) {
-                                        finalMessage.setErrorStatus(500);
-                                    }
-                                    //TODO notification with retry?
-                                 //   callback.handleResponse(true);
-                                    return;
-                                }
-
-                                // upload encrypted image to server
-//                                FileInputStream uploadStream;
-//                                try {
-//                                    uploadStream = new FileInputStream(localImageFile);
-//                                } catch (FileNotFoundException e) {
-//                                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync"); Did you forget to close a response body?
-//                                    if (finalMessage != null) {
-//                                        finalMessage.setErrorStatus(500);
-//                                    }
-//                              //      callback.handleResponse(true);
-//                                    //TODO notification with retry?
-//                                    return;
-//                                }
-
-                          //      FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.IMAGE, localImageFile.getAbsolutePath());
-//                                fileStreamTask.mTo = to;
-//                                fileStreamTask.mIv = iv;
-//
-//                                //fileStreamTask.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
-//                                fileStreamTask.mLocalFilePath = localImageFile.getAbsolutePath();
-//                                fileStreamTask.mMimeType = SurespotConstants.MimeTypes.IMAGE;
-//                                fileStreamTask.mAsyncCallback = new IAsyncCallback<Integer>() {
-//
-//                                    @Override
-//                                    public void handleResponse(Integer statusCode) {
-//                                        // if it failed update the message
-//                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-//                                        ChatAdapter chatAdapter = null;
-//                                        switch (statusCode) {
-//                                            case 200:
-//                                                break;
-//                                            case 402:
-//                                                if (finalMessage != null) {
-//                                                    finalMessage.setErrorStatus(402);
-//                                                }
-//                                                chatAdapter = chatController.getChatAdapter(activity, to);
-//                                                if (chatAdapter != null) {
-//                                                    chatAdapter.notifyDataSetChanged();
-//                                                }
-//                                                break;
-//                                            default:
-//                                                if (finalMessage != null) {
-//                                                    finalMessage.setErrorStatus(500);
-//                                                }
-//                                                chatAdapter = chatController.getChatAdapter(activity, to);
-//                                                if (chatAdapter != null) {
-//                                                    chatAdapter.notifyDataSetChanged();
-//                                                }
-//                                        }
-//                                        //TODO error notification?
-//                                    //    callback.handleResponse(true);
-//                                    }
-//                                };
-
-                                if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
-                                    SurespotApplication.getCommunicationService().processNextMessage();
-                                }
-                                else {
-                                    //TODO mark errored
-
-                                }
+                                SurespotLog.d(TAG, "adding local image message %s", finalMessage);
+                                chatController.addMessage(finalMessage);
                             }
-                        };
+                        });
 
-                        SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
+                        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                            SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
+                            SurespotApplication.getCommunicationService().processNextMessage();
+                        }
+                        else {
+                            //TODO mark errored? error notification? error toast?
 
-                    } else {
-                        //TODO error notification
-                     //   callback.handleResponse(false);
+                        }
                     }
-                } catch (IOException e) {
+
+                }
+                catch (IOException e) {
+                    //TODO mark errored? error notification? error toast?
                     SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
                 }
             }
         };
 
         SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+    }
+
+
+    public static void uploadVoiceMessageAsync(
+            final Activity activity,
+            final ChatController chatController,
+            final Uri audioUri,
+            final String from,
+            final String to) {
+
+        Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                SurespotLog.v(TAG, "uploadVoiceMessageAsync");
+                try {
+                    final File localImageFile = getTempImageUploadFile(activity);
+                    final String localImageUri = Uri.fromFile(localImageFile).toString();
+                    SurespotLog.d(TAG, "saving copy of unencrypted voice to: %s", localImageFile.getAbsolutePath());
+
+
+                    Utils.copyStreamToFile(activity.getContentResolver().openInputStream(audioUri), localImageFile);
+                    String iv = EncryptionController.getStringIv();
+                    SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.M4A, localImageUri, iv);
+                    final SurespotMessage finalMessage = message;
+
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SurespotLog.d(TAG, "adding local voice message %s", finalMessage);
+                            chatController.addMessage(finalMessage);
+                        }
+                    });
+
+                    if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+                        SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
+                        SurespotApplication.getCommunicationService().processNextMessage();
+                    }
+                    else {
+                        //TODO mark errored? error notification? error toast?
+
+                    }
+                }
+                catch (IOException e) {
+                    //TODO mark errored
+                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
+                    //callback.handleResponse(false);
+                }
+            }
+        };
+
+        SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+
     }
 
     public static void uploadFriendImageAsync(final Activity activity, final NetworkController networkController, final Uri imageUri, final String friendName,
@@ -346,12 +318,14 @@ public class ChatUtils {
                         public void handleResponse(String uri) {
                             if (uri != null) {
                                 callback.handleResponse(uri, ourVersion, iv);
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(null, null, null);
                             }
                         }
                     });
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     callback.handleResponse(null, null, null);
                     SurespotLog.w(TAG, e, "uploadFriendImageAsync");
                 }
@@ -362,205 +336,6 @@ public class ChatUtils {
 
     }
 
-    public static void uploadVoiceMessageAsync(final Activity activity, final ChatController chatController, final NetworkController networkController,
-                                               final Uri audioUri, final String from, final String to, final IAsyncCallback<Boolean> callback) {
-
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                SurespotLog.v(TAG, "uploadVoiceMessageAsync");
-                try {
-                    InputStream dataStream = null;
-
-                    dataStream = activity.getContentResolver().openInputStream(audioUri);
-
-                    if (dataStream != null) {
-
-                        PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-                        final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-
-                        final String ourVersion = IdentityController.getOurLatestVersion();
-                        final String theirVersion = IdentityController.getTheirLatestVersion(to);
-
-                        final String iv = EncryptionController.runEncryptTask(ourVersion, to, theirVersion, new BufferedInputStream(dataStream),
-                                encryptionOutputStream);
-
-                        // save encrypted audio locally until we receive server confirmation
-                        String localImageDir = FileUtils.getImageUploadDir(activity);
-                        new File(localImageDir).mkdirs();
-
-                        String localImageFilename = localImageDir + File.separator
-                                + URLEncoder.encode(String.valueOf(mImageUploadFileRandom.nextInt()) + ".tmp", "UTF-8");
-                        final File localImageFile = new File(localImageFilename);
-
-                        localImageFile.createNewFile();
-                        final String localImageUri = Uri.fromFile(localImageFile).toString();
-                        SurespotLog.v(TAG, "saving copy of encrypted image to: %s", localImageFilename);
-
-                        Runnable saveFileRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-
-                                SurespotMessage message = null;
-                                // save encrypted voice message to disk
-                                FileOutputStream fileSaveStream;
-                                try {
-                                    fileSaveStream = new FileOutputStream(localImageFile);
-
-                                    int bufferSize = 1024;
-                                    byte[] buffer = new byte[bufferSize];
-
-                                    int len = 0;
-                                    while ((len = encryptionInputStream.read(buffer)) != -1) {
-                                        fileSaveStream.write(buffer, 0, len);
-                                    }
-                                    fileSaveStream.close();
-                                    encryptionInputStream.close();
-
-                                    message = buildMessage(to, SurespotConstants.MimeTypes.M4A, null, iv, localImageUri);
-                                    message.setId(null);
-
-                                    final SurespotMessage finalMessage = message;
-                                    SurespotLog.v(TAG, "adding local voice message %s", finalMessage);
-                                    //need to add the message synchronously immediately so we can pull it out later
-                                    chatController.addMessage(activity, finalMessage);
-
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            //then update on UI thread async
-                                            ChatAdapter chatAdapter = chatController.getChatAdapter(finalMessage.getTo());
-                                            if (chatAdapter != null) {
-                                                chatAdapter.notifyDataSetChanged();
-                                            }
-
-                                        }
-                                    });
-
-                                } catch (IOException e) {
-                                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-                                    if (message != null) {
-                                        message.setErrorStatus(500);
-                                    }
-                                    callback.handleResponse(true);
-                                    return;
-                                }
-
-//                                // upload encrypted image to server
-//                                FileInputStream uploadStream;
-//                                try {
-//                                    uploadStream = new FileInputStream(localImageFile);
-//                                } catch (FileNotFoundException e) {
-//                                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-//                                    if (message != null) {
-//                                        message.setErrorStatus(500);
-//                                    }
-//                                    callback.handleResponse(true);
-//                                    return;
-//                                }
-//
-                                final SurespotMessage finalMessage = message;
-
-                        //        FileStreamTaskData fileStreamTask = new FileStreamTaskData(from, to, iv, SurespotConstants.MimeTypes.M4A, localImageFile.getAbsolutePath());
-//                                fileStreamTask.mTo = to;
-//                                fileStreamTask.mIv = iv;
-//                                fileStreamTask.mLocalFilePath = localImageFile.getAbsolutePath();
-//                                fileStreamTask.mStream = uploadStream; // is it okay to leave the file stream open for potentially a long time?
-//                                fileStreamTask.mMimeType = SurespotConstants.MimeTypes.M4A;
-//                                fileStreamTask.mChatController = chatController;
-//                                fileStreamTask.mAsyncCallback = new IAsyncCallback<Integer>() {
-//
-//                                    @Override
-//                                    public void handleResponse(Integer statusCode) {
-//                                        // if it failed update the message
-//                                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-//                                        ChatAdapter chatAdapter = null;
-//                                        switch (statusCode) {
-//                                            case 200:
-//                                                break;
-//                                            case 402:
-//                                                if (finalMessage != null) {
-//                                                    finalMessage.setErrorStatus(402);
-//                                                }
-//                                                chatAdapter = fileStreamTask.mChatController.getChatAdapter(activity, to);
-//                                                if (chatAdapter != null) {
-//                                                    chatAdapter.notifyDataSetChanged();
-//                                                }
-//                                                break;
-//                                            default:
-//                                                if (finalMessage != null) {
-//                                                    finalMessage.setErrorStatus(500);
-//                                                }
-//                                                chatAdapter = fileStreamTask.mChatController.getChatAdapter(activity, to);
-//                                                if (chatAdapter != null) {
-//                                                    chatAdapter.notifyDataSetChanged();
-//                                                }
-//                                        }
-//
-//                                        callback.handleResponse(true);
-//                                    }
-//                                };
-
-                                if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                    SurespotApplication.getCommunicationService().enqueueMessage(finalMessage);
-                                    SurespotApplication.getCommunicationService().processNextMessage();
-                                }
-                                //else ? TODO wtf owen set errored immediately
-                            }
-                        };
-
-                        SurespotApplication.THREAD_POOL_EXECUTOR.execute(saveFileRunnable);
-
-                    } else {
-                        callback.handleResponse(false);
-                    }
-                } catch (IOException e) {
-                    SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-                    callback.handleResponse(false);
-                }
-            }
-        };
-
-        SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
-
-    }
-
-//    public static void resendFileMessage(NetworkController networkController, final SurespotMessage message,
-//                                         final IAsyncCallback<Integer> callback) {
-//
-//        // upload encrypted file to server
-//        FileInputStream uploadStream = null;
-//        try {
-//            if (message.getData().startsWith("file")) {
-//                uploadStream = new FileInputStream(new File(new URI(message.getData())));
-//            } else {
-//                callback.handleResponse(500);
-//            }
-//        } catch (IllegalArgumentException e) {
-//            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-//            callback.handleResponse(500);
-//            return;
-//        } catch (FileNotFoundException e) {
-//            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-//            callback.handleResponse(500);
-//            return;
-//        } catch (URISyntaxException e) {
-//            SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
-//            callback.handleResponse(500);
-//            return;
-//        }
-//
-//        SurespotApplication.getCommunicationService().postFileStream(message.getOurVersion(), message.getTo(), message.getTheirVersion(), message.getIv(), uploadStream,
-//                message.getMimeType(), new IAsyncCallback<Integer>() {
-//
-//                    @Override
-//                    public void handleResponse(Integer statusCode) {
-//                        SurespotLog.v(TAG, "postFileStream complete, result: %d", statusCode);
-//                        callback.handleResponse(statusCode);
-//                    }
-//                });
-//    }
 
     public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, int rotate, int maxDimension) {
         //
@@ -582,13 +357,15 @@ public class ChatUtils {
             // if we have a rotation use it otherwise look at the EXIF
             if (rotate > -1) {
                 orientation = rotate;
-            } else {
+            }
+            else {
                 orientation = (int) rotationForImage(context, imageUri);
             }
             if (orientation == 90 || orientation == 270) {
                 rotatedWidth = options.outHeight;
                 rotatedHeight = options.outWidth;
-            } else {
+            }
+            else {
                 rotatedWidth = options.outWidth;
                 rotatedHeight = options.outHeight;
             }
@@ -605,7 +382,8 @@ public class ChatUtils {
                 options.inSampleSize = (int) Math.round(maxRatio);
                 SurespotLog.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
                 srcBitmap = BitmapFactory.decodeStream(is, null, options);
-            } else {
+            }
+            else {
                 srcBitmap = BitmapFactory.decodeStream(is);
             }
 
@@ -624,7 +402,8 @@ public class ChatUtils {
             }
 
             return srcBitmap;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "decodeSampledBitmapFromUri");
         }
         return null;
@@ -709,7 +488,8 @@ public class ChatUtils {
                     if (rotation2 != 0) {
                         return rotation2;
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     //fallback to old code
                 }
             }
@@ -722,7 +502,8 @@ public class ChatUtils {
                 return c.getInt(0);
             }
 
-        } else if (uri.getScheme().equals("file")) {
+        }
+        else if (uri.getScheme().equals("file")) {
             return getRotationFromPath(uri.getPath());
         }
         return 0f;
@@ -733,7 +514,8 @@ public class ChatUtils {
             ExifInterface exif = new ExifInterface(path);
             int rotation = (int) exifOrientationToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL));
             return rotation;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.e(TAG, e, "Error checking exif");
         }
         return 0;
@@ -787,10 +569,12 @@ public class ChatUtils {
 
         if (cursor.moveToFirst()) {
             filePath = cursor.getString(columnIndex);
-        } else {
+        }
+        else {
             if (wholeID.startsWith("primary:")) {
                 filePath = wholeID.replace("primary:", "");
-            } else {
+            }
+            else {
                 return wholeID;
             }
         }
@@ -801,22 +585,24 @@ public class ChatUtils {
     private static float exifOrientationToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+        }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
             return 180;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+        }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
             return 270;
         }
         return 0;
     }
 
-    public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages) {
+    public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages, boolean withPlain) {
         // avoid concurrent modification issues
         synchronized (messages) {
             SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
             JSONArray jsonMessages = new JSONArray();
 
             for (SurespotMessage message : messageArray) {
-                jsonMessages.put(message.toJSONObject());
+                jsonMessages.put(message.toJSONObject(withPlain));
             }
 
             return jsonMessages;
@@ -831,8 +617,9 @@ public class ChatUtils {
             for (int i = 0; i < jsonUM.length(); i++) {
                 messages.add(SurespotMessage.toSurespotMessage(jsonUM.getJSONObject(i)));
             }
-        } catch (JSONException e) {
-            SurespotLog.w(TAG, "jsonStringToChatMessages", e);
+        }
+        catch (JSONException e) {
+            SurespotLog.w(TAG, e, "jsonStringToChatMessages");
         }
         return messages;
 
@@ -846,8 +633,9 @@ public class ChatUtils {
             for (int i = 0; i < jsonUM.length(); i++) {
                 messages.add(SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i))));
             }
-        } catch (JSONException e) {
-            SurespotLog.w(TAG, "jsonStringsToMessages", e);
+        }
+        catch (JSONException e) {
+            SurespotLog.w(TAG, e, "jsonStringsToMessages");
         }
         return messages;
 
@@ -885,9 +673,11 @@ public class ChatUtils {
     public static String unicodeEscaped(int ch) {
         if (ch < 0x10) {
             return "\\u000" + Integer.toHexString(ch);
-        } else if (ch < 0x100) {
+        }
+        else if (ch < 0x100) {
             return "\\u00" + Integer.toHexString(ch);
-        } else if (ch < 0x1000) {
+        }
+        else if (ch < 0x1000) {
             return "\\u0" + Integer.toHexString(ch);
         }
         return "\\u" + Integer.toHexString(ch);
@@ -914,6 +704,44 @@ public class ChatUtils {
             return null;
         }
         return unicodeEscaped(ch.charValue());
+    }
+
+    public static void setMessageErrorText(Context context, TextView textView, SurespotMessage message) {
+        String statusText = null;
+        switch (message.getErrorStatus()) {
+            case 400:
+                statusText = context.getString(R.string.message_error_invalid);
+                break;
+            case 402:
+//			// if it's voice message they need to have upgraded, otherwise fall through to 403
+//			if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//				statusText = context.getString(R.string.billing_payment_required_voice);
+//				break;
+//			}
+            case 403:
+                statusText = context.getString(R.string.message_error_unauthorized);
+                break;
+            case 404:
+                statusText = context.getString(R.string.message_error_unauthorized);
+                break;
+            case 429:
+                statusText = context.getString(R.string.error_message_throttled);
+                break;
+            case 500:
+
+                //if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                statusText = context.getString(R.string.error_message_generic);
+//                }
+//                else {
+//                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+//                        statusText = context.getString(R.string.error_message_resend);
+//                    }
+//                }
+
+                break;
+        }
+
+        textView.setText(statusText);
     }
 
     public static class CodePoint {

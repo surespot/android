@@ -2,13 +2,9 @@ package com.twofours.surespot.friends;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,7 +18,6 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -172,7 +167,7 @@ public class FriendAdapter extends BaseAdapter {
                 String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
                         friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
-                SurespotLog.d(TAG, "setting alias for %s", friend.getName());
+                SurespotLog.v(TAG, "setting alias for %s", friend.getName());
                 friend.setAliasPlain(plainText);
             }
         }
@@ -333,6 +328,7 @@ public class FriendAdapter extends BaseAdapter {
 
                 @Override
                 public void onResponse(Call call, Response response, String responseString) throws IOException {
+                    SurespotLog.i(TAG, "respondToInvite, code: %d", response.code());
                     if (response.isSuccessful()) {
 
                         SurespotLog.d(TAG, "Invitation acted upon successfully: " + action);
@@ -352,8 +348,18 @@ public class FriendAdapter extends BaseAdapter {
                         Collections.sort(mFriends);
                         notifyDataSetChanged();
                     } else {
-                        SurespotLog.i(TAG, "respondToInvite");
-                        Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                        //if we got a 404 delete the user
+//                        if (response.code() == 404) {
+//                            SurespotLog.i(TAG, "respondToInvite got 404, deleting friend: %s from user: %s", friendname, IdentityController.getLoggedInUser());
+//                            mFriends.remove(position);
+//                            mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname,
+//                                    SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+//                            Collections.sort(mFriends);
+//                            notifyDataSetChanged();
+//                        }
+//                        else {
+                            Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                        //}
                     }
                 }
             }));
