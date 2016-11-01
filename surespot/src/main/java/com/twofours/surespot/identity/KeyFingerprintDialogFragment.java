@@ -1,12 +1,5 @@
 package com.twofours.surespot.identity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.os.AsyncTask;
@@ -20,12 +13,18 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.ui.ExpandableHeightListView;
 import com.twofours.surespot.ui.UIUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class KeyFingerprintDialogFragment extends DialogFragment {
 	private static final String TAG = "KeyFingerprintDialogFragment";
@@ -112,8 +111,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 					if (activity == null) {
 						return null;
 					}
-					
-					Utils.makeToast(activity, activity.getString(R.string.could_not_load_public_keys));
+
 					return null;
 				}
 				
@@ -125,7 +123,6 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(mUsername, sVer);
 
 						if (pubkeys == null) {
-							Utils.makeToast(activity, activity.getString(R.string.could_not_load_public_keys));
 							return null;
 						}
 						
@@ -154,6 +151,10 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 			protected void onPostExecute(List<HashMap<String, String>> theirItems) {
 				if (theirItems == null) {
 					dismiss();
+					Activity activity = getActivity();
+					if (activity != null) {
+						Utils.makeToast(activity, activity.getString(R.string.could_not_load_public_keys));
+					}
 					return;
 				}
 
