@@ -1590,9 +1590,17 @@ public class ChatController {
 
             // if it's an file message, delete the local file
             if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                if (message.getData().startsWith("file")) {
+                if (message.getData() != null && message.getData().startsWith("file")) {
                     try {
                         new File(new URI(message.getData())).delete();
+                    }
+                    catch (URISyntaxException e) {
+                        SurespotLog.w(TAG, e, "deleteMessage");
+                    }
+                }
+                if (message.getPlainData() != null && message.getPlainData().toString().startsWith("file")) {
+                    try {
+                        new File(new URI(message.getPlainData().toString())).delete();
                     }
                     catch (URISyntaxException e) {
                         SurespotLog.w(TAG, e, "deleteMessage");
