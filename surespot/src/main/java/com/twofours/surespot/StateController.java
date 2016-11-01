@@ -60,7 +60,7 @@ public class StateController {
 		mContext = context;
 	}
 
-	public FriendState loadFriends(String username) {
+	public synchronized FriendState loadFriends(String username) {
 		String filename = getFilename(username, FRIENDS);
 		ArrayList<Friend> friends = new ArrayList<Friend>();
 		if (filename != null) {
@@ -175,7 +175,7 @@ public class StateController {
 
 	}
 
-	public List<SurespotMessage> loadUnsentMessages(String username) {
+	public synchronized List<SurespotMessage> loadUnsentMessages(String username) {
 		String filename = getFilename(username, UNSENT_MESSAGES);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		if (filename != null) {
@@ -237,7 +237,7 @@ public class StateController {
 		}
 	}
 
-	public ArrayList<SurespotMessage> loadMessages(String user, String spot) {
+	public synchronized ArrayList<SurespotMessage> loadMessages(String user, String spot) {
 		String filename = getFilename(user, MESSAGES_PREFIX + spot);
 		ArrayList<SurespotMessage> messages = new ArrayList<SurespotMessage>();
 		if (filename != null) {
@@ -285,7 +285,7 @@ public class StateController {
 		FileUtils.deleteRecursive(new File(FileUtils.getStateDir(context) + File.separator + identityName));
 	}
 
-	public static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
+	public synchronized static void clearCache(final Context context, final IAsyncCallback<Void> callback) {
 		new AsyncTask<Void, Void, Void>() {
 			protected Void doInBackground(Void... params) {
 				// clear out some shiznit
@@ -327,7 +327,7 @@ public class StateController {
 		}.execute();
 	}
 
-	public static void wipeUserState(Context context, String username, String otherUsername) {
+	public synchronized static void wipeUserState(Context context, String username, String otherUsername) {
 		String publicKeyDir = FileUtils.getPublicKeyDir(context) + File.separator + otherUsername;
 		FileUtils.deleteRecursive(new File(publicKeyDir));
 
@@ -342,7 +342,7 @@ public class StateController {
 		}
 	}
 
-	public void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {
+	public synchronized void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {
 		if (username == null || password == null || secrets == null) {
 			return;
 		}
@@ -389,7 +389,7 @@ public class StateController {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<SharedSecretKey, byte[]> loadSharedSecrets(String username, String password) {
+	public synchronized Map<SharedSecretKey, byte[]> loadSharedSecrets(String username, String password) {
 		if (username == null || password == null) {
 			return null;
 		}			
@@ -440,7 +440,7 @@ public class StateController {
 		return map;
 	}
 
-	public Cookie loadCookie(String username, String password) {
+	public synchronized Cookie loadCookie(String username, String password) {
 		if (username == null || password == null) {
 			return null;
 		}
@@ -484,7 +484,7 @@ public class StateController {
 		return null;
 	}
 
-	public void saveCookie(final String username, final String password, final Cookie cookie) {
+	public synchronized void saveCookie(final String username, final String password, final Cookie cookie) {
 		if (username == null || password == null || cookie == null) {
 			return;
 		}
