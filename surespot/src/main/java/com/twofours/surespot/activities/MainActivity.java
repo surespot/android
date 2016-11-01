@@ -1044,27 +1044,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "onActivityResult, requestCode: " + requestCode);
 
         switch (requestCode) {
-            case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE:
-                if (resultCode == RESULT_OK) {
-                    final Uri selectedImageUri = data.getData();
-                    String to = data.getStringExtra("to");
-                    SurespotLog.d(TAG, "to: " + to);
-
-                    String urisExtra = data.getStringExtra("uris");
-                    String[] uris = urisExtra.split("~~~~");
-
-                    if (uris == null || uris.length == 0) {
-                        if (selectedImageUri != null) {
-                            uploadPicture(selectedImageUri, to);
-                        }
-                    }
-                    else {
-                        for (String uri : uris) {
-                            uploadPicture(Uri.parse(uri), to);
-                        }
-                    }
-                }
-                break;
             case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE:
                 if (resultCode == RESULT_OK) {
                     if (mImageCaptureHandler != null) {
@@ -1120,10 +1099,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 super.onActivityResult(requestCode, resultCode, data);
         }
 
-    }
-
-    private void uploadPicture(final Uri selectedImageUri, String to) {
-        ChatUtils.uploadPictureMessageAsync(this, SurespotApplication.getChatController(), selectedImageUri, mUser, to, false);
     }
 
     @Override
@@ -1213,6 +1188,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     protected Void doInBackground(Void... params) {
                         Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
                         intent.putExtra("to", currentChat);
+                        intent.putExtra("from", mUser);
                         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
                         // set start intent to avoid restarting every rotation
                         intent.putExtra("start", true);
