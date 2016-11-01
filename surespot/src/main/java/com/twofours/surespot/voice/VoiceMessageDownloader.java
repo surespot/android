@@ -178,25 +178,25 @@ public class VoiceMessageDownloader {
 				// see if the data has been sent to us inline
 				InputStream voiceStream = null;
 
-				//see if we have unencrypted local file
-				if (!TextUtils.isEmpty(mMessage.getData())) {
-
-
+				//see if we have encrypted local file
+				final String messageData = mMessage.getData();
+				String messageString = null;
+				if (!TextUtils.isEmpty(messageData)) {
 					//check disk cache before going to network
 					try {
 
-						voiceStream = SurespotApplication.getFileCacheController().getEntry(mMessage.getData());
+						voiceStream = SurespotApplication.getFileCacheController().getEntry(messageData);
 						if (voiceStream != null) {
-							SurespotLog.d(TAG, "got cached file entry for voice: %s,", mMessage.getData());
+							SurespotLog.d(TAG, "got cached file entry for voice: %s,", messageData);
 						}
 					}
 					catch (IOException e) {
-						SurespotLog.w(TAG, e, "error getting cached file entry for voice: %s,", mMessage.getData());
+						SurespotLog.w(TAG, e, "error getting cached file entry for voice: %s,", messageData);
 					}
 
 					if (voiceStream == null) {
-						SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", mMessage.getData());
-						voiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+						SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", messageData);
+						voiceStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), messageData);
 					}
 
 					if (mCancelled) {
@@ -267,13 +267,17 @@ public class VoiceMessageDownloader {
 						}
 					}
 				}
-				else if (!TextUtils.isEmpty(mMessage.getPlainData())) {
-					try {
-						soundbytes = Utils.inputStreamToBytes(new FileInputStream(Uri.parse(mMessage.getPlainData().toString()).getPath()));
-						SurespotLog.d(TAG, "loaded unencrypted voice from: %s, null: %b", mMessage.getPlainData().toString(), soundbytes == null);
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "error loading unencrypted voice from disk");
+				else {
+					CharSequence messagePlainSequence = mMessage.getPlainData();
+					if (!TextUtils.isEmpty(messagePlainSequence)) {
+						try {
+							messageString = messagePlainSequence.toString();
+							soundbytes = Utils.inputStreamToBytes(new FileInputStream(Uri.parse(messageString).getPath()));
+							SurespotLog.d(TAG, "loaded unencrypted voice from: %s, null: %b", messageString, soundbytes == null);
+						}
+						catch (IOException e) {
+							SurespotLog.w(TAG, e, "error loading unencrypted voice from disk");
+						}
 					}
 				}
 			}
