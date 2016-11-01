@@ -365,20 +365,26 @@ public class MessageImageDownloader {
      * @param bitmap The newly downloaded bitmap.
      */
     public static void addBitmapToCache(String key, Bitmap bitmap) {
-        if (bitmap != null) {
+        if (key != null && bitmap != null) {
             mBitmapCache.addBitmapToMemoryCache(key, bitmap);
         }
     }
 
     private static Bitmap getBitmapFromCache(String key) {
-        return mBitmapCache.getBitmapFromMemCache(key);
+        if (key != null) {
+            return mBitmapCache.getBitmapFromMemCache(key);
+        }
+
+        return null;
     }
 
     public static void moveCacheEntry(String sourceKey, String destKey) {
-        Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
-        if (bitmap != null) {
-            mBitmapCache.remove(sourceKey);
-            mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+        if (sourceKey != null && destKey != null) {
+            Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
+            if (bitmap != null) {
+                mBitmapCache.remove(sourceKey);
+                mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+            }
         }
     }
 }
