@@ -42,8 +42,13 @@ public class MainThreadCallbackWrapper implements Callback {
             bodyString = response.body().string();
             response.body().close();
         }
-        catch (IOException e) {
-            mCallback.onFailure(call, e);
+        catch (final IOException e) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mCallback.onFailure(call, e);
+                }
+            });
             return;
         }
 
