@@ -687,14 +687,20 @@ public class NetworkController {
 
 
     public String getPublicKeysSync(String username, String version) {
+        Response response = null;
         try {
-            Response response = getSync("/publickeys/" + username + "/since/" + version);
+            response = getSync("/publickeys/" + username + "/since/" + version);
             if (response.code() == 200) {
                 return response.body().string();
             }
         }
         catch (IOException e) {
-
+            SurespotLog.w(TAG, e, "Error: getPublicKeysSync.");
+        }
+        finally {
+            if (response != null) {
+                response.body().close();
+            }
         }
         return null;
     }
@@ -710,7 +716,7 @@ public class NetworkController {
             }
         }
         catch (IOException e) {
-
+            SurespotLog.w(TAG, e, "Error: getKeyVersionSync.");
         }
         finally {
             if (response != null) {

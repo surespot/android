@@ -161,7 +161,20 @@ public class ChangePasswordActivity extends Activity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    final String passwordToken = response.body().string();
+                    String responseToken = null;
+                    try {
+                        responseToken = response.body().string();
+                        response.body().close();
+                    }
+                    catch (Exception e) {
+                        mMpd.decrProgress();
+                        resetFields();
+                        Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
+                        return;
+                    }
+
+                    final String passwordToken = responseToken;
+
                     new AsyncTask<Void, Void, ChangePasswordWrapper>() {
                         @Override
                         protected ChangePasswordWrapper doInBackground(Void... params) {
