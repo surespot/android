@@ -359,6 +359,7 @@ public class CommunicationService extends Service {
 
                     if (result != null) {
                         //update unsent message
+                        message.setPlainData(null);
                         message.setData(result);
                         message.setFromVersion(ourLatestVersion);
                         message.setToVersion(theirLatestVersion);
@@ -417,37 +418,44 @@ public class CommunicationService extends Service {
                 protected Boolean doInBackground(Void... arg0) {
                     //make sure it's pointing to a local file
 
-                    synchronized (message) {
+                    synchronized (CommunicationService.this) {
                         //could be null because it's already being processed
-                        if (message.getPlainData() == null) {
+                        CharSequence cs = message.getPlainData();
+                        if (cs == null) {
                             SurespotLog.d(TAG, "prepAndSendFileMessage: plainData null, already processed, doing nothing");
                             return null;
                         }
 
-                        if (!message.getPlainData().toString().startsWith("file")) {
+                        String plainData = cs.toString();
+
+                        if (!plainData.startsWith("file")) {
                             message.setErrorStatus(500);
                             return false;
                         }
+
+                        message.setPlainData(null);
 
                         try {
 
                             final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
                             final String theirVersion = IdentityController.getTheirLatestVersion(message.getTo());
+
                             if (theirVersion == null) {
                                 SurespotLog.d(TAG, "prepAndSendFileMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
                                 //retry
                                 message.setErrorStatus(0);
+                                message.setPlainData(plainData);
                                 return false;
                             }
                             final String iv = message.getIv();
 
 
                             // save encrypted image to disk
-                            InputStream fileInputStream = CommunicationService.this.getContentResolver().openInputStream(Uri.parse(message.getPlainData().toString()));
+                            InputStream fileInputStream = CommunicationService.this.getContentResolver().openInputStream(Uri.parse(plainData));
                             File localImageFile = ChatUtils.getTempImageUploadFile(CommunicationService.this);
                             OutputStream fileSaveStream = new FileOutputStream(localImageFile);
                             String localImageUri = Uri.fromFile(localImageFile).toString();
-                            SurespotLog.d(TAG, "prepAndSendFileMessage: encrypting file iv: %s, from %s to encrypted file %s", iv, message.getPlainData().toString(), localImageUri);
+                            SurespotLog.d(TAG, "prepAndSendFileMessage: encrypting file iv: %s, from %s to encrypted file %s", iv, plainData, localImageUri);
 
                             //encrypt
                             PipedOutputStream encryptionOutputStream = new PipedOutputStream();
@@ -466,7 +474,7 @@ public class CommunicationService extends Service {
 
                             //move bitmap cache
                             if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-                                MessageImageDownloader.moveCacheEntry(message.getPlainData().toString(), localImageUri);
+                                MessageImageDownloader.moveCacheEntry(plainData, localImageUri);
                             }
 
                             //add encrypted local file to file cache
@@ -476,10 +484,10 @@ public class CommunicationService extends Service {
                             }
 
 
-                            boolean deleted = new File(Uri.parse(message.getPlainData().toString()).getPath()).delete();
-                            SurespotLog.d(TAG, "prepAndSendFileMessage: deleting unencrypted file %s, iv: %s, success: %b", message.getPlainData().toString(), iv, deleted);
+                            boolean deleted = new File(Uri.parse(plainData).getPath()).delete();
+                            SurespotLog.d(TAG, "prepAndSendFileMessage: deleting unencrypted file %s, iv: %s, success: %b", plainData, iv, deleted);
 
-                            message.setPlainData(null);
+
                             message.setData(localImageUri);
                             message.setFromVersion(ourVersion);
                             message.setToVersion(theirVersion);
@@ -488,6 +496,7 @@ public class CommunicationService extends Service {
                         }
                         catch (IOException e) {
                             SurespotLog.w(TAG, e, "prepAndSendFileMessage");
+                            message.setPlainData(plainData);
                             message.setErrorStatus(500);
                             return false;
                         }

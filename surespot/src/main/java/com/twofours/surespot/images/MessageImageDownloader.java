@@ -178,7 +178,9 @@ public class MessageImageDownloader {
             Bitmap bitmap = null;
 
             //if we have encrypted url (local or not)
-            if (!TextUtils.isEmpty(getMessage().getData())) {
+            final String messageData = getMessage().getData();
+            String messageString = null;
+            if (!TextUtils.isEmpty(messageData)) {
 
 
                 InputStream encryptedImageStream = null;
@@ -186,18 +188,18 @@ public class MessageImageDownloader {
                 //check disk cache before going to network
                 try {
 
-                    encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(mMessage.getData());
+                    encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(messageData);
                     if (encryptedImageStream != null) {
-                        SurespotLog.d(TAG, "got cached file entry for: %s,", mMessage.getData());
+                        SurespotLog.d(TAG, "got cached file entry for: %s,", messageData);
                     }
                 }
                 catch (IOException e) {
-                    SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", mMessage.getData());
+                    SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", messageData);
                 }
 
                 if (encryptedImageStream == null) {
-                    SurespotLog.d(TAG, "no cached file entry, making http call for: %s,", mMessage.getData());
-                    encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), mMessage.getData());
+                    SurespotLog.d(TAG, "no cached file entry, making http call for: %s,", messageData);
+                    encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(MainActivity.getContext(), messageData);
                 }
 
                 if (mCancelled) {
@@ -268,22 +270,29 @@ public class MessageImageDownloader {
                     }
                 }
             }
-            else if (!TextUtils.isEmpty(mMessage.getPlainData())) {
-                //load unencrypted image from disk
-                try {
-                    bitmap = ChatUtils.getSampledImage(Utils.inputStreamToBytes(new FileInputStream(Uri.parse(mMessage.getPlainData().toString()).getPath())));
-                    SurespotLog.d(TAG, "loaded unencrypted bitmap from: %s, null: %b", mMessage.getPlainData().toString(), bitmap == null);
+            else {
+                CharSequence messagePlainSequence = mMessage.getPlainData();
+                if (!TextUtils.isEmpty(messagePlainSequence)) {
+
+                    //load unencrypted image from disk
+                    try {
+                        messageString = messagePlainSequence.toString();
+                        bitmap = ChatUtils.getSampledImage(Utils.inputStreamToBytes(new FileInputStream(Uri.parse(messageString).getPath())));
+                        SurespotLog.d(TAG, "loaded unencrypted bitmap from: %s, null: %b", messageString, bitmap == null);
+                    }
+
+                    catch (IOException e) {
+                        SurespotLog.w(TAG, e, "MessageImageDownloaderTask loading unencrypted image from disk");
+                    }
                 }
 
-                catch (IOException e) {
-                    SurespotLog.w(TAG, e, "MessageImageDownloaderTask loading unencrypted image from disk");
-                }
             }
 
             mMessage.setLoaded(true);
             mMessage.setLoading(false);
 
             final Bitmap finalBitmap = bitmap;
+            final String finalMessageString = messageString;
 
             if (imageViewReference != null) {
                 final ImageView imageView = imageViewReference.get();
@@ -298,7 +307,14 @@ public class MessageImageDownloader {
 
                             if (finalBitmap != null) {
 
-                                MessageImageDownloader.addBitmapToCache(mMessage.getData(), finalBitmap);
+                                if (!TextUtils.isEmpty(messageData)) {
+                                    MessageImageDownloader.addBitmapToCache(messageData, finalBitmap);
+                                }
+
+                                if (!TextUtils.isEmpty(finalMessageString)) {
+                                    MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
+                                }
+
 
                                 Drawable drawable = imageView.getDrawable();
                                 if (drawable instanceof DownloadedDrawable) {
