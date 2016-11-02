@@ -409,9 +409,8 @@ public class CommunicationService extends Service {
     }
 
     private void prepAndSendFileMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "prepAndSendFileMessage, current thread: %s", Thread.currentThread().getName());
         if (!isMessageReadyToSend(message)) {
-
-
             new AsyncTask<Void, Void, Boolean>() {
 
                 @Override
@@ -421,6 +420,7 @@ public class CommunicationService extends Service {
                     synchronized (CommunicationService.this) {
                         //could be null because it's already being processed
                         CharSequence cs = message.getPlainData();
+                        SurespotLog.d(TAG, "prepAndSendFileMessage: plainData: %s", cs);
                         if (cs == null) {
                             SurespotLog.d(TAG, "prepAndSendFileMessage: plainData null, already processed, doing nothing");
                             return null;
@@ -433,8 +433,6 @@ public class CommunicationService extends Service {
                             return false;
                         }
 
-                        message.setPlainData(null);
-
                         try {
 
                             final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
@@ -444,7 +442,6 @@ public class CommunicationService extends Service {
                                 SurespotLog.d(TAG, "prepAndSendFileMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
                                 //retry
                                 message.setErrorStatus(0);
-                                message.setPlainData(plainData);
                                 return false;
                             }
                             final String iv = message.getIv();
@@ -488,6 +485,7 @@ public class CommunicationService extends Service {
                             SurespotLog.d(TAG, "prepAndSendFileMessage: deleting unencrypted file %s, iv: %s, success: %b", plainData, iv, deleted);
 
 
+                            message.setPlainData(null);
                             message.setData(localImageUri);
                             message.setFromVersion(ourVersion);
                             message.setToVersion(theirVersion);
@@ -496,7 +494,6 @@ public class CommunicationService extends Service {
                         }
                         catch (IOException e) {
                             SurespotLog.w(TAG, e, "prepAndSendFileMessage");
-                            message.setPlainData(plainData);
                             message.setErrorStatus(500);
                             return false;
                         }
@@ -880,7 +877,9 @@ public class CommunicationService extends Service {
     }
 
     private synchronized void loadMessageQueue() {
-        mSendQueue.clear();
+        // if we do below we create a different instance of the message in the queue, which borks file sending because
+        // we are using a property in the message to figure out it's state
+        //  mSendQueue.clear();
         List<SurespotMessage> unsentMessages = SurespotApplication.getStateController().loadUnsentMessages(mUsername);
         Iterator<SurespotMessage> iterator = unsentMessages.iterator();
         while (iterator.hasNext()) {
@@ -1225,6 +1224,7 @@ public class CommunicationService extends Service {
                 }
             }
         }
+
     }
 
     private void debugIntent(Intent intent, String tag) {
