@@ -883,14 +883,21 @@ public class CommunicationService extends Service {
         List<SurespotMessage> unsentMessages = SurespotApplication.getStateController().loadUnsentMessages(mUsername);
         Iterator<SurespotMessage> iterator = unsentMessages.iterator();
         while (iterator.hasNext()) {
-            SurespotMessage message = iterator.next();
+            final SurespotMessage message = iterator.next();
 
             if (!mSendQueue.contains(message)) {
                 mSendQueue.add(message);
             }
 
             //make sure the message is in the adapter so we can see it
-            SurespotApplication.getChatController().addMessage(message);
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    SurespotApplication.getChatController().addMessage(message);
+                }
+            };
+            mHandler.post(runnable);
+
         }
         SurespotLog.d(TAG, "loaded: " + mSendQueue.size() + " unsent messages.");
     }
