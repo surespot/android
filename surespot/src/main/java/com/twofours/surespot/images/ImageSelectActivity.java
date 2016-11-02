@@ -5,16 +5,17 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -31,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
@@ -46,29 +46,31 @@ public class ImageSelectActivity extends Activity {
     private ImageViewTouch mImageView;
     private Button mSendButton;
     private Button mCancelButton;
-    private ArrayList<File> mCompressedImagePaths;
-    private ArrayList<String> mPaths;
+    private File mPath;
     private String mTo;
     private String mFrom;
     private int mSize;
     private boolean mFriendImage;
+    private RelativeLayout mFrame;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
-        Bundle extras = getIntent().getExtras();
 
         mImageView = (ImageViewTouch) this.findViewById(R.id.imageViewer);
         mSendButton = (Button) this.findViewById(R.id.send);
 
         mCancelButton = (Button) this.findViewById(R.id.cancel);
+        mFrame = (RelativeLayout) this.findViewById(R.id.frame);
+
 
         mSendButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendImages();
+                sendImage();
+                finish();
             }
         });
 
@@ -82,22 +84,17 @@ public class ImageSelectActivity extends Activity {
         });
 
         if (savedInstanceState != null) {
-            mPaths = savedInstanceState.getStringArrayList("paths");
             mTo = savedInstanceState.getString("to");
             mFrom = savedInstanceState.getString("from");
             mSize = savedInstanceState.getInt("size");
             mFriendImage = savedInstanceState.getBoolean("friendImage");
+            String path = savedInstanceState.getString("path");
+            if (!TextUtils.isEmpty(path)) {
+                mPath = new File(path);
+            }
 
             setTitle();
             setButtonText();
-            if (mPaths != null && mPaths.size() > 0) {
-                mCompressedImagePaths = new ArrayList<File>();
-                for (String path : mPaths) {
-                    mCompressedImagePaths.add(new File(path));
-                }
-                // TODO: show "and more images..."?
-                setImage(BitmapFactory.decodeFile(mPaths.get(mPaths.size() - 1)), true);
-            }
         }
 
         boolean start = getIntent().getBooleanExtra("start", false);
@@ -107,6 +104,10 @@ public class ImageSelectActivity extends Activity {
             mFrom = getIntent().getStringExtra("from");
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
             mFriendImage = getIntent().getBooleanExtra("friendImage", false);
+            String path = getIntent().getStringExtra("path");
+            if (!TextUtils.isEmpty(path)) {
+                mPath = new File(path);
+            }
 
             setTitle();
             setButtonText();
@@ -128,42 +129,6 @@ public class ImageSelectActivity extends Activity {
 
     }
 
-    private void sendImages() {
-        if (mCompressedImagePaths == null || mCompressedImagePaths.size() == 0) {
-            setResult(RESULT_CANCELED);
-            finish();
-        }
-        else {
-
-            new AsyncTask<Void, Void, Void>() {
-                protected Void doInBackground(Void... params) {
-                    if (!mFriendImage) {
-
-                        for (File file : mCompressedImagePaths) {
-                            ChatUtils.uploadPictureMessageAsync(
-                                    ImageSelectActivity.this,
-                                    SurespotApplication.getChatController(),
-                                    Uri.fromFile(file),
-                                    mFrom,
-                                    mTo,
-                                    false);
-
-                        }
-                    }
-                    else {
-                        Intent dataIntent = new Intent();
-                        dataIntent.putExtra("to", mTo);
-                        dataIntent.setData(Uri.fromFile(mCompressedImagePaths.get(0)));
-                        setResult(Activity.RESULT_OK, dataIntent);
-                    }
-                    finish();
-                    return null;
-                }
-            }.execute();
-
-        }
-    }
-
     private void setTitle() {
 
         if (mSize == IMAGE_SIZE_LARGE) {
@@ -183,88 +148,123 @@ public class ImageSelectActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         SurespotLog.d(TAG, "onActivityResult, requestCode: %d, friendImage: %b", requestCode, mFriendImage);
         if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE:
+            if (requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
+                if (data.getData() != null) {
                     mImageView.setVisibility(View.VISIBLE);
-                    mPaths = new ArrayList<String>();
-                    new AsyncTask<Void, Void, ArrayList<Bitmap>>() {
-                        @Override
-                        protected ArrayList<Bitmap> doInBackground(Void... params) {
-                            ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-
-                            if (data.getData() != null) {
-                                Uri uri = (Uri) data.getData();
-                                // scale, compress and save the image
-                                BitmapAndFile result = compressImage(uri, -1, -1);
-
-                                mPaths.add(result.mFile.toString());
-                                bitmaps.add(result.mBitmap);
-                            }
-                            else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !mFriendImage) {
-                                handleMultipleImageSelection(bitmaps, data);
-                            }
-                            else {
-                                SurespotLog.i(TAG, "Not able to support multiple image selection and no appropriate data returned from image picker");
-                            }
-                            return bitmaps;
-                        }
-
-                        protected void onPostExecute(ArrayList<Bitmap> results) {
-                            if (results != null) {
-                                if (results.size() == 1 || mFriendImage) {
-                                    setImage(results, true);
-                                }
-                                else {
-                                    // just send them if we're not selecting a friend image
-                                    if (!mFriendImage) {
-                                        sendImages();
-                                    }
-                                }
-                            }
-                            else {
-                                mSendButton.setEnabled(false);
-                            }
-                        }
-                    }.execute();
+                    Uri uri = data.getData();
+                    if (!setImage(uri, true)) {
+                        Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
+                        finish();
+                    }
+                }
+                else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    handleMultipleImageSelection(data);
+                }
+                else {
+                    SurespotLog.i(TAG, "Not able to support multiple image selection and no appropriate data returned from image picker");
+                    Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
+                    finish();
+                }
+            }
+            else {
+                finish();
             }
         }
         else {
             finish();
         }
+    }
 
-        // Utils.clearIntent(getIntent());
+    private void sendImage() {
+        if (mFriendImage) {
+            Intent dataIntent = new Intent();
+            dataIntent.putExtra("to", mTo);
+            dataIntent.setData(Uri.fromFile(mPath));
+            setResult(Activity.RESULT_OK, dataIntent);
+        }
+        else {
+            new AsyncTask<Void, Void, Void>() {
+                //returns < 0 if finish
+                //0 if handled
+                //or > 1 for images not handled
+                @Override
+                protected Void doInBackground(Void... params) {
+                    ChatUtils.uploadPictureMessageAsync(
+                            ImageSelectActivity.this,
+                            SurespotApplication.getChatController(),
+                            Uri.fromFile(mPath),
+                            mFrom,
+                            mTo,
+                            false);
+                    return null;
+                }
+            }.execute();
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private void handleMultipleImageSelection(ArrayList<Bitmap> bitmaps, Intent data) {
-        ClipData clipData = data.getClipData();
+    //returns true if the images were sent
+    private void handleMultipleImageSelection(final Intent data) {
+        final ClipData clipData = data.getClipData();
+        final int itemCount = clipData.getItemCount();
 
-        if (clipData.getItemCount() > 1) {
-            Runnable runnable = new Runnable() {
+        //handle single image selection
+        if (itemCount == 1) {
+            Uri uri = clipData.getItemAt(0).getUri();
+            if (!setImage(uri, true)) {
+                Utils.makeLongToast(ImageSelectActivity.this, String.format(getString(R.string.could_not_select_image)));
+                finish();
+            }
 
-                @Override
-                public void run() {
-                    // make sure the user can't do anything while the images are being compressed and sent
-                    // eventually we'll want a progress indicator for those people who decide to send 10+ images at once :P
-                    mSendButton.setText(getString(R.string.sending_images));
-                    mSendButton.setEnabled(false);
-                    mCancelButton.setEnabled(false);
+            return;
+        }
+
+        new AsyncTask<Void, Void, Integer>() {
+            //returns < 0 if finish
+            //0 if handled
+            //or > 1 for images not handled
+            @Override
+            protected Integer doInBackground(Void... params) {
+                int errorCount = 0;
+
+                for (int n = 0; n < itemCount; n++) {
+                    Uri uri = clipData.getItemAt(n).getUri();
+                    // scale, compress and save the image
+                    BitmapAndFile result = compressImage(uri, n, -1);
+                    if (result != null) {
+                        ChatUtils.uploadPictureMessageAsync(
+                                ImageSelectActivity.this,
+                                SurespotApplication.getChatController(),
+                                Uri.fromFile(result.mFile),
+                                mFrom,
+                                mTo,
+                                false);
+                    }
+                    else {
+                        errorCount++;
+                    }
                 }
-            };
+                return errorCount;
+            }
 
-            this.runOnUiThread(runnable);
-        }
-
-        for (int n = 0; n < clipData.getItemCount(); n++) {
-            Uri uri = clipData.getItemAt(n).getUri();
-            // scale, compress and save the image
-            BitmapAndFile result = compressImage(uri, n, -1);
-            mPaths.add(result.mFile.toString());
-            bitmaps.add(result.mBitmap);
-        }
+            @Override
+            protected void onPostExecute(Integer errorCount) {
+                if (errorCount > 0) {
+                    Utils.makeLongToast(ImageSelectActivity.this, String.format(getString(R.string.did_not_send_x_images), errorCount, itemCount));
+                }
+                finish();
+            }
+        }.execute();
     }
 
-    private void setImage(Bitmap bitmap, boolean animate) {
+    private boolean setImage(Uri uri, boolean animate) {
+        mFrame.setVisibility(View.VISIBLE);
+        // scale, compress and save the image
+        BitmapAndFile result = compressImage(uri, -1, -1);
+        if (result == null) {
+            return false;
+        }
+
         if (animate) {
             Animation fadeIn = new AlphaAnimation(0, 1);
             fadeIn.setDuration(1000);
@@ -275,38 +275,23 @@ public class ImageSelectActivity extends Activity {
             mImageView.clearAnimation();
         }
         mImageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
-        mImageView.setImageBitmap(bitmap);
+        mImageView.setImageBitmap(result.mBitmap);
         mSendButton.setEnabled(true);
 
         if (mSize == IMAGE_SIZE_SMALL) {
             mImageView.zoomTo((float) .5, 2000);
         }
-    }
+        mPath = result.mFile;
 
-    private void setImage(ArrayList<Bitmap> bitmaps, boolean animate) {
-        if (animate) {
-            Animation fadeIn = new AlphaAnimation(0, 1);
-            fadeIn.setDuration(1000);
-            mImageView.startAnimation(fadeIn);
-
-        }
-        else {
-            mImageView.clearAnimation();
-        }
-        mImageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
-        mImageView.setImageBitmap(bitmaps.get(bitmaps.size() - 1));
-        mSendButton.setEnabled(true);
-
-        // TODO: show "and x more images..."??
-        if (mSize == IMAGE_SIZE_SMALL) {
-            mImageView.zoomTo((float) .5, 2000);
-        }
+        return true;
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putStringArrayList("paths", mPaths);
+        if (mPath != null) {
+            outState.putString("path", mPath.getAbsolutePath());
+        }
         outState.putString("to", mTo);
         outState.putInt("size", mSize);
         outState.putBoolean("friendImage", mFriendImage);
@@ -332,13 +317,12 @@ public class ImageSelectActivity extends Activity {
     }
 
     private void deleteCompressedImage() {
-        if (mCompressedImagePaths != null) {
-            for (File file : mCompressedImagePaths) {
-                file.delete();
-            }
-            mCompressedImagePaths = null;
+        if (mPath != null) {
+            mPath.delete();
+            mPath = null;
         }
     }
+
 
     private class BitmapAndFile {
         public File mFile;
@@ -347,11 +331,9 @@ public class ImageSelectActivity extends Activity {
 
     private BitmapAndFile compressImage(final Uri uri, int n, final int rotate) {
         final Uri finalUri;
-        File f;
+        File f = null;
         try {
-            if (mCompressedImagePaths == null) {
-                mCompressedImagePaths = new ArrayList<File>();
-            }
+
             f = createImageFile(COMPRESS_SUFFIX + n);
             // if it's an external image save it first
             if (uri.getScheme().startsWith("http")) {
@@ -372,17 +354,9 @@ public class ImageSelectActivity extends Activity {
         }
         catch (IOException e1) {
             SurespotLog.w(TAG, e1, "compressImage");
-            Runnable runnable = new Runnable() {
-
-                @Override
-                public void run() {
-                    Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_load_image));
-                }
-            };
-
-            this.runOnUiThread(runnable);
-            setResult(RESULT_CANCELED);
-            finish();
+            if (f != null) {
+                f.delete();
+            }
             return null;
         }
 
@@ -397,7 +371,6 @@ public class ImageSelectActivity extends Activity {
                 FileOutputStream fos = new FileOutputStream(f);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
                 fos.close();
-                mCompressedImagePaths.add(f);
 
                 // SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
                 BitmapAndFile result = new BitmapAndFile();
@@ -406,18 +379,9 @@ public class ImageSelectActivity extends Activity {
                 return result;
             }
             else {
-                Runnable runnable = new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_load_image));
-                    }
-                };
-
-                this.runOnUiThread(runnable);
-
-                setResult(RESULT_CANCELED);
-                finish();
+                if (f != null) {
+                    f.delete();
+                }
                 return null;
             }
         }
@@ -426,17 +390,6 @@ public class ImageSelectActivity extends Activity {
             if (f != null) {
                 f.delete();
             }
-            Runnable runnable = new Runnable() {
-
-                @Override
-                public void run() {
-                    Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_load_image));
-                }
-            };
-
-            this.runOnUiThread(runnable);
-            setResult(RESULT_CANCELED);
-            finish();
             return null;
         }
     }
