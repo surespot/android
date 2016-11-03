@@ -79,6 +79,7 @@ public class ImageSelectActivity extends Activity {
             @Override
             public void onClick(View v) {
                 deleteCompressedImage();
+                setResult(RESULT_CANCELED);
                 finish();
             }
         });
@@ -104,10 +105,6 @@ public class ImageSelectActivity extends Activity {
             mFrom = getIntent().getStringExtra("from");
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
             mFriendImage = getIntent().getBooleanExtra("friendImage", false);
-            String path = getIntent().getStringExtra("path");
-            if (!TextUtils.isEmpty(path)) {
-                mPath = new File(path);
-            }
 
             setTitle();
             setButtonText();
@@ -184,9 +181,7 @@ public class ImageSelectActivity extends Activity {
         }
         else {
             new AsyncTask<Void, Void, Void>() {
-                //returns < 0 if finish
-                //0 if handled
-                //or > 1 for images not handled
+
                 @Override
                 protected Void doInBackground(Void... params) {
                     ChatUtils.uploadPictureMessageAsync(

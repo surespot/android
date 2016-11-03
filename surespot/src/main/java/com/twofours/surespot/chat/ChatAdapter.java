@@ -124,7 +124,7 @@ public class ChatAdapter extends BaseAdapter {
 
             if (updateMessage != null) {
                 SurespotLog.v(TAG, "updating message: %s", updateMessage);
-                // SurespotLog.v(TAG, "new message: %s", message);
+                SurespotLog.v(TAG, "new message: %s", message);
 
                 // don't update unless we have an id
                 if (message.getId() != null) {
@@ -135,7 +135,7 @@ public class ChatAdapter extends BaseAdapter {
                     if (message.getDateTime() != null) {
                         updateMessage.setDateTime(message.getDateTime());
                     }
-                    if (message.getData() != null) {
+                    if (!TextUtils.isEmpty(message.getData())) {
                         updateMessage.setData(message.getData());
                     }
                     if (!message.isGcm()) {
@@ -152,15 +152,15 @@ public class ChatAdapter extends BaseAdapter {
                 else {
                     //message updated by communication controller after encryption
                     //update plain data, their version, our version
-                    if (message.getToVersion() != null) {
+                    if (!TextUtils.isEmpty(message.getToVersion())) {
                         updateMessage.setToVersion(message.getToVersion());
                     }
 
-                    if (message.getFromVersion() != null) {
+                    if (!TextUtils.isEmpty(message.getFromVersion())) {
                         updateMessage.setFromVersion(message.getFromVersion());
                     }
 
-                    if (message.getData() != null) {
+                    if (!TextUtils.isEmpty(message.getData())) {
                         updateMessage.setData(message.getData());
                     }
 
@@ -168,6 +168,7 @@ public class ChatAdapter extends BaseAdapter {
                         updateMessage.setErrorStatus(message.getErrorStatus());
                     }
                 }
+                SurespotLog.v(TAG, "updated message: %s", updateMessage);
             }
         }
 

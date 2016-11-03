@@ -524,7 +524,7 @@ public class CommunicationService extends Service {
 
 
     private void sendFileMessage(final SurespotMessage message) {
-        SurespotLog.d(TAG, "sendFileMessage, iv: %s", message.getIv());
+        SurespotLog.d(TAG, "sendFileMessage: %s", message);
         new AsyncTask<Void, Void, Tuple<Integer, JSONObject>>() {
             @Override
             protected Tuple<Integer, JSONObject> doInBackground(Void... voids) {
@@ -534,7 +534,9 @@ public class CommunicationService extends Service {
 
                     FileInputStream uploadStream;
                     try {
+                        SurespotLog.d(TAG, "sendFileMessage in thread: %s", message);
                         uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
+
                         return networkController.postFileStreamSync(
                                 message.getOurVersion(),
                                 message.getTo(),
@@ -606,7 +608,7 @@ public class CommunicationService extends Service {
                             }
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(message);
-                            processNextMessage();
+                         //   processNextMessage();
                             break;
                         default:
                             //try and send next message again
@@ -668,7 +670,7 @@ public class CommunicationService extends Service {
                                         //need to remove the message from the queue before setting the current send iv to null
 
                                         removeQueuedMessage(messageReceived);
-                                        processNextMessage();
+                                       // processNextMessage();
                                     }
                                 });
 
@@ -804,6 +806,7 @@ public class CommunicationService extends Service {
 
         if (removed) {
             saveMessageQueue();
+            processNextMessage();
         }
 
         SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
@@ -1421,7 +1424,7 @@ public class CommunicationService extends Service {
                                 messageSendCompleted(message);
                                 removeQueuedMessage(message);
                                 saveIfMainActivityPaused();
-                                processNextMessage();
+                                //processNextMessage();
                             }
                         });
 
