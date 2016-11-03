@@ -9,62 +9,20 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:actionBarStyle">@style/ActionBarThemeDefault</item>
-
-        <!--<item name="android:windowAnimationStyle">@android:style/Animation</item>-->
-        <!--<item name="android:windowFrame">@null</item>-->
-        <!--<item name="android:windowNoTitle">false</item>-->
-        <!--<item name="android:windowFullscreen">false</item>-->
-        <!--&lt;!&ndash;<item name="android:windowOverscan">false</item>&ndash;&gt;-->
-        <!--<item name="android:windowIsFloating">false</item>-->
-        <!--<item name="android:windowContentOverlay">@null</item>-->
-        <!--<item name="android:windowShowWallpaper">false</item>-->
-        <!--&lt;!&ndash;<item name="android:windowTitleStyle">@android:style/WindowTitle.Holo</item>&ndash;&gt;-->
-        <!--<item name="android:windowTitleSize">25dip</item>-->
-
-        <!--<item name="android:windowActionBar">true</item>-->
-        <!--<item name="android:windowActionModeOverlay">false</item>-->
-
-
+        <item name="android:actionBarStyle">@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse</item>
+        <!--<item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>-->
     </style>
-
-    <style name="ActionBarThemeDefault" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <!--<item name="android:background">@android:dra</item>-->
-    </style>
-
-
 
     <style name="BlackTheme" parent="android:Theme.Holo">
         <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
     </style>
 
 
-
     <style name="TranslucentBlack" parent="BlackTheme">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:actionBarStyle">@style/ActionBarThemeBlack</item>
-
-        <!--<item name="android:windowAnimationStyle">@android:style/Animation</item>-->
-        <!--<item name="android:windowFrame">@null</item>-->
-        <!--<item name="android:windowNoTitle">false</item>-->
-        <!--<item name="android:windowFullscreen">false</item>-->
-        <!--&lt;!&ndash;<item name="android:windowOverscan">false</item>&ndash;&gt;-->
-        <!--<item name="android:windowIsFloating">false</item>-->
-        <!--<item name="android:windowContentOverlay">@null</item>-->
-        <!--<item name="android:windowShowWallpaper">false</item>-->
-        <!--&lt;!&ndash;<item name="android:windowTitleStyle">@android:style/WindowTitle.Holo</item>&ndash;&gt;-->
-        <!--<item name="android:windowTitleSize">25dip</item>-->
-
-        <!--<item name="android:windowActionBar">true</item>-->
-        <!--<item name="android:windowActionModeOverlay">false</item>-->
-
-
-    </style>
-
-    <style name="ActionBarThemeBlack" parent="@android:style/Widget.Holo.ActionBar">
-        <!--<item name="android:background">@android:dra</item>-->
+        <item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>
     </style>
 
     <declare-styleable name="VolumeEnvelopeView">
