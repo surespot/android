@@ -1,16 +1,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/frame"
-                android:visibility="gone"
-                tools:context=".ImageSelectActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frame"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    tools:context=".ImageSelectActivity">
 
     <it.sephiroth.android.library.imagezoom.ImageViewTouch
         android:id="@+id/imageViewer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/buttonFrame"/>
+        android:layout_above="@+id/buttonFrame"
+        android:background="@android:color/transparent" />
 
     <LinearLayout
         android:id="@+id/buttonFrame"
@@ -24,8 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/cancel"
-            android:textColor="@color/surespotBlue">
-        </Button>
+            android:textColor="@color/surespotBlue"></Button>
 
         <View
             android:layout_width="1px"
@@ -33,7 +33,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
 
-            android:background="#aaa"/>
+            android:background="#aaa" />
 
         <Button
             android:id="@+id/send"
@@ -42,8 +42,7 @@
             android:layout_weight="1"
             android:enabled="false"
             android:text="@string/send"
-            android:textColor="@color/surespotBlue">
-        </Button>
+            android:textColor="@color/surespotBlue"></Button>
     </LinearLayout>
 
 </RelativeLayout>

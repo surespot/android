@@ -25,6 +25,7 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.ui.UIUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,6 +57,8 @@ public class ImageSelectActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //  UIUtils.setTheme(this);
+        boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
+        this.setTheme(black ? R.style.TranslucentBlack : R.style.TranslucentDefault);
         SurespotLog.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
@@ -64,9 +67,15 @@ public class ImageSelectActivity extends Activity {
         mSendButton = (Button) this.findViewById(R.id.send);
 
         mCancelButton = (Button) this.findViewById(R.id.cancel);
-        mFrame = (RelativeLayout) this.findViewById(R.id.frame);
-        mFrame.setBackgroundColor(ContextCompat.getColor(this,android.R.color.transparent));
 
+
+        mFrame = (RelativeLayout) this.findViewById(R.id.frame);
+//        mFrame.setVisibility(View.GONE);
+//        mFrame.setBackgroundColor(ContextCompat.getColor(this,android.R.color.transparent));
+//        mImageView.setVisibility(View.GONE);
+//
+//        mImageView.setBackgroundColor(ContextCompat.getColor(this,android.R.color.transparent));
+        getActionBar().hide();
 
         mSendButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -96,7 +105,7 @@ public class ImageSelectActivity extends Activity {
                 mPath = new File(path);
             }
 
-            //      setTitle();
+            setTitle();
             setButtonText();
         }
 
@@ -108,7 +117,7 @@ public class ImageSelectActivity extends Activity {
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
             mFriendImage = getIntent().getBooleanExtra("friendImage", false);
 
-            //    setTitle();
+            setTitle();
             setButtonText();
 
             // TODO paid version allows any file
@@ -133,10 +142,10 @@ public class ImageSelectActivity extends Activity {
 
         if (mSize == IMAGE_SIZE_LARGE) {
             Utils.configureActionBar(this, getString(R.string.select_image), mTo, false);
-        }
-        else {
+        } else {
             Utils.configureActionBar(this, getString(R.string.assign_image), mTo, false);
         }
+
 
     }
 
@@ -151,26 +160,22 @@ public class ImageSelectActivity extends Activity {
             if (requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !mFriendImage && data.getClipData() != null) {
                     handleMultipleImageSelection(data);
-                }
-                else if (data.getData() != null) {
-                    mImageView.setVisibility(View.VISIBLE);
+                } else if (data.getData() != null) {
+
                     Uri uri = data.getData();
                     if (!setImage(uri, true)) {
                         Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
                         finish();
                     }
-                }
-                else {
+                } else {
                     SurespotLog.i(TAG, "Not able to support multiple image selection and no appropriate data returned from image picker");
                     Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
                     finish();
                 }
-            }
-            else {
+            } else {
                 finish();
             }
-        }
-        else {
+        } else {
             finish();
         }
     }
@@ -181,8 +186,7 @@ public class ImageSelectActivity extends Activity {
             dataIntent.putExtra("to", mTo);
             dataIntent.setData(Uri.fromFile(mPath));
             setResult(Activity.RESULT_OK, dataIntent);
-        }
-        else {
+        } else {
             new AsyncTask<Void, Void, Void>() {
 
                 @Override
@@ -237,8 +241,7 @@ public class ImageSelectActivity extends Activity {
                                 mFrom,
                                 mTo,
                                 false);
-                    }
-                    else {
+                    } else {
                         errorCount++;
                     }
                 }
@@ -256,7 +259,13 @@ public class ImageSelectActivity extends Activity {
     }
 
     private boolean setImage(Uri uri, boolean animate) {
-        mFrame.setVisibility(View.VISIBLE);
+        SurespotLog.d(TAG, "setImage");
+        mFrame.setBackgroundColor(ContextCompat.getColor(this, android.R.color.background_dark));
+      //  mImageView.setVisibility(View.VISIBLE);
+       // mFrame.setVisibility(View.VISIBLE);
+        getActionBar().show();
+      //  getActionBar().setBackgroundDrawable(getResources().getDrawable(android.R.drawable.screen_background_dark));
+
         // scale, compress and save the image
         BitmapAndFile result = compressImage(uri, -1, -1);
         if (result == null) {
@@ -268,8 +277,7 @@ public class ImageSelectActivity extends Activity {
             fadeIn.setDuration(1000);
             mImageView.startAnimation(fadeIn);
 
-        }
-        else {
+        } else {
             mImageView.clearAnimation();
         }
         mImageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
@@ -307,8 +315,7 @@ public class ImageSelectActivity extends Activity {
             file.createNewFile();
             // SurespotLog.v(TAG, "createdFile: " + file.getPath());
             return file;
-        }
-        else {
+        } else {
             throw new IOException("Could not create image temp file dir: " + dir.getPath());
         }
 
@@ -345,12 +352,10 @@ public class ImageSelectActivity extends Activity {
 
                 fos.close();
                 finalUri = Uri.fromFile(f);
-            }
-            else {
+            } else {
                 finalUri = uri;
             }
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             SurespotLog.w(TAG, e1, "compressImage");
             if (f != null) {
                 f.delete();
@@ -375,15 +380,13 @@ public class ImageSelectActivity extends Activity {
                 result.mBitmap = bitmap;
                 result.mFile = f;
                 return result;
-            }
-            else {
+            } else {
                 if (f != null) {
                     f.delete();
                 }
                 return null;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             SurespotLog.w(TAG, e, "onActivityResult");
             if (f != null) {
                 f.delete();
