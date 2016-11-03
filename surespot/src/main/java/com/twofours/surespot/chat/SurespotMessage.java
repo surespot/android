@@ -62,7 +62,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     }
 
     public void setData(String data) {
-        mData = data;
+        if (TextUtils.isEmpty(data)) {
+            mData = null;
+        }
+        else {
+            mData = data;
+        }
     }
 
     public CharSequence getPlainData() {
@@ -372,7 +377,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     }
 
     public void setToVersion(String toVersion) {
-        mToVersion = toVersion;
+        if (TextUtils.isEmpty(toVersion)) {
+            mToVersion = null;
+        }
+        else {
+            mToVersion = toVersion;
+        }
     }
 
     public String getFromVersion() {
@@ -380,7 +390,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     }
 
     public void setFromVersion(String fromVersion) {
-        mFromVersion = fromVersion;
+        if (TextUtils.isEmpty(fromVersion)) {
+            mFromVersion = null;
+        }
+        else {
+            mFromVersion = fromVersion;
+        }
     }
 
     public boolean getDeleted() {
