@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,7 +25,6 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.ui.UIUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,7 +55,8 @@ public class ImageSelectActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        UIUtils.setTheme(this);
+        //  UIUtils.setTheme(this);
+        SurespotLog.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
 
@@ -64,6 +65,7 @@ public class ImageSelectActivity extends Activity {
 
         mCancelButton = (Button) this.findViewById(R.id.cancel);
         mFrame = (RelativeLayout) this.findViewById(R.id.frame);
+        mFrame.setBackgroundColor(ContextCompat.getColor(this,android.R.color.transparent));
 
 
         mSendButton.setOnClickListener(new OnClickListener() {
@@ -94,7 +96,7 @@ public class ImageSelectActivity extends Activity {
                 mPath = new File(path);
             }
 
-            setTitle();
+            //      setTitle();
             setButtonText();
         }
 
@@ -106,7 +108,7 @@ public class ImageSelectActivity extends Activity {
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
             mFriendImage = getIntent().getBooleanExtra("friendImage", false);
 
-            setTitle();
+            //    setTitle();
             setButtonText();
 
             // TODO paid version allows any file
@@ -119,6 +121,7 @@ public class ImageSelectActivity extends Activity {
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 plural = "s";
             }
+            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
             intent.setAction(Intent.ACTION_GET_CONTENT);
             SurespotLog.d(TAG, "startActivityForResult, friendImage: %b", mFriendImage);
             startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image) + plural), SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
@@ -146,16 +149,16 @@ public class ImageSelectActivity extends Activity {
         SurespotLog.d(TAG, "onActivityResult, requestCode: %d, friendImage: %b", requestCode, mFriendImage);
         if (resultCode == RESULT_OK) {
             if (requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
-                if (data.getData() != null) {
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !mFriendImage && data.getClipData() != null) {
+                    handleMultipleImageSelection(data);
+                }
+                else if (data.getData() != null) {
                     mImageView.setVisibility(View.VISIBLE);
                     Uri uri = data.getData();
                     if (!setImage(uri, true)) {
                         Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
                         finish();
                     }
-                }
-                else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    handleMultipleImageSelection(data);
                 }
                 else {
                     SurespotLog.i(TAG, "Not able to support multiple image selection and no appropriate data returned from image picker");
