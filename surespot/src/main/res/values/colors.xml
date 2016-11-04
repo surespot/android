@@ -2,4 +2,6 @@
 <resources>
     <color name="surespotBlue">#ff33b5e5</color>
     <color name="surespotGrey">#ff363636</color>
+    <color name="background_holo_dark">#ff000000</color>
+    <color name="background_holo_light">#fff3f3f3</color>
 </resources>

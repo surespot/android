@@ -98,7 +98,7 @@
             android:name="com.twofours.surespot.activities.MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_main"
-            android:launchMode="singleTask"
+
             android:windowSoftInputMode="adjustResize|stateUnchanged">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -141,17 +141,19 @@
         <activity
             android:name="com.twofours.surespot.activities.SignupActivity"
             android:label="@string/title_activity_signup"
-            android:windowSoftInputMode="stateVisible"></activity>
+            android:noHistory="true"
+            android:windowSoftInputMode="stateVisible"/>
         <activity
             android:name="com.twofours.surespot.activities.LoginActivity"
             android:label="login"
-            android:windowSoftInputMode="stateVisible"></activity>
+            android:windowSoftInputMode="stateVisible"/>
         <activity
             android:name="com.twofours.surespot.images.ImageViewActivity"
-            android:noHistory="true"></activity>
+            android:noHistory="true"/>
         <activity
             android:name="com.twofours.surespot.images.ImageSelectActivity"
-            android:windowSoftInputMode="stateAlwaysHidden"></activity>
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
             android:name="com.twofours.surespot.activities.SettingsActivity">
         </activity>
@@ -246,7 +248,7 @@
         </activity>
         <activity
             android:name="com.twofours.surespot.identity.SurespotKeystoreActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
     </application>
 
 </manifest>

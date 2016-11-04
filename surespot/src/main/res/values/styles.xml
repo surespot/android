@@ -1,31 +1,39 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-    <style name="DefaultTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="DefaultTheme" parent="android:style/Theme.Holo.Light.DarkActionBar">
         <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
+        <item name="android:actionBarStyle">
+            @android:style/Widget.Holo.Light.ActionBar.Solid.Inverse
+        </item>
     </style>
 
-    <style name="TranslucentDefault" parent="DefaultTheme">
+    <style name="TranslucentDefault" parent="@style/DefaultTheme">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:actionBarStyle">@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse</item>
-        <!--<item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>-->
+        <item name="android:buttonStyle">@android:style/Widget.Holo.ActionButton</item>
     </style>
 
-    <style name="BlackTheme" parent="android:Theme.Holo">
+    <style name="BlackTheme" parent="@android:style/Theme.Holo">
         <item name="android:buttonStyle">?android:attr/borderlessButtonStyle</item>
-    </style>
-
-
-    <style name="TranslucentBlack" parent="BlackTheme">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
         <item name="android:actionBarStyle">@android:style/Widget.Holo.ActionBar.Solid</item>
     </style>
 
+
+    <style name="TranslucentBlack" parent="@style/BlackTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:buttonStyle">@android:style/Widget.Holo.ActionButton</item>
+        <!--<item name="android:actionBarStyle">@style/BlackActionBar</item>-->
+    </style>
+
+    <style name="BlackActionBar" parent="@android:style/Widget.Holo.ActionBar.Solid">
+        <!--<item name="android:background">@android:color/background_dark</item>-->
+    </style>
+
     <declare-styleable name="VolumeEnvelopeView">
-        <attr name="color" format="color" />
+        <attr name="color" format="color"/>
     </declare-styleable>
 </resources>

@@ -10,6 +10,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:textColor="#FFFFFFFF"
         android:gravity="center"
         android:maxLines="1"
         android:textSize="20sp" >
@@ -23,6 +24,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="1dp"
         android:layout_toRightOf="@id/nav"
+        android:textColor="#ff33b5e5"
         android:gravity="center"
         android:text="/"
         android:textSize="20sp" >
