@@ -172,11 +172,12 @@ public class ImportIdentityActivity extends Activity {
                                                         @Override
                                                         public void handleResponse(final IdentityOperationResult response) {
                                                             Utils.clearIntent(getIntent());
+                                                            mSpd.hide();
                                                             ImportIdentityActivity.this.runOnUiThread(new Runnable() {
 
                                                                 @Override
                                                                 public void run() {
-                                                                    mSpd.hide();
+
                                                                     Utils.makeLongToast(ImportIdentityActivity.this, response.getResultText());
 
                                                                     if (response.getResultSuccess()) {
