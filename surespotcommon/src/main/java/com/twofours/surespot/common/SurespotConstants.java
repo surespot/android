@@ -54,7 +54,7 @@ public class SurespotConstants {
 	public final static int MAX_MESSAGE_LENGTH = 1024;
 	
 	public final static String DRIVE_IDENTITY_FOLDER = "surespot identity backups";
-	
+
 
 	// PROD set to 3
 	public final static int MAX_IDENTITIES = 3;
