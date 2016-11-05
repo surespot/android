@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="fill_parent"
-    android:paddingBottom="2dp" >
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="2dp">
 
     <TextView
         android:id="@+id/nav"
@@ -10,10 +11,10 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:textColor="#FFFFFFFF"
         android:gravity="center"
         android:maxLines="1"
-        android:textSize="20sp" >
+        android:textColor="#FFFFFFFF"
+        android:textSize="20sp">
     </TextView>
 
     <TextView
@@ -24,10 +25,10 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="1dp"
         android:layout_toRightOf="@id/nav"
-        android:textColor="#ff33b5e5"
         android:gravity="center"
         android:text="/"
-        android:textSize="20sp" >
+        android:textColor="#ff33b5e5"
+        android:textSize="20sp">
     </TextView>
 
     <TextView
@@ -36,14 +37,14 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"        
+        android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/separator"
         android:ellipsize="end"
         android:maxLines="1"
         android:singleLine="true"
         android:textColor="#FFBBBBBB"
         android:textSize="20sp"
-        android:textStyle="bold" >
+        android:textStyle="bold">
     </TextView>
 
 </RelativeLayout>
