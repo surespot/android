@@ -251,12 +251,12 @@ public class CommunicationService extends Service {
 
         SurespotLog.d(TAG, "connect, mSocket: " + mSocket + ", connected: " + (mSocket != null ? mSocket.connected() : false) + ", state: " + mConnectionState);
 
-        if (getConnectionState() == STATE_CONNECTED) {
+        if (mSocket != null && getConnectionState() == STATE_CONNECTED) {
             //onConnected();
             return true;
         }
 
-        if (getConnectionState() == STATE_CONNECTING) {
+        if (mSocket != null && getConnectionState() == STATE_CONNECTING) {
             // do NOT call already connected here, since we're not already connected
             // need to test to see if the program flow is good returning true here, or if we should allow things to continue
             // and try to connect()...
@@ -391,7 +391,7 @@ public class CommunicationService extends Service {
         }
     }
 
-    private void sendTextMessage(SurespotMessage message) {
+    private synchronized void sendTextMessage(SurespotMessage message) {
         if (getConnectionState() == STATE_CONNECTED) {
             SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
             JSONObject json = message.toJSONObjectSocket();
@@ -717,7 +717,7 @@ public class CommunicationService extends Service {
 
     }
 
-    public int getConnectionState() {
+    public synchronized int getConnectionState() {
         return mConnectionState;
     }
 
@@ -753,7 +753,7 @@ public class CommunicationService extends Service {
         }
     }
 
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return getConnectionState() == CommunicationService.STATE_CONNECTED;
     }
 
@@ -1171,15 +1171,18 @@ public class CommunicationService extends Service {
     }
 
 
-    private void disconnect() {
+    private synchronized void disconnect() {
         SurespotLog.d(TAG, "disconnect.");
-        setState(STATE_DISCONNECTED);
+        if (mConnectionState != STATE_DISCONNECTED) {
+            setState(STATE_DISCONNECTED);
 
-        if (mSocket != null) {
-            mSocket.disconnect();
-            disposeSocket();
+            if (mSocket != null) {
+                mSocket.disconnect();
+                disposeSocket();
+            }
         }
     }
+
 
     private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
