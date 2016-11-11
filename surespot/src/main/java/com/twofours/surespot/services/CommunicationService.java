@@ -916,7 +916,9 @@ public class CommunicationService extends Service {
 
     // notify listeners that we've connected
     private void onConnected() {
+
         SurespotLog.d(TAG, "onConnected, mErrored: %b", mErrored);
+        setState(STATE_CONNECTED);
 
         //if we reconnected after error
         mErrored = false;
@@ -924,6 +926,10 @@ public class CommunicationService extends Service {
         stopReconnectionAttempts();
         stopResendTimer();
 
+        //tell chat controller
+        if (SurespotApplication.getChatController() != null) {
+            SurespotApplication.getChatController().connected();
+        }
 
         // tell any listeners that we're connected
         if (mListener != null) {
@@ -1260,14 +1266,7 @@ public class CommunicationService extends Service {
         @Override
         public void call(Object... args) {
             SurespotLog.d(TAG, "mSocket.io connection established");
-            setState(STATE_CONNECTED);
-
             onConnected();
-
-            if (SurespotApplication.getChatController() != null) {
-                SurespotApplication.getChatController().onResume(true);
-                SurespotApplication.getChatController().connected();
-            }
         }
     };
 

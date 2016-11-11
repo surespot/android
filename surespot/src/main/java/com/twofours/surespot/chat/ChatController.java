@@ -67,8 +67,6 @@ public class ChatController {
     private ArrayList<MenuItem> mMenuItems;
     private HashMap<String, LatestIdPair> mPreConnectIds;
 
-
-    private static boolean mPaused = true;
     private NetworkController mNetworkController;
 
     private Context mContext;
@@ -1261,7 +1259,6 @@ public class ChatController {
 
     public synchronized void logout() {
         // save before we clear the chat adapters
-        onPause();
         SurespotApplication.getCommunicationService().userLoggedOut();
 
         // mViewPager = null;
@@ -1327,17 +1324,7 @@ public class ChatController {
         return mGlobalProgress || !mChatProgress.isEmpty();
     }
 
-    public synchronized void onResume(boolean justSetFlag) {
-        SurespotLog.d(TAG, "onResume, mPaused: %b, justSetFlag: %b", mPaused, justSetFlag);
-        if (justSetFlag) {
-            if (mPaused) {
-                mPaused = false;
-            }
-            return;
-        }
-
-        mPaused = false;
-
+    public synchronized void onResume() {
         setProgress(null, true);
 
         // load chat messages from disk that may have been added by gcm
@@ -1345,27 +1332,14 @@ public class ChatController {
             loadMessages(ca.getKey(), false);
         }
 
+        // make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
+        loadState(mUsername);
+
         if (SurespotApplication.getCommunicationService().connect(mUsername)) {
             setProgress(null, false);
         }
 
-        // make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
-        loadState(mUsername);
-
-        // moved: mContext.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-
         clearMessageNotification(mUsername, mCurrentChat);
-    }
-
-    public synchronized void onPause() {
-        SurespotLog.d(TAG, "onPause, mPaused: %b", mPaused);
-        mPaused = true;
-
-        //moved to commservice main activity paused
-//        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-//            SurespotApplication.getCommunicationService().save();
-//
-//        }
     }
 
     ChatAdapter getChatAdapter(String username) {
@@ -1529,10 +1503,6 @@ public class ChatController {
             return null;
         }
         return mCurrentChat;
-    }
-
-    public static boolean isPaused() {
-        return mPaused;
     }
 
     public boolean hasEarlierMessages(String username) {

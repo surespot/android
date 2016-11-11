@@ -986,10 +986,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mResumed = true;
         if (SurespotApplication.getChatController() != null) {
             if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getChatController().onResume(SurespotApplication.getCommunicationService().isConnected());
-            }
-            else {
-                SurespotApplication.getChatController().onResume(false);
+                SurespotApplication.getChatController().onResume();
             }
         }
 
@@ -1012,9 +1009,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "onPause");
 
         mPaused = true;
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().onPause();
-        }
 
         VoiceController.pause();
         stopWatchingExternalStorage();
