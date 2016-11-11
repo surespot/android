@@ -36,7 +36,6 @@ import java.security.PrivateKey;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class ChangePasswordActivity extends Activity {
@@ -110,13 +109,13 @@ public class ChangePasswordActivity extends Activity {
         }
 
         if (currentPassword.equals(newPassword)) {
-            resetNewAndConfirmFields();
+            focusNew();
             Utils.makeToast(this, this.getString(R.string.cannot_change_to_same_password));
             return;
         }
 
         if (!confirmPassword.equals(newPassword)) {
-            resetFields();
+            focusNew();
             Utils.makeToast(this, getString(R.string.passwords_do_not_match));
             return;
         }
@@ -127,14 +126,14 @@ public class ChangePasswordActivity extends Activity {
         if (identity == null) {
             mMpd.decrProgress();
             Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
-            resetFields();
+            focusCurrent();
             return;
         }
 
         // make sure file we're going to save to is writable before we start
         if (!IdentityController.ensureIdentityFile(ChangePasswordActivity.this, username, true)) {
             mMpd.decrProgress();
-            resetFields();
+            focusCurrent();
             Utils.makeToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
             return;
         }
@@ -150,30 +149,24 @@ public class ChangePasswordActivity extends Activity {
         SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
         // get a key update token from the server
-        SurespotApplication.getNetworkController().getPasswordToken(username, dPassword, authSignature, new Callback() {
+        SurespotApplication.getNetworkController().getPasswordToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+
             @Override
             public void onFailure(Call call, IOException e) {
                 mMpd.decrProgress();
-                resetFields();
+                focusCurrent();
                 Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response, final String passwordToken) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseToken = null;
-                    try {
-                        responseToken = response.body().string();
-                        response.body().close();
-                    }
-                    catch (Exception e) {
+                    if (TextUtils.isEmpty(passwordToken)) {
                         mMpd.decrProgress();
-                        resetFields();
+                        focusCurrent();
                         Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
                         return;
                     }
-
-                    final String passwordToken = responseToken;
 
                     new AsyncTask<Void, Void, ChangePasswordWrapper>() {
                         @Override
@@ -203,7 +196,7 @@ public class ChangePasswordActivity extends Activity {
                                             public void onFailure(final Call call, final IOException e) {
                                                 SurespotLog.i(TAG, e, "changePassword");
                                                 mMpd.decrProgress();
-                                                resetFields();
+                                                focusCurrent();
                                                 Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
 
                                             }
@@ -226,7 +219,7 @@ public class ChangePasswordActivity extends Activity {
                                                 else {
                                                     SurespotLog.i(TAG, "changePassword error");
                                                     mMpd.decrProgress();
-                                                    resetFields();
+                                                    focusCurrent();
                                                     Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
                                                 }
                                             }
@@ -234,7 +227,7 @@ public class ChangePasswordActivity extends Activity {
                             }
                             else {
                                 mMpd.decrProgress();
-                                resetFields();
+                                focusCurrent();
                                 Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
                             }
                         }
@@ -242,11 +235,11 @@ public class ChangePasswordActivity extends Activity {
                 }
                 else {
                     mMpd.decrProgress();
-                    resetFields();
+                    focusCurrent();
                     Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.could_not_change_password));
                 }
             }
-        });
+        }));
     }
 
     @Override
@@ -302,6 +295,21 @@ public class ChangePasswordActivity extends Activity {
         etConfirm.setText("");
 
         etCurrent.requestFocus();
+
+    }
+
+    private void focusCurrent() {
+        EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
+        if (etCurrent != null) {
+            etCurrent.requestFocus();
+        }
+    }
+
+    private void focusNew() {
+        EditText etNew = (EditText) findViewById(R.id.etChangePasswordNew);
+        if (etNew != null) {
+            etNew.requestFocus();
+        }
 
     }
 
