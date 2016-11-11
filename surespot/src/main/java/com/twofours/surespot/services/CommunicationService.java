@@ -744,6 +744,7 @@ public class CommunicationService extends Service {
     }
 
     public void clearServiceListener() {
+        SurespotLog.d("TAG", "clearServiceListener");
         mListener = null;
     }
 
@@ -1265,6 +1266,7 @@ public class CommunicationService extends Service {
 
             if (SurespotApplication.getChatController() != null) {
                 SurespotApplication.getChatController().onResume(true);
+                SurespotApplication.getChatController().connected();
             }
         }
     };

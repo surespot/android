@@ -276,7 +276,7 @@ public class Friend implements Comparable<Friend> {
 		theirFlags = theirFlags & (CHAT_ACTIVE | MESSAGE_ACTIVITY | INVITER);
 		myFlags = myFlags & (CHAT_ACTIVE | MESSAGE_ACTIVITY | INVITER);
 
-		SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
+		//SurespotLog.v(TAG, "comparing %s %d to %s %d", this.getName(), myFlags, another.getName(), theirFlags);
 
 		if ((theirFlags == myFlags) || (theirFlags < CHAT_ACTIVE && myFlags < CHAT_ACTIVE)) {
 			String myName = this.getNameOrAlias();

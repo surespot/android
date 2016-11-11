@@ -4,6 +4,8 @@ import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -153,7 +155,12 @@ public class ChatController {
 
     // this is wired up to listen for a message from the CommunicationService.  It's UI stuff
     public void connected() {
-        getFriendsAndData();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                getFriendsAndData();
+            }
+        });
     }
 
     private void handleAutoInvite() {
@@ -1333,8 +1340,6 @@ public class ChatController {
 
         setProgress(null, true);
 
-        // getFriendsAndIds();
-
         // load chat messages from disk that may have been added by gcm
         for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
             loadMessages(ca.getKey(), false);
@@ -1764,8 +1769,11 @@ public class ChatController {
         return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
     }
 
+    //needs to be run on UI thread
     private void getFriendsAndData() {
+        SurespotLog.d(TAG, "getFriendsAndData: friend count: %d, mLatestUserControlId: %d", mFriendAdapter.getCount(), mLatestUserControlId);
         if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
+            setProgress(null, true);
             mFriendAdapter.setLoading(true);
             // get the list of friends
             mNetworkController.getFriends(new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {

@@ -56,7 +56,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
-import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
@@ -2182,9 +2181,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 @Override
                 public void run() {
                     MainActivity.this.setHomeProgress(false);
-                    if (!logIfChatControllerNull()) {
-                        SurespotApplication.getChatController().connected();
-                    }
                 }
             });
 
@@ -2196,17 +2192,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 @Override
                 public void run() {
                     MainActivity.this.setHomeProgress(false);
-
-                    if (mCurrentFriend != null) {
-                        //notify current adapter as unsent messages are now errored
-                        ChatController cc = SurespotApplication.getChatController();
-                        if (cc != null) {
-                            ChatAdapter ca = cc.getChatAdapter(mCurrentFriend.getName(), false);
-                            if (ca != null) {
-                                ca.notifyDataSetChanged();
-                            }
-                        }
-                    }
                 }
             });
         }
