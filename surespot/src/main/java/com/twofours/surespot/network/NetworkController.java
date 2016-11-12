@@ -37,7 +37,6 @@ import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Cookie;
-import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -48,7 +47,7 @@ import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class NetworkController {
-    protected static final String TAG = "NetworkController";
+    protected String TAG = "NetworkController";
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
     private static String mBaseUrl;
@@ -67,8 +66,18 @@ public class NetworkController {
     public NetworkController(String username) {
         SurespotLog.d(TAG, "constructor");
         mUsername = username;
+        TAG = TAG + " " + username;
         mBaseUrl = SurespotConfiguration.getBaseUrl();
         mCookieStore = new SurespotCookieJar();
+
+
+        if (mUsername != null) {
+            Cookie cookie = IdentityController.getCookieForUser(mUsername);
+            if (cookie != null) {
+                SurespotLog.d(TAG, "got cookie for username: %s", mUsername);
+                mCookieStore.setCookie(cookie);
+            }
+        }
 
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
         Cache cache = new Cache(FileUtils.getHttpCacheDir(SurespotApplication.getContext()), cacheSize);
@@ -179,30 +188,15 @@ public class NetworkController {
         }
 
         mClient.dispatcher().setMaxRequestsPerHost(16);
-
-//        if (mClient == null) {
-//            Utils.makeLongToast(context, context.getString(R.string.error_surespot_could_not_create_http_clients));
-//            throw new Exception("Fatal error, could not create http clients..is storage space available?");
-//        }
-
-
     }
 
 
     public void set401Handler(IAsyncCallback<Object> the401Handler) {
-        SurespotLog.d(TAG, "setUsernameAnd401Handler, username: %s", mUsername);
+        SurespotLog.d(TAG, "set401Handler, username: %s", mUsername);
 
         m401Handler = the401Handler;
-        mCookieStore.clear();
 
-        if (mUsername != null) {
-            Cookie cookie = IdentityController.getCookieForUser(mUsername);
-            if (cookie != null) {
-                SurespotLog.d(TAG, "setUsernameAnd401Handler, got cookie for username: %s", mUsername);
-                mCookieStore.setCookie(cookie);
-            }
 
-        }
     }
 
     public void get(String url, Callback responseHandler) {
@@ -281,10 +275,6 @@ public class NetworkController {
                 .build();
 
         mClient.newCall(request).enqueue(responseHandler);
-    }
-
-    public CookieJar getCookieStore() {
-        return mCookieStore;
     }
 
     private boolean mUnauthorized;

@@ -91,6 +91,7 @@ public class IdentityController {
             // if we're logging in we probably didn't just buy it
             // SurespotApplication.getBillingController().clearJustPurchased();
             mPasswords.put(identity.getUsername(), password);
+            mLoggedInUser = identity.getUsername();
         }
         else {
             SurespotLog.w(TAG, "getIdentity null");
