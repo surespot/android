@@ -187,7 +187,7 @@ public class FriendImageDownloader {
 				try {
 					inputStream = new PipedInputStream(out);
 
-					EncryptionController.runDecryptTask(mFriend.getImageVersion(), IdentityController.getLoggedInUser(), mFriend.getImageVersion(),
+					EncryptionController.runDecryptTask(IdentityController.getLoggedInUser(), mFriend.getImageVersion(), IdentityController.getLoggedInUser(), mFriend.getImageVersion(),
 							mFriend.getImageIv(), mFriend.isImageHashed(), new BufferedInputStream(imageStream), out);
 
 					if (mCancelled) {

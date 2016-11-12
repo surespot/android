@@ -18,6 +18,7 @@ public class NetworkManager {
         NetworkController nc = mMap.get(username);
         if (nc == null) {
             nc = new NetworkController(username);
+            mMap.put(username,nc);
         }
         return nc;
     }

@@ -212,7 +212,7 @@ public class ChatController {
                     if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
                         // decrypt it before adding
-                        final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(mUsername), message.getOtherUser(mUsername),
+                        final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
                                 message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
                         // substitute emoji
@@ -1953,7 +1953,7 @@ public class ChatController {
 
                 @Override
                 protected String doInBackground(Void... params) {
-                    String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), IdentityController.getLoggedInUser(),
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
                     return plainText;
@@ -2122,7 +2122,7 @@ public class ChatController {
         String username = IdentityController.getLoggedInUser();
 
         byte[] iv = EncryptionController.getIv();
-        final String cipherAlias = EncryptionController.symmetricEncrypt(version, username, version, alias, iv);
+        final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, username, version, alias, iv);
         final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
 
         mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {

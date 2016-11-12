@@ -62,7 +62,7 @@ public class ImageViewActivity extends Activity {
                         try {
                             inputStream = new PipedInputStream(out);
 
-                            EncryptionController.runDecryptTask(message.getOurVersion(IdentityController.getLoggedInUser()), message.getOtherUser(IdentityController.getLoggedInUser()), message.getTheirVersion(IdentityController.getLoggedInUser()), message.getIv(), message.isHashed(),
+                            EncryptionController.runDecryptTask(IdentityController.getLoggedInUser(), message.getOurVersion(IdentityController.getLoggedInUser()), message.getOtherUser(IdentityController.getLoggedInUser()), message.getTheirVersion(IdentityController.getLoggedInUser()), message.getIv(), message.isHashed(),
                                     new BufferedInputStream(imageStream), out);
 
                             bitmap = BitmapFactory.decodeStream(inputStream);

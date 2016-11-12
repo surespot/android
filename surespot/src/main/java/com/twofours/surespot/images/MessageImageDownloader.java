@@ -208,7 +208,7 @@ public class MessageImageDownloader {
                     try {
                         inputStream = new PipedInputStream(out);
 
-                        EncryptionController.runDecryptTask(mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
+                        EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                 new BufferedInputStream(encryptedImageStream), out);
 
                         if (mCancelled) {

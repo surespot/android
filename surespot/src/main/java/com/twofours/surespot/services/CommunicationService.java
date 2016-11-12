@@ -356,7 +356,7 @@ public class CommunicationService extends Service {
                     }
 
                     byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
-                    String result = EncryptionController.symmetricEncrypt(ourLatestVersion, message.getTo(), theirLatestVersion, message.getPlainData().toString(), iv);
+                    String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, message.getPlainData().toString(), iv);
 
                     if (result != null) {
                         //update unsent message
@@ -458,7 +458,7 @@ public class CommunicationService extends Service {
                             //encrypt
                             PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                             final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-                            EncryptionController.runEncryptTask(ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+                            EncryptionController.runEncryptTask(mUsername, ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
 
                             int bufferSize = 1024;
                             byte[] buffer = new byte[bufferSize];

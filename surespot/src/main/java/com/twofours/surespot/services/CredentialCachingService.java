@@ -39,10 +39,6 @@ import java.util.concurrent.ExecutionException;
 
 import okhttp3.Cookie;
 
-import static android.R.attr.key;
-import static com.twofours.surespot.R.string.username;
-import static com.twofours.surespot.identity.IdentityController.getLoggedInUser;
-
 
 @SuppressLint("NewApi")
 public class CredentialCachingService extends Service {
@@ -82,7 +78,7 @@ public class CredentialCachingService extends Service {
         CacheLoader<SharedSecretKey, byte[]> secretCacheLoader = new CacheLoader<SharedSecretKey, byte[]>() {
             @Override
             public byte[] load(SharedSecretKey key) throws Exception {
-                SurespotLog.i(TAG, "secretCacheLoader, ourVersion: %s, theirUsername: %s, theirVersion: %s, hashed: %b", key.getOurVersion(), key.getTheirUsername(),
+                SurespotLog.i(TAG, "secretCacheLoader, ourUsername: %s, ourVersion: %s, theirUsername: %s, theirVersion: %s, hashed: %b", key.getOurUsername(), key.getOurVersion(), key.getTheirUsername(),
                         key.getTheirVersion(), key.getHashed());
 
                 try {
@@ -107,7 +103,7 @@ public class CredentialCachingService extends Service {
                 //get the network controller for the identity
                 NetworkController nc = NetworkManager.getNetworkController(identityAndFriendname.first);
                 String version = nc.getKeyVersionSync(identityAndFriendname.second);
-                SurespotLog.d(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", key, version);
+                SurespotLog.d(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", identityAndFriendname.second, version);
                 return version;
             }
         };
@@ -258,11 +254,11 @@ public class CredentialCachingService extends Service {
         return cookie;
     }
 
-    public byte[] getSharedSecret(String ourVersion, String theirUsername, String theirVersion, boolean hashed) {
-        if (getLoggedInUser() != null) {
+    public byte[] getSharedSecret(String ourUsername, String ourVersion, String theirUsername, String theirVersion, boolean hashed) {
+        if (ourUsername != null) {
             // get the cache for this user
             try {
-                return mSharedSecrets.get(new SharedSecretKey(new VersionMap(getLoggedInUser(), ourVersion), new VersionMap(theirUsername, theirVersion), hashed));
+                return mSharedSecrets.get(new SharedSecretKey(new VersionMap(ourUsername, ourVersion), new VersionMap(theirUsername, theirVersion), hashed));
             }
             catch (InvalidCacheLoadException e) {
                 SurespotLog.w(TAG, e, "getSharedSecret");
@@ -378,9 +374,9 @@ public class CredentialCachingService extends Service {
 
     public synchronized String getLatestVersion(String ourUsername, String theirUsername) {
         try {
-            if (getLoggedInUser() != null) {
+            if (ourUsername != null) {
                 String version = mLatestVersions.get(new Tuple<String, String>(ourUsername, theirUsername));
-                SurespotLog.v(TAG, "getLatestVersion, username: %s, version: %s", username, version);
+                SurespotLog.v(TAG, "getLatestVersion, username: %s, version: %s", theirUsername, version);
                 return version;
             }
         }

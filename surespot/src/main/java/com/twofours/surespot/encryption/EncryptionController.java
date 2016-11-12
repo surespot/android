@@ -342,7 +342,7 @@ public class EncryptionController {
         return null;
     }
 
-    public static void runEncryptTask(final String ourVersion, final String theirUsername, final String theirVersion, final String ivs, final InputStream in,
+    public static void runEncryptTask(final String ourUsername, final String ourVersion, final String theirUsername, final String theirVersion, final String ivs, final InputStream in,
                                       final OutputStream out) {
         final byte[] iv = ChatUtils.base64DecodeNowrap(ivs);
         Runnable runnable = new Runnable() {
@@ -354,7 +354,7 @@ public class EncryptionController {
                     final IvParameterSpec ivParams = new IvParameterSpec(iv);
                     Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
-                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourVersion, theirUsername, theirVersion, true), 0,
+                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourUsername, ourVersion, theirUsername, theirVersion, true), 0,
                             AES_KEY_LENGTH, "AES");
                     ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 
@@ -400,7 +400,7 @@ public class EncryptionController {
         SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
     }
 
-    public static String runEncryptTask(final String ourVersion, final String theirUsername, final String theirVersion, final InputStream in,
+    public static String runEncryptTask(final String ourUsername, final String ourVersion, final String theirUsername, final String theirVersion, final InputStream in,
                                         final OutputStream out) {
         final byte[] iv = new byte[IV_LENGTH];
         mSecureRandom.nextBytes(iv);
@@ -413,7 +413,7 @@ public class EncryptionController {
                     final IvParameterSpec ivParams = new IvParameterSpec(iv);
                     Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
-                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourVersion, theirUsername, theirVersion, true), 0,
+                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourUsername, ourVersion, theirUsername, theirVersion, true), 0,
                             AES_KEY_LENGTH, "AES");
                     ccm.init(Cipher.ENCRYPT_MODE, key, ivParams);
 
@@ -460,7 +460,7 @@ public class EncryptionController {
         return new String(ChatUtils.base64EncodeNowrap(iv));
     }
 
-    public static void runDecryptTask(final String ourVersion, final String username, final String theirVersion, final String ivs, final boolean hashed, final InputStream in,
+    public static void runDecryptTask(final String ourUsername, final String ourVersion, final String username, final String theirVersion, final String ivs, final boolean hashed, final InputStream in,
                                       final OutputStream out) {
         Runnable runnable = new Runnable() {
             @Override
@@ -474,7 +474,7 @@ public class EncryptionController {
                     final IvParameterSpec ivParams = new IvParameterSpec(iv);
                     Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
-                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion, hashed), 0,
+                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService().getSharedSecret(ourUsername, ourVersion, username, theirVersion, hashed), 0,
                             AES_KEY_LENGTH, "AES");
                     ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
 
@@ -521,9 +521,9 @@ public class EncryptionController {
         SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
     }
 
-    public static String symmetricDecrypt(final String ourVersion, final String username, final String theirVersion, final String ivs, final boolean hashed, final String cipherData) {
+    public static String symmetricDecrypt(final String ourUsername, final String ourVersion, final String username, final String theirVersion, final String ivs, final boolean hashed, final String cipherData) {
 
-        byte[] decrypted = symmetricDecryptBytes(ourVersion, username, theirVersion, ivs, hashed, cipherData);
+        byte[] decrypted = symmetricDecryptBytes(ourUsername, ourVersion, username, theirVersion, ivs, hashed, cipherData);
         if (decrypted == null) {
             return null;
         }
@@ -531,7 +531,7 @@ public class EncryptionController {
 
     }
 
-    public static byte[] symmetricDecryptBytes(final String ourVersion, final String username, final String theirVersion, final String ivs, final boolean hashed,
+    public static byte[] symmetricDecryptBytes(final String ourUsername, final String ourVersion, final String username, final String theirVersion, final String ivs, final boolean hashed,
                                                final String cipherData) {
         GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
 
@@ -542,7 +542,7 @@ public class EncryptionController {
 
             cipherBytes = ChatUtils.base64DecodeNowrap(cipherData);
             iv = ChatUtils.base64DecodeNowrap(ivs);
-            byte[] secret = SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion, hashed);
+            byte[] secret = SurespotApplication.getCachingService().getSharedSecret(ourUsername, ourVersion, username, theirVersion, hashed);
             if (secret == null) {
                 return null;
             }
@@ -575,14 +575,14 @@ public class EncryptionController {
         return new String(ChatUtils.base64EncodeNowrap(getIv()));
     }
 
-    public static String symmetricEncrypt(final String ourVersion, final String username, final String theirVersion, final String plaintext, byte[] iv) {
+    public static String symmetricEncrypt(final String ourUsername, final String ourVersion, final String username, final String theirVersion, final String plaintext, byte[] iv) {
 
         GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
         // byte[] iv = new byte[IV_LENGTH];
         // mSecureRandom.nextBytes(iv);
         ParametersWithIV ivParams;
         try {
-            ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion, true), 0,
+            ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(ourUsername, ourVersion, username, theirVersion, true), 0,
                     AES_KEY_LENGTH), iv);
 
             ccm.reset();
@@ -607,14 +607,14 @@ public class EncryptionController {
         return null;
     }
 
-    public static byte[] symmetricEncrypt(final String ourVersion, final String username, final String theirVersion, final byte[] plainBytes, byte[] iv) {
+    public static byte[] symmetricEncrypt(final String ourUsername, final String ourVersion, final String username, final String theirVersion, final byte[] plainBytes, byte[] iv) {
 
         GCMBlockCipher ccm = new GCMBlockCipher(new AESLightEngine());
         // byte[] iv = new byte[IV_LENGTH];
         // mSecureRandom.nextBytes(iv);
         ParametersWithIV ivParams;
         try {
-            ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(ourVersion, username, theirVersion, true), 0,
+            ivParams = new ParametersWithIV(new KeyParameter(SurespotApplication.getCachingService().getSharedSecret(ourUsername, ourVersion, username, theirVersion, true), 0,
                     AES_KEY_LENGTH), iv);
 
             ccm.reset();

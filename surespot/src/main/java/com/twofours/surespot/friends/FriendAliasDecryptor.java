@@ -72,7 +72,7 @@ public class FriendAliasDecryptor {
 
 		@Override
 		public void run() {
-			final String plainText = EncryptionController.symmetricDecrypt(mFriend.getAliasVersion(), IdentityController.getLoggedInUser(),
+			final String plainText = EncryptionController.symmetricDecrypt(IdentityController.getLoggedInUser(), mFriend.getAliasVersion(), IdentityController.getLoggedInUser(),
 					mFriend.getAliasVersion(), mFriend.getAliasIv(), mFriend.isAliasHashed(), mFriend.getAliasData());
 
 			mFriend.setAliasPlain(plainText);
