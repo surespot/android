@@ -45,6 +45,7 @@ import com.twofours.surespot.identity.SurespotKeystoreActivity;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.MultiProgressDialog;
@@ -291,8 +292,8 @@ public class LoginActivity extends Activity {
                 protected void onPostExecute(final IdSig idSig) {
                     if (idSig != null) {
 
-                        NetworkController networkController = SurespotApplication.getNetworkController();
-                        networkController.setUsernameAnd401Handler(username, new IAsyncCallback<Object>() {
+                        NetworkController networkController = NetworkManager.getNetworkController(username);
+                        networkController.set401Handler(new IAsyncCallback<Object>() {
                             @Override
                             public void handleResponse(Object unused) {
 

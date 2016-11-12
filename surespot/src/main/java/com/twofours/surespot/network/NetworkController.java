@@ -64,8 +64,9 @@ public class NetworkController {
 
     private IAsyncCallback<Object> m401Handler;
 
-    public NetworkController() {
+    public NetworkController(String username) {
         SurespotLog.d(TAG, "constructor");
+        mUsername = username;
         mBaseUrl = SurespotConfiguration.getBaseUrl();
         mCookieStore = new SurespotCookieJar();
 
@@ -188,16 +189,16 @@ public class NetworkController {
     }
 
 
-    public void setUsernameAnd401Handler(String username, IAsyncCallback<Object> the401Handler) {
-        SurespotLog.d(TAG, "setUsernameAnd401Handler, username: %s", username);
-        mUsername = username;
+    public void set401Handler(IAsyncCallback<Object> the401Handler) {
+        SurespotLog.d(TAG, "setUsernameAnd401Handler, username: %s", mUsername);
+
         m401Handler = the401Handler;
         mCookieStore.clear();
 
-        if (username != null) {
-            Cookie cookie = IdentityController.getCookieForUser(username);
+        if (mUsername != null) {
+            Cookie cookie = IdentityController.getCookieForUser(mUsername);
             if (cookie != null) {
-                SurespotLog.d(TAG, "setUsernameAnd401Handler, got cookie for username: %s", username);
+                SurespotLog.d(TAG, "setUsernameAnd401Handler, got cookie for username: %s", mUsername);
                 mCookieStore.setCookie(cookie);
             }
 

@@ -19,7 +19,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
@@ -29,6 +28,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -147,7 +147,7 @@ public class ManageKeysActivity extends Activity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		SurespotApplication.getNetworkController().getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback(){
+		NetworkManager.getNetworkController(username).getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback(){
 			@Override
 			public void onFailure(Call call, IOException e) {
 				mMpd.decrProgress();
@@ -192,7 +192,7 @@ public class ManageKeysActivity extends Activity {
 						protected void onPostExecute(final RollKeysWrapper result) {
 							if (result != null) {
 								// upload all this crap to the server
-								SurespotApplication.getNetworkController().updateKeys(username, dPassword,
+								NetworkManager.getNetworkController(username).updateKeys(username, dPassword,
 										EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 										EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
 										result.keyVersion, result.clientSig, new Callback() {

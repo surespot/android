@@ -44,17 +44,19 @@ public class ChatAdapter extends BaseAdapter {
     private boolean mLoaded;
     private VoiceMessageDownloader mMessageVoiceDownloader;
     private ArrayList<SurespotControlMessage> mControlMessages = new ArrayList<SurespotControlMessage>();
+    private String mUsername;
 
-    public ChatAdapter(Context context) {
+    public ChatAdapter(Context context, String username) {
         SurespotLog.v(TAG, "Constructor.");
         mContext = context;
+        mUsername = username;
 
         SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
         mDebugMode = pm.getBoolean("pref_debug_mode", false);
 
-        mMessageDecryptor = new MessageDecryptor(this);
-        mMessageImageDownloader = new MessageImageDownloader(this);
-        mMessageVoiceDownloader = new VoiceMessageDownloader(this);
+        mMessageDecryptor = new MessageDecryptor(mUsername, this);
+        mMessageImageDownloader = new MessageImageDownloader(mUsername, this);
+        mMessageVoiceDownloader = new VoiceMessageDownloader(mUsername, this);
     }
 
     public void doneCheckingSequence() {
@@ -214,11 +216,11 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public synchronized int getItemViewType(int position) {
         SurespotMessage message = mMessages.get(position);
-        return getTypeForMessage(message);
+        return getTypeForMessage(mUsername, message);
     }
 
-    public int getTypeForMessage(SurespotMessage message) {
-        String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
+    public int getTypeForMessage(String ourUser, SurespotMessage message) {
+        String otherUser = ChatUtils.getOtherUser(ourUser, message.getFrom(), message.getTo());
         if (otherUser.equals(message.getFrom())) {
             return TYPE_THEM;
         }

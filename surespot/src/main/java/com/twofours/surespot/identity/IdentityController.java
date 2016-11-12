@@ -27,6 +27,8 @@ import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.NetworkHelper;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -65,6 +67,9 @@ import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.Response;
 
+import static com.twofours.surespot.R.string.username;
+import static com.twofours.surespot.R.string.version;
+
 public class IdentityController {
     private static final String TAG = "IdentityController";
     public static final String IDENTITY_EXTENSION = ".ssi";
@@ -75,6 +80,7 @@ public class IdentityController {
     private static boolean mHasIdentity;
     private static KeyStore mKs;
     private static Map<String, String> mPasswords = new HashMap<>(5);
+    private static String mLoggedInUser;
 
     private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie, String password) {
         // load the identity
@@ -209,7 +215,7 @@ public class IdentityController {
 
                 String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
                 // do OOB verification
-                NetworkController networkController = SurespotApplication.getNetworkController();
+                NetworkController networkController = NetworkManager.getNetworkController(username);
                 networkController.validate(username, dPassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword),
                         new Callback() {
                             @Override
@@ -314,13 +320,14 @@ public class IdentityController {
 
         SurespotApplication.getCachingService().clearIdentityData(username, true);
 
-        if (isLoggedIn) {
-            SurespotApplication.getCachingService().logout(true);
-        }
+//        if (isLoggedIn) {
+//            SurespotApplication.getCachingService().logout(username,true);
+//        }
 
         clearStoredPasswordForIdentity(context, username);
 
-        SurespotApplication.getNetworkController().clearCache();
+        NetworkManager.getNetworkController(username).clearCache();
+
         FileCacheController fcc = SurespotApplication.getFileCacheController();
         if (fcc != null) {
             fcc.clearCache();
@@ -483,7 +490,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = SurespotApplication.getNetworkController();
+            NetworkController networkController = NetworkManager.getNetworkController(username);
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
                         @Override
@@ -540,7 +547,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = SurespotApplication.getNetworkController();
+            NetworkController networkController = NetworkManager.getNetworkController(username);
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
 
@@ -605,7 +612,7 @@ public class IdentityController {
 
             String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
             // do OOB verification
-            SurespotApplication.getNetworkController().validate(username, dPassword,
+            NetworkManager.getNetworkController(username).validate(username, dPassword,
                     EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
@@ -694,7 +701,7 @@ public class IdentityController {
         return null;
     }
 
-    public static PublicKeys getPublicKeyPair2(String username, String version) {
+    public static PublicKeys getPublicKeyPair2(String ourUsername, String theirUsername, String version) {
 
         int currentVersion = Integer.parseInt(version, 10);
         int wantedVersion = currentVersion;
@@ -714,7 +721,7 @@ public class IdentityController {
 
             //load keys locally
             //if we have them they've been validated and we can validate any new keys we downloaded
-            keys = loadPublicKeyPair(username, sCurrentVersion);
+            keys = loadPublicKeyPair(theirUsername, sCurrentVersion);
             if (keys != null) {
                 validatedKeys = keys;
                 validatedKeyVersion = currentVersion;
@@ -729,7 +736,7 @@ public class IdentityController {
         }
         else {
             //get keys from server since the last validated version
-            sDownloadedKeys = SurespotApplication.getNetworkController().getPublicKeysSync(username, Integer.toString(validatedKeyVersion + 1, 10));
+            sDownloadedKeys = NetworkManager.getNetworkController(ourUsername).getPublicKeysSync(theirUsername, Integer.toString(validatedKeyVersion + 1, 10));
 
             //validate from the last validated version to the version we want
             if (sDownloadedKeys != null) {
@@ -752,13 +759,13 @@ public class IdentityController {
                     JSONObject wantedKey = resultKeys.get(wantedVersion);
 
                     if (!wantedKey.has("clientSig")) {
-                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v1 code", username, version);
+                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v1 code", theirUsername, version);
                         //TODO need to recheck somehow and eventually get all keys validated using v2 code
-                        return getPublicKeyPair(username, version, wantedKey);
+                        return getPublicKeyPair(theirUsername, version, wantedKey);
 
                     }
                     else {
-                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", username, version);
+                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", theirUsername, version);
 
                         PublicKey previousDsaKey = null;
                         if (validatedKeys != null) {
@@ -784,7 +791,7 @@ public class IdentityController {
                             boolean verified = EncryptionController.verifySig(
                                     EncryptionController.ServerPublicKey,
                                     resultKeys.get(validatingVersion).getString("serverSig"),
-                                    username,
+                                    theirUsername,
                                     validatingVersion,
                                     sDhPub,
                                     sDsaPub
@@ -799,7 +806,7 @@ public class IdentityController {
 
                                     previousDsaKey,
                                     resultKeys.get(validatingVersion).getString("clientSig"),
-                                    username,
+                                    theirUsername,
                                     validatingVersion,
                                     sDhPub,
                                     sDsaPub);
@@ -809,7 +816,7 @@ public class IdentityController {
                             }
 
                             //save some keys
-                            savePublicKeyPair(username, String.valueOf(validatingVersion), jsonKey.toString());
+                            savePublicKeyPair(theirUsername, String.valueOf(validatingVersion), jsonKey.toString());
 
                             //get next previous signing key
                             previousDsaKey = dsaKeys.get(validatingVersion);
@@ -821,7 +828,7 @@ public class IdentityController {
 
 
                         //savePublicKeyPair(username, version, json.toString());
-                        SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", username);
+                        SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", theirUsername);
                         return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
                     }
                 }
@@ -935,14 +942,16 @@ public class IdentityController {
     }
 
     public static void logout() {
-        if (hasLoggedInUser()) {
-            SurespotApplication.getNetworkController().logout();
-
-            CredentialCachingService cache = SurespotApplication.getCachingService();
-            if (cache != null) {
-                cache.logout(false);
-            }
-        }
+        mLoggedInUser = null;
+        //TODO blow away password
+//        if (hasLoggedInUser()) {
+//           // SurespotApplication.getNetworkController().logout();
+//
+//            CredentialCachingService cache = SurespotApplication.getCachingService();
+//            if (cache != null) {
+//                cache.logout(false);
+//            }
+//        }
     }
 
     private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
@@ -985,18 +994,10 @@ public class IdentityController {
 
     public static boolean hasLoggedInUser() {
         return getLoggedInUser() != null;
-
     }
 
     public static String getLoggedInUser() {
-        CredentialCachingService service = SurespotApplication.getCachingService();
-        if (service != null) {
-            return service.getLoggedInUser();
-
-        }
-        else {
-            return null;
-        }
+        return mLoggedInUser;
     }
 
     public static String getLastLoggedInUser(Context context) {
@@ -1026,12 +1027,8 @@ public class IdentityController {
      * @param username
      * @return
      */
-    public static String getTheirLatestVersion(String username) {
-        return SurespotApplication.getCachingService().getLatestVersion(username);
-    }
-
-    public static String getOurLatestVersion() {
-        return SurespotApplication.getCachingService() == null ? null : SurespotApplication.getCachingService().getIdentity(null).getLatestVersion();
+    public static String getTheirLatestVersion(String ourUsername, String theirUsername) {
+        return SurespotApplication.getCachingService().getLatestVersion(ourUsername, theirUsername);
     }
 
     public static String getOurLatestVersion(String username) {
@@ -1063,7 +1060,7 @@ public class IdentityController {
         // if we have the latest version locally, if we don't then this user has
         // been revoked from a different device
         // and should not be used on this device anymore
-        if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion()))) {
+        if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(username)))) {
             SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
             // bad news
@@ -1072,7 +1069,7 @@ public class IdentityController {
 
             // delete identities locally?
             SurespotLog.d(TAG, "setting unauthorized, username=" + username + ", getLoggedInUser=" + getLoggedInUser());
-            SurespotApplication.getNetworkController().setUnauthorized(true, true);
+            NetworkManager.getNetworkController(username).setUnauthorized(true, true);
 
             // boot them out
             launchLoginActivity(context);
@@ -1083,7 +1080,7 @@ public class IdentityController {
 
         }
         else {
-            SurespotApplication.getCachingService().updateLatestVersion(username, version);
+            SurespotApplication.getCachingService().updateLatestVersion(username, username, version);
         }
 
     }

@@ -12,10 +12,10 @@ import android.widget.TextView;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.ExpandableHeightListView;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -105,7 +105,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 				}
 				
 				//get latest version from server							
-				String latestVersion = SurespotApplication.getNetworkController().getKeyVersionSync(mUsername);
+				String latestVersion = NetworkManager.getNetworkController(mUsername).getKeyVersionSync(mUsername);
 				if (latestVersion == null) {
 					activity = getActivity();
 					if (activity == null) {
@@ -120,7 +120,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 				if (maxVersion > 0) {
 					for (int ver = maxVersion; ver > 0; ver--) {
 						String sVer = String.valueOf(ver);
-						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(mUsername, sVer);
+						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(mUsername, mUsername, sVer);
 
 						if (pubkeys == null) {
 							return null;

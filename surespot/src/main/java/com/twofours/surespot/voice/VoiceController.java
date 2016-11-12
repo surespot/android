@@ -19,6 +19,7 @@ import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.File;
@@ -418,7 +419,7 @@ public class VoiceController {
 
                     SurespotLog.v(TAG, "message: %s not playing", message);
 
-                    if (ChatUtils.isMyMessage(message)) {
+                    if (ChatUtils.isMyMessage(IdentityController.getLoggedInUser(), message)) {
                         voicePlayed.setVisibility(View.VISIBLE);
                     }
                     // //if it's ours we don't care if it's been played or not

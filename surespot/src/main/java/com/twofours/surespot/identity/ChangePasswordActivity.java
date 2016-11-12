@@ -20,7 +20,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -28,6 +27,7 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -149,7 +149,7 @@ public class ChangePasswordActivity extends Activity {
         SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
         // get a key update token from the server
-        SurespotApplication.getNetworkController().getPasswordToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(username).getPasswordToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -189,7 +189,7 @@ public class ChangePasswordActivity extends Activity {
                         protected void onPostExecute(final ChangePasswordWrapper result) {
                             if (result != null) {
                                 // upload all this crap to the server
-                                SurespotApplication.getNetworkController().changePassword(username, dPassword, result.password, result.authSig,
+                                NetworkManager.getNetworkController(username).changePassword(username, dPassword, result.password, result.authSig,
                                         result.tokenSig, result.keyVersion, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
                                             @Override

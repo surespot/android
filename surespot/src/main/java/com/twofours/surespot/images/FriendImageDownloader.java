@@ -43,6 +43,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkManager;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -166,7 +167,7 @@ public class FriendImageDownloader {
 			Bitmap bitmap = null;
 			InputStream imageStream = null;
 
-			imageStream = SurespotApplication.getNetworkController().getFileStream(mFriend.getImageUrl());
+			imageStream = NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).getFileStream(mFriend.getImageUrl());
 
 			if (mCancelled) {
 				try {

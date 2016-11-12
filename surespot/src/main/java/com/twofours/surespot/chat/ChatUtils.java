@@ -28,7 +28,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
-import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.NetworkManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,8 +53,8 @@ public class ChatUtils {
     private static final String TAG = "ChatUtils";
     private static Random mImageUploadFileRandom = new Random();
 
-    public static String getOtherUser(String from, String to) {
-        return to.equals(IdentityController.getLoggedInUser()) ? from : to;
+    public static String getOtherUser(String ourUser, String from, String to) {
+        return to.equals(ourUser) ? from : to;
     }
 
     public static String getSpot(String from, String to) {
@@ -71,8 +71,8 @@ public class ChatUtils {
         return split[0].equals(user) ? split[1] : split[0];
     }
 
-    public static boolean isMyMessage(SurespotMessage message) {
-        return message.getFrom().equals(IdentityController.getLoggedInUser());
+    public static boolean isMyMessage(String ourUser, SurespotMessage message) {
+        return message.getFrom().equals(ourUser);
     }
 
     public static SurespotMessage buildPlainMessage(String from, String to, String mimeType, CharSequence plainData, String iv) {
@@ -296,7 +296,7 @@ public class ChatUtils {
 
     }
 
-    public static void uploadFriendImageAsync(final Activity activity, final NetworkController networkController, final Uri imageUri, final String friendName,
+    public static void uploadFriendImageAsync(final Activity activity, final Uri imageUri, final String ourName, final String friendName,
                                               final IAsyncCallbackTriplet<String, String, String> callback) {
 
         Runnable runnable = new Runnable() {
@@ -309,12 +309,12 @@ public class ChatUtils {
                     PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                     final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 
-                    final String ourVersion = IdentityController.getOurLatestVersion();
-                    final String username = IdentityController.getLoggedInUser();
-                    final String iv = EncryptionController.runEncryptTask(ourVersion, username, ourVersion, new BufferedInputStream(dataStream),
+                    final String ourVersion = IdentityController.getOurLatestVersion(ourName);
+
+                    final String iv = EncryptionController.runEncryptTask(ourVersion, ourName, ourVersion, new BufferedInputStream(dataStream),
                             encryptionOutputStream);
 
-                    networkController.postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
+                    NetworkManager.getNetworkController(ourName).postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
 
                         @Override
                         public void handleResponse(String uri) {

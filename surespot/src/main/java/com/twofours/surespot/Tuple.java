@@ -20,7 +20,30 @@ public class Tuple<F, S> {
         
     }
 
-  
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Tuple<?, ?> tuple = (Tuple<?, ?>) o;
+
+        if (first != null ? !first.equals(tuple.first) : tuple.first != null) {
+            return false;
+        }
+        return second != null ? second.equals(tuple.second) : tuple.second == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = first != null ? first.hashCode() : 0;
+        result = 31 * result + (second != null ? second.hashCode() : 0);
+        return result;
+    }
 
     /**
      * Convenience method for creating an appropriately typed pair.

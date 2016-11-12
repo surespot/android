@@ -48,6 +48,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
+import com.twofours.surespot.network.NetworkManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -152,8 +153,8 @@ public class CommunicationService extends Service {
 
             //override ssl context for self signed certs for dev
             if (!SurespotConfiguration.isSslCheckingStrict()) {
-                opts.sslContext = SurespotApplication.getNetworkController().getSSLContext();
-                opts.hostnameVerifier = SurespotApplication.getNetworkController().getHostnameVerifier();
+                opts.sslContext = NetworkManager.getNetworkController(mUsername).getSSLContext();
+                opts.hostnameVerifier = NetworkManager.getNetworkController(mUsername).getHostnameVerifier();
             }
 
             opts.reconnection = false;
@@ -345,7 +346,7 @@ public class CommunicationService extends Service {
                 @Override
                 protected Boolean doInBackground(Void... arg0) {
                     String ourLatestVersion = IdentityController.getOurLatestVersion(message.getFrom());
-                    String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getTo());
+                    String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
 
                     if (theirLatestVersion == null) {
                         SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
@@ -436,7 +437,7 @@ public class CommunicationService extends Service {
                         try {
 
                             final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
-                            final String theirVersion = IdentityController.getTheirLatestVersion(message.getTo());
+                            final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
 
                             if (theirVersion == null) {
                                 SurespotLog.d(TAG, "prepAndSendFileMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
@@ -529,8 +530,8 @@ public class CommunicationService extends Service {
             @Override
             protected Tuple<Integer, JSONObject> doInBackground(Void... voids) {
                 //post message via http if we have network controller for the from user
-                NetworkController networkController = SurespotApplication.getNetworkController();
-                if (networkController != null && message.getFrom().equals(networkController.getUsername())) {
+                NetworkController networkController = NetworkManager.getNetworkController(message.getFrom());
+                if (networkController != null) {
 
                     FileInputStream uploadStream;
                     try {
@@ -538,9 +539,9 @@ public class CommunicationService extends Service {
                         uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
 
                         return networkController.postFileStreamSync(
-                                message.getOurVersion(),
+                                message.getOurVersion(message.getFrom()),
                                 message.getTo(),
-                                message.getTheirVersion(),
+                                message.getTheirVersion(message.getFrom()),
                                 message.getIv(),
                                 uploadStream,
                                 message.getMimeType());
@@ -601,7 +602,7 @@ public class CommunicationService extends Service {
                                     @Override
                                     public void handleResponse(Object result) {
                                         if (mMainActivityPaused) {
-                                            saveMessages(message.getOtherUser());
+                                            saveMessages(message.getTo());
                                         }
                                     }
                                 });
@@ -628,7 +629,7 @@ public class CommunicationService extends Service {
 
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
-        SurespotApplication.getNetworkController().postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(message.getFrom()).postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -664,7 +665,7 @@ public class CommunicationService extends Service {
                                     @Override
                                     public void handleResponse(Object result) {
                                         if (mMainActivityPaused) {
-                                            saveMessages(message.getOtherUser());
+                                            saveMessages(message.getTo());
                                         }
 
                                         //need to remove the message from the queue before setting the current send iv to null
@@ -1193,7 +1194,7 @@ public class CommunicationService extends Service {
 
     private void tryReLogin() {
         SurespotLog.d(TAG, "trying to relogin " + mUsername);
-        NetworkHelper.reLogin(CommunicationService.this, SurespotApplication.getNetworkController(), mUsername, new CookieResponseHandler() {
+        NetworkHelper.reLogin(CommunicationService.this, mUsername, new CookieResponseHandler() {
             private String TAG = "ReLoginCookieResponseHandler";
 
             @Override

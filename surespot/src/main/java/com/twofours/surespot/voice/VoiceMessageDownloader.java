@@ -30,6 +30,8 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.FileInputStream;
@@ -53,8 +55,10 @@ public class VoiceMessageDownloader {
     private static final String TAG = "VoiceMessageDownloader";
     private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
     private ChatAdapter mChatAdapter;
+    private String mUsername;
 
-    public VoiceMessageDownloader(ChatAdapter chatAdapter) {
+    public VoiceMessageDownloader(String username, ChatAdapter chatAdapter) {
+        mUsername = username;
         mChatAdapter = chatAdapter;
     }
 
@@ -177,7 +181,8 @@ public class VoiceMessageDownloader {
                 if (!TextUtils.isEmpty(messageData)) {
 
                     SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", messageData);
-                    InputStream voiceStream = SurespotApplication.getNetworkController().getFileStream(messageData);
+                    InputStream voiceStream = NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).getFileStream(messageData);
+                    //InputStream voiceStream = SurespotApplication.getNetworkController().getFileStream(messageData);
 
                     if (mCancelled) {
                         try {
@@ -204,7 +209,7 @@ public class VoiceMessageDownloader {
                                 return;
                             }
 
-                            EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
+                            EncryptionController.runDecryptTask(mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                     voiceStream, out);
 
                             soundbytes = Utils.inputStreamToBytes(inputStream);

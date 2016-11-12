@@ -16,7 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -26,6 +25,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
+import com.twofours.surespot.network.NetworkManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -319,7 +319,8 @@ public class FriendAdapter extends BaseAdapter {
             final Friend friend = (Friend) getItem(position);
             final String friendname = friend.getName();
 
-            SurespotApplication.getNetworkController().respondToInvite(friendname, action, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).
+            respondToInvite(friendname, action, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "respondToInvite");

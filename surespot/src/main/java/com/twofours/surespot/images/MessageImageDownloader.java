@@ -36,6 +36,8 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
@@ -61,9 +63,11 @@ public class MessageImageDownloader {
     private static BitmapCache mBitmapCache = new BitmapCache();
     private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
     private ChatAdapter mChatAdapter;
+    private String mUsername;
 
 
-    public MessageImageDownloader(ChatAdapter chatAdapter) {
+    public MessageImageDownloader(String username, ChatAdapter chatAdapter) {
+        mUsername = username;
         mChatAdapter = chatAdapter;
     }
 
@@ -183,7 +187,8 @@ public class MessageImageDownloader {
             if (!TextUtils.isEmpty(messageData)) {
 
                 SurespotLog.d(TAG, "BitmapDownloaderTask getting %s,", messageData);
-                InputStream encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(messageData);
+
+                InputStream encryptedImageStream = NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).getFileStream(messageData);
 
                 if (mCancelled) {
                     try {
@@ -203,7 +208,7 @@ public class MessageImageDownloader {
                     try {
                         inputStream = new PipedInputStream(out);
 
-                        EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
+                        EncryptionController.runDecryptTask(mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                 new BufferedInputStream(encryptedImageStream), out);
 
                         if (mCancelled) {

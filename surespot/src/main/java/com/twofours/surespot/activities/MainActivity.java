@@ -75,6 +75,7 @@ import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
@@ -794,7 +795,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mMainHandler = new Handler(getMainLooper());
 
         //set username
-        SurespotApplication.getNetworkController().setUsernameAnd401Handler(mUser, m401Handler);
+        NetworkManager.getNetworkController(mUser).set401Handler(m401Handler);
 
         mBillingController = SurespotApplication.getBillingController();
 
@@ -1056,7 +1057,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (selectedImageUri != null) {
 
                         // Utils.makeToast(this, getString(R.string.uploading_image));
-                        ChatUtils.uploadFriendImageAsync(this, SurespotApplication.getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
+                        ChatUtils.uploadFriendImageAsync(this, selectedImageUri, mUser, to, new IAsyncCallbackTriplet<String, String, String>() {
 
                             @Override
                             public void handleResponse(String url, String version, String iv) {
@@ -1245,7 +1246,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // }.execute();
                 return true;
             case R.id.menu_invite_external:
-                UIUtils.sendInvitation(MainActivity.this, SurespotApplication.getNetworkController());
+                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser));
                 return true;
             case R.id.menu_clear_messages:
                 SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1819,7 +1820,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
 
             setHomeProgress(true);
-            SurespotApplication.getNetworkController().invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            NetworkManager.getNetworkController(mUser).invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "inviteFriend error");

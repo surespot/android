@@ -14,6 +14,7 @@ import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
 import com.twofours.surespot.services.CredentialCachingService.VersionMap;
@@ -298,8 +299,9 @@ public class StateController {
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_CHAT, null);
 				Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 
-				// network caches
-				SurespotApplication.getNetworkController().clearCache();
+				// clear network caches
+				NetworkManager.clearCaches();
+
 				FileCacheController fcc = SurespotApplication.getFileCacheController();
 				if (fcc != null) {
 					fcc.clearCache();

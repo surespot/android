@@ -17,12 +17,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 public class FriendFragment extends Fragment {
@@ -44,7 +44,7 @@ public class FriendFragment extends Fragment {
 
 			@Override
 			public void onClick(View v) {
-				UIUtils.sendInvitation(getActivity(), SurespotApplication.getNetworkController());
+				UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(IdentityController.getLoggedInUser()));
 
 			}
 		});

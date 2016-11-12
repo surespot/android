@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -21,6 +20,7 @@ import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
@@ -74,6 +74,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
+		final String ourUser = IdentityController.getLoggedInUser();
 		final MainActivity mActivity = (MainActivity) getActivity();
 		String messageString = getArguments().getString("message");
 		if (messageString != null) {
@@ -96,7 +97,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 		}
 		// if it's our message and it's been sent we can mark it locked or unlocked
-		if (mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+		if (mMessage.getId() != null && mMessage.getFrom().equals(ourUser)) {
 			mItems.add(mMessage.isShareable() ? getString(R.string.menu_lock) : getString(R.string.menu_unlock));
 		}
 
@@ -136,9 +137,9 @@ public class ImageMessageMenuFragment extends DialogFragment {
 									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
 									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-									InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(mMessage.getData());
+									InputStream imageStream = NetworkManager.getNetworkController(ourUser).getFileStream(mMessage.getData());
 
-									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
+									EncryptionController.runDecryptTask(mMessage.getOurVersion(ourUser), mMessage.getOtherUser(ourUser), mMessage.getTheirVersion(ourUser),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);
 
 									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());

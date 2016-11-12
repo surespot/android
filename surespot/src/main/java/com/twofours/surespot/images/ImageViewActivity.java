@@ -11,12 +11,13 @@ import android.view.MenuItem;
 import android.view.WindowManager.LayoutParams;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
@@ -53,7 +54,7 @@ public class ImageViewActivity extends Activity {
                     @Override
                     protected Bitmap doInBackground(Void... params) {
 
-                        InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(message.getData());
+                        InputStream imageStream = NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).getFileStream(message.getData());
 
                         Bitmap bitmap = null;
                         PipedOutputStream out = new PipedOutputStream();
@@ -61,7 +62,7 @@ public class ImageViewActivity extends Activity {
                         try {
                             inputStream = new PipedInputStream(out);
 
-                            EncryptionController.runDecryptTask(message.getOurVersion(), message.getOtherUser(), message.getTheirVersion(), message.getIv(), message.isHashed(),
+                            EncryptionController.runDecryptTask(message.getOurVersion(IdentityController.getLoggedInUser()), message.getOtherUser(IdentityController.getLoggedInUser()), message.getTheirVersion(IdentityController.getLoggedInUser()), message.getIv(), message.isHashed(),
                                     new BufferedInputStream(imageStream), out);
 
                             bitmap = BitmapFactory.decodeStream(inputStream);

@@ -27,6 +27,7 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CommunicationService;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -88,7 +89,7 @@ public class ChatController {
         SurespotLog.d(TAG, "constructor, username: %s", username);
         mContext = context;
         mUsername = username;
-        mNetworkController = SurespotApplication.getNetworkController();
+        mNetworkController = NetworkManager.getNetworkController(mUsername);
 
         mProgressCallback = progressCallback;
         mSendIntentCallback = sendIntentCallback;
@@ -195,7 +196,7 @@ public class ChatController {
 
     public void handleMessage(final SurespotMessage message, final IAsyncCallback<Object> callback) {
         SurespotLog.d(TAG, "handleMessage %s", message);
-        final String otherUser = message.getOtherUser();
+        final String otherUser = message.getOtherUser(mUsername);
 
         final ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
 
@@ -211,8 +212,8 @@ public class ChatController {
                     if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
                         // decrypt it before adding
-                        final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(), message.getOtherUser(),
-                                message.getTheirVersion(), message.getIv(), message.isHashed(), message.getData());
+                        final String plainText = EncryptionController.symmetricDecrypt(message.getOurVersion(mUsername), message.getOtherUser(mUsername),
+                                message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
                         // substitute emoji
                         if (plainText != null) {
@@ -231,7 +232,7 @@ public class ChatController {
                                 message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                             // if it's an image that i sent
                             // handle caching
-                            if (ChatUtils.isMyMessage(message)) {
+                            if (ChatUtils.isMyMessage(mUsername,message)) {
                                 handleCachedFile(chatAdapter, message);
                             }
                         }
@@ -261,7 +262,7 @@ public class ChatController {
 
                             // if it was a voice message from the other user set play flag
                             // TODO wrap in preference
-                            if (!ChatUtils.isMyMessage(message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                            if (!ChatUtils.isMyMessage(mUsername, message) && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                                 message.setPlayMedia(true);
                             }
 
@@ -271,7 +272,7 @@ public class ChatController {
                             // if it's my message increment the count by one to account for it as I may have unread messages from the
                             // other user; we
                             // can't just set the last viewed to the latest message
-                            if (ChatUtils.isMyMessage(message) && added) {
+                            if (ChatUtils.isMyMessage(mUsername, message) && added) {
                                 int adjustedLastViewedId = friend.getLastViewedMessageId() + 1;
                                 if (adjustedLastViewedId < messageId) {
                                     friend.setLastViewedMessageId(adjustedLastViewedId);
@@ -1063,7 +1064,7 @@ public class ChatController {
             StateController.wipeUserState(mContext, username, deletedUser);
 
             // clear in memory cached data
-            SurespotApplication.getCachingService().clearUserData(deletedUser);
+            SurespotApplication.getCachingService().clearUserData(deleter, deletedUser);
 
             // clear the http cache
             mNetworkController.clearCache();
@@ -1351,7 +1352,7 @@ public class ChatController {
         ChatAdapter chatAdapter = mChatAdapters.get(username);
         if (chatAdapter == null && create) {
 
-            chatAdapter = new ChatAdapter(mContext);
+            chatAdapter = new ChatAdapter(mContext, mUsername);
 
             Friend friend = mFriendAdapter.getFriend(username);
             if (friend != null) {
@@ -1527,10 +1528,10 @@ public class ChatController {
         // if it's on the server, send delete control message otherwise just delete it locally
         if (message.getId() != null) {
 
-            final ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser());
+            final ChatAdapter chatAdapter = mChatAdapters.get(message.getOtherUser(mUsername));
             setProgress("delete", true);
             if (chatAdapter != null) {
-                mNetworkController.deleteMessage(message.getOtherUser(), message.getId(), new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+                mNetworkController.deleteMessage(message.getOtherUser(mUsername), message.getId(), new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         SurespotLog.i(TAG, e, "deleteMessage");
@@ -1556,7 +1557,7 @@ public class ChatController {
         }
         else {
             // remove the local message
-            String otherUser = message.getOtherUser();
+            String otherUser = message.getOtherUser(mUsername);
             //	SurespotApplication.getCommunicationService().getSendQueue().remove(message);
 
             ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
@@ -1677,7 +1678,7 @@ public class ChatController {
         final ChatAdapter chatAdapter = mChatAdapters.get(to);
         final SurespotMessage message = chatAdapter.getMessageByIv(messageIv);
         if (message != null && message.getId() > 0) {
-            String messageUsername = message.getOtherUser();
+            String messageUsername = message.getOtherUser(mUsername);
 
             if (!messageUsername.equals(to)) {
                 Utils.makeToast(mContext, mContext.getString(R.string.could_not_set_message_lock_state));
@@ -1973,7 +1974,7 @@ public class ChatController {
     }
 
     public SurespotMessage getLiveMessage(SurespotMessage message) {
-        String otherUser = message.getOtherUser();
+        String otherUser = message.getOtherUser(mUsername);
         ChatAdapter chatAdapter = mChatAdapters.get(otherUser);
         if (chatAdapter != null) {
             return chatAdapter.getMessageByIv(message.getIv());
@@ -2117,7 +2118,7 @@ public class ChatController {
         }
 
         setProgress("assignFriendAlias", true);
-        final String version = IdentityController.getOurLatestVersion();
+        final String version = IdentityController.getOurLatestVersion(mUsername);
         String username = IdentityController.getLoggedInUser();
 
         byte[] iv = EncryptionController.getIv();

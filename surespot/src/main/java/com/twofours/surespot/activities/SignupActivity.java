@@ -45,7 +45,7 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
-import com.twofours.surespot.network.NetworkController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
@@ -65,7 +65,7 @@ public class SignupActivity extends Activity {
     private MultiProgressDialog mMpdCheck;
     private boolean mSignupAttempted;
     private boolean mCacheServiceBound;
-    private NetworkController mNetworkController;
+
     private View mUsernameValid;
     private View mUsernameInvalid;
     private Menu mMenuOverflow;
@@ -78,10 +78,6 @@ public class SignupActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.create), false);
-
-
-        mNetworkController = SurespotApplication.getNetworkController();
-   //     mNetworkController.setUsernameAnd401Handler(null,null);
 
 
         TextView tvSignupHelp = (TextView) findViewById(R.id.tvSignupHelp);
@@ -211,7 +207,7 @@ public class SignupActivity extends Activity {
         mMpdCheck.incrProgress();
 
         // see if the user exists
-        mNetworkController.userExists(username, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController().userExists(username, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -329,7 +325,7 @@ public class SignupActivity extends Activity {
 
                             String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
-                            mNetworkController.createUser2(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
+                            NetworkManager.getNetworkController(username).createUser2(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
 
 
                                 @Override

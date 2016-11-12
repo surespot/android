@@ -17,7 +17,6 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 
@@ -45,7 +44,6 @@ public class SurespotApplication extends Application {
 	private static String mVersion;
 	private static BillingController mBillingController;
 	private static String mUserAgent;
-	private static NetworkController mNetworkController = null;
 	private static ChatController mChatController = null;
 	private static Context mContext;
 
@@ -166,13 +164,7 @@ public class SurespotApplication extends Application {
 	public static CredentialCachingService getCachingService() {
 		return mCredentialCachingService;
 	}
-
-	public static NetworkController getNetworkController() {
-		if (mNetworkController == null) {
-			mNetworkController = new NetworkController();
-		}
-		return mNetworkController;
-	}
+	
 
 
 

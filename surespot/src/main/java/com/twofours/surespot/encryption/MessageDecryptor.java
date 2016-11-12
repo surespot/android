@@ -44,8 +44,10 @@ public class MessageDecryptor {
 	private static final String TAG = "TextDecryptor";
 	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
 	private ChatAdapter mChatAdapter;
+	private String mUsername;
 
-	public MessageDecryptor(ChatAdapter chatAdapter) {
+	public MessageDecryptor(String username, ChatAdapter chatAdapter) {
+		mUsername = username;
 		mChatAdapter = chatAdapter;
 	}
 
@@ -100,8 +102,8 @@ public class MessageDecryptor {
 
 		@Override
 		public void run() {
-			final CharSequence plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(), mMessage.getOtherUser(),
-					mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
+			final CharSequence plainText = EncryptionController.symmetricDecrypt(mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
+					mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
 
 			CharSequence plainData = null;
 			if (plainText != null) {
