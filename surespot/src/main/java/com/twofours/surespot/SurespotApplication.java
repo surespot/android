@@ -131,9 +131,9 @@ public class SurespotApplication extends Application {
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		startService(cacheIntent);
 
-		SurespotLog.v(TAG, "starting chat transmission service");
-		Intent chatIntent = new Intent(this, CommunicationService.class);
-		startService(chatIntent);
+//		SurespotLog.v(TAG, "starting chat transmission service");
+//		Intent chatIntent = new Intent(this, CommunicationService.class);
+//		startService(chatIntent);
 
 		mBillingController = new BillingController(this);
 		FileUtils.wipeImageCaptureDir(this);
@@ -161,20 +161,20 @@ public class SurespotApplication extends Application {
 
 
 
-	public static CommunicationService getCommunicationService() {
-		if (mCommunicationService == null) {
-			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mCommunicationService"));
-		}
-		return mCommunicationService;
-	}
+//	public static CommunicationService getCommunicationService() {
+//		if (mCommunicationService == null) {
+//			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mCommunicationService"));
+//		}
+//		return mCommunicationService;
+//	}
 
 	public static void setCachingService(CredentialCachingService credentialCachingService) {
 		SurespotApplication.mCredentialCachingService = credentialCachingService;
 	}
 
-	public static void setCommunicationService(CommunicationService communicationService) {
-		SurespotApplication.mCommunicationService = communicationService;
-	}
+//	public static void setCommunicationService(CommunicationService communicationService) {
+//		SurespotApplication.mCommunicationService = communicationService;
+//	}
 
 	public static StateController getStateController() {
 		return mStateController;
@@ -192,9 +192,9 @@ public class SurespotApplication extends Application {
 		return mUserAgent;
 	}
 
-	public static CommunicationService getCommunicationServiceNoThrow() {
-		return mCommunicationService;
-	}
+//	public static CommunicationService getCommunicationServiceNoThrow() {
+//		return mCommunicationService;
+//	}
 
 	public static Context getContext() {
 		return mContext;

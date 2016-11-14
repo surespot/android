@@ -44,6 +44,7 @@ public class ImageViewActivity extends Activity {
         Utils.configureActionBar(this, null, getString(R.string.pan_and_zoom), true);
 
         String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
+        final String ourUsername = getIntent().getStringExtra("ourUsername");
 
         if (sjmessage != null) {
             final SurespotMessage message = SurespotMessage.toSurespotMessage(sjmessage);
@@ -62,7 +63,7 @@ public class ImageViewActivity extends Activity {
                         try {
                             inputStream = new PipedInputStream(out);
 
-                            EncryptionController.runDecryptTask(IdentityController.getLoggedInUser(), message.getOurVersion(IdentityController.getLoggedInUser()), message.getOtherUser(IdentityController.getLoggedInUser()), message.getTheirVersion(IdentityController.getLoggedInUser()), message.getIv(), message.isHashed(),
+                            EncryptionController.runDecryptTask(IdentityController.getLoggedInUser(), message.getOurVersion(ourUsername), message.getOtherUser(IdentityController.getLoggedInUser()), message.getTheirVersion(IdentityController.getLoggedInUser()), message.getIv(), message.isHashed(),
                                     new BufferedInputStream(imageStream), out);
 
                             bitmap = BitmapFactory.decodeStream(inputStream);

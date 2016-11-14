@@ -107,7 +107,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private IAsyncCallback<Object> m401Handler;
 
     private boolean mCacheServiceBound;
-    private boolean mCommunicationServiceBound;
+  //  private boolean mCommunicationServiceBound;
     private Menu mMenuOverflow;
     private BroadcastReceiver mExternalStorageReceiver;
     private boolean mExternalStorageAvailable = false;
@@ -272,16 +272,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 mSigningUp = intent.getBooleanExtra("signingUp", false);
 
                 if (!mSigningUp) {
-                    if (mCommunicationServiceBound && mCacheServiceBound) {
+                    if (mCacheServiceBound) {
                         processLaunch();
                     }
                     else {
                         // one or more services needs to be bound
                         mStartWhenBothServicesBound = true;
 
-                        if (!mCommunicationServiceBound) {
-                            bindChatTransmissionService();
-                        }
+//                        if (!mCommunicationServiceBound) {
+//                            bindChatTransmissionService();
+//                        }
 
                         if (!mCacheServiceBound) {
                             bindCacheService();
@@ -301,16 +301,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
         else {
             mUser = user;
 
-            if (!mCommunicationServiceBound) {
-                bindChatTransmissionService();
-            }
+//            if (!mCommunicationServiceBound) {
+//                bindChatTransmissionService();
+//            }
 
             if (!mCacheServiceBound) {
                 bindCacheService();
             }
 
-            if (mCacheServiceBound && mCommunicationServiceBound) {
-                SurespotLog.d(TAG, "cache and chat transmission services already bound");
+            if (mCacheServiceBound) {
+                SurespotLog.d(TAG, "cache service already bound");
                 if (!mUnlocking) {
                     SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
                     postServiceProcess();
@@ -697,32 +697,32 @@ public class MainActivity extends Activity implements OnMeasureListener {
         return user;
     }
 
-    private ServiceConnection mChatConnection = new ServiceConnection() {
-        public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-            if (service instanceof CommunicationService.CommunicationServiceBinder) {
-                CommunicationService.CommunicationServiceBinder binder = (CommunicationService.CommunicationServiceBinder) service;
-                CommunicationService cts = binder.getService();
-
-                SurespotApplication.setCommunicationService(cts);
-                mCommunicationServiceBound = true;
-
-                if (!mUnlocking && mCacheServiceBound && (mResumed || mStartWhenBothServicesBound)) {
-                    SurespotLog.d(TAG, "transmission service calling postServiceProcess");
-                    postServiceProcess();
-                }
-                else {
-                    SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
-                }
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            SurespotApplication.getCommunicationService().clearServiceListener();
-            SurespotApplication.setCommunicationService(null);
-            mCommunicationServiceBound = false;
-        }
-    };
+//    private ServiceConnection mChatConnection = new ServiceConnection() {
+//        public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
+//            if (service instanceof CommunicationService.CommunicationServiceBinder) {
+//                CommunicationService.CommunicationServiceBinder binder = (CommunicationService.CommunicationServiceBinder) service;
+//                CommunicationService cts = binder.getService();
+//
+//                SurespotApplication.setCommunicationService(cts);
+//                mCommunicationServiceBound = true;
+//
+//                if (!mUnlocking && mCacheServiceBound && (mResumed || mStartWhenBothServicesBound)) {
+//                    SurespotLog.d(TAG, "transmission service calling postServiceProcess");
+//                    postServiceProcess();
+//                }
+//                else {
+//                    SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName name) {
+//            SurespotApplication.getCommunicationService().clearServiceListener();
+//            SurespotApplication.setCommunicationService(null);
+//            mCommunicationServiceBound = false;
+//        }
+//    };
 
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -734,7 +734,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             SurespotApplication.setCachingService(ccs);
             mCacheServiceBound = true;
 
-            if (!mUnlocking && mCommunicationServiceBound && (mResumed || mStartWhenBothServicesBound)) {
+            if (!mUnlocking && (mResumed || mStartWhenBothServicesBound)) {
                 SurespotLog.d(TAG, "caching service calling postServiceProcess");
                 postServiceProcess();
             }
@@ -801,8 +801,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mBillingController = SurespotApplication.getBillingController();
 
 
-        SurespotApplication.getCommunicationService().initializeService(new CommunicationServiceListener());
-
         mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
         mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
         mActivityLayout.setMainActivity(MainActivity.this);
@@ -837,6 +835,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     @Override
                     public void handleResponse(Friend result) {
                         handleTabChange(result);
+
 
                     }
                 }
@@ -966,21 +965,21 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 
-        CommunicationService cts = SurespotApplication.getCommunicationServiceNoThrow();
-
-        if (cts == null) {
-            SurespotLog.d(TAG, "binding chat transmission service");
-            Intent chatIntent = new Intent(this, CommunicationService.class);
-            startService(chatIntent);
-            bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
-        }
+//        CommunicationService cts = SurespotApplication.getCommunicationServiceNoThrow();
+//
+//        if (cts == null) {
+//            SurespotLog.d(TAG, "binding chat transmission service");
+//            Intent chatIntent = new Intent(this, CommunicationService.class);
+//            startService(chatIntent);
+//            bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
+//        }
 
         // if we had to unlock and we're resuming for a 2nd time and we have the caching service
         if (mUnlocking && mPaused == true) {
             SurespotLog.d(TAG, "setting mUnlocking to false");
             mUnlocking = false;
 
-            if (SurespotApplication.getCachingService() != null && SurespotApplication.getCommunicationServiceNoThrow() != null) {
+            if (SurespotApplication.getCachingService() != null) {
                 SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
                 postServiceProcess();
             }
@@ -994,22 +993,22 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void resume() {
         SurespotLog.d(TAG, "resume");
         mResumed = true;
-        if (ChatManager.getChatController(mUser) != null) {
-            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+      //  if (ChatManager.getChatController(mUser) != null) {
+           // if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
                 ChatManager.getChatController(mUser).onResume();
-            }
-        }
+          //  }
+        //}
 
         startWatchingExternalStorage();
         setBackgroundImage();
         setEditTextHints();
 
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().setMainActivityPaused(false);
-        }
-        else {
-            SurespotLog.d(TAG, "resume, Communication service was null");
-        }
+       // if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+            ChatManager.setMainActivityPaused(false);
+//        }
+//        else {
+//            SurespotLog.d(TAG, "resume, Communication service was null");
+//        }
 
     }
 
@@ -1035,9 +1034,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mDialog.dismiss();
         }
 
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().setMainActivityPaused(true);
-        }
+        ChatManager.setMainActivityPaused(true);
+
 
         mResumed = false;
     }
@@ -1306,16 +1304,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
             unbindService(mConnection);
         }
 
-        if (mChatConnection != null) {
-            if (mCommunicationServiceBound) {
-                unbindService(mChatConnection);
-            }
-
-            // clear the service listener.  This lets the transmission service know it can shut down when it's done sending
-            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getCommunicationServiceNoThrow().clearServiceListener();
-            }
-        }
+//        if (mChatConnection != null) {
+//            if (mCommunicationServiceBound) {
+//                unbindService(mChatConnection);
+//            }
+//
+//            // clear the service listener.  This lets the transmission service know it can shut down when it's done sending
+//            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
+//                SurespotApplication.getCommunicationServiceNoThrow().clearServiceListener();
+//            }
+//        }
     }
 
     public static Context getContext() {
@@ -2153,12 +2151,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
 
-    private void bindChatTransmissionService() {
-        SurespotLog.d(TAG, "binding chat transmission service");
-        Intent chatIntent = new Intent(this, CommunicationService.class);
-        startService(chatIntent);
-        bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
-    }
+//    private void bindChatTransmissionService() {
+//        SurespotLog.d(TAG, "binding chat transmission service");
+//        Intent chatIntent = new Intent(this, CommunicationService.class);
+//        startService(chatIntent);
+//        bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
+//    }
 
     private void bindCacheService() {
         SurespotLog.d(TAG, "binding cache service");

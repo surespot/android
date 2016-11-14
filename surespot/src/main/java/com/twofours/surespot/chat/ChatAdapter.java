@@ -44,19 +44,19 @@ public class ChatAdapter extends BaseAdapter {
     private boolean mLoaded;
     private VoiceMessageDownloader mMessageVoiceDownloader;
     private ArrayList<SurespotControlMessage> mControlMessages = new ArrayList<SurespotControlMessage>();
-    private String mUsername;
+    private String mOurUsername;
 
-    public ChatAdapter(Context context, String username) {
-        SurespotLog.v(TAG, "Constructor.");
+    public ChatAdapter(Context context, String ourUsername) {
+        SurespotLog.d(TAG, "Constructor, ourUsername: %s",ourUsername);
         mContext = context;
-        mUsername = username;
+        mOurUsername = ourUsername;
 
-        SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+        SharedPreferences pm = context.getSharedPreferences(mOurUsername, Context.MODE_PRIVATE);
         mDebugMode = pm.getBoolean("pref_debug_mode", false);
 
-        mMessageDecryptor = new MessageDecryptor(mUsername, this);
-        mMessageImageDownloader = new MessageImageDownloader(mUsername, this);
-        mMessageVoiceDownloader = new VoiceMessageDownloader(mUsername, this);
+        mMessageDecryptor = new MessageDecryptor(mOurUsername, this);
+        mMessageImageDownloader = new MessageImageDownloader(mOurUsername, this);
+        mMessageVoiceDownloader = new VoiceMessageDownloader(mOurUsername, this);
     }
 
     public void doneCheckingSequence() {
@@ -216,7 +216,7 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public synchronized int getItemViewType(int position) {
         SurespotMessage message = mMessages.get(position);
-        return getTypeForMessage(mUsername, message);
+        return getTypeForMessage(mOurUsername, message);
     }
 
     public int getTypeForMessage(String ourUser, SurespotMessage message) {
@@ -587,7 +587,7 @@ public class ChatAdapter extends BaseAdapter {
             SurespotMessage message = iterator.next();
 
             // if it's not our message, delete it
-            if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+            if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(mOurUsername)) {
                 message.setDeleted(true);
                 iterator.remove();
             }
