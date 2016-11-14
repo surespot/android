@@ -19,6 +19,8 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
+import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
@@ -33,6 +35,23 @@ public class FriendFragment extends Fragment {
 	// private ChatController mChatController;
 	private ListView mListView;
 	private AlertDialog mDialog;
+	private String mUsername;
+
+	public static FriendFragment newInstance(String username) {
+		FriendFragment cf = new FriendFragment();
+
+		Bundle bundle = new Bundle();
+		bundle.putString("username", username);
+		cf.setArguments(bundle);
+		return cf;
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		SurespotLog.d(TAG, "onCreate");
+		super.onCreate(savedInstanceState);
+		mUsername = getArguments().getString("username");
+	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
@@ -67,7 +86,7 @@ public class FriendFragment extends Fragment {
 		TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
 		UIUtils.setHtml(getActivity(), tvWelcome, R.string.welcome_to_surespot);
 
-		ChatController chatController = getMainActivity().getChatController();
+		ChatController chatController = ChatManager.getChatController(mUsername);
 		if (chatController != null) {
 			mMainAdapter = chatController.getFriendAdapter();
 
@@ -85,7 +104,7 @@ public class FriendFragment extends Fragment {
 			Friend friend = ((FriendAdapter.FriendViewHolder) view.getTag()).friend;
 			if (friend.isFriend()) {
 
-				ChatController chatController = getMainActivity().getChatController();
+				ChatController chatController = ChatManager.getChatController(mUsername);
 				if (chatController != null) {
 
 					chatController.setCurrentChat(friend.getName());
@@ -120,8 +139,9 @@ public class FriendFragment extends Fragment {
 	private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, String selection) {
 		final MainActivity activity = this.getMainActivity();
 
+
 		if (selection.equals(getString(R.string.menu_close_tab))) {
-			activity.getChatController().closeTab(friend.getName());
+			ChatManager.getChatController(mUsername).closeTab(friend.getName());
 		}
 		else {
 			if (selection.equals(getString(R.string.menu_assign_image))) {
@@ -156,14 +176,14 @@ public class FriendFragment extends Fragment {
 												new IAsyncCallback<Boolean>() {
 													public void handleResponse(Boolean result) {
 														if (result) {
-															activity.getChatController().deleteMessages(friend);
+															ChatManager.getChatController(mUsername).deleteMessages(friend);
 														}
 
 													};
 												});
 									}
 									else {
-										activity.getChatController().deleteMessages(friend);
+										ChatManager.getChatController(mUsername).deleteMessages(friend);
 									}
 								}
 								else {
@@ -176,7 +196,7 @@ public class FriendFragment extends Fragment {
 												new IAsyncCallback<Boolean>() {
 													public void handleResponse(Boolean result) {
 														if (result) {
-															activity.getChatController().deleteFriend(friend);
+															ChatManager.getChatController(mUsername).deleteFriend(friend);
 														}
 														else {
 															dialogi.cancel();

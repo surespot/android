@@ -10,6 +10,7 @@ import android.os.Bundle;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -20,14 +21,16 @@ import java.util.ArrayList;
 public class VoiceMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "VoiceMessageMenuFragment";
 	private SurespotMessage mMessage;
+	private String mUsername;
 	private ArrayList<String> mItems;
 //	private BillingController mBillingController;
 
-	public static DialogFragment newInstance(SurespotMessage message) {
+	public static DialogFragment newInstance(String username, SurespotMessage message) {
 		VoiceMessageMenuFragment f = new VoiceMessageMenuFragment();
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject(false).toString());
+		args.putString("username", username);
 		f.setArguments(args);
 
 		return f;
@@ -39,6 +42,11 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 		String messageString = getArguments().getString("message");
 		if (messageString != null) {
 			mMessage = SurespotMessage.toSurespotMessage(messageString);
+		}
+
+		String username = getArguments().getString("username");
+		if (username != null) {
+			mUsername = username;
 		}
 
 		final MainActivity mActivity = (MainActivity) getActivity();
@@ -73,7 +81,7 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
-											mActivity.getChatController().deleteMessage(mMessage);
+											ChatManager.getChatController(mUsername).deleteMessage(mMessage);
 										}
 										else {
 											dialogi.cancel();
@@ -83,7 +91,7 @@ public class VoiceMessageMenuFragment extends DialogFragment {
 						mActivity.setChildDialog(dialog);
 					}
 					else {
-						mActivity.getChatController().deleteMessage(mMessage);
+						ChatManager.getChatController(mUsername).deleteMessage(mMessage);
 					}
 
 					return;

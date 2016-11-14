@@ -57,6 +57,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
 import com.twofours.surespot.chat.EmojiParser;
@@ -426,17 +427,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SurespotApplication.getChatController() != null) {
+                if (ChatManager.getChatController(mUser) != null) {
 
                     Friend friend = mCurrentFriend;
                     if (friend != null) {
 
-                        if (mEtMessage.getText().toString().length() > 0 && !SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
+                        if (mEtMessage.getText().toString().length() > 0 && !ChatManager.getChatController(mUser).isFriendDeleted(friend.getName())) {
                             sendMessage(friend.getName());
                         }
                         else {
                             // go to home
-                            SurespotApplication.getChatController().setCurrentChat(null);
+                            ChatManager.getChatController(mUser).setCurrentChat(null);
                         }
                     }
                     else {
@@ -454,8 +455,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 Friend friend = mCurrentFriend;
                 if (friend != null) {
                     // if they're deleted always close the tab
-                    if (SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
-                        SurespotApplication.getChatController().closeTab();
+                    if (ChatManager.getChatController(mUser).isFriendDeleted(friend.getName())) {
+                        ChatManager.getChatController(mUser).closeTab();
                     }
                     else {
                         if (mEtMessage.getText().toString().length() > 0) {
@@ -468,7 +469,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                                 VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
                             }
                             else {
-                                SurespotApplication.getChatController().closeTab();
+                                ChatManager.getChatController(mUser).closeTab();
                             }
                         }
                     }
@@ -489,7 +490,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         Friend friend = mCurrentFriend;
                         if (friend != null) {
                             // if they're deleted do nothing
-                            if (SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
+                            if (ChatManager.getChatController(mUser).isFriendDeleted(friend.getName())) {
                                 return false;
                             }
 
@@ -799,27 +800,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         mBillingController = SurespotApplication.getBillingController();
 
-        SurespotApplication.setChatController(new ChatController(this, mUser, getFragmentManager(),
-                new IAsyncCallback<Boolean>() {
-                    @Override
-                    public void handleResponse(Boolean inProgress) {
-                        setHomeProgress(inProgress);
-                    }
-                }, new IAsyncCallback<Void>() {
-
-            @Override
-            public void handleResponse(Void result) {
-                handleSendIntent();
-
-            }
-        }, new IAsyncCallback<Friend>() {
-
-            @Override
-            public void handleResponse(Friend result) {
-                handleTabChange(result);
-
-            }
-        }));
 
         SurespotApplication.getCommunicationService().initializeService(new CommunicationServiceListener());
 
@@ -832,7 +812,36 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mKeyboardStateHandler = new KeyboardStateHandler();
         mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
-        SurespotApplication.getChatController().init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
+        ChatManager.attachChatController(
+                this,
+                mUser,
+                (ViewPager) findViewById(R.id.pager),
+                getFragmentManager(),
+                titlePageIndicator,
+                mMenuItems,
+
+                new IAsyncCallback<Boolean>() {
+                    @Override
+                    public void handleResponse(Boolean inProgress) {
+                        setHomeProgress(inProgress);
+                    }
+                }, new IAsyncCallback<Void>() {
+
+                    @Override
+                    public void handleResponse(Void result) {
+                        handleSendIntent();
+
+                    }
+                }, new IAsyncCallback<Friend>() {
+
+                    @Override
+                    public void handleResponse(Friend result) {
+                        handleTabChange(result);
+
+                    }
+                }
+        );
+
 
         setupChatControls();
         launch();
@@ -858,8 +867,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void launch() {
         SurespotLog.d(TAG, "launch");
         Intent intent = getIntent();
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().setAutoInviteData(getAutoInviteData(intent));
+        if (ChatManager.getChatController(mUser) != null) {
+            ChatManager.getChatController(mUser).setAutoInviteData(getAutoInviteData(intent));
         }
 
         String action = intent.getAction();
@@ -893,8 +902,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             Utils.clearIntent(intent);
             Utils.logIntent(TAG, intent);
 
-            if (SurespotApplication.getChatController() != null) {
-                SurespotApplication.getChatController().setCurrentChat(name);
+            if (ChatManager.getChatController(mUser) != null) {
+                ChatManager.getChatController(mUser).setCurrentChat(name);
 
             }
         }
@@ -902,13 +911,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
         if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
             // need to select a user so put the chat controller in select mode
 
-            if (SurespotApplication.getChatController() != null) {
+            if (ChatManager.getChatController(mUser) != null) {
                 // see if we can set the mode
-                if (SurespotApplication.getChatController().setMode(ChatController.MODE_SELECT)) {
+                if (ChatManager.getChatController(mUser).setMode(ChatController.MODE_SELECT)) {
                     Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
                     SurespotLog.d(TAG, "started from SEND");
 
-                    SurespotApplication.getChatController().setCurrentChat(null);
+                    ChatManager.getChatController(mUser).setCurrentChat(null);
                     mSet = true;
                 }
                 else {
@@ -924,8 +933,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotLog.d(TAG, "using LAST_CHAT");
                 name = lastName;
             }
-            if (SurespotApplication.getChatController() != null) {
-                SurespotApplication.getChatController().setCurrentChat(name);
+            if (ChatManager.getChatController(mUser) != null) {
+                ChatManager.getChatController(mUser).setCurrentChat(name);
             }
         }
 
@@ -985,9 +994,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void resume() {
         SurespotLog.d(TAG, "resume");
         mResumed = true;
-        if (SurespotApplication.getChatController() != null) {
+        if (ChatManager.getChatController(mUser) != null) {
             if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getChatController().onResume();
+                ChatManager.getChatController(mUser).onResume();
             }
         }
 
@@ -1068,11 +1077,11 @@ public class MainActivity extends Activity implements OnMeasureListener {
                                 catch (URISyntaxException e) {
                                 }
 
-                                if (SurespotApplication.getChatController() == null || url == null) {
+                                if (ChatManager.getChatController(mUser) == null || url == null) {
                                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
                                 }
                                 else {
-                                    SurespotApplication.getChatController().setImageUrl(to, url, version, iv, true);
+                                    ChatManager.getChatController(mUser).setImageUrl(to, url, version, iv, true);
                                 }
                             }
                         });
@@ -1123,8 +1132,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().enableMenuItems(mCurrentFriend);
+        if (ChatManager.getChatController(mUser) != null) {
+            ChatManager.getChatController(mUser).enableMenuItems(mCurrentFriend);
         }
 
         //
@@ -1157,17 +1166,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
-        final String currentChat = SurespotApplication.getChatController().getCurrentChat();
+        final String currentChat = ChatManager.getChatController(mUser).getCurrentChat();
         switch (item.getItemId()) {
             case android.R.id.home:
                 // This is called when the Home (Up) button is pressed
                 // in the Action Bar.
                 // showUi(!mChatsShowing);
-                SurespotApplication.getChatController().setCurrentChat(null);
+                ChatManager.getChatController(mUser).setCurrentChat(null);
                 return true;
             case R.id.menu_close_bar:
 
-                SurespotApplication.getChatController().closeTab();
+                ChatManager.getChatController(mUser).closeTab();
                 return true;
             case R.id.menu_send_image_bar:
                 if (currentChat == null) {
@@ -1228,8 +1237,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 }.execute();
                 return true;
             case R.id.menu_logout_bar:
-                if (SurespotApplication.getChatController() != null) {
-                    SurespotApplication.getChatController().logout();
+                if (ChatManager.getChatController(mUser) != null) {
+                    ChatManager.getChatController(mUser).logout();
                 }
                 IdentityController.logout();
 
@@ -1256,7 +1265,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                             getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
                                 public void handleResponse(Boolean result) {
                                     if (result) {
-                                        SurespotApplication.getChatController().deleteMessages(currentChat);
+                                        ChatManager.getChatController(mUser).deleteMessages(currentChat);
                                     }
                                 }
 
@@ -1264,7 +1273,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                             });
                 }
                 else {
-                    SurespotApplication.getChatController().deleteMessages(currentChat);
+                    ChatManager.getChatController(mUser).deleteMessages(currentChat);
                 }
 
                 return true;
@@ -1312,15 +1321,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
     public static Context getContext() {
         return mContext;
     }
-
-    public static ChatController getChatController() {
-        return SurespotApplication.getChatController();
-    }
-
-    public static Handler getMainHandler() {
-        return mMainHandler;
-    }
-
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -1475,8 +1475,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mHomeImageView.clearAnimation();
         }
 
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().enableMenuItems(mCurrentFriend);
+        if (ChatManager.getChatController(mUser) != null) {
+            ChatManager.getChatController(mUser).enableMenuItems(mCurrentFriend);
         }
     }
 
@@ -1681,7 +1681,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (MainActivity.this.mEnterToSend && s.toString().contains("\n")) {
                 int idx = s.toString().indexOf('\n');
                 s.delete(idx, idx + 1);
-                if (mEtMessage.getText().toString().length() > 0 && !SurespotApplication.getChatController().isFriendDeleted(mCurrentFriend.getName())) {
+                if (mEtMessage.getText().toString().length() > 0 && !ChatManager.getChatController(mUser).isFriendDeleted(mCurrentFriend.getName())) {
                     sendMessage(mCurrentFriend.getName());
                 }
             }
@@ -1723,7 +1723,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                     ChatUtils.uploadPictureMessageAsync(
                             this,
-                            SurespotApplication.getChatController(),
+                            ChatManager.getChatController(mUser),
                             imageUri,
                             mUser,
                             mCurrentFriend.getName(),
@@ -1744,7 +1744,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                         ChatUtils.uploadPictureMessageAsync(
                                 this,
-                                SurespotApplication.getChatController(),
+                                ChatManager.getChatController(mUser),
                                 imageUri,
                                 mUser,
                                 mCurrentFriend.getName(),
@@ -1762,7 +1762,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void sendMessage(String username) {
         final String message = mEtMessage.getText().toString();
         if (!message.isEmpty()) {
-            SurespotApplication.getChatController().sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
+            ChatManager.getChatController(mUser).sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
             TextKeyListener.clear(mEtMessage.getText());
         }
     }
@@ -1833,7 +1833,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (response.isSuccessful()) {
 
                         TextKeyListener.clear(mEtInvite.getText());
-                        if (SurespotApplication.getChatController().getFriendAdapter().addFriendInvited(friend)) {
+                        if (ChatManager.getChatController(mUser).getFriendAdapter().addFriendInvited(friend)) {
                             Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
                         }
                         else {
@@ -2112,7 +2112,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             @Override
             public void handleResponse(String alias) {
 
-                SurespotApplication.getChatController().assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
+                ChatManager.getChatController(mUser).assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
 
                     @Override
                     public void handleResponse(Boolean result) {
@@ -2126,7 +2126,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     public void removeFriendImage(final String name) {
-        SurespotApplication.getChatController().removeFriendImage(name, new IAsyncCallback<Boolean>() {
+        ChatManager.getChatController(mUser).removeFriendImage(name, new IAsyncCallback<Boolean>() {
             @Override
             public void handleResponse(Boolean result) {
                 if (!result) {
@@ -2137,7 +2137,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     public void removeFriendAlias(final String name) {
-        SurespotApplication.getChatController().removeFriendAlias(name, new IAsyncCallback<Boolean>() {
+        ChatManager.getChatController(mUser).removeFriendAlias(name, new IAsyncCallback<Boolean>() {
             @Override
             public void handleResponse(Boolean result) {
                 if (!result) {
@@ -2207,7 +2207,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
 
         private boolean logIfChatControllerNull() {
-            if (SurespotApplication.getChatController() == null) {
+            if (ChatManager.getChatController(mUser) == null) {
                 SurespotLog.w(TAG, "mChatController was null for tranmission service listener");
                 return true;
             }

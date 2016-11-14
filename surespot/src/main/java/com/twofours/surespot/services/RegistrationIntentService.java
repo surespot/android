@@ -18,6 +18,7 @@ package com.twofours.surespot.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -92,7 +93,11 @@ public class RegistrationIntentService extends IntentService {
      * @param id The new token.
      */
     private void sendRegistrationToServer(String id) {
-        NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).registerGcmId(this, id);
+        //todo use ChatManager
+        String username = IdentityController.getLoggedInUser();
+        if (!TextUtils.isEmpty(username)) {
+            NetworkManager.getNetworkController(username).registerGcmId(this, id);
+        }
     }
 
     /**

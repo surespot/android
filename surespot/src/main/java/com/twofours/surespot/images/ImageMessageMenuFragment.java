@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotLog;
@@ -36,14 +37,16 @@ import java.util.Observer;
 public class ImageMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "ImageMessageMenuFragment";
 	private SurespotMessage mMessage;
+	private String mUsername;
 	private ArrayList<String> mItems;
 	private Observer mMessageObserver;
 	
-	public static DialogFragment newInstance(SurespotMessage message) {
+	public static DialogFragment newInstance(String username, SurespotMessage message) {
 		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject(false).toString());
+		args.putString("username", username);
 		f.setArguments(args);
 
 		return f;
@@ -76,12 +79,18 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 		final String ourUser = IdentityController.getLoggedInUser();
 		final MainActivity mActivity = (MainActivity) getActivity();
+
+		String username = getArguments().getString("username");
+		if (username != null) {
+			mUsername = username;
+		}
+
 		String messageString = getArguments().getString("message");
 		if (messageString != null) {
 			SurespotMessage rebuiltMessage = SurespotMessage.toSurespotMessage(messageString);
 
 			// get the actual message instance to add a listener to
-			mMessage = mActivity.getChatController().getLiveMessage(rebuiltMessage);
+			mMessage = ChatManager.getChatController(mUsername).getLiveMessage(rebuiltMessage);
 
 			if (mMessage == null) {
 				mMessage = rebuiltMessage;
@@ -121,7 +130,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 				String itemText = mItems.get(which);
 
 				if (itemText.equals(getString(R.string.menu_lock)) || itemText.equals(getString(R.string.menu_unlock))) {
-					mActivity.getChatController().toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
+					ChatManager.getChatController(mUsername).toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 
@@ -181,7 +190,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
-											mActivity.getChatController().deleteMessage(mMessage);
+											ChatManager.getChatController(mUsername).deleteMessage(mMessage);
 										}
 										else {
 											dialogi.cancel();
@@ -190,7 +199,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								});
 						mActivity.setChildDialog(adialog);					}
 					else {
-						mActivity.getChatController().deleteMessage(mMessage);
+						ChatManager.getChatController(mUsername).deleteMessage(mMessage);
 					}
 
 					return;

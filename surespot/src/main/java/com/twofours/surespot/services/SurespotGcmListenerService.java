@@ -34,6 +34,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -100,7 +101,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
             //if current chat controller is for to user
             boolean tabOpenToUser = false;
-            ChatController chatController = SurespotApplication.getChatController();
+            ChatController chatController = ChatManager.getChatController(to);
             if (chatController != null) {
                 if (to.equals(chatController.getUsername())) {
                     //if tab is open on from user
@@ -110,7 +111,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 }
             }
 
-            boolean uiAttached = CommunicationService.isUIAttached();
+            boolean uiAttached = ChatManager.isUIAttached();
 
             SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, uiAttached, hasLoggedInUser,
                     sameUser, tabOpenToUser);
@@ -195,7 +196,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             if (!IdentityController.getIdentityNames(this).contains(to)) {
                 return;
             }
-            ChatController chatController = MainActivity.getChatController();
+            ChatController chatController = ChatManager.getChatController(to);
             boolean sameUser = to.equals(IdentityController.getLoggedInUser());
             String fromName = null;
             //get friend name if we can otherwise no name
@@ -223,7 +224,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
 
-            ChatController chatController = MainActivity.getChatController();
+            ChatController chatController = ChatManager.getChatController(to);
             boolean sameUser = to.equals(IdentityController.getLoggedInUser());
             String fromName = null;
             //get friend name if we can otherwise no name

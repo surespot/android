@@ -52,13 +52,6 @@ public class SurespotApplication extends Application {
 	public static final int KEEP_ALIVE = 1;
 	private static FileCacheController mFileCacheController;
 
-	public static ChatController getChatController() {
-		return mChatController;
-	}
-
-	public static void setChatController(ChatController chatController) {
-		SurespotApplication.mChatController = chatController;
-	}
 
 
 	protected void attachBaseContext(Context base) {

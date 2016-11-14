@@ -20,10 +20,12 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 	private static final String TAG = "ChatPagerAdapter";
 	private ArrayList<Friend> mChatFriends;
-	private static String mHomeName;
+	private String mHomeName;
+	private String mOurUSername;
 
-	public ChatPagerAdapter(Context context, FragmentManager fm) {
+	public ChatPagerAdapter(Context context, FragmentManager fm, String ourUsername) {
 		super(fm);
+		mOurUSername = ourUsername;
 		mHomeName = "";
 	}
 
@@ -32,7 +34,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		SurespotLog.v(TAG, "getItem, I: " + i);
 		if (i == 0) {
 
-			FriendFragment ff = new FriendFragment();
+			FriendFragment ff = FriendFragment.newInstance(mOurUSername);
 			SurespotLog.v(TAG, "created new friend fragment: " + ff);
 
 			// ff.setRetainInstance(true);
@@ -41,7 +43,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 		}
 		else {
 			String name = mChatFriends.get(i - 1).getName();
-			ChatFragment cf = ChatFragment.newInstance(name);
+			ChatFragment cf = ChatFragment.newInstance(mOurUSername, name);
 			SurespotLog.v(TAG, "created new chat fragment: " + cf);
 
 			// cf.setRetainInstance(true);
@@ -61,7 +63,7 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 
 		ChatFragment chatFragment = (ChatFragment) object;
 
-		String user = chatFragment.getUsername();
+		String user = chatFragment.getTheirUsername();
 		int index = getFriendIndex(user);
 
 		if (index == -1) {

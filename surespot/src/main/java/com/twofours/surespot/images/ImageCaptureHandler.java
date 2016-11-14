@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -58,10 +59,10 @@ public class ImageCaptureHandler implements Parcelable {
 	}
 
 	public void handleResult(final MainActivity activity) {
-		activity.getChatController().scrollToEnd(mTo);
+		ChatManager.getChatController(mFrom).scrollToEnd(mTo);
 		ChatUtils.uploadPictureMessageAsync(
 				activity,
-				activity.getChatController(),
+				ChatManager.getChatController(mFrom),
 				Uri.fromFile(new File(mCurrentPhotoPath)),
 				mFrom,
 				mTo,

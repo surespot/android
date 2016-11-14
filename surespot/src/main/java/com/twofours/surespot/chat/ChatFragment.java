@@ -17,7 +17,6 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -31,7 +30,8 @@ import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class ChatFragment extends Fragment {
 	private String TAG = "ChatFragment";
-	private String mUsername;
+	private String mTheirUsername;
+	private String mOurUsername;
 	private ListView mListView;
 
 	private boolean mLoading;
@@ -44,22 +44,35 @@ public class ChatFragment extends Fragment {
 	private boolean mMessagesLoaded;
 	private boolean mHasEarlier = true;
 
-	public String getUsername() {
-		if (mUsername == null) {
-			mUsername = getArguments().getString("username");
+	public String getTheirUsername() {
+		if (mTheirUsername == null) {
+			mTheirUsername = getArguments().getString("theirUsername");
 		}
-		return mUsername;
+		return mTheirUsername;
 	}
 
-	public void setUsername(String mUsername) {
-		this.mUsername = mUsername;
+	public void setOurUsername(String ourUsername) {
+		this.mOurUsername = ourUsername;
 	}
 
-	public static ChatFragment newInstance(String username) {
+	public String getOurUsername() {
+		if (mOurUsername == null) {
+			mOurUsername = getArguments().getString("ourUsername");
+		}
+		return mOurUsername;
+	}
+
+	public void setTheirUsername(String mTheirUsername) {
+		this.mTheirUsername = mTheirUsername;
+	}
+
+
+	public static ChatFragment newInstance(String ourUsername, String theirUsername) {
 		ChatFragment cf = new ChatFragment();
 
 		Bundle bundle = new Bundle();
-		bundle.putString("username", username);
+		bundle.putString("theirUsername", theirUsername);
+		bundle.putString("ourUsername", ourUsername);
 		cf.setArguments(bundle);
 		return cf;
 	}
@@ -67,8 +80,9 @@ public class ChatFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setUsername(getArguments().getString("username"));
-		TAG = TAG + ":" + getUsername();
+		setTheirUsername(getArguments().getString("theirUsername"));
+		setOurUsername(getArguments().getString("ourUsername"));
+		TAG = TAG + ":" + getOurUsername() + ":" + getTheirUsername();
 		SurespotLog.d(TAG, "onCreate");
 
 	}
@@ -76,7 +90,7 @@ public class ChatFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreateView(inflater, container, savedInstanceState);
-		SurespotLog.v(TAG, "onCreateView, username: %s", mUsername);
+		SurespotLog.v(TAG, "onCreateView, username: %s", mTheirUsername);
 
 		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
 		mListView = (ListView) view.findViewById(R.id.message_list);
@@ -119,19 +133,19 @@ public class ChatFragment extends Fragment {
 				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 				if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-					DialogFragment dialog = TextMessageMenuFragment.newInstance(message);
+					DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
 					dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
 					return true;
 				}
 				else {
 					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-						DialogFragment dialog = ImageMessageMenuFragment.newInstance(message);
+						DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
 						dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
 						return true;
 					}
 					else {
 						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-							DialogFragment dialog = VoiceMessageMenuFragment.newInstance(message);
+							DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername,message);
 							dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
 							return true;
 						}
@@ -141,9 +155,9 @@ public class ChatFragment extends Fragment {
 			}
 		});
 
-		ChatController chatController = getMainActivity().getChatController();
+		ChatController chatController = ChatManager.getChatController(getOurUsername());
 		if (chatController != null) {
-			mChatAdapter = chatController.getChatAdapter(mUsername);
+			mChatAdapter = chatController.getChatAdapter(mTheirUsername);
 			mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
 
 				@Override
@@ -155,7 +169,7 @@ public class ChatFragment extends Fragment {
 
 				}
 			});
-			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mUsername);
+			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mTheirUsername);
 
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
@@ -184,11 +198,11 @@ public class ChatFragment extends Fragment {
 					if (mainActivity == null) {
 						return;
 					}
-					ChatController chatController = mainActivity.getChatController();
+					ChatController chatController = ChatManager.getChatController(getOurUsername());
 					if (chatController == null) {
 						return;
 					}
-					boolean hasEarlier = chatController.hasEarlierMessages(mUsername);
+					boolean hasEarlier = chatController.hasEarlierMessages(mTheirUsername);
 					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
 					if (chatController != null && hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
 
@@ -211,7 +225,7 @@ public class ChatFragment extends Fragment {
 							// View v = mListView.getChildAt(0);
 							// mTop = (v == null) ? 0 : v.getTop();
 
-							getMainActivity().getChatController().loadEarlierMessages(mUsername, new IAsyncCallback<Boolean>() {
+							ChatManager.getChatController(getOurUsername()).loadEarlierMessages(mTheirUsername, new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(Boolean loadedNew) {
@@ -262,12 +276,12 @@ public class ChatFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		SurespotLog.v(TAG, "onResume: " + mUsername);
+		SurespotLog.v(TAG, "onResume: " + mTheirUsername);
 
-		ChatController chatController = getMainActivity().getChatController();
+		ChatController chatController = ChatManager.getChatController(getOurUsername());
 
 		if (chatController != null) {
-			Friend friend = chatController.getFriendAdapter().getFriend(mUsername);
+			Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
 
 			if (friend != null) {
 
@@ -289,7 +303,7 @@ public class ChatFragment extends Fragment {
 	@Override
 	public void onPause() {
 		super.onPause();
-		SurespotLog.v(TAG, "onPause, mUsername:  " + mUsername + ", currentScrollId: " + mListView.getFirstVisiblePosition());
+		SurespotLog.v(TAG, "onPause, mTheirUsername:  " + mTheirUsername + ", currentScrollId: " + mListView.getFirstVisiblePosition());
 		if (mMessagesLoaded) {
 			// set the current scroll position so we know how many messages to save
 
@@ -297,10 +311,10 @@ public class ChatFragment extends Fragment {
 			// mListView.removeOnScrollListener()):
 
 			if (mListView != null) {
-				ChatController chatController = SurespotApplication.getChatController();
+				ChatController chatController = ChatManager.getChatController(getOurUsername());
 				if (chatController != null && chatController.getFriendAdapter() != null) {
 
-					Friend friend = chatController.getFriendAdapter().getFriend(mUsername);
+					Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
 
 					if (friend != null) {
 
@@ -333,7 +347,7 @@ public class ChatFragment extends Fragment {
 		}
 		// if the messages weren't loaded don't sav ethe scroll position because it's bogus
 		else {
-			SurespotLog.v(TAG, "%s: messages not loaded,  not saving scroll position", mUsername);
+			SurespotLog.v(TAG, "%s: messages not loaded,  not saving scroll position", mTheirUsername);
 		}
 
 	}

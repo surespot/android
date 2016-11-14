@@ -471,7 +471,7 @@ public class NetworkController {
         postJSON("/keys2", params, asyncHttpResponseHandler);
     }
 
-    private static Cookie extractConnectCookie(SurespotCookieJar cookieStore) {
+    private Cookie extractConnectCookie(SurespotCookieJar cookieStore) {
         for (Cookie c : cookieStore.getCookies()) {
 
             if (c.name().equals("connect.sid")) {

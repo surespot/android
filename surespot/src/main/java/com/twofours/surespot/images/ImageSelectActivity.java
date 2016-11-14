@@ -20,7 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -195,7 +195,7 @@ public class ImageSelectActivity extends Activity {
                 protected Void doInBackground(Void... params) {
                     ChatUtils.uploadPictureMessageAsync(
                             ImageSelectActivity.this,
-                            SurespotApplication.getChatController(),
+                            ChatManager.getChatController(mFrom),
                             Uri.fromFile(mPath),
                             mFrom,
                             mTo,
@@ -238,7 +238,7 @@ public class ImageSelectActivity extends Activity {
                     if (result != null) {
                         ChatUtils.uploadPictureMessageAsync(
                                 ImageSelectActivity.this,
-                                SurespotApplication.getChatController(),
+                                ChatManager.getChatController(mFrom),
                                 Uri.fromFile(result.mFile),
                                 mFrom,
                                 mTo,

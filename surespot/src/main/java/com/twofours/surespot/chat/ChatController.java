@@ -84,38 +84,47 @@ public class ChatController {
     private String mUsername;
     private String mCurrentChat;
 
-    public ChatController(Context context, String username, FragmentManager fm, IAsyncCallback<Boolean> progressCallback, IAsyncCallback<Void> sendIntentCallback,
-                          IAsyncCallback<Friend> tabShowingCallback) {
+    public ChatController(String username) {
         SurespotLog.d(TAG, "constructor, username: %s", username);
-        mContext = context;
+
         mUsername = username;
         mNetworkController = NetworkManager.getNetworkController(mUsername);
 
-        mProgressCallback = progressCallback;
-        mSendIntentCallback = sendIntentCallback;
-
-        mTabShowingCallback = tabShowingCallback;
         mEarliestMessage = new HashMap<String, Integer>();
         mChatAdapters = new HashMap<String, ChatAdapter>();
-        mFriendAdapter = new FriendAdapter(SurespotApplication.getCommunicationService());
         mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
+
+        mNotificationManager = (NotificationManager) SurespotApplication.getCommunicationService().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        mFriendAdapter = new FriendAdapter(SurespotApplication.getCommunicationService());
         loadState(mUsername);
 
-        mFragmentManager = fm;
-        mNotificationManager = (NotificationManager) SurespotApplication.getCommunicationService().getSystemService(Context.NOTIFICATION_SERVICE);
 
         // mViewPager.setOffscreenPageLimit(2);
     }
 
     // this has to be done outside of the contructor as it creates fragments, which need chat controller instance
-    public void init(ViewPager viewPager, TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems) {
-        mChatPagerAdapter = new ChatPagerAdapter(mContext, mFragmentManager);
+    public void attach(
+            Context context,
+            ViewPager viewPager,
+            FragmentManager fm,
+            TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems,
+            IAsyncCallback<Boolean> progressCallback,
+            IAsyncCallback<Void> sendIntentCallback,
+            IAsyncCallback<Friend> tabShowingCallback) {
+        mFragmentManager = fm;
+        mContext = context;
+        mProgressCallback = progressCallback;
+        mSendIntentCallback = sendIntentCallback;
+        mTabShowingCallback = tabShowingCallback;
+        mChatPagerAdapter = new ChatPagerAdapter(mContext, mFragmentManager, mUsername);
         mMenuItems = menuItems;
 
         mViewPager = viewPager;
         mViewPager.setAdapter(mChatPagerAdapter);
         mIndicator = pageIndicator;
         mIndicator.setViewPager(mViewPager);
+
 
         mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
@@ -232,7 +241,7 @@ public class ChatController {
                                 message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                             // if it's an image that i sent
                             // handle caching
-                            if (ChatUtils.isMyMessage(mUsername,message)) {
+                            if (ChatUtils.isMyMessage(mUsername, message)) {
                                 handleCachedFile(chatAdapter, message);
                             }
                         }

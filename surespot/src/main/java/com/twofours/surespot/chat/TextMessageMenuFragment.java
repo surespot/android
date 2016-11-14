@@ -18,9 +18,10 @@ import com.twofours.surespot.ui.UIUtils;
 public class TextMessageMenuFragment extends DialogFragment {
     protected static final String TAG = "TextMessageMenuFragment";
     private SurespotMessage mMessage;
+    private String mUsername;
     private String[] mMenuItemArray;
 
-    public static DialogFragment newInstance(SurespotMessage message) {
+    public static DialogFragment newInstance(String username, SurespotMessage message) {
         TextMessageMenuFragment f = new TextMessageMenuFragment();
 
         Bundle args = new Bundle();
@@ -29,6 +30,7 @@ public class TextMessageMenuFragment extends DialogFragment {
         // plain text is not converted to json string so store it separately
         if (message.getPlainData() != null) {
             args.putString("messageText", message.getPlainData().toString());
+            args.putString("username", username);
         }
         f.setArguments(args);
 
@@ -51,6 +53,11 @@ public class TextMessageMenuFragment extends DialogFragment {
         }
 
         final String finalMessageText = messageText;
+
+        String username = getArguments().getString("username");
+        if (username != null) {
+            mUsername = username;
+        }
 
         mMenuItemArray = new String[2];
         mMenuItemArray[0] = getString(R.string.menu_copy);
@@ -86,7 +93,7 @@ public class TextMessageMenuFragment extends DialogFragment {
                                     getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
                                         public void handleResponse(Boolean result) {
                                             if (result) {
-                                                mActivity.getChatController().deleteMessage(mMessage);
+                                                ChatManager.getChatController(mUsername).deleteMessage(mMessage);
                                             }
                                             else {
                                                 dialogi.cancel();
@@ -99,7 +106,7 @@ public class TextMessageMenuFragment extends DialogFragment {
                         }
 
                         else {
-                            mActivity.getChatController().deleteMessage(mMessage);
+                            ChatManager.getChatController(mUsername).deleteMessage(mMessage);
                         }
                         break;
                 }

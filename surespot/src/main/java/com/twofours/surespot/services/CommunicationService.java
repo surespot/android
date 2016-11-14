@@ -30,6 +30,7 @@ import com.twofours.surespot.Tuple;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotControlMessage;
 import com.twofours.surespot.chat.SurespotErrorMessage;
@@ -96,7 +97,7 @@ public class CommunicationService extends Service {
 
     private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
-    private static boolean mMainActivityPaused = false;
+    private boolean mMainActivityPaused = false;
 
     private ReconnectTask mReconnectTask;
     Handler mHandler = new Handler(Looper.getMainLooper());
@@ -221,10 +222,11 @@ public class CommunicationService extends Service {
             SurespotLog.d(TAG, "user logging out: " + mUsername);
 
             save();
-            mUsername = null;
+            
             shutdownConnection();
             mSendQueue.clear();
-            SurespotApplication.getChatController().dispose();
+            ChatManager.getChatController(mUsername).dispose();
+            mUsername = null;
         }
     }
 
@@ -265,7 +267,7 @@ public class CommunicationService extends Service {
         }
 
         setState(STATE_CONNECTING);
-        SurespotApplication.getChatController().onBeforeConnect();
+        ChatManager.getChatController(mUsername).onBeforeConnect();
 
         try {
             createSocket();
@@ -374,7 +376,7 @@ public class CommunicationService extends Service {
                 }
 
                 protected void onPostExecute(Boolean success) {
-                    SurespotApplication.getChatController().addMessage(message);
+                    ChatManager.getChatController(mUsername).addMessage(message);
                     if (success) {
                         sendTextMessage(message);
                     }
@@ -504,7 +506,7 @@ public class CommunicationService extends Service {
 
                 protected void onPostExecute(Boolean success) {
                     if (success != null) {
-                        SurespotApplication.getChatController().addMessage(message);
+                        ChatManager.getChatController(mUsername).addMessage(message);
                         if (success) {
                             sendFileMessage(message);
                         }
@@ -596,7 +598,7 @@ public class CommunicationService extends Service {
                             mErrored = false;
 
                             //update ui
-                            ChatController cc = SurespotApplication.getChatController();
+                            ChatController cc = ChatManager.getChatController(mUsername);
                             if (cc != null && newMessage != null) {
                                 cc.handleMessage(newMessage, new IAsyncCallback<Object>() {
                                     @Override
@@ -659,7 +661,7 @@ public class CommunicationService extends Service {
                         if (status == 204) {
                             final SurespotMessage messageReceived = SurespotMessage.toSurespotMessage(jsonMessage);
                             //update the UI
-                            ChatController cc = SurespotApplication.getChatController();
+                            ChatController cc = ChatManager.getChatController(mUsername);
                             if (cc != null) {
                                 cc.handleMessage(messageReceived, new IAsyncCallback<Object>() {
                                     @Override
@@ -734,9 +736,9 @@ public class CommunicationService extends Service {
         saveMessages();
         saveMessageQueue();
 
-        if (SurespotApplication.getChatController() != null) {
-            SurespotLog.d(TAG, "saving last chat: %s", SurespotApplication.getChatController().getCurrentChat());
-            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, SurespotApplication.getChatController().getCurrentChat());
+        if (ChatManager.getChatController(mUsername) != null) {
+            SurespotLog.d(TAG, "saving last chat: %s", ChatManager.getChatController(mUsername).getCurrentChat());
+            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_CHAT, ChatManager.getChatController(mUsername).getCurrentChat());
         }
 
         if (mSendQueue.size() == 0) {
@@ -856,7 +858,7 @@ public class CommunicationService extends Service {
         // save last 30? messages
         SurespotLog.d(TAG, "saveMessages");
         if (mUsername != null) {
-            for (Map.Entry<String, ChatAdapter> entry : SurespotApplication.getChatController().mChatAdapters.entrySet()) {
+            for (Map.Entry<String, ChatAdapter> entry : ChatManager.getChatController(mUsername).mChatAdapters.entrySet()) {
                 String them = entry.getKey();
                 String spot = ChatUtils.getSpot(mUsername, them);
                 SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(),
@@ -868,7 +870,7 @@ public class CommunicationService extends Service {
     public synchronized void saveMessages(String username) {
         // save last 30? messages
         SurespotLog.d(TAG, "saveMessages, username: %s", username);
-        ChatAdapter chatAdapter = SurespotApplication.getChatController().mChatAdapters.get(username);
+        ChatAdapter chatAdapter = ChatManager.getChatController(mUsername).mChatAdapters.get(username);
 
         if (chatAdapter != null) {
             SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
@@ -898,7 +900,7 @@ public class CommunicationService extends Service {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    SurespotApplication.getChatController().addMessage(message);
+                    ChatManager.getChatController(mUsername).addMessage(message);
                 }
             };
             mHandler.post(runnable);
@@ -908,9 +910,9 @@ public class CommunicationService extends Service {
     }
 
     private void saveFriends() {
-        if (SurespotApplication.getChatController() != null) {
-            if (SurespotApplication.getChatController().getFriendAdapter() != null && SurespotApplication.getChatController().getFriendAdapter().getCount() > 0) {
-                SurespotApplication.getChatController().saveFriends();
+        if (ChatManager.getChatController(mUsername) != null) {
+            if (ChatManager.getChatController(mUsername).getFriendAdapter() != null && ChatManager.getChatController(mUsername).getFriendAdapter().getCount() > 0) {
+                ChatManager.getChatController(mUsername).saveFriends();
             }
         }
     }
@@ -928,8 +930,8 @@ public class CommunicationService extends Service {
         stopResendTimer();
 
         //tell chat controller
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().connected();
+        if (ChatManager.getChatController(mUsername) != null) {
+            ChatManager.getChatController(mUsername).connected();
         }
 
         // tell any listeners that we're connected
@@ -1353,7 +1355,7 @@ public class CommunicationService extends Service {
 
                         if (message != null) {
                             //update chat controller message
-                            SurespotApplication.getChatController().addMessage(message);
+                            ChatManager.getChatController(mUsername).addMessage(message);
                         }
                         processNextMessage();
                     }
@@ -1378,7 +1380,7 @@ public class CommunicationService extends Service {
 
                     try {
                         SurespotControlMessage message = SurespotControlMessage.toSurespotControlMessage((JSONObject) args[0]);
-                        SurespotApplication.getChatController().handleControlMessage(null, message, true, false);
+                        ChatManager.getChatController(mUsername).handleControlMessage(null, message, true, false);
                     }
                     catch (JSONException e) {
                         SurespotLog.w(TAG, "on control", e);
@@ -1400,7 +1402,7 @@ public class CommunicationService extends Service {
                         final JSONObject jsonMessage = (JSONObject) args[0];
                         SurespotLog.d(TAG, "received message: " + jsonMessage.toString());
                         final SurespotMessage message = SurespotMessage.toSurespotMessage(jsonMessage);
-                        SurespotApplication.getChatController().handleMessage(message, new IAsyncCallback<Object>() {
+                        ChatManager.getChatController(mUsername).handleMessage(message, new IAsyncCallback<Object>() {
                             @Override
                             public void handleResponse(Object result) {
                                 // see if we have deletes
@@ -1413,7 +1415,7 @@ public class CommunicationService extends Service {
                                             for (int i = 0; i < deleteControlMessages.length(); i++) {
                                                 try {
                                                     SurespotControlMessage dMessage = SurespotControlMessage.toSurespotControlMessage(new JSONObject(deleteControlMessages.getString(i)));
-                                                    SurespotApplication.getChatController().handleControlMessage(null, dMessage, true, false);
+                                                    ChatManager.getChatController(mUsername).handleControlMessage(null, dMessage, true, false);
                                                 }
                                                 catch (JSONException e) {
                                                     SurespotLog.w(TAG, e, "on control");
@@ -1446,8 +1448,6 @@ public class CommunicationService extends Service {
         }
     };
 
-    public static boolean isUIAttached() {
-        return !mMainActivityPaused;
-    }
+
 }
 
