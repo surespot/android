@@ -958,7 +958,7 @@ public class NetworkController {
                 return encryptedImageStream;
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", url);
         }
 
