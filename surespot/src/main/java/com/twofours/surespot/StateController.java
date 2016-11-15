@@ -3,6 +3,7 @@ package com.twofours.surespot;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -302,6 +303,9 @@ public class StateController {
 				// clear network caches
 				NetworkManager.clearCaches();
 
+				//clear chat manager state
+				ChatManager.resetState();
+
 				FileCacheController fcc = SurespotApplication.getFileCacheController();
 				if (fcc != null) {
 					fcc.clearCache();
@@ -318,6 +322,8 @@ public class StateController {
 				if (ccs != null) {
 					ccs.clear();
 				}
+
+
 
 				return null;
 			}
@@ -342,6 +348,8 @@ public class StateController {
 		catch (Exception ex) {
 			SurespotLog.w(TAG, ex, "wipeUserState");
 		}
+
+
 	}
 
 	public synchronized void saveSharedSecrets(final String username, final String password, final Map<SharedSecretKey, byte[]> secrets) {

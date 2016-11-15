@@ -111,8 +111,14 @@ public class ChatManager {
         }
     }
 
-    public static boolean isUIAttached() {
+    public static synchronized boolean isUIAttached() {
         return !mPaused;
+    }
+
+    public static synchronized void resetState() {
+        mMap.clear();
+        mAttachedChatController = null;
+        mConnectivityReceiver = null;
     }
 
     private static class BroadcastReceiverHandler extends BroadcastReceiver {
