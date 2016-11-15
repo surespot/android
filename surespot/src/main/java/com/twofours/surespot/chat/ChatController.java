@@ -24,7 +24,6 @@ import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
@@ -210,6 +209,7 @@ public class ChatController {
         });
 
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(mContext);
     }
 
     public void setAutoInviteData(AutoInviteData autoInviteData) {
@@ -2224,16 +2224,16 @@ public class ChatController {
         return mSocket;
     }
 
-    // sets if the main activity is paused or not
-    public void setMainActivityPaused(boolean paused) {
-        mMainActivityPaused = paused;
-        if (paused) {
-            save();
-            disconnect();
-        } else {
-            connect();
-        }
-    }
+//    // sets if the main activity is paused or not
+//    public void setMainActivityPaused(boolean paused) {
+//        mMainActivityPaused = paused;
+//        if (paused) {
+//            save();
+//            disconnect();
+//        } else {
+//            connect();
+//        }
+//    }
 
     // Notify the service that the user logged out
     public synchronized void userLoggedOut() {
@@ -2739,11 +2739,6 @@ public class ChatController {
 
         SurespotLog.d(TAG, "saving last chat: %s", getCurrentChat());
         Utils.putUserSharedPrefsString(mContext, mUsername, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChat());
-
-
-        if (mSendQueue.size() == 0) {
-            FileUtils.wipeFileUploadDir(mContext);
-        }
     }
 
     public void clearServiceListener() {

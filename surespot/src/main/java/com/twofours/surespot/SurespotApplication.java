@@ -137,6 +137,8 @@ public class SurespotApplication extends Application {
 
 		mBillingController = new BillingController(this);
 		FileUtils.wipeImageCaptureDir(this);
+		FileUtils.wipeFileUploadDir(this);
+
 	}
 
 	private boolean versionChanged(Context context) {

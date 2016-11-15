@@ -12,6 +12,7 @@ import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
+import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.Friend;
@@ -119,6 +120,7 @@ public class ChatManager {
         mMap.clear();
         mAttachedChatController = null;
         mConnectivityReceiver = null;
+        FileUtils.wipeFileUploadDir(mContext);
     }
 
     private static class BroadcastReceiverHandler extends BroadcastReceiver {
