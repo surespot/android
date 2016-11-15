@@ -28,10 +28,11 @@ import java.util.HashMap;
 public class ChatManager {
     private static String TAG = "ChatManager";
     private static HashMap<String, ChatController> mMap = new HashMap<>();
-    private static boolean mUIAttached;
-    private static boolean mMainActivityPaused;
-    private static ChatController mActiveChatController;
+
+    private static ChatController mAttachedChatController;
     private static BroadcastReceiverHandler mConnectivityReceiver;
+    private static Context mContext;
+    private static boolean mPaused;
 
     public static synchronized ChatController getChatController(String username) {
         if (TextUtils.isEmpty(username)) {
@@ -57,33 +58,61 @@ public class ChatManager {
                                                                    IAsyncCallback<Boolean> progressCallback,
                                                                    IAsyncCallback<Void> sendIntentCallback,
                                                                    IAsyncCallback<Friend> tabShowingCallback) {
+        SurespotLog.d(TAG, "attachChatController, username: %s", username);
         ChatController cc = getChatController(username);
 
         cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback);
-        mActiveChatController = cc;
+        mAttachedChatController = cc;
         if (mConnectivityReceiver == null) {
-            mConnectivityReceiver= new BroadcastReceiverHandler();
+            SurespotLog.d(TAG, "attachChatController, username: %s registering new broadcast receiver", username);
+            mConnectivityReceiver = new BroadcastReceiverHandler();
+            context.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+            mContext = context;
         }
-        context.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
         return cc;
     }
 
-    public static boolean isUIAttached() {
-        return !mUIAttached;
+    public static boolean isChatControllerAttached(String username) {
+        if (mAttachedChatController != null) {
+            return (mAttachedChatController.getUsername().equals(username));
+        }
+        return false;
     }
 
-    // sets if the main activity is paused or not
-    public static void setMainActivityPaused(boolean paused) {
-        mMainActivityPaused = paused;
 
-        if (mActiveChatController != null) {
-            if (paused) {
-                mActiveChatController.save();
-                mActiveChatController.disconnect();
-            } else {
-                mActiveChatController.connect();
+    public static synchronized void detach(Context context) {
+        SurespotLog.d(TAG, "detach");
+        if (mConnectivityReceiver != null) {
+            if (mContext == context) {
+                SurespotLog.d(TAG, "detach, unregistering broadcast receiver");
+                mContext.unregisterReceiver(mConnectivityReceiver);
+                mConnectivityReceiver = null;
             }
         }
+    }
+
+    public static synchronized void pause(String username) {
+        mPaused = true;
+        if (mAttachedChatController != null && mAttachedChatController.getUsername().equals(username)) {
+            //  if (paused) {
+            mAttachedChatController.save();
+            mAttachedChatController.disconnect();
+//            } else {
+//                mAttachedChatController.connect();
+//            }
+        }
+    }
+
+    public static synchronized void resume(String username) {
+        mPaused = false;
+        if (mAttachedChatController != null && mAttachedChatController.getUsername().equals(username)) {
+            mAttachedChatController.resume();
+        }
+    }
+
+    public static boolean isUIAttached() {
+        return !mPaused;
     }
 
     private static class BroadcastReceiverHandler extends BroadcastReceiver {
@@ -92,29 +121,22 @@ public class ChatManager {
             SurespotLog.d(TAG, "onReceive");
             Utils.debugIntent(intent, TAG);
 
-            if (mActiveChatController != null) {
+            if (mAttachedChatController != null) {
                 Bundle extras = intent.getExtras();
                 if (extras.containsKey("networkInfo")) {
                     NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
                     if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
                         SurespotLog.d(TAG, "onReceive,  CONNECTED");
                         synchronized (this) {
-                            mActiveChatController.clearError();
-                            mActiveChatController.disconnect();
-                            mActiveChatController.connect();
-                            mActiveChatController.processNextMessage();
-//                        mErrored = false;
-//                        disconnect();
-//                        connect();
-//                        processNextMessage();
+                            mAttachedChatController.clearError();
+                            mAttachedChatController.disconnect();
+                            mAttachedChatController.connect();
+                            mAttachedChatController.processNextMessage();
                         }
                         return;
                     }
                 }
             }
         }
-
     }
-
-
 }

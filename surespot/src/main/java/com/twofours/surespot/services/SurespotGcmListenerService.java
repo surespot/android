@@ -97,7 +97,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 }
             }
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
-            boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
 
             //if current chat controller is for to user
             boolean tabOpenToUser = false;
