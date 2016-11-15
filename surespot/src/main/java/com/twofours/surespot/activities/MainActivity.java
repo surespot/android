@@ -1236,6 +1236,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     protected Void doInBackground(Void... params) {
 
                         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                        intent.putExtra("username", mUser);
                         startActivity(intent);
                         return null;
                     }

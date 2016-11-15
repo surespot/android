@@ -51,7 +51,7 @@ public class SettingsActivity extends PreferenceActivity {
 
 		// TODO put in fragment0
 		final PreferenceManager prefMgr = getPreferenceManager();
-		String user = IdentityController.getLoggedInUser();
+		String user = getIntent().getStringExtra("username");
 		if (user != null) {
 			prefMgr.setSharedPreferencesName(user);
 
