@@ -626,8 +626,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switchUser(identityNames[position]);
+                mDrawerList.setItemChecked(position, true);
             }
         });
+
+        for (int i=0;i<identityNames.length;i++) {
+            if (identityNames[i].equals(mUser)) {
+                mDrawerList.setItemChecked(i, true);
+                break;
+            }
+        }
+
     }
 
     private void switchUser(String identityName) {
