@@ -1751,7 +1751,7 @@ public class ChatController {
     //needs to be run on UI thread
     private void getFriendsAndData() {
         SurespotLog.d(TAG, "getFriendsAndData: friend count: %d, mLatestUserControlId: %d", mFriendAdapter.getCount(), mLatestUserControlId);
-        if (mFriendAdapter.getCount() == 0 && mLatestUserControlId == 0) {
+        if (mFriendAdapter.getCount() == 0 || mLatestUserControlId == 0) {
             setProgress(null, true);
             mFriendAdapter.setLoading(true);
             // get the list of friends
