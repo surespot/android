@@ -77,7 +77,6 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.ITransmissionServiceListener;
@@ -1105,7 +1104,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
-        if (ChatManager.getChatController(mUser) != null) {
+        if (mUser != null && ChatManager.getChatController(mUser) != null) {
             ChatManager.getChatController(mUser).enableMenuItems(mCurrentFriend);
         }
 
