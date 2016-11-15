@@ -26,7 +26,7 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('/home/adam/raid/2fours/android_keystore/custom-debug.keystore')
+            storeFile file('/Users/adam/dev/surespot-android_keystore/custom-debug.keystore')
                     storePassword "android"
                     keyAlias "androiddebugkey"
                     keyPassword "android"
