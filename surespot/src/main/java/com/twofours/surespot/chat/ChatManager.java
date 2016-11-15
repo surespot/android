@@ -145,4 +145,13 @@ public class ChatManager {
             }
         }
     }
+
+    public static synchronized String getLoggedInUser() {
+        if (mAttachedChatController != null) {
+            return mAttachedChatController.getUsername();
+        }
+        else {
+            return null;
+        }
+    }
 }

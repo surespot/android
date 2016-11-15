@@ -77,7 +77,6 @@ public class IdentityController {
     private static boolean mHasIdentity;
     private static KeyStore mKs;
     private static Map<String, String> mPasswords = new HashMap<>(5);
-    private static String mLoggedInUser;
 
     private synchronized static void setLoggedInUser(final Context context, SurespotIdentity identity, Cookie cookie, String password) {
         // load the identity
@@ -88,7 +87,6 @@ public class IdentityController {
             // if we're logging in we probably didn't just buy it
             // SurespotApplication.getBillingController().clearJustPurchased();
             mPasswords.put(identity.getUsername(), password);
-            mLoggedInUser = identity.getUsername();
         }
         else {
             SurespotLog.w(TAG, "getIdentity null");
@@ -307,34 +305,32 @@ public class IdentityController {
         return identityDir;
     }
 
-    static synchronized void deleteIdentity(Context context, String username, final boolean preserveBackedUpIdentity) {
+    static synchronized void deleteIdentity(Context context, String deletedUsername, final boolean preserveBackedUpIdentity) {
         // force identity reload
         mHasIdentity = false;
 
         boolean isLoggedIn = false;
-        if (username.equals(getLoggedInUser())) {
+        if (deletedUsername.equals(getLoggedInUser())) {
             isLoggedIn = true;
         }
 
-        SurespotApplication.getCachingService().clearIdentityData(username, true);
+        SurespotApplication.getCachingService().clearIdentityData(deletedUsername, true);
 
-//        if (isLoggedIn) {
-//            SurespotApplication.getCachingService().logout(username,true);
-//        }
+        if (isLoggedIn) {
+            logout(context, getLoggedInUser());
+        }
 
-        clearStoredPasswordForIdentity(context, username);
-
-        NetworkManager.getNetworkController(username).clearCache();
+        NetworkManager.getNetworkController(deletedUsername).clearCache();
 
         FileCacheController fcc = SurespotApplication.getFileCacheController();
         if (fcc != null) {
             fcc.clearCache();
         }
 
-        StateController.wipeState(context, username);
+        StateController.wipeState(context, deletedUsername);
 
         synchronized (IDENTITY_FILE_LOCK) {
-            String identityFilename = FileUtils.getIdentityDir(context) + File.separator + username + IDENTITY_EXTENSION;
+            String identityFilename = FileUtils.getIdentityDir(context) + File.separator + deletedUsername + IDENTITY_EXTENSION;
             File file = new File(identityFilename);
             file.delete();
 
@@ -347,7 +343,7 @@ public class IdentityController {
                 // file = new File(identityFilename);
                 // file.delete();
 
-                identityFilename = exportDir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
+                identityFilename = exportDir + File.separator + caseInsensitivize(deletedUsername) + IDENTITY_EXTENSION;
                 file = new File(identityFilename);
                 file.delete();
             }
@@ -940,7 +936,6 @@ public class IdentityController {
     }
 
     public static synchronized void logout(Context context, String username) {
-        mLoggedInUser = null;
         ChatManager.getChatController(username).logout();
         NetworkManager.getNetworkController(username).logout();
 
@@ -950,6 +945,12 @@ public class IdentityController {
         }
 
         clearStoredPasswordForIdentity(context, username);
+    }
+
+    public static synchronized void logout(Context context) {
+        if (getLoggedInUser() != null) {
+            logout(context, getLoggedInUser());
+        }
     }
 
     private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
@@ -995,7 +996,7 @@ public class IdentityController {
     }
 
     public static String getLoggedInUser() {
-        return mLoggedInUser;
+        return ChatManager.getLoggedInUser();
     }
 
     public static String getLastLoggedInUser(Context context) {

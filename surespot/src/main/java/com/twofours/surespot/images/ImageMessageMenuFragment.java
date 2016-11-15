@@ -19,7 +19,6 @@ import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
@@ -99,7 +98,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
 		// if it's not our message we can save it to gallery
-		if (!mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+		if (!mMessage.getFrom().equals(mUsername)) {
 			mItems.add(getString(R.string.menu_save_to_gallery));
 
 		}
@@ -181,7 +180,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 				}
 
 				if (itemText.equals(getString(R.string.menu_delete_message))) {
-					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					SharedPreferences sp = mActivity.getSharedPreferences(mUsername, Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
 						AlertDialog adialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
