@@ -98,6 +98,8 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
+import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
+
 public class MainActivity extends Activity implements OnMeasureListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -340,7 +342,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         newIntent.setType(intent.getType());
 
         if (mUser != null) {
-            newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, mUser);
+            newIntent.putExtra(MESSAGE_TO, mUser);
         }
 
         newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -702,7 +704,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         Intent intent = getIntent();
         // String user = mUser;
         String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
-        String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+        String messageTo = intent.getStringExtra(MESSAGE_TO);
 
         // SurespotLog.d(TAG, "user: %s", user);
         SurespotLog.d(TAG, "type: %s", notificationType);
@@ -908,7 +910,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         String action = intent.getAction();
         String type = intent.getType();
-        String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+        String messageTo = intent.getStringExtra(MESSAGE_TO);
         String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
         String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
@@ -1272,21 +1274,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 }.execute();
                 return true;
             case R.id.menu_logout_bar:
-
-
                 IdentityController.logout(this, mUser);
 
-                // new AsyncTask<Void, Void, Void>() {
-                // protected Void doInBackground(Void... params) {
-
                 Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
+                finalIntent.putExtra(MESSAGE_TO, mUser);
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                // mChatController = null;
                 MainActivity.this.startActivity(finalIntent);
                 finish();
-                // return null;
-                // }
-                // }.execute();
                 return true;
             case R.id.menu_invite_external:
                 UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser), mUser);
