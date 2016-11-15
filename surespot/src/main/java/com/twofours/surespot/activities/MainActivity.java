@@ -296,7 +296,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
     private void processLaunch() {
         String user = getLaunchUser();
-
+        SurespotLog.d(TAG, "processLaunch, launchUser: %s, mUser: %s", user, mUser);
         if (user == null) {
             launchLogin();
         }
@@ -326,16 +326,21 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     private void launchLogin() {
-        SurespotLog.d(TAG, "launchLogin");
+        SurespotLog.d(TAG, "launchLogin, mUser: %s", mUser);
         Intent intent = getIntent();
         Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
-        newIntent.putExtra("autoinviteuri", intent.getData());
-        newIntent.setAction(intent.getAction());
-        newIntent.setType(intent.getType());
 
         Bundle extras = intent.getExtras();
         if (extras != null) {
             newIntent.putExtras(extras);
+        }
+
+        newIntent.putExtra("autoinviteuri", intent.getData());
+        newIntent.setAction(intent.getAction());
+        newIntent.setType(intent.getType());
+
+        if (mUser != null) {
+            newIntent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, mUser);
         }
 
         newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -654,6 +659,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     private void switchUser(String identityName) {
+        SurespotLog.d(TAG, "switchUser, mUser: %s, identityName: %s", mUser, identityName);
         if (!identityName.equals(mUser)) {
             ChatManager.pause(mUser);
             ChatManager.detach(this);
