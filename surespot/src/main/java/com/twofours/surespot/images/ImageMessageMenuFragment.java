@@ -76,8 +76,6 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-
-		final String ourUser = IdentityController.getLoggedInUser();
 		final MainActivity mActivity = (MainActivity) getActivity();
 
 		String username = getArguments().getString("username");
@@ -106,7 +104,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 		}
 		// if it's our message and it's been sent we can mark it locked or unlocked
-		if (mMessage.getId() != null && mMessage.getFrom().equals(ourUser)) {
+		if (mMessage.getId() != null && mMessage.getFrom().equals(mUsername)) {
 			mItems.add(mMessage.isShareable() ? getString(R.string.menu_lock) : getString(R.string.menu_unlock));
 		}
 
@@ -146,9 +144,9 @@ public class ImageMessageMenuFragment extends DialogFragment {
 									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
 									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-									InputStream imageStream = NetworkManager.getNetworkController(ourUser).getFileStream(mMessage.getData());
+									InputStream imageStream = NetworkManager.getNetworkController(mUsername).getFileStream(mMessage.getData());
 
-									EncryptionController.runDecryptTask(ourUser, mMessage.getOurVersion(ourUser), mMessage.getOtherUser(ourUser), mMessage.getTheirVersion(ourUser),
+									EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);
 
 									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());

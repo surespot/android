@@ -241,8 +241,8 @@ public class UIUtils {
         UIUtils.setHtml(context, tvWelcome, R.string.welcome_to_surespot);
     }
 
-    public static void sendInvitation(final Activity context, NetworkController networkController) {
-        final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser());
+    public static void sendInvitation(final Activity context, NetworkController networkController, String username) {
+        final String longUrl = buildExternalInviteUrl(username);
         if (longUrl == null) {
             Utils.makeLongToast(context, context.getString(R.string.invite_no_application_found));
             return;
@@ -321,13 +321,11 @@ public class UIUtils {
         return null;
     }
 
-    public static AlertDialog showQRDialog(Activity activity) {
+    public static AlertDialog showQRDialog(Activity activity, String user) {
         LayoutInflater inflator = activity.getLayoutInflater();
         View dialogLayout = inflator.inflate(R.layout.qr_invite_layout, null, false);
         TextView tvQrInviteText = (TextView) dialogLayout.findViewById(R.id.tvQrInviteText);
         ImageView ivQr = (ImageView) dialogLayout.findViewById(R.id.ivQr);
-
-        String user = IdentityController.getLoggedInUser();
 
         Spannable s1 = new SpannableString(user);
         s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

@@ -203,7 +203,7 @@ public class ChatController {
         });
 
 
-        mFriendAdapter = new FriendAdapter(mContext);
+        mFriendAdapter = new FriendAdapter(mContext, mUsername);
         loadState(mUsername);
 
         mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
@@ -1971,7 +1971,7 @@ public class ChatController {
 
                 @Override
                 protected String doInBackground(Void... params) {
-                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), mUsername,
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
                     return plainText;
@@ -2133,10 +2133,9 @@ public class ChatController {
 
         setProgress("assignFriendAlias", true);
         final String version = IdentityController.getOurLatestVersion(mUsername);
-        String username = IdentityController.getLoggedInUser();
 
         byte[] iv = EncryptionController.getIv();
-        final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, username, version, alias, iv);
+        final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, mUsername, version, alias, iv);
         final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
 
         mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
