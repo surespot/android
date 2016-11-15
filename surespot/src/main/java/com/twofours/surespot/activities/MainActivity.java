@@ -146,14 +146,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
     // control booleans
     private boolean mLaunched;
     private boolean mResumed;
-  //  private boolean mStartWhenBothServicesBound;
+    //  private boolean mStartWhenBothServicesBound;
     private boolean mSigningUp;
     private boolean mUnlocking = false;
     private boolean mPaused = false;
     // end control booleans
 
     private BillingController mBillingController;
-  //  private BroadcastReceiver mRegistrationBroadcastReceiver;
+    //  private BroadcastReceiver mRegistrationBroadcastReceiver;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private ListView mDrawerList;
 
@@ -179,17 +179,20 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 intent.putExtra("signingUp", true);
                 startActivity(newIntent);
                 finish();
-            } else {
+            }
+            else {
                 SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
                 Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(newIntent);
                 finish();
             }
-        } else {
+        }
+        else {
             if (!needsSignup()) {
                 processLaunch();
-            } else {
+            }
+            else {
                 mSigningUp = true;
             }
         }
@@ -265,14 +268,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
 
             processLaunch();
-        } else {
+        }
+        else {
             if (!mSigningUp) {
                 mSigningUp = intent.getBooleanExtra("signingUp", false);
 
                 if (!mSigningUp) {
                     if (mCacheServiceBound) {
                         processLaunch();
-                    } else {
+                    }
+                    else {
                         // one or more services needs to be bound
                         //     mStartWhenBothServicesBound = true;
 
@@ -294,7 +299,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         if (user == null) {
             launchLogin();
-        } else {
+        }
+        else {
             mUser = user;
 
 //            if (!mCommunicationServiceBound) {
@@ -310,7 +316,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 if (!mUnlocking) {
                     SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
                     postServiceProcess();
-                } else {
+                }
+                else {
                     SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
                 }
             }
@@ -367,7 +374,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 if (segments.size() > 1) {
                     if (dataUri) {
                         intent.setData(null);
-                    } else {
+                    }
+                    else {
                         intent.removeExtra("autoinviteurl");
                     }
 
@@ -376,7 +384,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         aid.setUsername(segments.get(1));
                         aid.setSource(segments.get(2));
                         return aid;
-                    } catch (IndexOutOfBoundsException e) {
+                    }
+                    catch (IndexOutOfBoundsException e) {
                         SurespotLog.i(TAG, e, "getAutoInviteData");
                     }
                 }
@@ -425,11 +434,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                         if (mEtMessage.getText().toString().length() > 0 && !ChatManager.getChatController(mUser).isFriendDeleted(friend.getName())) {
                             sendMessage(friend.getName());
-                        } else {
+                        }
+                        else {
                             // go to home
                             ChatManager.getChatController(mUser).setCurrentChat(null);
                         }
-                    } else {
+                    }
+                    else {
                         inviteFriend();
                     }
                 }
@@ -446,15 +457,18 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     // if they're deleted always close the tab
                     if (ChatManager.getChatController(mUser).isFriendDeleted(friend.getName())) {
                         ChatManager.getChatController(mUser).closeTab();
-                    } else {
+                    }
+                    else {
                         if (mEtMessage.getText().toString().length() > 0) {
                             sendMessage(friend.getName());
-                        } else {
+                        }
+                        else {
                             SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
                             boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
                             if (!disableVoice) {
                                 VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
-                            } else {
+                            }
+                            else {
                                 ChatManager.getChatController(mUser).closeTab();
                             }
                         }
@@ -621,7 +635,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         List<String> ids = IdentityController.getIdentityNames(this);
         final String[] identityNames = ids.toArray(new String[ids.size()]);
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item,identityNames));
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -630,7 +644,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         });
 
-        for (int i=0;i<identityNames.length;i++) {
+        for (int i = 0; i < identityNames.length; i++) {
             if (identityNames[i].equals(mUser)) {
                 mDrawerList.setItemChecked(i, true);
                 break;
@@ -696,14 +710,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             user = intent.getStringExtra(SurespotConstants.ExtraNames.NAME);
 
-        } else if (!TextUtils.isEmpty(messageTo)
+        }
+        else if (!TextUtils.isEmpty(messageTo)
                 && (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
                 || SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
                 .equals(notificationType))) {
 
             user = messageTo;
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
-        } else {
+        }
+        else {
             user = IdentityController.getLastLoggedInUser(this);
         }
 
@@ -751,7 +767,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (!mUnlocking) {
                 SurespotLog.d(TAG, "caching service calling postServiceProcess");
                 postServiceProcess();
-            } else {
+            }
+            else {
                 SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
             }
         }
@@ -866,7 +883,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (apiAvailability.isUserResolvableError(resultCode)) {
                 apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
                         .show();
-            } else {
+            }
+            else {
                 Log.i(TAG, "This device is not supported.");
                 finish();
             }
@@ -930,7 +948,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                     ChatManager.getChatController(mUser).setCurrentChat(null);
                     mSet = true;
-                } else {
+                }
+                else {
                     Utils.clearIntent(intent);
                 }
             }
@@ -1082,12 +1101,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
                                 try {
                                     File file = new File(new URI(selectedImageUri.toString()));
                                     SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
-                                } catch (URISyntaxException e) {
+                                }
+                                catch (URISyntaxException e) {
                                 }
 
                                 if (ChatManager.getChatController(mUser) == null || url == null) {
                                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
-                                } else {
+                                }
+                                else {
                                     ChatManager.getChatController(mUser).setImageUrl(to, url, version, iv, true);
                                 }
                             }
@@ -1100,7 +1121,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // Pass on the activity result to the helper for handling
                 if (!SurespotApplication.getBillingController().getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
                     super.onActivityResult(requestCode, resultCode, data);
-                } else {
+                }
+                else {
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
@@ -1127,7 +1149,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
         if (hasCamera()) {
             mMenuItems.add(captureItem);
             captureItem.setEnabled(FileUtils.isExternalStorageMounted());
-        } else {
+        }
+        else {
             SurespotLog.d(TAG, "hiding capture image menu option");
             menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
         }
@@ -1243,10 +1266,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 }.execute();
                 return true;
             case R.id.menu_logout_bar:
-                if (ChatManager.getChatController(mUser) != null) {
-                    ChatManager.getChatController(mUser).logout();
-                }
-                IdentityController.logout();
+
+
+                IdentityController.logout(this, mUser);
 
                 // new AsyncTask<Void, Void, Void>() {
                 // protected Void doInBackground(Void... params) {
@@ -1277,7 +1299,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                                 ;
                             });
-                } else {
+                }
+                else {
                     ChatManager.getChatController(mUser).deleteMessages(currentChat);
                 }
 
@@ -1379,7 +1402,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
         // don't puke if we can't unregister
         try {
             unregisterReceiver(mExternalStorageReceiver);
-        } catch (java.lang.IllegalArgumentException e) {
+        }
+        catch (java.lang.IllegalArgumentException e) {
         }
     }
 
@@ -1388,10 +1412,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "updateExternalStorageState:  " + state);
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             mExternalStorageAvailable = mExternalStorageWriteable = true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+        }
+        else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             mExternalStorageAvailable = true;
             mExternalStorageWriteable = false;
-        } else {
+        }
+        else {
 
             mExternalStorageAvailable = mExternalStorageWriteable = false;
         }
@@ -1474,7 +1500,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "progress status changed to: %b", inProgress);
         if (inProgress) {
             UIUtils.showProgressAnimation(this, mHomeImageView);
-        } else {
+        }
+        else {
             mHomeImageView.clearAnimation();
         }
 
@@ -1489,7 +1516,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
         View view = null;
         if (mCurrentFriend == null) {
             view = mEtInvite;
-        } else {
+        }
+        else {
             view = mEtMessage;
         }
 
@@ -1525,7 +1553,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
         View view = null;
         if (mCurrentFriend == null) {
             view = mEtInvite;
-        } else {
+        }
+        else {
             view = mEtMessage;
         }
 
@@ -1573,7 +1602,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
                             mKeyboardShowing = false;
-                        } else {
+                        }
+                        else {
                             Runnable runnable = new Runnable() {
 
                                 @Override
@@ -1607,7 +1637,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
                             mKeyboardShowing = true;
-                        } else {
+                        }
+                        else {
 
                         }
                     }
@@ -1627,7 +1658,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotLog.d(TAG, "showEmoji,  showing emoji view");
                 mEmojiView.setVisibility(View.VISIBLE);
             }
-        } else {
+        }
+        else {
             if (visibility != View.GONE && force) {
                 SurespotLog.d(TAG, "showEmoji,  hiding emoji view");
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
@@ -1645,11 +1677,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void toggleEmoji() {
         if (mEmojiShowing) {
             showSoftKeyboard(mEtMessage);
-        } else {
+        }
+        else {
             if (mKeyboardShowing) {
                 hideSoftKeyboard();
                 showEmoji(true, false);
-            } else {
+            }
+            else {
                 showEmoji(true, true);
             }
 
@@ -1707,7 +1741,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // requestFocus();
                 // clear the intent
 
-            } else {
+            }
+            else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
                     final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
@@ -1725,7 +1760,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                             true);
                 }
             }
-        } else {
+        }
+        else {
             if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
                 Utils.configureActionBar(this, "", mUser, true);
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
@@ -1795,7 +1831,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             mEmojiView.setVisibility(View.VISIBLE);
             setEmojiIcon(false);
-        } else {
+        }
+        else {
             mEmojiView.setVisibility(View.GONE);
             setEmojiIcon(true);
         }
@@ -1828,10 +1865,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         TextKeyListener.clear(mEtInvite.getText());
                         if (ChatManager.getChatController(mUser).getFriendAdapter().addFriendInvited(friend)) {
                             Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
-                        } else {
+                        }
+                        else {
                             Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
                         }
-                    } else {
+                    }
+                    else {
                         switch (response.code()) {
                             case 404:
                                 Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
@@ -1858,19 +1897,22 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mIvVoice.setVisibility(View.GONE);
             mIvHome.setVisibility(View.GONE);
             mIvSend.setVisibility(View.GONE);
-        } else {
+        }
+        else {
             if (mCurrentFriend.isDeleted()) {
                 mIvInvite.setVisibility(View.GONE);
                 mIvVoice.setVisibility(View.GONE);
                 mIvHome.setVisibility(View.VISIBLE);
                 mIvSend.setVisibility(View.GONE);
-            } else {
+            }
+            else {
                 if (mEtMessage.getText().length() > 0) {
                     mIvInvite.setVisibility(View.GONE);
                     mIvVoice.setVisibility(View.GONE);
                     mIvHome.setVisibility(View.GONE);
                     mIvSend.setVisibility(View.VISIBLE);
-                } else {
+                }
+                else {
                     mIvInvite.setVisibility(View.GONE);
                     SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
                     boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
@@ -1878,7 +1920,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (disableVoice) {
                         mIvVoice.setVisibility(View.GONE);
                         mIvHome.setVisibility(View.VISIBLE);
-                    } else {
+                    }
+                    else {
                         mIvVoice.setVisibility(View.VISIBLE);
                         mIvHome.setVisibility(View.GONE);
                     }
@@ -1920,12 +1963,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 }
                 showKeyboard = mKeyboardShowingOnHomeTab;
 
-            } else {
+            }
+            else {
                 showKeyboard = mKeyboardShowing;
             }
             showEmoji = false;
 
-        } else {
+        }
+        else {
             getActionBar().setDisplayHomeAsUpEnabled(true);
 
             if (friend.isDeleted()) {
@@ -1937,7 +1982,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     // if we're coming from home tab
                     if (mCurrentFriend == null) {
                         mKeyboardShowingOnHomeTab = mKeyboardShowing;
-                    } else {
+                    }
+                    else {
                         if (!mCurrentFriend.isDeleted()) {
                             mKeyboardShowingOnChatTab = mKeyboardShowing;
                             mEmojiShowingOnChatTab = mEmojiShowing;
@@ -1948,7 +1994,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 showKeyboard = false;
                 showEmoji = false;
 
-            } else {
+            }
+            else {
                 mEtMessage.setVisibility(View.VISIBLE);
                 mEmojiButton.setVisibility(View.VISIBLE);
 
@@ -1963,7 +2010,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         mKeyboardShowingOnHomeTab = mKeyboardShowing;
                     }
 
-                } else {
+                }
+                else {
                     showKeyboard = mKeyboardShowing;
                     showEmoji = mEmojiShowing;
                 }
@@ -1980,27 +2028,33 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (friend == null) {
                 if (mEmojiShowing) {
                     showSoftKeyboardThenHideEmoji(mEtInvite);
-                } else {
+                }
+                else {
                     hideSoftKeyboard(mEtMessage);
                 }
-            } else {
+            }
+            else {
                 if (mEmojiShowing) {
                     showSoftKeyboard(mEtMessage);
                     showEmoji(false, true);
-                } else {
+                }
+                else {
                     showEmoji(true, true);
                     hideSoftKeyboard(mEtInvite);
                 }
             }
-        } else {
+        }
+        else {
             if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
                 showSoftKeyboard();
-            } else {
+            }
+            else {
 
                 if (mKeyboardShowing != showKeyboard) {
                     showEmoji(showEmoji, true);
                     hideSoftKeyboard();
-                } else {
+                }
+                else {
                     showEmoji(showEmoji, true);
                 }
             }
@@ -2022,7 +2076,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
             }
             mEmojiButton.setImageResource(mEmojiResourceId);
-        } else {
+        }
+        else {
             mEmojiButton.setImageResource(R.drawable.keyboard_icon);
         }
 
@@ -2047,7 +2102,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             imageView.setImageURI(Uri.parse(backgroundImageUrl));
             imageView.setAlpha(125);
             SurespotConfiguration.setBackgroundImageSet(true);
-        } else {
+        }
+        else {
             imageView.setImageDrawable(null);
             SurespotConfiguration.setBackgroundImageSet(false);
         }

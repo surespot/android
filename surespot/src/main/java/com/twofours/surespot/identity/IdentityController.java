@@ -15,6 +15,7 @@ import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConstants;
@@ -27,7 +28,6 @@ import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
-import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.ui.UIUtils;
@@ -67,9 +67,6 @@ import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.Response;
 
-import static com.twofours.surespot.R.string.username;
-import static com.twofours.surespot.R.string.version;
-
 public class IdentityController {
     private static final String TAG = "IdentityController";
     public static final String IDENTITY_EXTENSION = ".ssi";
@@ -106,7 +103,7 @@ public class IdentityController {
         setLoggedInUser(context, identity, cookie, password);
     }
 
-    public static void updatePassword(Context context, SurespotIdentity identity, String username, String newPassword, String newSalt) {
+    static void updatePassword(Context context, SurespotIdentity identity, String username, String newPassword, String newSalt) {
         if (identity != null) {
             identity.setSalt(newSalt);
             saveIdentity(context, true, identity, newPassword + CACHE_IDENTITY_ID);
@@ -310,7 +307,7 @@ public class IdentityController {
         return identityDir;
     }
 
-    public static synchronized void deleteIdentity(Context context, String username, final boolean preserveBackedUpIdentity) {
+    static synchronized void deleteIdentity(Context context, String username, final boolean preserveBackedUpIdentity) {
         // force identity reload
         mHasIdentity = false;
 
@@ -362,7 +359,7 @@ public class IdentityController {
 
     }
 
-    public static SurespotIdentity getIdentity(Context context) {
+    static SurespotIdentity getIdentity(Context context) {
         return getIdentity(context, null, null);
     }
 
@@ -942,17 +939,17 @@ public class IdentityController {
         setLoggedInUser(context, identity, cookie, password);
     }
 
-    public static void logout() {
+    public static synchronized void logout(Context context, String username) {
         mLoggedInUser = null;
-        //TODO blow away password
-//        if (hasLoggedInUser()) {
-//           // SurespotApplication.getNetworkController().logout();
-//
-//            CredentialCachingService cache = SurespotApplication.getCachingService();
-//            if (cache != null) {
-//                cache.logout(false);
-//            }
-//        }
+        ChatManager.getChatController(username).logout();
+        NetworkManager.getNetworkController(username).logout();
+
+        CredentialCachingService cache = SurespotApplication.getCachingService();
+        if (cache != null) {
+            cache.clearIdentityData(username, true);
+        }
+
+        clearStoredPasswordForIdentity(context, username);
     }
 
     private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
@@ -1329,6 +1326,7 @@ public class IdentityController {
 
     public static boolean clearStoredPasswordForIdentity(Context context, String username) {
         if (username != null) {
+            mPasswords.remove(username);
             if (USE_PUBLIC_KEYSTORE_M) {
                 java.security.KeyStore ks = null;
                 try {

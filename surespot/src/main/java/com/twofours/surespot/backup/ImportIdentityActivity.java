@@ -193,7 +193,8 @@ public class ImportIdentityActivity extends Activity {
                                                                         // login
                                                                         // screen
                                                                         if (mSignup || mMode == MODE_DRIVE) {
-                                                                            IdentityController.logout();
+
+                                                                        //    IdentityController.logout(ImportIdentityActivity.this);
 
                                                                             Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
                                                                             intent.putExtra(SurespotConstants.ExtraNames.MESSAGE_TO, user);
@@ -426,7 +427,8 @@ public class ImportIdentityActivity extends Activity {
                                                                 Utils.putUserSharedPrefsString(ImportIdentityActivity.this, user, SurespotConstants.ExtraNames.JUST_RESTORED_IDENTITY, "true");
 
                                                                 if (mSignup) {
-                                                                    IdentityController.logout();
+                                                                    //TODO pass in current user
+                                                                    //IdentityController.logout();
 
                                                                     Intent intent = new Intent(ImportIdentityActivity.this, MainActivity.class);
                                                                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
