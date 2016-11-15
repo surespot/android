@@ -194,7 +194,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
             ChatController chatController = ChatManager.getChatController(to);
-            boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
             String fromName = null;
             //get friend name if we can otherwise no name
             if (sameUser && chatController != null) {
@@ -222,7 +222,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             }
 
             ChatController chatController = ChatManager.getChatController(to);
-            boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
             String fromName = null;
             //get friend name if we can otherwise no name
             if (sameUser && chatController != null) {

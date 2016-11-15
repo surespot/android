@@ -549,7 +549,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             @Override
             public void onClick(View v) {
-                mDialog = UIUtils.showQRDialog(MainActivity.this);
+                mDialog = UIUtils.showQRDialog(MainActivity.this, mUser);
             }
         });
 
@@ -1228,7 +1228,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // }.execute();
                 return true;
             case R.id.menu_invite_external:
-                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser));
+                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser), mUser);
                 return true;
             case R.id.menu_clear_messages:
                 SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);

@@ -86,7 +86,7 @@ public class TextMessageMenuFragment extends DialogFragment {
                         }
                         break;
                     case 1:
-                        SharedPreferences sp = getActivity().getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+                        SharedPreferences sp = getActivity().getSharedPreferences(mUsername, Context.MODE_PRIVATE);
                         boolean confirm = sp.getBoolean("pref_delete_message", true);
                         if (confirm) {
                             AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),

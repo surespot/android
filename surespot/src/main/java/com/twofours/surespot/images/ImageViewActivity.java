@@ -55,7 +55,7 @@ public class ImageViewActivity extends Activity {
                     @Override
                     protected Bitmap doInBackground(Void... params) {
 
-                        InputStream imageStream = NetworkManager.getNetworkController(IdentityController.getLoggedInUser()).getFileStream(message.getData());
+                        InputStream imageStream = NetworkManager.getNetworkController(ourUsername).getFileStream(message.getData());
 
                         Bitmap bitmap = null;
                         PipedOutputStream out = new PipedOutputStream();
@@ -63,7 +63,7 @@ public class ImageViewActivity extends Activity {
                         try {
                             inputStream = new PipedInputStream(out);
 
-                            EncryptionController.runDecryptTask(IdentityController.getLoggedInUser(), message.getOurVersion(ourUsername), message.getOtherUser(IdentityController.getLoggedInUser()), message.getTheirVersion(IdentityController.getLoggedInUser()), message.getIv(), message.isHashed(),
+                            EncryptionController.runDecryptTask(ourUsername, message.getOurVersion(ourUsername), message.getOtherUser(ourUsername), message.getTheirVersion(ourUsername), message.getIv(), message.isHashed(),
                                     new BufferedInputStream(imageStream), out);
 
                             bitmap = BitmapFactory.decodeStream(inputStream);

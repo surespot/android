@@ -203,8 +203,8 @@ public class ChatController {
         });
 
 
-        mFriendAdapter = new FriendAdapter(mContext);
-        loadState(mUsername);
+        mFriendAdapter = new FriendAdapter(mContext, mUsername);
+        loadState();
 
         mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
         mFriendAdapter.registerFriendAliasChangedCallback(new IAsyncCallback<Void>() {
@@ -1025,9 +1025,8 @@ public class ChatController {
             }
 
             // clear any associated invite notification
-            String loggedInUser = mUsername;
-            if (loggedInUser != null) {
-                mNotificationManager.cancel(loggedInUser + ":" + friendName,
+            if (mUsername != null) {
+                mNotificationManager.cancel(mUsername + ":" + friendName,
                         SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
             }
 
@@ -1091,17 +1090,16 @@ public class ChatController {
 
     private void handleDeleteUser(String deletedUser, String deleter, boolean notify) {
         SurespotLog.d(TAG, "handleDeleteUser,  deletedUser: %s, deleter: %s", deletedUser, deleter);
-        String username = mUsername;
 
         Friend friend = mFriendAdapter.getFriend(deletedUser);
 
-        boolean iDidTheDeleting = deleter.equals(username);
+        boolean iDidTheDeleting = deleter.equals(mUsername);
         if (iDidTheDeleting) {
             // won't be needing this anymore
             closeTab(deletedUser);
 
             // blow all the state associated with this user away
-            StateController.wipeUserState(mContext, username, deletedUser);
+            StateController.wipeUserState(mContext, mUsername, deletedUser);
 
             // clear in memory cached data
             SurespotApplication.getCachingService().clearUserData(deleter, deletedUser);
@@ -1316,9 +1314,9 @@ public class ChatController {
         SurespotApplication.getStateController().saveFriends(mUsername, mLatestUserControlId, mFriendAdapter.getFriends());
     }
 
-    private void loadState(String username) {
+    private void loadState() {
         SurespotLog.d(TAG, "loadState");
-        FriendState fs = SurespotApplication.getStateController().loadFriends(username);
+        FriendState fs = SurespotApplication.getStateController().loadFriends(mUsername);
 
         List<Friend> friends = null;
         if (fs != null) {
@@ -1368,13 +1366,13 @@ public class ChatController {
         }
 
         // make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
-        loadState(mUsername);
+        loadState();
 
-        if (connect(mUsername)) {
+        if (connect()) {
             setProgress(null, false);
         }
 
-        clearMessageNotification(mUsername, mCurrentChat);
+        clearMessageNotification(mCurrentChat);
     }
 
     ChatAdapter getChatAdapter(String username) {
@@ -1426,10 +1424,6 @@ public class ChatController {
     public synchronized void setCurrentChat(final String username) {
 
         SurespotLog.d(TAG, "setCurrentChat: %s", username);
-        String loggedInUser = mUsername;
-        if (loggedInUser == null) {
-            return;
-        }
 
         Friend friend = null;
         if (username != null) {
@@ -1446,7 +1440,7 @@ public class ChatController {
             friend.setLastViewedMessageId(friend.getAvailableMessageId());
 
             // cancel associated notifications
-            clearMessageNotification(loggedInUser, username);
+            clearMessageNotification(username);
             int wantedPosition = mChatPagerAdapter.getChatFragmentPosition(username);
 
             if (wantedPosition != mViewPager.getCurrentItem()) {
@@ -1461,8 +1455,8 @@ public class ChatController {
         } else {
             mCurrentChat = null;
             mViewPager.setCurrentItem(0, true);
-            mNotificationManager.cancel(loggedInUser + ":" + username, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-            mNotificationManager.cancel(loggedInUser, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
+            mNotificationManager.cancel(mUsername + ":" + username, SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
+            mNotificationManager.cancel(mUsername, SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
         }
 
         mFriendAdapter.sort();
@@ -1473,9 +1467,9 @@ public class ChatController {
 
     }
 
-    private void clearMessageNotification(String loggedInUser, String username) {
-        if (!TextUtils.isEmpty(loggedInUser) && !TextUtils.isEmpty(username)) {
-            mNotificationManager.cancel(loggedInUser + ":" + ChatUtils.getSpot(loggedInUser, username),
+    private void clearMessageNotification(String username) {
+        if (!TextUtils.isEmpty(username)) {
+            mNotificationManager.cancel(mUsername + ":" + ChatUtils.getSpot(mUsername, username),
                     SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
         }
     }
@@ -1971,7 +1965,7 @@ public class ChatController {
 
                 @Override
                 protected String doInBackground(Void... params) {
-                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), mUsername,
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
                     return plainText;
@@ -2133,10 +2127,9 @@ public class ChatController {
 
         setProgress("assignFriendAlias", true);
         final String version = IdentityController.getOurLatestVersion(mUsername);
-        String username = IdentityController.getLoggedInUser();
 
         byte[] iv = EncryptionController.getIv();
-        final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, username, version, alias, iv);
+        final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, mUsername, version, alias, iv);
         final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
 
         mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
@@ -2260,24 +2253,24 @@ public class ChatController {
             shutdownConnection();
             mSendQueue.clear();
             dispose();
-            mUsername = null;
+            //mUsername = null;
         }
     }
 
-    public synchronized boolean connect(String username) {
-        SurespotLog.d(TAG, "connect, username: %s, musername: %s", username, mUsername);
-        if (!username.equals(mUsername)) {
-            SurespotLog.d(TAG, "Setting user name to " + username + " and connecting");
-            //don't need to disconnect 1st time through when mUsername will be null
-            if (mUsername != null) {
-                disconnect();
-            }
-            mUsername = username;
-        }
-
-        loadMessageQueue();
-        return connect();
-    }
+//    public synchronized boolean connect(String username) {
+//        SurespotLog.d(TAG, "connect, username: %s, musername: %s", username, mUsername);
+//        if (!username.equals(mUsername)) {
+//            SurespotLog.d(TAG, "Setting user name to " + username + " and connecting");
+//            //don't need to disconnect 1st time through when mUsername will be null
+//            if (mUsername != null) {
+//                disconnect();
+//            }
+//            mUsername = username;
+//        }
+//
+//        loadMessageQueue();
+//        return connect();
+//    }
 
     public synchronized boolean connect() {
 
@@ -2301,6 +2294,7 @@ public class ChatController {
         }
 
         setState(STATE_CONNECTING);
+        loadMessageQueue();
         onBeforeConnect();
 
         try {

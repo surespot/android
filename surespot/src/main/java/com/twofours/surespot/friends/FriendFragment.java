@@ -63,7 +63,7 @@ public class FriendFragment extends Fragment {
 
 			@Override
 			public void onClick(View v) {
-				UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(IdentityController.getLoggedInUser()));
+				UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(mUsername), mUsername);
 
 			}
 		});
@@ -168,7 +168,7 @@ public class FriendFragment extends Fragment {
 
 								if (selection.equals(getString(R.string.menu_delete_all_messages))) {
 
-									SharedPreferences sp = activity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+									SharedPreferences sp = activity.getSharedPreferences(mUsername, Context.MODE_PRIVATE);
 									boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
 									if (confirm) {
 										mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),

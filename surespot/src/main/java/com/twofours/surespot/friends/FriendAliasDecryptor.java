@@ -29,9 +29,9 @@ public class FriendAliasDecryptor {
 	 * @param imageView
 	 *            The ImageView to bind the downloaded image to.
 	 */
-	public void decrypt(TextView textView, Friend friend) {
+	public void decrypt(TextView textView, String ourUsername, Friend friend) {
 		if (TextUtils.isEmpty(friend.getAliasPlain())) {
-			DecryptionTask task = new DecryptionTask(textView, friend);
+			DecryptionTask task = new DecryptionTask(textView, ourUsername, friend);
 			DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
 			textView.setTag(decryptionTaskWrapper);
 			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -62,17 +62,19 @@ public class FriendAliasDecryptor {
 	 */
 	class DecryptionTask implements Runnable {
 		private Friend mFriend;
+		private String mOurUsername;
 
 		private final WeakReference<TextView> textViewReference;
 
-		public DecryptionTask(TextView textView, Friend friend) {
+		public DecryptionTask(TextView textView, String ourUsername, Friend friend) {
+			mOurUsername = ourUsername;
 			textViewReference = new WeakReference<TextView>(textView);
 			mFriend = friend;
 		}
 
 		@Override
 		public void run() {
-			final String plainText = EncryptionController.symmetricDecrypt(IdentityController.getLoggedInUser(), mFriend.getAliasVersion(), IdentityController.getLoggedInUser(),
+			final String plainText = EncryptionController.symmetricDecrypt(mOurUsername, mFriend.getAliasVersion(), mOurUsername,
 					mFriend.getAliasVersion(), mFriend.getAliasIv(), mFriend.isAliasHashed(), mFriend.getAliasData());
 
 			mFriend.setAliasPlain(plainText);
