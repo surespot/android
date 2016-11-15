@@ -44,9 +44,11 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -153,6 +155,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private BillingController mBillingController;
   //  private BroadcastReceiver mRegistrationBroadcastReceiver;
     private Handler mHandler = new Handler(Looper.getMainLooper());
+    private ListView mDrawerList;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -613,6 +616,27 @@ public class MainActivity extends Activity implements OnMeasureListener {
         });
 
 
+        //drawer
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        List<String> ids = IdentityController.getIdentityNames(this);
+        final String[] identityNames = ids.toArray(new String[ids.size()]);
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item,identityNames));
+        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switchUser(identityNames[position]);
+            }
+        });
+    }
+
+    private void switchUser(String identityName) {
+        if (!identityName.equals(mUser)) {
+            ChatManager.pause(mUser);
+            ChatManager.detach(this);
+            mUser = identityName;
+            postServiceProcess();
+        }
     }
 
     private boolean needsSignup() {
@@ -905,7 +929,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         if (!mSet) {
             Utils.configureActionBar(this, "", mUser, true);
-            String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
+            String lastName = Utils.getUserSharedPrefsString(getApplicationContext(), mUser, SurespotConstants.PrefNames.LAST_CHAT);
             if (lastName != null) {
                 SurespotLog.d(TAG, "using LAST_CHAT");
                 name = lastName;
@@ -1276,7 +1300,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         if (mCacheServiceBound && mConnection != null) {
             unbindService(mConnection);
         }
-
+        ChatManager.pause(mUser);
         ChatManager.detach(this);
 
 //        if (mChatConnection != null) {

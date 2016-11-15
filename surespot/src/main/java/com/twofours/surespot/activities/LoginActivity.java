@@ -353,7 +353,7 @@ public class LoginActivity extends Activity {
                                         newIntent.removeExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
                                         newIntent.removeExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
-                                        Utils.putSharedPrefsString(LoginActivity.this, SurespotConstants.PrefNames.LAST_CHAT, null);
+                                        Utils.putUserSharedPrefsString(LoginActivity.this, username, SurespotConstants.PrefNames.LAST_CHAT, null);
                                     }
                                 }
 
