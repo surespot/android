@@ -16,6 +16,7 @@ import android.hardware.Camera;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -1844,7 +1845,15 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mQRButton.setVisibility(View.VISIBLE);
             mEtInvite.requestFocus();
 
-            getActionBar().setDisplayHomeAsUpEnabled(false);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                getActionBar().setDisplayHomeAsUpEnabled(true);
+                getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
+            }
+            else
+            {
+                getActionBar().setDisplayHomeAsUpEnabled(false);
+            }
 
             SurespotLog.d(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
             if (mFriendHasBeenSet) {
@@ -1860,8 +1869,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
             showEmoji = false;
 
         } else {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                getActionBar().setHomeAsUpIndicator(R.drawable.ic_ab_back_holo_dark_am);
+            }
+
+            getActionBar().setDisplayHomeAsUpEnabled(true);
             if (friend.isDeleted()) {
 
                 mEmojiButton.setVisibility(View.GONE);
