@@ -1352,11 +1352,6 @@ public class ChatController {
 
         // make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
         loadState();
-
-        if (connect()) {
-            setProgress(null, false);
-        }
-
         clearMessageNotification(mCurrentChat);
     }
 
