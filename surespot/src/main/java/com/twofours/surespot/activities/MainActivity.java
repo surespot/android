@@ -161,6 +161,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private ListView mDrawerList;
     private FrameLayout mContentFrame;
+    private DrawerLayout mDrawerLayout;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -753,14 +754,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         //drawer
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         List<String> ids = IdentityController.getIdentityNames(this);
         final String[] identityNames = ids.toArray(new String[ids.size()]);
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switchUser(identityNames[position-1]);
+                switchUser(identityNames[position - 1]);
                 mDrawerList.setItemChecked(position, true);
             }
         });
@@ -770,7 +771,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         for (int i = 0; i < identityNames.length; i++) {
             if (identityNames[i].equals(mUser)) {
-                mDrawerList.setItemChecked(i+1, true);
+                mDrawerList.setItemChecked(i + 1, true);
                 break;
             }
         }
@@ -1124,7 +1125,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // This is called when the Home (Up) button is pressed
                 // in the Action Bar.
                 // showUi(!mChatsShowing);
-                ChatManager.getChatController(mUser).setCurrentChat(null);
+                if (TextUtils.isEmpty(ChatManager.getChatController(mUser).getCurrentChat())) {
+                    if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
+                    }
+                    else {
+                        mDrawerLayout.openDrawer(GravityCompat.START);
+                    }
+                } else {
+                    ChatManager.getChatController(mUser).setCurrentChat(null);
+                }
                 return true;
             case R.id.menu_close_bar:
 
