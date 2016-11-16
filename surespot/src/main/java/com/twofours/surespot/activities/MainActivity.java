@@ -1701,6 +1701,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
             handled = true;
         }
 
+        //go to home page if we not
+        if (mCurrentFriend != null) {
+            ChatManager.getChatController(mUser).setCurrentChat(null);
+            handled = true;
+        }
+
         return handled;
     }
 
