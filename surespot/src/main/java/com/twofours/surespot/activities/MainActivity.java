@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.AudioManager;
@@ -751,6 +752,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         //drawer
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout.setScrimColor(Color.argb(224,0,0,0));
         List<String> ids = IdentityController.getIdentityNames(this);
         final String[] identityNames = ids.toArray(new String[ids.size()]);
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
