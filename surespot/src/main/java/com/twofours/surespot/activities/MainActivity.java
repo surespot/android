@@ -46,6 +46,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -158,6 +159,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     //  private BroadcastReceiver mRegistrationBroadcastReceiver;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private ListView mDrawerList;
+    private FrameLayout mContentFrame;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -317,7 +319,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotLog.d(TAG, "cache service already bound");
                 if (!mUnlocking) {
                     SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
-                    postServiceProcess();
+                    postServiceProcess(true);
                 }
                 else {
                     SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
@@ -405,7 +407,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     class KeyboardStateHandler implements OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
-            final View activityRootView = findViewById(R.id.chatLayout);
+            final View activityRootView = findViewById(R.id.drawer_layout);
             int activityHeight = activityRootView.getHeight();
             int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
 
@@ -666,7 +668,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
             ChatManager.pause(mUser);
             ChatManager.detach(this);
             mUser = identityName;
-            postServiceProcess();
+
+            View currentMainView = mContentFrame.getChildAt(0);
+            View mainView = getLayoutInflater().inflate(R.layout.main_view, mContentFrame,false);
+
+            mContentFrame.addView(mainView);
+            mContentFrame.removeView(currentMainView);
+            postServiceProcess(false);
         }
     }
 
@@ -774,7 +782,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             if (!mUnlocking) {
                 SurespotLog.d(TAG, "caching service calling postServiceProcess");
-                postServiceProcess();
+                postServiceProcess(true);
             }
             else {
                 SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
@@ -787,7 +795,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
     };
 
-    private void postServiceProcess() {
+    private void postServiceProcess(boolean setContentView) {
         if (!SurespotApplication.getCachingService().setSession(this, mUser)) {
             launchLogin();
             return;
@@ -822,10 +830,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         // we're loading so build the ui
-        setContentView(R.layout.activity_main);
+        if (setContentView) {
+            setContentView(R.layout.activity_main);
+            mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
+            View mainView = getLayoutInflater().inflate(R.layout.main_view, mContentFrame, false);
+            mContentFrame.addView(mainView);
+        }
 
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
-
         setHomeProgress(true);
 
         // create the chat controller here if we know we're not going to need to login
@@ -1019,7 +1031,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             if (SurespotApplication.getCachingService() != null) {
                 SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
-                postServiceProcess();
+                postServiceProcess(true);
             }
         }
 
