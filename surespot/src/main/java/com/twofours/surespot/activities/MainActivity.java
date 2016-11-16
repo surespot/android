@@ -625,9 +625,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 return;
             }
 
+            IdentityController.setLastUser(this, mUser);
             setupUser();
             launch();
-
         }
         ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
     }
@@ -813,6 +813,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                     }
                 },
+
                 new IAsyncCallback<Friend>() {
 
                     @Override
