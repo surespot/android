@@ -319,7 +319,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotLog.d(TAG, "cache service already bound");
                 if (!mUnlocking) {
                     SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
-                    postServiceProcess(true);
+                    postServiceProcess();
                 }
                 else {
                     SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
@@ -426,12 +426,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
     }
 
-    private void setupChatControls() {
-        mIvInvite = (ImageView) findViewById(R.id.ivInvite);
-        mIvVoice = (ImageView) findViewById(R.id.ivVoice);
-        mIvSend = (ImageView) findViewById(R.id.ivSend);
-        mIvHome = (ImageView) findViewById(R.id.ivHome);
-        mSendButton = (View) findViewById(R.id.bSend);
+    private void setupChatControls(View mainView) {
+        mIvInvite = (ImageView) mainView.findViewById(R.id.ivInvite);
+        mIvVoice = (ImageView) mainView.findViewById(R.id.ivVoice);
+        mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
+        mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
+        mSendButton = (View) mainView.findViewById(R.id.bSend);
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -542,7 +542,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         });
 
-        mEmojiView = (GridView) findViewById(R.id.fEmoji);
+        mEmojiView = (GridView) mainView.findViewById(R.id.fEmoji);
         mEmojiView.setAdapter(new EmojiAdapter(this));
 
         mEmojiView.setOnItemClickListener(new OnItemClickListener() {
@@ -557,7 +557,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         });
 
-        mEmojiButton = (ImageView) findViewById(R.id.bEmoji);
+        mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -569,7 +569,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         setEmojiIcon(true);
 
-        mQRButton = (ImageView) findViewById(R.id.bQR);
+        mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
         mQRButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -578,7 +578,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         });
 
-        mEtMessage = (EditText) findViewById(R.id.etMessage);
+        mEtMessage = (EditText) mainView.findViewById(R.id.etMessage);
         mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -619,7 +619,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         mEtMessage.setOnTouchListener(editTouchListener);
 
-        mEtInvite = (EditText) findViewById(R.id.etInvite);
+        mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
         mEtInvite.setOnTouchListener(editTouchListener);
 
@@ -639,27 +639,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         });
 
 
-        //drawer
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
-        List<String> ids = IdentityController.getIdentityNames(this);
-        final String[] identityNames = ids.toArray(new String[ids.size()]);
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
-        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switchUser(identityNames[position]);
-                mDrawerList.setItemChecked(position, true);
-            }
-        });
-
-        for (int i = 0; i < identityNames.length; i++) {
-            if (identityNames[i].equals(mUser)) {
-                mDrawerList.setItemChecked(i, true);
-                break;
-            }
-        }
-
     }
 
     private void switchUser(String identityName) {
@@ -669,12 +648,13 @@ public class MainActivity extends Activity implements OnMeasureListener {
             ChatManager.detach(this);
             mUser = identityName;
 
-            View currentMainView = mContentFrame.getChildAt(0);
-            View mainView = getLayoutInflater().inflate(R.layout.main_view, mContentFrame,false);
+            if (!SurespotApplication.getCachingService().setSession(this, mUser)) {
+                launchLogin();
+                return;
+            }
 
-            mContentFrame.addView(mainView);
-            mContentFrame.removeView(currentMainView);
-            postServiceProcess(false);
+            setupUser();
+            launch();
         }
     }
 
@@ -782,7 +762,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             if (!mUnlocking) {
                 SurespotLog.d(TAG, "caching service calling postServiceProcess");
-                postServiceProcess(true);
+                postServiceProcess();
             }
             else {
                 SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
@@ -795,11 +775,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
     };
 
-    private void postServiceProcess(boolean setContentView) {
+    private void postServiceProcess() {
         if (!SurespotApplication.getCachingService().setSession(this, mUser)) {
             launchLogin();
             return;
         }
+
 
         //gcm crap
 //	//	mRegistrationBroadcastReceiver = new BroadcastReceiver() {
@@ -818,6 +799,15 @@ public class MainActivity extends Activity implements OnMeasureListener {
 //			}
 //		};
 
+
+        // we're loading so build the ui
+        setContentView(R.layout.activity_main);
+        setupGlobal();
+        setupUser();
+        launch();
+    }
+
+    private void setupGlobal() {
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
             Intent intent = new Intent(this, RegistrationIntentService.class);
@@ -828,42 +818,57 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         // set volume control buttons
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        // we're loading so build the ui
-        if (setContentView) {
-            setContentView(R.layout.activity_main);
-            mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
-            View mainView = getLayoutInflater().inflate(R.layout.main_view, mContentFrame, false);
-            mContentFrame.addView(mainView);
-        }
-
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
         setHomeProgress(true);
 
-        // create the chat controller here if we know we're not going to need to login
-        // so that if we come back from a restart (for example a rotation), the automatically
-        // created fragments have a chat controller instance
         mMainHandler = new Handler(getMainLooper());
 
+        //drawer
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        List<String> ids = IdentityController.getIdentityNames(this);
+        final String[] identityNames = ids.toArray(new String[ids.size()]);
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
+        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switchUser(identityNames[position]);
+                mDrawerList.setItemChecked(position, true);
+            }
+        });
+
+        for (int i = 0; i < identityNames.length; i++) {
+            if (identityNames[i].equals(mUser)) {
+                mDrawerList.setItemChecked(i, true);
+                break;
+            }
+        }
+    }
+
+    private void setupUser() {
         //set username
         NetworkManager.getNetworkController(mUser).set401Handler(m401Handler);
 
-        mBillingController = SurespotApplication.getBillingController();
-
+        mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
+        View currentMainView = mContentFrame.getChildAt(0);
+        View mainView = getLayoutInflater().inflate(R.layout.main_view, mContentFrame, false);
+        mContentFrame.addView(mainView);
+        if (currentMainView != null) {
+            mContentFrame.removeView(currentMainView);
+        }
 
         mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
         mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
         mActivityLayout.setMainActivity(MainActivity.this);
-
-        final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
-
         mKeyboardStateHandler = new KeyboardStateHandler();
         mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
+
+        TitlePageIndicator titlePageIndicator = (TitlePageIndicator) mainView.findViewById(R.id.indicator);
         ChatManager.attachChatController(
                 this,
                 mUser,
-                (ViewPager) findViewById(R.id.pager),
+                (ViewPager) mainView.findViewById(R.id.pager),
                 getFragmentManager(),
                 titlePageIndicator,
                 mMenuItems,
@@ -892,8 +897,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
         );
 
 
-        setupChatControls();
-        launch();
+        setupChatControls(mainView);
+
+
     }
 
     private boolean checkPlayServices() {
@@ -1031,7 +1037,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             if (SurespotApplication.getCachingService() != null) {
                 SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
-                postServiceProcess(true);
+                postServiceProcess();
             }
         }
 
