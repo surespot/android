@@ -107,12 +107,10 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     private static Context mContext = null;
-    private static Handler mMainHandler = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallback<Object> m401Handler;
 
     private boolean mCacheServiceBound;
-    //  private boolean mCommunicationServiceBound;
     private Menu mMenuOverflow;
     private BroadcastReceiver mExternalStorageReceiver;
     private boolean mExternalStorageAvailable = false;
@@ -150,14 +148,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
     // control booleans
     private boolean mLaunched;
     private boolean mResumed;
-    //  private boolean mStartWhenBothServicesBound;
     private boolean mSigningUp;
     private boolean mUnlocking = false;
     private boolean mPaused = false;
     // end control booleans
 
     private BillingController mBillingController;
-    //  private BroadcastReceiver mRegistrationBroadcastReceiver;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private ListView mDrawerList;
     private FrameLayout mContentFrame;
@@ -749,8 +745,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
         setHomeProgress(true);
-
-        mMainHandler = new Handler(getMainLooper());
 
         //drawer
         mDrawerList = (ListView) findViewById(R.id.left_drawer);

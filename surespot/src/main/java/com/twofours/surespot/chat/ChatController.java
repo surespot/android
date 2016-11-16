@@ -729,8 +729,8 @@ public class ChatController {
     }
 
     private class LatestIdPair {
-        public int latestMessageId;
-        public int latestControlMessageId;
+        int latestMessageId;
+        int latestControlMessageId;
     }
 
     private LatestIdPair getPreConnectIds(String username) {
@@ -890,7 +890,7 @@ public class ChatController {
         // chatAdapter.setLoading(false);
     }
 
-    public void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
+    private void handleControlMessage(ChatAdapter chatAdapter, SurespotControlMessage message, boolean notify, boolean reApplying) {
         // if it's a system message from another user then check version
         if (message.getType().equals("user")) {
             handleUserControlMessage(message, notify);
@@ -1267,7 +1267,7 @@ public class ChatController {
         return lastControlId == null ? 0 : lastControlId;
     }
 
-    public synchronized void loadMessages(String username, boolean replace) {
+    private synchronized void loadMessages(String username, boolean replace) {
         SurespotLog.d(TAG, "loadMessages: " + username);
 
         if (!TextUtils.isEmpty(mUsername)) {
@@ -1285,22 +1285,19 @@ public class ChatController {
 
     public synchronized void logout() {
         // save before we clear the chat adapters
-        userLoggedOut();
 
-        // mViewPager = null;
-        // mCallback401 = null;
-        // mChatPagerAdapter = null;
-        // mIndicator = null;
-        // mFragmentManager = null;
-        // mFriendAdapter = null;
-        // mMenuItems = null;
-        // mSocketCallback = null;
+        SurespotLog.d(TAG, "user logging out: " + mUsername);
+
+        save();
+
+        shutdownConnection();
+        mSendQueue.clear();
+        dispose();
+
         mChatAdapters.clear();
-        // mActiveChats.clear();
-        // mReadSinceConnected.clear();
     }
 
-    public void saveFriends() {
+    private void saveFriends() {
         SurespotApplication.getStateController().saveFriends(mUsername, mLatestUserControlId, mFriendAdapter.getFriends());
     }
 
@@ -1316,8 +1313,6 @@ public class ChatController {
 
         mFriendAdapter.setFriends(friends);
         mFriendAdapter.setLoading(false);
-
-        //loadUnsentMessages();
     }
 
     private boolean mGlobalProgress;
@@ -1343,11 +1338,11 @@ public class ChatController {
         }
     }
 
-    public synchronized boolean isInProgress() {
+    private synchronized boolean isInProgress() {
         return mGlobalProgress || !mChatProgress.isEmpty();
     }
 
-    public synchronized void resume() {
+    synchronized void resume() {
         setProgress(null, true);
 
         // load chat messages from disk that may have been added by gcm
@@ -1369,7 +1364,7 @@ public class ChatController {
         return getChatAdapter(username, true);
     }
 
-    public ChatAdapter getChatAdapter(String username, boolean create) {
+    private ChatAdapter getChatAdapter(String username, boolean create) {
 
         ChatAdapter chatAdapter = mChatAdapters.get(username);
         if (chatAdapter == null && create) {
@@ -1403,11 +1398,9 @@ public class ChatController {
         return chatAdapter;
     }
 
-    public void destroyChatAdapter(String username) {
+    private void destroyChatAdapter(String username) {
         SurespotLog.d(TAG, "destroying chat adapter for: %s", username);
-        //   if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
         saveMessages(username);
-        // }
         mChatAdapters.remove(username);
     }
 
@@ -2222,47 +2215,7 @@ public class ChatController {
         return mSocket;
     }
 
-//    // sets if the main activity is paused or not
-//    public void setMainActivityPaused(boolean paused) {
-//        mMainActivityPaused = paused;
-//        if (paused) {
-//            save();
-//            disconnect();
-//        } else {
-//            connect();
-//        }
-//    }
-
-    // Notify the service that the user logged out
-    public synchronized void userLoggedOut() {
-        if (mUsername != null) {
-            SurespotLog.d(TAG, "user logging out: " + mUsername);
-
-            save();
-
-            shutdownConnection();
-            mSendQueue.clear();
-            dispose();
-            //mUsername = null;
-        }
-    }
-
-//    public synchronized boolean connect(String username) {
-//        SurespotLog.d(TAG, "connect, username: %s, musername: %s", username, mUsername);
-//        if (!username.equals(mUsername)) {
-//            SurespotLog.d(TAG, "Setting user name to " + username + " and connecting");
-//            //don't need to disconnect 1st time through when mUsername will be null
-//            if (mUsername != null) {
-//                disconnect();
-//            }
-//            mUsername = username;
-//        }
-//
-//        loadMessageQueue();
-//        return connect();
-//    }
-
-    public synchronized boolean connect() {
+    synchronized boolean connect() {
 
         if (mMainActivityPaused) {
             // if the communication service wants to stay connected again any time in the future, disable the below statement
@@ -2297,7 +2250,7 @@ public class ChatController {
         return false;
     }
 
-    public synchronized void enqueueMessage(SurespotMessage message) {
+    synchronized void enqueueMessage(SurespotMessage message) {
         if (getConnectionState() == STATE_DISCONNECTED) {
             connect();
         }
@@ -2308,7 +2261,7 @@ public class ChatController {
         }
     }
 
-    public synchronized void processNextMessage() {
+    synchronized void processNextMessage() {
 
         //if we're ERRORED do nothing
         if (mErrored) {
@@ -3141,7 +3094,7 @@ public class ChatController {
 
                     }
 
-                    userLoggedOut();
+                    logout();
                 } else {
                     //try and connect again
                     connect();
