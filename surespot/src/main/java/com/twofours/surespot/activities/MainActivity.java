@@ -760,15 +760,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switchUser(identityNames[position]);
+                switchUser(identityNames[position-1]);
                 mDrawerList.setItemChecked(position, true);
             }
         });
 
+        View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
+        mDrawerList.addHeaderView(header, null, false);
+
         for (int i = 0; i < identityNames.length; i++) {
             if (identityNames[i].equals(mUser)) {
-                mDrawerList.setItemChecked(i, true);
-
+                mDrawerList.setItemChecked(i+1, true);
                 break;
             }
         }

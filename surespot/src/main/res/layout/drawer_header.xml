@@ -1,0 +1,16 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="240dp"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom|center_horizontal"
+        style="@android:style/TextAppearance.Medium"
+        android:paddingBottom="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/active_identity"
+        android:textColor="@color/surespotBlue"/>
+</RelativeLayout>
