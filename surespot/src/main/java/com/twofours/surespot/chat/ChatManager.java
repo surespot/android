@@ -133,11 +133,18 @@ public class ChatManager {
                         SurespotLog.d(TAG, "onReceive,  CONNECTED");
                         synchronized (this) {
                             mAttachedChatController.clearError();
-                            mAttachedChatController.disconnect();
                             mAttachedChatController.connect();
                             mAttachedChatController.processNextMessage();
                         }
                         return;
+                    }
+
+                    if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
+                        SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
+                        synchronized (this) {
+                            mAttachedChatController.disconnect();
+                            mAttachedChatController.processNextMessage();
+                        }
                     }
                 }
             }
