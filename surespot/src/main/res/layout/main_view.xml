@@ -1,4 +1,4 @@
-<com.twofours.surespot.chat.MainActivityLayout android:id="@+id/chatLayout"
+<com.twofours.surespot.chat.SoftKeyboardLayout android:id="@+id/chatLayout"
                                                xmlns:android="http://schemas.android.com/apk/res/android"
                                                xmlns:app="http://schemas.android.com/apk/res-auto"
                                                android:layout_width="fill_parent"
@@ -191,4 +191,4 @@
             android:textStyle="bold"/>
     </RelativeLayout>
 
-</com.twofours.surespot.chat.MainActivityLayout>
+</com.twofours.surespot.chat.SoftKeyboardLayout>

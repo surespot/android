@@ -2,26 +2,19 @@ package com.twofours.surespot.chat;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
-import com.twofours.surespot.activities.MainActivity;
+public class SoftKeyboardLayout extends RelativeLayout {
 
-public class MainActivityLayout extends RelativeLayout {
-	MainActivity mMainActivity;
 
 	// thanks to http://stackoverflow.com/questions/7300497/adjust-layout-when-soft-keyboard-is-on
-	public MainActivityLayout(Context context) {
+	public SoftKeyboardLayout(Context context) {
 		super(context);
 	}
 
-	public MainActivityLayout(Context context, AttributeSet attrs) {
+	public SoftKeyboardLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-	}
-
-	public void setMainActivity(MainActivity mainActivity) {
-		mMainActivity = mainActivity;
 	}
 
 	private OnMeasureListener onSoftKeyboardListener;
@@ -40,19 +33,7 @@ public class MainActivityLayout extends RelativeLayout {
 
 	public interface OnMeasureListener {
 
-		public void onLayoutMeasure();
+		void onLayoutMeasure();
 
-	}
-
-	@Override
-	public boolean dispatchKeyEventPreIme(KeyEvent event) {
-		if (mMainActivity != null) {
-
-			if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-				return mMainActivity.backButtonPressed();
-			}
-		}
-
-		return super.dispatchKeyEventPreIme(event);
 	}
 }

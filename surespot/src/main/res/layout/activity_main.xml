@@ -1,4 +1,4 @@
-<android.support.v4.widget.DrawerLayout android:id="@+id/drawer_layout"
+<com.twofours.surespot.chat.SurespotDrawerLayout android:id="@+id/drawer_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -19,4 +19,4 @@
               android:choiceMode="singleChoice"
               android:divider="@android:color/transparent"
               android:dividerHeight="0dp"/>
-</android.support.v4.widget.DrawerLayout>
+</com.twofours.surespot.chat.SurespotDrawerLayout>

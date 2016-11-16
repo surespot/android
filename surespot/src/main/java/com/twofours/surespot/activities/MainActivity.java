@@ -66,8 +66,9 @@ import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.EmojiAdapter;
 import com.twofours.surespot.chat.EmojiParser;
-import com.twofours.surespot.chat.MainActivityLayout;
-import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
+import com.twofours.surespot.chat.SoftKeyboardLayout;
+import com.twofours.surespot.chat.SoftKeyboardLayout.OnMeasureListener;
+import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -118,7 +119,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private ImageView mHomeImageView;
     private InputMethodManager mImm;
     private KeyboardStateHandler mKeyboardStateHandler;
-    private MainActivityLayout mActivityLayout;
+    private SoftKeyboardLayout mActivityLayout;
     private EditText mEtMessage;
     private EditText mEtInvite;
     private View mSendButton;
@@ -783,9 +784,11 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mContentFrame.removeView(currentMainView);
         }
 
-        mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
-        mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
-        mActivityLayout.setMainActivity(MainActivity.this);
+        mActivityLayout = (SoftKeyboardLayout) findViewById(R.id.chatLayout);
+        mActivityLayout.setOnSoftKeyboardListener(this);
+
+        SurespotDrawerLayout sdl = (SurespotDrawerLayout)  findViewById(R.id.drawer_layout);
+        sdl.setMainActivity(this);
         mKeyboardStateHandler = new KeyboardStateHandler();
         mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
@@ -1682,27 +1685,32 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     public boolean backButtonPressed() {
-        boolean handled = false;
+
         SurespotLog.d(TAG, "backButtonPressed");
+
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
 
         if (mEmojiShowing) {
             showEmoji(false, true);
-            handled = true;
+            return true;
         }
 
         if (mKeyboardShowing) {
 
             hideSoftKeyboard();
-            handled = true;
+            return true;
         }
 
         //go to home page if we not
         if (mCurrentFriend != null) {
             ChatManager.getChatController(mUser).setCurrentChat(null);
-            handled = true;
+            return true;
         }
 
-        return handled;
+        return false;
     }
 
     @Override
