@@ -4,7 +4,6 @@ import android.app.FragmentManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -41,7 +40,6 @@ import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.services.ITransmissionServiceListener;
 import com.viewpagerindicator.TitlePageIndicator;
 
 import org.json.JSONArray;
@@ -86,7 +84,7 @@ public class ChatController {
 
     private static final String TAG = "ChatController";
 
-    public HashMap<String, ChatAdapter> mChatAdapters;
+    private HashMap<String, ChatAdapter> mChatAdapters;
     private HashMap<String, Integer> mEarliestMessage;
 
     private FriendAdapter mFriendAdapter;
@@ -109,24 +107,22 @@ public class ChatController {
     private IAsyncCallback<Boolean> mProgressCallback;
     private IAsyncCallback<Void> mSendIntentCallback;
     private IAsyncCallback<Friend> mTabShowingCallback;
+    private IAsyncCallback<Object> m401Handler;
     private AutoInviteData mAutoInviteData;
-    private boolean mHandlingAutoInvite;
 
     private String mCurrentChat;
 
-    private ITransmissionServiceListener mListener;
     private ConcurrentLinkedQueue<SurespotMessage> mSendQueue = new ConcurrentLinkedQueue<SurespotMessage>();
 
-    private BroadcastReceiver mConnectivityReceiver;
     private String mUsername;
     private boolean mMainActivityPaused = false;
 
     private ReconnectTask mReconnectTask;
-    Handler mHandler = new Handler(Looper.getMainLooper());
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
-    public static final int STATE_CONNECTING = 2;
-    public static final int STATE_CONNECTED = 1;
-    public static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_CONNECTING = 2;
+    private static final int STATE_CONNECTED = 1;
+    private static final int STATE_DISCONNECTED = 0;
     private static final int MAX_RETRIES = 60;
 
     // maximum time before reconnecting in seconds
@@ -144,7 +140,7 @@ public class ChatController {
     private ProcessNextMessageTask mResendTask;
     private boolean mErrored;
 
-    public ChatController(String username) {
+    ChatController(String username) {
         SurespotLog.d(TAG, "constructor, username: %s", username);
 
         mUsername = username;
@@ -159,19 +155,21 @@ public class ChatController {
     }
 
     // this has to be done outside of the contructor as it creates fragments, which need chat controller instance
-    public void attach(
+    void attach(
             Context context,
             ViewPager viewPager,
             FragmentManager fm,
             TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems,
             IAsyncCallback<Boolean> progressCallback,
             IAsyncCallback<Void> sendIntentCallback,
-            IAsyncCallback<Friend> tabShowingCallback) {
+            IAsyncCallback<Friend> tabShowingCallback,
+            IAsyncCallback<Object> four01handler) {
         mFragmentManager = fm;
         mContext = context;
         mProgressCallback = progressCallback;
         mSendIntentCallback = sendIntentCallback;
         mTabShowingCallback = tabShowingCallback;
+        m401Handler = four01handler;
         mChatPagerAdapter = new ChatPagerAdapter(mContext, mFragmentManager, mUsername);
         mMenuItems = menuItems;
 
@@ -236,7 +234,7 @@ public class ChatController {
     private void handleAutoInvite() {
 
         // if we need to invite someone then do it
-        if (mAutoInviteData != null && !mHandlingAutoInvite) {
+        if (mAutoInviteData != null) {
             if (mFriendAdapter.getFriend(mAutoInviteData.getUsername()) == null) {
                 SurespotLog.d(TAG, "auto inviting user: %s", mAutoInviteData.getUsername());
                 mNetworkController.invite(mAutoInviteData.getUsername(), mAutoInviteData.getSource(), new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
@@ -2741,11 +2739,6 @@ public class ChatController {
         Utils.putUserSharedPrefsString(mContext, mUsername, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChat());
     }
 
-    public void clearServiceListener() {
-        SurespotLog.d("TAG", "clearServiceListener");
-        mListener = null;
-    }
-
     private void saveIfMainActivityPaused() {
         if (mMainActivityPaused) {
             save();
@@ -2761,11 +2754,6 @@ public class ChatController {
 
         saveMessageQueue();
         saveMessages();
-
-        //notify UI
-        if (mListener != null) {
-            mListener.onCouldNotConnectToServer();
-        }
 
         // raise Android notifications for unsent messages so the user can re-enter the app and retry sending if we haven't already
         if (!mErrored && !mSendQueue.isEmpty()) {
@@ -2811,41 +2799,6 @@ public class ChatController {
         SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
     }
 
-
-//    public class CommunicationServiceBinder extends Binder {
-//        public CommunicationService getService() {
-//            return this;
-//        }
-//    }
-//
-//    @Override
-//    public int onStartCommand(Intent intent, int flags, int startId) {
-//        // as long as the main activity isn't forced to be destroyed right away, we don't really need to run as STICKY
-//        // At some point in the future if we want to poll the server for notifications, we may need to run as STICKY
-//        return START_NOT_STICKY;
-//    }
-//
-//    @Override
-//    public IBinder onBind(Intent intent) {
-//        return mBinder;
-//    }
-//
-//    @Override
-//    public void onDestroy() {
-//        SurespotLog.i(TAG, "onDestroy");
-//        unregisterReceiver();
-//        disconnect();
-//        save();
-//    }
-//
-//    public void initializeService(ITransmissionServiceListener listener) {
-//        if (mConnectivityReceiver != null) {
-//            unregisterReceiver();
-//        }
-//        SurespotLog.d(TAG, "initializeService: ", this.getClass().getSimpleName());
-//        this.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-//        mListener = listener;
-//    }
 
     // chat adapters and state
 
@@ -2924,27 +2877,8 @@ public class ChatController {
         stopReconnectionAttempts();
         stopResendTimer();
 
-
         connected();
-
-
-        // tell any listeners that we're connected
-        if (mListener != null) {
-            SurespotLog.d(TAG, "onConnected, mListener calling onConnected()");
-            mListener.onConnected();
-        } else {
-            SurespotLog.d(TAG, "onConnected, mListener was null");
-        }
-
         processNextMessage();
-    }
-
-    // notify listeners that we've connected
-    private void onNotConnected() {
-        // tell any listeners that we're connected
-        if (mListener != null) {
-            mListener.onNotConnected();
-        }
     }
 
 
@@ -3200,10 +3134,10 @@ public class ChatController {
                 //if we're getting 401 bail
                 if (code == 401) {
                     // give up
-                    if (mListener != null) {
+                    if (m401Handler != null) {
 
                         SurespotLog.i(TAG, "401 on reconnect, giving up.");
-                        mListener.on401();
+                        m401Handler.handleResponse(null);
 
                     }
 
@@ -3231,7 +3165,6 @@ public class ChatController {
             SurespotLog.d(TAG, "Connection terminated.");
             mCurrentSendIv = null;
             disconnect();
-            onNotConnected();
             connect();
             processNextMessage();
         }
@@ -3251,8 +3184,6 @@ public class ChatController {
             //force queue
             mCurrentSendIv = null;
             disconnect();
-            onNotConnected();
-
 
             if (args.length > 0) {
                 if ("not authorized".equals(args[0])) {

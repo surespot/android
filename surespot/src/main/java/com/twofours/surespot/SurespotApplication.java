@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
 
 import com.twofours.surespot.billing.BillingController;
-import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -17,7 +16,6 @@ import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.services.CommunicationService;
 import com.twofours.surespot.services.CredentialCachingService;
 
 import org.acra.ACRA;
@@ -39,12 +37,10 @@ formUri = "https://www.surespot.me:3000/logs/surespot", resToastText = R.string.
 public class SurespotApplication extends Application {
 	private static final String TAG = "SurespotApplication";
 	private static CredentialCachingService mCredentialCachingService;
-	private static CommunicationService mCommunicationService;
 	private static StateController mStateController = null;
 	private static String mVersion;
 	private static BillingController mBillingController;
 	private static String mUserAgent;
-	private static ChatController mChatController = null;
 	private static Context mContext;
 
 	public static final int CORE_POOL_SIZE = 24;
@@ -131,10 +127,6 @@ public class SurespotApplication extends Application {
 		Intent cacheIntent = new Intent(this, CredentialCachingService.class);
 		startService(cacheIntent);
 
-//		SurespotLog.v(TAG, "starting chat transmission service");
-//		Intent chatIntent = new Intent(this, CommunicationService.class);
-//		startService(chatIntent);
-
 		mBillingController = new BillingController(this);
 		FileUtils.wipeImageCaptureDir(this);
 		FileUtils.wipeFileUploadDir(this);
@@ -159,24 +151,10 @@ public class SurespotApplication extends Application {
 	public static CredentialCachingService getCachingService() {
 		return mCredentialCachingService;
 	}
-	
-
-
-
-//	public static CommunicationService getCommunicationService() {
-//		if (mCommunicationService == null) {
-//			SurespotLog.w(TAG, "mChatTransmissionServiceWasNull", new NullPointerException("mCommunicationService"));
-//		}
-//		return mCommunicationService;
-//	}
 
 	public static void setCachingService(CredentialCachingService credentialCachingService) {
 		SurespotApplication.mCredentialCachingService = credentialCachingService;
 	}
-
-//	public static void setCommunicationService(CommunicationService communicationService) {
-//		SurespotApplication.mCommunicationService = communicationService;
-//	}
 
 	public static StateController getStateController() {
 		return mStateController;
@@ -193,10 +171,6 @@ public class SurespotApplication extends Application {
 	public static String getUserAgent() {
 		return mUserAgent;
 	}
-
-//	public static CommunicationService getCommunicationServiceNoThrow() {
-//		return mCommunicationService;
-//	}
 
 	public static Context getContext() {
 		return mContext;

@@ -84,7 +84,6 @@ import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
-import com.twofours.surespot.services.ITransmissionServiceListener;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
@@ -808,14 +807,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     public void handleResponse(Boolean inProgress) {
                         setHomeProgress(inProgress);
                     }
-                }, new IAsyncCallback<Void>() {
+                },
+                new IAsyncCallback<Void>() {
 
                     @Override
                     public void handleResponse(Void result) {
                         handleSendIntent();
 
                     }
-                }, new IAsyncCallback<Friend>() {
+                },
+                new IAsyncCallback<Friend>() {
 
                     @Override
                     public void handleResponse(Friend result) {
@@ -823,7 +824,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
 
                     }
-                }
+                },
+                m401Handler
         );
 
         setupChatControls(mainView);
@@ -2035,45 +2037,5 @@ public class MainActivity extends Activity implements OnMeasureListener {
         Intent cacheIntent = new Intent(this, CredentialCachingService.class);
         startService(cacheIntent);
         bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    private class CommunicationServiceListener implements ITransmissionServiceListener {
-        // implementation goes here - or maybe we have a separate class if this gets too big
-
-        @Override
-        public void onConnected() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(false);
-                }
-            });
-
-        }
-
-        @Override
-        public void onCouldNotConnectToServer() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(false);
-                }
-            });
-        }
-
-        @Override
-        public void onNotConnected() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(true);
-                }
-            });
-        }
-
-        @Override
-        public void on401() {
-            m401Handler.handleResponse(null);
-        }
     }
 }

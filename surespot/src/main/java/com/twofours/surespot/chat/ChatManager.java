@@ -46,7 +46,6 @@ public class ChatManager {
             mMap.put(username, nc);
         }
 
-
         return nc;
     }
 
@@ -58,11 +57,12 @@ public class ChatManager {
                                                                    ArrayList<MenuItem> menuItems,
                                                                    IAsyncCallback<Boolean> progressCallback,
                                                                    IAsyncCallback<Void> sendIntentCallback,
-                                                                   IAsyncCallback<Friend> tabShowingCallback) {
+                                                                   IAsyncCallback<Friend> tabShowingCallback,
+                                                                   IAsyncCallback<Object> listener) {
         SurespotLog.d(TAG, "attachChatController, username: %s", username);
         ChatController cc = getChatController(username);
 
-        cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback);
+        cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
         mAttachedChatController = cc;
         if (mConnectivityReceiver == null) {
             SurespotLog.d(TAG, "attachChatController, username: %s registering new broadcast receiver", username);
@@ -96,12 +96,8 @@ public class ChatManager {
     public static synchronized void pause(String username) {
         mPaused = true;
         if (mAttachedChatController != null && mAttachedChatController.getUsername().equals(username)) {
-            //  if (paused) {
             mAttachedChatController.save();
             mAttachedChatController.disconnect();
-//            } else {
-//                mAttachedChatController.connect();
-//            }
         }
     }
 

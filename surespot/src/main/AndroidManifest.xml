@@ -89,10 +89,6 @@
         <service
             android:name="com.twofours.surespot.services.CredentialCachingService"
             android:exported="false"></service>
-        <service
-            android:name=".services.CommunicationService"
-            android:exported="false">
-        </service>
 
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
