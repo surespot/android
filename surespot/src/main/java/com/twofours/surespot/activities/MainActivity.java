@@ -787,11 +787,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mContentFrame.removeView(currentMainView);
         }
 
-        mActivityLayout = (SoftKeyboardLayout) findViewById(R.id.chatLayout);
+        SurespotDrawerLayout sdl = (SurespotDrawerLayout) findViewById(R.id.drawer_layout);
+        sdl.setMainActivity(this);
+
+        mActivityLayout = (SoftKeyboardLayout) mainView.findViewById(R.id.chatLayout);
         mActivityLayout.setOnSoftKeyboardListener(this);
 
-        SurespotDrawerLayout sdl = (SurespotDrawerLayout)  findViewById(R.id.drawer_layout);
-        sdl.setMainActivity(this);
         mKeyboardStateHandler = new KeyboardStateHandler();
         mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
