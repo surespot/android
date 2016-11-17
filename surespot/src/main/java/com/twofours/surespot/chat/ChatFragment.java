@@ -156,6 +156,13 @@ public class ChatFragment extends Fragment {
 			}
 		});
 
+
+		return view;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		ChatController chatController = ChatManager.getChatController(getOurUsername());
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(mTheirUsername);
@@ -170,14 +177,13 @@ public class ChatFragment extends Fragment {
 
 				}
 			});
-			SurespotLog.v(TAG, "onCreateView settingChatAdapter for: " + mTheirUsername);
+			SurespotLog.v(TAG, "onActivityCreated settingChatAdapter for: " + mTheirUsername);
 
 			mListView.setAdapter(mChatAdapter);
 			mListView.setDividerHeight(1);
 			mListView.setOnScrollListener(mOnScrollListener);
 
 		}
-		return view;
 	}
 
 	private MainActivity getMainActivity() {
