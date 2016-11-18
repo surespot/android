@@ -21,7 +21,6 @@ import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkManager;
@@ -86,6 +85,14 @@ public class FriendFragment extends Fragment {
 		TextView tvWelcome = (TextView) view.findViewById(R.id.tvWelcome);
 		UIUtils.setHtml(getActivity(), tvWelcome, R.string.welcome_to_surespot);
 
+
+
+		return view;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		ChatController chatController = ChatManager.getChatController(mUsername);
 		if (chatController != null) {
 			mMainAdapter = chatController.getFriendAdapter();
@@ -94,8 +101,6 @@ public class FriendFragment extends Fragment {
 			mListView.setOnItemClickListener(mClickListener);
 			mListView.setOnItemLongClickListener(mLongClickListener);
 		}
-
-		return view;
 	}
 
 	AdapterView.OnItemClickListener mClickListener = new AdapterView.OnItemClickListener() {

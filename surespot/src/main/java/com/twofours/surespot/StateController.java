@@ -308,7 +308,7 @@ public class StateController {
                 NetworkManager.clearCaches();
 
                 //clear chat manager state
-                ChatManager.resetState();
+                ChatManager.resetState(context);
 
                 FileCacheController fcc = SurespotApplication.getFileCacheController();
                 if (fcc != null) {
