@@ -61,6 +61,8 @@ import android.widget.TextView.OnEditorActionListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.rockerhieu.emojicon.EmojiconsView;
+import com.rockerhieu.emojicon.OnEmojiconClickedListener;
+import com.rockerhieu.emojicon.emoji.Emojicon;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
@@ -68,7 +70,6 @@ import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.common.FileUtils;
@@ -105,7 +106,7 @@ import okhttp3.Response;
 
 import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -387,6 +388,7 @@ public class MainActivity extends Activity {
 
         return null;
     }
+
 
     class KeyboardStateHandler implements OnGlobalLayoutListener {
         @Override
@@ -1991,14 +1993,14 @@ public class MainActivity extends Activity {
 
     private void setEmojiIcon(final boolean keyboardShowing) {
 
-        if (keyboardShowing) {
-            if (mEmojiResourceId < 0) {
-                mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
-            }
-            mEmojiButton.setImageResource(mEmojiResourceId);
-        } else {
-            mEmojiButton.setImageResource(R.drawable.keyboard_icon);
-        }
+//        if (keyboardShowing) {
+//            if (mEmojiResourceId < 0) {
+//                mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
+//            }
+//            mEmojiButton.setImageResource(mEmojiResourceId);
+//        } else {
+//            mEmojiButton.setImageResource(R.drawable.keyboard_icon);
+//        }
 
     }
 
@@ -2129,8 +2131,8 @@ public class MainActivity extends Activity {
 
 
          //   mEmojiView.setId(R.id.emoji_drawer);
-            //mEmojiView.setOnEmojiconBackspaceClickedListener(this);
-            //mEmojiView.setOnEmojiconClickedListener(this);
+            mEmojiView.setOnEmojiconBackspaceClickedListener(this);
+            mEmojiView.setOnEmojiconClickedListener(this);
 
             mWindowLayoutParams = new WindowManager.LayoutParams();
             mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
@@ -2192,4 +2194,15 @@ public class MainActivity extends Activity {
         mActivityLayout.setPadding(0, 0, 0, 0);
         mEmojiVisible = false;
     }
+
+    @Override
+    public void onEmojiconBackspaceClicked(View v) {
+        EmojiconsView.backspace(mEtMessage);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsView.input(mEtMessage, emojicon);
+    }
+
 }

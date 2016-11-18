@@ -285,8 +285,8 @@ public class ChatController {
 
                         // substitute emoji
                         if (plainText != null) {
-                            EmojiParser parser = EmojiParser.getInstance();
-                            message.setPlainData(parser.addEmojiSpans(plainText));
+                            //EmojiParser parser = EmojiParser.getInstance();
+                            message.setPlainData(plainText);
                         } else {
                             // error decrypting
                             SurespotLog.d(TAG, "could not decrypt message");
@@ -1480,7 +1480,7 @@ public class ChatController {
 
             // build a message without the encryption values set as they could take a while
 
-            final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mUsername, username, mimeType, EmojiParser.getInstance().addEmojiSpans(plainText), new String(
+            final SurespotMessage chatMessage = ChatUtils.buildPlainMessage(mUsername, username, mimeType, plainText, new String(
                     ChatUtils.base64EncodeNowrap(iv)));
 
 

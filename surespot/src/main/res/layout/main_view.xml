@@ -76,7 +76,7 @@
             android:singleLine="true">
         </EditText>
 
-        <EditText
+        <com.rockerhieu.emojicon.EmojiconEditText
             android:id="@+id/etMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
             android:scrollbars="vertical"
             android:singleLine="false"
             android:visibility="gone">
-        </EditText>
+        </com.rockerhieu.emojicon.EmojiconEditText>
     </FrameLayout>
 
     <FrameLayout

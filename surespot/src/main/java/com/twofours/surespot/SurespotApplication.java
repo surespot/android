@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
 
 import com.twofours.surespot.billing.BillingController;
-import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -78,8 +77,6 @@ public class SurespotApplication extends Application {
 		mContext = getApplicationContext();
 
 		ACRA.init(this);
-
-		EmojiParser.init(this);
 
 		PackageManager manager = this.getPackageManager();
 		PackageInfo info = null;

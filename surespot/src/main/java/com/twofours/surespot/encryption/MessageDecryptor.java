@@ -26,7 +26,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
-import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.ui.UIUtils;
@@ -108,8 +107,7 @@ public class MessageDecryptor {
 			CharSequence plainData = null;
 			if (plainText != null) {
 				// set plaintext in messageso we don't have to decrypt again
-				plainData = EmojiParser.getInstance().addEmojiSpans(plainText.toString());
-				mMessage.setPlainData(plainData);
+				mMessage.setPlainData(plainText);
 			}
 			else {
 				//error decrypting

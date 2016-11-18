@@ -81,7 +81,7 @@
                 android:textSize="10sp" />
         </LinearLayout>
 
-        <TextView
+        <com.rockerhieu.emojicon.EmojiconTextView
             android:id="@+id/messageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
