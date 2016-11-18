@@ -1,18 +1,6 @@
 package com.twofours.surespot.ui;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.spongycastle.util.encoders.Hex;
-
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -45,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -61,12 +50,21 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.KeyFingerprintDialogFragment;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.qr.QRCodeEncoder;
 import com.twofours.surespot.qr.WriterException;
+
+import org.json.JSONObject;
+import org.spongycastle.util.encoders.Hex;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -614,4 +612,24 @@ public class UIUtils {
         boolean black = Utils.getSharedPrefsBoolean(activity, SurespotConstants.PrefNames.BLACK);
         activity.setTheme(black ? R.style.BlackTheme : R.style.DefaultTheme);
     }
+
+    @SuppressWarnings("deprecation")
+    public static Point getDisplaySize(Context context) {
+        Point displaySize = null;
+        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = manager.getDefaultDisplay();
+        if (display != null) {
+            displaySize = new Point();
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+                displaySize.set(display.getWidth(), display.getHeight());
+            }
+            else {
+                display.getSize(displaySize);
+            }
+        }
+
+        return displaySize;
+    }
+
+
 }

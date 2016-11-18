@@ -33,7 +33,9 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -51,7 +53,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -59,6 +60,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.rockerhieu.emojicon.EmojiconsView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
@@ -66,10 +68,8 @@ import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.EmojiAdapter;
 import com.twofours.surespot.chat.EmojiParser;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
-import com.twofours.surespot.chat.SoftKeyboardLayout.OnMeasureListener;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
@@ -105,7 +105,7 @@ import okhttp3.Response;
 
 import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
 
-public class MainActivity extends Activity implements OnMeasureListener {
+public class MainActivity extends Activity {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -125,7 +125,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private EditText mEtMessage;
     private EditText mEtInvite;
     private View mSendButton;
-    private GridView mEmojiView;
+    private EmojiconsView mEmojiView;
     private boolean mKeyboardShowing;
     private int mEmojiHeight;
     private int mInitialHeightOffset;
@@ -161,6 +161,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private ListView mDrawerList;
     private FrameLayout mContentFrame;
     private DrawerLayout mDrawerLayout;
+    private boolean mEmojiVisible;
+    private LayoutParams mWindowLayoutParams;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -203,6 +205,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         UIUtils.setTheme(this);
+        //Emojiconize.activity(this).go();
         super.onCreate(savedInstanceState);
 
         SurespotLog.d(TAG, "onCreate");
@@ -517,20 +520,20 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         });
 
-        mEmojiView = (GridView) mainView.findViewById(R.id.fEmoji);
-        mEmojiView.setAdapter(new EmojiAdapter(this));
-
-        mEmojiView.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
-                int start = mEtMessage.getSelectionStart();
-                int end = mEtMessage.getSelectionEnd();
-                CharSequence insertText = EmojiParser.getInstance().getEmojiChar(position);
-                mEtMessage.getText().replace(Math.min(start, end), Math.max(start, end), insertText);
-                mEtMessage.setSelection(Math.max(start, end) + insertText.length());
-
-            }
-        });
+        //mEmojiView = (EmojiconsView) findViewById(R.id.emojicons_view);
+//        mEmojiView.setAdapter(new EmojiAdapter(this));
+//
+//        mEmojiView.setOnItemClickListener(new OnItemClickListener() {
+//            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+//
+//                int start = mEtMessage.getSelectionStart();
+//                int end = mEtMessage.getSelectionEnd();
+//                CharSequence insertText = EmojiParser.getInstance().getEmojiChar(position);
+//                mEtMessage.getText().replace(Math.min(start, end), Math.max(start, end), insertText);
+//                mEtMessage.setSelection(Math.max(start, end) + insertText.length());
+//
+//            }
+//        });
 
         mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
@@ -538,7 +541,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             @Override
             public void onClick(View v) {
 
-                toggleEmoji();
+                toggleEmojiDrawer();
             }
         });
 
@@ -782,6 +785,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 break;
             }
         }
+
+
+//        emojiconsView.setPages(Arrays.asList(
+//                new EmojiconPage(Emojicon.TYPE_PEOPLE, null, false, R.drawable.ic_emoji_people_light),
+//                new EmojiconPage(Emojicon.TYPE_NATURE, null, false, R.drawable.ic_emoji_nature_light),
+//                new EmojiconPage(Emojicon.TYPE_OBJECTS, null, false, R.drawable.ic_emoji_objects_light),
+//                new EmojiconPage(Emojicon.TYPE_PLACES, null, false, R.drawable.ic_emoji_places_light),
+//                new EmojiconPage(Emojicon.TYPE_SYMBOLS, null, false, R.drawable.ic_emoji_symbols_light)
     }
 
     private void setupUser() {
@@ -800,7 +811,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
         sdl.setMainActivity(this);
 
         mActivityLayout = (SoftKeyboardLayout) mainView.findViewById(R.id.chatLayout);
-        mActivityLayout.setOnSoftKeyboardListener(this);
+        mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
+            @Override
+            public void onKeyboardShown(boolean visible) {
+                if (!visible && mActivityLayout.getPaddingBottom() == 0 && isEmojiVisible()) {
+                    hideEmojiDrawer(false);
+                }
+            }
+        });
 
         mKeyboardStateHandler = new KeyboardStateHandler();
         mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
@@ -1725,7 +1743,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         return false;
     }
 
-    @Override
+    //@Override
     public void onLayoutMeasure() {
         SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
         if (mEmojiShowing) {
@@ -1851,7 +1869,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mEmojiButton.setVisibility(View.GONE);
             mEtMessage.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
-            mEmojiView.setVisibility(View.GONE);
+          //  mEmojiView.setVisibility(View.GONE);
 
             mQRButton.setVisibility(View.VISIBLE);
             mEtInvite.requestFocus();
@@ -1932,35 +1950,35 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
         mCurrentFriend = friend;
-        if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
-            if (friend == null) {
-                if (mEmojiShowing) {
-                    showSoftKeyboardThenHideEmoji(mEtInvite);
-                } else {
-                    hideSoftKeyboard(mEtMessage);
-                }
-            } else {
-                if (mEmojiShowing) {
-                    showSoftKeyboard(mEtMessage);
-                    showEmoji(false, true);
-                } else {
-                    showEmoji(true, true);
-                    hideSoftKeyboard(mEtInvite);
-                }
-            }
-        } else {
-            if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
-                showSoftKeyboard();
-            } else {
-
-                if (mKeyboardShowing != showKeyboard) {
-                    showEmoji(showEmoji, true);
-                    hideSoftKeyboard();
-                } else {
-                    showEmoji(showEmoji, true);
-                }
-            }
-        }
+//        if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
+//            if (friend == null) {
+//                if (mEmojiShowing) {
+//                    showSoftKeyboardThenHideEmoji(mEtInvite);
+//                } else {
+//                    hideSoftKeyboard(mEtMessage);
+//                }
+//            } else {
+//                if (mEmojiShowing) {
+//                    showSoftKeyboard(mEtMessage);
+//                    showEmoji(false, true);
+//                } else {
+//                    showEmoji(true, true);
+//                    hideSoftKeyboard(mEtInvite);
+//                }
+//            }
+//        } else {
+//            if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
+//                showSoftKeyboard();
+//            } else {
+//
+//                if (mKeyboardShowing != showKeyboard) {
+//                    showEmoji(showEmoji, true);
+//                    hideSoftKeyboard();
+//                } else {
+//                    showEmoji(showEmoji, true);
+//                }
+//            }
+//        }
 
         if (friend == null || !friend.isDeleted()) {
             mKeyboardShowing = showKeyboard;
@@ -2080,5 +2098,98 @@ public class MainActivity extends Activity implements OnMeasureListener {
         Intent cacheIntent = new Intent(this, CredentialCachingService.class);
         startService(cacheIntent);
         bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+
+
+
+    public boolean isEmojiVisible() {
+        return mEmojiVisible;
+    }
+
+    private void toggleEmojiDrawer() {
+        // TODO animate drawer enter & exit
+
+        if (isEmojiVisible()) {
+            hideEmojiDrawer();
+        }
+        else {
+            showEmojiDrawer();
+        }
+    }
+
+    private void showEmojiDrawer() {
+        int keyboardHeight = mActivityLayout.getKeyboardHeight();
+
+        mEmojiVisible = true;
+
+        if (mEmojiView == null) {
+            mEmojiView = (EmojiconsView) LayoutInflater
+                    .from(this).inflate(R.layout.emojicons, null, false);
+
+
+         //   mEmojiView.setId(R.id.emoji_drawer);
+            //mEmojiView.setOnEmojiconBackspaceClickedListener(this);
+            //mEmojiView.setOnEmojiconClickedListener(this);
+
+            mWindowLayoutParams = new WindowManager.LayoutParams();
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        }
+
+        mWindowLayoutParams.height = keyboardHeight;
+        mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+
+        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
+
+        try {
+            if (mEmojiView.getParent() != null) {
+                wm.removeViewImmediate(mEmojiView);
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error removing emoji view", e);
+        }
+
+        try {
+            wm.addView(mEmojiView, mWindowLayoutParams);
+        }
+        catch (Exception e) {
+            Log.e(TAG, "error adding emoji view", e);
+            return;
+        }
+
+
+        if (!mActivityLayout.isKeyboardVisible()) {
+            mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
+            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
+        }
+
+       // mEmojiButton.setImageResource(R.drawable.ic_keyboard);
+    }
+
+    private void hideEmojiDrawer() {
+        hideEmojiDrawer(true);
+    }
+
+    public void hideEmojiDrawer(boolean showKeyboard) {
+        if (showKeyboard) {
+            InputMethodManager input = (InputMethodManager) mContext
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+       //     input.showSoftInput(mTextEntry, 0);
+        }
+
+        if (mEmojiView != null && mEmojiView.getParent() != null) {
+            WindowManager wm = (WindowManager) mContext
+                    .getSystemService(Context.WINDOW_SERVICE);
+            wm.removeViewImmediate(mEmojiView);
+        }
+
+     //   mEmojiButton.setImageResource(R.drawable.ic_emoji);
+        mActivityLayout.setPadding(0, 0, 0, 0);
+        mEmojiVisible = false;
     }
 }
