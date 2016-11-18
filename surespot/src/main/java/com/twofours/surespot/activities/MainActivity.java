@@ -43,7 +43,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
@@ -106,7 +105,7 @@ import okhttp3.Response;
 
 import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
 
-public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
+public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -121,7 +120,7 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
     private boolean mExternalStorageWriteable = false;
     private ImageView mHomeImageView;
     private InputMethodManager mImm;
-    private KeyboardStateHandler mKeyboardStateHandler;
+    //private KeyboardStateHandler mKeyboardStateHandler;
     private SoftKeyboardLayout mActivityLayout;
     private EditText mEtMessage;
     private EditText mEtInvite;
@@ -162,7 +161,6 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
     private ListView mDrawerList;
     private FrameLayout mContentFrame;
     private DrawerLayout mDrawerLayout;
-    private boolean mEmojiVisible;
     private LayoutParams mWindowLayoutParams;
 
     @Override
@@ -390,26 +388,26 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
     }
 
 
-    class KeyboardStateHandler implements OnGlobalLayoutListener {
-        @Override
-        public void onGlobalLayout() {
-            final View activityRootView = findViewById(R.id.drawer_layout);
-            int activityHeight = activityRootView.getHeight();
-            int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
-
-            if (mInitialHeightOffset == 0) {
-                mInitialHeightOffset = heightDelta;
-            }
-
-            // set the emoji view to the keyboard height
-            mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
-
-            SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
-                    .getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
-
-            setButtonText();
-        }
-    }
+//    class KeyboardStateHandler implements OnGlobalLayoutListener {
+//        @Override
+//        public void onGlobalLayout() {
+//            final View activityRootView = findViewById(R.id.drawer_layout);
+//            int activityHeight = activityRootView.getHeight();
+//            int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
+//
+//            if (mInitialHeightOffset == 0) {
+//                mInitialHeightOffset = heightDelta;
+//            }
+//
+//            // set the emoji view to the keyboard height
+//            mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
+//
+//            SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
+//                    .getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
+//
+//            setButtonText();
+//        }
+//    }
 
     private void setupChatControls(View mainView) {
         mIvInvite = (ImageView) mainView.findViewById(R.id.ivInvite);
@@ -584,24 +582,24 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
-        OnTouchListener editTouchListener = new OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (!mKeyboardShowing) {
-                    showSoftKeyboard(v);
-                    return true;
-                }
-
-                return false;
-            }
-        };
-
-        mEtMessage.setOnTouchListener(editTouchListener);
+//        OnTouchListener editTouchListener = new OnTouchListener() {
+//
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (!mKeyboardShowing) {
+//                    showSoftKeyboard(v);
+//                    return true;
+//                }
+//
+//                return false;
+//            }
+//        };
+//
+//        mEtMessage.setOnTouchListener(editTouchListener);
 
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
-        mEtInvite.setOnTouchListener(editTouchListener);
+        //mEtInvite.setOnTouchListener(editTouchListener);
 
         mEtInvite.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
@@ -771,7 +769,7 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
         mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
-            //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
+                //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
                 if (slideOffset > 0.5) {
                     hideSoftKeyboard();
                 }
@@ -787,14 +785,6 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
                 break;
             }
         }
-
-
-//        emojiconsView.setPages(Arrays.asList(
-//                new EmojiconPage(Emojicon.TYPE_PEOPLE, null, false, R.drawable.ic_emoji_people_light),
-//                new EmojiconPage(Emojicon.TYPE_NATURE, null, false, R.drawable.ic_emoji_nature_light),
-//                new EmojiconPage(Emojicon.TYPE_OBJECTS, null, false, R.drawable.ic_emoji_objects_light),
-//                new EmojiconPage(Emojicon.TYPE_PLACES, null, false, R.drawable.ic_emoji_places_light),
-//                new EmojiconPage(Emojicon.TYPE_SYMBOLS, null, false, R.drawable.ic_emoji_symbols_light)
     }
 
     private void setupUser() {
@@ -816,14 +806,15 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
         mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
+                SurespotLog.d(TAG, "OnKeyboardShown");
                 if (!visible && mActivityLayout.getPaddingBottom() == 0 && isEmojiVisible()) {
                     hideEmojiDrawer(false);
                 }
             }
         });
 
-        mKeyboardStateHandler = new KeyboardStateHandler();
-        mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
+        //mKeyboardStateHandler = new KeyboardStateHandler();
+        //mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
 
 
         TitlePageIndicator titlePageIndicator = (TitlePageIndicator) mainView.findViewById(R.id.indicator);
@@ -1472,20 +1463,20 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
         view.post(runnable);
     }
 
-    private synchronized void showSoftKeyboard() {
-        SurespotLog.d(TAG, "showSoftkeyboard");
-        mKeyboardShowing = true;
-        mEmojiShowing = false;
-
-        View view = null;
-        if (mCurrentFriend == null) {
-            view = mEtInvite;
-        } else {
-            view = mEtMessage;
-        }
-
-        showSoftKeyboard(view);
-    }
+//    private synchronized void showSoftKeyboard() {
+//        SurespotLog.d(TAG, "showSoftkeyboard");
+//        mKeyboardShowing = true;
+//        mEmojiShowing = false;
+//
+//        View view = null;
+//        if (mCurrentFriend == null) {
+//            view = mEtInvite;
+//        } else {
+//            view = mEtMessage;
+//        }
+//
+//        showSoftKeyboard(view);
+//    }
 
     private synchronized void showSoftKeyboard(final View view) {
         mKeyboardShowing = true;
@@ -1514,102 +1505,102 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
         view.post(runnable);
     }
 
-    private synchronized void showSoftKeyboardThenHideEmoji(final View view) {
-        mKeyboardShowing = true;
+//    private synchronized void showSoftKeyboardThenHideEmoji(final View view) {
+//        mKeyboardShowing = true;
+//
+//        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+//        Runnable runnable = new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+//                mImm.showSoftInput(view, 0, new ResultReceiver(null) {
+//                    @Override
+//                    protected void onReceiveResult(int resultCode, Bundle resultData) {
+//                        if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
+//                            mKeyboardShowing = false;
+//                        } else {
+//                            Runnable runnable = new Runnable() {
+//
+//                                @Override
+//                                public void run() {
+//                                    showEmoji(false, false);
+//
+//                                }
+//                            };
+//
+//                            view.post(runnable);
+//
+//                        }
+//
+//                    }
+//                });
+//            }
+//        };
+//        view.post(runnable);
+//    }
+//
+//    private synchronized void hideSoftKeyboardThenShowEmoji(final View view) {
+//        mKeyboardShowing = false;
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+//        Runnable runnable = new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                showEmoji(true, true);
+//                mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
+//                    @Override
+//                    protected void onReceiveResult(int resultCode, Bundle resultData) {
+//                        if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
+//                            mKeyboardShowing = true;
+//                        } else {
+//
+//                        }
+//                    }
+//                });
+//            }
+//        };
+//
+//        view.post(runnable);
+//    }
 
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-                mImm.showSoftInput(view, 0, new ResultReceiver(null) {
-                    @Override
-                    protected void onReceiveResult(int resultCode, Bundle resultData) {
-                        if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
-                            mKeyboardShowing = false;
-                        } else {
-                            Runnable runnable = new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    showEmoji(false, false);
-
-                                }
-                            };
-
-                            view.post(runnable);
-
-                        }
-
-                    }
-                });
-            }
-        };
-        view.post(runnable);
-    }
-
-    private synchronized void hideSoftKeyboardThenShowEmoji(final View view) {
-        mKeyboardShowing = false;
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                showEmoji(true, true);
-                mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
-                    @Override
-                    protected void onReceiveResult(int resultCode, Bundle resultData) {
-                        if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
-                            mKeyboardShowing = true;
-                        } else {
-
-                        }
-                    }
-                });
-            }
-        };
-
-        view.post(runnable);
-    }
-
-    private synchronized void showEmoji(boolean showEmoji, boolean force) {
-        int visibility = mEmojiView.getVisibility();
-        if (showEmoji) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-
-            if (visibility != View.VISIBLE && force) {
-                SurespotLog.d(TAG, "showEmoji,  showing emoji view");
-                mEmojiView.setVisibility(View.VISIBLE);
-            }
-        } else {
-            if (visibility != View.GONE && force) {
-                SurespotLog.d(TAG, "showEmoji,  hiding emoji view");
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-                mEmojiView.setVisibility(View.GONE);
-            }
-        }
-
-        if (force) {
-            setEmojiIcon(!showEmoji);
-        }
-
-        mEmojiShowing = showEmoji;
-    }
-
-    private void toggleEmoji() {
-        if (mEmojiShowing) {
-            showSoftKeyboard(mEtMessage);
-        } else {
-            if (mKeyboardShowing) {
-                hideSoftKeyboard();
-                showEmoji(true, false);
-            } else {
-                showEmoji(true, true);
-            }
-
-        }
-    }
+//    private synchronized void showEmoji(boolean showEmoji, boolean force) {
+//        int visibility = mEmojiView.getVisibility();
+//        if (showEmoji) {
+//            getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+//
+//            if (visibility != View.VISIBLE && force) {
+//                SurespotLog.d(TAG, "showEmoji,  showing emoji view");
+//                mEmojiView.setVisibility(View.VISIBLE);
+//            }
+//        } else {
+//            if (visibility != View.GONE && force) {
+//                SurespotLog.d(TAG, "showEmoji,  hiding emoji view");
+//                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+//                mEmojiView.setVisibility(View.GONE);
+//            }
+//        }
+//
+//        if (force) {
+//            setEmojiIcon(!showEmoji);
+//        }
+//
+//        mEmojiShowing = showEmoji;
+//    }
+//
+//    private void toggleEmoji() {
+//        if (mEmojiShowing) {
+//            showSoftKeyboard(mEtMessage);
+//        } else {
+//            if (mKeyboardShowing) {
+//                hideSoftKeyboard();
+//                showEmoji(true, false);
+//            } else {
+//                showEmoji(true, true);
+//            }
+//
+//        }
+//    }
 
     class ChatTextWatcher implements TextWatcher {
 
@@ -1725,16 +1716,17 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
             return true;
         }
 
-        if (mEmojiShowing) {
-            showEmoji(false, true);
-            return true;
-        }
-
-        if (mKeyboardShowing) {
-
+        if (mEmojiShowing || mKeyboardShowing) {
+            //hideEmojiDrawer(false);
             hideSoftKeyboard();
             return true;
         }
+
+//        if (mKeyboardShowing) {
+//
+//            hideSoftKeyboard();
+//            return true;
+//        }
 
         //go to home page if we not
         if (mCurrentFriend != null) {
@@ -1871,7 +1863,7 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
             mEmojiButton.setVisibility(View.GONE);
             mEtMessage.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
-          //  mEmojiView.setVisibility(View.GONE);
+            //  mEmojiView.setVisibility(View.GONE);
 
             mQRButton.setVisibility(View.VISIBLE);
             mEtInvite.requestFocus();
@@ -1952,19 +1944,30 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
         mCurrentFriend = friend;
+
+        if (friend == null) {
+            //hideEmojiDrawer(false);
+            hideSoftKeyboard();
+        }
+
+
 //        if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
 //            if (friend == null) {
 //                if (mEmojiShowing) {
-//                    showSoftKeyboardThenHideEmoji(mEtInvite);
+//                    hideEmojiDrawer(true);
+//                    //showSoftKeyboardThenHideEmoji(mEtInvite);
 //                } else {
-//                    hideSoftKeyboard(mEtMessage);
+//
+//                    hideSoftKeyboard(mEtInvite);
 //                }
 //            } else {
 //                if (mEmojiShowing) {
-//                    showSoftKeyboard(mEtMessage);
-//                    showEmoji(false, true);
+//                    //showSoftKeyboard(mEtMessage);
+//                    hideEmojiDrawer(true);
+//                    //showEmoji(false, true);
 //                } else {
-//                    showEmoji(true, true);
+//                    showEmojiDrawer();
+//                    //showEmoji(true, true);
 //                    hideSoftKeyboard(mEtInvite);
 //                }
 //            }
@@ -1973,18 +1976,23 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
 //                showSoftKeyboard();
 //            } else {
 //
+//                if (showEmoji) {
+//                    showEmojiDrawer();
+//                }
+//                else {
+//                    hideEmojiDrawer(false);
+//                }
+//
 //                if (mKeyboardShowing != showKeyboard) {
-//                    showEmoji(showEmoji, true);
-//                    hideSoftKeyboard();
-//                } else {
-//                    showEmoji(showEmoji, true);
+//
+//                    //hideSoftKeyboard();
 //                }
 //            }
 //        }
-
-        if (friend == null || !friend.isDeleted()) {
-            mKeyboardShowing = showKeyboard;
-        }
+//
+//        if (friend == null || !friend.isDeleted()) {
+//            mKeyboardShowing = showKeyboard;
+//        }
 
         setButtonText();
 
@@ -1993,14 +2001,11 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
 
     private void setEmojiIcon(final boolean keyboardShowing) {
 
-//        if (keyboardShowing) {
-//            if (mEmojiResourceId < 0) {
-//                mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
-//            }
-//            mEmojiButton.setImageResource(mEmojiResourceId);
-//        } else {
-//            mEmojiButton.setImageResource(R.drawable.keyboard_icon);
-//        }
+        if (keyboardShowing) {
+            mEmojiButton.setImageResource(R.drawable.ic_emoji);
+        } else {
+            mEmojiButton.setImageResource(R.drawable.ic_keyboard);
+        }
 
     }
 
@@ -2103,10 +2108,8 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
     }
 
 
-
-
     public boolean isEmojiVisible() {
-        return mEmojiVisible;
+        return mEmojiShowing;
     }
 
     private void toggleEmojiDrawer() {
@@ -2114,23 +2117,26 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
 
         if (isEmojiVisible()) {
             hideEmojiDrawer();
-        }
-        else {
+        } else {
             showEmojiDrawer();
+        //    if (mKeyboardShowing) {
+                //hideSoftKeyboard();
+       //     }
         }
     }
 
     private void showEmojiDrawer() {
         int keyboardHeight = mActivityLayout.getKeyboardHeight();
 
-        mEmojiVisible = true;
+        SurespotLog.d(TAG, "showEmojiDrawer height: %d", keyboardHeight);
+        mEmojiShowing = true;
 
         if (mEmojiView == null) {
             mEmojiView = (EmojiconsView) LayoutInflater
                     .from(this).inflate(R.layout.emojicons, null, false);
 
 
-         //   mEmojiView.setId(R.id.emoji_drawer);
+            //   mEmojiView.setId(R.id.emoji_drawer);
             mEmojiView.setOnEmojiconBackspaceClickedListener(this);
             mEmojiView.setOnEmojiconClickedListener(this);
 
@@ -2151,15 +2157,13 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
             if (mEmojiView.getParent() != null) {
                 wm.removeViewImmediate(mEmojiView);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e(TAG, "error removing emoji view", e);
         }
 
         try {
             wm.addView(mEmojiView, mWindowLayoutParams);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e(TAG, "error adding emoji view", e);
             return;
         }
@@ -2170,7 +2174,7 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
             // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
         }
 
-       // mEmojiButton.setImageResource(R.drawable.ic_keyboard);
+        mEmojiButton.setImageResource(R.drawable.ic_keyboard);
     }
 
     private void hideEmojiDrawer() {
@@ -2181,7 +2185,7 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
         if (showKeyboard) {
             InputMethodManager input = (InputMethodManager) mContext
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
-       //     input.showSoftInput(mTextEntry, 0);
+            input.showSoftInput(mEtMessage, 0);
         }
 
         if (mEmojiView != null && mEmojiView.getParent() != null) {
@@ -2190,9 +2194,9 @@ public class MainActivity extends Activity implements  EmojiconsView.OnEmojiconB
             wm.removeViewImmediate(mEmojiView);
         }
 
-     //   mEmojiButton.setImageResource(R.drawable.ic_emoji);
+        mEmojiButton.setImageResource(R.drawable.ic_emoji);
         mActivityLayout.setPadding(0, 0, 0, 0);
-        mEmojiVisible = false;
+        mEmojiShowing = false;
     }
 
     @Override
