@@ -958,7 +958,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     protected void onResume() {
         super.onResume();
         SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
-
+        startWatchingExternalStorage();
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 
@@ -982,7 +982,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "resume");
         mResumed = true;
 
-        startWatchingExternalStorage();
+
         setBackgroundImage();
         setEditTextHints();
         ChatManager.resume(mUser);

@@ -728,6 +728,10 @@ public class ChatController {
         // mFragmentManager = null;
     }
 
+    public boolean hasContext() {
+        return mContext != null;
+    }
+
     private class LatestIdPair {
         int latestMessageId;
         int latestControlMessageId;

@@ -68,7 +68,11 @@ public class ChatManager {
         if (mConnectivityReceiver == null) {
             SurespotLog.d(TAG, "attachChatController, username: %s registering new broadcast receiver", username);
             mConnectivityReceiver = new BroadcastReceiverHandler();
-            context.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+            try {
+                context.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+            } catch (Exception e) {
+                SurespotLog.w(TAG, e, "detach");
+            }
         }
 
         return cc;
@@ -86,7 +90,11 @@ public class ChatManager {
         SurespotLog.d(TAG, "detach");
         if (mConnectivityReceiver != null) {
             SurespotLog.d(TAG, "detach, unregistering broadcast receiver");
-            context.unregisterReceiver(mConnectivityReceiver);
+            try {
+                context.unregisterReceiver(mConnectivityReceiver);
+            } catch (Exception e) {
+                SurespotLog.w(TAG, e, "detach");
+            }
             mConnectivityReceiver = null;
         }
     }
@@ -94,7 +102,7 @@ public class ChatManager {
     public static synchronized void pause(String username) {
         mPaused = true;
         ChatController cc = getChatController(username, false);
-        if (cc != null) {
+        if (cc != null && cc.hasContext()) {
             cc.save();
             cc.disconnect();
         }
@@ -103,7 +111,7 @@ public class ChatManager {
     public static synchronized void resume(String username) {
         mPaused = false;
         ChatController cc = getChatController(username, false);
-        if (cc != null) {
+        if (cc != null && cc.hasContext()) {
             cc.resume();
         }
     }
@@ -131,7 +139,7 @@ public class ChatManager {
                     NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
 
                     ChatController cc = getChatController(mAttachedUsername, false);
-                    if (cc != null) {
+                    if (cc != null && cc.hasContext()) {
 
                         if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
                             SurespotLog.d(TAG, "onReceive,  CONNECTED");
