@@ -752,7 +752,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         //drawer
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerLayout.setScrimColor(Color.argb(224,0,0,0));
+        mDrawerLayout.setScrimColor(Color.argb(224, 0, 0, 0));
         List<String> ids = IdentityController.getIdentityNames(this);
         final String[] identityNames = ids.toArray(new String[ids.size()]);
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
@@ -761,6 +761,15 @@ public class MainActivity extends Activity implements OnMeasureListener {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switchUser(identityNames[position - 1]);
                 mDrawerList.setItemChecked(position, true);
+            }
+        });
+        mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
+                if (slideOffset > 0.5) {
+                    hideSoftKeyboard();
+                }
             }
         });
 
@@ -1130,8 +1139,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 if (TextUtils.isEmpty(ChatManager.getChatController(mUser).getCurrentChat())) {
                     if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
                         mDrawerLayout.closeDrawer(GravityCompat.START);
-                    }
-                    else {
+                    } else {
                         mDrawerLayout.openDrawer(GravityCompat.START);
                     }
                 } else {
@@ -1852,9 +1860,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setDisplayHomeAsUpEnabled(true);
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
-            }
-            else
-            {
+            } else {
                 getActionBar().setDisplayHomeAsUpEnabled(false);
             }
 
