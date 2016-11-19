@@ -1564,27 +1564,11 @@ public final class EmojiconHandler {
      * @param context
      * @param text
      * @param emojiSize
-     * @param emojiAlignment
-     * @param textSize
      */
     public static void addEmojis(Context context, Spannable text, int emojiSize) {
         addEmojis(context, text, emojiSize, 0, -1, false);
     }
 
-    /**
-     * Convert emoji characters of the given Spannable to the according emojicon.
-     *
-     * @param context
-     * @param text
-     * @param emojiSize
-     * @param emojiAlignment
-     * @param textSize
-     * @param index
-     * @param length
-     */
-    public static void addEmojis(Context context, Spannable text, int emojiSize, int index, int length) {
-        addEmojis(context, text, emojiSize, index, length, false);
-    }
 
     /**
      * Convert emoji characters of the given Spannable to the according emojicon.
@@ -1592,8 +1576,6 @@ public final class EmojiconHandler {
      * @param context
      * @param text
      * @param emojiSize
-     * @param emojiAlignment
-     * @param textSize
      * @param useSystemDefault
      */
     public static void addEmojis(Context context, Spannable text, int emojiSize, boolean useSystemDefault) {
@@ -1610,8 +1592,6 @@ public final class EmojiconHandler {
      * @param context
      * @param text
      * @param emojiSize
-     * @param emojiAlignment
-     * @param textSize
      * @param index
      * @param length
      * @param useSystemDefault

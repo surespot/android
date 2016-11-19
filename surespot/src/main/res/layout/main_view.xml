@@ -1,8 +1,8 @@
 <com.twofours.surespot.chat.SoftKeyboardLayout android:id="@+id/chatLayout"
-                                               xmlns:android="http://schemas.android.com/apk/res/android"
-                                               xmlns:app="http://schemas.android.com/apk/res-auto"
-                                               android:layout_width="fill_parent"
-                                               android:layout_height="fill_parent"     >
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
 
     <ImageView
         android:id="@+id/backgroundImage"
@@ -87,6 +87,7 @@
             android:maxLines="5"
             android:minHeight="45dp"
             android:scrollbars="vertical"
+            app:emojiconSize="30dp"
             android:singleLine="false"
             android:visibility="gone">
         </com.rockerhieu.emojicon.EmojiconEditText>

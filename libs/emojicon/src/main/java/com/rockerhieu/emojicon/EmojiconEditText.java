@@ -25,12 +25,12 @@ import android.widget.EditText;
  * @author Hieu Rocker (rockerhieu@gmail.com).
  */
 public class EmojiconEditText extends EditText {
-    private int mEmojiconTextSize;
+    private int mEmojiconSize;
     private boolean mUseSystemDefault = false;
 
     public EmojiconEditText(Context context) {
         super(context);
-        mEmojiconTextSize = (int) getTextSize();
+        mEmojiconSize = (int) getTextSize();
     }
 
     public EmojiconEditText(Context context, AttributeSet attrs) {
@@ -45,9 +45,9 @@ public class EmojiconEditText extends EditText {
 
     private void init(AttributeSet attrs) {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.Emojicon);
+        mEmojiconSize = (int) a.getDimension(R.styleable.Emojicon_emojiconSize, getTextSize());
         mUseSystemDefault = a.getBoolean(R.styleable.Emojicon_emojiconUseSystemDefault, false);
         a.recycle();
-        mEmojiconTextSize = (int) getTextSize();
         setText(getText());
     }
 
@@ -56,11 +56,21 @@ public class EmojiconEditText extends EditText {
         updateText(start, lengthAfter, false);
     }
 
+    /**
+     * Set the size of emojicon in pixels.
+     */
+    public void setEmojiconSize(int pixels) {
+        mEmojiconSize = pixels;
 
+        updateText();
+    }
 
+    private void updateText() {
+        updateText(0, -1, true);
+    }
 
     private void updateText(int index, int length, boolean removeAll) {
-        EmojiconHandler.addEmojis(getContext(), getText(), mEmojiconTextSize, index, length, removeAll, mUseSystemDefault);
+        EmojiconHandler.addEmojis(getContext(), getText(), mEmojiconSize, index, length, removeAll, mUseSystemDefault);
     }
 
     /**
