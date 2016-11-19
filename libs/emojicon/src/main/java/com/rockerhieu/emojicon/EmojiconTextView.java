@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.style.DynamicDrawableSpan;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
@@ -29,8 +28,6 @@ import android.widget.TextView;
  */
 public class EmojiconTextView extends TextView {
     private int mEmojiconSize;
-    private int mEmojiconAlignment;
-    private int mEmojiconTextSize;
     private int mTextStart = 0;
     private int mTextLength = -1;
     private boolean mUseSystemDefault = false;
@@ -51,13 +48,11 @@ public class EmojiconTextView extends TextView {
     }
 
     private void init(AttributeSet attrs) {
-        mEmojiconTextSize = (int) getTextSize();
         if (attrs == null) {
             mEmojiconSize = (int) getTextSize();
         } else {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.Emojicon);
             mEmojiconSize = (int) a.getDimension(R.styleable.Emojicon_emojiconSize, getTextSize());
-            mEmojiconAlignment = a.getInt(R.styleable.Emojicon_emojiconAlignment, DynamicDrawableSpan.ALIGN_BASELINE);
             mTextStart = a.getInteger(R.styleable.Emojicon_emojiconTextStart, 0);
             mTextLength = a.getInteger(R.styleable.Emojicon_emojiconTextLength, -1);
             mUseSystemDefault = a.getBoolean(R.styleable.Emojicon_emojiconUseSystemDefault, false);
@@ -70,7 +65,7 @@ public class EmojiconTextView extends TextView {
     public void setText(CharSequence text, BufferType type) {
         if (!TextUtils.isEmpty(text)) {
             SpannableStringBuilder builder = new SpannableStringBuilder(text);
-            EmojiconHandler.addEmojis(getContext(), builder, mEmojiconTextSize, mTextStart, mTextLength, mUseSystemDefault);
+            EmojiconHandler.addEmojis(getContext(), builder, mEmojiconSize, mTextStart, mTextLength, mUseSystemDefault);
             text = builder;
         }
         super.setText(text, type);
