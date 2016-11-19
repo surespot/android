@@ -108,7 +108,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    private static Context mContext = null;
+    private Context mContext = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallback<Object> m401Handler;
 
@@ -167,7 +167,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (deleted) {
             // if we have any users or we don't need to create a user, figure out if we need to login
-            if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
+            if (!IdentityController.hasIdentity(this) || intent.getBooleanExtra("create", false)) {
                 // otherwise show the signup activity
                 SurespotLog.d(TAG, "I was deleted and there are no other users so starting signup activity.");
                 Intent newIntent = new Intent(this, SignupActivity.class);
@@ -561,7 +561,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private boolean needsSignup() {
         Intent intent = getIntent();
         // figure out if we need to create a user
-        if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
+        if (!IdentityController.hasIdentity(this) || intent.getBooleanExtra("create", false)) {
 
             // otherwise show the signup activity
 
@@ -1206,10 +1206,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
         ChatManager.pause(mUser);
         ChatManager.detach(this);
-    }
-
-    public static Context getContext() {
-        return mContext;
     }
 
     @Override

@@ -16,19 +16,12 @@
 
 package com.twofours.surespot.images;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.lang.ref.WeakReference;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -36,13 +29,20 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.NetworkManager;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.lang.ref.WeakReference;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -56,7 +56,7 @@ import com.twofours.surespot.network.NetworkManager;
 public class FriendImageDownloader {
     private static final String TAG = "FriendImageDownloader";
     private static BitmapCache mBitmapCache = new BitmapCache();
-    private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
 
     /**
      * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and

@@ -628,9 +628,9 @@ public class IdentityController {
 
     }
 
-    private static synchronized String savePublicKeyPair(String username, String version, String keyPair) {
+    private static synchronized String savePublicKeyPair(Context context, String username, String version, String keyPair) {
         try {
-            String dir = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username;
+            String dir = FileUtils.getPublicKeyDir(context) + File.separator + username;
             if (!FileUtils.ensureDir(dir)) {
                 SurespotLog.e(TAG, new RuntimeException("Could not create public key pair dir: %s" + dir), "Could not create public key pair dir: %s", dir);
                 return null;
@@ -648,7 +648,7 @@ public class IdentityController {
         return null;
     }
 
-    private static PublicKeys getPublicKeyPair(String username, String version, JSONObject jsonKeyPair) {
+    private static PublicKeys getPublicKeyPair(Context context, String username, String version, JSONObject jsonKeyPair) {
         try {
             String readVersion = jsonKeyPair.getString("version");
             if (!readVersion.equals(version)) {
@@ -667,7 +667,7 @@ public class IdentityController {
             PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubDH);
             PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
 
-            savePublicKeyPair(username, version, json.toString());
+            savePublicKeyPair(context, username, version, json.toString());
             SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
             return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
         } catch (JSONException e) {
@@ -677,7 +677,7 @@ public class IdentityController {
         return null;
     }
 
-    public static PublicKeys getPublicKeyPair2(String ourUsername, String theirUsername, String version) {
+    public static PublicKeys getPublicKeyPair2(Context context, String ourUsername, String theirUsername, String version) {
 
         int currentVersion = Integer.parseInt(version, 10);
         int wantedVersion = currentVersion;
@@ -697,7 +697,7 @@ public class IdentityController {
 
             //load keys locally
             //if we have them they've been validated and we can validate any new keys we downloaded
-            keys = loadPublicKeyPair(theirUsername, sCurrentVersion);
+            keys = loadPublicKeyPair(context, theirUsername, sCurrentVersion);
             if (keys != null) {
                 validatedKeys = keys;
                 validatedKeyVersion = currentVersion;
@@ -736,7 +736,7 @@ public class IdentityController {
                     if (!wantedKey.has("clientSig")) {
                         SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v1 code", theirUsername, version);
                         //TODO need to recheck somehow and eventually get all keys validated using v2 code
-                        return getPublicKeyPair(theirUsername, version, wantedKey);
+                        return getPublicKeyPair(context, theirUsername, version, wantedKey);
 
                     } else {
                         SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", theirUsername, version);
@@ -789,7 +789,7 @@ public class IdentityController {
                             }
 
                             //save some keys
-                            savePublicKeyPair(theirUsername, String.valueOf(validatingVersion), jsonKey.toString());
+                            savePublicKeyPair(context, theirUsername, String.valueOf(validatingVersion), jsonKey.toString());
 
                             //get next previous signing key
                             previousDsaKey = dsaKeys.get(validatingVersion);
@@ -928,10 +928,10 @@ public class IdentityController {
         }
     }
 
-    private synchronized static PublicKeys loadPublicKeyPair(String username, String version) {
+    private synchronized static PublicKeys loadPublicKeyPair(Context context, String username, String version) {
 
         // try to load identity
-        String pkFilename = FileUtils.getPublicKeyDir(MainActivity.getContext()) + File.separator + username + File.separator + version
+        String pkFilename = FileUtils.getPublicKeyDir(context) + File.separator + username + File.separator + version
                 + PUBLICKEYPAIR_EXTENSION;
         File pkFile = new File(pkFilename);
 
@@ -958,9 +958,9 @@ public class IdentityController {
 
     }
 
-    public static boolean hasIdentity() {
+    public static boolean hasIdentity(Context context) {
         if (!mHasIdentity) {
-            mHasIdentity = getIdentityNames(MainActivity.getContext()).size() > 0;
+            mHasIdentity = getIdentityNames(context).size() > 0;
         }
         return mHasIdentity;
     }

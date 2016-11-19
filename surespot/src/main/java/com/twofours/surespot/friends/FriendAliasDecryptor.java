@@ -3,6 +3,7 @@ package com.twofours.surespot.friends;
 import java.lang.ref.WeakReference;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.widget.TextView;
 
@@ -13,7 +14,7 @@ import com.twofours.surespot.identity.IdentityController;
 
 public class FriendAliasDecryptor {
 	private static final String TAG = "FriendAliasDecryptor";
-	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+	private static Handler mHandler = new Handler(Looper.getMainLooper());
 	private FriendAdapter mFriendAdapter;
 
 	public FriendAliasDecryptor(FriendAdapter friendAdapter) {

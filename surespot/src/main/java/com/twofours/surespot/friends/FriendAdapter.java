@@ -16,12 +16,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
@@ -326,7 +324,7 @@ public class FriendAdapter extends BaseAdapter {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "respondToInvite");
-                    Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                    Utils.makeToast(mContext, mContext.getString(R.string.could_not_respond_to_invite));
                 }
 
                 @Override
@@ -361,7 +359,7 @@ public class FriendAdapter extends BaseAdapter {
 //                            notifyDataSetChanged();
 //                        }
 //                        else {
-                            Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                            Utils.makeToast(mContext, mContext.getString(R.string.could_not_respond_to_invite));
                         //}
                     }
                 }

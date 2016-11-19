@@ -447,11 +447,11 @@ public class UIUtils {
         return showHelpDialog(context, R.string.surespot_help, view, firstTime);
     }
 
-    public static void updateDateAndSize(SurespotMessage message, View parentView) {
+    public static void updateDateAndSize(Context context, SurespotMessage message, View parentView) {
         if (message.getDateTime() != null) {
             TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
-            tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
-                    + DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+            tvTime.setText(DateFormat.getDateFormat(context).format(message.getDateTime()) + " "
+                    + DateFormat.getTimeFormat(context).format(message.getDateTime()));
 
         }
 

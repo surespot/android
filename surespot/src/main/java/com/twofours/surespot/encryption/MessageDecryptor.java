@@ -17,6 +17,7 @@
 package com.twofours.surespot.encryption;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.text.SpannableStringBuilder;
 import android.view.View;
 import android.widget.TextView;
@@ -24,7 +25,6 @@ import android.widget.TextView;
 import com.rockerhieu.emojicon.EmojiconHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
@@ -43,7 +43,7 @@ import java.lang.ref.WeakReference;
  */
 public class MessageDecryptor {
     private static final String TAG = "TextDecryptor";
-    private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
 
@@ -136,7 +136,7 @@ public class MessageDecryptor {
                         @Override
                         public void run() {
                             textView.setText(finalPlainData);
-                            UIUtils.updateDateAndSize(mMessage, (View) textView.getParent());
+                            UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) textView.getParent());
                         }
                     });
                 }

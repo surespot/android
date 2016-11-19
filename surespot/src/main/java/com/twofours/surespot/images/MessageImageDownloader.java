@@ -21,6 +21,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.Animation;
@@ -28,7 +29,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -36,7 +36,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -61,7 +60,7 @@ import java.lang.ref.WeakReference;
 public class MessageImageDownloader {
     private static final String TAG = "MessageImageDownloader";
     private static BitmapCache mBitmapCache = new BitmapCache();
-    private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
 
@@ -92,7 +91,7 @@ public class MessageImageDownloader {
             message.setLoaded(true);
             message.setLoading(false);
 
-            UIUtils.updateDateAndSize(message, (View) imageView.getParent());
+            UIUtils.updateDateAndSize(mChatAdapter.getContext(), message, (View) imageView.getParent());
 
         }
     }
@@ -317,7 +316,7 @@ public class MessageImageDownloader {
                                 imageView.setImageBitmap(finalBitmap);
                                 imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
 
-                                UIUtils.updateDateAndSize(mMessage, (View) imageView.getParent());
+                                UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 mChatAdapter.checkLoaded();
                             }
                             else {

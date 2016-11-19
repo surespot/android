@@ -16,8 +16,10 @@
 
 package com.twofours.surespot.voice;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.SeekBar;
@@ -30,7 +32,6 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -53,7 +54,7 @@ import java.lang.ref.WeakReference;
  */
 public class VoiceMessageDownloader {
     private static final String TAG = "VoiceMessageDownloader";
-    private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
 
@@ -83,7 +84,7 @@ public class VoiceMessageDownloader {
             message.setLoaded(true);
             message.setLoading(false);
 
-            updateUI(message, parentView);
+            updateUI(mChatAdapter.getContext(), message, parentView);
 
         }
     }
@@ -284,7 +285,7 @@ public class VoiceMessageDownloader {
 
                             @Override
                             public void run() {
-                                updateUI(mMessage, view);
+                                updateUI(mChatAdapter.getContext(), mMessage, view);
 
                             }
 
@@ -300,12 +301,12 @@ public class VoiceMessageDownloader {
         }
     }
 
-    private void updateUI(SurespotMessage message, View parentView) {
-        UIUtils.updateDateAndSize(message, parentView);
+    private void updateUI(Context context, SurespotMessage message, View parentView) {
+        UIUtils.updateDateAndSize(context ,message, parentView);
 
         if (message.isPlayVoice()) {
             SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-            VoiceController.playVoiceMessage(MainActivity.getContext(), seekBar, message);
+            VoiceController.playVoiceMessage(context, seekBar, message);
         }
 
     }
