@@ -147,12 +147,14 @@ public class ChatController {
 
         mContext = context;
         mUsername = username;
+        mFriendAdapter = new FriendAdapter(mContext, mUsername);
         mNetworkController = NetworkManager.getNetworkController(mUsername);
+        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(mContext);
 
         mEarliestMessage = new HashMap<String, Integer>();
         mChatAdapters = new HashMap<String, ChatAdapter>();
         mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
-
 
         // mViewPager.setOffscreenPageLimit(2);
     }
@@ -182,7 +184,6 @@ public class ChatController {
         mIndicator = pageIndicator;
         mIndicator.setViewPager(mViewPager);
 
-
         mIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -191,12 +192,9 @@ public class ChatController {
                     String name = mChatPagerAdapter.getChatName(position);
                     setCurrentChat(name);
                 }
-
             }
         });
 
-
-        mFriendAdapter = new FriendAdapter(mContext, mUsername);
         loadState();
 
         mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
@@ -210,8 +208,7 @@ public class ChatController {
             }
         });
 
-        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mBuilder = new NotificationCompat.Builder(mContext);
+
     }
 
     public void setAutoInviteData(AutoInviteData autoInviteData) {
@@ -1308,7 +1305,9 @@ public class ChatController {
     }
 
     private void saveFriends() {
-        SurespotApplication.getStateController().saveFriends(mUsername, mLatestUserControlId, mFriendAdapter.getFriends());
+        if (mFriendAdapter != null) {
+            SurespotApplication.getStateController().saveFriends(mUsername, mLatestUserControlId, mFriendAdapter.getFriends());
+        }
     }
 
     private void loadState() {
@@ -2768,7 +2767,7 @@ public class ChatController {
     private synchronized void saveMessages() {
         // save last 30? messages
         SurespotLog.d(TAG, "saveMessages");
-        if (mUsername != null) {
+        if (mUsername != null && mChatAdapters != null) {
             for (Map.Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
                 String them = entry.getKey();
                 String spot = ChatUtils.getSpot(mUsername, them);
