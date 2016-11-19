@@ -42,6 +42,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
@@ -671,7 +672,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
         setHomeProgress(true);
-
+        getActionBar().setDisplayHomeAsUpEnabled(true);
         //drawer
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -695,10 +696,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                        sendBackPressed();
 //                    }
 //                    else {
-                        if (isEmojiVisible()) {
-                            hideEmojiDrawer(false);
-                        }
-                 //   }
+                    if (isEmojiVisible()) {
+                        hideEmojiDrawer(false);
+                    }
+                    //   }
                     //hideSoftKeyboard();
                 }
             }
@@ -735,7 +736,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
-              //  SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
+                //  SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
                 if (!visible && mActivityLayout.getPaddingBottom() == 0 && isEmojiVisible()) {
                     hideEmojiDrawer(false);
                 }
@@ -1451,7 +1452,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
 
-
         //go to home page if we not
         if (mCurrentFriend != null) {
             ChatManager.getChatController(mUser).setCurrentChat(null);
@@ -1568,10 +1568,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                getActionBar().setDisplayHomeAsUpEnabled(true);
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
             } else {
-                getActionBar().setDisplayHomeAsUpEnabled(false);
+
+                ViewGroup home = (ViewGroup) findViewById(android.R.id.home).getParent();
+                // get the first child (up imageview)
+                ((ImageView) home.getChildAt(0))
+                        // change the icon according to your needs
+                        .setImageResource(R.drawable.ic_drawer);
             }
 
 
@@ -1580,8 +1584,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_ab_back_holo_dark_am);
             }
+            else {
+                ViewGroup home = (ViewGroup) findViewById(android.R.id.home).getParent();
+                // get the first child (up imageview)
+                ((ImageView) home.getChildAt(0))
+                        // change the icon according to your needs
+                        .setImageResource(R.drawable.ic_ab_back_holo_dark_am);
+            }
 
-            getActionBar().setDisplayHomeAsUpEnabled(true);
             if (friend.isDeleted()) {
 
                 mEmojiButton.setVisibility(View.GONE);
@@ -1606,10 +1616,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                sendBackPressed();
 //            }
 //            else {
-                if (isEmojiVisible()) {
-                    hideEmojiDrawer(false);
-                }
-          //  }
+            if (isEmojiVisible()) {
+                hideEmojiDrawer(false);
+            }
+            //  }
         }
 
         setButtonText();
@@ -1828,8 +1838,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         EmojiconsView.input(mEtMessage, emojicon);
     }
 
-    void sendBackPressed()
-    {
+    void sendBackPressed() {
         this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
     }
 }
