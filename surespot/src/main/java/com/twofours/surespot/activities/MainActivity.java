@@ -678,7 +678,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mDrawerLayout.setScrimColor(Color.argb(224, 0, 0, 0));
         List<String> ids = IdentityController.getIdentityNames(this);
         final String[] identityNames = ids.toArray(new String[ids.size()]);
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
+
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -706,6 +706,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
         mDrawerList.addHeaderView(header, null, false);
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
 
         for (int i = 0; i < identityNames.length; i++) {
             if (identityNames[i].equals(mUser)) {
@@ -740,10 +741,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
             }
         });
-
-        //mKeyboardStateHandler = new KeyboardStateHandler();
-        //mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
-
 
         TitlePageIndicator titlePageIndicator = (TitlePageIndicator) mainView.findViewById(R.id.indicator);
         ChatManager.attachChatController(
