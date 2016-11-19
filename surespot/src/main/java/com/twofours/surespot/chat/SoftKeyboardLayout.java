@@ -14,12 +14,14 @@ import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.common.SurespotLog;
 
 import java.lang.reflect.Field;
 
 public class SoftKeyboardLayout extends RelativeLayout {
 
 	private static final Rect rect = new Rect();
+	private static final String TAG = "SoftKeyboardLayout";
 	private boolean mKeyboardVisible;
 
 	private OnKeyboardShownListener mListener;
@@ -56,7 +58,7 @@ public class SoftKeyboardLayout extends RelativeLayout {
 		getWindowVisibleDisplayFrame(rect);
 
 		final int keyboardHeight = availableHeight - (rect.bottom - rect.top);
-
+		SurespotLog.d(TAG, "keyboardHeight: %d", keyboardHeight);
 		if (keyboardHeight > getResources().getDimensionPixelSize(R.dimen.min_emoji_drawer_height)) {
 			onKeyboardShown(keyboardHeight);
 			mKeyboardVisible = true;
