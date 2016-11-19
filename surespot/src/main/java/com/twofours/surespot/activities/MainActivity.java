@@ -194,7 +194,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         UIUtils.setTheme(this);
-        //Emojiconize.activity(this).go();
         super.onCreate(savedInstanceState);
 
         SurespotLog.d(TAG, "onCreate");
@@ -692,6 +691,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
                 if (slideOffset > 0.5) {
+//                    if (mActivityLayout.isKeyboardVisible()) {
+//                        sendBackPressed();
+//                    }
+//                    else {
+                        if (isEmojiVisible()) {
+                            hideEmojiDrawer(false);
+                        }
+                 //   }
                     //hideSoftKeyboard();
                 }
             }
@@ -1600,7 +1607,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mCurrentFriend = friend;
 
         if (friend == null) {
-            hideEmojiDrawer(false);
+//            if (mActivityLayout.isKeyboardVisible()) {
+//                sendBackPressed();
+//            }
+//            else {
+                if (isEmojiVisible()) {
+                    hideEmojiDrawer(false);
+                }
+          //  }
         }
 
         setButtonText();
@@ -1816,4 +1830,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         EmojiconsView.input(mEtMessage, emojicon);
     }
 
+    void sendBackPressed()
+    {
+        this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+    }
 }
