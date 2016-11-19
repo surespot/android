@@ -21,7 +21,7 @@ ext {
 
 
     applicationId = "com.twofours.surespot"
-    minSdkVersion = 16
+    minSdkVersion = 15
     targetSdkVersion = 20
     multiDexEnabled = true
 
