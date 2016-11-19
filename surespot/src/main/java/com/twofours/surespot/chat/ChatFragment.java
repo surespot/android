@@ -163,7 +163,7 @@ public class ChatFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
+		ChatController chatController = ChatManager.getChatController(getOurUsername());
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(mTheirUsername);
 			mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
@@ -205,7 +205,7 @@ public class ChatFragment extends Fragment {
 					if (mainActivity == null) {
 						return;
 					}
-					ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
+					ChatController chatController = ChatManager.getChatController(getOurUsername());
 					if (chatController == null) {
 						return;
 					}
@@ -285,7 +285,7 @@ public class ChatFragment extends Fragment {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume: " + mTheirUsername);
 
-		ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
+		ChatController chatController = ChatManager.getChatController(getOurUsername());
 
 		if (chatController != null) {
 			Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
@@ -318,7 +318,7 @@ public class ChatFragment extends Fragment {
 			// mListView.removeOnScrollListener()):
 
 			if (mListView != null) {
-				ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
+				ChatController chatController = ChatManager.getChatController(getOurUsername());
 				if (chatController != null && chatController.getFriendAdapter() != null) {
 
 					Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);

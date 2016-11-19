@@ -370,7 +370,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                ChatController cc = ChatManager.getChatController(mUser);
                 if (cc != null) {
 
                     Friend friend = mCurrentFriend;
@@ -396,7 +396,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 SurespotLog.d(TAG, "onLongClick voice");
                 Friend friend = mCurrentFriend;
                 if (friend != null) {
-                    ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                    ChatController cc = ChatManager.getChatController(mUser);
                     if (cc != null) {
 
                         // if they're deleted always close the tab
@@ -433,7 +433,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         Friend friend = mCurrentFriend;
                         if (friend != null) {
                             // if they're deleted do nothing
-                            ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                            ChatController cc = ChatManager.getChatController(mUser);
                             if (cc != null) {
                                 if (cc.isFriendDeleted(friend.getName())) {
                                     return false;
@@ -551,7 +551,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void switchUser(String identityName) {
         SurespotLog.d(TAG, "switchUser, mUser: %s, identityName: %s", mUser, identityName);
         if (!identityName.equals(mUser)) {
-            ChatManager.pause(this, mUser);
+            ChatManager.pause(mUser);
             ChatManager.detach(this);
             mUser = identityName;
 
@@ -810,7 +810,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.d(TAG, "launch");
         Intent intent = getIntent();
 
-        ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+        ChatController cc = ChatManager.getChatController(mUser);
         if (cc == null) {
             SurespotLog.d(TAG, "launch, null chatcontroller, bailing");
             return;
@@ -928,7 +928,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         setBackgroundImage();
         setEditTextHints();
-        ChatManager.resume(this, mUser);
+        ChatManager.resume(mUser);
     }
 
     @Override
@@ -953,7 +953,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mDialog.dismiss();
         }
 
-        ChatManager.pause(this, mUser);
+        ChatManager.pause(mUser);
 
 
         mResumed = false;
@@ -993,7 +993,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 } catch (URISyntaxException e) {
                                 }
 
-                                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                                ChatController cc = ChatManager.getChatController(mUser);
 
                                 if (cc == null || url == null) {
                                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
@@ -1049,7 +1049,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
-        ChatController cc = ChatManager.getChatController(this, mUser);
+        ChatController cc = ChatManager.getChatController(mUser);
         if (mUser != null && cc != null) {
             cc.enableMenuItems(mCurrentFriend);
         }
@@ -1078,7 +1078,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
-        final ChatController cc = ChatManager.getChatController(this, mUser);
+        final ChatController cc = ChatManager.getChatController(mUser);
         if (cc == null) {
             SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
             return false;
@@ -1219,7 +1219,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (mCacheServiceBound && mConnection != null) {
             unbindService(mConnection);
         }
-        ChatManager.pause(this, mUser);
+        ChatManager.pause(mUser);
         ChatManager.detach(this);
     }
 
@@ -1335,7 +1335,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mHomeImageView.clearAnimation();
         }
 
-        ChatController cc = ChatManager.getChatController(this, mUser);
+        ChatController cc = ChatManager.getChatController(mUser);
         if (cc != null) {
             cc.enableMenuItems(mCurrentFriend);
         }
@@ -1363,7 +1363,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             if (MainActivity.this.mEnterToSend && s.toString().contains("\n")) {
                 int idx = s.toString().indexOf('\n');
                 s.delete(idx, idx + 1);
-                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                ChatController cc = ChatManager.getChatController(mUser);
 
                 if (cc != null && mEtMessage.getText().toString().length() > 0 && !cc.isFriendDeleted(mCurrentFriend.getName())) {
                     sendMessage(mCurrentFriend.getName());
@@ -1406,7 +1406,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                     ChatUtils.uploadPictureMessageAsync(
                             this,
-                            ChatManager.getChatController(this, mUser),
+                            ChatManager.getChatController(mUser),
                             imageUri,
                             mUser,
                             mCurrentFriend.getName(),
@@ -1426,7 +1426,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                         ChatUtils.uploadPictureMessageAsync(
                                 this,
-                                ChatManager.getChatController(this, mUser),
+                                ChatManager.getChatController(mUser),
                                 imageUri,
                                 mUser,
                                 mCurrentFriend.getName(),
@@ -1444,7 +1444,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void sendMessage(String username) {
         final String message = mEtMessage.getText().toString();
         if (!message.isEmpty()) {
-            ChatController cc = ChatManager.getChatController(this, mUser);
+            ChatController cc = ChatManager.getChatController(mUser);
             if (cc != null) {
                 cc.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
                 TextKeyListener.clear(mEtMessage.getText());
@@ -1474,7 +1474,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         //go to home page if we not
         if (mCurrentFriend != null) {
-            ChatController cc = ChatManager.getChatController(this, mUser);
+            ChatController cc = ChatManager.getChatController(mUser);
             if (cc != null) {
                 cc.setCurrentChat(null);
                 return true;
@@ -1510,7 +1510,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (response.isSuccessful()) {
 
                         TextKeyListener.clear(mEtInvite.getText());
-                        ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                        ChatController cc = ChatManager.getChatController(mUser);
                         if (cc != null) {
                             if (cc.getFriendAdapter().addFriendInvited(friend)) {
                                 Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
@@ -1716,7 +1716,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             @Override
             public void handleResponse(String alias) {
-                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                ChatController cc = ChatManager.getChatController(mUser);
                 if (cc != null) {
                     cc.assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
 
@@ -1735,7 +1735,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     public void removeFriendImage(final String name) {
-        ChatController cc = ChatManager.getChatController(this, mUser);
+        ChatController cc = ChatManager.getChatController(mUser);
         if (cc != null) {
             cc.removeFriendImage(name, new IAsyncCallback<Boolean>() {
                 @Override
@@ -1751,7 +1751,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     public void removeFriendAlias(final String name) {
-        ChatController cc = ChatManager.getChatController(this, mUser);
+        ChatController cc = ChatManager.getChatController(mUser);
         if (cc != null) {
             cc.removeFriendAlias(name, new IAsyncCallback<Boolean>() {
                 @Override

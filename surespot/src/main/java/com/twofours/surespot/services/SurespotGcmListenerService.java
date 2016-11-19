@@ -78,7 +78,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
         String type = bundle.getString("type");
         String from = bundle.getString("sentfrom");
 
-        ChatController chatController = ChatManager.getChatController(this, to);
+        ChatController chatController = ChatManager.getChatController(to);
 
         if ("message".equals(type)) {
             // make sure to is someone on this phone

@@ -86,7 +86,7 @@ public class TextMessageMenuFragment extends DialogFragment {
                         break;
                     case 1:
 
-                        final ChatController cc = ChatManager.getChatController(getActivity(), mUsername);
+                        final ChatController cc = ChatManager.getChatController(mUsername);
                         if (cc != null) {
                             SharedPreferences sp = getActivity().getSharedPreferences(mUsername, Context.MODE_PRIVATE);
                             boolean confirm = sp.getBoolean("pref_delete_message", true);

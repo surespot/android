@@ -33,22 +33,13 @@ public class ChatManager {
     private static boolean mPaused;
     private static String mAttachedUsername;
 
-    public static synchronized ChatController getChatController(Context context, String username) {
-        return getChatController(context, username, true);
-    }
 
-    private static synchronized ChatController getChatController(Context context, String username, boolean create) {
+
+    public static synchronized ChatController getChatController(String username) {
         if (TextUtils.isEmpty(username)) {
             throw new RuntimeException("null username");
         }
-        ChatController nc = mMap.get(username);
-        if (nc == null && create) {
-            SurespotLog.d(TAG, "creating chat controller for %s", username);
-            nc = new ChatController(context, username);
-            mMap.put(username, nc);
-        }
-
-        return nc;
+        return mMap.get(username);
     }
 
     public static synchronized ChatController attachChatController(Context context,
@@ -62,7 +53,14 @@ public class ChatManager {
                                                                    IAsyncCallback<Friend> tabShowingCallback,
                                                                    IAsyncCallback<Object> listener) {
         SurespotLog.d(TAG, "attachChatController, username: %s", username);
-        ChatController cc = getChatController(context, username);
+
+        ChatController cc = mMap.get(username);
+        if (cc == null) {
+            SurespotLog.d(TAG, "creating chat controller for %s", username);
+            cc = new ChatController(context, username);
+            mMap.put(username, cc);
+        }
+
         cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
         mAttachedUsername = username;
         if (mConnectivityReceiver == null) {
@@ -99,18 +97,18 @@ public class ChatManager {
         }
     }
 
-    public static synchronized void pause(Context context, String username) {
+    public static synchronized void pause(String username) {
         mPaused = true;
-        ChatController cc = getChatController(context, username, false);
+        ChatController cc = getChatController(username);
         if (cc != null) {
             cc.save();
             cc.disconnect();
         }
     }
 
-    public static synchronized void resume(Context context, String username) {
+    public static synchronized void resume(String username) {
         mPaused = false;
-        ChatController cc = getChatController(context, username, false);
+        ChatController cc = getChatController(username);
         if (cc != null) {
             cc.resume();
         }
@@ -138,7 +136,7 @@ public class ChatManager {
                 if (extras.containsKey("networkInfo")) {
                     NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
 
-                    ChatController cc = getChatController(context, mAttachedUsername, false);
+                    ChatController cc = getChatController(mAttachedUsername);
                     if (cc != null) {
 
                         if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {

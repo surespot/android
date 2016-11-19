@@ -195,7 +195,7 @@ public class ImageSelectActivity extends Activity {
                 protected Void doInBackground(Void... params) {
                     ChatUtils.uploadPictureMessageAsync(
                             ImageSelectActivity.this,
-                            ChatManager.getChatController(ImageSelectActivity.this, mFrom),
+                            ChatManager.getChatController(mFrom),
                             Uri.fromFile(mPath),
                             mFrom,
                             mTo,
@@ -238,7 +238,7 @@ public class ImageSelectActivity extends Activity {
                     if (result != null) {
                         ChatUtils.uploadPictureMessageAsync(
                                 ImageSelectActivity.this,
-                                ChatManager.getChatController(ImageSelectActivity.this, mFrom),
+                                ChatManager.getChatController(mFrom),
                                 Uri.fromFile(result.mFile),
                                 mFrom,
                                 mTo,

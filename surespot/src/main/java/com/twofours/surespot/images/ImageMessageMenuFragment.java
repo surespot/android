@@ -83,7 +83,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 			mUsername = username;
 		}
 
-		final ChatController cc =  ChatManager.getChatController(mActivity, mUsername);
+		final ChatController cc =  ChatManager.getChatController(mUsername);
 		if (cc == null) {
 			return null;
 		}

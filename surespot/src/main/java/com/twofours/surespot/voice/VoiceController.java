@@ -280,7 +280,7 @@ public class VoiceController {
         }
         else {
             try {
-                ChatController cc = ChatManager.getChatController(activity, mFrom);
+                ChatController cc = ChatManager.getChatController(mFrom);
                 if (cc != null) {
                     final String m4aFile = mSendingFile;
                     ChatUtils.uploadVoiceMessageAsync(

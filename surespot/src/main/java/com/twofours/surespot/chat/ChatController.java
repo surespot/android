@@ -147,7 +147,6 @@ public class ChatController {
 
         mContext = context;
         mUsername = username;
-        mFriendAdapter = new FriendAdapter(mContext, mUsername);
         mNetworkController = NetworkManager.getNetworkController(mUsername);
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(mContext);
@@ -195,6 +194,8 @@ public class ChatController {
             }
         });
 
+
+        mFriendAdapter = new FriendAdapter(mContext, mUsername);
         loadState();
 
         mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
@@ -207,8 +208,6 @@ public class ChatController {
                 mIndicator.notifyDataSetChanged();
             }
         });
-
-
     }
 
     public void setAutoInviteData(AutoInviteData autoInviteData) {

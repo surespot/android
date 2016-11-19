@@ -92,7 +92,7 @@ public class FriendFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ChatController chatController = ChatManager.getChatController(getActivity(), mUsername);
+        ChatController chatController = ChatManager.getChatController(mUsername);
         if (chatController != null) {
             mMainAdapter = chatController.getFriendAdapter();
 
@@ -108,7 +108,7 @@ public class FriendFragment extends Fragment {
             Friend friend = ((FriendAdapter.FriendViewHolder) view.getTag()).friend;
             if (friend.isFriend()) {
 
-                ChatController chatController = ChatManager.getChatController(getActivity(), mUsername);
+                ChatController chatController = ChatManager.getChatController(mUsername);
                 if (chatController != null) {
 
                     chatController.setCurrentChat(friend.getName());
@@ -145,7 +145,7 @@ public class FriendFragment extends Fragment {
     private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, String selection) {
         final MainActivity activity = this.getMainActivity();
 
-        final ChatController cc = ChatManager.getChatController(activity, mUsername);
+        final ChatController cc = ChatManager.getChatController(mUsername);
 
         if (selection.equals(getString(R.string.menu_close_tab))) {
             if (cc != null) {

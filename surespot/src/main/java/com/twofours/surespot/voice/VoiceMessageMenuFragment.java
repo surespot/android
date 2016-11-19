@@ -76,7 +76,7 @@ public class VoiceMessageMenuFragment extends DialogFragment {
                 if (itemText.equals(getString(R.string.menu_delete_message))) {
                     SharedPreferences sp = mActivity.getSharedPreferences(mUsername, Context.MODE_PRIVATE);
                     boolean confirm = sp.getBoolean("pref_delete_message", true);
-                    final ChatController cc = ChatManager.getChatController(mActivity, mUsername);
+                    final ChatController cc = ChatManager.getChatController(mUsername);
                     if (cc != null) {
                         if (confirm) {
                             AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),

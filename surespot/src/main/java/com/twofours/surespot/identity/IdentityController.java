@@ -15,6 +15,7 @@ import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.FileUtils;
@@ -911,7 +912,10 @@ public class IdentityController {
     }
 
     public static synchronized void logout(Context context, String username) {
-        ChatManager.getChatController(context, username).logout();
+        ChatController cc = ChatManager.getChatController(username);
+        if (cc != null) {
+            cc.logout();
+        }
         NetworkManager.getNetworkController(username).logout();
 
         CredentialCachingService cache = SurespotApplication.getCachingService();
