@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
@@ -77,6 +78,11 @@ public class ImageMessageMenuFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		final MainActivity mActivity = (MainActivity) getActivity();
 
+		final ChatController cc =  ChatManager.getChatController(mActivity, mUsername);
+		if (cc == null) {
+			return null;
+		}
+
 		String username = getArguments().getString("username");
 		if (username != null) {
 			mUsername = username;
@@ -87,7 +93,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 			SurespotMessage rebuiltMessage = SurespotMessage.toSurespotMessage(messageString);
 
 			// get the actual message instance to add a listener to
-			mMessage = ChatManager.getChatController(mUsername).getLiveMessage(rebuiltMessage);
+			mMessage = cc.getLiveMessage(rebuiltMessage);
 
 			if (mMessage == null) {
 				mMessage = rebuiltMessage;
@@ -127,7 +133,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 				String itemText = mItems.get(which);
 
 				if (itemText.equals(getString(R.string.menu_lock)) || itemText.equals(getString(R.string.menu_unlock))) {
-					ChatManager.getChatController(mUsername).toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
+					cc.toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 
@@ -187,7 +193,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
-											ChatManager.getChatController(mUsername).deleteMessage(mMessage);
+											cc.deleteMessage(mMessage);
 										}
 										else {
 											dialogi.cancel();
@@ -196,7 +202,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								});
 						mActivity.setChildDialog(adialog);					}
 					else {
-						ChatManager.getChatController(mUsername).deleteMessage(mMessage);
+						cc.deleteMessage(mMessage);
 					}
 
 					return;

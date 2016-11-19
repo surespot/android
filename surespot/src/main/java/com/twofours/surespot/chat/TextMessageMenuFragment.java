@@ -11,7 +11,6 @@ import android.os.Bundle;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -86,27 +85,32 @@ public class TextMessageMenuFragment extends DialogFragment {
                         }
                         break;
                     case 1:
-                        SharedPreferences sp = getActivity().getSharedPreferences(mUsername, Context.MODE_PRIVATE);
-                        boolean confirm = sp.getBoolean("pref_delete_message", true);
-                        if (confirm) {
-                            AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
-                                    getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
-                                        public void handleResponse(Boolean result) {
-                                            if (result) {
-                                                ChatManager.getChatController(mUsername).deleteMessage(mMessage);
-                                            }
-                                            else {
-                                                dialogi.cancel();
-                                            }
-                                        }
 
-                                        ;
-                                    });
-                            mActivity.setChildDialog(dialog);
+                        final ChatController cc = ChatManager.getChatController(getActivity(), mUsername);
+                        if (cc != null) {
+                            SharedPreferences sp = getActivity().getSharedPreferences(mUsername, Context.MODE_PRIVATE);
+                            boolean confirm = sp.getBoolean("pref_delete_message", true);
+
+                            if (confirm) {
+                                AlertDialog dialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
+                                        getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                                            public void handleResponse(Boolean result) {
+                                                if (result) {
+                                                    cc.deleteMessage(mMessage);
+                                                } else {
+                                                    dialogi.cancel();
+                                                }
+                                            }
+
+                                            ;
+                                        });
+                                mActivity.setChildDialog(dialog);
+                            } else {
+                                cc.deleteMessage(mMessage);
+                            }
                         }
-
                         else {
-                            ChatManager.getChatController(mUsername).deleteMessage(mMessage);
+                            dialogi.cancel();
                         }
                         break;
                 }

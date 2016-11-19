@@ -142,9 +142,10 @@ public class ChatController {
     private ProcessNextMessageTask mResendTask;
     private boolean mErrored;
 
-    ChatController(String username) {
+    ChatController(Context context, String username) {
         SurespotLog.d(TAG, "constructor, username: %s", username);
 
+        mContext = context;
         mUsername = username;
         mNetworkController = NetworkManager.getNetworkController(mUsername);
 
@@ -166,6 +167,7 @@ public class ChatController {
             IAsyncCallback<Void> sendIntentCallback,
             IAsyncCallback<Friend> tabShowingCallback,
             IAsyncCallback<Object> four01handler) {
+        SurespotLog.d(TAG, "attach, username: %s", mUsername);
         mFragmentManager = fm;
         mContext = context;
         mProgressCallback = progressCallback;

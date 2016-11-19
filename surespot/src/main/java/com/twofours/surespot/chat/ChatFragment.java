@@ -163,7 +163,7 @@ public class ChatFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		ChatController chatController = ChatManager.getChatController(getOurUsername());
+		ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
 		if (chatController != null) {
 			mChatAdapter = chatController.getChatAdapter(mTheirUsername);
 			mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
@@ -205,13 +205,13 @@ public class ChatFragment extends Fragment {
 					if (mainActivity == null) {
 						return;
 					}
-					ChatController chatController = ChatManager.getChatController(getOurUsername());
+					ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
 					if (chatController == null) {
 						return;
 					}
 					boolean hasEarlier = chatController.hasEarlierMessages(mTheirUsername);
 					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
-					if (chatController != null && hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
+					if (hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
 
 						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
 						// + ", visibleItemCount: " + visibleItemCount);
@@ -232,7 +232,7 @@ public class ChatFragment extends Fragment {
 							// View v = mListView.getChildAt(0);
 							// mTop = (v == null) ? 0 : v.getTop();
 
-							ChatManager.getChatController(getOurUsername()).loadEarlierMessages(mTheirUsername, new IAsyncCallback<Boolean>() {
+							chatController.loadEarlierMessages(mTheirUsername, new IAsyncCallback<Boolean>() {
 
 								@Override
 								public void handleResponse(Boolean loadedNew) {
@@ -285,7 +285,7 @@ public class ChatFragment extends Fragment {
 		super.onResume();
 		SurespotLog.v(TAG, "onResume: " + mTheirUsername);
 
-		ChatController chatController = ChatManager.getChatController(getOurUsername());
+		ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
 
 		if (chatController != null) {
 			Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
@@ -318,7 +318,7 @@ public class ChatFragment extends Fragment {
 			// mListView.removeOnScrollListener()):
 
 			if (mListView != null) {
-				ChatController chatController = ChatManager.getChatController(getOurUsername());
+				ChatController chatController = ChatManager.getChatController(getActivity(), getOurUsername());
 				if (chatController != null && chatController.getFriendAdapter() != null) {
 
 					Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);

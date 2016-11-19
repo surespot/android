@@ -78,6 +78,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
         String type = bundle.getString("type");
         String from = bundle.getString("sentfrom");
 
+        ChatController chatController = ChatManager.getChatController(this, to);
+
         if ("message".equals(type)) {
             // make sure to is someone on this phone
             if (!IdentityController.getIdentityNames(this).contains(to)) {
@@ -101,7 +103,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
             //if current chat controller is for to user
             boolean tabOpenToUser = false;
-            ChatController chatController = ChatManager.getChatController(to);
+
             if (chatController != null) {
                 if (to.equals(chatController.getUsername())) {
                     //if tab is open on from user
@@ -134,7 +136,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {
                             SurespotLog.d(TAG, "adding gcm message to controller");
-                            ChatManager.getChatController(to).saveMessages(from);
+                            chatController.saveMessages(from);
 
                             added = true;
                         }
@@ -193,7 +195,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             if (!IdentityController.getIdentityNames(this).contains(to)) {
                 return;
             }
-            ChatController chatController = ChatManager.getChatController(to);
+
             boolean sameUser = ChatManager.isChatControllerAttached(to);
             String fromName = null;
             //get friend name if we can otherwise no name
@@ -221,7 +223,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
 
-            ChatController chatController = ChatManager.getChatController(to);
             boolean sameUser = ChatManager.isChatControllerAttached(to);
             String fromName = null;
             //get friend name if we can otherwise no name

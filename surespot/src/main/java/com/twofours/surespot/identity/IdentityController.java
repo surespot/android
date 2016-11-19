@@ -911,7 +911,7 @@ public class IdentityController {
     }
 
     public static synchronized void logout(Context context, String username) {
-        ChatManager.getChatController(username).logout();
+        ChatManager.getChatController(context, username).logout();
         NetworkManager.getNetworkController(username).logout();
 
         CredentialCachingService cache = SurespotApplication.getCachingService();

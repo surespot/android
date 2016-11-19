@@ -215,8 +215,8 @@ public class ChatUtils {
                             }
                         });
 
-                        ChatManager.getChatController(from).enqueueMessage(finalMessage);
-                        ChatManager.getChatController(from).processNextMessage();
+                        chatController.enqueueMessage(finalMessage);
+                        chatController.processNextMessage();
 
                     }
 
@@ -265,8 +265,8 @@ public class ChatUtils {
                     });
 
 
-                    ChatManager.getChatController(from).enqueueMessage(finalMessage);
-                    ChatManager.getChatController(from).processNextMessage();
+                    chatController.enqueueMessage(finalMessage);
+                    chatController.processNextMessage();
 
                 } catch (IOException e) {
                     //TODO mark errored
