@@ -18,6 +18,7 @@ package com.twofours.surespot.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -26,8 +27,11 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.network.NetworkManager;
 
 import java.io.IOException;
+import java.util.List;
 
 
 public class RegistrationIntentService extends IntentService {
@@ -69,8 +73,7 @@ public class RegistrationIntentService extends IntentService {
             // otherwise your server should have already received the token.
 //            sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, true).apply();
             // [END register_for_gcm]
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SurespotLog.i(TAG, e, "Failed to complete token refresh");
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
@@ -90,7 +93,12 @@ public class RegistrationIntentService extends IntentService {
      * @param id The new token.
      */
     private void sendRegistrationToServer(String id) {
-        SurespotApplication.getNetworkController().registerGcmId(this, id);
+        //todo use ChatManager
+        List<String> usernames = IdentityController.getIdentityNames(this);
+        for (String username : usernames) {
+            NetworkManager.getNetworkController(username).registerGcmId(this, id);
+        }
+
     }
 
     /**

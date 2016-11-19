@@ -12,10 +12,10 @@ import android.widget.TextView;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.ExpandableHeightListView;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -28,15 +28,17 @@ import java.util.List;
 
 public class KeyFingerprintDialogFragment extends DialogFragment {
 	private static final String TAG = "KeyFingerprintDialogFragment";
-	private String mUsername;
+	private String mOurUsername;
+	private String mTheirUsername;
 	private String mAlias;
 
-	public static KeyFingerprintDialogFragment newInstance(String username, String alias) {
+	public static KeyFingerprintDialogFragment newInstance(String ourUsername, String theirUsername, String alias) {
 		KeyFingerprintDialogFragment f = new KeyFingerprintDialogFragment();
 
 		// Supply num input as an argument.
 		Bundle args = new Bundle();
-		args.putString("username", username);
+		args.putString("ourUsername", ourUsername);
+		args.putString("theirUsername", theirUsername);
 		args.putString("alias", alias);
 		f.setArguments(args);
 
@@ -48,7 +50,8 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 		//
 		super.onCreate(savedInstanceState);
 		setStyle(STYLE_NO_TITLE, 0);
-		mUsername = getArguments().getString("username");
+		mOurUsername = getArguments().getString("ourUsername");
+		mTheirUsername = getArguments().getString("theirUsername");
 		mAlias = getArguments().getString("alias");
 	}
 
@@ -68,8 +71,8 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 
 
 		final List<HashMap<String, String>> myItems = new ArrayList<HashMap<String, String>>();
-		final SurespotIdentity identity = IdentityController.getIdentity(getActivity());
-		final boolean meFirst = ComparisonChain.start().compare(identity.getUsername().toLowerCase(), mUsername.toLowerCase(), Ordering.natural()).result() < 0;
+		final SurespotIdentity identity = IdentityController.getIdentity(getActivity(), mOurUsername);
+		final boolean meFirst = ComparisonChain.start().compare(mOurUsername.toLowerCase(), mTheirUsername.toLowerCase(), Ordering.natural()).result() < 0;
 
 		for (PrivateKeyPairs pkp : identity.getKeyPairs()) {
 			String version = pkp.getVersion();
@@ -105,7 +108,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 				}
 				
 				//get latest version from server							
-				String latestVersion = SurespotApplication.getNetworkController().getKeyVersionSync(mUsername);
+				String latestVersion = NetworkManager.getNetworkController(mOurUsername).getKeyVersionSync(mTheirUsername);
 				if (latestVersion == null) {
 					activity = getActivity();
 					if (activity == null) {
@@ -120,7 +123,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 				if (maxVersion > 0) {
 					for (int ver = maxVersion; ver > 0; ver--) {
 						String sVer = String.valueOf(ver);
-						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(mUsername, sVer);
+						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(getActivity(), mOurUsername, mTheirUsername, sVer);
 
 						if (pubkeys == null) {
 							return null;
@@ -182,11 +185,11 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 
 		if (meFirst) {
 			tvALabel.setText(identity.getUsername());
-			String bLabelText = UIUtils.buildAliasString(mUsername, mAlias);
+			String bLabelText = UIUtils.buildAliasString(mTheirUsername, mAlias);
 			tvBLabel.setText(bLabelText);
 		}
 		else {
-			String aLabelText = UIUtils.buildAliasString(mUsername, mAlias);
+			String aLabelText = UIUtils.buildAliasString(mTheirUsername, mAlias);
 			tvALabel.setText(aLabelText);
 			tvBLabel.setText(identity.getUsername());
 

@@ -21,6 +21,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.Animation;
@@ -28,7 +29,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -36,6 +36,7 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
@@ -59,11 +60,13 @@ import java.lang.ref.WeakReference;
 public class MessageImageDownloader {
     private static final String TAG = "MessageImageDownloader";
     private static BitmapCache mBitmapCache = new BitmapCache();
-    private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
+    private String mUsername;
 
 
-    public MessageImageDownloader(ChatAdapter chatAdapter) {
+    public MessageImageDownloader(String username, ChatAdapter chatAdapter) {
+        mUsername = username;
         mChatAdapter = chatAdapter;
     }
 
@@ -88,7 +91,7 @@ public class MessageImageDownloader {
             message.setLoaded(true);
             message.setLoading(false);
 
-            UIUtils.updateDateAndSize(message, (View) imageView.getParent());
+            UIUtils.updateDateAndSize(mChatAdapter.getContext(), message, (View) imageView.getParent());
 
         }
     }
@@ -183,7 +186,8 @@ public class MessageImageDownloader {
             if (!TextUtils.isEmpty(messageData)) {
 
                 SurespotLog.d(TAG, "BitmapDownloaderTask getting %s,", messageData);
-                InputStream encryptedImageStream = SurespotApplication.getNetworkController().getFileStream(messageData);
+
+                InputStream encryptedImageStream = NetworkManager.getNetworkController(mUsername).getFileStream(messageData);
 
                 if (mCancelled) {
                     try {
@@ -203,7 +207,7 @@ public class MessageImageDownloader {
                     try {
                         inputStream = new PipedInputStream(out);
 
-                        EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
+                        EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                 new BufferedInputStream(encryptedImageStream), out);
 
                         if (mCancelled) {
@@ -312,7 +316,7 @@ public class MessageImageDownloader {
                                 imageView.setImageBitmap(finalBitmap);
                                 imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
 
-                                UIUtils.updateDateAndSize(mMessage, (View) imageView.getParent());
+                                UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 mChatAdapter.checkLoaded();
                             }
                             else {

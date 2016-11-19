@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -386,4 +387,21 @@ public class Utils {
 
 		return emailAddresses;
 	}
+
+
+	public static void debugIntent(Intent intent, String tag) {
+		Log.v(tag, "action: " + intent.getAction());
+		Log.v(tag, "component: " + intent.getComponent());
+		Bundle extras = intent.getExtras();
+		if (extras != null) {
+			for (String key : extras.keySet()) {
+				Log.d(tag, "key [" + key + "]: " +
+						extras.get(key));
+			}
+		}
+		else {
+			Log.v(tag, "no extras");
+		}
+	}
+
 }

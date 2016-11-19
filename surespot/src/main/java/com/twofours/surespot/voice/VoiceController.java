@@ -14,11 +14,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.File;
@@ -278,14 +280,23 @@ public class VoiceController {
         }
         else {
             try {
-                final String m4aFile = mSendingFile;
-                ChatUtils.uploadVoiceMessageAsync(
-                        activity,
-                        MainActivity.getChatController(),
-                        Uri.fromFile(new File(m4aFile)),
-                        mFrom,
-                        mTo);
+                ChatController cc = ChatManager.getChatController(activity, mFrom);
+                if (cc != null) {
+                    final String m4aFile = mSendingFile;
+                    ChatUtils.uploadVoiceMessageAsync(
+                            activity,
+                            cc,
+                            Uri.fromFile(new File(m4aFile)),
+                            mFrom,
+                            mTo);
+                }
+                else {
+                    SurespotLog.w(TAG, "sendVoiceMessage null chat controller, deleting: %s", mSendingFile);
+                    new File(mSendingFile).delete();
+                    Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
+                }
             }
+
             catch (Exception e) {
                 SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
                 new File(mSendingFile).delete();
@@ -418,7 +429,7 @@ public class VoiceController {
 
                     SurespotLog.v(TAG, "message: %s not playing", message);
 
-                    if (ChatUtils.isMyMessage(message)) {
+                    if (ChatUtils.isMyMessage(IdentityController.getLoggedInUser(), message)) {
                         voicePlayed.setVisibility(View.VISIBLE);
                     }
                     // //if it's ours we don't care if it's been played or not

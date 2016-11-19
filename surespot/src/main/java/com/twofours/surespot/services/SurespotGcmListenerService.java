@@ -34,6 +34,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotConstants;
@@ -77,6 +78,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
         String type = bundle.getString("type");
         String from = bundle.getString("sentfrom");
 
+        ChatController chatController = ChatManager.getChatController(this, to);
+
         if ("message".equals(type)) {
             // make sure to is someone on this phone
             if (!IdentityController.getIdentityNames(this).contains(to)) {
@@ -96,11 +99,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 }
             }
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
-            boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
 
             //if current chat controller is for to user
             boolean tabOpenToUser = false;
-            ChatController chatController = SurespotApplication.getChatController();
+
             if (chatController != null) {
                 if (to.equals(chatController.getUsername())) {
                     //if tab is open on from user
@@ -110,7 +113,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 }
             }
 
-            boolean uiAttached = CommunicationService.isUIAttached();
+            boolean uiAttached = ChatManager.isUIAttached();
 
             SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, uiAttached, hasLoggedInUser,
                     sameUser, tabOpenToUser);
@@ -133,11 +136,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     if (chatController != null) {
                         if (chatController.addMessageExternal(sm)) {
                             SurespotLog.d(TAG, "adding gcm message to controller");
-                            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                                SurespotApplication.getCommunicationService().saveMessages(from);
-                            } else {
-                                SurespotLog.w(TAG, "could not add gcm message to controller - transmission service was null");
-                            }
+                            chatController.saveMessages(from);
+
                             added = true;
                         }
                     }
@@ -195,8 +195,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
             if (!IdentityController.getIdentityNames(this).contains(to)) {
                 return;
             }
-            ChatController chatController = MainActivity.getChatController();
-            boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
             String fromName = null;
             //get friend name if we can otherwise no name
             if (sameUser && chatController != null) {
@@ -223,8 +223,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
 
-            ChatController chatController = MainActivity.getChatController();
-            boolean sameUser = to.equals(IdentityController.getLoggedInUser());
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
             String fromName = null;
             //get friend name if we can otherwise no name
             if (sameUser && chatController != null) {

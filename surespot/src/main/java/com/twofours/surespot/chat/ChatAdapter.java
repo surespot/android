@@ -17,7 +17,6 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.voice.VoiceController;
@@ -44,17 +43,19 @@ public class ChatAdapter extends BaseAdapter {
     private boolean mLoaded;
     private VoiceMessageDownloader mMessageVoiceDownloader;
     private ArrayList<SurespotControlMessage> mControlMessages = new ArrayList<SurespotControlMessage>();
+    private String mOurUsername;
 
-    public ChatAdapter(Context context) {
-        SurespotLog.v(TAG, "Constructor.");
+    public ChatAdapter(Context context, String ourUsername) {
+        SurespotLog.d(TAG, "Constructor, ourUsername: %s", ourUsername);
         mContext = context;
+        mOurUsername = ourUsername;
 
-        SharedPreferences pm = context.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+        SharedPreferences pm = context.getSharedPreferences(mOurUsername, Context.MODE_PRIVATE);
         mDebugMode = pm.getBoolean("pref_debug_mode", false);
 
-        mMessageDecryptor = new MessageDecryptor(this);
-        mMessageImageDownloader = new MessageImageDownloader(this);
-        mMessageVoiceDownloader = new VoiceMessageDownloader(this);
+        mMessageDecryptor = new MessageDecryptor(mOurUsername, this);
+        mMessageImageDownloader = new MessageImageDownloader(mOurUsername, this);
+        mMessageVoiceDownloader = new VoiceMessageDownloader(mOurUsername, this);
     }
 
     public void doneCheckingSequence() {
@@ -116,8 +117,7 @@ public class ChatAdapter extends BaseAdapter {
         if (index == -1) {
             mMessages.add(message);
             added = true;
-        }
-        else {
+        } else {
             // SurespotLog.v(TAG, "addMessage, updating message");
             SurespotMessage updateMessage = mMessages.get(index);
 
@@ -150,17 +150,21 @@ public class ChatAdapter extends BaseAdapter {
                 //
                 else {
                     //message updated by communication controller after encryption
-                    //update plain data, their version, our version
-                    if (!TextUtils.isEmpty(message.getToVersion())) {
-                        updateMessage.setToVersion(message.getToVersion());
-                    }
+                    //update plain data, their version, our version if the local message doesn't have an id
+                    //(ie. hasn't roundtripped)
+                    if (updateMessage.getId() == null) {
+                        if (!TextUtils.isEmpty(message.getToVersion())) {
+                            updateMessage.setToVersion(message.getToVersion());
+                        }
 
-                    if (!TextUtils.isEmpty(message.getFromVersion())) {
-                        updateMessage.setFromVersion(message.getFromVersion());
-                    }
+                        if (!TextUtils.isEmpty(message.getFromVersion())) {
+                            updateMessage.setFromVersion(message.getFromVersion());
+                        }
 
-                    if (!TextUtils.isEmpty(message.getData())) {
-                        updateMessage.setData(message.getData());
+                        //if local message has an id don't overwrite the data
+                        if (!TextUtils.isEmpty(message.getData())) {
+                            updateMessage.setData(message.getData());
+                        }
                     }
 
                     if (updateMessage.getErrorStatus() != message.getErrorStatus()) {
@@ -180,8 +184,7 @@ public class ChatAdapter extends BaseAdapter {
     private synchronized void insertMessage(SurespotMessage message) {
         if (mMessages.indexOf(message) == -1) {
             mMessages.add(0, message);
-        }
-        else {
+        } else {
             SurespotLog.v(TAG, "insertMessage, message already present: %s", message);
         }
     }
@@ -214,15 +217,14 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public synchronized int getItemViewType(int position) {
         SurespotMessage message = mMessages.get(position);
-        return getTypeForMessage(message);
+        return getTypeForMessage(mOurUsername, message);
     }
 
-    public int getTypeForMessage(SurespotMessage message) {
-        String otherUser = ChatUtils.getOtherUser(message.getFrom(), message.getTo());
+    public int getTypeForMessage(String ourUser, SurespotMessage message) {
+        String otherUser = ChatUtils.getOtherUser(ourUser, message.getFrom(), message.getTo());
         if (otherUser.equals(message.getFrom())) {
             return TYPE_THEM;
-        }
-        else {
+        } else {
             return TYPE_US;
         }
     }
@@ -260,8 +262,7 @@ public class ChatAdapter extends BaseAdapter {
             if (currentViewHolder.type != type) {
                 SurespotLog.v(TAG, "types do not match, creating new view for the row");
                 convertView = null;
-            }
-            else {
+            } else {
                 chatMessageViewHolder = currentViewHolder;
             }
         }
@@ -321,8 +322,7 @@ public class ChatAdapter extends BaseAdapter {
         if (item.getErrorStatus() > 0) {
             SurespotLog.v(TAG, "item has error: %s", item);
             ChatUtils.setMessageErrorText(mContext, chatMessageViewHolder.tvTime, item);
-        }
-        else {
+        } else {
             if (item.getId() == null) {
                 // if it's a text message or we're sending
                 //     if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
@@ -337,18 +337,15 @@ public class ChatAdapter extends BaseAdapter {
 //                        SurespotLog.v(TAG, "getView, item.getId() is null, an image or voice message, setting status text to loading and decrypting...");
 //                    }
 //                }
-            }
-            else {
+            } else {
                 if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
                     chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
-                }
-                else {
+                } else {
 
                     if (item.getDateTime() != null) {
                         chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
                                 + DateFormat.getTimeFormat(mContext).format(item.getDateTime()));
-                    }
-                    else {
+                    } else {
                         chatMessageViewHolder.tvTime.setText("");
                         SurespotLog.v(TAG, "getView, item: %s", item);
                     }
@@ -367,15 +364,13 @@ public class ChatAdapter extends BaseAdapter {
             if (item.getPlainData() != null) {
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.tvText.setText(item.getPlainData());
-            }
-            else {
+            } else {
                 chatMessageViewHolder.tvText.setText("");
                 mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
             }
             chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
             chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-        }
-        else {
+        } else {
             if (item.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
@@ -391,13 +386,11 @@ public class ChatAdapter extends BaseAdapter {
 
                     chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
                     chatMessageViewHolder.ivShareable.setVisibility(View.VISIBLE);
-                }
-                else {
+                } else {
                     chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
                     chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
                 }
-            }
-            else {
+            } else {
                 if (item.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                     chatMessageViewHolder.imageView.setVisibility(View.GONE);
                     chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
@@ -413,8 +406,7 @@ public class ChatAdapter extends BaseAdapter {
                             SurespotLog.v(TAG, "chatAdapter setting played to visible");
                             chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
                             chatMessageViewHolder.voicePlay.setVisibility(View.GONE);
-                        }
-                        else {
+                        } else {
                             SurespotLog.v(TAG, "chatAdapter setting played to gone");
                             chatMessageViewHolder.voicePlayed.setVisibility(View.GONE);
                             chatMessageViewHolder.voicePlay.setVisibility(View.VISIBLE);
@@ -585,7 +577,7 @@ public class ChatAdapter extends BaseAdapter {
             SurespotMessage message = iterator.next();
 
             // if it's not our message, delete it
-            if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(IdentityController.getLoggedInUser())) {
+            if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(mOurUsername)) {
                 message.setDeleted(true);
                 iterator.remove();
             }

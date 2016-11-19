@@ -16,16 +16,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
+import com.twofours.surespot.network.NetworkManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,9 +51,11 @@ public class FriendAdapter extends BaseAdapter {
     private IAsyncCallback<Boolean> mLoadingCallback;
 
     private Context mContext;
+    private String mUsername;
 
-    public FriendAdapter(Context context) {
+    public FriendAdapter(Context context, String username) {
         mContext = context;
+        mUsername = username;
         mFriendAliasDecryptor = new FriendAliasDecryptor(this);
 
         // clear invite notifications
@@ -164,7 +164,7 @@ public class FriendAdapter extends BaseAdapter {
         SurespotLog.d(TAG, "decryptAliases");
         for (Friend friend : mFriends) {
             if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
-                String plainText = EncryptionController.symmetricDecrypt(friend.getAliasVersion(), IdentityController.getLoggedInUser(),
+                String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(),mUsername,
                         friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
                 SurespotLog.v(TAG, "setting alias for %s", friend.getName());
@@ -245,7 +245,7 @@ public class FriendAdapter extends BaseAdapter {
         friendViewHolder.tvName.setText(friend.getNameOrAlias());
         // if alias not decrypted decrypt it
         if (TextUtils.isEmpty(friend.getAliasPlain()) && friend.hasFriendAliasAssigned()) {
-            mFriendAliasDecryptor.decrypt(friendViewHolder.tvName, friend);
+            mFriendAliasDecryptor.decrypt(friendViewHolder.tvName, mUsername, friend);
         }
 
         friendViewHolder.tvName.setTextColor(
@@ -253,7 +253,7 @@ public class FriendAdapter extends BaseAdapter {
         );
 
         if (friend.hasFriendImageAssigned()) {
-            FriendImageDownloader.download(friendViewHolder.avatarImage, friend);
+            FriendImageDownloader.download(friendViewHolder.avatarImage, mUsername, friend);
         } else {
             friendViewHolder.avatarImage.setImageResource(android.R.color.transparent);
         }
@@ -319,11 +319,12 @@ public class FriendAdapter extends BaseAdapter {
             final Friend friend = (Friend) getItem(position);
             final String friendname = friend.getName();
 
-            SurespotApplication.getNetworkController().respondToInvite(friendname, action, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            NetworkManager.getNetworkController(mUsername).
+            respondToInvite(friendname, action, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "respondToInvite");
-                    Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                    Utils.makeToast(mContext, mContext.getString(R.string.could_not_respond_to_invite));
                 }
 
                 @Override
@@ -343,7 +344,7 @@ public class FriendAdapter extends BaseAdapter {
                                 }
                             }
                         }
-                        mNotificationManager.cancel(IdentityController.getLoggedInUser() + ":" + friendname,
+                        mNotificationManager.cancel(mUsername + ":" + friendname,
                                 SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
                         Collections.sort(mFriends);
                         notifyDataSetChanged();
@@ -358,7 +359,7 @@ public class FriendAdapter extends BaseAdapter {
 //                            notifyDataSetChanged();
 //                        }
 //                        else {
-                            Utils.makeToast(MainActivity.getContext(), mContext.getString(R.string.could_not_respond_to_invite));
+                            Utils.makeToast(mContext, mContext.getString(R.string.could_not_respond_to_invite));
                         //}
                     }
                 }

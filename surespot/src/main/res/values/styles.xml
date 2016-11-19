@@ -26,11 +26,6 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:buttonStyle">@android:style/Widget.Holo.ActionButton</item>
-        <!--<item name="android:actionBarStyle">@style/BlackActionBar</item>-->
-    </style>
-
-    <style name="BlackActionBar" parent="@android:style/Widget.Holo.ActionBar.Solid">
-        <!--<item name="android:background">@android:color/background_dark</item>-->
     </style>
 
     <declare-styleable name="VolumeEnvelopeView">

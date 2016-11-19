@@ -2,9 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:emojicon="http://schemas.android.com/apk/res-auto"
     android:descendantFocusability="blocksDescendants"
     android:gravity="left"
-    android:orientation="horizontal" >
+    android:orientation="horizontal">
 
     <!-- <TextView -->
     <!-- android:id="@+id/messageUser" -->
@@ -72,7 +73,7 @@
                 android:textSize="10sp" />
         </LinearLayout>
 
-        <TextView
+        <com.rockerhieu.emojicon.EmojiconTextView
             android:id="@+id/messageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -80,10 +81,11 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="7dp"
             android:layout_marginRight="55dp"
+            emojicon:emojiconSize="30dp"
             android:autoLink="all"
             android:textSize="16sp"
             android:visibility="gone" >
-        </TextView>
+        </com.rockerhieu.emojicon.EmojiconTextView>
 
         <ImageView
             android:id="@+id/messageImage"

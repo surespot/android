@@ -16,8 +16,10 @@
 
 package com.twofours.surespot.voice;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.SeekBar;
@@ -30,6 +32,7 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.FileInputStream;
@@ -51,10 +54,12 @@ import java.lang.ref.WeakReference;
  */
 public class VoiceMessageDownloader {
     private static final String TAG = "VoiceMessageDownloader";
-    private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
+    private String mUsername;
 
-    public VoiceMessageDownloader(ChatAdapter chatAdapter) {
+    public VoiceMessageDownloader(String username, ChatAdapter chatAdapter) {
+        mUsername = username;
         mChatAdapter = chatAdapter;
     }
 
@@ -79,7 +84,7 @@ public class VoiceMessageDownloader {
             message.setLoaded(true);
             message.setLoading(false);
 
-            updateUI(message, parentView);
+            updateUI(mChatAdapter.getContext(), message, parentView);
 
         }
     }
@@ -177,7 +182,8 @@ public class VoiceMessageDownloader {
                 if (!TextUtils.isEmpty(messageData)) {
 
                     SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", messageData);
-                    InputStream voiceStream = SurespotApplication.getNetworkController().getFileStream(messageData);
+                    InputStream voiceStream = NetworkManager.getNetworkController(mUsername).getFileStream(messageData);
+                    //InputStream voiceStream = SurespotApplication.getNetworkController().getFileStream(messageData);
 
                     if (mCancelled) {
                         try {
@@ -204,7 +210,7 @@ public class VoiceMessageDownloader {
                                 return;
                             }
 
-                            EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(), mMessage.getIv(), mMessage.isHashed(),
+                            EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                     voiceStream, out);
 
                             soundbytes = Utils.inputStreamToBytes(inputStream);
@@ -279,7 +285,7 @@ public class VoiceMessageDownloader {
 
                             @Override
                             public void run() {
-                                updateUI(mMessage, view);
+                                updateUI(mChatAdapter.getContext(), mMessage, view);
 
                             }
 
@@ -295,12 +301,12 @@ public class VoiceMessageDownloader {
         }
     }
 
-    private void updateUI(SurespotMessage message, View parentView) {
-        UIUtils.updateDateAndSize(message, parentView);
+    private void updateUI(Context context, SurespotMessage message, View parentView) {
+        UIUtils.updateDateAndSize(context ,message, parentView);
 
         if (message.isPlayVoice()) {
             SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-            VoiceController.playVoiceMessage(MainActivity.getContext(), seekBar, message);
+            VoiceController.playVoiceMessage(context, seekBar, message);
         }
 
     }

@@ -11,25 +11,30 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
-import android.os.ResultReceiver;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.TextKeyListener;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,31 +42,35 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.GridView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.rockerhieu.emojicon.EmojiconsView;
+import com.rockerhieu.emojicon.OnEmojiconClickedListener;
+import com.rockerhieu.emojicon.emoji.Emojicon;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.chat.EmojiAdapter;
-import com.twofours.surespot.chat.EmojiParser;
-import com.twofours.surespot.chat.MainActivityLayout;
-import com.twofours.surespot.chat.MainActivityLayout.OnMeasureListener;
+import com.twofours.surespot.chat.SoftKeyboardLayout;
+import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -75,10 +84,9 @@ import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
-import com.twofours.surespot.services.CommunicationService;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
-import com.twofours.surespot.services.ITransmissionServiceListener;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.UIUtils;
@@ -95,42 +103,33 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class MainActivity extends Activity implements OnMeasureListener {
+import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
+
+public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    private static Context mContext = null;
-    private static Handler mMainHandler = null;
+    private Context mContext = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallback<Object> m401Handler;
 
     private boolean mCacheServiceBound;
-    private boolean mCommunicationServiceBound;
     private Menu mMenuOverflow;
     private BroadcastReceiver mExternalStorageReceiver;
     private boolean mExternalStorageAvailable = false;
     private boolean mExternalStorageWriteable = false;
     private ImageView mHomeImageView;
-    private InputMethodManager mImm;
-    private KeyboardStateHandler mKeyboardStateHandler;
-    private MainActivityLayout mActivityLayout;
+
+    private SoftKeyboardLayout mActivityLayout;
     private EditText mEtMessage;
     private EditText mEtInvite;
     private View mSendButton;
-    private GridView mEmojiView;
-    private boolean mKeyboardShowing;
-    private int mEmojiHeight;
-    private int mInitialHeightOffset;
+    private EmojiconsView mEmojiView;
     private ImageView mEmojiButton;
+    private boolean mEmojiShowing;
     private ImageView mQRButton;
     private Friend mCurrentFriend;
-    private int mOrientation;
-    private boolean mKeyboardShowingOnChatTab;
-    private boolean mKeyboardShowingOnHomeTab;
-    private boolean mEmojiShowingOnChatTab;
-    private boolean mEmojiShowing;
     private boolean mFriendHasBeenSet;
-    private int mEmojiResourceId = -1;
     private ImageView mIvInvite;
     private ImageView mIvVoice;
     private ImageView mIvSend;
@@ -143,15 +142,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
     // control booleans
     private boolean mLaunched;
     private boolean mResumed;
-    private boolean mStartWhenBothServicesBound;
     private boolean mSigningUp;
     private boolean mUnlocking = false;
     private boolean mPaused = false;
     // end control booleans
 
     private BillingController mBillingController;
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
     private Handler mHandler = new Handler(Looper.getMainLooper());
+    private ListView mDrawerList;
+    private FrameLayout mContentFrame;
+    private DrawerLayout mDrawerLayout;
+    private LayoutParams mWindowLayoutParams;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -167,7 +168,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         if (deleted) {
             // if we have any users or we don't need to create a user, figure out if we need to login
-            if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
+            if (!IdentityController.hasIdentity(this) || intent.getBooleanExtra("create", false)) {
                 // otherwise show the signup activity
                 SurespotLog.d(TAG, "I was deleted and there are no other users so starting signup activity.");
                 Intent newIntent = new Intent(this, SignupActivity.class);
@@ -175,20 +176,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 intent.putExtra("signingUp", true);
                 startActivity(newIntent);
                 finish();
-            }
-            else {
+            } else {
                 SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
                 Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(newIntent);
                 finish();
             }
-        }
-        else {
+        } else {
             if (!needsSignup()) {
                 processLaunch();
-            }
-            else {
+            } else {
                 mSigningUp = true;
             }
         }
@@ -215,10 +213,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         Intent intent = getIntent();
         Utils.logIntent(TAG, intent);
-
-        mImm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        mOrientation = getResources().getConfiguration().orientation;
-
 
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 
@@ -250,37 +244,15 @@ public class MainActivity extends Activity implements OnMeasureListener {
         };
 
         if (!needsSignup()) {
-            if (savedInstanceState != null) {
-
-                mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing", false);
-                mEmojiShowing = savedInstanceState.getBoolean("emojiShowing", false);
-                mEmojiShowingOnChatTab = savedInstanceState.getBoolean("emojiShowingChat", mEmojiShowing);
-                mKeyboardShowingOnChatTab = savedInstanceState.getBoolean("keyboardShowingChat", mKeyboardShowing);
-                mKeyboardShowingOnHomeTab = savedInstanceState.getBoolean("keyboardShowingHome", mKeyboardShowing);
-
-                SurespotLog.v(TAG,
-                        "loading from saved instance state, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
-                        mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab, mEmojiShowingOnChatTab);
-            }
-
             processLaunch();
-        }
-        else {
+        } else {
             if (!mSigningUp) {
                 mSigningUp = intent.getBooleanExtra("signingUp", false);
 
                 if (!mSigningUp) {
-                    if (mCommunicationServiceBound && mCacheServiceBound) {
+                    if (mCacheServiceBound) {
                         processLaunch();
-                    }
-                    else {
-                        // one or more services needs to be bound
-                        mStartWhenBothServicesBound = true;
-
-                        if (!mCommunicationServiceBound) {
-                            bindChatTransmissionService();
-                        }
-
+                    } else {
                         if (!mCacheServiceBound) {
                             bindCacheService();
                         }
@@ -292,48 +264,45 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
     private void processLaunch() {
         String user = getLaunchUser();
-
+        SurespotLog.d(TAG, "processLaunch, launchUser: %s, mUser: %s", user, mUser);
         if (user == null) {
             launchLogin();
-        }
-        else {
+        } else {
             mUser = user;
-
-            if (!mCommunicationServiceBound) {
-                bindChatTransmissionService();
-            }
 
             if (!mCacheServiceBound) {
                 bindCacheService();
             }
 
-            if (mCacheServiceBound && mCommunicationServiceBound) {
-                SurespotLog.d(TAG, "cache and chat transmission services already bound");
+            if (mCacheServiceBound) {
+                SurespotLog.d(TAG, "cache service already bound");
                 if (!mUnlocking) {
                     SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
                     postServiceProcess();
-                }
-                else {
+                } else {
                     SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
                 }
             }
-            else {
-                mStartWhenBothServicesBound = true;
-            }
+
         }
     }
 
     private void launchLogin() {
-        SurespotLog.d(TAG, "launchLogin");
+        SurespotLog.d(TAG, "launchLogin, mUser: %s", mUser);
         Intent intent = getIntent();
         Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
-        newIntent.putExtra("autoinviteuri", intent.getData());
-        newIntent.setAction(intent.getAction());
-        newIntent.setType(intent.getType());
 
         Bundle extras = intent.getExtras();
         if (extras != null) {
             newIntent.putExtras(extras);
+        }
+
+        newIntent.putExtra("autoinviteuri", intent.getData());
+        newIntent.setAction(intent.getAction());
+        newIntent.setType(intent.getType());
+
+        if (mUser != null) {
+            newIntent.putExtra(MESSAGE_TO, mUser);
         }
 
         newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -372,8 +341,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 if (segments.size() > 1) {
                     if (dataUri) {
                         intent.setData(null);
-                    }
-                    else {
+                    } else {
                         intent.removeExtra("autoinviteurl");
                     }
 
@@ -382,8 +350,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         aid.setUsername(segments.get(1));
                         aid.setSource(segments.get(2));
                         return aid;
-                    }
-                    catch (IndexOutOfBoundsException e) {
+                    } catch (IndexOutOfBoundsException e) {
                         SurespotLog.i(TAG, e, "getAutoInviteData");
                     }
                 }
@@ -393,52 +360,29 @@ public class MainActivity extends Activity implements OnMeasureListener {
         return null;
     }
 
-    class KeyboardStateHandler implements OnGlobalLayoutListener {
-        @Override
-        public void onGlobalLayout() {
-            final View activityRootView = findViewById(R.id.chatLayout);
-            int activityHeight = activityRootView.getHeight();
-            int heightDelta = activityRootView.getRootView().getHeight() - activityHeight;
-
-            if (mInitialHeightOffset == 0) {
-                mInitialHeightOffset = heightDelta;
-            }
-
-            // set the emoji view to the keyboard height
-            mEmojiHeight = Math.abs(heightDelta - mInitialHeightOffset);
-
-            SurespotLog.v(TAG, "onGlobalLayout, root Height: %d, activity height: %d, emoji: %d, initialHeightOffset: %d", activityRootView.getRootView()
-                    .getHeight(), activityRootView.getHeight(), heightDelta, mInitialHeightOffset);
-
-            setButtonText();
-
-        }
-    }
-
-    private void setupChatControls() {
-        mIvInvite = (ImageView) findViewById(R.id.ivInvite);
-        mIvVoice = (ImageView) findViewById(R.id.ivVoice);
-        mIvSend = (ImageView) findViewById(R.id.ivSend);
-        mIvHome = (ImageView) findViewById(R.id.ivHome);
-        mSendButton = (View) findViewById(R.id.bSend);
+    private void setupChatControls(View mainView) {
+        mIvInvite = (ImageView) mainView.findViewById(R.id.ivInvite);
+        mIvVoice = (ImageView) mainView.findViewById(R.id.ivVoice);
+        mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
+        mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
+        mSendButton = (View) mainView.findViewById(R.id.bSend);
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SurespotApplication.getChatController() != null) {
+                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                if (cc != null) {
 
                     Friend friend = mCurrentFriend;
                     if (friend != null) {
 
-                        if (mEtMessage.getText().toString().length() > 0 && !SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
+                        if (mEtMessage.getText().toString().length() > 0 && !cc.isFriendDeleted(friend.getName())) {
                             sendMessage(friend.getName());
-                        }
-                        else {
+                        } else {
                             // go to home
-                            SurespotApplication.getChatController().setCurrentChat(null);
+                            cc.setCurrentChat(null);
                         }
-                    }
-                    else {
+                    } else {
                         inviteFriend();
                     }
                 }
@@ -452,22 +396,23 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 SurespotLog.d(TAG, "onLongClick voice");
                 Friend friend = mCurrentFriend;
                 if (friend != null) {
-                    // if they're deleted always close the tab
-                    if (SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
-                        SurespotApplication.getChatController().closeTab();
-                    }
-                    else {
-                        if (mEtMessage.getText().toString().length() > 0) {
-                            sendMessage(friend.getName());
-                        }
-                        else {
-                            SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
-                            boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
-                            if (!disableVoice) {
-                                VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
-                            }
-                            else {
-                                SurespotApplication.getChatController().closeTab();
+                    ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                    if (cc != null) {
+
+                        // if they're deleted always close the tab
+                        if (cc.isFriendDeleted(friend.getName())) {
+                            cc.closeTab();
+                        } else {
+                            if (mEtMessage.getText().toString().length() > 0) {
+                                sendMessage(friend.getName());
+                            } else {
+                                SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
+                                boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
+                                if (!disableVoice) {
+                                    VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
+                                } else {
+                                    cc.closeTab();
+                                }
                             }
                         }
                     }
@@ -488,8 +433,11 @@ public class MainActivity extends Activity implements OnMeasureListener {
                         Friend friend = mCurrentFriend;
                         if (friend != null) {
                             // if they're deleted do nothing
-                            if (SurespotApplication.getChatController().isFriendDeleted(friend.getName())) {
-                                return false;
+                            ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                            if (cc != null) {
+                                if (cc.isFriendDeleted(friend.getName())) {
+                                    return false;
+                                }
                             }
 
                             if (mEtMessage.getText().toString().length() == 0) {
@@ -531,43 +479,28 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
         });
 
-        mEmojiView = (GridView) findViewById(R.id.fEmoji);
-        mEmojiView.setAdapter(new EmojiAdapter(this));
-
-        mEmojiView.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
-                int start = mEtMessage.getSelectionStart();
-                int end = mEtMessage.getSelectionEnd();
-                CharSequence insertText = EmojiParser.getInstance().getEmojiChar(position);
-                mEtMessage.getText().replace(Math.min(start, end), Math.max(start, end), insertText);
-                mEtMessage.setSelection(Math.max(start, end) + insertText.length());
-
-            }
-        });
-
-        mEmojiButton = (ImageView) findViewById(R.id.bEmoji);
+        mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
         mEmojiButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
-                toggleEmoji();
+                toggleEmojiDrawer();
             }
         });
 
         setEmojiIcon(true);
 
-        mQRButton = (ImageView) findViewById(R.id.bQR);
+        mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
         mQRButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                mDialog = UIUtils.showQRDialog(MainActivity.this);
+                mDialog = UIUtils.showQRDialog(MainActivity.this, mUser);
             }
         });
 
-        mEtMessage = (EditText) findViewById(R.id.etMessage);
+        mEtMessage = (EditText) mainView.findViewById(R.id.etMessage);
         mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -593,24 +526,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
-        OnTouchListener editTouchListener = new OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (!mKeyboardShowing) {
-                    showSoftKeyboard(v);
-                    return true;
-                }
-
-                return false;
-            }
-        };
-
-        mEtMessage.setOnTouchListener(editTouchListener);
-
-        mEtInvite = (EditText) findViewById(R.id.etInvite);
+        mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
-        mEtInvite.setOnTouchListener(editTouchListener);
+        //mEtInvite.setOnTouchListener(editTouchListener);
 
         mEtInvite.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
@@ -630,10 +548,29 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
     }
 
+    private void switchUser(String identityName) {
+        SurespotLog.d(TAG, "switchUser, mUser: %s, identityName: %s", mUser, identityName);
+        if (!identityName.equals(mUser)) {
+            ChatManager.pause(this, mUser);
+            ChatManager.detach(this);
+            mUser = identityName;
+
+            if (!SurespotApplication.getCachingService().setSession(this, mUser)) {
+                launchLogin();
+                return;
+            }
+
+            IdentityController.setLastUser(this, mUser);
+            setupUser();
+            launch();
+        }
+        ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
+    }
+
     private boolean needsSignup() {
         Intent intent = getIntent();
         // figure out if we need to create a user
-        if (!IdentityController.hasIdentity() || intent.getBooleanExtra("create", false)) {
+        if (!IdentityController.hasIdentity(this) || intent.getBooleanExtra("create", false)) {
 
             // otherwise show the signup activity
 
@@ -664,7 +601,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         Intent intent = getIntent();
         // String user = mUser;
         String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
-        String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+        String messageTo = intent.getStringExtra(MESSAGE_TO);
 
         // SurespotLog.d(TAG, "user: %s", user);
         SurespotLog.d(TAG, "type: %s", notificationType);
@@ -678,49 +615,20 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             user = intent.getStringExtra(SurespotConstants.ExtraNames.NAME);
 
-        }
-        else if (!TextUtils.isEmpty(messageTo)
+        } else if (!TextUtils.isEmpty(messageTo)
                 && (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
                 || SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
                 .equals(notificationType))) {
 
             user = messageTo;
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
-        }
-        else {
+        } else {
             user = IdentityController.getLastLoggedInUser(this);
         }
 
         SurespotLog.d(TAG, "got launch user: %s", user);
         return user;
     }
-
-    private ServiceConnection mChatConnection = new ServiceConnection() {
-        public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-            if (service instanceof CommunicationService.CommunicationServiceBinder) {
-                CommunicationService.CommunicationServiceBinder binder = (CommunicationService.CommunicationServiceBinder) service;
-                CommunicationService cts = binder.getService();
-
-                SurespotApplication.setCommunicationService(cts);
-                mCommunicationServiceBound = true;
-
-                if (!mUnlocking && mCacheServiceBound && (mResumed || mStartWhenBothServicesBound)) {
-                    SurespotLog.d(TAG, "transmission service calling postServiceProcess");
-                    postServiceProcess();
-                }
-                else {
-                    SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
-                }
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            SurespotApplication.getCommunicationService().clearServiceListener();
-            SurespotApplication.setCommunicationService(null);
-            mCommunicationServiceBound = false;
-        }
-    };
 
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -732,11 +640,10 @@ public class MainActivity extends Activity implements OnMeasureListener {
             SurespotApplication.setCachingService(ccs);
             mCacheServiceBound = true;
 
-            if (!mUnlocking && mCommunicationServiceBound && (mResumed || mStartWhenBothServicesBound)) {
+            if (!mUnlocking) {
                 SurespotLog.d(TAG, "caching service calling postServiceProcess");
                 postServiceProcess();
-            }
-            else {
+            } else {
                 SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
             }
         }
@@ -753,23 +660,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
             return;
         }
 
-        //gcm crap
-//	//	mRegistrationBroadcastReceiver = new BroadcastReceiver() {
-//			@Override
-//			public void onReceive(Context context, Intent intent) {
-//			//	mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
-//				SharedPreferences sharedPreferences =
-//						PreferenceManager.getDefaultSharedPreferences(context);
-//				boolean sentToken = sharedPreferences
-//						.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
-////				if (sentToken) {
-////					Utils.makeLongToast(getString(R.string.gcm_send_message));
-////				} else {
-////					Utils.makeLongToast(R.string.token_error_message));
-////				}
-//			}
-//		};
+        // we're loading so build the ui
+        setContentView(R.layout.activity_main);
+        setupGlobal();
+        setupUser();
+        launch();
+    }
 
+    private void setupGlobal() {
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
             Intent intent = new Intent(this, RegistrationIntentService.class);
@@ -780,61 +678,116 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         // set volume control buttons
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        // we're loading so build the ui
-        setContentView(R.layout.activity_main);
-
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
-
         setHomeProgress(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        //drawer
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout.setScrimColor(Color.argb(224, 0, 0, 0));
+        List<String> ids = IdentityController.getIdentityNames(this);
+        final String[] identityNames = ids.toArray(new String[ids.size()]);
 
-        // create the chat controller here if we know we're not going to need to login
-        // so that if we come back from a restart (for example a rotation), the automatically
-        // created fragments have a chat controller instance
-        mMainHandler = new Handler(getMainLooper());
+        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switchUser(identityNames[position - 1]);
+                mDrawerList.setItemChecked(position, true);
+            }
+        });
+        mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
+                if (slideOffset > 0.5) {
+//                    if (mActivityLayout.isKeyboardVisible()) {
+//                        sendBackPressed();
+//                    }
+//                    else {
+                    if (isEmojiVisible()) {
+                        hideEmojiDrawer(false);
+                    }
+                    //   }
+                    //hideSoftKeyboard();
+                }
+            }
+        });
 
+        View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
+        mDrawerList.addHeaderView(header, null, false);
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
+
+        for (int i = 0; i < identityNames.length; i++) {
+            if (identityNames[i].equals(mUser)) {
+                mDrawerList.setItemChecked(i + 1, true);
+                break;
+            }
+        }
+    }
+
+    private void setupUser() {
         //set username
-        SurespotApplication.getNetworkController().setUsernameAnd401Handler(mUser, m401Handler);
+        NetworkManager.getNetworkController(mUser).set401Handler(m401Handler);
 
-        mBillingController = SurespotApplication.getBillingController();
+        mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
+        View currentMainView = mContentFrame.getChildAt(0);
+        View mainView = getLayoutInflater().inflate(R.layout.main_view, mContentFrame, false);
+        mContentFrame.addView(mainView);
+        if (currentMainView != null) {
+            mContentFrame.removeView(currentMainView);
+        }
 
-        SurespotApplication.setChatController(new ChatController(this, mUser, getFragmentManager(),
+        SurespotDrawerLayout sdl = (SurespotDrawerLayout) findViewById(R.id.drawer_layout);
+        sdl.setMainActivity(this);
+
+        mActivityLayout = (SoftKeyboardLayout) mainView.findViewById(R.id.chatLayout);
+        mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
+            @Override
+            public void onKeyboardShown(boolean visible) {
+                //  SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
+                if (!visible && mActivityLayout.getPaddingBottom() == 0 && isEmojiVisible()) {
+                    hideEmojiDrawer(false);
+                }
+            }
+        });
+
+        TitlePageIndicator titlePageIndicator = (TitlePageIndicator) mainView.findViewById(R.id.indicator);
+        ChatManager.attachChatController(
+                this,
+                mUser,
+                (ViewPager) mainView.findViewById(R.id.pager),
+                getFragmentManager(),
+                titlePageIndicator,
+                mMenuItems,
+
                 new IAsyncCallback<Boolean>() {
                     @Override
                     public void handleResponse(Boolean inProgress) {
                         setHomeProgress(inProgress);
                     }
-                }, new IAsyncCallback<Void>() {
+                },
+                new IAsyncCallback<Void>() {
 
-            @Override
-            public void handleResponse(Void result) {
-                handleSendIntent();
+                    @Override
+                    public void handleResponse(Void result) {
+                        handleSendIntent();
 
-            }
-        }, new IAsyncCallback<Friend>() {
+                    }
+                },
 
-            @Override
-            public void handleResponse(Friend result) {
-                handleTabChange(result);
+                new IAsyncCallback<Friend>() {
 
-            }
-        }));
+                    @Override
+                    public void handleResponse(Friend result) {
+                        handleTabChange(result);
 
-        SurespotApplication.getCommunicationService().initializeService(new CommunicationServiceListener());
 
-        mActivityLayout = (MainActivityLayout) findViewById(R.id.chatLayout);
-        mActivityLayout.setOnSoftKeyboardListener(MainActivity.this);
-        mActivityLayout.setMainActivity(MainActivity.this);
+                    }
+                },
+                m401Handler
+        );
 
-        final TitlePageIndicator titlePageIndicator = (TitlePageIndicator) findViewById(R.id.indicator);
-
-        mKeyboardStateHandler = new KeyboardStateHandler();
-        mActivityLayout.getViewTreeObserver().addOnGlobalLayoutListener(mKeyboardStateHandler);
-
-        SurespotApplication.getChatController().init((ViewPager) findViewById(R.id.pager), titlePageIndicator, mMenuItems);
-
-        setupChatControls();
-        launch();
+        setupChatControls(mainView);
     }
 
     private boolean checkPlayServices() {
@@ -844,8 +797,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (apiAvailability.isUserResolvableError(resultCode)) {
                 apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
                         .show();
-            }
-            else {
+            } else {
                 Log.i(TAG, "This device is not supported.");
                 finish();
             }
@@ -857,13 +809,18 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void launch() {
         SurespotLog.d(TAG, "launch");
         Intent intent = getIntent();
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().setAutoInviteData(getAutoInviteData(intent));
+
+        ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+        if (cc == null) {
+            SurespotLog.d(TAG, "launch, null chatcontroller, bailing");
+            return;
         }
+        cc.setAutoInviteData(getAutoInviteData(intent));
+
 
         String action = intent.getAction();
         String type = intent.getType();
-        String messageTo = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_TO);
+        String messageTo = intent.getStringExtra(MESSAGE_TO);
         String messageFrom = intent.getStringExtra(SurespotConstants.ExtraNames.MESSAGE_FROM);
         String notificationType = intent.getStringExtra(SurespotConstants.ExtraNames.NOTIFICATION_TYPE);
 
@@ -892,40 +849,32 @@ public class MainActivity extends Activity implements OnMeasureListener {
             Utils.clearIntent(intent);
             Utils.logIntent(TAG, intent);
 
-            if (SurespotApplication.getChatController() != null) {
-                SurespotApplication.getChatController().setCurrentChat(name);
-
-            }
+            cc.setCurrentChat(name);
         }
 
         if ((Intent.ACTION_SEND.equals(action) || Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null)) {
             // need to select a user so put the chat controller in select mode
+            // see if we can set the mode
+            if (cc.setMode(ChatController.MODE_SELECT)) {
+                Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
+                SurespotLog.d(TAG, "started from SEND");
 
-            if (SurespotApplication.getChatController() != null) {
-                // see if we can set the mode
-                if (SurespotApplication.getChatController().setMode(ChatController.MODE_SELECT)) {
-                    Utils.configureActionBar(this, getString(R.string.send), getString(R.string.main_action_bar_right), true);
-                    SurespotLog.d(TAG, "started from SEND");
-
-                    SurespotApplication.getChatController().setCurrentChat(null);
-                    mSet = true;
-                }
-                else {
-                    Utils.clearIntent(intent);
-                }
+                cc.setCurrentChat(null);
+                mSet = true;
+            } else {
+                Utils.clearIntent(intent);
             }
         }
 
         if (!mSet) {
             Utils.configureActionBar(this, "", mUser, true);
-            String lastName = Utils.getSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.LAST_CHAT);
+            String lastName = Utils.getUserSharedPrefsString(getApplicationContext(), mUser, SurespotConstants.PrefNames.LAST_CHAT);
             if (lastName != null) {
                 SurespotLog.d(TAG, "using LAST_CHAT");
                 name = lastName;
             }
-            if (SurespotApplication.getChatController() != null) {
-                SurespotApplication.getChatController().setCurrentChat(name);
-            }
+
+            cc.setCurrentChat(name);
         }
 
         setButtonText();
@@ -952,25 +901,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
     protected void onResume() {
         super.onResume();
         SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
-
+        startWatchingExternalStorage();
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
 
-        CommunicationService cts = SurespotApplication.getCommunicationServiceNoThrow();
-
-        if (cts == null) {
-            SurespotLog.d(TAG, "binding chat transmission service");
-            Intent chatIntent = new Intent(this, CommunicationService.class);
-            startService(chatIntent);
-            bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
-        }
-
         // if we had to unlock and we're resuming for a 2nd time and we have the caching service
-        if (mUnlocking && mPaused == true) {
+        if (mUnlocking && mPaused) {
             SurespotLog.d(TAG, "setting mUnlocking to false");
             mUnlocking = false;
 
-            if (SurespotApplication.getCachingService() != null && SurespotApplication.getCommunicationServiceNoThrow() != null) {
+            if (SurespotApplication.getCachingService() != null) {
                 SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
                 postServiceProcess();
             }
@@ -984,23 +924,11 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void resume() {
         SurespotLog.d(TAG, "resume");
         mResumed = true;
-        if (SurespotApplication.getChatController() != null) {
-            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getChatController().onResume();
-            }
-        }
 
-        startWatchingExternalStorage();
+
         setBackgroundImage();
         setEditTextHints();
-
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().setMainActivityPaused(false);
-        }
-        else {
-            SurespotLog.d(TAG, "resume, Communication service was null");
-        }
-
+        ChatManager.resume(this, mUser);
     }
 
     @Override
@@ -1025,9 +953,8 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mDialog.dismiss();
         }
 
-        if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-            SurespotApplication.getCommunicationService().setMainActivityPaused(true);
-        }
+        ChatManager.pause(this, mUser);
+
 
         mResumed = false;
     }
@@ -1056,22 +983,24 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (selectedImageUri != null) {
 
                         // Utils.makeToast(this, getString(R.string.uploading_image));
-                        ChatUtils.uploadFriendImageAsync(this, SurespotApplication.getNetworkController(), selectedImageUri, to, new IAsyncCallbackTriplet<String, String, String>() {
+                        ChatUtils.uploadFriendImageAsync(this, selectedImageUri, mUser, to, new IAsyncCallbackTriplet<String, String, String>() {
 
                             @Override
                             public void handleResponse(String url, String version, String iv) {
                                 try {
                                     File file = new File(new URI(selectedImageUri.toString()));
                                     SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
-                                }
-                                catch (URISyntaxException e) {
+                                } catch (URISyntaxException e) {
                                 }
 
-                                if (SurespotApplication.getChatController() == null || url == null) {
+                                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+
+                                if (cc == null || url == null) {
                                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
-                                }
-                                else {
-                                    SurespotApplication.getChatController().setImageUrl(to, url, version, iv, true);
+                                } else {
+                                    if (cc != null) {
+                                        cc.setImageUrl(to, url, version, iv, true);
+                                    }
                                 }
                             }
                         });
@@ -1083,8 +1012,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // Pass on the activity result to the helper for handling
                 if (!SurespotApplication.getBillingController().getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
                     super.onActivityResult(requestCode, resultCode, data);
-                }
-                else {
+                } else {
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
@@ -1111,8 +1039,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         if (hasCamera()) {
             mMenuItems.add(captureItem);
             captureItem.setEnabled(FileUtils.isExternalStorageMounted());
-        }
-        else {
+        } else {
             SurespotLog.d(TAG, "hiding capture image menu option");
             menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
         }
@@ -1122,8 +1049,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().enableMenuItems(mCurrentFriend);
+        ChatController cc = ChatManager.getChatController(this, mUser);
+        if (mUser != null && cc != null) {
+            cc.enableMenuItems(mCurrentFriend);
         }
 
         //
@@ -1132,13 +1060,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
     }
 
     private boolean hasCamera() {
-        //   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
         return Camera.getNumberOfCameras() > 0;
-//        }
-//        else {
-//            PackageManager pm = this.getPackageManager();
-//            return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA);
-//        }
     }
 
     public void uploadFriendImage(String name) {
@@ -1156,17 +1078,30 @@ public class MainActivity extends Activity implements OnMeasureListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         super.onOptionsItemSelected(item);
-        final String currentChat = SurespotApplication.getChatController().getCurrentChat();
+        final ChatController cc = ChatManager.getChatController(this, mUser);
+        if (cc == null) {
+            SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
+            return false;
+        }
+        final String currentChat = cc.getCurrentChat();
         switch (item.getItemId()) {
             case android.R.id.home:
                 // This is called when the Home (Up) button is pressed
                 // in the Action Bar.
                 // showUi(!mChatsShowing);
-                SurespotApplication.getChatController().setCurrentChat(null);
+                if (TextUtils.isEmpty(cc.getCurrentChat())) {
+                    if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                        mDrawerLayout.closeDrawer(GravityCompat.START);
+                    } else {
+                        mDrawerLayout.openDrawer(GravityCompat.START);
+                    }
+                } else {
+                    cc.setCurrentChat(null);
+                }
                 return true;
             case R.id.menu_close_bar:
 
-                SurespotApplication.getChatController().closeTab();
+                cc.closeTab();
                 return true;
             case R.id.menu_send_image_bar:
                 if (currentChat == null) {
@@ -1221,31 +1156,23 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     protected Void doInBackground(Void... params) {
 
                         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                        intent.putExtra("username", mUser);
                         startActivity(intent);
                         return null;
                     }
                 }.execute();
                 return true;
             case R.id.menu_logout_bar:
-                if (SurespotApplication.getChatController() != null) {
-                    SurespotApplication.getChatController().logout();
-                }
-                IdentityController.logout();
-
-                // new AsyncTask<Void, Void, Void>() {
-                // protected Void doInBackground(Void... params) {
+                IdentityController.logout(this, mUser);
 
                 Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
+                finalIntent.putExtra(MESSAGE_TO, mUser);
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                // mChatController = null;
                 MainActivity.this.startActivity(finalIntent);
                 finish();
-                // return null;
-                // }
-                // }.execute();
                 return true;
             case R.id.menu_invite_external:
-                UIUtils.sendInvitation(MainActivity.this, SurespotApplication.getNetworkController());
+                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser), mUser);
                 return true;
             case R.id.menu_clear_messages:
                 SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1255,15 +1182,12 @@ public class MainActivity extends Activity implements OnMeasureListener {
                             getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
                                 public void handleResponse(Boolean result) {
                                     if (result) {
-                                        SurespotApplication.getChatController().deleteMessages(currentChat);
+                                        cc.deleteMessages(currentChat);
                                     }
                                 }
-
-                                ;
                             });
-                }
-                else {
-                    SurespotApplication.getChatController().deleteMessages(currentChat);
+                } else {
+                    cc.deleteMessages(currentChat);
                 }
 
                 return true;
@@ -1295,31 +1219,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
         if (mCacheServiceBound && mConnection != null) {
             unbindService(mConnection);
         }
-
-        if (mChatConnection != null) {
-            if (mCommunicationServiceBound) {
-                unbindService(mChatConnection);
-            }
-
-            // clear the service listener.  This lets the transmission service know it can shut down when it's done sending
-            if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
-                SurespotApplication.getCommunicationServiceNoThrow().clearServiceListener();
-            }
-        }
+        ChatManager.pause(this, mUser);
+        ChatManager.detach(this);
     }
-
-    public static Context getContext() {
-        return mContext;
-    }
-
-    public static ChatController getChatController() {
-        return SurespotApplication.getChatController();
-    }
-
-    public static Handler getMainHandler() {
-        return mMainHandler;
-    }
-
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -1338,18 +1240,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         return super.onKeyUp(keyCode, event);
     }
-
-
-    public void openOptionsMenuDeferred() {
-        mHandler.post(new Runnable() {
-                          @Override
-                          public void run() {
-                              openOptionsMenu();
-                          }
-                      }
-        );
-    }
-
 
     private void startWatchingExternalStorage() {
         mExternalStorageReceiver = new BroadcastReceiver() {
@@ -1371,8 +1261,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
         // don't puke if we can't unregister
         try {
             unregisterReceiver(mExternalStorageReceiver);
-        }
-        catch (java.lang.IllegalArgumentException e) {
+        } catch (java.lang.IllegalArgumentException e) {
         }
     }
 
@@ -1381,12 +1270,10 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "updateExternalStorageState:  " + state);
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             mExternalStorageAvailable = mExternalStorageWriteable = true;
-        }
-        else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             mExternalStorageAvailable = true;
             mExternalStorageWriteable = false;
-        }
-        else {
+        } else {
 
             mExternalStorageAvailable = mExternalStorageWriteable = false;
         }
@@ -1423,27 +1310,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     mImageCaptureHandler.getImagePath());
             outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
         }
-
-        SurespotLog.d(TAG, "onSaveInstanceState saving mKeyboardShowing: %b", mKeyboardShowing);
-        outState.putBoolean("keyboardShowing", mKeyboardShowing);
-
-        SurespotLog.d(TAG, "onSaveInstanceState saving emoji showing: %b", mEmojiShowing);
-        outState.putBoolean("emojiShowing", mEmojiShowing);
-
-        SurespotLog.d(TAG, "onSaveInstanceState saving emoji showing on chat tab: %b", mEmojiShowing);
-        outState.putBoolean("emojiShowingChat", mEmojiShowing);
-
-        SurespotLog.d(TAG, "onSaveInstanceState saving keyboard showing in chat tab: %b", mKeyboardShowingOnChatTab);
-        outState.putBoolean("keyboardShowingChat", mKeyboardShowingOnChatTab);
-
-        SurespotLog.d(TAG, "onSaveInstanceState saving keybard showing in home tab: %b", mKeyboardShowingOnHomeTab);
-        outState.putBoolean("keyboardShowingHome", mKeyboardShowingOnHomeTab);
-
-        if (mInitialHeightOffset > 0) {
-            SurespotLog.d(TAG, "onSaveInstanceState saving heightOffset: %d", mInitialHeightOffset);
-            outState.putInt("heightOffset", mInitialHeightOffset);
-        }
-
     }
 
     @Override
@@ -1455,10 +1321,6 @@ public class MainActivity extends Activity implements OnMeasureListener {
             SurespotLog.d(TAG, "onRestoreInstanceState restored imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
                     mImageCaptureHandler.getImagePath());
         }
-
-        mKeyboardShowing = savedInstanceState.getBoolean("keyboardShowing");
-
-        mInitialHeightOffset = savedInstanceState.getInt("heightOffset");
     }
 
     private void setHomeProgress(boolean inProgress) {
@@ -1469,195 +1331,16 @@ public class MainActivity extends Activity implements OnMeasureListener {
         SurespotLog.d(TAG, "progress status changed to: %b", inProgress);
         if (inProgress) {
             UIUtils.showProgressAnimation(this, mHomeImageView);
-        }
-        else {
+        } else {
             mHomeImageView.clearAnimation();
         }
 
-        if (SurespotApplication.getChatController() != null) {
-            SurespotApplication.getChatController().enableMenuItems(mCurrentFriend);
+        ChatController cc = ChatManager.getChatController(this, mUser);
+        if (cc != null) {
+            cc.enableMenuItems(mCurrentFriend);
         }
     }
 
-    public synchronized void hideSoftKeyboard() {
-
-        SurespotLog.d(TAG, "hideSoftkeyboard");
-        View view = null;
-        if (mCurrentFriend == null) {
-            view = mEtInvite;
-        }
-        else {
-            view = mEtMessage;
-        }
-
-        hideSoftKeyboard(view);
-    }
-
-    private synchronized void hideSoftKeyboard(final View view) {
-        mKeyboardShowing = false;
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
-                    @Override
-                    protected void onReceiveResult(int resultCode, Bundle resultData) {
-                        if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
-                            mKeyboardShowing = true;
-
-                        }
-                    }
-                });
-            }
-        };
-        view.post(runnable);
-    }
-
-    private synchronized void showSoftKeyboard() {
-        SurespotLog.d(TAG, "showSoftkeyboard");
-        mKeyboardShowing = true;
-        mEmojiShowing = false;
-
-        View view = null;
-        if (mCurrentFriend == null) {
-            view = mEtInvite;
-        }
-        else {
-            view = mEtMessage;
-        }
-
-        showSoftKeyboard(view);
-    }
-
-    private synchronized void showSoftKeyboard(final View view) {
-        mKeyboardShowing = true;
-        mEmojiShowing = false;
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-                mImm.restartInput(view);
-                mImm.showSoftInput(view, 0, new ResultReceiver(null) {
-                    @Override
-                    protected void onReceiveResult(int resultCode, Bundle resultData) {
-                        if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
-                            mKeyboardShowing = false;
-                        }
-
-                    }
-                });
-
-                // setEmojiIcon(true);
-            }
-        };
-        view.post(runnable);
-    }
-
-    private synchronized void showSoftKeyboardThenHideEmoji(final View view) {
-        mKeyboardShowing = true;
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                mImm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-                mImm.showSoftInput(view, 0, new ResultReceiver(null) {
-                    @Override
-                    protected void onReceiveResult(int resultCode, Bundle resultData) {
-                        if ((resultCode != InputMethodManager.RESULT_SHOWN) && (resultCode != InputMethodManager.RESULT_UNCHANGED_SHOWN)) {
-                            mKeyboardShowing = false;
-                        }
-                        else {
-                            Runnable runnable = new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    showEmoji(false, false);
-
-                                }
-                            };
-
-                            view.post(runnable);
-
-                        }
-
-                    }
-                });
-            }
-        };
-        view.post(runnable);
-    }
-
-    private synchronized void hideSoftKeyboardThenShowEmoji(final View view) {
-        mKeyboardShowing = false;
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM, WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                showEmoji(true, true);
-                mImm.hideSoftInputFromWindow(view.getWindowToken(), 0, new ResultReceiver(null) {
-                    @Override
-                    protected void onReceiveResult(int resultCode, Bundle resultData) {
-                        if (resultCode != InputMethodManager.RESULT_HIDDEN && resultCode != InputMethodManager.RESULT_UNCHANGED_HIDDEN) {
-                            mKeyboardShowing = true;
-                        }
-                        else {
-
-                        }
-                    }
-                });
-            }
-        };
-
-        view.post(runnable);
-    }
-
-    private synchronized void showEmoji(boolean showEmoji, boolean force) {
-        int visibility = mEmojiView.getVisibility();
-        if (showEmoji) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-
-            if (visibility != View.VISIBLE && force) {
-                SurespotLog.d(TAG, "showEmoji,  showing emoji view");
-                mEmojiView.setVisibility(View.VISIBLE);
-            }
-        }
-        else {
-            if (visibility != View.GONE && force) {
-                SurespotLog.d(TAG, "showEmoji,  hiding emoji view");
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-                mEmojiView.setVisibility(View.GONE);
-            }
-        }
-
-        if (force) {
-            setEmojiIcon(!showEmoji);
-        }
-
-        mEmojiShowing = showEmoji;
-    }
-
-    private void toggleEmoji() {
-        if (mEmojiShowing) {
-            showSoftKeyboard(mEtMessage);
-        }
-        else {
-            if (mKeyboardShowing) {
-                hideSoftKeyboard();
-                showEmoji(true, false);
-            }
-            else {
-                showEmoji(true, true);
-            }
-
-        }
-    }
 
     class ChatTextWatcher implements TextWatcher {
 
@@ -1680,7 +1363,9 @@ public class MainActivity extends Activity implements OnMeasureListener {
             if (MainActivity.this.mEnterToSend && s.toString().contains("\n")) {
                 int idx = s.toString().indexOf('\n');
                 s.delete(idx, idx + 1);
-                if (mEtMessage.getText().toString().length() > 0 && !SurespotApplication.getChatController().isFriendDeleted(mCurrentFriend.getName())) {
+                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+
+                if (cc != null && mEtMessage.getText().toString().length() > 0 && !cc.isFriendDeleted(mCurrentFriend.getName())) {
                     sendMessage(mCurrentFriend.getName());
                 }
             }
@@ -1710,8 +1395,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                 // requestFocus();
                 // clear the intent
 
-            }
-            else {
+            } else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
                     final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
@@ -1722,15 +1406,14 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                     ChatUtils.uploadPictureMessageAsync(
                             this,
-                            SurespotApplication.getChatController(),
+                            ChatManager.getChatController(this, mUser),
                             imageUri,
                             mUser,
                             mCurrentFriend.getName(),
                             true);
                 }
             }
-        }
-        else {
+        } else {
             if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
                 Utils.configureActionBar(this, "", mUser, true);
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
@@ -1743,7 +1426,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
                         ChatUtils.uploadPictureMessageAsync(
                                 this,
-                                SurespotApplication.getChatController(),
+                                ChatManager.getChatController(this, mUser),
                                 imageUri,
                                 mUser,
                                 mCurrentFriend.getName(),
@@ -1761,51 +1444,46 @@ public class MainActivity extends Activity implements OnMeasureListener {
     private void sendMessage(String username) {
         final String message = mEtMessage.getText().toString();
         if (!message.isEmpty()) {
-            SurespotApplication.getChatController().sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
-            TextKeyListener.clear(mEtMessage.getText());
+            ChatController cc = ChatManager.getChatController(this, mUser);
+            if (cc != null) {
+                cc.sendMessage(username, message, SurespotConstants.MimeTypes.TEXT);
+                TextKeyListener.clear(mEtMessage.getText());
+            }
         }
     }
 
     public boolean backButtonPressed() {
-        boolean handled = false;
+
         SurespotLog.d(TAG, "backButtonPressed");
 
-        if (mEmojiShowing) {
-            showEmoji(false, true);
-            handled = true;
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         }
 
-        if (mKeyboardShowing) {
-
-            hideSoftKeyboard();
-            handled = true;
+        //returning false will cause the keyboard to be hidden
+        if (mActivityLayout.isKeyboardVisible()) {
+            return false;
         }
 
-        return handled;
+        if (isEmojiVisible()) {
+            hideEmojiDrawer(false);
+            return true;
+        }
+
+
+        //go to home page if we not
+        if (mCurrentFriend != null) {
+            ChatController cc = ChatManager.getChatController(this, mUser);
+            if (cc != null) {
+                cc.setCurrentChat(null);
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    @Override
-    public void onLayoutMeasure() {
-        SurespotLog.v(TAG, "onLayoutMeasure, emoji height: %d", mEmojiHeight);
-        if (mEmojiShowing) {
-
-            if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                mEmojiHeight = 200;
-            }
-
-            if (mEmojiHeight > 0) {
-                android.view.ViewGroup.LayoutParams layoutParams = mEmojiView.getLayoutParams();
-                layoutParams.height = mEmojiHeight;
-            }
-
-            mEmojiView.setVisibility(View.VISIBLE);
-            setEmojiIcon(false);
-        }
-        else {
-            mEmojiView.setVisibility(View.GONE);
-            setEmojiIcon(true);
-        }
-    }
 
     private void inviteFriend() {
 
@@ -1819,7 +1497,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             }
 
             setHomeProgress(true);
-            SurespotApplication.getNetworkController().invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            NetworkManager.getNetworkController(mUser).invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "inviteFriend error");
@@ -1832,14 +1510,17 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (response.isSuccessful()) {
 
                         TextKeyListener.clear(mEtInvite.getText());
-                        if (SurespotApplication.getChatController().getFriendAdapter().addFriendInvited(friend)) {
-                            Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
+                        ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                        if (cc != null) {
+                            if (cc.getFriendAdapter().addFriendInvited(friend)) {
+                                Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
+                            } else {
+                                Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
+                            }
+                        } else {
+                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                         }
-                        else {
-                            Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
-                        }
-                    }
-                    else {
+                    } else {
                         switch (response.code()) {
                             case 404:
                                 Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
@@ -1866,22 +1547,19 @@ public class MainActivity extends Activity implements OnMeasureListener {
             mIvVoice.setVisibility(View.GONE);
             mIvHome.setVisibility(View.GONE);
             mIvSend.setVisibility(View.GONE);
-        }
-        else {
+        } else {
             if (mCurrentFriend.isDeleted()) {
                 mIvInvite.setVisibility(View.GONE);
                 mIvVoice.setVisibility(View.GONE);
                 mIvHome.setVisibility(View.VISIBLE);
                 mIvSend.setVisibility(View.GONE);
-            }
-            else {
+            } else {
                 if (mEtMessage.getText().length() > 0) {
                     mIvInvite.setVisibility(View.GONE);
                     mIvVoice.setVisibility(View.GONE);
                     mIvHome.setVisibility(View.GONE);
                     mIvSend.setVisibility(View.VISIBLE);
-                }
-                else {
+                } else {
                     mIvInvite.setVisibility(View.GONE);
                     SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
                     boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
@@ -1889,8 +1567,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
                     if (disableVoice) {
                         mIvVoice.setVisibility(View.GONE);
                         mIvHome.setVisibility(View.VISIBLE);
-                    }
-                    else {
+                    } else {
                         mIvVoice.setVisibility(View.VISIBLE);
                         mIvHome.setVisibility(View.GONE);
                     }
@@ -1902,88 +1579,55 @@ public class MainActivity extends Activity implements OnMeasureListener {
         }
     }
 
-    // this isn't brittle...NOT
     private void handleTabChange(Friend friend) {
-
-        boolean showKeyboard = false;
-        boolean showEmoji = false;
         SurespotLog
                 .v(TAG,
-                        "handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b, keyboardShowing: %b, emojiShowing: %b, keyboardShowingChat: %b, keyboardShowingHome: %b, emojiShowingChat: %b",
-                        mFriendHasBeenSet, mCurrentFriend == null, mKeyboardShowing, mEmojiShowing, mKeyboardShowingOnChatTab, mKeyboardShowingOnHomeTab,
-                        mEmojiShowingOnChatTab);
+                        "handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b",
+                        mFriendHasBeenSet, mCurrentFriend == null);
 
         if (friend == null) {
             mEmojiButton.setVisibility(View.GONE);
             mEtMessage.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
-            mEmojiView.setVisibility(View.GONE);
+            //  mEmojiView.setVisibility(View.GONE);
 
             mQRButton.setVisibility(View.VISIBLE);
             mEtInvite.requestFocus();
 
-            getActionBar().setDisplayHomeAsUpEnabled(false);
 
-            SurespotLog.d(TAG, "handleTabChange, setting keyboardShowingOnChatTab: %b", mKeyboardShowing);
-            if (mFriendHasBeenSet) {
-                if (mCurrentFriend != null && !mCurrentFriend.isDeleted()) {
-                    mKeyboardShowingOnChatTab = mKeyboardShowing;
-                    mEmojiShowingOnChatTab = mEmojiShowing;
-                }
-                showKeyboard = mKeyboardShowingOnHomeTab;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
+            } else {
 
+                ViewGroup home = (ViewGroup) findViewById(android.R.id.home).getParent();
+                // get the first child (up imageview)
+                ((ImageView) home.getChildAt(0))
+                        // change the icon according to your needs
+                        .setImageResource(R.drawable.ic_drawer);
             }
-            else {
-                showKeyboard = mKeyboardShowing;
-            }
-            showEmoji = false;
 
-        }
-        else {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        } else {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                getActionBar().setHomeAsUpIndicator(R.drawable.ic_ab_back_holo_dark_am);
+            } else {
+                ViewGroup home = (ViewGroup) findViewById(android.R.id.home).getParent();
+                // get the first child (up imageview)
+                ((ImageView) home.getChildAt(0))
+                        // change the icon according to your needs
+                        .setImageResource(R.drawable.ic_ab_back_holo_dark_am);
+            }
 
             if (friend.isDeleted()) {
 
                 mEmojiButton.setVisibility(View.GONE);
                 mEtMessage.setVisibility(View.GONE);
 
-                if (mFriendHasBeenSet) {
-                    // if we're coming from home tab
-                    if (mCurrentFriend == null) {
-                        mKeyboardShowingOnHomeTab = mKeyboardShowing;
-                    }
-                    else {
-                        if (!mCurrentFriend.isDeleted()) {
-                            mKeyboardShowingOnChatTab = mKeyboardShowing;
-                            mEmojiShowingOnChatTab = mEmojiShowing;
-                        }
-                    }
-                }
 
-                showKeyboard = false;
-                showEmoji = false;
-
-            }
-            else {
+            } else {
                 mEtMessage.setVisibility(View.VISIBLE);
                 mEmojiButton.setVisibility(View.VISIBLE);
-
-                // if we moved back to chat tab from home hab show the keyboard if it was showing
-                if ((mCurrentFriend == null || mCurrentFriend.isDeleted()) && mFriendHasBeenSet) {
-                    SurespotLog.d(TAG, "handleTabChange, keyboardShowingOnChatTab: %b", mKeyboardShowingOnChatTab);
-
-                    showKeyboard = mKeyboardShowingOnChatTab;
-                    showEmoji = mEmojiShowingOnChatTab;
-
-                    if (mCurrentFriend != null && !mCurrentFriend.isDeleted()) {
-                        mKeyboardShowingOnHomeTab = mKeyboardShowing;
-                    }
-
-                }
-                else {
-                    showKeyboard = mKeyboardShowing;
-                    showEmoji = mEmojiShowing;
-                }
             }
 
             mEtInvite.setVisibility(View.GONE);
@@ -1993,71 +1637,34 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
         mCurrentFriend = friend;
-        if ((mKeyboardShowing && showEmoji) || (mEmojiShowing && showKeyboard)) {
-            if (friend == null) {
-                if (mEmojiShowing) {
-                    showSoftKeyboardThenHideEmoji(mEtInvite);
-                }
-                else {
-                    hideSoftKeyboard(mEtMessage);
-                }
-            }
-            else {
-                if (mEmojiShowing) {
-                    showSoftKeyboard(mEtMessage);
-                    showEmoji(false, true);
-                }
-                else {
-                    showEmoji(true, true);
-                    hideSoftKeyboard(mEtInvite);
-                }
-            }
-        }
-        else {
-            if (showKeyboard && (mKeyboardShowing != showKeyboard || mEmojiShowing)) {
-                showSoftKeyboard();
-            }
-            else {
 
-                if (mKeyboardShowing != showKeyboard) {
-                    showEmoji(showEmoji, true);
-                    hideSoftKeyboard();
-                }
-                else {
-                    showEmoji(showEmoji, true);
-                }
+        if (friend == null) {
+//            if (mActivityLayout.isKeyboardVisible()) {
+//                sendBackPressed();
+//            }
+//            else {
+            if (isEmojiVisible()) {
+                hideEmojiDrawer(false);
             }
-        }
-
-        if (friend == null || !friend.isDeleted()) {
-            mKeyboardShowing = showKeyboard;
+            //  }
         }
 
         setButtonText();
-
         mFriendHasBeenSet = true;
     }
 
     private void setEmojiIcon(final boolean keyboardShowing) {
-
+        boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
         if (keyboardShowing) {
-            if (mEmojiResourceId < 0) {
-                mEmojiResourceId = EmojiParser.getInstance().getRandomEmojiResource();
+            mEmojiButton.setImageResource(R.drawable.smiley);
+        } else {
+            if (black) {
+                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
+            } else {
+                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
             }
-            mEmojiButton.setImageResource(mEmojiResourceId);
         }
-        else {
-            mEmojiButton.setImageResource(R.drawable.keyboard_icon);
-        }
-
     }
-
-//    public void showVoicePurchaseDialog(boolean comingFromButton) {
-//        FragmentManager fm = getSupportFragmentManager();
-//        SherlockDialogFragment dialog = VoicePurchaseFragment.newInstance(comingFromButton);
-//        dialog.show(fm, "voice_purchase");
-//
-//    }
 
     private void setBackgroundImage() {
         // reset preference config for adapters
@@ -2071,8 +1678,7 @@ public class MainActivity extends Activity implements OnMeasureListener {
             imageView.setImageURI(Uri.parse(backgroundImageUrl));
             imageView.setAlpha(125);
             SurespotConfiguration.setBackgroundImageSet(true);
-        }
-        else {
+        } else {
             imageView.setImageDrawable(null);
             SurespotConfiguration.setBackgroundImageSet(false);
         }
@@ -2110,53 +1716,59 @@ public class MainActivity extends Activity implements OnMeasureListener {
 
             @Override
             public void handleResponse(String alias) {
+                ChatController cc = ChatManager.getChatController(MainActivity.this, mUser);
+                if (cc != null) {
+                    cc.assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
 
-                SurespotApplication.getChatController().assignFriendAlias(name, alias, new IAsyncCallback<Boolean>() {
-
-                    @Override
-                    public void handleResponse(Boolean result) {
-                        if (!result) {
-                            Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
+                        @Override
+                        public void handleResponse(Boolean result) {
+                            if (!result) {
+                                Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
+                }
             }
         });
     }
 
     public void removeFriendImage(final String name) {
-        SurespotApplication.getChatController().removeFriendImage(name, new IAsyncCallback<Boolean>() {
-            @Override
-            public void handleResponse(Boolean result) {
-                if (!result) {
-                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
+        ChatController cc = ChatManager.getChatController(this, mUser);
+        if (cc != null) {
+            cc.removeFriendImage(name, new IAsyncCallback<Boolean>() {
+                @Override
+                public void handleResponse(Boolean result) {
+                    if (!result) {
+                        Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
+        }
     }
 
     public void removeFriendAlias(final String name) {
-        SurespotApplication.getChatController().removeFriendAlias(name, new IAsyncCallback<Boolean>() {
-            @Override
-            public void handleResponse(Boolean result) {
-                if (!result) {
-                    Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
+        ChatController cc = ChatManager.getChatController(this, mUser);
+        if (cc != null) {
+            cc.removeFriendAlias(name, new IAsyncCallback<Boolean>() {
+                @Override
+                public void handleResponse(Boolean result) {
+                    if (!result) {
+                        Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
+        }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-    }
-
-
-    private void bindChatTransmissionService() {
-        SurespotLog.d(TAG, "binding chat transmission service");
-        Intent chatIntent = new Intent(this, CommunicationService.class);
-        startService(chatIntent);
-        bindService(chatIntent, mChatConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void bindCacheService() {
@@ -2166,52 +1778,108 @@ public class MainActivity extends Activity implements OnMeasureListener {
         bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private class CommunicationServiceListener implements ITransmissionServiceListener {
-        // implementation goes here - or maybe we have a separate class if this gets too big
 
-        @Override
-        public void onConnected() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(false);
-                }
-            });
+    public boolean isEmojiVisible() {
+        return mEmojiShowing;
+    }
 
-        }
+    private void toggleEmojiDrawer() {
+        // TODO animate drawer enter & exit
 
-        @Override
-        public void onCouldNotConnectToServer() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(false);
-                }
-            });
-        }
-
-        @Override
-        public void onNotConnected() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.setHomeProgress(true);
-                }
-            });
-        }
-
-        @Override
-        public void on401() {
-            m401Handler.handleResponse(null);
-        }
-
-        private boolean logIfChatControllerNull() {
-            if (SurespotApplication.getChatController() == null) {
-                SurespotLog.w(TAG, "mChatController was null for tranmission service listener");
-                return true;
-            }
-            return false;
+        if (isEmojiVisible()) {
+            hideEmojiDrawer();
+        } else {
+            showEmojiDrawer();
         }
     }
 
+    private void showEmojiDrawer() {
+        int keyboardHeight = mActivityLayout.getKeyboardHeight();
+
+        SurespotLog.d(TAG, "showEmojiDrawer height: %d", keyboardHeight);
+        mEmojiShowing = true;
+
+        if (mEmojiView == null) {
+            mEmojiView = (EmojiconsView) LayoutInflater
+                    .from(this).inflate(R.layout.emojicons, null, false);
+
+
+            //   mEmojiView.setId(R.id.emoji_drawer);
+            mEmojiView.setOnEmojiconBackspaceClickedListener(this);
+            mEmojiView.setOnEmojiconClickedListener(this);
+
+
+            mWindowLayoutParams = new WindowManager.LayoutParams();
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        }
+
+        mWindowLayoutParams.height = keyboardHeight;
+        mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+
+        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
+
+        try {
+            if (mEmojiView.getParent() != null) {
+                wm.removeViewImmediate(mEmojiView);
+            }
+        } catch (Exception e) {
+            SurespotLog.e(TAG, e, "error removing emoji view");
+        }
+
+        try {
+            wm.addView(mEmojiView, mWindowLayoutParams);
+        } catch (Exception e) {
+            SurespotLog.e(TAG, e, "error adding emoji view");
+            return;
+        }
+
+
+        if (!mActivityLayout.isKeyboardVisible()) {
+            SurespotLog.d(TAG, "setting padding");
+            mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
+            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
+        }
+
+        setEmojiIcon(false);
+    }
+
+    private void hideEmojiDrawer() {
+        hideEmojiDrawer(true);
+    }
+
+    public void hideEmojiDrawer(boolean showKeyboard) {
+        if (showKeyboard) {
+            InputMethodManager input = (InputMethodManager) mContext
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            input.showSoftInput(mEtMessage, 0);
+        }
+
+        if (mEmojiView != null && mEmojiView.getParent() != null) {
+            WindowManager wm = (WindowManager) mContext
+                    .getSystemService(Context.WINDOW_SERVICE);
+            wm.removeViewImmediate(mEmojiView);
+        }
+
+        mEmojiButton.setImageResource(R.drawable.smiley);
+        mActivityLayout.setPadding(0, 0, 0, 0);
+        mEmojiShowing = false;
+    }
+
+    @Override
+    public void onEmojiconBackspaceClicked(View v) {
+        EmojiconsView.backspace(mEtMessage);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsView.input(mEtMessage, emojicon);
+    }
+
+    void sendBackPressed() {
+        this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+    }
 }

@@ -4,4 +4,5 @@ include ':androidkeystore'
 include ':viewpagerindicator'
 include ':surespot', ':ColorPickerPreference'
 project(':ColorPickerPreference').projectDir = new File('libs/android-ColorPickerPreference/ColorPickerPreference')
+include ':libs:emojicon'
 

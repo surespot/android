@@ -12,15 +12,16 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.common.FileUtils;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
 import java.io.BufferedInputStream;
@@ -36,14 +37,16 @@ import java.util.Observer;
 public class ImageMessageMenuFragment extends DialogFragment {
 	protected static final String TAG = "ImageMessageMenuFragment";
 	private SurespotMessage mMessage;
+	private String mUsername;
 	private ArrayList<String> mItems;
 	private Observer mMessageObserver;
 	
-	public static DialogFragment newInstance(SurespotMessage message) {
+	public static DialogFragment newInstance(String username, SurespotMessage message) {
 		ImageMessageMenuFragment f = new ImageMessageMenuFragment();
 
 		Bundle args = new Bundle();
 		args.putString("message", message.toJSONObject(false).toString());
+		args.putString("username", username);
 		f.setArguments(args);
 
 		return f;
@@ -73,14 +76,24 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-
 		final MainActivity mActivity = (MainActivity) getActivity();
+
+		String username = getArguments().getString("username");
+		if (username != null) {
+			mUsername = username;
+		}
+
+		final ChatController cc =  ChatManager.getChatController(mActivity, mUsername);
+		if (cc == null) {
+			return null;
+		}
+
 		String messageString = getArguments().getString("message");
 		if (messageString != null) {
 			SurespotMessage rebuiltMessage = SurespotMessage.toSurespotMessage(messageString);
 
 			// get the actual message instance to add a listener to
-			mMessage = mActivity.getChatController().getLiveMessage(rebuiltMessage);
+			mMessage = cc.getLiveMessage(rebuiltMessage);
 
 			if (mMessage == null) {
 				mMessage = rebuiltMessage;
@@ -91,12 +104,12 @@ public class ImageMessageMenuFragment extends DialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
 		// if it's not our message we can save it to gallery
-		if (!mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+		if (!mMessage.getFrom().equals(mUsername)) {
 			mItems.add(getString(R.string.menu_save_to_gallery));
 
 		}
 		// if it's our message and it's been sent we can mark it locked or unlocked
-		if (mMessage.getId() != null && mMessage.getFrom().equals(IdentityController.getLoggedInUser())) {
+		if (mMessage.getId() != null && mMessage.getFrom().equals(mUsername)) {
 			mItems.add(mMessage.isShareable() ? getString(R.string.menu_lock) : getString(R.string.menu_unlock));
 		}
 
@@ -120,7 +133,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 				String itemText = mItems.get(which);
 
 				if (itemText.equals(getString(R.string.menu_lock)) || itemText.equals(getString(R.string.menu_unlock))) {
-					mActivity.getChatController().toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
+					cc.toggleMessageShareable(mMessage.getTo(), mMessage.getIv());
 					return;
 				}
 
@@ -136,9 +149,9 @@ public class ImageMessageMenuFragment extends DialogFragment {
 									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
 									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-									InputStream imageStream = SurespotApplication.getNetworkController().getFileStream(mMessage.getData());
+									InputStream imageStream = NetworkManager.getNetworkController(mUsername).getFileStream(mMessage.getData());
 
-									EncryptionController.runDecryptTask(mMessage.getOurVersion(), mMessage.getOtherUser(), mMessage.getTheirVersion(),
+									EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);
 
 									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
@@ -173,14 +186,14 @@ public class ImageMessageMenuFragment extends DialogFragment {
 				}
 
 				if (itemText.equals(getString(R.string.menu_delete_message))) {
-					SharedPreferences sp = mActivity.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
+					SharedPreferences sp = mActivity.getSharedPreferences(mUsername, Context.MODE_PRIVATE);
 					boolean confirm = sp.getBoolean("pref_delete_message", true);
 					if (confirm) {
 						AlertDialog adialog = UIUtils.createAndShowConfirmationDialog(mActivity, getString(R.string.delete_message_confirmation_title),
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
-											mActivity.getChatController().deleteMessage(mMessage);
+											cc.deleteMessage(mMessage);
 										}
 										else {
 											dialogi.cancel();
@@ -189,7 +202,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								});
 						mActivity.setChildDialog(adialog);					}
 					else {
-						mActivity.getChatController().deleteMessage(mMessage);
+						cc.deleteMessage(mMessage);
 					}
 
 					return;

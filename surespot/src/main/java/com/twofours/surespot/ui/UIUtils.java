@@ -1,18 +1,6 @@
 package com.twofours.surespot.ui;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.spongycastle.util.encoders.Hex;
-
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -45,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -61,12 +50,21 @@ import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.KeyFingerprintDialogFragment;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.qr.QRCodeEncoder;
 import com.twofours.surespot.qr.WriterException;
+
+import org.json.JSONObject;
+import org.spongycastle.util.encoders.Hex;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -241,8 +239,8 @@ public class UIUtils {
         UIUtils.setHtml(context, tvWelcome, R.string.welcome_to_surespot);
     }
 
-    public static void sendInvitation(final Activity context, NetworkController networkController) {
-        final String longUrl = buildExternalInviteUrl(IdentityController.getLoggedInUser());
+    public static void sendInvitation(final Activity context, NetworkController networkController, String username) {
+        final String longUrl = buildExternalInviteUrl(username);
         if (longUrl == null) {
             Utils.makeLongToast(context, context.getString(R.string.invite_no_application_found));
             return;
@@ -321,13 +319,11 @@ public class UIUtils {
         return null;
     }
 
-    public static AlertDialog showQRDialog(Activity activity) {
+    public static AlertDialog showQRDialog(Activity activity, String user) {
         LayoutInflater inflator = activity.getLayoutInflater();
         View dialogLayout = inflator.inflate(R.layout.qr_invite_layout, null, false);
         TextView tvQrInviteText = (TextView) dialogLayout.findViewById(R.id.tvQrInviteText);
         ImageView ivQr = (ImageView) dialogLayout.findViewById(R.id.ivQr);
-
-        String user = IdentityController.getLoggedInUser();
 
         Spannable s1 = new SpannableString(user);
         s1.setSpan(new ForegroundColorSpan(Color.RED), 0, s1.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -396,10 +392,10 @@ public class UIUtils {
         return ad;
     }
 
-    public static void showKeyFingerprintsDialog(MainActivity activity, String name, String alias) {
+    public static void showKeyFingerprintsDialog(MainActivity activity, String ourUsername, String theirUsername, String alias) {
 
         // Create the fragment and show it as a dialog.
-        KeyFingerprintDialogFragment newFragment = KeyFingerprintDialogFragment.newInstance(name, alias);
+        KeyFingerprintDialogFragment newFragment = KeyFingerprintDialogFragment.newInstance(ourUsername, theirUsername, alias);
         newFragment.show(activity.getFragmentManager(), "dialog");
 
     }
@@ -451,11 +447,11 @@ public class UIUtils {
         return showHelpDialog(context, R.string.surespot_help, view, firstTime);
     }
 
-    public static void updateDateAndSize(SurespotMessage message, View parentView) {
+    public static void updateDateAndSize(Context context, SurespotMessage message, View parentView) {
         if (message.getDateTime() != null) {
             TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
-            tvTime.setText(DateFormat.getDateFormat(MainActivity.getContext()).format(message.getDateTime()) + " "
-                    + DateFormat.getTimeFormat(MainActivity.getContext()).format(message.getDateTime()));
+            tvTime.setText(DateFormat.getDateFormat(context).format(message.getDateTime()) + " "
+                    + DateFormat.getTimeFormat(context).format(message.getDateTime()));
 
         }
 
@@ -616,4 +612,24 @@ public class UIUtils {
         boolean black = Utils.getSharedPrefsBoolean(activity, SurespotConstants.PrefNames.BLACK);
         activity.setTheme(black ? R.style.BlackTheme : R.style.DefaultTheme);
     }
+
+    @SuppressWarnings("deprecation")
+    public static Point getDisplaySize(Context context) {
+        Point displaySize = null;
+        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = manager.getDefaultDisplay();
+        if (display != null) {
+            displaySize = new Point();
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
+                displaySize.set(display.getWidth(), display.getHeight());
+            }
+            else {
+                display.getSize(displaySize);
+            }
+        }
+
+        return displaySize;
+    }
+
+
 }

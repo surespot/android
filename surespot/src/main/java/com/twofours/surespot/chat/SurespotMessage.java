@@ -118,12 +118,12 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         mId = id;
     }
 
-    public String getOtherUser() {
-        return ChatUtils.getOtherUser(this.mFrom, this.mTo);
+    public String getOtherUser(String ourUser) {
+        return ChatUtils.getOtherUser(ourUser, this.mFrom, this.mTo);
     }
 
-    public String getTheirVersion() {
-        String otherUser = ChatUtils.getOtherUser(this.mFrom, this.mTo);
+    public String getTheirVersion(String ourUser) {
+        String otherUser = ChatUtils.getOtherUser(ourUser, this.mFrom, this.mTo);
         if (mFrom.equals(otherUser)) {
             return getFromVersion();
         }
@@ -132,8 +132,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         }
     }
 
-    public String getOurVersion() {
-        String otherUser = ChatUtils.getOtherUser(this.mFrom, this.mTo);
+    public String getOurVersion(String ourUser) {
+        String otherUser = ChatUtils.getOtherUser(ourUser, this.mFrom, this.mTo);
         if (mFrom.equals(otherUser)) {
             return getToVersion();
         }

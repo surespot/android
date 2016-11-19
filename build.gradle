@@ -14,3 +14,16 @@ allprojects {
         jcenter()
     }
 }
+
+ext {
+    compileSdkVersion = 25
+    buildToolsVersion = '25.0.0'
+
+
+    applicationId = "com.twofours.surespot"
+    minSdkVersion = 15
+    targetSdkVersion = 20
+    multiDexEnabled = true
+
+
+}

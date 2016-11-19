@@ -16,6 +16,26 @@
 
 package com.twofours.surespot.images;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.TextUtils;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.network.NetworkManager;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,348 +44,313 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ref.WeakReference;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.text.TextUtils;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
-
-import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
-import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.friends.Friend;
-import com.twofours.surespot.identity.IdentityController;
-
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
- * 
+ * <p>
  * <p>
  * It requires the INTERNET permission, which should be added to your application's manifest file.
  * </p>
- * 
+ * <p>
  * A local cache of downloaded images is maintained internally to improve performance.
  */
 public class FriendImageDownloader {
-	private static final String TAG = "FriendImageDownloader";
-	private static BitmapCache mBitmapCache = new BitmapCache();
-	private static Handler mHandler = new Handler(MainActivity.getContext().getMainLooper());
+    private static final String TAG = "FriendImageDownloader";
+    private static BitmapCache mBitmapCache = new BitmapCache();
+    private static Handler mHandler = new Handler(Looper.getMainLooper());
 
-	/**
-	 * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
-	 * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
-	 * 
-	 * @param url
-	 *            The URL of the image to download.
-	 * @param imageView
-	 *            The ImageView to bind the downloaded image to.
-	 */
-	public static void download(ImageView imageView, Friend friend) {
-		String imageUrl = friend.getImageUrl();
-		SurespotLog.v(TAG, "downloading image for %s", friend);
+    /**
+     * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
+     * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
+     *
+     * @param imageView The ImageView to bind the downloaded image to.
+     */
+    public static void download(ImageView imageView, String ourUsername, Friend friend) {
+        String imageUrl = friend.getImageUrl();
+        SurespotLog.v(TAG, "downloading image for %s", friend);
 
-		if (TextUtils.isEmpty(imageUrl)) {
-			return;
-		}
+        if (TextUtils.isEmpty(imageUrl)) {
+            return;
+        }
 
-		Bitmap bitmap = getBitmapFromCache(imageUrl);
+        Bitmap bitmap = getBitmapFromCache(imageUrl);
 
-		if (bitmap == null) {
-			SurespotLog.v(TAG, "bitmap not in cache: %s, %s", friend.getName(), imageUrl);
-			forceDownload(imageView, friend);
-		}
-		else {
-			SurespotLog.v(TAG, "loading bitmap from cache: %s, %s", friend.getName(), imageUrl);
-			cancelPotentialDownload(imageView, friend);
-			imageView.clearAnimation();
-			imageView.setImageBitmap(bitmap);
-			// imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
+        if (bitmap == null) {
+            SurespotLog.v(TAG, "bitmap not in cache: %s, %s", friend.getName(), imageUrl);
+            forceDownload(imageView, ourUsername, friend);
+        } else {
+            SurespotLog.v(TAG, "loading bitmap from cache: %s, %s", friend.getName(), imageUrl);
+            cancelPotentialDownload(imageView, ourUsername, friend);
+            imageView.clearAnimation();
+            imageView.setImageBitmap(bitmap);
+            // imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
 
-		}
-	}
+        }
+    }
 
-	/**
-	 * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
-	 */
-	private static void forceDownload(ImageView imageView, Friend friend) {
-		if (cancelPotentialDownload(imageView, friend)) {
-			BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, friend);
-			DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
-			imageView.setImageDrawable(downloadedDrawable);
-			SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
-		}
-	}
+    /**
+     * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
+     */
+    private static void forceDownload(ImageView imageView, String ourUsername, Friend friend) {
+        if (cancelPotentialDownload(imageView, ourUsername, friend)) {
+            BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, ourUsername, friend);
+            DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
+            imageView.setImageDrawable(downloadedDrawable);
+            SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
+        }
+    }
 
-	/**
-	 * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
-	 * progress deals with the same url. The download is not stopped in that case.
-	 */
-	private static boolean cancelPotentialDownload(ImageView imageView, Friend friend) {
-		BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+    /**
+     * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
+     * progress deals with the same url. The download is not stopped in that case.
+     */
+    private static boolean cancelPotentialDownload(ImageView imageView, String ourUsername, Friend friend) {
+        BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+        if (bitmapDownloaderTask != null) {
+            Friend taskFriend = bitmapDownloaderTask.mFriend;
+            String username = bitmapDownloaderTask.mOurUsername;
+            if (!username.equals(ourUsername) || (taskFriend == null) || (!taskFriend.equals(friend))) {
+                bitmapDownloaderTask.cancel();
+            } else {
+                // The same URL is already being downloaded.
+                return false;
+            }
+        }
+        return true;
+    }
 
-		if (bitmapDownloaderTask != null) {
-			Friend taskFriend = bitmapDownloaderTask.mFriend;
-			if ((taskFriend == null) || (!taskFriend.equals(friend))) {
-				bitmapDownloaderTask.cancel();
-			}
-			else {
-				// The same URL is already being downloaded.
-				return false;
-			}
-		}
-		return true;
-	}
+    /**
+     * @param imageView Any imageView
+     * @return Retrieve the currently active download task (if any) associated with this imageView. null if there is no such task.
+     */
+    private static BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
+        if (imageView != null) {
+            Drawable drawable = imageView.getDrawable();
+            if (drawable instanceof DownloadedDrawable) {
+                DownloadedDrawable downloadedDrawable = (DownloadedDrawable) drawable;
+                return downloadedDrawable.getBitmapDownloaderTask();
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * @param imageView
-	 *            Any imageView
-	 * @return Retrieve the currently active download task (if any) associated with this imageView. null if there is no such task.
-	 */
-	public static BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
-		if (imageView != null) {
-			Drawable drawable = imageView.getDrawable();
-			if (drawable instanceof DownloadedDrawable) {
-				DownloadedDrawable downloadedDrawable = (DownloadedDrawable) drawable;
-				return downloadedDrawable.getBitmapDownloaderTask();
-			}
-		}
-		return null;
-	}
+    /**
+     * The actual AsyncTask that will asynchronously download the image.
+     */
+    private static class BitmapDownloaderTask implements Runnable {
+        private String mOurUsername;
+        private Friend mFriend;
+        private boolean mCancelled;
 
-	/**
-	 * The actual AsyncTask that will asynchronously download the image.
-	 */
-	public static class BitmapDownloaderTask implements Runnable {
-		private Friend mFriend;
-		private boolean mCancelled;
+        public Friend getFriend() {
+            return mFriend;
+        }
 
-		public Friend getFriend() {
-			return mFriend;
-		}
+        private final WeakReference<ImageView> imageViewReference;
 
-		private final WeakReference<ImageView> imageViewReference;
+        private BitmapDownloaderTask(ImageView imageView, String ourUsername, Friend friend) {
+            mFriend = friend;
+            mOurUsername = ourUsername;
+            imageViewReference = new WeakReference<ImageView>(imageView);
+        }
 
-		public BitmapDownloaderTask(ImageView imageView, Friend friend) {
-			mFriend = friend;
-			imageViewReference = new WeakReference<ImageView>(imageView);
-		}
+        public void cancel() {
+            mCancelled = true;
+        }
 
-		public void cancel() {
-			mCancelled = true;
-		}
+        @Override
+        public void run() {
+            Bitmap bitmap = null;
+            InputStream imageStream = null;
 
-		@Override
-		public void run() {
-			Bitmap bitmap = null;
-			InputStream imageStream = null;
+            imageStream = NetworkManager.getNetworkController(mOurUsername).getFileStream(mFriend.getImageUrl());
 
-			imageStream = SurespotApplication.getNetworkController().getFileStream(mFriend.getImageUrl());
+            if (mCancelled) {
+                try {
+                    if (imageStream != null) {
+                        imageStream.close();
+                    }
+                } catch (IOException e) {
+                    SurespotLog.w(TAG, e, "FriendImage DownloaderTask ioe");
+                }
+                return;
+            }
 
-			if (mCancelled) {
-				try {
-					if (imageStream != null) {
-						imageStream.close();
-					}
-				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "FriendImage DownloaderTask ioe");
-				}
-				return;
-			}
+            if (!mCancelled && imageStream != null) {
+                PipedOutputStream out = new PipedOutputStream();
+                PipedInputStream inputStream = null;
+                try {
+                    inputStream = new PipedInputStream(out);
 
-			if (!mCancelled && imageStream != null) {
-				PipedOutputStream out = new PipedOutputStream();
-				PipedInputStream inputStream = null;
-				try {
-					inputStream = new PipedInputStream(out);
+                    EncryptionController.runDecryptTask(mOurUsername, mFriend.getImageVersion(), mOurUsername, mFriend.getImageVersion(),
+                            mFriend.getImageIv(), mFriend.isImageHashed(), new BufferedInputStream(imageStream), out);
 
-					EncryptionController.runDecryptTask(mFriend.getImageVersion(), IdentityController.getLoggedInUser(), mFriend.getImageVersion(),
-							mFriend.getImageIv(), mFriend.isImageHashed(), new BufferedInputStream(imageStream), out);
+                    if (mCancelled) {
+                        return;
+                    }
 
-					if (mCancelled) {
-						return;
-					}
+                    byte[] bytes = Utils.inputStreamToBytes(inputStream);
+                    if (mCancelled) {
+                        return;
+                    }
 
-					byte[] bytes = Utils.inputStreamToBytes(inputStream);
-					if (mCancelled) {
-						return;
-					}
+                    bitmap = ChatUtils.getSampledImage(bytes);
+                } catch (InterruptedIOException ioe) {
 
-					bitmap = ChatUtils.getSampledImage(bytes);
-				}
-				catch (InterruptedIOException ioe) {
+                    SurespotLog.w(TAG, ioe, "FriendImage DownloaderTask ioe");
 
-					SurespotLog.w(TAG, ioe, "FriendImage DownloaderTask ioe");
+                } catch (IOException e) {
+                    SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+                } finally {
 
-				}
-				catch (IOException e) {
-					SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
-				}
-				finally {
+                    try {
+                        if (imageStream != null) {
+                            imageStream.close();
+                        }
+                    } catch (IOException e) {
+                        SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+                    }
 
-					try {
-						if (imageStream != null) {
-							imageStream.close();
-						}
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
-					}
+                    try {
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
+                    } catch (IOException e) {
+                        SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+                    }
+                }
+            }
 
-					try {
-						if (inputStream != null) {
-							inputStream.close();
-						}
-					}
-					catch (IOException e) {
-						SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
-					}
-				}
-			}
+            final Bitmap finalBitmap = bitmap;
+            if (imageViewReference != null) {
+                final ImageView imageView = imageViewReference.get();
+                final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
+                // Change bitmap only if this process is still associated with it
+                // Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+                if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
 
-			final Bitmap finalBitmap = bitmap;
-			if (imageViewReference != null) {
-				final ImageView imageView = imageViewReference.get();
-				final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-				// Change bitmap only if this process is still associated with it
-				// Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-				if ((BitmapDownloaderTask.this == bitmapDownloaderTask)) {
+                    mHandler.post(new Runnable() {
 
-					mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (finalBitmap != null) {
 
-						@Override
-						public void run() {
-							if (finalBitmap != null) {
+                                FriendImageDownloader.addBitmapToCache(mFriend.getImageUrl(), finalBitmap);
 
-								FriendImageDownloader.addBitmapToCache(mFriend.getImageUrl(), finalBitmap);
+                                Drawable drawable = imageView.getDrawable();
+                                if (drawable instanceof DownloadedDrawable) {
 
-								Drawable drawable = imageView.getDrawable();
-								if (drawable instanceof DownloadedDrawable) {
+                                    imageView.clearAnimation();
+                                    Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+                                    // AlphaAnimation(0,
+                                    // 1);
+                                    // Animation fadeout = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_out);
+                                    // fadeIn.setDuration(1000);
+                                    imageView.startAnimation(fadeIn);
 
-									imageView.clearAnimation();
-									Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
-																																	// AlphaAnimation(0,
-																																	// 1);
-									// Animation fadeout = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_out);
-									// fadeIn.setDuration(1000);
-									imageView.startAnimation(fadeIn);
+                                } else {
+                                    SurespotLog.v(TAG, "clearing uploading flag");
+                                    // mMessage.setPlainData(null);
+                                    ImageViewAnimatedChange(imageView.getContext(), imageView, finalBitmap);
+                                }
 
-								}
-								else {
-									SurespotLog.v(TAG, "clearing uploading flag");
-									// mMessage.setPlainData(null);
-									ImageViewAnimatedChange(imageView.getContext(), imageView, finalBitmap);
-								}
+                                SurespotLog.v(TAG, "setting image for %s", mFriend.getName());
+                                imageView.setImageBitmap(finalBitmap);
+                                // imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
+                            } else {
+                                // todo set error bitmap
+                                imageView.setImageDrawable(null);
+                            }
 
-								SurespotLog.v(TAG, "setting image for %s", mFriend.getName());
-								imageView.setImageBitmap(finalBitmap);
-								// imageView.setBackgroundColor(imageView.getResources().getColor(android.R.color.transparent));
-							}
-							else {
-								// todo set error bitmap
-								imageView.setImageDrawable(null);
-							}
+                        }
+                    });
+                }
+            }
+        }
+    }
 
-						}
-					});
-				}
-			}
-		}
-	}
+    public static void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
+        SurespotLog.v(TAG, "switching image");
+        final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out);
+        final Animation anim_in = AnimationUtils.loadAnimation(c, android.R.anim.fade_in);
+        anim_out.setAnimationListener(new AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
 
-	public static void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
-		SurespotLog.v(TAG, "switching image");
-		final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out);
-		final Animation anim_in = AnimationUtils.loadAnimation(c, android.R.anim.fade_in);
-		anim_out.setAnimationListener(new AnimationListener() {
-			@Override
-			public void onAnimationStart(Animation animation) {
-			}
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
 
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                v.setImageBitmap(new_image);
+                anim_in.setAnimationListener(new AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
 
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				v.setImageBitmap(new_image);
-				anim_in.setAnimationListener(new AnimationListener() {
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
 
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                    }
+                });
+                v.startAnimation(anim_in);
+            }
+        });
+        v.startAnimation(anim_out);
+    }
 
-					@Override
-					public void onAnimationEnd(Animation animation) {
-					}
-				});
-				v.startAnimation(anim_in);
-			}
-		});
-		v.startAnimation(anim_out);
-	}
+    /**
+     * A fake Drawable that will be attached to the imageView while the download is in progress.
+     * <p>
+     * <p>
+     * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure that only the last
+     * started download process can bind its result, independently of the download finish order.
+     * </p>
+     */
+    public static class DownloadedDrawable extends ColorDrawable {
+        private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
 
-	/**
-	 * A fake Drawable that will be attached to the imageView while the download is in progress.
-	 * 
-	 * <p>
-	 * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure that only the last
-	 * started download process can bind its result, independently of the download finish order.
-	 * </p>
-	 */
-	public static class DownloadedDrawable extends ColorDrawable {
-		private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
+        public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask) {
+            bitmapDownloaderTaskReference = new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
+        }
 
-		public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask) {
-			bitmapDownloaderTaskReference = new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
-		}
+        public BitmapDownloaderTask getBitmapDownloaderTask() {
+            return bitmapDownloaderTaskReference.get();
+        }
+    }
 
-		public BitmapDownloaderTask getBitmapDownloaderTask() {
-			return bitmapDownloaderTaskReference.get();
-		}
-	}
+    /**
+     * Adds this bitmap to the cache.
+     *
+     * @param bitmap The newly downloaded bitmap.
+     */
+    public static void addBitmapToCache(String key, Bitmap bitmap) {
+        if (bitmap != null) {
+            mBitmapCache.addBitmapToMemoryCache(key, bitmap);
+        }
+    }
 
-	/**
-	 * Adds this bitmap to the cache.
-	 * 
-	 * @param bitmap
-	 *            The newly downloaded bitmap.
-	 */
-	public static void addBitmapToCache(String key, Bitmap bitmap) {
-		if (bitmap != null) {
-			mBitmapCache.addBitmapToMemoryCache(key, bitmap);
-		}
-	}
+    /**
+     * @return The cached bitmap or null if it was not found.
+     */
+    public static Bitmap getBitmapFromCache(String key) {
+        return mBitmapCache.getBitmapFromMemCache(key);
+    }
 
-	/**
-	 * @param url
-	 *            The URL of the image that will be retrieved from the cache.
-	 * @return The cached bitmap or null if it was not found.
-	 */
-	public static Bitmap getBitmapFromCache(String key) {
-		return mBitmapCache.getBitmapFromMemCache(key);
-	}
+    public static void evictCache() {
+        mBitmapCache.evictAll();
 
-	public static void evictCache() {
-		mBitmapCache.evictAll();
+    }
 
-	}
-
-	public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
-		Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
-		if (bitmap != null) {
-			mBitmapCache.remove(sourceKey);
-			mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
-		}
-	}
+    public static void copyAndRemoveCacheEntry(String sourceKey, String destKey) {
+        Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
+        if (bitmap != null) {
+            mBitmapCache.remove(sourceKey);
+            mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+        }
+    }
 }

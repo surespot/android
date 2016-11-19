@@ -14,7 +14,7 @@ import okhttp3.Cookie;
 public class NetworkHelper {
     private static final String TAG = "NetworkHelper";
 
-    public static void reLogin(final Context context, final NetworkController networkController, final String username, final CookieResponseHandler cookieResponseHandler) {
+    public static void reLogin(final Context context, final String username, final CookieResponseHandler cookieResponseHandler) {
         // if we have password login again and retry
         String pw = null;
 
@@ -38,7 +38,7 @@ public class NetworkHelper {
 
                         String signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);
 
-                        networkController.login(username, dPassword, signature, new CookieResponseHandler() {
+                        NetworkManager.getNetworkController(username).login(username, dPassword, signature, new CookieResponseHandler() {
 
                             @Override
                             public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {
