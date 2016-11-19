@@ -14,9 +14,11 @@ import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.ViewPager;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
+import com.rockerhieu.emojicon.EmojiconHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
@@ -285,8 +287,10 @@ public class ChatController {
 
                         // substitute emoji
                         if (plainText != null) {
-                            //EmojiParser parser = EmojiParser.getInstance();
-                            message.setPlainData(plainText);
+                            // set plaintext in message so we don't have to decrypt again
+                            SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
+                            EmojiconHandler.addEmojis(mContext, builder, 30);
+                            message.setPlainData(builder.toString());
                         } else {
                             // error decrypting
                             SurespotLog.d(TAG, "could not decrypt message");

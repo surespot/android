@@ -17,12 +17,8 @@
 package com.rockerhieu.emojicon;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.text.style.DynamicDrawableSpan;
-
-import java.lang.ref.WeakReference;
 
 /**
  * @author Hieu Rocker (rockerhieu@gmail.com)
@@ -37,7 +33,7 @@ class EmojiconSpan extends DynamicDrawableSpan {
 
     private Drawable mDrawable;
 
-    public EmojiconSpan(Context context, int resourceId, int size, int alignment, int textSize) {
+    public EmojiconSpan(Context context, int resourceId, int size) {
         super();
         mContext = context;
         mResourceId = resourceId;
