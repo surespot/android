@@ -1442,7 +1442,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         SurespotLog.d(TAG, "backButtonPressed");
 
-        //if they press back hide keyboard first
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+
+        //returning false will cause the keyboard to be hidden
         if (mActivityLayout.isKeyboardVisible()) {
             return false;
         }
@@ -1452,10 +1457,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             return true;
         }
 
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        }
+
 
         //go to home page if we not
         if (mCurrentFriend != null) {
