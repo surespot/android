@@ -78,14 +78,14 @@ public class ImageMessageMenuFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		final MainActivity mActivity = (MainActivity) getActivity();
 
-		final ChatController cc =  ChatManager.getChatController(mActivity, mUsername);
-		if (cc == null) {
-			return null;
-		}
-
 		String username = getArguments().getString("username");
 		if (username != null) {
 			mUsername = username;
+		}
+
+		final ChatController cc =  ChatManager.getChatController(mActivity, mUsername);
+		if (cc == null) {
+			return null;
 		}
 
 		String messageString = getArguments().getString("message");
