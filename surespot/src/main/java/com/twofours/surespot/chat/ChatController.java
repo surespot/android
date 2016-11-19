@@ -593,7 +593,7 @@ public class ChatController {
                                 protected Void doInBackground(Void... voids) {
                                     //see if we need to update signatures, will only have sigs property if we need to update
                                     if (hasSigs) {
-                                        JSONObject sigs = IdentityController.updateSignatures(mContext);
+                                        JSONObject sigs = IdentityController.updateSignatures(mContext, mUsername);
                                         mNetworkController.updateSigs(sigs, new Callback() {
                                             @Override
                                             public void onFailure(Call call, IOException e) {

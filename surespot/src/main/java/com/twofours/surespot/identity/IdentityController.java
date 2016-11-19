@@ -350,13 +350,13 @@ public class IdentityController {
 
     }
 
-    static SurespotIdentity getIdentity(Context context) {
-        return getIdentity(context, null, null);
+    static SurespotIdentity getIdentity(Context context, String username) {
+        return getIdentity(context, username, null);
     }
 
     public static SurespotIdentity getIdentity(Context context, String username, String password) {
         if (username == null) {
-            username = getLastLoggedInUser(context);
+            return null;
         }
 
         CredentialCachingService ccs = SurespotApplication.getCachingService();
@@ -1324,12 +1324,11 @@ public class IdentityController {
                 context.startActivity(intent);
             }
         }
-
     }
 
-    public static JSONObject updateSignatures(Context context) {
+    public static JSONObject updateSignatures(Context context, String username) {
         //iterate through all identity public keys and generate new client sigs
-        SurespotIdentity identity = getIdentity(context);
+        SurespotIdentity identity = getIdentity(context, username);
         String previousVersion = "1";
         PrivateKey previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
         JSONObject signatures = new JSONObject();

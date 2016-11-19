@@ -392,10 +392,10 @@ public class UIUtils {
         return ad;
     }
 
-    public static void showKeyFingerprintsDialog(MainActivity activity, String name, String alias) {
+    public static void showKeyFingerprintsDialog(MainActivity activity, String ourUsername, String theirUsername, String alias) {
 
         // Create the fragment and show it as a dialog.
-        KeyFingerprintDialogFragment newFragment = KeyFingerprintDialogFragment.newInstance(name, alias);
+        KeyFingerprintDialogFragment newFragment = KeyFingerprintDialogFragment.newInstance(ourUsername, theirUsername, alias);
         newFragment.show(activity.getFragmentManager(), "dialog");
 
     }

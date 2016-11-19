@@ -167,7 +167,7 @@ public class FriendFragment extends Fragment {
 
 						else {
 							if (selection.equals(getString(R.string.verify_key_fingerprints))) {
-								UIUtils.showKeyFingerprintsDialog(activity, friend.getName(), friend.getAliasPlain());
+								UIUtils.showKeyFingerprintsDialog(activity, mUsername, friend.getName(), friend.getAliasPlain());
 							}
 							else {
 
