@@ -1626,17 +1626,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void setEmojiIcon(final boolean keyboardShowing) {
         boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
         if (keyboardShowing) {
-            mEmojiButton.setImageResource(R.drawable.ic_emoji);
+            mEmojiButton.setImageResource(R.drawable.smiley);
         } else {
-
             if (black) {
-                mEmojiButton.setImageResource(R.drawable.ic_keyboard_grey_500_36dp);
-            }
-            else {
-                mEmojiButton.setImageResource(R.drawable.ic_keyboard);
+                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
+            } else {
+                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
             }
         }
-
     }
 
     private void setBackgroundImage() {
@@ -1823,7 +1820,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             wm.removeViewImmediate(mEmojiView);
         }
 
-        mEmojiButton.setImageResource(R.drawable.ic_emoji);
+        mEmojiButton.setImageResource(R.drawable.smiley);
         mActivityLayout.setPadding(0, 0, 0, 0);
         mEmojiShowing = false;
     }
