@@ -162,7 +162,11 @@ public class FriendImageDownloader {
             Bitmap bitmap = null;
             InputStream imageStream = null;
 
-            imageStream = NetworkManager.getNetworkController(mOurUsername).getFileStream(mFriend.getImageUrl());
+            ImageView iv = imageViewReference.get();
+            if (iv == null) {
+                return;
+            }
+            imageStream = NetworkManager.getNetworkController(iv.getContext(), mOurUsername).getFileStream(mFriend.getImageUrl());
 
             if (mCancelled) {
                 try {
@@ -266,6 +270,7 @@ public class FriendImageDownloader {
                 }
             }
         }
+
     }
 
     public static void ImageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {

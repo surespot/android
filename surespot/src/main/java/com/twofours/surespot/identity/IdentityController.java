@@ -211,7 +211,7 @@ public class IdentityController {
 
                 String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
                 // do OOB verification
-                NetworkController networkController = NetworkManager.getNetworkController(username);
+                NetworkController networkController = NetworkManager.getNetworkController(context, username);
                 networkController.validate(username, dPassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword),
                         new Callback() {
                             @Override
@@ -316,7 +316,7 @@ public class IdentityController {
             logout(context, getLoggedInUser());
         }
 
-        NetworkManager.getNetworkController(deletedUsername).clearCache();
+        NetworkManager.getNetworkController(context, deletedUsername).clearCache();
 
         FileCacheController fcc = SurespotApplication.getFileCacheController();
         if (fcc != null) {
@@ -477,7 +477,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = NetworkManager.getNetworkController(username);
+            NetworkController networkController = NetworkManager.getNetworkController(context, username);
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
                         @Override
@@ -531,7 +531,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = NetworkManager.getNetworkController(username);
+            NetworkController networkController = NetworkManager.getNetworkController(context, username);
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
 
@@ -593,7 +593,7 @@ public class IdentityController {
 
             String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
             // do OOB verification
-            NetworkManager.getNetworkController(username).validate(username, dPassword,
+            NetworkManager.getNetworkController(context, username).validate(username, dPassword,
                     EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
@@ -712,7 +712,7 @@ public class IdentityController {
             return validatedKeys;
         } else {
             //get keys from server since the last validated version
-            sDownloadedKeys = NetworkManager.getNetworkController(ourUsername).getPublicKeysSync(theirUsername, Integer.toString(validatedKeyVersion + 1, 10));
+            sDownloadedKeys = NetworkManager.getNetworkController(context, ourUsername).getPublicKeysSync(theirUsername, Integer.toString(validatedKeyVersion + 1, 10));
 
             //validate from the last validated version to the version we want
             if (sDownloadedKeys != null) {
@@ -916,7 +916,7 @@ public class IdentityController {
         if (cc != null) {
             cc.logout();
         }
-        NetworkManager.getNetworkController(username).logout();
+        NetworkManager.getNetworkController(context, username).logout();
 
         CredentialCachingService cache = SurespotApplication.getCachingService();
         if (cache != null) {
@@ -1046,7 +1046,7 @@ public class IdentityController {
 
             // delete identities locally?
             SurespotLog.d(TAG, "setting unauthorized, username=" + username + ", getLoggedInUser=" + getLoggedInUser());
-            NetworkManager.getNetworkController(username).setUnauthorized(true, true);
+            NetworkManager.getNetworkController(context, username).setUnauthorized(true, true);
 
             // boot them out
             launchLoginActivity(context);

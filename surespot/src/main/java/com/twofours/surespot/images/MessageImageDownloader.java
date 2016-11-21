@@ -187,7 +187,7 @@ public class MessageImageDownloader {
 
                 SurespotLog.d(TAG, "BitmapDownloaderTask getting %s,", messageData);
 
-                InputStream encryptedImageStream = NetworkManager.getNetworkController(mUsername).getFileStream(messageData);
+                InputStream encryptedImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(messageData);
 
                 if (mCancelled) {
                     try {

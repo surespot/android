@@ -319,7 +319,7 @@ public class FriendAdapter extends BaseAdapter {
             final Friend friend = (Friend) getItem(position);
             final String friendname = friend.getName();
 
-            NetworkManager.getNetworkController(mUsername).
+            NetworkManager.getNetworkController(mContext, mUsername).
             respondToInvite(friendname, action, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {

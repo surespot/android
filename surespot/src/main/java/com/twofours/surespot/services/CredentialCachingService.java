@@ -101,7 +101,7 @@ public class CredentialCachingService extends Service {
             @Override
             public String load(Tuple<String, String> identityAndFriendname) throws Exception {
                 //get the network controller for the identity
-                NetworkController nc = NetworkManager.getNetworkController(identityAndFriendname.first);
+                NetworkController nc = NetworkManager.getNetworkController(CredentialCachingService.this,identityAndFriendname.first);
                 String version = nc.getKeyVersionSync(identityAndFriendname.second);
                 SurespotLog.d(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", identityAndFriendname.second, version);
                 return version;

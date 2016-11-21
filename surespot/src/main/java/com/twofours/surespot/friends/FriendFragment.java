@@ -62,7 +62,7 @@ public class FriendFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(mUsername), mUsername);
+                UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(getActivity(), mUsername), mUsername);
 
             }
         });

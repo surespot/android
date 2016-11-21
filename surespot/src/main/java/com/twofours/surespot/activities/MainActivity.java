@@ -727,7 +727,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     private void setupUser() {
         //set username
-        NetworkManager.getNetworkController(mUser).set401Handler(m401Handler);
+        NetworkManager.getNetworkController(this, mUser).set401Handler(m401Handler);
 
         mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
         View currentMainView = mContentFrame.getChildAt(0);
@@ -1016,6 +1016,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
+                break;
+            case SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS:
+                if (SurespotApplication.getThemeChanged()) {
+                    SurespotApplication.setThemeChanged(null);
+                    finish();
+                    final Intent intent = getIntent();
+                    startActivity(intent);
+                }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
         }
@@ -1154,10 +1163,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
-
                         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                         intent.putExtra("username", mUser);
-                        startActivity(intent);
+                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
                         return null;
                     }
                 }.execute();
@@ -1172,7 +1180,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 finish();
                 return true;
             case R.id.menu_invite_external:
-                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser), mUser);
+                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(this, mUser), mUser);
                 return true;
             case R.id.menu_clear_messages:
                 SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1497,7 +1505,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
 
             setHomeProgress(true);
-            NetworkManager.getNetworkController(mUser).invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            NetworkManager.getNetworkController(this, mUser).invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "inviteFriend error");
@@ -1882,4 +1890,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     void sendBackPressed() {
         this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
     }
+
+//    @Override
+//    public Resources.Theme getTheme() {
+//
+//        if (!SurespotApplication.getThemeChanged()) {
+//            return super.getTheme();
+//        }
+//        else {
+//            SurespotLog.d(TAG, "getTheme, changed");
+//            Resources.Theme theme = super.getTheme();
+//            boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
+//
+//            theme.applyStyle(black ? R.style.BlackTheme : R.style.DefaultTheme, true);
+//
+//            SurespotApplication.setThemeChanged(false);
+//            // you could also use a switch if you have many themes that could apply
+//            return theme;
+//        }
+//    }
 }

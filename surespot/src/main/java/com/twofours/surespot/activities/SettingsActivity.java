@@ -24,6 +24,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.common.SurespotConfiguration;
 import com.twofours.surespot.common.SurespotConstants;
@@ -114,6 +115,7 @@ public class SettingsActivity extends PreferenceActivity {
 					boolean newChecked = blackPref.isChecked();
 					SurespotLog.d(TAG, "set black: %b", newChecked);
 					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.BLACK, newChecked);
+					SurespotApplication.setThemeChanged(SettingsActivity.this);
 					return true;
 				}
 			});

@@ -16,7 +16,6 @@ import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.UIUtils;
 
@@ -55,7 +54,7 @@ public class ImageViewActivity extends Activity {
                     @Override
                     protected Bitmap doInBackground(Void... params) {
 
-                        InputStream imageStream = NetworkManager.getNetworkController(ourUsername).getFileStream(message.getData());
+                        InputStream imageStream = NetworkManager.getNetworkController(ImageViewActivity.this, ourUsername).getFileStream(message.getData());
 
                         Bitmap bitmap = null;
                         PipedOutputStream out = new PipedOutputStream();

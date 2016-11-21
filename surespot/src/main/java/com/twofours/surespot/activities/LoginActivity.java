@@ -292,7 +292,7 @@ public class LoginActivity extends Activity {
                 protected void onPostExecute(final IdSig idSig) {
                     if (idSig != null) {
 
-                        NetworkController networkController = NetworkManager.getNetworkController(username);
+                        NetworkController networkController = NetworkManager.getNetworkController(LoginActivity.this, username);
                         networkController.set401Handler(new IAsyncCallback<Object>() {
                             @Override
                             public void handleResponse(Object unused) {

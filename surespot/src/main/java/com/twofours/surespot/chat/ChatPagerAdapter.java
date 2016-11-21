@@ -179,10 +179,13 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 	}
 
 	public void removeChat(int viewId, int index) {
+
 		Friend friend = mChatFriends.remove(index - 1);
 
 		String fragname = makeFragmentName(viewId, friend.getName().hashCode());
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
+
+		SurespotLog.d(TAG, "removeChat, index: %d, name: %s", index, fragname);
 
 		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());
@@ -217,4 +220,41 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 			return IconProvider.NO_ICON;
 		}
 	}
+
+//	public void destroyChatFragments(int viewId) {
+//		FragmentTransaction ft = null;
+//		for (int i = mChatFriends.size()-1; i >=0;i--) {
+//
+//
+//			SurespotLog.d(TAG, "removeChatFragment, size: %d, index: %d", mChatFriends.size(), i);
+//			Friend friend = mChatFriends.remove(i);
+//
+//			String fragname = makeFragmentName(viewId, friend.getName().hashCode());
+//			Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
+//
+//			SurespotLog.d(TAG, "removeChatFragment, getFragment: %b", fragment != null);
+//
+//			// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
+//			// + " v=" + ((Fragment)object).getView());
+//			if (fragment != null) {
+//
+//				// blow the fragment away
+//				//if (ft == null) {
+//					SurespotLog.d(TAG, "removing fragment index %d", i);
+//					ft = mFragmentManager.beginTransaction();
+//			//	}
+//
+//				ft.remove(fragment);
+//				ft.commitAllowingStateLoss();
+//
+//
+//			}
+//
+//		}
+////		if (ft != null) {
+////			ft.commit();
+////		//	notifyDataSetChanged();
+////		}
+//	}
+
 }

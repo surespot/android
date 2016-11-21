@@ -147,7 +147,7 @@ public class ManageKeysActivity extends Activity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		NetworkManager.getNetworkController(username).getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback(){
+		NetworkManager.getNetworkController(ManageKeysActivity.this, username).getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback(){
 			@Override
 			public void onFailure(Call call, IOException e) {
 				mMpd.decrProgress();
@@ -192,7 +192,7 @@ public class ManageKeysActivity extends Activity {
 						protected void onPostExecute(final RollKeysWrapper result) {
 							if (result != null) {
 								// upload all this crap to the server
-								NetworkManager.getNetworkController(username).updateKeys(username, dPassword,
+								NetworkManager.getNetworkController(ManageKeysActivity.this, username).updateKeys(username, dPassword,
 										EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 										EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
 										result.keyVersion, result.clientSig, new Callback() {

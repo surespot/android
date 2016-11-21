@@ -149,7 +149,7 @@ public class ChangePasswordActivity extends Activity {
         SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
         // get a key update token from the server
-        NetworkManager.getNetworkController(username).getPasswordToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(ChangePasswordActivity.this, username).getPasswordToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -189,7 +189,7 @@ public class ChangePasswordActivity extends Activity {
                         protected void onPostExecute(final ChangePasswordWrapper result) {
                             if (result != null) {
                                 // upload all this crap to the server
-                                NetworkManager.getNetworkController(username).changePassword(username, dPassword, result.password, result.authSig,
+                                NetworkManager.getNetworkController(ChangePasswordActivity.this, username).changePassword(username, dPassword, result.password, result.authSig,
                                         result.tokenSig, result.keyVersion, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
                                             @Override

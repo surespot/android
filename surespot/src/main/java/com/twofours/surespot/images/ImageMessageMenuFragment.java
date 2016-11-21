@@ -149,7 +149,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 									File galleryFile = FileUtils.createGalleryImageFile(".jpg");
 									FileOutputStream fos = new FileOutputStream(galleryFile);
 
-									InputStream imageStream = NetworkManager.getNetworkController(mUsername).getFileStream(mMessage.getData());
+									InputStream imageStream = NetworkManager.getNetworkController(getActivity(), mUsername).getFileStream(mMessage.getData());
 
 									EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);

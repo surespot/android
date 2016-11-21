@@ -182,8 +182,7 @@ public class VoiceMessageDownloader {
                 if (!TextUtils.isEmpty(messageData)) {
 
                     SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", messageData);
-                    InputStream voiceStream = NetworkManager.getNetworkController(mUsername).getFileStream(messageData);
-                    //InputStream voiceStream = SurespotApplication.getNetworkController().getFileStream(messageData);
+                    InputStream voiceStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(messageData);
 
                     if (mCancelled) {
                         try {

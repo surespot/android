@@ -110,7 +110,7 @@ public class DeleteIdentityActivity extends Activity {
         SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
         // get a key update token from the server
-        NetworkManager.getNetworkController(username).getDeleteToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(DeleteIdentityActivity.this, username).getDeleteToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 mMpd.decrProgress();
@@ -138,7 +138,7 @@ public class DeleteIdentityActivity extends Activity {
                         protected void onPostExecute(final DeleteIdentityWrapper result) {
                             if (result != null) {
                                 // upload all this crap to the server
-                                NetworkManager.getNetworkController(username).deleteUser(username, dPassword, result.authSig, result.tokenSig,
+                                NetworkManager.getNetworkController(DeleteIdentityActivity.this, username).deleteUser(username, dPassword, result.authSig, result.tokenSig,
                                         result.keyVersion, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback()
                                 {
                                             @Override

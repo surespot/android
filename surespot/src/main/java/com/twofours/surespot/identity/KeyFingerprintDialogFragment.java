@@ -108,7 +108,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 				}
 				
 				//get latest version from server							
-				String latestVersion = NetworkManager.getNetworkController(mOurUsername).getKeyVersionSync(mTheirUsername);
+				String latestVersion = NetworkManager.getNetworkController(activity, mOurUsername).getKeyVersionSync(mTheirUsername);
 				if (latestVersion == null) {
 					activity = getActivity();
 					if (activity == null) {

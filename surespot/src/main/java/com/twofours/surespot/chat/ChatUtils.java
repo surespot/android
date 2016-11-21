@@ -298,7 +298,7 @@ public class ChatUtils {
                     final String iv = EncryptionController.runEncryptTask(ourName, ourVersion, ourName, ourVersion, new BufferedInputStream(dataStream),
                             encryptionOutputStream);
 
-                    NetworkManager.getNetworkController(ourName).postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
+                    NetworkManager.getNetworkController(activity, ourName).postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
 
                         @Override
                         public void handleResponse(String uri) {

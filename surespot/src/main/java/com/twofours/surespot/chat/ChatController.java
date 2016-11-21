@@ -147,7 +147,7 @@ public class ChatController {
 
         mContext = context;
         mUsername = username;
-        mNetworkController = NetworkManager.getNetworkController(mUsername);
+        mNetworkController = NetworkManager.getNetworkController(context, mUsername);
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(mContext);
 
@@ -2174,8 +2174,8 @@ public class ChatController {
 
             //override ssl context for self signed certs for dev
             if (!SurespotConfiguration.isSslCheckingStrict()) {
-                opts.sslContext = NetworkManager.getNetworkController(mUsername).getSSLContext();
-                opts.hostnameVerifier = NetworkManager.getNetworkController(mUsername).getHostnameVerifier();
+                opts.sslContext = mNetworkController.getSSLContext();
+                opts.hostnameVerifier = mNetworkController.getHostnameVerifier();
             }
 
             opts.reconnection = false;
@@ -2502,30 +2502,26 @@ public class ChatController {
             @Override
             protected Tuple<Integer, JSONObject> doInBackground(Void... voids) {
                 //post message via http if we have network controller for the from user
-                NetworkController networkController = NetworkManager.getNetworkController(message.getFrom());
-                if (networkController != null) {
 
-                    FileInputStream uploadStream;
-                    try {
-                        SurespotLog.d(TAG, "sendFileMessage in thread: %s", message);
-                        uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
 
-                        return networkController.postFileStreamSync(
-                                message.getOurVersion(message.getFrom()),
-                                message.getTo(),
-                                message.getTheirVersion(message.getFrom()),
-                                message.getIv(),
-                                uploadStream,
-                                message.getMimeType());
+                FileInputStream uploadStream;
+                try {
+                    SurespotLog.d(TAG, "sendFileMessage in thread: %s", message);
+                    uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
 
-                    } catch (Exception e) {
-                        SurespotLog.w(TAG, e, "sendFileMessage");
-                        return new Tuple<>(500, null);
-                    }
-                } else {
-                    SurespotLog.i(TAG, "network controller null or different user");
+                    return mNetworkController.postFileStreamSync(
+                            message.getOurVersion(message.getFrom()),
+                            message.getTo(),
+                            message.getTheirVersion(message.getFrom()),
+                            message.getIv(),
+                            uploadStream,
+                            message.getMimeType());
+
+                } catch (Exception e) {
+                    SurespotLog.w(TAG, e, "sendFileMessage");
                     return new Tuple<>(500, null);
                 }
+
             }
 
             @Override
@@ -2597,7 +2593,7 @@ public class ChatController {
 
         ArrayList<SurespotMessage> toSend = new ArrayList<SurespotMessage>();
         toSend.add(message);
-        NetworkManager.getNetworkController(message.getFrom()).postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        mNetworkController.postMessages(toSend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -3290,4 +3286,10 @@ public class ChatController {
     public void clearError() {
         mErrored = false;
     }
+
+//    public void destroyChatFragments() {
+//        mChatPagerAdapter.destroyChatFragments(mViewPager.getId());
+//
+//    }
+
 }

@@ -207,7 +207,7 @@ public class SignupActivity extends Activity {
         mMpdCheck.incrProgress();
 
         // see if the user exists
-        NetworkManager.getNetworkController().userExists(username, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(this).userExists(username, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -325,7 +325,7 @@ public class SignupActivity extends Activity {
 
                             String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
-                            NetworkManager.getNetworkController(username).createUser2(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
+                            NetworkManager.getNetworkController(SignupActivity.this, username).createUser2(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
 
 
                                 @Override

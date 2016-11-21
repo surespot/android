@@ -38,7 +38,7 @@ public class NetworkHelper {
 
                         String signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);
 
-                        NetworkManager.getNetworkController(username).login(username, dPassword, signature, new CookieResponseHandler() {
+                        NetworkManager.getNetworkController(context, username).login(username, dPassword, signature, new CookieResponseHandler() {
 
                             @Override
                             public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {
