@@ -1890,23 +1890,4 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     void sendBackPressed() {
         this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
     }
-
-//    @Override
-//    public Resources.Theme getTheme() {
-//
-//        if (!SurespotApplication.getThemeChanged()) {
-//            return super.getTheme();
-//        }
-//        else {
-//            SurespotLog.d(TAG, "getTheme, changed");
-//            Resources.Theme theme = super.getTheme();
-//            boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-//
-//            theme.applyStyle(black ? R.style.BlackTheme : R.style.DefaultTheme, true);
-//
-//            SurespotApplication.setThemeChanged(false);
-//            // you could also use a switch if you have many themes that could apply
-//            return theme;
-//        }
-//    }
 }

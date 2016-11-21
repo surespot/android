@@ -3,7 +3,6 @@ package com.twofours.surespot.friends;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.common.Utils;
@@ -212,15 +212,15 @@ public class FriendAdapter extends BaseAdapter {
             //adding a listener fucks the styles up so set manually
             Button acceptButton = (Button) convertView.findViewById(R.id.notificationItemAccept);
             acceptButton.setOnClickListener(FriendInviteResponseListener);
-            acceptButton.setBackgroundResource(Utils.getSharedPrefsBoolean(this.mContext, "pref_black") ? R.drawable.surespot_list_selector_holo_dark : R.drawable.surespot_list_selector_holo_light);
+            acceptButton.setBackgroundResource(Utils.getSharedPrefsBoolean(this.mContext, SurespotConstants.PrefNames.BLACK) ? R.drawable.surespot_list_selector_holo_dark : R.drawable.surespot_list_selector_holo_light);
 
             Button blockButton = (Button) convertView.findViewById(R.id.notificationItemBlock);
             blockButton.setOnClickListener(FriendInviteResponseListener);
-            blockButton.setBackgroundResource(Utils.getSharedPrefsBoolean(this.mContext, "pref_black") ? R.drawable.surespot_list_selector_holo_dark : R.drawable.surespot_list_selector_holo_light);
+            blockButton.setBackgroundResource(Utils.getSharedPrefsBoolean(this.mContext, SurespotConstants.PrefNames.BLACK) ? R.drawable.surespot_list_selector_holo_dark : R.drawable.surespot_list_selector_holo_light);
 
             Button ignoreButton = (Button) convertView.findViewById(R.id.notificationItemIgnore);
             ignoreButton.setOnClickListener(FriendInviteResponseListener);
-            ignoreButton.setBackgroundResource(Utils.getSharedPrefsBoolean(this.mContext, "pref_black") ? R.drawable.surespot_list_selector_holo_dark : R.drawable.surespot_list_selector_holo_light);
+            ignoreButton.setBackgroundResource(Utils.getSharedPrefsBoolean(this.mContext, SurespotConstants.PrefNames.BLACK) ? R.drawable.surespot_list_selector_holo_dark : R.drawable.surespot_list_selector_holo_light);
 
             friendViewHolder = new FriendViewHolder();
             friendViewHolder.statusLayout = convertView.findViewById(R.id.statusLayout);
@@ -249,7 +249,7 @@ public class FriendAdapter extends BaseAdapter {
         }
 
         friendViewHolder.tvName.setTextColor(
-                ContextCompat.getColor(mContext, Utils.getSharedPrefsBoolean(this.mContext, "pref_black") ? android.R.color.primary_text_dark_nodisable : android.R.color.primary_text_light_nodisable)
+                SurespotApplication.getTextColor()
         );
 
         if (friend.hasFriendImageAssigned()) {

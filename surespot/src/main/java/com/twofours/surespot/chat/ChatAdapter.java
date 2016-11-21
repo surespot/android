@@ -312,7 +312,6 @@ public class ChatAdapter extends BaseAdapter {
 
         final SurespotMessage item = (SurespotMessage) getItem(position);
 
-        //int color = ContextCompat.getColor(mContext, Utils.getSharedPrefsBoolean(this.mContext, "pref_black") ? android.R.color.primary_text_dark_nodisable : android.R.color.primary_text_light_nodisable);
         SurespotLog.d(TAG, "color: %d", SurespotApplication.getTextColor());
         chatMessageViewHolder.tvText.setTextColor(SurespotApplication.getTextColor());
         chatMessageViewHolder.tvTime.setTextColor(SurespotApplication.getTextColor());

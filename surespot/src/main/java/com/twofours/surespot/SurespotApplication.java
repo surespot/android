@@ -178,7 +178,7 @@ public class SurespotApplication extends Application {
         if (context != null) {
             mThemeChanged = true;
             boolean black = Utils.getSharedPrefsBoolean(context, SurespotConstants.PrefNames.BLACK);
-            mTextColor = ContextCompat.getColor(context, black ? android.R.color.primary_text_dark_nodisable : android.R.color.primary_text_light_nodisable);
+            mTextColor = ContextCompat.getColor(context, black ?  R.color.surespotGrey : android.R.color.black);
         }
     }
 

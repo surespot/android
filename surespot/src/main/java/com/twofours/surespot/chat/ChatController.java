@@ -3287,9 +3287,4 @@ public class ChatController {
         mErrored = false;
     }
 
-//    public void destroyChatFragments() {
-//        mChatPagerAdapter.destroyChatFragments(mViewPager.getId());
-//
-//    }
-
 }
