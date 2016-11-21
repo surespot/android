@@ -127,6 +127,7 @@ public class SurespotApplication extends Application {
         FileUtils.wipeFileUploadDir(this);
 
         setThemeChanged(this);
+        setThemeChanged(null);
 
     }
 
@@ -178,7 +179,10 @@ public class SurespotApplication extends Application {
         if (context != null) {
             mThemeChanged = true;
             boolean black = Utils.getSharedPrefsBoolean(context, SurespotConstants.PrefNames.BLACK);
-            mTextColor = ContextCompat.getColor(context, black ?  R.color.surespotGrey : android.R.color.black);
+            mTextColor = ContextCompat.getColor(context, black ? R.color.surespotGrey : android.R.color.black);
+        }
+        else {
+            mThemeChanged = false;
         }
     }
 
