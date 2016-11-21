@@ -3,19 +3,16 @@ package com.twofours.surespot.activities;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.SurespotConstants;
 import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.ui.UIUtils;
 
-public class AboutActivity extends Activity implements View.OnClickListener {
+public class AboutActivity extends Activity  {
 
-	private static final String TAG = null;
-	private int mClicks = 0;
+	private static final String TAG = "AboutActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +29,6 @@ public class AboutActivity extends Activity implements View.OnClickListener {
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutTech), R.string.about_tech);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutWebsite), R.string.about_website);
 		UIUtils.setHtml(this, (TextView) findViewById(R.id.tvAboutEmail), R.string.about_support);
-
-		findViewById(R.id.surespotLogo).setOnClickListener(this);
 	}
 
 	@Override
@@ -46,14 +41,5 @@ public class AboutActivity extends Activity implements View.OnClickListener {
 			return super.onOptionsItemSelected(item);
 		}
 
-	}
-
-	@Override
-	public void onClick(View view) {
-		boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-		if (++mClicks == 8) {
-			Utils.putSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK, !black);
-			Utils.makeLongToast(this, getString(R.string.black) + " - " + getString(R.string.requires_force_stop));
-		}
 	}
 }

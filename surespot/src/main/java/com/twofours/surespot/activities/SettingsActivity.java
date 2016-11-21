@@ -103,20 +103,20 @@ public class SettingsActivity extends PreferenceActivity {
 				}
 			});
 			// global overrides
-//			boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-//			final CheckBoxPreference blackPref = (CheckBoxPreference) prefMgr.findPreference(SurespotConstants.PrefNames.BLACK);
-//			blackPref.setChecked(black);
-//			SurespotLog.d(TAG, "black is: %b",  black);
-//
-//			blackPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-//				@Override
-//				public boolean onPreferenceClick(Preference preference) {
-//					boolean newChecked = blackPref.isChecked();
-//					SurespotLog.d(TAG, "set black: %b", newChecked);
-//					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.BLACK, newChecked);
-//					return true;
-//				}
-//			});
+			boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
+			final CheckBoxPreference blackPref = (CheckBoxPreference) prefMgr.findPreference(SurespotConstants.PrefNames.BLACK);
+			blackPref.setChecked(black);
+			SurespotLog.d(TAG, "black is: %b",  black);
+
+			blackPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					boolean newChecked = blackPref.isChecked();
+					SurespotLog.d(TAG, "set black: %b", newChecked);
+					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.BLACK, newChecked);
+					return true;
+				}
+			});
 
 
 			boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
