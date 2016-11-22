@@ -685,16 +685,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.setScrimColor(Color.argb(224, 0, 0, 0));
-        List<String> ids = IdentityController.getIdentityNames(this);
-        final String[] identityNames = ids.toArray(new String[ids.size()]);
-
-        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switchUser(identityNames[position - 1]);
-                mDrawerList.setItemChecked(position, true);
-            }
-        });
+        View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
+        mDrawerList.addHeaderView(header, null, false);
         mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -713,8 +705,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
-        mDrawerList.addHeaderView(header, null, false);
+        updateDrawer();
+    }
+
+    private void updateDrawer() {
+
+        List<String> ids = IdentityController.getIdentityNames(this);
+        final String[] identityNames = ids.toArray(new String[ids.size()]);
+
+        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switchUser(identityNames[position - 1]);
+                mDrawerList.setItemChecked(position, true);
+            }
+        });
+
+
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
 
         for (int i = 0; i < identityNames.length; i++) {
@@ -1026,6 +1033,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     intent.putExtra("themeChanged", true);
                     startActivity(intent);
                 }
+                else {
+                    //update drawer with identities as a new one may have been restored
+                    updateDrawer();
+                }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
@@ -1234,7 +1245,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void logout() {
-        IdentityController.logout(this, mUser);
+        IdentityController.logout(this, mUser, false);
 
         Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
         finalIntent.putExtra(MESSAGE_TO, mUser);

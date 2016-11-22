@@ -313,7 +313,7 @@ public class IdentityController {
         SurespotApplication.getCachingService().clearIdentityData(deletedUsername, true);
 
         if (isLoggedIn) {
-            logout(context, getLoggedInUser());
+            logout(context, getLoggedInUser(), true);
         }
 
         NetworkManager.getNetworkController(context, deletedUsername).clearCache();
@@ -911,12 +911,15 @@ public class IdentityController {
         setLoggedInUser(context, identity, cookie, password);
     }
 
-    public static synchronized void logout(Context context, String username) {
+    public static synchronized void logout(Context context, String username, boolean deleted) {
         ChatController cc = ChatManager.getChatController(username);
         if (cc != null) {
             cc.logout();
         }
-        NetworkManager.getNetworkController(context, username).logout();
+
+        if (!deleted) {
+            NetworkManager.getNetworkController(context, username).logout();
+        }
 
         CredentialCachingService cache = SurespotApplication.getCachingService();
         if (cache != null) {
@@ -928,7 +931,7 @@ public class IdentityController {
 
     public static synchronized void logout(Context context) {
         if (getLoggedInUser() != null) {
-            logout(context, getLoggedInUser());
+            logout(context, getLoggedInUser(), false);
         }
     }
 
