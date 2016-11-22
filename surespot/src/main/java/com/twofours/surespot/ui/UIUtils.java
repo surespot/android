@@ -152,8 +152,7 @@ public class UIUtils {
         // more messages than minimum meaning we've loaded some
         if (currentPos < SurespotConstants.SAVE_MESSAGE_BUFFER) {
             return currentPos;
-        }
-        else {
+        } else {
             return SurespotConstants.SAVE_MESSAGE_BUFFER;
         }
         // saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
@@ -265,8 +264,7 @@ public class UIUtils {
                     JSONObject json = null;
                     try {
                         json = new JSONObject(response.body().string());
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         SurespotLog.i(TAG, e, "getShortUrl error");
                         launchInviteApp(context, progressDialog, longUrl);
                         return;
@@ -275,12 +273,10 @@ public class UIUtils {
                     String sUrl = json.optString("id", null);
                     if (!TextUtils.isEmpty(sUrl)) {
                         launchInviteApp(context, progressDialog, sUrl);
-                    }
-                    else {
+                    } else {
                         launchInviteApp(context, progressDialog, longUrl);
                     }
-                }
-                else {
+                } else {
                     launchInviteApp(context, progressDialog, longUrl);
                 }
             }
@@ -301,8 +297,7 @@ public class UIUtils {
             }
 
             progressDialog.hide();
-        }
-        catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException e) {
             progressDialog.hide();
             Utils.makeToast(context, context.getString(R.string.invite_no_application_found));
         }
@@ -311,8 +306,7 @@ public class UIUtils {
     private static String buildExternalInviteUrl(String username) {
         try {
             return "https://server.surespot.me/autoinvite/" + URLEncoder.encode(username, "UTF-8") + "/social";
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
 
         }
@@ -331,8 +325,7 @@ public class UIUtils {
         String inviteUrl = null;
         try {
             inviteUrl = "https://server.surespot.me/autoinvite/" + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
             Utils.makeLongToast(activity, activity.getString(R.string.invite_no_application_found));
             return null;
@@ -345,8 +338,7 @@ public class UIUtils {
         try {
             bitmap = QRCodeEncoder.encodeAsBitmap(inviteUrl, SurespotConfiguration.getQRDisplaySize());
             ivQr.setImageBitmap(bitmap);
-        }
-        catch (WriterException e) {
+        } catch (WriterException e) {
             SurespotLog.w(TAG, e, "generate invite QR");
             return null;
 
@@ -428,8 +420,7 @@ public class UIUtils {
 
             // Create Hex String
             return new String(Hex.encode(messageDigest));
-        }
-        catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             SurespotLog.i(TAG, e, "md5");
         }
         return "";
@@ -462,8 +453,7 @@ public class UIUtils {
             // use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
             float kb = (float) message.getDataSize() / 1000;
             voiceTime.setText(String.format("%d KB", (int) Math.ceil(kb)));
-        }
-        else {
+        } else {
             TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
             voiceTime.setVisibility(View.GONE);
         }
@@ -489,12 +479,11 @@ public class UIUtils {
         Notification notification = builder.build();
 
         // use big style if supported
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-			notification.contentView = contentView;
-		}
-		else {
-        builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
-		}
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            notification.contentView = contentView;
+        } else {
+            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
+        }
 
         return notification;
     }
@@ -524,32 +513,28 @@ public class UIUtils {
             case Surface.ROTATION_90:
                 if (width > height) {
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                }
-                else {
+                } else {
                     activity.setRequestedOrientation(9/* reversePortait */);
                 }
                 break;
             case Surface.ROTATION_180:
                 if (height > width) {
                     activity.setRequestedOrientation(9/* reversePortait */);
-                }
-                else {
+                } else {
                     activity.setRequestedOrientation(8/* reverseLandscape */);
                 }
                 break;
             case Surface.ROTATION_270:
                 if (width > height) {
                     activity.setRequestedOrientation(8/* reverseLandscape */);
-                }
-                else {
+                } else {
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 }
                 break;
             default:
                 if (height > width) {
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                }
-                else {
+                } else {
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 }
         }
@@ -613,23 +598,15 @@ public class UIUtils {
         activity.setTheme(black ? R.style.BlackTheme : R.style.DefaultTheme);
     }
 
-    @SuppressWarnings("deprecation")
     public static Point getDisplaySize(Context context) {
         Point displaySize = null;
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = manager.getDefaultDisplay();
         if (display != null) {
             displaySize = new Point();
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB_MR2) {
-                displaySize.set(display.getWidth(), display.getHeight());
-            }
-            else {
-                display.getSize(displaySize);
-            }
+            display.getSize(displaySize);
         }
 
         return displaySize;
     }
-
-
 }

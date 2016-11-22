@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -324,7 +325,9 @@ public class SettingsActivity extends PreferenceActivity {
 		}
 
 		// scale, compress and save the image
-		int maxDimension = 400;
+		Point size = UIUtils.getDisplaySize(this);
+		int maxDimension = Math.max(size.x, size.y)/2;
+		SurespotLog.d(TAG, "max dimension %d", maxDimension);
 
 		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(SettingsActivity.this, finalUri, rotate, maxDimension);
 		try {
