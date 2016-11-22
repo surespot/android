@@ -34,7 +34,7 @@
       android:layout_weight="1"
       android:scaleType="center"
       android:id="@+id/emojis_tab_0_recents"
-      android:src="@drawable/ic_emoji_recent_light" />
+      android:src="@drawable/emoji_recent" />
 
     <View
       android:layout_width="1px"
@@ -48,7 +48,7 @@
       android:layout_weight="1"
       android:scaleType="center"
       android:id="@+id/emojis_tab_1_people"
-      android:src="@drawable/ic_emoji_people_light" />
+      android:src="@drawable/emoji_people" />
 
     <View
       android:layout_width="1px"
@@ -62,7 +62,7 @@
       android:layout_weight="1"
       android:scaleType="center"
       android:id="@+id/emojis_tab_2_nature"
-      android:src="@drawable/ic_emoji_nature_light" />
+      android:src="@drawable/emoji_nature" />
 
     <View
       android:layout_width="1px"
@@ -75,8 +75,8 @@
       android:layout_height="match_parent"
       android:layout_weight="1"
       android:scaleType="center"
-      android:id="@+id/emojis_tab_3_objects"
-      android:src="@drawable/ic_emoji_objects_light" />
+      android:id="@+id/emojis_tab_3_food"
+      android:src="@drawable/emoji_food" />
 
     <View
       android:layout_width="1px"
@@ -89,8 +89,8 @@
       android:layout_height="match_parent"
       android:layout_weight="1"
       android:scaleType="center"
-      android:id="@+id/emojis_tab_4_cars"
-      android:src="@drawable/ic_emoji_places_light" />
+      android:id="@+id/emojis_tab_4_sport"
+      android:src="@drawable/emoji_sport" />
 
     <View
       android:layout_width="1px"
@@ -103,8 +103,37 @@
       android:layout_height="match_parent"
       android:layout_weight="1"
       android:scaleType="center"
-      android:id="@+id/emojis_tab_5_punctuation"
-      android:src="@drawable/ic_emoji_symbols_light" />
+      android:id="@+id/emojis_tab_5_cars"
+      android:src="@drawable/emoji_cars" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:background="@color/horizontal_vertical" />
+
+    <ImageButton
+        android:background="@null"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:scaleType="center"
+        android:id="@+id/emojis_tab_6_electronics"
+        android:src="@drawable/emoji_electronics" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:background="@color/horizontal_vertical" />
+
+    <ImageButton
+        android:background="@null"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:scaleType="center"
+        android:id="@+id/emojis_tab_7_symbols"
+        android:src="@drawable/emoji_symbols" />
+
 
     <View
       android:layout_width="1px"
@@ -117,7 +146,7 @@
       android:layout_height="match_parent"
       android:layout_weight="1"
       android:id="@+id/emojis_backspace"
-      android:src="@drawable/sym_keyboard_delete_holo_dark" />
+      android:src="@drawable/emoji_backspace_back_normal" />
   </LinearLayout>
 
   <android.support.v4.view.ViewPager

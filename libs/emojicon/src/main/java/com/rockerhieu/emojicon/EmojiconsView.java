@@ -19,11 +19,15 @@ package com.rockerhieu.emojicon;
 import java.util.Arrays;
 import java.util.List;
 
+import com.rockerhieu.emojicon.emoji.Cars;
+import com.rockerhieu.emojicon.emoji.Electronics;
 import com.rockerhieu.emojicon.emoji.Emojicon;
+import com.rockerhieu.emojicon.emoji.Food;
 import com.rockerhieu.emojicon.emoji.Nature;
 import com.rockerhieu.emojicon.emoji.Objects;
 import com.rockerhieu.emojicon.emoji.People;
 import com.rockerhieu.emojicon.emoji.Places;
+import com.rockerhieu.emojicon.emoji.Sport;
 import com.rockerhieu.emojicon.emoji.Symbols;
 
 import android.annotation.TargetApi;
@@ -78,23 +82,28 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
         emojisPager.setOnPageChangeListener(this);
         // we handle recents
         EmojiconRecents recents = this;
+
         mEmojisAdapter = new EmojisPagerAdapter(Arrays.asList(
                 EmojiconRecentsGridView.newInstance(getContext(), this, mUseSystemDefault),
                 EmojiconGridView.newInstance(getContext(), this, People.DATA, recents, mUseSystemDefault),
                 EmojiconGridView.newInstance(getContext(), this, Nature.DATA, recents, mUseSystemDefault),
-                EmojiconGridView.newInstance(getContext(), this, Objects.DATA, recents, mUseSystemDefault),
-                EmojiconGridView.newInstance(getContext(), this, Places.DATA, recents, mUseSystemDefault),
+                EmojiconGridView.newInstance(getContext(), this, Food.DATA, recents, mUseSystemDefault),
+                EmojiconGridView.newInstance(getContext(), this, Sport.DATA, recents, mUseSystemDefault),
+                EmojiconGridView.newInstance(getContext(), this, Cars.DATA, recents, mUseSystemDefault),
+                EmojiconGridView.newInstance(getContext(), this, Electronics.DATA, recents, mUseSystemDefault),
                 EmojiconGridView.newInstance(getContext(), this, Symbols.DATA, recents, mUseSystemDefault)
         ));
         emojisPager.setAdapter(mEmojisAdapter);
 
-        mEmojiTabs = new View[6];
+        mEmojiTabs = new View[8];
         mEmojiTabs[0] = findViewById(R.id.emojis_tab_0_recents);
         mEmojiTabs[1] = findViewById(R.id.emojis_tab_1_people);
         mEmojiTabs[2] = findViewById(R.id.emojis_tab_2_nature);
-        mEmojiTabs[3] = findViewById(R.id.emojis_tab_3_objects);
-        mEmojiTabs[4] = findViewById(R.id.emojis_tab_4_cars);
-        mEmojiTabs[5] = findViewById(R.id.emojis_tab_5_punctuation);
+        mEmojiTabs[3] = findViewById(R.id.emojis_tab_3_food);
+        mEmojiTabs[4] = findViewById(R.id.emojis_tab_4_sport);
+        mEmojiTabs[5] = findViewById(R.id.emojis_tab_5_cars);
+        mEmojiTabs[6] = findViewById(R.id.emojis_tab_6_electronics);
+        mEmojiTabs[7] = findViewById(R.id.emojis_tab_7_symbols);
         for (int i = 0; i < mEmojiTabs.length; i++) {
             final int position = i;
             mEmojiTabs[i].setOnClickListener(new View.OnClickListener() {
