@@ -900,6 +900,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     @Override
     protected void onResume() {
         super.onResume();
+
         SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
         startWatchingExternalStorage();
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1019,9 +1020,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS:
                 if (SurespotApplication.getThemeChanged()) {
-                    SurespotApplication.setThemeChanged(null);
+                    destroy();
                     finish();
                     final Intent intent = getIntent();
+                    intent.putExtra("themeChanged", true);
                     startActivity(intent);
                 }
                 break;
@@ -1058,9 +1060,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
-        ChatController cc = ChatManager.getChatController(mUser);
-        if (mUser != null && cc != null) {
-            cc.enableMenuItems(mCurrentFriend);
+
+        if (mUser != null) {
+            ChatController cc = ChatManager.getChatController(mUser);
+            if (cc != null) {
+                cc.enableMenuItems(mCurrentFriend);
+            }
         }
 
         //
@@ -1222,14 +1227,34 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     @Override
     protected void onDestroy() {
+        //SurespotLog.d(TAG, "onDestroy");
         super.onDestroy();
-        SurespotLog.d(TAG, "onDestroy");
+
+        //calling finish and starting the activity again when we set the theme (see onActivityResult)
+        //results in an onDestroy being called in the new instance (&$&*% AFTER it is loaded
+        //use the global theme change flag to work around this
+        SurespotLog.d(TAG, "onDestroy, themeChanged: %b", SurespotApplication.getThemeChanged());
+
+        if (!SurespotApplication.getThemeChanged()) {
+            ChatManager.pause(mUser);
+            destroy();
+        }
+        else {
+            SurespotApplication.setThemeChanged(null);
+        }
+
+    }
+
+    private void destroy() {
+        SurespotLog.d(TAG, "destroy unbinding");
+
         if (mCacheServiceBound && mConnection != null) {
             unbindService(mConnection);
         }
-        ChatManager.pause(mUser);
+
         ChatManager.detach(this);
     }
+
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {

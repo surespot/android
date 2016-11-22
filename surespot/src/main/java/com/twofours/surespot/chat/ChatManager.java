@@ -54,12 +54,12 @@ public class ChatManager {
                                                                    IAsyncCallback<Object> listener) {
         SurespotLog.d(TAG, "attachChatController, username: %s", username);
 
-        ChatController cc = mMap.get(username);
-        if (cc == null) {
+        ChatController cc = null;//mMap.get(username);
+       // if (cc == null) {
             SurespotLog.d(TAG, "creating chat controller for %s", username);
             cc = new ChatController(context, username);
             mMap.put(username, cc);
-        }
+     //   }
 
         cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
         mAttachedUsername = username;
