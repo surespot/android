@@ -1176,13 +1176,21 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }.execute();
                 return true;
             case R.id.menu_logout_bar:
-                IdentityController.logout(this, mUser);
+                SharedPreferences spl = Utils.getGlobalSharedPrefs(this);
+                boolean confirmlogout = spl.getBoolean("pref_confirm_logout", true);
+                if (confirmlogout) {
+                    mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.confirm_logout_message), getString(R.string.confirm_logout_title),
+                            getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        logout();
+                                    }
+                                }
+                            });
+                } else {
+                    logout();
+                }
 
-                Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
-                finalIntent.putExtra(MESSAGE_TO, mUser);
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                MainActivity.this.startActivity(finalIntent);
-                finish();
                 return true;
             case R.id.menu_invite_external:
                 UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(this, mUser), mUser);
@@ -1224,6 +1232,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
     }
+
+    private void logout() {
+        IdentityController.logout(this, mUser);
+
+        Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
+        finalIntent.putExtra(MESSAGE_TO, mUser);
+        finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        MainActivity.this.startActivity(finalIntent);
+        finish();
+    }
+
 
     @Override
     protected void onDestroy() {

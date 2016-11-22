@@ -101,20 +101,22 @@ public class SurespotApplication extends Application {
             SurespotLog.w(TAG, e, "could not create file cache controller");
         }
 
-        boolean oneTimeGotNoCase = Utils.getSharedPrefsBoolean(this, "66onetime");
+        boolean oneTimeGotNoCase = Utils.getSharedPrefsBoolean(this, "68onetime");
         if (!oneTimeGotNoCase) {
 
+
+            //set confirm logout default to true
+            Utils.putSharedPrefsBoolean(SurespotApplication.this,"pref_confirm_logout", true);
             //wipe the cache
             StateController.clearCache(this, new IAsyncCallback<Void>() {
                 @Override
                 public void handleResponse(Void result) {
                     SurespotLog.d(TAG, "cache cleared");
-                    Utils.putSharedPrefsBoolean(SurespotApplication.this, "66onetime", true);
+                    Utils.putSharedPrefsBoolean(SurespotApplication.this, "68onetime", true);
                 }
             });
 
-            //set the default theme to black
-            //Utils.putSharedPrefsBoolean(SurespotApplication.this,SurespotConstants.PrefNames.BLACK, true);
+
         }
 
 

@@ -42,337 +42,343 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class SettingsActivity extends PreferenceActivity {
-	private static final String TAG = "SettingsActivity";
-	private Preference mBgImagePref;
-	private AlertDialog mHelpDialog;
+    private static final String TAG = "SettingsActivity";
+    private Preference mBgImagePref;
+    private AlertDialog mHelpDialog;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		UIUtils.setTheme(this);
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        UIUtils.setTheme(this);
+        super.onCreate(savedInstanceState);
 
-		// TODO put in fragment0
-		final PreferenceManager prefMgr = getPreferenceManager();
-		String user = getIntent().getStringExtra("username");
-		if (user != null) {
-			prefMgr.setSharedPreferencesName(user);
+        // TODO put in fragment0
+        final PreferenceManager prefMgr = getPreferenceManager();
+        String user = getIntent().getStringExtra("username");
+        if (user != null) {
+            prefMgr.setSharedPreferencesName(user);
 
-			addPreferencesFromResource(R.xml.preferences);
-			Utils.configureActionBar(this, getString(R.string.settings), user, true);
-			prefMgr.findPreference("pref_help").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            addPreferencesFromResource(R.xml.preferences);
+            Utils.configureActionBar(this, getString(R.string.settings), user, true);
+            prefMgr.findPreference("pref_help").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					mHelpDialog = UIUtils.showHelpDialog(SettingsActivity.this, false);
-					return true;
-				}
-			});
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    mHelpDialog = UIUtils.showHelpDialog(SettingsActivity.this, false);
+                    return true;
+                }
+            });
 
-			mBgImagePref = prefMgr.findPreference("pref_background_image");
+            mBgImagePref = prefMgr.findPreference("pref_background_image");
 
-			String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
-			if (TextUtils.isEmpty(bgImageUri)) {
-				mBgImagePref.setTitle(R.string.pref_title_background_image_select);
-			}
-			else {
-				mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
-			}
+            String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
+            if (TextUtils.isEmpty(bgImageUri)) {
+                mBgImagePref.setTitle(R.string.pref_title_background_image_select);
+            } else {
+                mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
+            }
 
-			mBgImagePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
-					if (TextUtils.isEmpty(bgImageUri)) {
-						Intent intent = new Intent();
-						intent.setType("image/*");
-						intent.setAction(Intent.ACTION_GET_CONTENT);
-						startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
-								SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
-					}
-					else {
-						mBgImagePref.setTitle(getString(R.string.pref_title_background_image_select));
-						Editor editor = prefMgr.getSharedPreferences().edit();
-						SurespotLog.v(TAG, "removing background image file: %s", bgImageUri);
-						File file = new File(bgImageUri);
-						file.delete();
-						SurespotLog.v(TAG, "background image file exists: %b", file.exists());
-						editor.remove("pref_background_image");
-						editor.commit();
-						SurespotConfiguration.setBackgroundImageSet(false);
-					}
+            mBgImagePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    String bgImageUri = prefMgr.getSharedPreferences().getString("pref_background_image", null);
+                    if (TextUtils.isEmpty(bgImageUri)) {
+                        Intent intent = new Intent();
+                        intent.setType("image/*");
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)),
+                                SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE);
+                    } else {
+                        mBgImagePref.setTitle(getString(R.string.pref_title_background_image_select));
+                        Editor editor = prefMgr.getSharedPreferences().edit();
+                        SurespotLog.v(TAG, "removing background image file: %s", bgImageUri);
+                        File file = new File(bgImageUri);
+                        file.delete();
+                        SurespotLog.v(TAG, "background image file exists: %b", file.exists());
+                        editor.remove("pref_background_image");
+                        editor.commit();
+                        SurespotConfiguration.setBackgroundImageSet(false);
+                    }
 
-					return true;
-				}
-			});
-			// global overrides
-			boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-			final CheckBoxPreference blackPref = (CheckBoxPreference) prefMgr.findPreference(SurespotConstants.PrefNames.BLACK);
-			blackPref.setChecked(black);
-			SurespotLog.d(TAG, "black is: %b",  black);
+                    return true;
+                }
+            });
+            // global overrides
+            boolean confirmLogout = Utils.getSharedPrefsBoolean(this, "pref_confirm_logout");
+            final CheckBoxPreference confirmLogoutPref = (CheckBoxPreference) prefMgr.findPreference("pref_confirm_logout");
+            confirmLogoutPref.setChecked(confirmLogout);
 
-			blackPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					boolean newChecked = blackPref.isChecked();
-					SurespotLog.d(TAG, "set black: %b", newChecked);
-					Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.BLACK, newChecked);
-					SurespotApplication.setThemeChanged(SettingsActivity.this);
-					return true;
-				}
-			});
+            confirmLogoutPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    boolean newChecked = confirmLogoutPref.isChecked();
+                    //SurespotLog.d(TAG, "set black: %b", newChecked);
+                    Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_confirm_logout", newChecked);
+                    return true;
+                }
+            });
+
+            boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
+            final CheckBoxPreference blackPref = (CheckBoxPreference) prefMgr.findPreference(SurespotConstants.PrefNames.BLACK);
+            blackPref.setChecked(black);
+            SurespotLog.d(TAG, "black is: %b", black);
+
+            blackPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    boolean newChecked = blackPref.isChecked();
+                    SurespotLog.d(TAG, "set black: %b", newChecked);
+                    Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.BLACK, newChecked);
+                    SurespotApplication.setThemeChanged(SettingsActivity.this);
+                    return true;
+                }
+            });
 
 
-			boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
-			final CheckBoxPreference stopCachePref = (CheckBoxPreference) prefMgr.findPreference("pref_stop_cache_logout_control");
-			stopCachePref.setChecked(stopCache);
-			SurespotLog.d(TAG, "read kill cache on logout: %b", stopCache);
+            boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
+            final CheckBoxPreference stopCachePref = (CheckBoxPreference) prefMgr.findPreference("pref_stop_cache_logout_control");
+            stopCachePref.setChecked(stopCache);
+            SurespotLog.d(TAG, "read kill cache on logout: %b", stopCache);
 
-			stopCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					boolean newChecked = stopCachePref.isChecked();
-					SurespotLog.d(TAG, "set kill cache on logout: %b", newChecked);
-					Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_stop_cache_logout", newChecked);
-					return true;
-				}
-			});
+            stopCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    boolean newChecked = stopCachePref.isChecked();
+                    SurespotLog.d(TAG, "set kill cache on logout: %b", newChecked);
+                    Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_stop_cache_logout", newChecked);
+                    return true;
+                }
+            });
 
-			boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
-			final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
-			enableKeystorePref.setChecked(enableKeystore);
-			SurespotLog.d(TAG, "read keystore enabled: %b", enableKeystore);
-			
-			//only let them disable it here, they enable it from login screen by clicking save checkbox			
-			enableKeystorePref.setEnabled(enableKeystore);
+            boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
+            final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
+            enableKeystorePref.setChecked(enableKeystore);
+            SurespotLog.d(TAG, "read keystore enabled: %b", enableKeystore);
 
-			enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					final boolean newChecked = enableKeystorePref.isChecked();
+            //only let them disable it here, they enable it from login screen by clicking save checkbox
+            enableKeystorePref.setEnabled(enableKeystore);
 
-					SurespotLog.d(TAG, "set keystore enabled: %b", newChecked);
-					
+            enableKeystorePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    final boolean newChecked = enableKeystorePref.isChecked();
 
-					if (newChecked) {
-						//shouldn't happen
-						IdentityController.initKeystore();
-						IdentityController.unlock(SettingsActivity.this);
-						Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
-					}
-					else {
-						UIUtils.createAndShowConfirmationDialog(SettingsActivity.this, getString(R.string.disable_keystore_message),
-								getString(R.string.disable_keystore_title), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                    SurespotLog.d(TAG, "set keystore enabled: %b", newChecked);
 
-									@Override
-									public void handleResponse(Boolean result) {
-										if (result) {
-											Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
-											IdentityController.destroyKeystore();
-											enableKeystorePref.setEnabled(false);
-										}
-										else {
-											enableKeystorePref.setChecked(true);
-										}
-									}
-								});
-					}
-					return true;
-				}
-			});
-		}
-	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			finish();
+                    if (newChecked) {
+                        //shouldn't happen
+                        IdentityController.initKeystore();
+                        IdentityController.unlock(SettingsActivity.this);
+                        Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, newChecked);
+                    } else {
+                        UIUtils.createAndShowConfirmationDialog(SettingsActivity.this, getString(R.string.disable_keystore_message),
+                                getString(R.string.disable_keystore_title), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
+                                    @Override
+                                    public void handleResponse(Boolean result) {
+                                        if (result) {
+                                            Utils.putSharedPrefsBoolean(SettingsActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED, false);
+                                            IdentityController.destroyKeystore();
+                                            enableKeystorePref.setEnabled(false);
+                                        } else {
+                                            enableKeystorePref.setChecked(true);
+                                        }
+                                    }
+                                });
+                    }
+                    return true;
+                }
+            });
+        }
+    }
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-		super.onPreferenceTreeClick(preferenceScreen, preference);
-		// work around black background on gingerbread: https://code.google.com/p/android/issues/detail?id=4611
-		if (preference != null) {
-			if (preference instanceof PreferenceScreen) {
-				// work around non clickable home
-				// button:http://stackoverflow.com/questions/16374820/action-bar-home-button-not-functional-with-nested-preferencescreen
-				initializeActionBar((PreferenceScreen) preference);
-				{
-					if (((PreferenceScreen) preference).getDialog() != null) {
-						((PreferenceScreen) preference).getDialog().getWindow().getDecorView()
-								.setBackgroundDrawable(this.getWindow().getDecorView().getBackground().getConstantState().newDrawable());
-					}
-				}
-			}
-		}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
 
-		return false;
-	}
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
-	/** Sets up the action bar for an {@link PreferenceScreen} */
-	public static void initializeActionBar(PreferenceScreen preferenceScreen) {
-		final Dialog dialog = preferenceScreen.getDialog();
-		if (dialog != null && dialog.getActionBar() != null) {
-			// Inialize the action bar
-			dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+        super.onPreferenceTreeClick(preferenceScreen, preference);
+        // work around black background on gingerbread: https://code.google.com/p/android/issues/detail?id=4611
+        if (preference != null) {
+            if (preference instanceof PreferenceScreen) {
+                // work around non clickable home
+                // button:http://stackoverflow.com/questions/16374820/action-bar-home-button-not-functional-with-nested-preferencescreen
+                initializeActionBar((PreferenceScreen) preference);
+                {
+                    if (((PreferenceScreen) preference).getDialog() != null) {
+                        ((PreferenceScreen) preference).getDialog().getWindow().getDecorView()
+                                .setBackgroundDrawable(this.getWindow().getDecorView().getBackground().getConstantState().newDrawable());
+                    }
+                }
+            }
+        }
 
-			// Apply custom home button area click listener to close the PreferenceScreen because PreferenceScreens are dialogs which swallow
-			// events instead of passing to the activity
-			// Related Issue: https://code.google.com/p/android/issues/detail?id=4611
+        return false;
+    }
 
-			View homeBtn = dialog.findViewById(android.R.id.home);
+    /**
+     * Sets up the action bar for an {@link PreferenceScreen}
+     */
+    public static void initializeActionBar(PreferenceScreen preferenceScreen) {
+        final Dialog dialog = preferenceScreen.getDialog();
+        if (dialog != null && dialog.getActionBar() != null) {
+            // Inialize the action bar
+            dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
 
-			if (homeBtn != null) {
-				OnClickListener dismissDialogClickListener = new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						dialog.dismiss();
-					}
-				};
+            // Apply custom home button area click listener to close the PreferenceScreen because PreferenceScreens are dialogs which swallow
+            // events instead of passing to the activity
+            // Related Issue: https://code.google.com/p/android/issues/detail?id=4611
 
-				// Prepare yourselves for some hacky programming
-				ViewParent homeBtnContainer = homeBtn.getParent();
+            View homeBtn = dialog.findViewById(android.R.id.home);
 
-				// The home button is an ImageView inside a FrameLayout
-				if (homeBtnContainer instanceof FrameLayout) {
-					ViewGroup containerParent = (ViewGroup) homeBtnContainer.getParent();
+            if (homeBtn != null) {
+                OnClickListener dismissDialogClickListener = new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                };
 
-					if (containerParent instanceof LinearLayout) {
-						// This view also contains the title text, set the whole view as clickable
-						((LinearLayout) containerParent).setOnClickListener(dismissDialogClickListener);
-					}
-					else {
-						// Just set it on the home button
-						((FrameLayout) homeBtnContainer).setOnClickListener(dismissDialogClickListener);
-					}
-				}
-				else {
-					// The 'If all else fails' default case
-					homeBtn.setOnClickListener(dismissDialogClickListener);
-				}
-			}
-		}
-	}
+                // Prepare yourselves for some hacky programming
+                ViewParent homeBtnContainer = homeBtn.getParent();
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_OK) {
-			Uri uri = data.getData();
+                // The home button is an ImageView inside a FrameLayout
+                if (homeBtnContainer instanceof FrameLayout) {
+                    ViewGroup containerParent = (ViewGroup) homeBtnContainer.getParent();
 
-			File imageFile = compressImage(uri, -1);
+                    if (containerParent instanceof LinearLayout) {
+                        // This view also contains the title text, set the whole view as clickable
+                        ((LinearLayout) containerParent).setOnClickListener(dismissDialogClickListener);
+                    } else {
+                        // Just set it on the home button
+                        ((FrameLayout) homeBtnContainer).setOnClickListener(dismissDialogClickListener);
+                    }
+                } else {
+                    // The 'If all else fails' default case
+                    homeBtn.setOnClickListener(dismissDialogClickListener);
+                }
+            }
+        }
+    }
 
-			if (imageFile != null) {
-				SharedPreferences preferences = getPreferenceManager().getSharedPreferences();
-				SharedPreferences.Editor editor = preferences.edit();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            Uri uri = data.getData();
 
-				SurespotLog.v(TAG, "compressed image path: %s", imageFile.getAbsolutePath());
-				editor.putString("pref_background_image", imageFile.getAbsolutePath());
-				editor.commit();
+            File imageFile = compressImage(uri, -1);
 
-				if (mBgImagePref == null) {
-					mBgImagePref = getPreferenceManager().findPreference("pref_background_image");
-				}
+            if (imageFile != null) {
+                SharedPreferences preferences = getPreferenceManager().getSharedPreferences();
+                SharedPreferences.Editor editor = preferences.edit();
 
-				if (mBgImagePref != null) {
-					mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
-				}
-				SurespotConfiguration.setBackgroundImageSet(true);
-			}
-		}
-	}
+                SurespotLog.v(TAG, "compressed image path: %s", imageFile.getAbsolutePath());
+                editor.putString("pref_background_image", imageFile.getAbsolutePath());
+                editor.commit();
 
-	private File compressImage(final Uri uri, final int rotate) {
-		final Uri finalUri;
-		File file = null;
-		try {
-			file = File.createTempFile("background", "image");
-			// if it's an external image save it first
-			if (uri.getScheme().startsWith("http")) {
-				FileOutputStream fos = new FileOutputStream(file);
-				InputStream is = new URL(uri.toString()).openStream();
-				byte[] buffer = new byte[1024];
-				int len;
-				while ((len = is.read(buffer)) != -1) {
-					fos.write(buffer, 0, len);
-				}
+                if (mBgImagePref == null) {
+                    mBgImagePref = getPreferenceManager().findPreference("pref_background_image");
+                }
 
-				fos.close();
-				finalUri = Uri.fromFile(file);
-			}
-			else {
-				finalUri = uri;
-			}
-		}
-		catch (IOException e1) {
-			SurespotLog.w(TAG, e1, "compressImage");
-			Runnable runnable = new Runnable() {
+                if (mBgImagePref != null) {
+                    mBgImagePref.setTitle(R.string.pref_title_background_image_remove);
+                }
+                SurespotConfiguration.setBackgroundImageSet(true);
+            }
+        }
+    }
 
-				@Override
-				public void run() {
-					Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
-				}
-			};
+    private File compressImage(final Uri uri, final int rotate) {
+        final Uri finalUri;
+        File file = null;
+        try {
+            file = File.createTempFile("background", "image");
+            // if it's an external image save it first
+            if (uri.getScheme().startsWith("http")) {
+                FileOutputStream fos = new FileOutputStream(file);
+                InputStream is = new URL(uri.toString()).openStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = is.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
+                }
 
-			this.runOnUiThread(runnable);
-			return null;
-		}
+                fos.close();
+                finalUri = Uri.fromFile(file);
+            } else {
+                finalUri = uri;
+            }
+        } catch (IOException e1) {
+            SurespotLog.w(TAG, e1, "compressImage");
+            Runnable runnable = new Runnable() {
 
-		// scale, compress and save the image
-		Point size = UIUtils.getDisplaySize(this);
-		int maxDimension = Math.max(size.x, size.y)/2;
-		SurespotLog.d(TAG, "max dimension %d", maxDimension);
+                @Override
+                public void run() {
+                    Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
+                }
+            };
 
-		Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(SettingsActivity.this, finalUri, rotate, maxDimension);
-		try {
+            this.runOnUiThread(runnable);
+            return null;
+        }
 
-			if (file != null && bitmap != null) {
-				SurespotLog.v(TAG, "compressingImage to: %s", file);
-				FileOutputStream fos = new FileOutputStream(file);
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-				fos.close();
-				// SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
-				return file;
-			}
-			else {
-				Runnable runnable = new Runnable() {
+        // scale, compress and save the image
+        Point size = UIUtils.getDisplaySize(this);
+        int maxDimension = Math.max(size.x, size.y) / 2;
+        SurespotLog.d(TAG, "max dimension %d", maxDimension);
 
-					@Override
-					public void run() {
-						Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
-					}
-				};
+        Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(SettingsActivity.this, finalUri, rotate, maxDimension);
+        try {
 
-				this.runOnUiThread(runnable);
-				return null;
-			}
-		}
-		catch (IOException e) {
-			SurespotLog.w(TAG, e, "compressImage");
-			Runnable runnable = new Runnable() {
+            if (file != null && bitmap != null) {
+                SurespotLog.v(TAG, "compressingImage to: %s", file);
+                FileOutputStream fos = new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
+                fos.close();
+                // SurespotLog.v(TAG, "done compressingImage to: " + mCompressedImagePath);
+                return file;
+            } else {
+                Runnable runnable = new Runnable() {
 
-				@Override
-				public void run() {
-					Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
-				}
-			};
+                    @Override
+                    public void run() {
+                        Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
+                    }
+                };
 
-			this.runOnUiThread(runnable);
-			return null;
-		}
-	}
+                this.runOnUiThread(runnable);
+                return null;
+            }
+        } catch (IOException e) {
+            SurespotLog.w(TAG, e, "compressImage");
+            Runnable runnable = new Runnable() {
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (mHelpDialog != null && mHelpDialog.isShowing()) {
-			mHelpDialog.dismiss();
-		}
-	}
+                @Override
+                public void run() {
+                    Utils.makeLongToast(SettingsActivity.this, getString(R.string.could_not_load_image));
+                }
+            };
+
+            this.runOnUiThread(runnable);
+            return null;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mHelpDialog != null && mHelpDialog.isShowing()) {
+            mHelpDialog.dismiss();
+        }
+    }
 }

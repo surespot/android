@@ -103,6 +103,10 @@
     <PreferenceScreen android:title="@string/pref_title_global_options">
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="pref_confirm_logout"
+            android:title="@string/pref_confirm_logout" />
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="pref_black"
             android:title="@string/black_theme" />
         <CheckBoxPreference
