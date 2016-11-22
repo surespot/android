@@ -14,7 +14,6 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
@@ -311,11 +310,7 @@ public class IdentityController {
         }
 
         SurespotApplication.getCachingService().clearIdentityData(deletedUsername, true);
-
-        if (isLoggedIn) {
-            logout(context, getLoggedInUser(), true);
-        }
-
+        logout(context, deletedUsername, true);
         NetworkManager.getNetworkController(context, deletedUsername).clearCache();
 
         FileCacheController fcc = SurespotApplication.getFileCacheController();
@@ -348,7 +343,6 @@ public class IdentityController {
         if (isLoggedIn) {
             UIUtils.launchMainActivityDeleted(context);
         }
-
     }
 
     static SurespotIdentity getIdentity(Context context, String username) {
