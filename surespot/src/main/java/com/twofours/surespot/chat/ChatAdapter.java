@@ -312,7 +312,7 @@ public class ChatAdapter extends BaseAdapter {
 
         final SurespotMessage item = (SurespotMessage) getItem(position);
 
-        SurespotLog.d(TAG, "color: %d", SurespotApplication.getTextColor());
+        //SurespotLog.d(TAG, "color: %d", SurespotApplication.getTextColor());
         chatMessageViewHolder.tvText.setTextColor(SurespotApplication.getTextColor());
         chatMessageViewHolder.tvTime.setTextColor(SurespotApplication.getTextColor());
         chatMessageViewHolder.messageSize.setTextColor(SurespotApplication.getTextColor());

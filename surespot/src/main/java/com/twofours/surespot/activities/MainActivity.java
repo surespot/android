@@ -1436,34 +1436,42 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     // Utils.makeToast(getActivity(), getString(R.string.uploading_image));
 
                     SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
-
-                    ChatUtils.uploadPictureMessageAsync(
-                            this,
-                            ChatManager.getChatController(mUser),
-                            imageUri,
-                            mUser,
-                            mCurrentFriend.getName(),
-                            true);
+                    ChatController cc = ChatManager.getChatController(mUser);
+                    if (cc != null) {
+                        ChatUtils.uploadPictureMessageAsync(
+                                this,
+                                cc,
+                                imageUri,
+                                mUser,
+                                mCurrentFriend.getName(),
+                                true);
+                    }
+                    else {
+                        //TODO
+                    }
                 }
             }
         } else {
             if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
                 Utils.configureActionBar(this, "", mUser, true);
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+                    ChatController cc = ChatManager.getChatController(mUser);
+                    if (cc != null) {
+                        ArrayList<Parcelable> uris = extras.getParcelableArrayList(Intent.EXTRA_STREAM);
 
-                    ArrayList<Parcelable> uris = extras.getParcelableArrayList(Intent.EXTRA_STREAM);
-                    for (Parcelable p : uris) {
-                        final Uri imageUri = (Uri) p;
+                        for (Parcelable p : uris) {
+                            final Uri imageUri = (Uri) p;
 
-                        SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
+                            SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-                        ChatUtils.uploadPictureMessageAsync(
-                                this,
-                                ChatManager.getChatController(mUser),
-                                imageUri,
-                                mUser,
-                                mCurrentFriend.getName(),
-                                true);
+                            ChatUtils.uploadPictureMessageAsync(
+                                    this,
+                                    cc,
+                                    imageUri,
+                                    mUser,
+                                    mCurrentFriend.getName(),
+                                    true);
+                        }
                     }
                 }
             }
