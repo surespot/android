@@ -17,7 +17,7 @@
 <com.rockerhieu.emojicon.EmojiconsView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground">
+    android:background="@color/emojiBackground">
 
     <LinearLayout
         android:id="@+id/emojis_tab"
@@ -32,7 +32,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_recent" />
 
@@ -47,7 +47,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_people" />
 
@@ -61,7 +61,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_nature" />
 
@@ -75,7 +75,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_food" />
 
@@ -89,7 +89,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_sport" />
 
@@ -103,7 +103,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_cars" />
 
@@ -117,7 +117,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_electronics" />
 
@@ -131,7 +131,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:src="@drawable/emoji_symbols" />
 
@@ -146,7 +146,7 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/surespot_ripple"
+            android:background="?android:attr/selectableItemBackground"
             android:src="@drawable/emoji_backspace_back_normal" />
     </LinearLayout>
 

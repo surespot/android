@@ -24,7 +24,7 @@
         android:layout_width="36dip"
         android:layout_height="36dip"
         android:layout_gravity="center"
-        android:background="@drawable/surespot_ripple"
+        android:background="?android:attr/selectableItemBackground"
         android:gravity="center"
         emojicon:emojiconSize="30dip" />
 </FrameLayout>

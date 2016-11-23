@@ -57,7 +57,7 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
     private EmojisPagerAdapter mEmojisAdapter;
     private EmojiconRecentsManager mRecentsManager;
     private boolean mUseSystemDefault = false;
-    private int mThemeAccentColor;
+    private int mSelectedColor;
 
     public EmojiconsView(Context context) {
         super(context);
@@ -85,13 +85,7 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
         // we handle recents
         EmojiconRecents recents = this;
 
-
-
-//
-//        final TypedValue value = new TypedValue();
-//
-//        getContext().getTheme().resolveAttribute(R.attr.colorAccent, value, true);
-        mThemeAccentColor = ContextCompat.getColor(getContext(), R.color.surespotBlue);
+        mSelectedColor = ContextCompat.getColor(getContext(), R.color.surespotBlue);
 
         mEmojisAdapter = new EmojisPagerAdapter(Arrays.asList(
                 EmojiconRecentsGridView.newInstance(getContext(), this, mUseSystemDefault),
@@ -211,7 +205,7 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
                     mEmojiTabs[mEmojiTabLastSelectedIndex].clearColorFilter();
                 }
                 mEmojiTabs[i].setSelected(true);
-                mEmojiTabs[i].setColorFilter(mThemeAccentColor, PorterDuff.Mode.SRC_IN);
+                mEmojiTabs[i].setColorFilter(mSelectedColor, PorterDuff.Mode.SRC_IN);
                 mEmojiTabLastSelectedIndex = i;
                 mRecentsManager.setRecentPage(i);
                 break;
