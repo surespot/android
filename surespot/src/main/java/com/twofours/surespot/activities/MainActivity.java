@@ -64,6 +64,9 @@ import com.rockerhieu.emojicon.OnEmojiconClickedListener;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
@@ -71,11 +74,6 @@ import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
-import com.twofours.surespot.utils.FileUtils;
-import com.twofours.surespot.SurespotConfiguration;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
@@ -89,7 +87,9 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
+import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -525,6 +525,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         TextWatcher tw = new ChatTextWatcher();
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
+
+        OnTouchListener editTouchListener = new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mEmojiShowing) {
+                    return true;
+                }
+
+                return false;
+            }
+        };
+
+        mEtMessage.setOnTouchListener(editTouchListener);
 
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
@@ -1032,8 +1046,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     final Intent intent = getIntent();
                     intent.putExtra("themeChanged", true);
                     startActivity(intent);
-                }
-                else {
+                } else {
                     //update drawer with identities as a new one may have been restored
                     updateDrawer();
                 }
@@ -1268,8 +1281,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (!SurespotApplication.getThemeChanged()) {
             ChatManager.pause(mUser);
             destroy();
-        }
-        else {
+        } else {
             SurespotApplication.setThemeChanged(null);
         }
 
@@ -1475,8 +1487,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 mUser,
                                 mCurrentFriend.getName(),
                                 true);
-                    }
-                    else {
+                    } else {
                         //TODO
                     }
                 }
