@@ -20,12 +20,12 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.utils.FileUtils;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
@@ -51,6 +51,7 @@ public class ImageSelectActivity extends Activity {
     private File mPath;
     private String mTo;
     private String mFrom;
+    private String mToAlias;
     private int mSize;
     private boolean mFriendImage;
     private RelativeLayout mFrame;
@@ -93,6 +94,7 @@ public class ImageSelectActivity extends Activity {
 
         if (savedInstanceState != null) {
             mTo = savedInstanceState.getString("to");
+            mToAlias = savedInstanceState.getString("toAlias");
             mFrom = savedInstanceState.getString("from");
             mSize = savedInstanceState.getInt("size");
             mFriendImage = savedInstanceState.getBoolean("friendImage");
@@ -110,6 +112,7 @@ public class ImageSelectActivity extends Activity {
         if (start) {
             getIntent().putExtra("start", false);
             mTo = getIntent().getStringExtra("to");
+            mToAlias = getIntent().getStringExtra("toAlias");
             mFrom = getIntent().getStringExtra("from");
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
             mFriendImage = getIntent().getBooleanExtra("friendImage", false);
@@ -138,9 +141,9 @@ public class ImageSelectActivity extends Activity {
     private void setTitle() {
 
         if (mSize == IMAGE_SIZE_LARGE) {
-            Utils.configureActionBar(this, getString(R.string.select_image), mTo, false);
+            Utils.configureActionBar(this, getString(R.string.select_image), mToAlias, false);
         } else {
-            Utils.configureActionBar(this, getString(R.string.assign_image), mTo, false);
+            Utils.configureActionBar(this, getString(R.string.assign_image), mToAlias, false);
         }
 
 
@@ -190,6 +193,7 @@ public class ImageSelectActivity extends Activity {
                 protected Void doInBackground(Void... params) {
                     ChatController cc = ChatManager.getChatController(mFrom);
                     if (cc == null) {
+                        //TODO notify user?
                         return null;
                     }
                     ChatUtils.uploadPictureMessageAsync(
@@ -319,6 +323,7 @@ public class ImageSelectActivity extends Activity {
             outState.putString("path", mPath.getAbsolutePath());
         }
         outState.putString("to", mTo);
+        outState.putString("toAlias", mToAlias);
         outState.putString("from", mFrom);
         outState.putInt("size", mSize);
         outState.putBoolean("friendImage", mFriendImage);

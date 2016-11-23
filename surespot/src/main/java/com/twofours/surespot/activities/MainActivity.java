@@ -1101,9 +1101,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         return Camera.getNumberOfCameras() > 0;
     }
 
-    public void uploadFriendImage(String name) {
+    public void uploadFriendImage(String name, String alias) {
         Intent intent = new Intent(this, ImageSelectActivity.class);
         intent.putExtra("to", name);
+        intent.putExtra("toAlias", alias);
         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
         // set start intent to avoid restarting every rotation
         intent.putExtra("start", true);
@@ -1142,7 +1143,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 cc.closeTab();
                 return true;
             case R.id.menu_send_image_bar:
-                if (currentChat == null) {
+                if (currentChat == null || mCurrentFriend == null) {
                     return true;
                 }
 
@@ -1155,6 +1156,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     protected Void doInBackground(Void... params) {
                         Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
                         intent.putExtra("to", currentChat);
+                        intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
                         intent.putExtra("from", mUser);
                         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
                         // set start intent to avoid restarting every rotation
