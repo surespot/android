@@ -1031,27 +1031,25 @@ public class IdentityController {
 
     public static void updateLatestVersion(Context context, String username, String version) {
         // see if we are the user that's been revoked
+        boolean sameUser = false;
+        if (username.equals(getLoggedInUser())) {
+            sameUser = true;
+        }
+
         // if we have the latest version locally, if we don't then this user has
         // been revoked from a different device
         // and should not be used on this device anymore
-        if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(context, username)))) {
+        if ((Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(context, username)))) {
             SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
             // bad news
             // delete the identity file and cached data
             deleteIdentity(context, username, false);
 
-            // delete identities locally?
-            SurespotLog.d(TAG, "setting unauthorized, username=" + username + ", getLoggedInUser=" + getLoggedInUser());
-            NetworkManager.getNetworkController(context, username).setUnauthorized(true, true);
-
             // boot them out
-            launchLoginActivity(context);
-
-            // TODO tell user?
-            // Utils.makeLongToast(context, "identity: " + username +
-            // " revoked");
-
+            if (sameUser) {
+                launchLoginActivity(context);
+            }
         } else {
             SurespotApplication.getCachingService().updateLatestVersion(username, username, version);
         }
