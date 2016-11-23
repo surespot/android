@@ -2110,7 +2110,7 @@ public class ChatController {
         }
 
         setProgress("assignFriendAlias", true);
-        final String version = IdentityController.getOurLatestVersion(mUsername);
+        final String version = IdentityController.getOurLatestVersion(mContext, mUsername);
 
         byte[] iv = EncryptionController.getIv();
         final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, mUsername, version, alias, iv);
@@ -2317,7 +2317,7 @@ public class ChatController {
 
                 @Override
                 protected Boolean doInBackground(Void... arg0) {
-                    String ourLatestVersion = IdentityController.getOurLatestVersion(message.getFrom());
+                    String ourLatestVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
                     String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
 
                     if (theirLatestVersion == null) {
@@ -2404,7 +2404,7 @@ public class ChatController {
 
                         try {
 
-                            final String ourVersion = IdentityController.getOurLatestVersion(message.getFrom());
+                            final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
                             final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
 
                             if (theirVersion == null) {

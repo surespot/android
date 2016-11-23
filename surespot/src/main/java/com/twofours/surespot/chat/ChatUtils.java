@@ -293,7 +293,7 @@ public class ChatUtils {
                     PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                     final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 
-                    final String ourVersion = IdentityController.getOurLatestVersion(ourName);
+                    final String ourVersion = IdentityController.getOurLatestVersion(activity, ourName);
 
                     final String iv = EncryptionController.runEncryptTask(ourName, ourVersion, ourName, ourVersion, new BufferedInputStream(dataStream),
                             encryptionOutputStream);

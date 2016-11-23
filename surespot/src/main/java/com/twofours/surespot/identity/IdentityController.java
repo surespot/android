@@ -917,7 +917,7 @@ public class IdentityController {
 
         CredentialCachingService cache = SurespotApplication.getCachingService();
         if (cache != null) {
-            cache.clearIdentityData(username, true);
+            cache.logout(username, deleted);
         }
 
         clearStoredPasswordForIdentity(context, username);
@@ -1005,8 +1005,8 @@ public class IdentityController {
         return SurespotApplication.getCachingService().getLatestVersion(ourUsername, theirUsername);
     }
 
-    public static String getOurLatestVersion(String username) {
-        return SurespotApplication.getCachingService().getIdentity(null, username, null).getLatestVersion();
+    public static String getOurLatestVersion(Context context, String username) {
+        return SurespotApplication.getCachingService().getIdentity(context, username, null).getLatestVersion();
 
     }
 
@@ -1034,7 +1034,7 @@ public class IdentityController {
         // if we have the latest version locally, if we don't then this user has
         // been revoked from a different device
         // and should not be used on this device anymore
-        if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(username)))) {
+        if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(context, username)))) {
             SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
             // bad news
