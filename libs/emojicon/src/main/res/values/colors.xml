@@ -17,4 +17,10 @@
 <resources>
     <color name="horizontal_divider">#8f8f8f</color>
     <color name="horizontal_vertical">#8f8f8f</color>
+    <!-- main color for drawable-v21/my_ripple -->
+    <color name="surespot_ripple_color_highlight">#FFffffff</color>
+    <!-- main color for drawable/my_ripple -->
+    <color name="surespot_ripple_color_highlight_press">#ffffffff</color>
+    <color name="surespot_ripple_color_highlight_focus">#ffffffff</color>
+    <color name="surespotBlue">#ff33b5e5</color>
 </resources>

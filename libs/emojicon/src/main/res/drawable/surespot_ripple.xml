@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/drawable/my_ripple.xml -->
+
+<!-- This will be the drawable used on API < 21 --><!-- Obviously you can specify here whateer you want --><!-- like activated states, animated states, shapes, pngs, whatever like any other drawable--><!-- I've just put 2 states (pressed,focused) using the same color than the v21 ripple -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/surespot_ripple_color_highlight_focus" android:state_focused="true" />
+    <item android:drawable="@color/surespot_ripple_color_highlight_press" android:state_pressed="true" />
+    <item android:drawable="@android:color/transparent" />
+</selector>

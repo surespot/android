@@ -14,151 +14,152 @@
   ~ limitations under the License.
   -->
 
-<com.rockerhieu.emojicon.EmojiconsView
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:background="@drawable/keyboard_background_holo"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent">
-
-  <LinearLayout
-    android:id="@+id/emojis_tab"
+<com.rockerhieu.emojicon.EmojiconsView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="50dip"
-    android:layout_alignParentTop="true"
-    android:orientation="horizontal">
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
 
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:scaleType="center"
-      android:id="@+id/emojis_tab_0_recents"
-      android:src="@drawable/emoji_recent" />
+    <LinearLayout
+        android:id="@+id/emojis_tab"
+        android:layout_width="match_parent"
+        android:layout_height="50dip"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal">
+
+        <ImageButton
+
+            android:id="@+id/emojis_tab_0_recents"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_recent" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+
+            android:id="@+id/emojis_tab_1_people"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_people" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_tab_2_nature"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_nature" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_tab_3_food"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_food" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_tab_4_sport"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_sport" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_tab_5_cars"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_cars" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_tab_6_electronics"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_electronics" />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_tab_7_symbols"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:scaleType="center"
+            android:src="@drawable/emoji_symbols" />
+
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/horizontal_vertical" />
+
+        <ImageButton
+            android:id="@+id/emojis_backspace"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/surespot_ripple"
+            android:src="@drawable/emoji_backspace_back_normal" />
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/emojis_pager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/emojis_tab" />
 
     <View
-      android:layout_width="1px"
-      android:layout_height="match_parent"
-      android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:scaleType="center"
-      android:id="@+id/emojis_tab_1_people"
-      android:src="@drawable/emoji_people" />
-
-    <View
-      android:layout_width="1px"
-      android:layout_height="match_parent"
-      android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:scaleType="center"
-      android:id="@+id/emojis_tab_2_nature"
-      android:src="@drawable/emoji_nature" />
-
-    <View
-      android:layout_width="1px"
-      android:layout_height="match_parent"
-      android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:scaleType="center"
-      android:id="@+id/emojis_tab_3_food"
-      android:src="@drawable/emoji_food" />
-
-    <View
-      android:layout_width="1px"
-      android:layout_height="match_parent"
-      android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:scaleType="center"
-      android:id="@+id/emojis_tab_4_sport"
-      android:src="@drawable/emoji_sport" />
-
-    <View
-      android:layout_width="1px"
-      android:layout_height="match_parent"
-      android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:scaleType="center"
-      android:id="@+id/emojis_tab_5_cars"
-      android:src="@drawable/emoji_cars" />
-
-    <View
-        android:layout_width="1px"
-        android:layout_height="match_parent"
-        android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-        android:background="@null"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:scaleType="center"
-        android:id="@+id/emojis_tab_6_electronics"
-        android:src="@drawable/emoji_electronics" />
-
-    <View
-        android:layout_width="1px"
-        android:layout_height="match_parent"
-        android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-        android:background="@null"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:scaleType="center"
-        android:id="@+id/emojis_tab_7_symbols"
-        android:src="@drawable/emoji_symbols" />
-
-
-    <View
-      android:layout_width="1px"
-      android:layout_height="match_parent"
-      android:background="@color/horizontal_vertical" />
-
-    <ImageButton
-      android:background="@null"
-      android:layout_width="0dip"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:id="@+id/emojis_backspace"
-      android:src="@drawable/emoji_backspace_back_normal" />
-  </LinearLayout>
-
-  <android.support.v4.view.ViewPager
-    android:layout_below="@id/emojis_tab"
-    android:id="@+id/emojis_pager"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true" />
-
-  <View
-    android:layout_width="match_parent"
-    android:layout_height="1px"
-    android:layout_below="@id/emojis_tab"
-    android:background="@color/horizontal_divider" />
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_below="@id/emojis_tab"
+        android:background="@color/horizontal_divider" />
 </com.rockerhieu.emojicon.EmojiconsView>
