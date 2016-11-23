@@ -16,8 +16,7 @@
 
 <com.rockerhieu.emojicon.EmojiconsView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/emojiBackground">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/emojis_tab"
@@ -146,8 +145,8 @@
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/emoji_backspace_back_normal" />
+            android:paddingBottom="1dp"
+            android:background="?android:attr/selectableItemBackground" />
     </LinearLayout>
 
     <android.support.v4.view.ViewPager

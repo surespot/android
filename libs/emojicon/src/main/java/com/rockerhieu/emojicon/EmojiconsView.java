@@ -18,6 +18,7 @@ package com.rockerhieu.emojicon;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -32,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -57,7 +59,8 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
     private EmojisPagerAdapter mEmojisAdapter;
     private EmojiconRecentsManager mRecentsManager;
     private boolean mUseSystemDefault = false;
-    private int mSelectedColor;
+    private int mSelectedMask;
+    private int mUnselectedMask;
 
     public EmojiconsView(Context context) {
         super(context);
@@ -85,7 +88,11 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
         // we handle recents
         EmojiconRecents recents = this;
 
-        mSelectedColor = ContextCompat.getColor(getContext(), R.color.surespotBlue);
+        SharedPreferences settings = this.getContext().getSharedPreferences("surespot_preferences", android.content.Context.MODE_PRIVATE);
+        boolean black = settings.getBoolean("pref_black", false);
+        mSelectedMask = ContextCompat.getColor(getContext(), R.color.selectedMask);
+        mUnselectedMask = ContextCompat.getColor(getContext(), black ? R.color.unselectedMaskDark : R.color.unselectedMaskLight);
+        setBackgroundColor(ContextCompat.getColor(getContext(), black ? R.color.emojiBackgroundDark : R.color.emojiBackgroundLight));
 
         mEmojisAdapter = new EmojisPagerAdapter(Arrays.asList(
                 EmojiconRecentsGridView.newInstance(getContext(), this, mUseSystemDefault),
@@ -110,6 +117,7 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
         mEmojiTabs[7] = (ImageView) findViewById(R.id.emojis_tab_7_symbols);
         for (int i = 0; i < mEmojiTabs.length; i++) {
             final int position = i;
+            mEmojiTabs[i].setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
             mEmojiTabs[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -117,7 +125,11 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
                 }
             });
         }
-        findViewById(R.id.emojis_backspace).setOnTouchListener(new RepeatListener(1000, 50, new View.OnClickListener() {
+
+        ImageButton backspace = (ImageButton) findViewById(R.id.emojis_backspace);
+        //set icon
+        backspace.setImageResource(black ? R.drawable.emoji_backspace_dark : R.drawable.emoji_backspace_light);
+        backspace.setOnTouchListener(new RepeatListener(1000, 50, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mOnEmojiconBackspaceClickedListener != null) {
@@ -137,8 +149,7 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
 
         if (page == 0) {
             onPageSelected(page);
-        }
-        else {
+        } else {
             emojisPager.setCurrentItem(page, false);
         }
     }
@@ -202,10 +213,11 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
 
                 if (mEmojiTabLastSelectedIndex >= 0 && mEmojiTabLastSelectedIndex < mEmojiTabs.length) {
                     mEmojiTabs[mEmojiTabLastSelectedIndex].setSelected(false);
-                    mEmojiTabs[mEmojiTabLastSelectedIndex].clearColorFilter();
+                    //mEmojiTabs[mEmojiTabLastSelectedIndex].clearColorFilter();
+                    mEmojiTabs[mEmojiTabLastSelectedIndex].setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
                 }
                 mEmojiTabs[i].setSelected(true);
-                mEmojiTabs[i].setColorFilter(mSelectedColor, PorterDuff.Mode.SRC_IN);
+                mEmojiTabs[i].setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
                 mEmojiTabLastSelectedIndex = i;
                 mRecentsManager.setRecentPage(i);
                 break;
@@ -316,12 +328,14 @@ public class EmojiconsView extends RelativeLayout implements ViewPager.OnPageCha
                     downView = view;
                     handler.removeCallbacks(handlerRunnable);
                     handler.postAtTime(handlerRunnable, downView, SystemClock.uptimeMillis() + initialInterval);
+                    downView.setPressed(true);
                     clickListener.onClick(view);
                     return true;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_OUTSIDE:
                     handler.removeCallbacksAndMessages(downView);
+                    downView.setPressed(false);
                     downView = null;
                     return true;
             }

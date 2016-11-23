@@ -17,6 +17,13 @@
 <resources>
     <color name="horizontal_divider">#8f8f8f</color>
     <color name="horizontal_vertical">#8f8f8f</color>
-    <color name="surespotBlue">#ff33b5e5</color>
-    <color name="emojiBackground">#ffeceff1</color>
+
+    <color name="emojiBackgroundLight">#ffeceff1</color>
+    <color name="emojiBackgroundDark">#ff222222</color>
+
+    <color name="selectedMask">#ff33b5e5</color>
+    <color name="unselectedMaskDark">#ffFFFFFF</color>
+    <color name="unselectedMaskLight">#AA333333</color>
+
+
 </resources>
