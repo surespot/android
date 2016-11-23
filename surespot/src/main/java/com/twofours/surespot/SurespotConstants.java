@@ -1,4 +1,4 @@
-package com.twofours.surespot.common;
+package com.twofours.surespot;
 
 public class SurespotConstants {
 

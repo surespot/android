@@ -9,14 +9,11 @@ import android.support.multidex.MultiDex;
 import android.support.v4.content.ContextCompat;
 
 import com.twofours.surespot.billing.BillingController;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.Utils;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;

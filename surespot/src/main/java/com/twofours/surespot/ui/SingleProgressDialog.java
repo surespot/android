@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 import java.util.Timer;
 import java.util.TimerTask;

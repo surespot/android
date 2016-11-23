@@ -7,7 +7,7 @@ import android.content.Context;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.ui.SurespotFragmentPagerAdapter;

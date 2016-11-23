@@ -23,10 +23,10 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -12,7 +12,7 @@ import android.os.Bundle;
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 public class TextMessageMenuFragment extends DialogFragment {
     protected static final String TAG = "TextMessageMenuFragment";

@@ -1,4 +1,4 @@
-package com.twofours.surespot.common;
+package com.twofours.surespot;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
@@ -29,7 +29,7 @@ public class SurespotConfiguration {
 	public static void LoadConfigProperties(Context context) {
 		// Read from the /res/raw directory
 		try {
-			InputStream rawResource = context.getResources().openRawResource(R.raw.configuration);
+			InputStream rawResource = context.getResources().openRawResource(com.twofours.surespot.R.raw.configuration);
 			Properties properties = new Properties();
 			properties.load(rawResource);
 			mConfigProperties = properties;

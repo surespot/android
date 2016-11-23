@@ -18,8 +18,8 @@ import android.widget.SeekBar;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.images.ImageMessageMenuFragment;
 import com.twofours.surespot.images.ImageViewActivity;

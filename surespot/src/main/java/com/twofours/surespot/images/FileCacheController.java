@@ -4,9 +4,9 @@ import android.content.Context;
 
 import com.google.common.io.ByteStreams;
 import com.jakewharton.disklrucache.DiskLruCache;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;

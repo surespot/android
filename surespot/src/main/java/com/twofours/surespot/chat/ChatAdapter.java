@@ -14,9 +14,9 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;

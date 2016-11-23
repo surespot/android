@@ -2,8 +2,8 @@ package com.twofours.surespot.images;
 
 import android.graphics.Bitmap;
 
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 
 public class BitmapCache {
 	private BitmapLruCache mMemoryCache;

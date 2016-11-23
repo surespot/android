@@ -1,4 +1,4 @@
-package com.twofours.surespot.ui;
+package com.twofours.surespot.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -46,10 +46,11 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.ui.LetterOrDigitOrSpaceInputFilter;
+import com.twofours.surespot.ui.SingleProgressDialog;
 import com.twofours.surespot.identity.KeyFingerprintDialogFragment;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;

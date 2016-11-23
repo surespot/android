@@ -37,10 +37,10 @@ import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.identity.IdentityController;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.util.ArrayList;
 import java.util.Date;

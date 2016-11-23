@@ -1,4 +1,4 @@
-package com.twofours.surespot.common;
+package com.twofours.surespot.utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
+
+import com.twofours.surespot.SurespotLog;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

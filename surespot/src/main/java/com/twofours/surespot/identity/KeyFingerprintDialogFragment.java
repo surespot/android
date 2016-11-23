@@ -12,12 +12,12 @@ import android.widget.TextView;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.ExpandableHeightListView;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

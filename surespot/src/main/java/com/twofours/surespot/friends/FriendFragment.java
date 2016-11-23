@@ -20,11 +20,11 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 public class FriendFragment extends Fragment {
     private FriendAdapter mMainAdapter;

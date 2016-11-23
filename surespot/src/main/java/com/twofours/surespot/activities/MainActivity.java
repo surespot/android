@@ -71,11 +71,11 @@ import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
@@ -89,7 +89,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -103,7 +103,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
+import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
 
 public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";

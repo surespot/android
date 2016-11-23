@@ -2,18 +2,15 @@ package com.twofours.surespot.identity;
 
 import org.nick.androidkeystore.android.security.KeyStore;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.KeyguardManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 
 public class SurespotKeystoreActivity extends Activity {
 

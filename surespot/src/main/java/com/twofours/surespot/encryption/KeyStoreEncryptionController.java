@@ -4,13 +4,12 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.Base64;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
@@ -20,8 +19,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class KeyStoreEncryptionController {
     private static final String TAG = "KeyStoreEncryptionController";

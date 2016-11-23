@@ -4,7 +4,7 @@ package com.twofours.surespot.chat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 /**
  * @author adam

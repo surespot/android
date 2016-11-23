@@ -1,20 +1,18 @@
 package com.twofours.surespot;
 
-import java.net.URLDecoder;
-import java.util.HashMap;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.Utils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URLDecoder;
+import java.util.HashMap;
 
 // test with this: 
 // adb -s 192.168.10.137:5555 shell 'am broadcast -a com.android.vending.INSTALL_REFERRER -n com.twofours.surespot/.SurespotBroadcastReceiver --es "referrer" "utm_source=test_source&utm_medium=test_medium&utm_term=test_term&utm_content=ePhrlkCtjf&utm_campaign=test_name"' 

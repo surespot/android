@@ -1,4 +1,4 @@
-package com.twofours.surespot.common;
+package com.twofours.surespot.utils;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -19,13 +19,15 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -294,15 +296,15 @@ public class Utils {
 		actionBar.setDisplayHomeAsUpEnabled(home);
 		actionBar.setDisplayShowCustomEnabled(true);
 		actionBar.setDisplayShowTitleEnabled(false);
-		View customNav = LayoutInflater.from(activity).inflate(R.layout.actionbar_title, null);
+		View customNav = LayoutInflater.from(activity).inflate(com.twofours.surespot.R.layout.actionbar_title, null);
 		actionBar.setCustomView(customNav);
 		setActionBarTitles(activity, leftText, rightText);
 	}
 
 	public static void setActionBarTitles(Activity activity, String leftText, String rightText) {
-		TextView navView = (TextView) activity.findViewById(R.id.nav);
-		TextView separatorView = (TextView) activity.findViewById(R.id.separator);
-		TextView userView = (TextView) activity.findViewById(R.id.user);
+		TextView navView = (TextView) activity.findViewById(com.twofours.surespot.R.id.nav);
+		TextView separatorView = (TextView) activity.findViewById(com.twofours.surespot.R.id.separator);
+		TextView userView = (TextView) activity.findViewById(com.twofours.surespot.R.id.user);
 
 		if (leftText != null && leftText.length() > 0) {
 			navView.setVisibility(View.VISIBLE);

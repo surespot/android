@@ -3,7 +3,7 @@ package com.twofours.surespot.network;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 import java.util.HashMap;
 

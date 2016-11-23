@@ -2,7 +2,7 @@ package com.twofours.surespot.voice;
 
 import android.media.MediaRecorder;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 public class MediaRecorderWrapper {
     /**

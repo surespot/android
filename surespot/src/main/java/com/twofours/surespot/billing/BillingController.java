@@ -6,9 +6,9 @@ import android.content.Context;
 import com.twofours.surespot.billing.IabHelper.OnConsumeFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabPurchaseFinishedListener;
 import com.twofours.surespot.billing.IabHelper.OnIabSetupFinishedListener;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
 import java.util.ArrayList;
