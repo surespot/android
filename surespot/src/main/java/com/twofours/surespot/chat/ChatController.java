@@ -23,12 +23,11 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.StateController.FriendState;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.Tuple;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.Tuple;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
@@ -42,6 +41,7 @@ import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.Utils;
 import com.viewpagerindicator.TitlePageIndicator;
 
 import org.json.JSONArray;
@@ -196,7 +196,7 @@ public class ChatController {
 
 
         mFriendAdapter = new FriendAdapter(mContext, mUsername);
-        loadState();
+        loadFriendState();
 
         mChatPagerAdapter.setChatFriends(mFriendAdapter.getActiveChatFriends());
         mFriendAdapter.registerFriendAliasChangedCallback(new IAsyncCallback<Void>() {
@@ -1309,8 +1309,8 @@ public class ChatController {
         }
     }
 
-    private void loadState() {
-        SurespotLog.d(TAG, "loadState");
+    private void loadFriendState() {
+        SurespotLog.d(TAG, "loadFriendState");
         FriendState fs = SurespotApplication.getStateController().loadFriends(mUsername);
 
         List<Friend> friends = null;
@@ -1357,9 +1357,6 @@ public class ChatController {
         for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
             loadMessages(ca.getKey(), false);
         }
-
-        // make sure to reload user state - we don't want to show old messages as "sending..." when they have been sent
-        loadState();
 
         if (connect()) {
             setProgress(null, false);
@@ -1966,9 +1963,7 @@ public class ChatController {
 
                     friend.setAliasPlain(plainAlias);
                     saveFriends();
-                    mChatPagerAdapter.sort();
-                    mChatPagerAdapter.notifyDataSetChanged();
-                    mIndicator.notifyDataSetChanged();
+                    mFriendAdapter.notifyFriendAliasChanged();
                     mFriendAdapter.sort();
                     mFriendAdapter.notifyDataSetChanged();
                 }
@@ -2030,9 +2025,7 @@ public class ChatController {
             friend.setAliasVersion(null);
             friend.setAliasPlain(null);
             saveFriends();
-            mChatPagerAdapter.sort();
-            mChatPagerAdapter.notifyDataSetChanged();
-            mIndicator.notifyDataSetChanged();
+            mFriendAdapter.notifyFriendAliasChanged();
             mFriendAdapter.sort();
             mFriendAdapter.notifyDataSetChanged();
         }
