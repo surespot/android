@@ -277,7 +277,7 @@ public class CredentialCachingService extends Service {
         if (context == null) {
             context = this;
         }
-        if (identity == null && context != null) {
+        if (identity == null) {
             // if we have the password load it
             if (password == null) {
                 password = getPassword(context, username);

@@ -995,20 +995,17 @@ public class IdentityController {
 
     }
 
-    /**
-     * run this on a thread
-     *
-     * @param username
-     * @return
-     */
     public static String getTheirLatestVersion(String ourUsername, String theirUsername) {
         return SurespotApplication.getCachingService().getLatestVersion(ourUsername, theirUsername);
     }
 
     public static String getOurLatestVersion(Context context, String username) {
-        SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(context, username, null);
-        if (identity != null) {
-            return identity.getLatestVersion();
+        CredentialCachingService cachingService = SurespotApplication.getCachingService();
+        if (cachingService != null) {
+            SurespotIdentity identity = cachingService.getIdentity(context, username, null);
+            if (identity != null) {
+                return identity.getLatestVersion();
+            }
         }
 
         return null;
@@ -1040,32 +1037,27 @@ public class IdentityController {
             sameUser = true;
         }
 
-        // if we have the latest version locally, if we don't then this user has
-        // been revoked from a different device
-        // and should not be used on this device anymore
-        String sOurLatestVersion = getOurLatestVersion(context, username);
-        int ourLatestVersion;
-        if (sOurLatestVersion != null) {
-            ourLatestVersion = Integer.parseInt(sOurLatestVersion);
-        } else {
-            ourLatestVersion = 0;
-        }
+        SurespotLog.d(TAG, "updateLatestVersion, username: %s, version: %s, sameUser: %b", username, version, sameUser);
+        //us
+        if (sameUser) {
+            //if we can't get the latest version we weren't logged in (we couldn't be here if we hadn't received the user control message after logging in)
+            //so we couldn't have issued the key roll
+            //therefore blow the identity away
 
-        if ((Integer.parseInt(version) > ourLatestVersion)) {
-            SurespotLog.v(TAG, "user revoked, deleting data and logging out");
+            if (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(context, username))) {
+                SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
-            // bad news
-            // delete the identity file and cached data
-            deleteIdentity(context, username, false);
+                // bad news
+                // delete the identity file and cached data
+                deleteIdentity(context, username, false);
 
-            // boot them out
-            if (sameUser) {
+                // boot them out
                 launchLoginActivity(context);
             }
         } else {
-            SurespotApplication.getCachingService().updateLatestVersion(username, username, version);
+            //not us
+            SurespotApplication.getCachingService().updateLatestVersion(getLoggedInUser(), username, version);
         }
-
     }
 
     private static void launchLoginActivity(Context context) {

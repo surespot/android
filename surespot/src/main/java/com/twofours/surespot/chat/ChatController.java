@@ -1771,7 +1771,9 @@ public class ChatController {
                         boolean userSuddenlyHasFriends = false;
                         try {
                             JSONObject jsonObject = new JSONObject(responseString);
-                            mLatestUserControlId = jsonObject.getInt("userControlId");
+                            //user could have no friends but rolled keys in which case user control id > 0
+                            //so don't update it
+                            //   mLatestUserControlId = jsonObject.getInt("userControlId");
                             JSONArray friendsArray = jsonObject.optJSONArray("friends");
 
                             if (friendsArray != null) {
@@ -1786,6 +1788,7 @@ public class ChatController {
                             }
                             if (friends.size() > 0) {
                                 userSuddenlyHasFriends = true;
+
                             }
                         } catch (JSONException e) {
                             SurespotLog.e(TAG, e, "getFriendsAndData error");
