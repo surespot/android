@@ -231,15 +231,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
-
-
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Utils.makeToast(MainActivity.this, getString(R.string.unauthorized));
-                    }
-                };
-                MainActivity.this.runOnUiThread(runnable);
             }
         };
 
