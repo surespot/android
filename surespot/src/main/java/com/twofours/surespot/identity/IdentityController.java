@@ -13,14 +13,12 @@ import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.utils.FileUtils;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
@@ -30,7 +28,9 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1006,8 +1006,12 @@ public class IdentityController {
     }
 
     public static String getOurLatestVersion(Context context, String username) {
-        return SurespotApplication.getCachingService().getIdentity(context, username, null).getLatestVersion();
+        SurespotIdentity identity = SurespotApplication.getCachingService().getIdentity(context, username, null);
+        if (identity != null) {
+            return identity.getLatestVersion();
+        }
 
+        return null;
     }
 
     public static void rollKeys(Context context, SurespotIdentity identity, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {
@@ -1039,7 +1043,15 @@ public class IdentityController {
         // if we have the latest version locally, if we don't then this user has
         // been revoked from a different device
         // and should not be used on this device anymore
-        if ((Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(context, username)))) {
+        String sOurLatestVersion = getOurLatestVersion(context, username);
+        int ourLatestVersion;
+        if (sOurLatestVersion != null) {
+            ourLatestVersion = Integer.parseInt(sOurLatestVersion);
+        } else {
+            ourLatestVersion = 0;
+        }
+
+        if ((Integer.parseInt(version) > ourLatestVersion)) {
             SurespotLog.v(TAG, "user revoked, deleting data and logging out");
 
             // bad news
