@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.twofours.surespot"
     android:versionCode="69"
-    android:versionName="69-debug">
+    android:versionName="69">
 
 
     <permission

@@ -57,10 +57,10 @@ public class SurespotConstants {
 
 
 	// PROD set to 3
-	public final static int MAX_IDENTITIES = 30;
+	public final static int MAX_IDENTITIES = 3;
 
 	// PROD false for production
-	public final static boolean LOGGING = true;
+	public final static boolean LOGGING = false;
 
 	// PROD true for production
 	public final static boolean SSL_STRICT = true;
