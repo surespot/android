@@ -436,7 +436,10 @@ public class ChatController {
                     SurespotLog.d(TAG, "copying cache entries from %s to %s", localUri, remoteUri);
                     // update in memory image cache
                     if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                        SurespotApplication.getFileCacheController().moveCacheEntry(localUri, remoteUri);
+                        FileCacheController fcc = SurespotApplication.getFileCacheController();
+                        if (fcc != null) {
+                            fcc.moveCacheEntry(localUri, remoteUri);
+                        }
                         MessageImageDownloader.moveCacheEntry(localUri, remoteUri);
                     }
 
