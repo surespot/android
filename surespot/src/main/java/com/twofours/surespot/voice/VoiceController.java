@@ -14,14 +14,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -165,8 +165,7 @@ public class VoiceController {
             startTimer(activity);
             mState = State.RECORDING;
             // Utils.makeToast(activity, "sample rate: " + mSampleRate);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             SurespotLog.e(TAG, e, "prepare() failed");
         }
 
@@ -188,8 +187,7 @@ public class VoiceController {
             mRecorder = null;
 
             mState = State.STARTED;
-        }
-        catch (RuntimeException stopException) {
+        } catch (RuntimeException stopException) {
 
         }
 
@@ -255,8 +253,7 @@ public class VoiceController {
                 mSendingFile = mFileName;
                 mFileName = null;
                 sendVoiceMessage(activity);
-            }
-            else {
+            } else {
                 SurespotLog.v(TAG, "not sending, deleting: %s", mSendingFile);
                 new File(mFileName).delete();
             }
@@ -274,12 +271,11 @@ public class VoiceController {
     private synchronized static void sendVoiceMessage(final Activity activity) {
         int maxVolume = mEnvelopeView.getMaxVolume();
         SurespotLog.v(TAG, "max recorded volume: %d", maxVolume);
-        if (maxVolume < SEND_THRESHOLD) {
-            new File(mSendingFile).delete();
-            Utils.makeToast(activity, activity.getString(R.string.no_audio_detected));
-        }
-        else {
-            try {
+        try {
+            if (maxVolume < SEND_THRESHOLD) {
+                new File(mSendingFile).delete();
+                Utils.makeToast(activity, activity.getString(R.string.no_audio_detected));
+            } else {
                 ChatController cc = ChatManager.getChatController(mFrom);
                 if (cc != null) {
                     final String m4aFile = mSendingFile;
@@ -289,19 +285,16 @@ public class VoiceController {
                             Uri.fromFile(new File(m4aFile)),
                             mFrom,
                             mTo);
-                }
-                else {
+                } else {
                     SurespotLog.w(TAG, "sendVoiceMessage null chat controller, deleting: %s", mSendingFile);
                     new File(mSendingFile).delete();
                     Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
                 }
             }
-
-            catch (Exception e) {
-                SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
-                new File(mSendingFile).delete();
-                Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
-            }
+        } catch (Exception e) {
+            SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
+            new File(mSendingFile).delete();
+            Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
         }
     }
 
@@ -357,9 +350,7 @@ public class VoiceController {
                 mPlayer.setDataSource(mAudioFile.getAbsolutePath());
                 mPlayer.prepareAsync();
 
-            }
-
-            catch (Exception e) {
+            } catch (Exception e) {
                 SurespotLog.w(TAG, e, "playVoiceMessage error");
                 playCompleted();
                 return;
@@ -394,8 +385,7 @@ public class VoiceController {
     public static void attach(final SeekBar seekBar) {
         if (isCurrentMessage(seekBar)) {
             mSeekBar = seekBar;
-        }
-        else {
+        } else {
             setProgress(seekBar, 0);
         }
 
@@ -422,8 +412,7 @@ public class VoiceController {
                     voicePlay.setVisibility(View.GONE);
                 }
                 voiceStop.setVisibility(View.VISIBLE);
-            }
-            else {
+            } else {
                 SurespotMessage message = getSeekbarMessage(mSeekBar);
                 if (message != null) {
 
@@ -441,8 +430,7 @@ public class VoiceController {
                             if (voicePlay != null) {
                                 voicePlay.setVisibility(View.GONE);
                             }
-                        }
-                        else {
+                        } else {
                             SurespotLog.v(TAG, "setting played to gone");
                             voicePlayed.setVisibility(View.GONE);
                             if (voicePlay != null) {
@@ -490,8 +478,7 @@ public class VoiceController {
                         int currentPosition = 0;
                         try {
                             currentPosition = mPlayer.getCurrentPosition();
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             SurespotLog.w(TAG, "SeekBarThread error getting current position");
                             mRun = false;
                             break;
@@ -527,8 +514,7 @@ public class VoiceController {
 
                 try {
                     Thread.sleep(30);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     mRun = false;
                     SurespotLog.w(TAG, e, "SeekBarThread interrupted");
                 }
@@ -561,8 +547,7 @@ public class VoiceController {
         SurespotMessage seekBarMessage = getSeekbarMessage(seekBar);
         if (seekBarMessage != null && seekBarMessage.equals(mMessage) && mPlaying) { //
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
