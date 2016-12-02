@@ -1372,7 +1372,7 @@ public class ChatController {
         return getChatAdapter(username, true);
     }
 
-    private ChatAdapter getChatAdapter(String username, boolean create) {
+    ChatAdapter getChatAdapter(String username, boolean create) {
 
         ChatAdapter chatAdapter = mChatAdapters.get(username);
         if (chatAdapter == null && create) {

@@ -292,20 +292,20 @@ public class ChatFragment extends Fragment {
 
 			if (friend != null) {
 
+
 				mSelectedItem = friend.getSelectedItem();
 				mSelectedTop = friend.getSelectedTop();
 
 				SurespotLog.v(TAG, "onResume, selectedItem: " + mSelectedItem);
 
-				if (mChatAdapter.isLoaded()) {
+				mChatAdapter = chatController.getChatAdapter(mTheirUsername, false);
+				if (mChatAdapter != null && mChatAdapter.isLoaded()) {
 					SurespotLog.v(TAG, "chat adapter loaded already, scrolling");
 					scrollToState();
-
 				}
 			}
 		}
-
-	};
+	}
 
 	@Override
 	public void onPause() {
