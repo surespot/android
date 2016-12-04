@@ -2313,7 +2313,7 @@ public class ChatController {
     }
 
 
-    private synchronized void prepAndSendTextMessage(final SurespotMessage message) {
+    private void prepAndSendTextMessage(final SurespotMessage message) {
         SurespotLog.d(TAG, "prepAndSendTextMessage, iv: %s", message.getIv());
 
         //make sure message is encrypted
@@ -2323,41 +2323,52 @@ public class ChatController {
 
                 @Override
                 protected Boolean doInBackground(Void... arg0) {
-                    String ourLatestVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
-                    String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+                    synchronized (ChatController.this) {
 
-                    if (theirLatestVersion == null) {
-                        SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
-                        //retry
-                        message.setErrorStatus(0);
-                        return false;
-                    }
+                        //if plain data is null, already being handled, do nothing
+                        CharSequence plainData = message.getPlainData();
+                        if (plainData == null) {
+                            return null;
+                        }
 
-                    byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
-                    String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, message.getPlainData().toString(), iv);
+                        String ourLatestVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
+                        String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
 
-                    if (result != null) {
-                        //update unsent message
-                        message.setPlainData(null);
-                        message.setData(result);
-                        message.setFromVersion(ourLatestVersion);
-                        message.setToVersion(theirLatestVersion);
-                        return true;
-                    } else {
-                        SurespotLog.d(TAG, "could not encrypt message, iv: %s", message.getIv());
-                        message.setErrorStatus(500);
-                        return false;
+                        if (theirLatestVersion == null) {
+                            SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
+                            //retry
+                            message.setErrorStatus(0);
+                            return false;
+                        }
+
+                        byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
+                        String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
+
+                        if (result != null) {
+                            //update unsent message
+                            message.setPlainData(null);
+                            message.setData(result);
+                            message.setFromVersion(ourLatestVersion);
+                            message.setToVersion(theirLatestVersion);
+                            return true;
+                        } else {
+                            SurespotLog.d(TAG, "could not encrypt message, iv: %s", message.getIv());
+                            message.setErrorStatus(500);
+                            return false;
+                        }
                     }
                 }
 
                 protected void onPostExecute(Boolean success) {
-                    addMessage(message);
-                    if (success) {
-                        sendTextMessage(message);
-                    } else {
-                        messageSendCompleted(message);
-                        if (!scheduleResendTimer()) {
-                            errorMessageQueue();
+                    if (success != null) {
+                        addMessage(message);
+                        if (success) {
+                            sendTextMessage(message);
+                        } else {
+                            messageSendCompleted(message);
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue();
+                            }
                         }
                     }
                 }
@@ -2392,7 +2403,7 @@ public class ChatController {
                 protected Boolean doInBackground(Void... arg0) {
                     //make sure it's pointing to a local file
 
-                    synchronized (this) {
+                    synchronized (ChatController.this) {
                         //could be null because it's already being processed
                         CharSequence cs = message.getPlainData();
                         SurespotLog.d(TAG, "prepAndSendFileMessage: plainData: %s", cs);
