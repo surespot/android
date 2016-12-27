@@ -154,44 +154,18 @@ public class MediaRecorderWrapper {
 
         if (mRecorder != null) {
             mRecorder.release();
+            mRecorder = null;
         }
     }
 
-    /**
-     * Resets the recorder to the INITIALIZING state, as if it was just created. In case the class was in RECORDING state, the recording is stopped. In case of
-     * exceptions the class is set to the ERROR state.
-     */
-    public void reset() {
-        try {
-            if (state != State.ERROR) {
-                release();
-                fPath = null; // Reset file path
-
-                mRecorder = new MediaRecorder();
-                mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-                mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-                mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-                state = State.INITIALIZING;
-            }
-        } catch (Exception e) {
-            SurespotLog.e(MediaRecorderWrapper.class.getName(), e, e.getMessage());
-            state = State.ERROR;
-        }
-    }
 
     /**
      * Starts the recording, and sets the state to RECORDING. Call after prepare().
      */
     public void start() {
         if (state == State.READY) {
-            try {
-                mRecorder.start();
-                state = State.RECORDING;
-            } catch (Exception e) {
-                SurespotLog.e(TAG, e, "error starting media recorder");
-                state = State.ERROR;
-            }
+            mRecorder.start();
+            state = State.RECORDING;
         } else {
             SurespotLog.w(MediaRecorderWrapper.class.getName(), "start() called on illegal state");
             state = State.ERROR;
@@ -204,13 +178,9 @@ public class MediaRecorderWrapper {
      */
     public void stop() {
         if (state == State.RECORDING) {
-            try {
-                mRecorder.stop();
-                state = State.STOPPED;
-            } catch (Exception e) {
-                SurespotLog.e(TAG, e, "error stopping media recorder");
-                state = State.ERROR;
-            }
+            mRecorder.stop();
+            state = State.STOPPED;
+
         } else {
             SurespotLog.w(MediaRecorderWrapper.class.getName(), "stop() called on illegal state");
             state = State.ERROR;

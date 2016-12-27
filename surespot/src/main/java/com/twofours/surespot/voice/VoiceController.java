@@ -25,7 +25,6 @@ import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -165,7 +164,7 @@ public class VoiceController {
             startTimer(activity);
             mState = State.RECORDING;
             // Utils.makeToast(activity, "sample rate: " + mSampleRate);
-        } catch (IOException e) {
+        } catch (Exception e) {
             SurespotLog.e(TAG, e, "prepare() failed");
         }
 
@@ -187,7 +186,7 @@ public class VoiceController {
             mRecorder = null;
 
             mState = State.STARTED;
-        } catch (RuntimeException stopException) {
+        } catch (Exception stopException) {
 
         }
 
@@ -213,16 +212,6 @@ public class VoiceController {
 
         mPlaying = false;
         updatePlayControls();
-
-    }
-
-    public synchronized void destroy() {
-        if (mRecorder != null) {
-            mRecorder.release();
-            mRecorder = null;
-        }
-
-        playCompleted();
 
     }
 
