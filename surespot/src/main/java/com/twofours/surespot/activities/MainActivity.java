@@ -541,7 +541,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 boolean handled = false;
 
                 if (mCurrentFriend == null) {
-                    if (actionId == EditorInfo.IME_ACTION_DONE || (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN)) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE || (actionId == EditorInfo.IME_NULL && event != null && event.getAction() == KeyEvent.ACTION_DOWN)) {
                         inviteFriend();
                         handled = true;
                     }
