@@ -924,7 +924,7 @@ public class ChatController {
                     SurespotMessage dMessage = chatAdapter.getMessageById(messageId);
 
                     if (dMessage != null) {
-                        deleteMessageInternal(chatAdapter, dMessage, controlFromMe);
+                        deleteMessageInternal(chatAdapter, dMessage, controlFromMe, false);
                     }
                 } else {
                     if (message.getAction().equals("deleteAll")) {
@@ -1143,7 +1143,7 @@ public class ChatController {
     }
 
 
-    private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe) {
+    private void deleteMessageInternal(ChatAdapter chatAdapter, SurespotMessage dMessage, boolean initiatedByMe, boolean notify) {
         // if it's an image blow the http cache entry away
         if (dMessage.getMimeType() != null) {
             if (dMessage.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) || dMessage.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
@@ -1156,7 +1156,7 @@ public class ChatController {
             // (if someone else deleted my message we don't care)
             if (initiatedByMe || !myMessage) {
                 SurespotLog.d(TAG, "deleting message");
-                chatAdapter.deleteMessageById(dMessage.getId());
+                chatAdapter.deleteMessageById(dMessage.getId(), notify);
             }
         }
     }
@@ -1536,7 +1536,7 @@ public class ChatController {
         return false;
     }
 
-    public void deleteMessage(final SurespotMessage message) {
+    public void deleteMessage(final SurespotMessage message, final boolean notify) {
 
 
         //remove it from send queue
@@ -1559,7 +1559,7 @@ public class ChatController {
                     @Override
                     public void onResponse(Call call, Response response, String responseString) throws IOException {
                         if (response.isSuccessful()) {
-                            deleteMessageInternal(chatAdapter, message, true);
+                            deleteMessageInternal(chatAdapter, message, true, notify);
                             setProgress("delete", false);
                         } else {
                             SurespotLog.i(TAG, "deleteMessage statusCode: %d", response.code());
@@ -2000,17 +2000,7 @@ public class ChatController {
                 SurespotLog.d(TAG, "addMessageExternal: chatAdapter null, not adding message");
                 return false;
             } else {
-
-                // Handler handler = new Handler(Looper.getMainLooper());
-                // handler.post(new Runnable() {
-                //
-                // @Override
-                // public void run() {
-
                 return applyControlMessages(chatAdapter, message, false, true, false);
-
-                // }
-                // });
             }
         }
     }

@@ -510,7 +510,7 @@ public class ChatAdapter extends BaseAdapter {
         return null;
     }
 
-    public synchronized SurespotMessage deleteMessageById(Integer id) {
+    public synchronized SurespotMessage deleteMessageById(Integer id, boolean notify) {
         SurespotMessage message = null;
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
             message = iterator.previous();
@@ -520,7 +520,9 @@ public class ChatAdapter extends BaseAdapter {
                 SurespotLog.v(TAG, "deleting message");
                 message.setDeleted(true);
                 iterator.remove();
-                notifyDataSetChanged();
+                if (notify) {
+                    notifyDataSetChanged();
+                }
                 return message;
             }
         }

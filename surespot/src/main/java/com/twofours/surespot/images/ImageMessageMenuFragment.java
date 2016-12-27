@@ -193,7 +193,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								getString(R.string.delete_message), getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
 									public void handleResponse(Boolean result) {
 										if (result) {
-											cc.deleteMessage(mMessage);
+											cc.deleteMessage(mMessage, true);
 										}
 										else {
 											dialogi.cancel();
@@ -202,7 +202,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 								});
 						mActivity.setChildDialog(adialog);					}
 					else {
-						cc.deleteMessage(mMessage);
+						cc.deleteMessage(mMessage, true);
 					}
 
 					return;
