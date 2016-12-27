@@ -715,24 +715,24 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     private void updateDrawer() {
 
-        List<String> ids = IdentityController.getIdentityNames(this);
-        final String[] identityNames = ids.toArray(new String[ids.size()]);
+        if (mDrawerList != null) {
+            List<String> ids = IdentityController.getIdentityNames(this);
+            final String[] identityNames = ids.toArray(new String[ids.size()]);
 
-        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switchUser(identityNames[position - 1]);
-                mDrawerList.setItemChecked(position, true);
-            }
-        });
+            mDrawerList.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    switchUser(identityNames[position - 1]);
+                    mDrawerList.setItemChecked(position, true);
+                }
+            });
 
-
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
-
-        for (int i = 0; i < identityNames.length; i++) {
-            if (identityNames[i].equals(mUser)) {
-                mDrawerList.setItemChecked(i + 1, true);
-                break;
+            mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
+            for (int i = 0; i < identityNames.length; i++) {
+                if (identityNames[i].equals(mUser)) {
+                    mDrawerList.setItemChecked(i + 1, true);
+                    break;
+                }
             }
         }
     }
