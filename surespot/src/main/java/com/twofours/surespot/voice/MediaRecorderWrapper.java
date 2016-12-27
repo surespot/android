@@ -71,12 +71,10 @@ public class MediaRecorderWrapper {
 
             fPath = null;
             state = State.INITIALIZING;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (e.getMessage() != null) {
                 SurespotLog.e(MediaRecorderWrapper.class.getName(), e, e.getMessage());
-            }
-            else {
+            } else {
                 SurespotLog.e(MediaRecorderWrapper.class.getName(), e, "Unknown error occured while initializing recording");
             }
             state = State.ERROR;
@@ -94,12 +92,10 @@ public class MediaRecorderWrapper {
                 fPath = argPath;
                 mRecorder.setOutputFile(fPath);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (e.getMessage() != null) {
                 SurespotLog.e(MediaRecorderWrapper.class.getName(), e, e.getMessage());
-            }
-            else {
+            } else {
                 SurespotLog.e(MediaRecorderWrapper.class.getName(), e, "Unknown error occured while setting output path");
             }
             state = State.ERROR;
@@ -115,12 +111,10 @@ public class MediaRecorderWrapper {
         if (state == State.RECORDING) {
             try {
                 return mRecorder.getMaxAmplitude();
-            }
-            catch (IllegalStateException e) {
+            } catch (IllegalStateException e) {
                 return 0;
             }
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -135,18 +129,15 @@ public class MediaRecorderWrapper {
             if (state == State.INITIALIZING) {
                 mRecorder.prepare();
                 state = State.READY;
-            }
-            else {
+            } else {
                 SurespotLog.w(MediaRecorderWrapper.class.getName(), "prepare() method called on illegal state");
                 release();
                 state = State.ERROR;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (e.getMessage() != null) {
                 SurespotLog.e(MediaRecorderWrapper.class.getName(), e, e.getMessage());
-            }
-            else {
+            } else {
                 SurespotLog.e(MediaRecorderWrapper.class.getName(), e, "Unknown error occured in prepare()");
             }
             state = State.ERROR;
@@ -183,8 +174,7 @@ public class MediaRecorderWrapper {
 
                 state = State.INITIALIZING;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SurespotLog.e(MediaRecorderWrapper.class.getName(), e, e.getMessage());
             state = State.ERROR;
         }
@@ -195,10 +185,14 @@ public class MediaRecorderWrapper {
      */
     public void start() {
         if (state == State.READY) {
-            mRecorder.start();
-            state = State.RECORDING;
-        }
-        else {
+            try {
+                mRecorder.start();
+                state = State.RECORDING;
+            } catch (Exception e) {
+                SurespotLog.e(TAG, e, "error starting media recorder");
+                state = State.ERROR;
+            }
+        } else {
             SurespotLog.w(MediaRecorderWrapper.class.getName(), "start() called on illegal state");
             state = State.ERROR;
         }
@@ -210,10 +204,14 @@ public class MediaRecorderWrapper {
      */
     public void stop() {
         if (state == State.RECORDING) {
-            mRecorder.stop();
-            state = State.STOPPED;
-        }
-        else {
+            try {
+                mRecorder.stop();
+                state = State.STOPPED;
+            } catch (Exception e) {
+                SurespotLog.e(TAG, e, "error stopping media recorder");
+                state = State.ERROR;
+            }
+        } else {
             SurespotLog.w(MediaRecorderWrapper.class.getName(), "stop() called on illegal state");
             state = State.ERROR;
         }
