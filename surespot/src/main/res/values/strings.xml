@@ -370,4 +370,5 @@
     <string name="pref_confirm_logout">confirm logout</string>
     <string name="confirm_logout_message">Logging out will also clear the password if it is stored. Are you sure?</string>
     <string name="confirm_logout_title">Logout?</string>
+    <string name="could_not_record_audio">Could not record audio, is the microphone permission enabled?</string>
 </resources>

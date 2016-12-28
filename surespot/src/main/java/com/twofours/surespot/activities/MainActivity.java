@@ -457,7 +457,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                                     @Override
                                     public void run() {
-                                        VoiceController.stopRecording(MainActivity.this, finalSend);
+                                        VoiceController.stopRecording(MainActivity.this, finalSend, false);
 
                                     }
                                 }, 250);

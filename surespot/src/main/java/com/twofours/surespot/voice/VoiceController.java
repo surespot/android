@@ -116,7 +116,7 @@ public class VoiceController {
                             }
 
                             if (currentTimeLeft < -150) {
-                                stopRecording(mActivity, true);
+                                stopRecording(mActivity, true, false);
                                 return;
                             }
 
@@ -132,9 +132,9 @@ public class VoiceController {
 
     }
 
-    private synchronized static void startRecordingInternal(final Activity activity) {
+    private synchronized static boolean startRecordingInternal(final Activity activity) {
         if (mState != State.STARTED) {
-            return;
+            return false;
         }
 
         try {
@@ -163,9 +163,12 @@ public class VoiceController {
 
             startTimer(activity);
             mState = State.RECORDING;
-            // Utils.makeToast(activity, "sample rate: " + mSampleRate);
+            return true;
         } catch (Exception e) {
-            SurespotLog.e(TAG, e, "prepare() failed");
+            SurespotLog.e(TAG, e, "startRecordingInternal() failed");
+            Utils.makeToast(activity, activity.getString(R.string.could_not_record_audio));
+            stopRecording(activity, false, true);
+            return false;
         }
 
     }
@@ -186,10 +189,9 @@ public class VoiceController {
             mRecorder = null;
 
             mState = State.STARTED;
-        } catch (Exception stopException) {
-
+        } catch (Exception e) {
+            SurespotLog.e(TAG, e, "stopRecordingInternal() failed");
         }
-
     }
 
     // Play is over, cleanup
@@ -227,15 +229,12 @@ public class VoiceController {
             mEnvelopeView = (VolumeEnvelopeView) context.findViewById(R.id.volume_envelope);
             mVoiceHeaderView = (View) context.findViewById(R.id.voiceHeader);
             mVoiceRecTimeLeftView = (TextView) context.findViewById(R.id.voiceRecTimeLeft);
-            startRecordingInternal(context);
-
-            mRecording = true;
+            mRecording = startRecordingInternal(context);
         }
-
     }
 
-    public synchronized static void stopRecording(Activity activity, boolean send) {
-        if (mRecording) {
+    public synchronized static void stopRecording(Activity activity, boolean send, boolean force) {
+        if (mRecording || force) {
             stopRecordingInternal();
 
             if (send) {
