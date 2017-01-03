@@ -7,7 +7,7 @@ import android.content.Context;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendFragment;
 import com.twofours.surespot.ui.SurespotFragmentPagerAdapter;
@@ -179,10 +179,13 @@ public class ChatPagerAdapter extends SurespotFragmentPagerAdapter implements Ic
 	}
 
 	public void removeChat(int viewId, int index) {
+
 		Friend friend = mChatFriends.remove(index - 1);
 
 		String fragname = makeFragmentName(viewId, friend.getName().hashCode());
 		Fragment fragment = mFragmentManager.findFragmentByTag(fragname);
+
+		SurespotLog.d(TAG, "removeChat, index: %d, name: %s", index, fragname);
 
 		// SurespotLog.v(TAG, "Detaching item #" + getItemId(position-1) + ": f=" + object
 		// + " v=" + ((Fragment)object).getView());

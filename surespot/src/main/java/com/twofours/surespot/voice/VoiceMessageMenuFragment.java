@@ -14,7 +14,7 @@ import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.network.IAsyncCallback;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.util.ArrayList;
 

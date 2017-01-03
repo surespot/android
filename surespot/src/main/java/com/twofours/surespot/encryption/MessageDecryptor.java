@@ -27,8 +27,8 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.lang.ref.WeakReference;
 

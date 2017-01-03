@@ -18,15 +18,14 @@ package com.twofours.surespot.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.NetworkManager;
 
@@ -96,7 +95,7 @@ public class RegistrationIntentService extends IntentService {
         //todo use ChatManager
         List<String> usernames = IdentityController.getIdentityNames(this);
         for (String username : usernames) {
-            NetworkManager.getNetworkController(username).registerGcmId(this, id);
+            NetworkManager.getNetworkController(this, username).registerGcmId(this, id);
         }
 
     }

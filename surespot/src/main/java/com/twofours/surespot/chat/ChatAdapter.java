@@ -13,9 +13,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -311,9 +312,10 @@ public class ChatAdapter extends BaseAdapter {
 
         final SurespotMessage item = (SurespotMessage) getItem(position);
 
-        //chatMessageViewHolder.tvText.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
-        //chatMessageViewHolder.tvTime.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
-        //chatMessageViewHolder.messageSize.setTextColor(mContext.getResources().getColor(bgImageSet ? R.color.surespotGrey : android.R.color.black));
+        //SurespotLog.d(TAG, "color: %d", SurespotApplication.getTextColor());
+        chatMessageViewHolder.tvText.setTextColor(SurespotApplication.getTextColor());
+        chatMessageViewHolder.tvTime.setTextColor(SurespotApplication.getTextColor());
+        chatMessageViewHolder.messageSize.setTextColor(SurespotApplication.getTextColor());
 
 //        if (!SurespotConstants.MimeTypes.TEXT.equals(item.getMimeType())) {
 //            SurespotLog.v(TAG, "rendering item: %s", item);

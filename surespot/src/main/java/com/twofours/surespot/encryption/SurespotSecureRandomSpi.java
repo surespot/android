@@ -6,7 +6,7 @@ import org.spongycastle.crypto.digests.SHA256Digest;
 import org.spongycastle.crypto.prng.DigestRandomGenerator;
 import org.spongycastle.crypto.prng.RandomGenerator;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 
 //work around this massive problem by using bouncy castle PRNG and linux random device

@@ -1,5 +1,4 @@
 include ':imageViewTouch'
-include ':surespotcommon'
 include ':androidkeystore'
 include ':viewpagerindicator'
 include ':surespot', ':ColorPickerPreference'

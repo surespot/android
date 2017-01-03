@@ -26,14 +26,13 @@ import android.widget.SeekBar;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -182,8 +181,7 @@ public class VoiceMessageDownloader {
                 if (!TextUtils.isEmpty(messageData)) {
 
                     SurespotLog.d(TAG, "no cached file entry, making http call for voice: %s,", messageData);
-                    InputStream voiceStream = NetworkManager.getNetworkController(mUsername).getFileStream(messageData);
-                    //InputStream voiceStream = SurespotApplication.getNetworkController().getFileStream(messageData);
+                    InputStream voiceStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(messageData);
 
                     if (mCancelled) {
                         try {

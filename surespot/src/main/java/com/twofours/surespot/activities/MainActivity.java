@@ -64,6 +64,9 @@ import com.rockerhieu.emojicon.OnEmojiconClickedListener;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
@@ -71,11 +74,6 @@ import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
@@ -89,7 +87,9 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -103,7 +103,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-import static com.twofours.surespot.common.SurespotConstants.ExtraNames.MESSAGE_TO;
+import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
 
 public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
@@ -231,15 +231,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
-
-
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Utils.makeToast(MainActivity.this, getString(R.string.unauthorized));
-                    }
-                };
-                MainActivity.this.runOnUiThread(runnable);
             }
         };
 
@@ -526,6 +517,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
+        OnTouchListener editTouchListener = new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mEmojiShowing) {
+                    return true;
+                }
+
+                return false;
+            }
+        };
+
+        mEtMessage.setOnTouchListener(editTouchListener);
+
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
         //mEtInvite.setOnTouchListener(editTouchListener);
@@ -685,16 +690,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.setScrimColor(Color.argb(224, 0, 0, 0));
-        List<String> ids = IdentityController.getIdentityNames(this);
-        final String[] identityNames = ids.toArray(new String[ids.size()]);
-
-        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switchUser(identityNames[position - 1]);
-                mDrawerList.setItemChecked(position, true);
-            }
-        });
+        View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
+        mDrawerList.addHeaderView(header, null, false);
         mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -713,8 +710,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
-        mDrawerList.addHeaderView(header, null, false);
+        updateDrawer();
+    }
+
+    private void updateDrawer() {
+
+        List<String> ids = IdentityController.getIdentityNames(this);
+        final String[] identityNames = ids.toArray(new String[ids.size()]);
+
+        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switchUser(identityNames[position - 1]);
+                mDrawerList.setItemChecked(position, true);
+            }
+        });
+
+
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, identityNames));
 
         for (int i = 0; i < identityNames.length; i++) {
@@ -727,7 +739,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     private void setupUser() {
         //set username
-        NetworkManager.getNetworkController(mUser).set401Handler(m401Handler);
+        NetworkManager.getNetworkController(this, mUser).set401Handler(m401Handler);
 
         mContentFrame = (FrameLayout) findViewById(R.id.content_frame);
         View currentMainView = mContentFrame.getChildAt(0);
@@ -900,6 +912,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     @Override
     protected void onResume() {
         super.onResume();
+
         SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
         startWatchingExternalStorage();
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1016,6 +1029,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
+                break;
+            case SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS:
+                if (SurespotApplication.getThemeChanged()) {
+                    destroy();
+                    finish();
+                    final Intent intent = getIntent();
+                    intent.putExtra("themeChanged", true);
+                    startActivity(intent);
+                } else {
+                    //update drawer with identities as a new one may have been restored
+                    updateDrawer();
+                }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
         }
@@ -1049,9 +1075,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         //mMenuItems.add(menu.findItem(R.id.menu_purchase_voice));
 
-        ChatController cc = ChatManager.getChatController(mUser);
-        if (mUser != null && cc != null) {
-            cc.enableMenuItems(mCurrentFriend);
+
+        if (mUser != null) {
+            ChatController cc = ChatManager.getChatController(mUser);
+            if (cc != null) {
+                cc.enableMenuItems(mCurrentFriend);
+            }
         }
 
         //
@@ -1063,9 +1092,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         return Camera.getNumberOfCameras() > 0;
     }
 
-    public void uploadFriendImage(String name) {
+    public void uploadFriendImage(String name, String alias) {
         Intent intent = new Intent(this, ImageSelectActivity.class);
         intent.putExtra("to", name);
+        intent.putExtra("toAlias", alias);
         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_SMALL);
         // set start intent to avoid restarting every rotation
         intent.putExtra("start", true);
@@ -1104,7 +1134,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 cc.closeTab();
                 return true;
             case R.id.menu_send_image_bar:
-                if (currentChat == null) {
+                if (currentChat == null || mCurrentFriend == null) {
                     return true;
                 }
 
@@ -1117,6 +1147,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     protected Void doInBackground(Void... params) {
                         Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
                         intent.putExtra("to", currentChat);
+                        intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
                         intent.putExtra("from", mUser);
                         intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
                         // set start intent to avoid restarting every rotation
@@ -1154,25 +1185,32 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
-
                         Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                         intent.putExtra("username", mUser);
-                        startActivity(intent);
+                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
                         return null;
                     }
                 }.execute();
                 return true;
             case R.id.menu_logout_bar:
-                IdentityController.logout(this, mUser);
+                SharedPreferences spl = Utils.getGlobalSharedPrefs(this);
+                boolean confirmlogout = spl.getBoolean("pref_confirm_logout", true);
+                if (confirmlogout) {
+                    mDialog = UIUtils.createAndShowConfirmationDialog(this, getString(R.string.confirm_logout_message), getString(R.string.confirm_logout_title),
+                            getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        logout();
+                                    }
+                                }
+                            });
+                } else {
+                    logout();
+                }
 
-                Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
-                finalIntent.putExtra(MESSAGE_TO, mUser);
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                MainActivity.this.startActivity(finalIntent);
-                finish();
                 return true;
             case R.id.menu_invite_external:
-                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(mUser), mUser);
+                UIUtils.sendInvitation(MainActivity.this, NetworkManager.getNetworkController(this, mUser), mUser);
                 return true;
             case R.id.menu_clear_messages:
                 SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -1212,16 +1250,46 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     }
 
+    private void logout() {
+        IdentityController.logout(this, mUser, false);
+
+        Intent finalIntent = new Intent(MainActivity.this, LoginActivity.class);
+        finalIntent.putExtra(MESSAGE_TO, mUser);
+        finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        MainActivity.this.startActivity(finalIntent);
+        finish();
+    }
+
+
     @Override
     protected void onDestroy() {
+        //SurespotLog.d(TAG, "onDestroy");
         super.onDestroy();
-        SurespotLog.d(TAG, "onDestroy");
+
+        //calling finish and starting the activity again when we set the theme (see onActivityResult)
+        //results in an onDestroy being called in the new instance (&$&*% AFTER it is loaded
+        //use the global theme change flag to work around this
+        SurespotLog.d(TAG, "onDestroy, themeChanged: %b", SurespotApplication.getThemeChanged());
+
+        if (!SurespotApplication.getThemeChanged()) {
+            ChatManager.pause(mUser);
+            destroy();
+        } else {
+            SurespotApplication.setThemeChanged(null);
+        }
+
+    }
+
+    private void destroy() {
+        SurespotLog.d(TAG, "destroy unbinding");
+
         if (mCacheServiceBound && mConnection != null) {
             unbindService(mConnection);
         }
-        ChatManager.pause(mUser);
+
         ChatManager.detach(this);
     }
+
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -1403,34 +1471,41 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     // Utils.makeToast(getActivity(), getString(R.string.uploading_image));
 
                     SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
-
-                    ChatUtils.uploadPictureMessageAsync(
-                            this,
-                            ChatManager.getChatController(mUser),
-                            imageUri,
-                            mUser,
-                            mCurrentFriend.getName(),
-                            true);
+                    ChatController cc = ChatManager.getChatController(mUser);
+                    if (cc != null) {
+                        ChatUtils.uploadPictureMessageAsync(
+                                this,
+                                cc,
+                                imageUri,
+                                mUser,
+                                mCurrentFriend.getName(),
+                                true);
+                    } else {
+                        //TODO
+                    }
                 }
             }
         } else {
             if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
                 Utils.configureActionBar(this, "", mUser, true);
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
+                    ChatController cc = ChatManager.getChatController(mUser);
+                    if (cc != null) {
+                        ArrayList<Parcelable> uris = extras.getParcelableArrayList(Intent.EXTRA_STREAM);
 
-                    ArrayList<Parcelable> uris = extras.getParcelableArrayList(Intent.EXTRA_STREAM);
-                    for (Parcelable p : uris) {
-                        final Uri imageUri = (Uri) p;
+                        for (Parcelable p : uris) {
+                            final Uri imageUri = (Uri) p;
 
-                        SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
+                            SurespotLog.d(TAG, "received image data, upload image, uri: %s", imageUri);
 
-                        ChatUtils.uploadPictureMessageAsync(
-                                this,
-                                ChatManager.getChatController(mUser),
-                                imageUri,
-                                mUser,
-                                mCurrentFriend.getName(),
-                                true);
+                            ChatUtils.uploadPictureMessageAsync(
+                                    this,
+                                    cc,
+                                    imageUri,
+                                    mUser,
+                                    mCurrentFriend.getName(),
+                                    true);
+                        }
                     }
                 }
             }
@@ -1497,7 +1572,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
 
             setHomeProgress(true);
-            NetworkManager.getNetworkController(mUser).invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            NetworkManager.getNetworkController(this, mUser).invite(friend, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     SurespotLog.i(TAG, e, "inviteFriend error");

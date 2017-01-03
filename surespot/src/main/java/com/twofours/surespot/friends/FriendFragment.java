@@ -17,14 +17,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.common.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 public class FriendFragment extends Fragment {
     private FriendAdapter mMainAdapter;
@@ -62,7 +62,7 @@ public class FriendFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(mUsername), mUsername);
+                UIUtils.sendInvitation(getActivity(), NetworkManager.getNetworkController(getActivity(), mUsername), mUsername);
 
             }
         });
@@ -153,7 +153,7 @@ public class FriendFragment extends Fragment {
             }
         } else {
             if (selection.equals(getString(R.string.menu_assign_image))) {
-                activity.uploadFriendImage(friend.getName());
+                activity.uploadFriendImage(friend.getName(), friend.getNameOrAlias());
             } else {
                 if (selection.equals(getString(R.string.menu_remove_friend_image))) {
                     activity.removeFriendImage(friend.getName());

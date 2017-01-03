@@ -32,12 +32,12 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -187,7 +187,7 @@ public class MessageImageDownloader {
 
                 SurespotLog.d(TAG, "BitmapDownloaderTask getting %s,", messageData);
 
-                InputStream encryptedImageStream = NetworkManager.getNetworkController(mUsername).getFileStream(messageData);
+                InputStream encryptedImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(messageData);
 
                 if (mCancelled) {
                     try {

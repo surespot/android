@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
@@ -38,7 +38,7 @@ public class NetworkHelper {
 
                         String signature = EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword);
 
-                        NetworkManager.getNetworkController(username).login(username, dPassword, signature, new CookieResponseHandler() {
+                        NetworkManager.getNetworkController(context, username).login(username, dPassword, signature, new CookieResponseHandler() {
 
                             @Override
                             public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {

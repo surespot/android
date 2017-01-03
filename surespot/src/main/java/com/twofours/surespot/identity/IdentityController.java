@@ -13,15 +13,12 @@ import com.google.common.collect.Ordering;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.LoginActivity;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
@@ -31,7 +28,9 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -211,7 +210,7 @@ public class IdentityController {
 
                 String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
                 // do OOB verification
-                NetworkController networkController = NetworkManager.getNetworkController(username);
+                NetworkController networkController = NetworkManager.getNetworkController(context, username);
                 networkController.validate(username, dPassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword),
                         new Callback() {
                             @Override
@@ -311,12 +310,8 @@ public class IdentityController {
         }
 
         SurespotApplication.getCachingService().clearIdentityData(deletedUsername, true);
-
-        if (isLoggedIn) {
-            logout(context, getLoggedInUser());
-        }
-
-        NetworkManager.getNetworkController(deletedUsername).clearCache();
+        logout(context, deletedUsername, true);
+        NetworkManager.getNetworkController(context, deletedUsername).clearCache();
 
         FileCacheController fcc = SurespotApplication.getFileCacheController();
         if (fcc != null) {
@@ -348,7 +343,6 @@ public class IdentityController {
         if (isLoggedIn) {
             UIUtils.launchMainActivityDeleted(context);
         }
-
     }
 
     static SurespotIdentity getIdentity(Context context, String username) {
@@ -477,7 +471,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = NetworkManager.getNetworkController(username);
+            NetworkController networkController = NetworkManager.getNetworkController(context, username);
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
                         @Override
@@ -531,7 +525,7 @@ public class IdentityController {
             final String finalusername = identity.getUsername();
             String dpassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltBytes)));
 
-            NetworkController networkController = NetworkManager.getNetworkController(username);
+            NetworkController networkController = NetworkManager.getNetworkController(context, username);
             networkController.validate(finalusername, dpassword, EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), finalusername, dpassword),
                     new Callback() {
 
@@ -593,7 +587,7 @@ public class IdentityController {
 
             String dPassword = new String(ChatUtils.base64EncodeNowrap(EncryptionController.derive(password, saltyBytes)));
             // do OOB verification
-            NetworkManager.getNetworkController(username).validate(username, dPassword,
+            NetworkManager.getNetworkController(context, username).validate(username, dPassword,
                     EncryptionController.sign(identity.getKeyPairDSA().getPrivate(), username, dPassword), new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
@@ -712,7 +706,7 @@ public class IdentityController {
             return validatedKeys;
         } else {
             //get keys from server since the last validated version
-            sDownloadedKeys = NetworkManager.getNetworkController(ourUsername).getPublicKeysSync(theirUsername, Integer.toString(validatedKeyVersion + 1, 10));
+            sDownloadedKeys = NetworkManager.getNetworkController(context, ourUsername).getPublicKeysSync(theirUsername, Integer.toString(validatedKeyVersion + 1, 10));
 
             //validate from the last validated version to the version we want
             if (sDownloadedKeys != null) {
@@ -911,16 +905,19 @@ public class IdentityController {
         setLoggedInUser(context, identity, cookie, password);
     }
 
-    public static synchronized void logout(Context context, String username) {
+    public static synchronized void logout(Context context, String username, boolean deleted) {
         ChatController cc = ChatManager.getChatController(username);
         if (cc != null) {
             cc.logout();
         }
-        NetworkManager.getNetworkController(username).logout();
+
+        if (!deleted) {
+            NetworkManager.getNetworkController(context, username).logout();
+        }
 
         CredentialCachingService cache = SurespotApplication.getCachingService();
         if (cache != null) {
-            cache.clearIdentityData(username, true);
+            cache.logout(username, deleted);
         }
 
         clearStoredPasswordForIdentity(context, username);
@@ -928,7 +925,7 @@ public class IdentityController {
 
     public static synchronized void logout(Context context) {
         if (getLoggedInUser() != null) {
-            logout(context, getLoggedInUser());
+            logout(context, getLoggedInUser(), false);
         }
     }
 
@@ -998,19 +995,20 @@ public class IdentityController {
 
     }
 
-    /**
-     * run this on a thread
-     *
-     * @param username
-     * @return
-     */
     public static String getTheirLatestVersion(String ourUsername, String theirUsername) {
         return SurespotApplication.getCachingService().getLatestVersion(ourUsername, theirUsername);
     }
 
-    public static String getOurLatestVersion(String username) {
-        return SurespotApplication.getCachingService().getIdentity(null, username, null).getLatestVersion();
+    public static String getOurLatestVersion(Context context, String username) {
+        CredentialCachingService cachingService = SurespotApplication.getCachingService();
+        if (cachingService != null) {
+            SurespotIdentity identity = cachingService.getIdentity(context, username, null);
+            if (identity != null) {
+                return identity.getLatestVersion();
+            }
+        }
 
+        return null;
     }
 
     public static void rollKeys(Context context, SurespotIdentity identity, String username, String password, String keyVersion, KeyPair keyPairDH, KeyPair keyPairsDSA) {
@@ -1034,31 +1032,32 @@ public class IdentityController {
 
     public static void updateLatestVersion(Context context, String username, String version) {
         // see if we are the user that's been revoked
-        // if we have the latest version locally, if we don't then this user has
-        // been revoked from a different device
-        // and should not be used on this device anymore
-        if (username.equals(getLoggedInUser()) && (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(username)))) {
-            SurespotLog.v(TAG, "user revoked, deleting data and logging out");
-
-            // bad news
-            // delete the identity file and cached data
-            deleteIdentity(context, username, false);
-
-            // delete identities locally?
-            SurespotLog.d(TAG, "setting unauthorized, username=" + username + ", getLoggedInUser=" + getLoggedInUser());
-            NetworkManager.getNetworkController(username).setUnauthorized(true, true);
-
-            // boot them out
-            launchLoginActivity(context);
-
-            // TODO tell user?
-            // Utils.makeLongToast(context, "identity: " + username +
-            // " revoked");
-
-        } else {
-            SurespotApplication.getCachingService().updateLatestVersion(username, username, version);
+        boolean sameUser = false;
+        if (username.equals(getLoggedInUser())) {
+            sameUser = true;
         }
 
+        SurespotLog.d(TAG, "updateLatestVersion, username: %s, version: %s, sameUser: %b", username, version, sameUser);
+        //us
+        if (sameUser) {
+            //if we can't get the latest version we weren't logged in (we couldn't be here if we hadn't received the user control message after logging in)
+            //so we couldn't have issued the key roll
+            //therefore blow the identity away
+
+            if (Integer.parseInt(version) > Integer.parseInt(getOurLatestVersion(context, username))) {
+                SurespotLog.v(TAG, "user revoked, deleting data and logging out");
+
+                // bad news
+                // delete the identity file and cached data
+                deleteIdentity(context, username, false);
+
+                // boot them out
+                launchLoginActivity(context);
+            }
+        } else {
+            //not us
+            SurespotApplication.getCachingService().updateLatestVersion(getLoggedInUser(), username, version);
+        }
     }
 
     private static void launchLoginActivity(Context context) {

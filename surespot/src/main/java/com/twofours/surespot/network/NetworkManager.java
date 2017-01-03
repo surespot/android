@@ -1,8 +1,9 @@
 package com.twofours.surespot.network;
 
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 import java.util.HashMap;
 
@@ -15,19 +16,19 @@ public class NetworkManager {
     private static HashMap<String, NetworkController> mMap = new HashMap<>();
     private static String TAG = "NetworkManager";
 
-    public static synchronized NetworkController getNetworkController() {
+    public static synchronized NetworkController getNetworkController(Context context) {
         SurespotLog.d(TAG, "creating network controller for no user");
-        return new NetworkController(null);
+        return new NetworkController(context, null);
     }
 
-    public static synchronized NetworkController getNetworkController(String username) {
+    public static synchronized NetworkController getNetworkController(Context context, String username) {
         if (TextUtils.isEmpty(username)) {
             throw new RuntimeException("null username");
         }
         NetworkController nc = mMap.get(username);
         if (nc == null) {
             SurespotLog.d(TAG, "creating network controller for %s", username);
-            nc = new NetworkController(username);
+            nc = new NetworkController(context, username);
             mMap.put(username,nc);
         }
         return nc;

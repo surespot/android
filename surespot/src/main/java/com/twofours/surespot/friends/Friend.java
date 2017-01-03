@@ -4,7 +4,7 @@ import android.text.TextUtils;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;

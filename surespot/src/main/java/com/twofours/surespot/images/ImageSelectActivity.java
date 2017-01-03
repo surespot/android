@@ -20,12 +20,13 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,6 +51,7 @@ public class ImageSelectActivity extends Activity {
     private File mPath;
     private String mTo;
     private String mFrom;
+    private String mToAlias;
     private int mSize;
     private boolean mFriendImage;
     private RelativeLayout mFrame;
@@ -92,13 +94,14 @@ public class ImageSelectActivity extends Activity {
 
         if (savedInstanceState != null) {
             mTo = savedInstanceState.getString("to");
+            mToAlias = savedInstanceState.getString("toAlias");
             mFrom = savedInstanceState.getString("from");
             mSize = savedInstanceState.getInt("size");
             mFriendImage = savedInstanceState.getBoolean("friendImage");
             String path = savedInstanceState.getString("path");
             if (!TextUtils.isEmpty(path)) {
                 mPath = new File(path);
-                setImage(Uri.fromFile(mPath),true);
+                setImage(Uri.fromFile(mPath), true);
             }
 
             setTitle();
@@ -109,6 +112,7 @@ public class ImageSelectActivity extends Activity {
         if (start) {
             getIntent().putExtra("start", false);
             mTo = getIntent().getStringExtra("to");
+            mToAlias = getIntent().getStringExtra("toAlias");
             mFrom = getIntent().getStringExtra("from");
             mSize = getIntent().getIntExtra("size", IMAGE_SIZE_LARGE);
             mFriendImage = getIntent().getBooleanExtra("friendImage", false);
@@ -137,10 +141,9 @@ public class ImageSelectActivity extends Activity {
     private void setTitle() {
 
         if (mSize == IMAGE_SIZE_LARGE) {
-            Utils.configureActionBar(this, getString(R.string.select_image), mTo, false);
-        }
-        else {
-            Utils.configureActionBar(this, getString(R.string.assign_image), mTo, false);
+            Utils.configureActionBar(this, getString(R.string.select_image), mToAlias, false);
+        } else {
+            Utils.configureActionBar(this, getString(R.string.assign_image), mToAlias, false);
         }
 
 
@@ -157,26 +160,22 @@ public class ImageSelectActivity extends Activity {
             if (requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && !mFriendImage && data.getClipData() != null) {
                     handleMultipleImageSelection(data);
-                }
-                else if (data.getData() != null) {
+                } else if (data.getData() != null) {
 
                     Uri uri = data.getData();
                     if (!setImage(uri, true)) {
                         Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
                         finish();
                     }
-                }
-                else {
+                } else {
                     SurespotLog.i(TAG, "Not able to support multiple image selection and no appropriate data returned from image picker");
                     Utils.makeLongToast(ImageSelectActivity.this, getString(R.string.could_not_select_image));
                     finish();
                 }
-            }
-            else {
+            } else {
                 finish();
             }
-        }
-        else {
+        } else {
             finish();
         }
     }
@@ -187,15 +186,19 @@ public class ImageSelectActivity extends Activity {
             dataIntent.putExtra("to", mTo);
             dataIntent.setData(Uri.fromFile(mPath));
             setResult(Activity.RESULT_OK, dataIntent);
-        }
-        else {
+        } else {
             new AsyncTask<Void, Void, Void>() {
 
                 @Override
                 protected Void doInBackground(Void... params) {
+                    ChatController cc = ChatManager.getChatController(mFrom);
+                    if (cc == null) {
+                        //TODO notify user?
+                        return null;
+                    }
                     ChatUtils.uploadPictureMessageAsync(
                             ImageSelectActivity.this,
-                            ChatManager.getChatController(mFrom),
+                            cc,
                             Uri.fromFile(mPath),
                             mFrom,
                             mTo,
@@ -231,6 +234,12 @@ public class ImageSelectActivity extends Activity {
             protected Integer doInBackground(Void... params) {
                 int errorCount = 0;
 
+                ChatController cc = ChatManager.getChatController(mFrom);
+                if (cc == null) {
+                    errorCount = itemCount;
+                    return errorCount;
+                }
+
                 for (int n = 0; n < itemCount; n++) {
                     Uri uri = clipData.getItemAt(n).getUri();
                     // scale, compress and save the image
@@ -238,13 +247,12 @@ public class ImageSelectActivity extends Activity {
                     if (result != null) {
                         ChatUtils.uploadPictureMessageAsync(
                                 ImageSelectActivity.this,
-                                ChatManager.getChatController(mFrom),
+                                cc,
                                 Uri.fromFile(result.mFile),
                                 mFrom,
                                 mTo,
                                 false);
-                    }
-                    else {
+                    } else {
                         errorCount++;
                     }
                 }
@@ -275,12 +283,12 @@ public class ImageSelectActivity extends Activity {
             //mSendButton.setBackgroundDrawable(ContextCompat.getDrawable(this, android.R.drawable.btn_default));
         }
 
-       //     getActionBar().setBackgroundDrawable(ContextCompat.getDrawable(this, android.R.drawable.screen_background_dark));
-     //   }
-     //   else {
-    //        mFrame.setBackgroundColor(ContextCompat.getColor(this, R.color.background_holo_light));
-            //getActionBar().setBackgroundDrawable(ContextCompat.getDrawable(this, android.R.drawable.title_bar));
-  //      }
+        //     getActionBar().setBackgroundDrawable(ContextCompat.getDrawable(this, android.R.drawable.screen_background_dark));
+        //   }
+        //   else {
+        //        mFrame.setBackgroundColor(ContextCompat.getColor(this, R.color.background_holo_light));
+        //getActionBar().setBackgroundDrawable(ContextCompat.getDrawable(this, android.R.drawable.title_bar));
+        //      }
 
         // scale, compress and save the image
         BitmapAndFile result = compressImage(uri, -1, -1);
@@ -293,8 +301,7 @@ public class ImageSelectActivity extends Activity {
             fadeIn.setDuration(1000);
             mImageView.startAnimation(fadeIn);
 
-        }
-        else {
+        } else {
             mImageView.clearAnimation();
         }
         mImageView.setDisplayType(DisplayType.FIT_TO_SCREEN);
@@ -316,6 +323,7 @@ public class ImageSelectActivity extends Activity {
             outState.putString("path", mPath.getAbsolutePath());
         }
         outState.putString("to", mTo);
+        outState.putString("toAlias", mToAlias);
         outState.putString("from", mFrom);
         outState.putInt("size", mSize);
         outState.putBoolean("friendImage", mFriendImage);
@@ -333,8 +341,7 @@ public class ImageSelectActivity extends Activity {
             file.createNewFile();
             // SurespotLog.v(TAG, "createdFile: " + file.getPath());
             return file;
-        }
-        else {
+        } else {
             throw new IOException("Could not create image temp file dir: " + dir.getPath());
         }
 
@@ -371,12 +378,10 @@ public class ImageSelectActivity extends Activity {
 
                 fos.close();
                 finalUri = Uri.fromFile(f);
-            }
-            else {
+            } else {
                 finalUri = uri;
             }
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             SurespotLog.w(TAG, e1, "compressImage");
             if (f != null) {
                 f.delete();
@@ -401,15 +406,13 @@ public class ImageSelectActivity extends Activity {
                 result.mBitmap = bitmap;
                 result.mFile = f;
                 return result;
-            }
-            else {
+            } else {
                 if (f != null) {
                     f.delete();
                 }
                 return null;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             SurespotLog.w(TAG, e, "onActivityResult");
             if (f != null) {
                 f.delete();

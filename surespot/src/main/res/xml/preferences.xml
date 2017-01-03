@@ -104,8 +104,11 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_black"
-            android:title="@string/black_theme"
-            android:summary="@string/requires_force_stop"/>
+            android:title="@string/black_theme" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_confirm_logout"
+            android:title="@string/pref_confirm_logout" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_enable_keystore_control"

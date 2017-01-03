@@ -10,6 +10,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat.Builder;
+import android.text.TextUtils;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -17,11 +18,10 @@ import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
@@ -29,7 +29,8 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.security.PublicKey;
 import java.util.HashMap;
@@ -83,13 +84,14 @@ public class CredentialCachingService extends Service {
 
                 try {
                     PublicKey publicKey = mPublicIdentities.get(new Tuple<String, PublicKeyPairKey>(key.getOurUsername(), new PublicKeyPairKey(new VersionMap(key.getTheirUsername(), key.getTheirVersion())))).getDHKey();
-                    return EncryptionController.generateSharedSecretSync(getIdentity(null, key.getOurUsername(), null).getKeyPairDH(key.getOurVersion())
+                    byte[] secret = EncryptionController.generateSharedSecretSync(getIdentity(CredentialCachingService.this, key.getOurUsername(), null).getKeyPairDH(key.getOurVersion())
                             .getPrivate(), publicKey, key.getHashed());
-                }
-                catch (InvalidCacheLoadException e) {
+
+                    saveSharedSecrets(key.getOurUsername());
+                    return secret;
+                } catch (InvalidCacheLoadException e) {
                     SurespotLog.w(TAG, e, "secretCacheLoader");
-                }
-                catch (ExecutionException e) {
+                } catch (ExecutionException e) {
                     SurespotLog.w(TAG, e, "secretCacheLoader");
                 }
 
@@ -101,7 +103,7 @@ public class CredentialCachingService extends Service {
             @Override
             public String load(Tuple<String, String> identityAndFriendname) throws Exception {
                 //get the network controller for the identity
-                NetworkController nc = NetworkManager.getNetworkController(identityAndFriendname.first);
+                NetworkController nc = NetworkManager.getNetworkController(CredentialCachingService.this, identityAndFriendname.first);
                 String version = nc.getKeyVersionSync(identityAndFriendname.second);
                 SurespotLog.d(TAG, "versionCacheLoader: retrieved keyversion from server for username: %s, version: %s", identityAndFriendname.second, version);
                 return version;
@@ -132,13 +134,11 @@ public class CredentialCachingService extends Service {
                     notification = UIUtils.generateNotification(new Builder(this), contentIntent, getPackageName(), R.drawable.surespot_logo_grey,
                             getString(R.string.caching_service_notification_title).toString(), getString(R.string.caching_service_notification_message));
                     notification.priority = Notification.PRIORITY_MIN;
-                }
-                else {
+                } else {
                     Utils.putSharedPrefsBoolean(this, "firstTimePreventedForegroundService", true);
                 }
             }
-        }
-        else {
+        } else {
             notification = new Notification(0, null, System.currentTimeMillis());
             notification.flags |= Notification.FLAG_NO_CLEAR;
 
@@ -202,6 +202,7 @@ public class CredentialCachingService extends Service {
             if (hasPassword) {
                 Map<SharedSecretKey, byte[]> secrets = SurespotApplication.getStateController().loadSharedSecrets(username, password);
                 if (secrets != null) {
+                    SurespotLog.d(TAG, "setSession loaded %d shared secrets for %s", secrets.size(), username);
                     mSharedSecrets.putAll(secrets);
                 }
             }
@@ -209,14 +210,16 @@ public class CredentialCachingService extends Service {
         return sessionSet;
     }
 
-    private void saveSharedSecrets() {
-//        if (mLoggedInUser != null) {
-//            String password = getPassword(this, mLoggedInUser);
-//            if (password != null) {
-//                Map<SharedSecretKey, byte[]> secrets = mSharedSecrets.asMap();
-//                SurespotApplication.getStateController().saveSharedSecrets(mLoggedInUser, password, secrets);
-//            }
-//        }
+    private void saveSharedSecrets(String username) {
+        if (!TextUtils.isEmpty(username)) {
+            String password = getPassword(this, username);
+            if (!TextUtils.isEmpty(password)) {
+
+                Map<SharedSecretKey, byte[]> secrets = mSharedSecrets.asMap();
+                SurespotLog.d(TAG, "saveSharedSecrets, username: %s, count: %d", username, secrets.size());
+                SurespotApplication.getStateController().saveSharedSecrets(username, password, secrets);
+            }
+        }
     }
 
     public void updateIdentity(SurespotIdentity identity, boolean onlyIfExists) {
@@ -232,7 +235,7 @@ public class CredentialCachingService extends Service {
                 String version = pkp.getVersion();
 
                 this.mPublicIdentities.put(new Tuple<String, PublicKeyPairKey>(
-                        identity.getUsername(), new PublicKeyPairKey(new VersionMap(identity.getUsername(), version))),
+                                identity.getUsername(), new PublicKeyPairKey(new VersionMap(identity.getUsername(), version))),
                         new PublicKeys(version, identity.getKeyPairDH(version).getPublic(), identity.getKeyPairDSA(version).getPublic(), 0));
             }
         }
@@ -259,11 +262,9 @@ public class CredentialCachingService extends Service {
             // get the cache for this user
             try {
                 return mSharedSecrets.get(new SharedSecretKey(new VersionMap(ourUsername, ourVersion), new VersionMap(theirUsername, theirVersion), hashed));
-            }
-            catch (InvalidCacheLoadException e) {
+            } catch (InvalidCacheLoadException e) {
                 SurespotLog.w(TAG, e, "getSharedSecret");
-            }
-            catch (ExecutionException e) {
+            } catch (ExecutionException e) {
                 SurespotLog.w(TAG, e, "getSharedSecret");
             }
         }
@@ -271,13 +272,12 @@ public class CredentialCachingService extends Service {
 
     }
 
-    public SurespotIdentity getIdentity(Context context, String username) {
-        return getIdentity(context, username, null);
-    }
-
     public SurespotIdentity getIdentity(Context context, String username, String password) {
         SurespotIdentity identity = mIdentities.get(username);
-        if (identity == null && context != null) {
+        if (context == null) {
+            context = this;
+        }
+        if (identity == null) {
             // if we have the password load it
             if (password == null) {
                 password = getPassword(context, username);
@@ -332,18 +332,15 @@ public class CredentialCachingService extends Service {
         }
     }
 
-//    public synchronized void logout(boolean deleted) {
-//        if (mLoggedInUser != null) {
-//            SurespotLog.i(TAG, "Logging out: %s", mLoggedInUser);
-//
-//            if (!deleted) {
-//                saveSharedSecrets();
-//            }
-//
-//            clearIdentityData(mLoggedInUser, true);
-//            mLoggedInUser = null;
-//        }
-//    }
+    public synchronized void logout(String username, boolean deleted) {
+        SurespotLog.i(TAG, "Logging out: %s", username);
+
+        if (!deleted) {
+            saveSharedSecrets(username);
+        }
+
+        clearIdentityData(username, true);
+    }
 
     public class CredentialCachingBinder extends Binder {
         public CredentialCachingService getService() {
@@ -362,14 +359,8 @@ public class CredentialCachingService extends Service {
 
     }
 
-    @Override
-    public void onDestroy() {
-        SurespotLog.i(TAG, "onDestroy");
-        saveSharedSecrets();
-    }
-
     private synchronized String getLatestVersionIfPresent(String ourUsername, String theirUsername) {
-        return mLatestVersions.getIfPresent(new Tuple<String,String> (ourUsername,theirUsername));
+        return mLatestVersions.getIfPresent(new Tuple<String, String>(ourUsername, theirUsername));
     }
 
     public synchronized String getLatestVersion(String ourUsername, String theirUsername) {
@@ -379,11 +370,9 @@ public class CredentialCachingService extends Service {
                 SurespotLog.v(TAG, "getLatestVersion, username: %s, version: %s", theirUsername, version);
                 return version;
             }
-        }
-        catch (InvalidCacheLoadException e) {
+        } catch (InvalidCacheLoadException e) {
             SurespotLog.w(TAG, e, "getLatestVersion");
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             SurespotLog.w(TAG, e, "getLatestVersion");
         }
         return null;
@@ -440,16 +429,14 @@ public class CredentialCachingService extends Service {
                 if (other.mUsername != null) {
                     return false;
                 }
-            }
-            else if (!mUsername.equals(other.mUsername)) {
+            } else if (!mUsername.equals(other.mUsername)) {
                 return false;
             }
             if (mVersion == null) {
                 if (other.mVersion != null) {
                     return false;
                 }
-            }
-            else if (!mVersion.equals(other.mVersion)) {
+            } else if (!mVersion.equals(other.mVersion)) {
                 return false;
             }
             return true;
@@ -495,8 +482,7 @@ public class CredentialCachingService extends Service {
                 if (other.mVersionMap != null) {
                     return false;
                 }
-            }
-            else if (!mVersionMap.equals(other.mVersionMap)) {
+            } else if (!mVersionMap.equals(other.mVersionMap)) {
                 return false;
             }
             return true;
@@ -558,16 +544,14 @@ public class CredentialCachingService extends Service {
                 if (other.mOurVersionMap != null) {
                     return false;
                 }
-            }
-            else if (!mOurVersionMap.equals(other.mOurVersionMap)) {
+            } else if (!mOurVersionMap.equals(other.mOurVersionMap)) {
                 return false;
             }
             if (mTheirVersionMap == null) {
                 if (other.mTheirVersionMap != null) {
                     return false;
                 }
-            }
-            else if (!mTheirVersionMap.equals(other.mTheirVersionMap)) {
+            } else if (!mTheirVersionMap.equals(other.mTheirVersionMap)) {
                 return false;
             }
 

@@ -368,4 +368,7 @@
     <string name="could_not_select_image">Could not select image</string>
     <string name="did_not_send_x_images">surespot was unable to send %1$d of the %2$d selected images.</string>
     <string name="active_identity">ACTIVE IDENTITY</string>
+    <string name="pref_confirm_logout">confirm logout</string>
+    <string name="confirm_logout_message">Logging out will also clear the password if it is stored. Are you sure?</string>
+    <string name="confirm_logout_title">Logout?</string>
 </resources>

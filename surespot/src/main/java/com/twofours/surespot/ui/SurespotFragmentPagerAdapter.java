@@ -24,7 +24,7 @@ import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 /**
  * Implementation of {@link android.support.v4.view.PagerAdapter} that represents each page as a {@link Fragment} that is persistently kept in the fragment

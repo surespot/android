@@ -13,9 +13,9 @@ import android.os.Bundle;
 
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 public class FriendMenuFragment extends DialogFragment {
 	protected static final String TAG = "FriendMenuFragment";

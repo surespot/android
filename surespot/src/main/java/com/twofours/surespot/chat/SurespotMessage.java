@@ -2,7 +2,7 @@ package com.twofours.surespot.chat;
 
 import android.text.TextUtils;
 
-import com.twofours.surespot.common.SurespotLog;
+import com.twofours.surespot.SurespotLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;

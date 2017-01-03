@@ -14,10 +14,10 @@ import android.widget.Spinner;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.SignupActivity;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.MultiProgressDialog;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.util.List;
 

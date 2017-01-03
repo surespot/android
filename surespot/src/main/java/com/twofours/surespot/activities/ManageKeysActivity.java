@@ -21,8 +21,8 @@ import android.widget.TextView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
@@ -30,7 +30,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.MultiProgressDialog;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +41,6 @@ import java.security.PrivateKey;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class ManageKeysActivity extends Activity {
@@ -147,7 +146,8 @@ public class ManageKeysActivity extends Activity {
 		SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
 		// get a key update token from the server
-		NetworkManager.getNetworkController(username).getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback(){
+		NetworkManager.getNetworkController(ManageKeysActivity.this, username).getKeyToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback()
+		{
 			@Override
 			public void onFailure(Call call, IOException e) {
 				mMpd.decrProgress();
@@ -192,10 +192,11 @@ public class ManageKeysActivity extends Activity {
 						protected void onPostExecute(final RollKeysWrapper result) {
 							if (result != null) {
 								// upload all this crap to the server
-								NetworkManager.getNetworkController(username).updateKeys(username, dPassword,
+								NetworkManager.getNetworkController(ManageKeysActivity.this, username).updateKeys(username, dPassword,
 										EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
 										EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
-										result.keyVersion, result.clientSig, new Callback() {
+										result.keyVersion, result.clientSig, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+
 											@Override
 											public void onFailure(Call call, IOException e) {
 												SurespotLog.i(TAG, "error rollKeys");
@@ -204,7 +205,7 @@ public class ManageKeysActivity extends Activity {
 											}
 
 											@Override
-											public void onResponse(Call call, Response response) throws IOException {
+											public void onResponse(Call call, Response response, String responseString) throws IOException {
 												if (response.isSuccessful()) {
 													// save the key pairs
 													IdentityController.rollKeys(ManageKeysActivity.this, identity, username, password, result.keyVersion,
@@ -223,7 +224,7 @@ public class ManageKeysActivity extends Activity {
 											}
 
 
-										});
+										}));
 
 							} else {
 								mMpd.decrProgress();

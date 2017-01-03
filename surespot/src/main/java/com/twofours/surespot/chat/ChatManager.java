@@ -12,9 +12,9 @@ import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -36,9 +36,10 @@ public class ChatManager {
 
 
     public static synchronized ChatController getChatController(String username) {
-        if (TextUtils.isEmpty(username)) {
-            throw new RuntimeException("null username");
+       if (TextUtils.isEmpty(username)) {
+           return null;
         }
+
         return mMap.get(username);
     }
 

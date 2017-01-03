@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.ui.ExpandableHeightGridView;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 public class KeyFingerprintAdapter extends BaseAdapter {
 

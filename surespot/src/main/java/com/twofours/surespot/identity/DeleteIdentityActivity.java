@@ -14,14 +14,14 @@ import android.widget.Spinner;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.MultiProgressDialog;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.io.IOException;
 import java.security.PrivateKey;
@@ -110,7 +110,7 @@ public class DeleteIdentityActivity extends Activity {
         SurespotLog.v(TAG, "generatedAuthSig: " + authSignature);
 
         // get a key update token from the server
-        NetworkManager.getNetworkController(username).getDeleteToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(DeleteIdentityActivity.this, username).getDeleteToken(username, dPassword, authSignature, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 mMpd.decrProgress();
@@ -138,7 +138,7 @@ public class DeleteIdentityActivity extends Activity {
                         protected void onPostExecute(final DeleteIdentityWrapper result) {
                             if (result != null) {
                                 // upload all this crap to the server
-                                NetworkManager.getNetworkController(username).deleteUser(username, dPassword, result.authSig, result.tokenSig,
+                                NetworkManager.getNetworkController(DeleteIdentityActivity.this, username).deleteUser(username, dPassword, result.authSig, result.tokenSig,
                                         result.keyVersion, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback()
                                 {
                                             @Override

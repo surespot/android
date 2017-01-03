@@ -34,9 +34,9 @@ import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.backup.ImportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity;
@@ -49,7 +49,7 @@ import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.MultiProgressDialog;
-import com.twofours.surespot.ui.UIUtils;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.security.InvalidKeyException;
 import java.util.List;
@@ -292,7 +292,7 @@ public class LoginActivity extends Activity {
                 protected void onPostExecute(final IdSig idSig) {
                     if (idSig != null) {
 
-                        NetworkController networkController = NetworkManager.getNetworkController(username);
+                        NetworkController networkController = NetworkManager.getNetworkController(LoginActivity.this, username);
                         networkController.set401Handler(new IAsyncCallback<Object>() {
                             @Override
                             public void handleResponse(Object unused) {

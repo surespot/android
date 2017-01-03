@@ -18,11 +18,11 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.common.FileUtils;
-import com.twofours.surespot.common.SurespotConfiguration;
-import com.twofours.surespot.common.SurespotConstants;
-import com.twofours.surespot.common.SurespotLog;
-import com.twofours.surespot.common.Utils;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
@@ -293,12 +293,12 @@ public class ChatUtils {
                     PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                     final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
 
-                    final String ourVersion = IdentityController.getOurLatestVersion(ourName);
+                    final String ourVersion = IdentityController.getOurLatestVersion(activity, ourName);
 
                     final String iv = EncryptionController.runEncryptTask(ourName, ourVersion, ourName, ourVersion, new BufferedInputStream(dataStream),
                             encryptionOutputStream);
 
-                    NetworkManager.getNetworkController(ourName).postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
+                    NetworkManager.getNetworkController(activity, ourName).postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {
 
                         @Override
                         public void handleResponse(String uri) {
