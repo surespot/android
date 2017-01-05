@@ -3042,9 +3042,10 @@ public class ChatController {
         int defaults = 0;
 
         boolean showLights = pm == null ? true : pm.getBoolean("pref_notifications_led", true);
-        boolean makeSound = pm == null ? true : pm.getBoolean("pref_notifications_sound", true);
         boolean vibrate = pm == null ? true : pm.getBoolean("pref_notifications_vibration", true);
         int color = pm == null ? 0xff0000FF : pm.getInt("pref_notification_color", ContextCompat.getColor(mContext, R.color.surespotBlue));
+        String customSound = pm == null ? "content://settings/system/notification_sound"
+                : pm.getString("pref_notifications_sound", "content://settings/system/notification_sound");
 
         if (showLights) {
             SurespotLog.v(TAG, "showing notification led");
@@ -3053,10 +3054,8 @@ public class ChatController {
             mBuilder.setLights(color, 0, 0);
         }
 
-        if (makeSound) {
-            SurespotLog.v(TAG, "making notification sound");
-            defaults |= Notification.DEFAULT_SOUND;
-        }
+        SurespotLog.v(TAG, "making notification sound " + customSound);
+        mBuilder.setSound(Uri.parse(customSound));
 
         if (vibrate) {
             SurespotLog.v(TAG, "vibrating notification");

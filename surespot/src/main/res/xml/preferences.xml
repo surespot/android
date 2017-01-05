@@ -56,11 +56,13 @@
                 android:defaultValue="true"
                 android:key="pref_notifications_enabled"
                 android:title="@string/notifications_enabled"/>
-            <CheckBoxPreference
-                android:defaultValue="true"
+            <RingtonePreference
+                android:defaultValue="content://settings/system/notification_sound"
                 android:dependency="pref_notifications_enabled"
                 android:key="pref_notifications_sound"
-                android:title="@string/notifications_sound"/>
+                android:title="@string/notifications_sound"
+                android:ringtoneType="notification"
+                android:showDefault="true"/>
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:dependency="pref_notifications_enabled"

@@ -29,6 +29,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.net.Uri;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.twofours.surespot.R;
@@ -287,9 +288,9 @@ public class SurespotGcmListenerService extends GcmListenerService {
         int defaults = 0;
 
         boolean showLights = pm.getBoolean("pref_notifications_led", true);
-        boolean makeSound = pm.getBoolean("pref_notifications_sound", true);
         boolean vibrate = pm.getBoolean("pref_notifications_vibration", true);
         int color = pm.getInt("pref_notification_color", ContextCompat.getColor(context, R.color.surespotBlue));
+        String customSound = pm.getString("pref_notifications_sound", "content://settings/system/notification_sound");
 
         if (showLights) {
             SurespotLog.v(TAG, "showing notification led");
@@ -299,10 +300,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
             mBuilder.setLights(color, 0, 0);
         }
 
-        if (makeSound) {
-            SurespotLog.v(TAG, "making notification sound");
-            defaults |= Notification.DEFAULT_SOUND;
-        }
+        SurespotLog.v(TAG, "making notification sound " + customSound);
+        mBuilder.setSound(Uri.parse(customSound));
 
         if (vibrate) {
             SurespotLog.v(TAG, "vibrating notification");
