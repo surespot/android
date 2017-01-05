@@ -273,7 +273,7 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK && requestCode == SurespotConstants.IntentRequestCodes.REQUEST_EXISTING_IMAGE) {
             Uri uri = data.getData();
 
             File imageFile = compressImage(uri, -1);
@@ -296,6 +296,7 @@ public class SettingsActivity extends PreferenceActivity {
                 SurespotConfiguration.setBackgroundImageSet(true);
             }
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private File compressImage(final Uri uri, final int rotate) {

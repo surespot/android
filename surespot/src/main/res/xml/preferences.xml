@@ -43,24 +43,18 @@
             android:key="pref_background_image"
             android:title="@string/pref_title_background_image_select"/>
 
-        <net.margaritov.preference.colorpicker.ColorPickerPreference
-            alphaSlider="false"
-            android:defaultValue="@color/surespotBlue"
-            android:key="pref_notification_color"
-            android:summary="@string/pref_summary_notification_color"
-            android:title="@string/pref_title_notification_color"
-            />
-
         <PreferenceScreen android:title="@string/notifications_title">
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:key="pref_notifications_enabled"
                 android:title="@string/notifications_enabled"/>
-            <CheckBoxPreference
-                android:defaultValue="true"
+            <RingtonePreference
+                android:defaultValue="content://settings/system/notification_sound"
                 android:dependency="pref_notifications_enabled"
                 android:key="pref_notifications_sound"
-                android:title="@string/notifications_sound"/>
+                android:title="@string/notifications_sound"
+                android:ringtoneType="notification"
+                android:showDefault="true"/>
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:dependency="pref_notifications_enabled"
@@ -71,6 +65,12 @@
                 android:dependency="pref_notifications_enabled"
                 android:key="pref_notifications_led"
                 android:title="@string/notifications_led"/>
+            <net.margaritov.preference.colorpicker.ColorPickerPreference
+                alphaSlider="false"
+                android:defaultValue="@color/surespotBlue"
+                android:key="pref_notification_color"
+                android:summary="@string/pref_summary_notification_color"
+                android:title="@string/pref_title_notification_color"/>
         </PreferenceScreen>
 
         <CheckBoxPreference
