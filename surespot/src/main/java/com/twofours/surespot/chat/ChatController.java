@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -3043,12 +3044,11 @@ public class ChatController {
         boolean showLights = pm == null ? true : pm.getBoolean("pref_notifications_led", true);
         boolean makeSound = pm == null ? true : pm.getBoolean("pref_notifications_sound", true);
         boolean vibrate = pm == null ? true : pm.getBoolean("pref_notifications_vibration", true);
-        int color = pm == null ? 0xff0000FF : pm.getInt("pref_notification_color", mContext.getResources().getColor(R.color.surespotBlue));
+        int color = pm == null ? 0xff0000FF : pm.getInt("pref_notification_color", ContextCompat.getColor(mContext, R.color.surespotBlue));
 
         if (showLights) {
             SurespotLog.v(TAG, "showing notification led");
             mBuilder.setLights(color, 500, 5000);
-            defaults |= Notification.FLAG_SHOW_LIGHTS;
         } else {
             mBuilder.setLights(color, 0, 0);
         }
@@ -3064,7 +3064,10 @@ public class ChatController {
         }
 
         mBuilder.setDefaults(defaults);
-        mNotificationManager.notify(SurespotConstants.ExtraNames.UNSENT_MESSAGES, SurespotConstants.IntentRequestCodes.UNSENT_MESSAGE_NOTIFICATION, mBuilder.build());
+        Notification notification = mBuilder.build();
+        if (showLights)
+            notification.flags = Notification.FLAG_SHOW_LIGHTS;
+        mNotificationManager.notify(SurespotConstants.ExtraNames.UNSENT_MESSAGES, SurespotConstants.IntentRequestCodes.UNSENT_MESSAGE_NOTIFICATION, notification);
 
         // mNotificationManager.notify(tag, id, mBuilder.build());
         // Notification notification = UIUtils.generateNotification(mBuilder, contentIntent, getPackageName(), title, message);

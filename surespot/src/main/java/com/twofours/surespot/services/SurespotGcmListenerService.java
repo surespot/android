@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
@@ -288,12 +289,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
         boolean showLights = pm.getBoolean("pref_notifications_led", true);
         boolean makeSound = pm.getBoolean("pref_notifications_sound", true);
         boolean vibrate = pm.getBoolean("pref_notifications_vibration", true);
-        int color = pm.getInt("pref_notification_color", getResources().getColor(R.color.surespotBlue));
+        int color = pm.getInt("pref_notification_color", ContextCompat.getColor(context, R.color.surespotBlue));
 
         if (showLights) {
             SurespotLog.v(TAG, "showing notification led");
             mBuilder.setLights(color, 500, 5000);
-            defaults |= Notification.FLAG_SHOW_LIGHTS; // shouldn't need this - setLights does it.  Just to make sure though...
         }
         else {
             mBuilder.setLights(color, 0, 0);
@@ -310,7 +310,10 @@ public class SurespotGcmListenerService extends GcmListenerService {
         }
 
         mBuilder.setDefaults(defaults);
-        mNotificationManager.notify(tag, id, mBuilder.build());
+        Notification notification = mBuilder.build();
+        if (showLights)
+            notification.flags = Notification.FLAG_SHOW_LIGHTS;
+        mNotificationManager.notify(tag, id, notification);
     }
 
     private void generateSystemNotification(Context context, String title, String message, String tag, int id) {
