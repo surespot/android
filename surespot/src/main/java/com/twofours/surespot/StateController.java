@@ -190,7 +190,7 @@ public class StateController {
 
     }
 
-    public synchronized void saveMessages(String user, String spot, ArrayList<SurespotMessage> messages, int currentScrollPosition) {
+    public synchronized void saveMessages(String user, String spot, List<SurespotMessage> messages, int currentScrollPosition) {
         String filename = getFilename(user, MESSAGES_PREFIX + spot);
         if (filename != null) {
             if (messages != null) {

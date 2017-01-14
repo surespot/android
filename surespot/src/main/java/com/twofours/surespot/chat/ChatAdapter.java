@@ -26,12 +26,13 @@ import com.twofours.surespot.voice.VoiceMessageDownloader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatAdapter extends BaseAdapter {
     private final static String TAG = "ChatAdapter";
-    private ArrayList<SurespotMessage> mMessages = new ArrayList<SurespotMessage>();
+    private List<SurespotMessage> mMessages =  Collections.synchronizedList(new ArrayList<SurespotMessage>());
     private Context mContext;
     private final static int TYPE_US = 0;
     private final static int TYPE_THEM = 1;
@@ -68,12 +69,12 @@ public class ChatAdapter extends BaseAdapter {
         mAllLoadedCallback = callback;
     }
 
-    public synchronized ArrayList<SurespotMessage> getMessages() {
+    public List<SurespotMessage> getMessages() {
         return mMessages;
     }
 
     // get the last message that has an id
-    public synchronized SurespotMessage getLastMessageWithId() {
+    public SurespotMessage getLastMessageWithId() {
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
             SurespotMessage message = iterator.previous();
             if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
@@ -83,7 +84,7 @@ public class ChatAdapter extends BaseAdapter {
         return null;
     }
 
-    public synchronized SurespotMessage getFirstMessageWithId() {
+    public SurespotMessage getFirstMessageWithId() {
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext(); ) {
             SurespotMessage message = iterator.next();
             if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
@@ -94,7 +95,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     // update the id and sent status of the message once we received
-    private synchronized boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) {
+    private boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort) {
 
         // SurespotLog.v(TAG, "addMessage, could not find message");
 
@@ -183,7 +184,7 @@ public class ChatAdapter extends BaseAdapter {
         return added;
     }
 
-    private synchronized void insertMessage(SurespotMessage message) {
+    private void insertMessage(SurespotMessage message) {
         if (mMessages.indexOf(message) == -1) {
             mMessages.add(0, message);
         } else {
@@ -191,14 +192,14 @@ public class ChatAdapter extends BaseAdapter {
         }
     }
 
-    public synchronized void setMessages(ArrayList<SurespotMessage> messages) {
+    public void setMessages(ArrayList<SurespotMessage> messages) {
         if (messages.size() > 0) {
             mMessages.clear();
             mMessages.addAll(messages);
         }
     }
 
-    public synchronized void addOrUpdateMessages(ArrayList<SurespotMessage> messages) {
+    public void addOrUpdateMessages(ArrayList<SurespotMessage> messages) {
         for (SurespotMessage message : messages) {
             addOrUpdateMessage(message, false, false);
 
@@ -207,17 +208,17 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     @Override
-    public synchronized int getCount() {
+    public int getCount() {
         return mMessages.size();
     }
 
     @Override
-    public synchronized Object getItem(int position) {
+    public Object getItem(int position) {
         return mMessages.get(position);
     }
 
     @Override
-    public synchronized int getItemViewType(int position) {
+    public int getItemViewType(int position) {
         SurespotMessage message = mMessages.get(position);
         return getTypeForMessage(mOurUsername, message);
     }
@@ -478,7 +479,7 @@ public class ChatAdapter extends BaseAdapter {
 
     }
 
-    public synchronized boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {
+    public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {
         boolean added = addOrUpdateMessage(message, checkSequence, sort);
 
         if (notify) {
@@ -487,14 +488,14 @@ public class ChatAdapter extends BaseAdapter {
         return added;
     }
 
-    public synchronized void insertMessage(SurespotMessage message, boolean notify) {
+    public void insertMessage(SurespotMessage message, boolean notify) {
         insertMessage(message);
         if (notify) {
             notifyDataSetChanged();
         }
     }
 
-    public synchronized SurespotMessage deleteMessageByIv(String iv) {
+    public SurespotMessage deleteMessageByIv(String iv) {
         SurespotMessage message = null;
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
             message = iterator.next();
@@ -511,7 +512,7 @@ public class ChatAdapter extends BaseAdapter {
         return null;
     }
 
-    public synchronized SurespotMessage deleteMessageById(Integer id, boolean notify) {
+    public SurespotMessage deleteMessageById(Integer id, boolean notify) {
         SurespotMessage message = null;
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
             message = iterator.previous();
@@ -531,7 +532,7 @@ public class ChatAdapter extends BaseAdapter {
         return null;
     }
 
-    public synchronized SurespotMessage getMessageById(Integer id) {
+    public SurespotMessage getMessageById(Integer id) {
         SurespotMessage message = null;
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
             message = iterator.next();
@@ -545,7 +546,7 @@ public class ChatAdapter extends BaseAdapter {
         return null;
     }
 
-    public synchronized SurespotMessage getMessageByIv(String iv) {
+    public SurespotMessage getMessageByIv(String iv) {
         SurespotMessage message = null;
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
             message = iterator.previous();
@@ -559,11 +560,11 @@ public class ChatAdapter extends BaseAdapter {
         return null;
     }
 
-    public synchronized void sort() {
+    public void sort() {
         Collections.sort(mMessages);
     }
 
-    public synchronized void deleteAllMessages(int utaiMessageId) {
+    public void deleteAllMessages(int utaiMessageId) {
         //
         // mMessages.clear();
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
@@ -576,7 +577,7 @@ public class ChatAdapter extends BaseAdapter {
         }
     }
 
-    public synchronized void deleteTheirMessages(int utaiMessageId) {
+    public void deleteTheirMessages(int utaiMessageId) {
 
         for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
             SurespotMessage message = iterator.next();
@@ -598,7 +599,7 @@ public class ChatAdapter extends BaseAdapter {
     // so we keep track of which messages we're loading
     // so we know when they're done, and when they are
     // we can scroll to where we need to be
-    public synchronized void checkLoaded() {
+    public void checkLoaded() {
 
         if (!mLoaded) {
 
@@ -621,7 +622,7 @@ public class ChatAdapter extends BaseAdapter {
         return mContext;
     }
 
-    public synchronized void addControlMessage(SurespotControlMessage message) {
+    public void addControlMessage(SurespotControlMessage message) {
         mControlMessages.add(message);
     }
 
