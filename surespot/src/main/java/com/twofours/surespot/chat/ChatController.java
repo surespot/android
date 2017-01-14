@@ -2309,62 +2309,78 @@ public class ChatController {
         //make sure message is encrypted
         if (!isMessageReadyToSend(message)) {
             // do encryption in background
-            new AsyncTask<Void, Void, Boolean>() {
-
+            Runnable runnable = new Runnable() {
                 @Override
-                protected Boolean doInBackground(Void... arg0) {
+                public void run() {
+
                     synchronized (ChatController.this) {
+                        final Boolean success = encryptMessage(message);
 
-                        //if plain data is null, already being handled, do nothing
-                        CharSequence plainData = message.getPlainData();
-                        if (plainData == null) {
-                            return null;
-                        }
+                        if (success != null) {
+                            //update on ui thread
+                            Runnable runnableUi = new Runnable() {
+                                @Override
+                                public void run() {
+                                    addMessage(message);
+                                    if (success) {
+                                        sendTextMessage(message);
+                                    } else {
+                                        messageSendCompleted(message);
+                                        if (!scheduleResendTimer()) {
+                                            errorMessageQueue();
+                                        }
+                                    }
+                                }
+                            };
 
-                        String ourLatestVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
-                        String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+                            mHandler.post(runnableUi);
 
-                        if (theirLatestVersion == null) {
-                            SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
-                            //retry
-                            message.setErrorStatus(0);
-                            return false;
-                        }
-
-                        byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
-                        String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
-
-                        if (result != null) {
-                            //update unsent message
-                            message.setPlainData(null);
-                            message.setData(result);
-                            message.setFromVersion(ourLatestVersion);
-                            message.setToVersion(theirLatestVersion);
-                            return true;
-                        } else {
-                            SurespotLog.d(TAG, "could not encrypt message, iv: %s", message.getIv());
-                            message.setErrorStatus(500);
-                            return false;
                         }
                     }
                 }
+            };
 
-                protected void onPostExecute(Boolean success) {
-                    if (success != null) {
-                        addMessage(message);
-                        if (success) {
-                            sendTextMessage(message);
-                        } else {
-                            messageSendCompleted(message);
-                            if (!scheduleResendTimer()) {
-                                errorMessageQueue();
-                            }
-                        }
-                    }
-                }
-            }.execute();
+            SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+
         } else {
             sendTextMessage(message);
+        }
+    }
+
+    private Boolean encryptMessage(SurespotMessage message) {
+        //if plain data is null, already being handled, do nothing
+        CharSequence plainData = message.getPlainData();
+        if (plainData == null) {
+            return null;
+        }
+
+        String ourLatestVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
+        String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+        synchronized (ChatController.this) {
+
+            if (theirLatestVersion == null) {
+                SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
+                //retry
+                message.setErrorStatus(0);
+                return false;
+            }
+
+
+            byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
+            String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
+
+            if (result != null) {
+                //update unsent message
+                message.setPlainData(null);
+                message.setData(result);
+                message.setFromVersion(ourLatestVersion);
+                message.setToVersion(theirLatestVersion);
+                return true;
+            } else {
+                SurespotLog.d(TAG, "could not encrypt message, iv: %s", message.getIv());
+                message.setErrorStatus(500);
+                return false;
+            }
         }
     }
 
