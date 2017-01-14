@@ -85,6 +85,14 @@ public class SurespotApplication extends Application {
             mVersion = "unknown";
         }
 
+        //workaround Stack:java.lang.NoClassDefFoundError: android/os/AsyncTask: https://code.google.com/p/android/issues/detail?id=81083
+        try {
+            Class.forName("android.os.AsyncTask");
+        }
+        catch(Throwable ignore) {
+            // ignored
+        }
+
 
         mUserAgent = "surespot/" + SurespotApplication.getVersion() + " (Android)";
 
