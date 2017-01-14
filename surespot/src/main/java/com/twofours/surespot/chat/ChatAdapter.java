@@ -27,6 +27,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatAdapter extends BaseAdapter {
     private final static String TAG = "ChatAdapter";
@@ -43,7 +44,7 @@ public class ChatAdapter extends BaseAdapter {
     private MessageImageDownloader mMessageImageDownloader;
     private boolean mLoaded;
     private VoiceMessageDownloader mMessageVoiceDownloader;
-    private ArrayList<SurespotControlMessage> mControlMessages = new ArrayList<SurespotControlMessage>();
+    private CopyOnWriteArrayList<SurespotControlMessage> mControlMessages = new CopyOnWriteArrayList<>();
     private String mOurUsername;
 
     public ChatAdapter(Context context, String ourUsername) {
@@ -624,7 +625,7 @@ public class ChatAdapter extends BaseAdapter {
         mControlMessages.add(message);
     }
 
-    public synchronized ArrayList<SurespotControlMessage> getControlMessages() {
+    public CopyOnWriteArrayList<SurespotControlMessage> getControlMessages() {
         return mControlMessages;
     }
 }

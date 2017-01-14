@@ -69,6 +69,7 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.socket.client.IO;
 import io.socket.client.Manager;
@@ -387,7 +388,7 @@ public class ChatController {
 
     private boolean applyControlMessages(ChatAdapter chatAdapter, SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {
         // see if we have applicable control messages and apply them if necessary
-        ArrayList<SurespotControlMessage> controlMessages = chatAdapter.getControlMessages();
+        CopyOnWriteArrayList<SurespotControlMessage> controlMessages = chatAdapter.getControlMessages();
         ArrayList<SurespotControlMessage> applicableControlMessages = new ArrayList<SurespotControlMessage>();
         for (SurespotControlMessage controlMessage : controlMessages) {
             int messageId = Integer.parseInt(controlMessage.getMoreData());
