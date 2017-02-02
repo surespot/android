@@ -1140,12 +1140,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
 
                 // can't send images to deleted folk
-                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+                if (mCurrentFriend.isDeleted()) {
                     return true;
                 }
 
                 new AsyncTask<Void, Void, Void>() {
                     protected Void doInBackground(Void... params) {
+                        if (mCurrentFriend == null) {
+                            return null;
+                        }
                         Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
                         intent.putExtra("to", currentChat);
                         intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
